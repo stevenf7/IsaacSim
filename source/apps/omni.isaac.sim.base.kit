@@ -9,6 +9,7 @@ keywords = ["experience", "app", "usd"]
 [dependencies]
 # Isaac Sim extensions
 "isaacsim.app.about" = {}
+"isaacsim.app.setup" = { order = 1000 }
 "isaacsim.asset.browser" = {}
 "isaacsim.asset.generator.occupancy_map.ui" = {}
 "isaacsim.asset.generator.occupancy_map" = {}
@@ -54,13 +55,12 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.util.debug_draw" = {}
 "isaacsim.util.merge_mesh" = {}
 "isaacsim.util.physics" = {}
-"isaacsim.app.setup" = { order = 1000 }
 "omni.isaac.assets_check" = { order = 1001 }
 "omni.isaac.block_world" = {}
 "omni.isaac.cloner" = {}
 "omni.isaac.core_archive" = {}
-"omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
+"omni.isaac.core" = {}
 "omni.isaac.debug_draw" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.extension_templates" = {}
@@ -90,18 +90,10 @@ keywords = ["experience", "app", "usd"]
 "omni.usd.schema.isaac" = {}
 
 # Kit extensions
-#"omni.activity.freeze_monitor" = {}
-#"omni.activity.profiler" = {}
-#"omni.activity.pump" = {}
-#"omni.activity.ui" = {}
-#"omni.activity.usd_resolver" = {}
 "omni.anim.curve.bundle" = {}
 "omni.anim.graph.schema" = {}
 "omni.anim.navigation.schema" = {}
 "omni.anim.shared.core" = {}
-"omni.kit.collaboration.channel_manager" = {}
-#"omni.curve.manipulator" = {}
-#"omni.genproc.bundle" = {}
 "omni.graph.bundle.action" = {}
 "omni.graph.visualization.nodes" = {}
 "omni.graph.window.action" = {}
@@ -114,6 +106,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.asset_converter" = {}
 "omni.kit.browser.asset" = {}
 "omni.kit.browser.material" = {}
+"omni.kit.collaboration.channel_manager" = {}
 "omni.kit.context_menu" = {}
 "omni.kit.converter.cad" = {order = 200}
 "omni.kit.graph.delegate.default" = {}
@@ -149,7 +142,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.stage.mdl_converter" = {}
 "omni.kit.stagerecorder.bundle" = {}
 "omni.kit.telemetry" = {}
-# "omni.kit.thumbnails.mdl" = {} # brings in legacy_gizmos
 "omni.kit.thumbnails.usd" = {}
 "omni.kit.tool.asset_exporter" = {}
 "omni.kit.tool.asset_importer" = {}
@@ -182,8 +174,8 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.extensions" = {}
 "omni.kit.window.file" = {}
 "omni.kit.window.filepicker" = {}
-"omni.kit.window.material" = {}
 "omni.kit.window.material_graph" = {}
+"omni.kit.window.material" = {}
 "omni.kit.window.preferences" = {}
 "omni.kit.window.property" = {}
 "omni.kit.window.quicksearch" = {}
@@ -195,7 +187,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.toolbar" = {}
 "omni.kit.window.usd_paths" = {}
 "omni.physx.bundle" = {}
-# "omni.physx.fabric" = {}
 "omni.physx.tensors" = {}
 "omni.replicator.isaac" = {}
 "omni.replicator.replicator_yaml" = {}
@@ -204,13 +195,14 @@ keywords = ["experience", "app", "usd"]
 "omni.simready.explorer" = {}
 "omni.stats" = {}
 "omni.syntheticdata" = {}
-"omni.usd.metrics.assembler.ui" = {}
 "omni.usd.metrics.assembler.physics" = {}
+"omni.usd.metrics.assembler.ui" = {}
 "omni.usd.schema.metrics.assembler" = {}
 "omni.usd.schema.scene.visualization" = {}
 "omni.warp" = {}
 "semantics.schema.editor" = {}
 "semantics.schema.property" = {}
+
 
 [settings]
 renderer.active = "rtx"

@@ -3,7 +3,7 @@
 folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsDeprecated"]
 
 [dependencies]
-"omni.isaac.sim.base" = {version = "4.5.0", exact = true}
+"omni.isaac.sim.base" = {version = "4.5.0"}
 # This section is for dependencies that should be kept at the specified versions, even if they are updated by Create
 
 
@@ -12,9 +12,23 @@ folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsD
 ########################################################################################################################
 
 # Only for Isaac Sim
-"omni.replicator.replicator_yaml" = {version = "2.0.8", exact = true}
-"omni.replicator.core" = {version = "1.11.27", exact = true}
+"omni.anim.people" = {version = "0.5.0", exact = true}
+"omni.cuopt.examples" = {version = "1.0.0", exact = true}
+"omni.cuopt.service" = {version = "1.0.0", exact = true}
+"omni.cuopt.visualization" = {version = "1.0.0", exact = true}
+"omni.extended.materials" = {version = "105.0.9", exact = true}
+"omni.importer.mjcf" = {version = "1.1.1", exact = true}
+"omni.importer.onshape" = {version = "0.7.3", exact = true}
+"omni.importer.urdf" = {version = "2.1.1", exact = true}
+"omni.kit.gfn" = {version = "107.0.1", exact = true}
+"omni.kit.profiler.tracy" = {version = "1.1.7", exact = true}
 "omni.net" = {version = "0.2.0-isaac", exact = true}
+"omni.replicator.agent.camera_calibration" = {version = "0.4.0", exact = true}
+"omni.replicator.agent.core" = {version = "0.4.1", exact = true}
+"omni.replicator.agent.ui" = {version = "0.4.0", exact = true}
+"omni.replicator.core" = {version = "1.11.27", exact = true}
+"omni.replicator.object" = {version = "0.3.8", exact = true}
+"omni.replicator.replicator_yaml" = {version = "2.0.8", exact = true}
 "omni.sensors.nv.camera" = {version = "0.16.0-isaac", exact = true}
 "omni.sensors.nv.common" = {version = "2.3.0-isaac", exact = true}
 "omni.sensors.nv.ids" = {version = "1.3.0-isaac", exact = true}
@@ -24,221 +38,212 @@ folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsD
 "omni.sensors.nv.ultrasonic" = {version = "2.3.0-isaac", exact = true}
 "omni.sensors.nv.wpm" = {version = "2.3.0-isaac", exact = true}
 "omni.sensors.tiled" = {version = "0.0.6", exact = true}
+"omni.usd.metrics.assembler.physics" = {version = "106.2.0", exact = true}
+"omni.warp.core" = {version = "1.3.1", exact = true}
+"omni.warp" = {version = "1.3.1", exact = true}
 "semantics.schema.editor" = {version = "0.3.9", exact = true}
 "semantics.schema.property" = {version = "1.0.5", exact = true}
-"omni.importer.mjcf" = {version = "1.1.1", exact = true}
-"omni.importer.urdf" = {version = "2.1.1", exact = true}
-"omni.importer.onshape" = {version = "0.7.3", exact = true}
-"omni.anim.people" = {version = "0.5.0", exact = true}
-"omni.replicator.object" = {version = "0.3.8", exact = true}
-"omni.replicator.agent.core" = {version = "0.4.1", exact = true}
-"omni.replicator.agent.ui" = {version = "0.4.0", exact = true}
-"omni.replicator.agent.camera_calibration" = {version = "0.4.0", exact = true}
-"omni.kit.profiler.tracy" = {version = "1.1.7", exact = true}
-"omni.cuopt.service" = {version = "1.0.0", exact = true}
-"omni.cuopt.visualization" = {version = "1.0.0", exact = true}
-"omni.cuopt.examples" = {version = "1.0.0", exact = true}
-"omni.usd.metrics.assembler.physics" = {version = "106.2.0", exact = true}
-"omni.kit.gfn" = {version = "107.0.1", exact = true}
-"omni.extended.materials" = {version = "105.0.9", exact = true}
+
 "omni.rtx.shadercache.vulkan" = {}
 "omni.kit.test_helpers_gfx" = {}
 
-# Extensions from Create
-"omni.anim.behavior.schema" = {version = "106.3.0", exact = true}
-"omni.anim.curve.bundle" = {version = "1.2.3", exact = true}
-"omni.anim.curve.core" = {version = "1.1.14", exact = true}
-"omni.anim.curve.ui" = {version = "1.3.17", exact = true}
-"omni.anim.curve_editor" = {version = "105.17.10", exact = true}
-"omni.anim.graph.bundle" = {version = "106.3.0", exact = true}
-"omni.anim.graph.core" = {version = "106.3.0", exact = true}
-"omni.anim.graph.schema" = {version = "106.3.0", exact = true}
-"omni.anim.graph.ui" = {version = "106.3.0", exact = true}
-"omni.anim.navigation.bundle" = {version = "106.3.0", exact = true}
-"omni.anim.navigation.core" = {version = "106.3.1", exact = true}
-"omni.anim.navigation.navmesh.recast" = {version = "106.1.5", exact = true}
-"omni.anim.navigation.recast" = {version = "106.3.1", exact = true}
-"omni.anim.navigation.schema" = {version = "106.3.0", exact = true}
-"omni.anim.navigation.ui" = {version = "106.3.1", exact = true}
-"omni.anim.retarget.bundle" = {version = "106.3.0", exact = true}
-"omni.anim.retarget.core" = {version = "106.3.1", exact = true}
-"omni.anim.retarget.ui" = {version = "106.3.0", exact = true}
-"omni.anim.shared.core" = {version = "106.0.1", exact = true}
-"omni.anim.skelJoint" = {version = "106.3.0", exact = true}
-"omni.anim.timeline" = {version = "105.0.23", exact = true}
-"omni.anim.window.timeline" = {version = "105.13.5", exact = true}
-"omni.asset_validator.ui" = {version = "0.11.8", exact = true}
-"omni.curve.creator" = {version = "105.0.5", exact = true}
-"omni.curve.manipulator" = {version = "105.2.9", exact = true}
-"omni.flowusd" = {version = "106.3.6", exact = true}
-"omni.genproc.core" = {version = "106.1.0", exact = true}
-"omni.graph.action" = {version = "1.120.0", exact = true}
-"omni.graph.action_nodes" = {version = "1.40.0", exact = true}
-"omni.graph.bundle.action" = {version = "2.20.0", exact = true}
-"omni.graph.io" = {version = "1.20.0", exact = true}
-"omni.graph.nodes" = {version = "1.161.0", exact = true}
-"omni.graph.scriptnode" = {version = "1.40.0", exact = true}
-"omni.graph.telemetry" = {version = "2.30.1", exact = true}
-"omni.graph.tutorials" = {version = "1.40.0", exact = true}
-"omni.graph.ui" = {version = "1.90.1", exact = true}
-"omni.graph.ui_nodes" = {version = "1.40.0", exact = true}
-"omni.graph.visualization.nodes" = {version = "2.1.1", exact = true}
-"omni.graph.window.action" = {version = "1.40.0", exact = true}
-"omni.graph.window.core" = {version = "1.130.0", exact = true}
-"omni.graph.window.generic" = {version = "1.40.0", exact = true}
-"omni.kit.agent.watcher" = {version = "0.2.1", exact = true}
-"omni.kit.asset_converter" = {version = "2.2.0", exact = true}
-"omni.kit.browser.asset" = {version = "1.3.10", exact = true}
-"omni.kit.browser.asset_provider.local" = {version = "1.0.9", exact = true}
-"omni.kit.browser.core" = {version = "2.3.11", exact = true}
-"omni.kit.browser.deepsearch" = {version = "1.1.8", exact = true}
-"omni.kit.browser.folder.core" = {version = "1.10.0", exact = true}
-"omni.kit.browser.material" = {version = "1.6.0", exact = true}
-"omni.kit.browser.sample" = {version = "1.4.8", exact = true}
-"omni.kit.browser.texture" = {version = "1.2.1", exact = true}
-"omni.kit.converter.cad" = {version = "201.2.1", exact = true}
-"omni.kit.converter.geojson" = {version = "0.0.10", exact = true}
-"omni.kit.converter.lib3mf" = {version = "1.1.3", exact = true}
-"omni.kit.converter.ogc" = {version = "1.1.22", exact = true}
-"omni.kit.converter.stl" = {version = "0.1.1", exact = true}
-"omni.kit.converter.vtk" = {version = "2.3.1", exact = true}
-"omni.kit.core.collection" = {version = "0.1.7", exact = true}
-"omni.kit.environment.core" = {version = "1.3.14", exact = true}
-"omni.kit.graph.delegate.default" = {version = "1.2.2", exact = true}
-"omni.kit.graph.delegate.modern" = {version = "1.10.6", exact = true}
-"omni.kit.graph.delegate.neo" = {version = "1.1.3", exact = true}
-"omni.kit.graph.editor.core" = {version = "1.5.3", exact = true}
-"omni.kit.graph.editor.example" = {version = "1.0.24", exact = true}
-"omni.kit.graph.usd.commands" = {version = "1.3.1", exact = true}
-"omni.kit.graph.widget.variables" = {version = "2.1.0", exact = true}
-"omni.kit.livestream.messaging" = {version = "1.1.1", exact = true}
-"omni.kit.manipulator.tool.mesh_snap" = {version = "1.4.5", exact = true}
-"omni.kit.menu.stage" = {version = "1.2.5", exact = true}
-"omni.kit.mesh.raycast" = {version = "105.4.0", exact = true}
-"omni.kit.ngsearch" = {version = "0.3.3", exact = true}
-"omni.kit.playlist.core" = {version = "1.3.4", exact = true}
-"omni.kit.pointclouds" = {version = "1.4.3", exact = true}
-"omni.kit.preferences.animation" = {version = "1.1.8", exact = true}
-"omni.kit.prim.icon" = {version = "1.0.13", exact = true}
-"omni.kit.profiler.window" = {version = "2.2.3", exact = true}
-"omni.kit.property.collection" = {version = "0.1.17", exact = true}
-"omni.kit.property.environment" = {version = "1.2.1", exact = true}
-"omni.kit.property.sbsar" = {version = "107.0.0", exact = true}
-"omni.kit.property.visualization" = {version = "104.0.5", exact = true}
-"omni.kit.scripting" = {version = "106.3.0", exact = true}
-"omni.kit.search.files" = {version = "1.0.4", exact = true}
-"omni.kit.search.service" = {version = "0.1.12", exact = true}
-"omni.kit.sequencer.core" = {version = "103.4.2", exact = true}
-"omni.kit.sequencer.usd" = {version = "103.4.6", exact = true}
-"omni.kit.stage_column.payload" = {version = "2.0.0", exact = true}
-"omni.kit.stage_column.variant" = {version = "1.0.13", exact = true}
-"omni.kit.stagerecorder.bundle" = {version = "105.0.2", exact = true}
-"omni.kit.stagerecorder.core" = {version = "105.0.5", exact = true}
-"omni.kit.stagerecorder.ui" = {version = "105.0.6", exact = true}
-"omni.kit.thumbnails.mdl" = {version = "1.0.24", exact = true}
-"omni.kit.thumbnails.usd" = {version = "1.0.9", exact = true}
-"omni.kit.timeline.minibar" = {version = "1.2.9", exact = true}
-"omni.kit.tool.asset_exporter" = {version = "1.3.3", exact = true}
-"omni.kit.tool.asset_importer" = {version = "2.7.0", exact = true}
-"omni.kit.tool.measure" = {version = "105.2.7", exact = true}
-"omni.kit.tool.remove_unused.controller" = {version = "0.1.3", exact = true}
-"omni.kit.tool.remove_unused.core" = {version = "0.1.2", exact = true}
-"omni.kit.variant.editor" = {version = "106.1.1", exact = true}
-"omni.kit.variant.presenter" = {version = "106.0.0", exact = true}
-"omni.kit.viewport.menubar.lighting" = {version = "106.0.2", exact = true}
-"omni.kit.viewport.menubar.waypoint" = {version = "104.2.16", exact = true}
-"omni.kit.waypoint.bundle" = {version = "1.0.4", exact = true}
-"omni.kit.waypoint.core" = {version = "1.4.55", exact = true}
-"omni.kit.waypoint.playlist" = {version = "1.0.8", exact = true}
-"omni.kit.widget.calendar" = {version = "1.0.8", exact = true}
-"omni.kit.widget.collection" = {version = "0.1.18", exact = true}
-"omni.kit.widget.extended_searchfield" = {version = "1.0.28", exact = true}
-"omni.kit.widget.material_preview" = {version = "1.0.16", exact = true}
-"omni.kit.widget.sliderbar" = {version = "1.0.10", exact = true}
-"omni.kit.widget.timeline" = {version = "105.0.1", exact = true}
-"omni.kit.widget.zoombar" = {version = "1.0.5", exact = true}
-"omni.kit.widgets.custom" = {version = "1.0.8", exact = true}
-"omni.kit.window.collection" = {version = "0.1.22", exact = true}
-"omni.kit.window.material" = {version = "1.6.2", exact = true}
-"omni.kit.window.material_graph" = {version = "1.8.19", exact = true}
-"omni.kit.window.movie_capture" = {version = "2.4.2", exact = true}
-"omni.kit.window.quicksearch" = {version = "2.4.4", exact = true}
-"omni.kit.window.section" = {version = "107.0.1", exact = true}
-"omni.kit.window.usddebug" = {version = "1.0.2", exact = true}
-"omni.kit.xr.advertise" = {version = "106.4.3", exact = true}
-"omni.kit.xr.core" = {version = "106.4.3", exact = true}
-"omni.kit.xr.example.usd_scene_ui" = {version = "106.0.116", exact = true}
-"omni.kit.xr.profile.ar" = {version = "106.4.3", exact = true}
-"omni.kit.xr.profile.common" = {version = "106.4.3", exact = true}
-"omni.kit.xr.profile.tabletar" = {version = "106.4.3", exact = true}
-"omni.kit.xr.profile.vr" = {version = "106.4.3", exact = true}
-"omni.kit.xr.scene_view.core" = {version = "106.4.3", exact = true}
-"omni.kit.xr.scene_view.utils" = {version = "106.4.3", exact = true}
-"omni.kit.xr.system.cloudxr" = {version = "106.4.3", exact = true}
-"omni.kit.xr.system.cloudxr41" = {version = "106.4.3", exact = true}
-"omni.kit.xr.system.openxr" = {version = "106.4.3", exact = true}
-"omni.kit.xr.system.playback" = {version = "106.4.3", exact = true}
-"omni.kit.xr.system.steamvr" = {version = "106.4.3", exact = true}
-"omni.kit.xr.telemetry" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.config.common" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.config.generic" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.config.htcvive" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.config.magicleap" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.config.metaquest" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.stage.common" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.window.profile" = {version = "106.4.3", exact = true}
-"omni.kit.xr.ui.window.viewport" = {version = "106.4.3", exact = true}
-"omni.no_code_ui.bundle" = {version = "1.0.27", exact = true}
-"omni.product_configurator.panel" = {version = "1.0.15", exact = true}
-"omni.product_configurator.utils" = {version = "1.2.2", exact = true}
-"omni.ramp" = {version = "105.1.15", exact = true}
-"omni.scene.visualization.bundle" = {version = "105.1.0", exact = true}
-"omni.scene.visualization.core" = {version = "105.4.14", exact = true}
-"omni.scene.visualization.ui" = {version = "105.1.2", exact = true}
-"omni.services.browser.asset" = {version = "1.3.3", exact = true}
-"omni.services.carb.event_stream" = {version = "1.0.0", exact = true}
-"omni.services.client" = {version = "0.5.3", exact = true}
-"omni.services.core" = {version = "1.9.0", exact = true}
-"omni.services.facilities.base" = {version = "1.0.4", exact = true}
-"omni.services.facilities.workqueue" = {version = "1.1.2", exact = true}
-"omni.services.pip_archive" = {version = "0.13.6", exact = true}
-"omni.services.starfleet.auth" = {version = "0.1.5", exact = true}
-"omni.services.streamclient.webrtc" = {version = "1.3.8", exact = true}
-"omni.services.streamclient.websocket" = {version = "2.0.0", exact = true}
-"omni.services.streaming.manager" = {version = "0.3.10", exact = true}
-"omni.services.thumbnails.images" = {version = "1.3.2", exact = true}
-"omni.services.transport.client.base" = {version = "1.2.4", exact = true}
-"omni.services.transport.client.http_async" = {version = "1.3.6", exact = true}
-"omni.services.transport.server.base" = {version = "1.1.1", exact = true}
-"omni.services.transport.server.http" = {version = "1.3.1", exact = true}
-"omni.services.transport.server.zeroconf" = {version = "1.0.9", exact = true}
-"omni.services.usd" = {version = "1.1.0", exact = true}
-"omni.simready.explorer" = {version = "1.1.1", exact = true}
-"omni.slangnode" = {version = "106.3.0", exact = true}
-"omni.tools.array" = {version = "105.0.4", exact = true}
-"omni.usd.fileformat.e57" = {version = "1.2.4", exact = true}
-"omni.usd.fileformat.pts" = {version = "106.0.1", exact = true}
-"omni.usd.fileformat.sbsar" = {version = "107.0.2", exact = true}
-"omni.usd.metrics.assembler" = {version = "106.3.0", exact = true}
-"omni.usd.metrics.assembler.ui" = {version = "106.3.0", exact = true}
-"omni.usd.schema.destruction" = {version = "0.7.0", exact = true}
-"omni.usd.schema.flow" = {version = "106.0.8", exact = true}
-"omni.usd.schema.metrics.assembler" = {version = "106.3.0", exact = true}
-"omni.usd.schema.scene.visualization" = {version = "2.0.2", exact = true}
-"omni.usd.schema.sequence" = {version = "2.3.1", exact = true}
-"omni.vdb_timesample_editor" = {version = "0.1.10", exact = true}
-"omni.warehouse_creator" = {version = "0.4.2", exact = true}
-"omni.warp" = {version = "1.3.1", exact = true}
+"omni.anim.asset" = {}
+"omni.anim.behavior.schema" = {}
+"omni.anim.curve_editor" = {}
+"omni.anim.curve.bundle" = {}
+"omni.anim.curve.core" = {}
+"omni.anim.curve.ui" = {}
+"omni.anim.graph.bundle" = {}
+"omni.anim.graph.core" = {}
+"omni.anim.graph.schema" = {}
+"omni.anim.graph.ui" = {}
+"omni.anim.navigation.bundle" = {}
+"omni.anim.navigation.core" = {}
+"omni.anim.navigation.navmesh.recast" = {}
+"omni.anim.navigation.recast" = {}
+"omni.anim.navigation.schema" = {}
+"omni.anim.navigation.ui" = {}
+"omni.anim.retarget.bundle" = {}
+"omni.anim.retarget.core" = {}
+"omni.anim.retarget.ui" = {}
+"omni.anim.shared.core" = {}
+"omni.anim.skelJoint" = {}
+"omni.anim.timeline" = {}
+"omni.anim.window.timeline" = {}
+"omni.asset_validator.core" = {}
+"omni.asset_validator.ui" = {}
+"omni.curve.creator" = {}
+"omni.curve.manipulator" = {}
+"omni.flowusd" = {}
+"omni.genproc.core" = {}
+"omni.graph.action_nodes" = {}
+"omni.graph.action" = {}
+"omni.graph.bundle.action" = {}
+"omni.graph.io" = {}
+"omni.graph.nodes" = {}
+"omni.graph.scriptnode" = {}
+"omni.graph.telemetry" = {}
+"omni.graph.tutorials" = {}
+"omni.graph.ui_nodes" = {}
+"omni.graph.ui" = {}
+"omni.graph.visualization.nodes" = {}
+"omni.graph.window.action" = {}
+"omni.graph.window.core" = {}
+"omni.graph.window.generic" = {}
+"omni.kit.agent.watcher" = {}
+"omni.kit.asset_converter" = {}
+"omni.kit.browser.asset_provider.local" = {}
+"omni.kit.browser.asset" = {}
+"omni.kit.browser.core" = {}
+"omni.kit.browser.deepsearch" = {}
+"omni.kit.browser.folder.core" = {}
+"omni.kit.browser.material" = {}
+"omni.kit.browser.sample" = {}
+"omni.kit.browser.texture" = {}
+"omni.kit.converter.cad" = {}
+"omni.kit.converter.geojson" = {}
+"omni.kit.converter.lib3mf" = {}
+"omni.kit.converter.ogc" = {}
+"omni.kit.converter.stl" = {}
+"omni.kit.converter.vtk" = {}
+"omni.kit.core.collection" = {}
+"omni.kit.data2ui.core" = {}
+"omni.kit.data2ui.usd" = {}
+"omni.kit.environment.core" = {}
+"omni.kit.graph.delegate.default" = {}
+"omni.kit.graph.delegate.modern" = {}
+"omni.kit.graph.delegate.neo" = {}
+"omni.kit.graph.editor.core" = {}
+"omni.kit.graph.editor.example" = {}
+"omni.kit.graph.usd.commands" = {}
+"omni.kit.graph.widget.variables" = {}
+"omni.kit.livestream.core" = {}
+"omni.kit.livestream.messaging" = {}
+"omni.kit.livestream.webrtc" = {}
+"omni.kit.manipulator.tool.mesh_snap" = {}
+"omni.kit.menu.stage" = {}
+"omni.kit.mesh.raycast" = {}
+"omni.kit.ngsearch" = {}
+"omni.kit.playlist.core" = {}
+"omni.kit.pointclouds" = {}
+"omni.kit.preferences.animation" = {}
+"omni.kit.prim.icon" = {}
+"omni.kit.profiler.window" = {}
+"omni.kit.property.collection" = {}
+"omni.kit.property.environment" = {}
+"omni.kit.property.sbsar" = {}
+"omni.kit.property.visualization" = {}
+"omni.kit.scripting" = {}
+"omni.kit.search.files" = {}
+"omni.kit.search.service" = {}
+"omni.kit.sequencer.core" = {}
+"omni.kit.sequencer.usd" = {}
+"omni.kit.stage_column.payload" = {}
+"omni.kit.stage_column.variant" = {}
+"omni.kit.stagerecorder.bundle" = {}
+"omni.kit.stagerecorder.core" = {}
+"omni.kit.stagerecorder.ui" = {}
+"omni.kit.streamsdk.plugins" = {}
+"omni.kit.thumbnails.mdl" = {}
+"omni.kit.thumbnails.usd" = {}
+"omni.kit.timeline.minibar" = {}
+"omni.kit.tool.asset_exporter" = {}
+"omni.kit.tool.asset_importer" = {}
+"omni.kit.tool.collect" = {}
+"omni.kit.tool.measure" = {}
+"omni.kit.tool.remove_unused.controller" = {}
+"omni.kit.tool.remove_unused.core" = {}
+"omni.kit.variant.editor" = {}
+"omni.kit.variant.presenter" = {}
+"omni.kit.viewport.menubar.lighting" = {}
+"omni.kit.viewport.menubar.waypoint" = {}
+"omni.kit.waypoint.bundle" = {}
+"omni.kit.waypoint.core" = {}
+"omni.kit.waypoint.playlist" = {}
+"omni.kit.widget.calendar" = {}
+"omni.kit.widget.collection" = {}
+"omni.kit.widget.extended_searchfield" = {}
+"omni.kit.widget.material_preview" = {}
+"omni.kit.widget.sliderbar" = {}
+"omni.kit.widget.timeline" = {}
+"omni.kit.widget.zoombar" = {}
+"omni.kit.widgets.custom" = {}
+"omni.kit.window.collection" = {}
+"omni.kit.window.material_graph" = {}
+"omni.kit.window.material" = {}
+"omni.kit.window.movie_capture" = {}
+"omni.kit.window.quicksearch" = {}
+"omni.kit.window.section" = {}
+"omni.kit.window.usddebug" = {}
+"omni.kit.xr.advertise" = {}
+"omni.kit.xr.configurations" = {}
+"omni.kit.xr.core" = {}
+"omni.kit.xr.example.usd_scene_ui" = {}
+"omni.kit.xr.profile.ar" = {}
+"omni.kit.xr.profile.common" = {}
+"omni.kit.xr.profile.tabletar" = {}
+"omni.kit.xr.profile.vr" = {}
+"omni.kit.xr.scene_view.core" = {}
+"omni.kit.xr.scene_view.utils" = {}
+"omni.kit.xr.system.cloudxr" = {}
+"omni.kit.xr.system.cloudxr41" = {}
+"omni.kit.xr.system.openxr" = {}
+"omni.kit.xr.system.playback" = {}
+"omni.kit.xr.system.steamvr" = {}
+"omni.kit.xr.telemetry" = {}
+"omni.kit.xr.ui.config.common" = {}
+"omni.kit.xr.ui.config.generic" = {}
+"omni.kit.xr.ui.config.htcvive" = {}
+"omni.kit.xr.ui.config.magicleap" = {}
+"omni.kit.xr.ui.config.metaquest" = {}
+"omni.kit.xr.ui.stage.common" = {}
+"omni.kit.xr.ui.stage" = {}
+"omni.kit.xr.ui.window.profile" = {}
+"omni.kit.xr.ui.window.viewport" = {}
+"omni.no_code_ui.bundle" = {}
+"omni.product_configurator.panel" = {}
+"omni.product_configurator.utils" = {}
+"omni.ramp" = {}
+"omni.scene.optimizer.bundle" = {}
+"omni.scene.optimizer.core" = {}
+"omni.scene.optimizer.ui" = {}
+"omni.scene.visualization.bundle" = {}
+"omni.scene.visualization.core" = {}
+"omni.scene.visualization.ui" = {}
+"omni.services.browser.asset" = {}
+"omni.services.carb.event_stream" = {}
+"omni.services.client" = {}
+"omni.services.core" = {}
+"omni.services.facilities.base" = {}
+"omni.services.facilities.workqueue" = {}
+"omni.services.pip_archive" = {}
+"omni.services.starfleet.auth" = {}
+"omni.services.streamclient.webrtc" = {}
+"omni.services.streamclient.websocket" = {}
+"omni.services.streaming.manager" = {}
+"omni.services.thumbnails.images" = {}
+"omni.services.transport.client.base" = {}
+"omni.services.transport.client.http_async" = {}
+"omni.services.transport.server.base" = {}
+"omni.services.transport.server.http" = {}
+"omni.services.transport.server.zeroconf" = {}
+"omni.services.usd" = {}
+"omni.simready.explorer" = {}
+"omni.slangnode" = {}
+"omni.tools.array" = {}
+"omni.usd.fileformat.e57" = {}
+"omni.usd.fileformat.pts" = {}
+"omni.usd.fileformat.sbsar" = {}
+"omni.usd.metrics.assembler.ui" = {}
+"omni.usd.metrics.assembler" = {}
+"omni.usd.schema.destruction" = {}
+"omni.usd.schema.flow" = {}
+"omni.usd.schema.metrics.assembler" = {}
+"omni.usd.schema.scene.visualization" = {}
+"omni.usd.schema.sequence" = {}
+"omni.vdb_timesample_editor" = {}
+"omni.warehouse_creator" = {}
 
-# Additional Create Extensions
-"omni.anim.asset" = {version = "106.3.0", exact = true}
-"omni.asset_validator.core" = {version = "0.11.8", exact = true}
-"omni.kit.data2ui.core" = {version = "1.0.27", exact = true}
-"omni.kit.data2ui.usd" = {version = "1.0.27", exact = true}
-"omni.scene.optimizer.bundle" = {version = "106.1.1", exact = true}
-"omni.scene.optimizer.core" = {version = "106.1.1", exact = true}
-"omni.scene.optimizer.ui" = {version = "106.1.1", exact = true}
-"omni.warp.core" = {version = "1.3.1", exact = true}
 
 # Windows only
 [dependencies."filter:platform"."windows-x86_64"]
@@ -259,169 +264,38 @@ folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsD
 
 # Exact Version dependencies:
 # 	omni.anim.asset-106.3.0
-# 	omni.anim.behavior.schema-106.3.0
-# 	omni.anim.curve.bundle-1.2.3
-# 	omni.anim.curve.core-1.1.14
-# 	omni.anim.curve.ui-1.3.17
-# 	omni.anim.curve_editor-105.17.10
-# 	omni.anim.graph.bundle-106.3.0
-# 	omni.anim.graph.core-106.3.0
-# 	omni.anim.graph.schema-106.3.0
-# 	omni.anim.graph.ui-106.3.0
-# 	omni.anim.navigation.bundle-106.3.0
-# 	omni.anim.navigation.core-106.3.1
-# 	omni.anim.navigation.navmesh.recast-106.1.5
-# 	omni.anim.navigation.recast-106.3.1
-# 	omni.anim.navigation.schema-106.3.0
-# 	omni.anim.navigation.ui-106.3.1
 # 	omni.anim.people-0.5.0
-# 	omni.anim.retarget.bundle-106.3.0
-# 	omni.anim.retarget.core-106.3.1
-# 	omni.anim.retarget.ui-106.3.0
-# 	omni.anim.shared.core-106.0.1
-# 	omni.anim.skelJoint-106.3.0
-# 	omni.anim.timeline-105.0.23
-# 	omni.anim.window.timeline-105.13.5
-# 	omni.asset_validator.core-0.11.8
-# 	omni.asset_validator.ui-0.11.8
+# 	omni.asset_validator.core-0.14.2
 # 	omni.convexdecomposition-106.4.1
 # 	omni.cuopt.examples-1.0.0
 # 	omni.cuopt.service-1.0.0
 # 	omni.cuopt.visualization-1.0.0
-# 	omni.curve.creator-105.0.5
-# 	omni.curve.manipulator-105.2.9
 # 	omni.extended.materials-105.0.9
-# 	omni.flowusd-106.3.6
-# 	omni.genproc.core-106.1.0
-# 	omni.graph.action-1.120.0
-# 	omni.graph.action_nodes-1.40.0
-# 	omni.graph.bundle.action-2.20.0
-# 	omni.graph.io-1.20.0
-# 	omni.graph.nodes-1.161.0
-# 	omni.graph.scriptnode-1.40.0
-# 	omni.graph.telemetry-2.30.1
-# 	omni.graph.tutorials-1.40.0
-# 	omni.graph.ui-1.90.1
-# 	omni.graph.ui_nodes-1.40.0
-# 	omni.graph.visualization.nodes-2.1.1
-# 	omni.graph.window.action-1.40.0
-# 	omni.graph.window.core-1.130.0
-# 	omni.graph.window.generic-1.40.0
 # 	omni.importer.mjcf-1.1.1
 # 	omni.importer.onshape-0.7.3
 # 	omni.importer.urdf-2.1.1
-# 	omni.isaac.sim.base-4.5.0
-# 	omni.kit.agent.watcher-0.2.1
-# 	omni.kit.asset_converter-2.2.0
-# 	omni.kit.browser.asset-1.3.10
-# 	omni.kit.browser.asset_provider.local-1.0.9
-# 	omni.kit.browser.core-2.3.11
-# 	omni.kit.browser.deepsearch-1.1.8
-# 	omni.kit.browser.folder.core-1.10.0
-# 	omni.kit.browser.material-1.6.0
-# 	omni.kit.browser.sample-1.4.8
-# 	omni.kit.browser.texture-1.2.1
-# 	omni.kit.converter.cad-201.2.1
-# 	omni.kit.converter.geojson-0.0.10
-# 	omni.kit.converter.lib3mf-1.1.3
-# 	omni.kit.converter.ogc-1.1.22
-# 	omni.kit.converter.stl-0.1.1
-# 	omni.kit.converter.vtk-2.3.1
-# 	omni.kit.core.collection-0.1.7
 # 	omni.kit.data2ui.core-1.0.27
 # 	omni.kit.data2ui.usd-1.0.27
-# 	omni.kit.environment.core-1.3.14
 # 	omni.kit.gfn-107.0.1
-# 	omni.kit.graph.delegate.default-1.2.2
-# 	omni.kit.graph.delegate.modern-1.10.6
-# 	omni.kit.graph.delegate.neo-1.1.3
-# 	omni.kit.graph.editor.core-1.5.3
-# 	omni.kit.graph.editor.example-1.0.24
-# 	omni.kit.graph.usd.commands-1.3.1
-# 	omni.kit.graph.widget.variables-2.1.0
-# 	omni.kit.livestream.messaging-1.1.1
-# 	omni.kit.manipulator.tool.mesh_snap-1.4.5
-# 	omni.kit.menu.stage-1.2.5
-# 	omni.kit.mesh.raycast-105.4.0
-# 	omni.kit.ngsearch-0.3.3
-# 	omni.kit.playlist.core-1.3.4
-# 	omni.kit.pointclouds-1.4.3
-# 	omni.kit.preferences.animation-1.1.8
-# 	omni.kit.prim.icon-1.0.13
 # 	omni.kit.profiler.tracy-1.1.7
-# 	omni.kit.profiler.window-2.2.3
-# 	omni.kit.property.collection-0.1.17
-# 	omni.kit.property.environment-1.2.1
 # 	omni.kit.property.physx-106.4.1
-# 	omni.kit.property.sbsar-107.0.0
-# 	omni.kit.property.visualization-104.0.5
-# 	omni.kit.scripting-106.3.0
-# 	omni.kit.search.files-1.0.4
-# 	omni.kit.search.service-0.1.12
-# 	omni.kit.sequencer.core-103.4.2
-# 	omni.kit.sequencer.usd-103.4.6
-# 	omni.kit.stage_column.payload-2.0.0
-# 	omni.kit.stage_column.variant-1.0.13
-# 	omni.kit.stagerecorder.bundle-105.0.2
-# 	omni.kit.stagerecorder.core-105.0.5
-# 	omni.kit.stagerecorder.ui-105.0.6
-# 	omni.kit.thumbnails.mdl-1.0.24
-# 	omni.kit.thumbnails.usd-1.0.9
-# 	omni.kit.timeline.minibar-1.2.9
-# 	omni.kit.tool.asset_exporter-1.3.3
-# 	omni.kit.tool.asset_importer-2.7.0
-# 	omni.kit.tool.measure-105.2.7
-# 	omni.kit.tool.remove_unused.controller-0.1.3
-# 	omni.kit.tool.remove_unused.core-0.1.2
-# 	omni.kit.variant.editor-106.1.1
-# 	omni.kit.variant.presenter-106.0.0
-# 	omni.kit.viewport.menubar.lighting-106.0.2
-# 	omni.kit.viewport.menubar.waypoint-104.2.16
-# 	omni.kit.waypoint.bundle-1.0.4
-# 	omni.kit.waypoint.core-1.4.55
-# 	omni.kit.waypoint.playlist-1.0.8
-# 	omni.kit.widget.calendar-1.0.8
-# 	omni.kit.widget.collection-0.1.18
-# 	omni.kit.widget.extended_searchfield-1.0.28
-# 	omni.kit.widget.material_preview-1.0.16
-# 	omni.kit.widget.sliderbar-1.0.10
-# 	omni.kit.widget.timeline-105.0.1
-# 	omni.kit.widget.zoombar-1.0.5
-# 	omni.kit.widgets.custom-1.0.8
-# 	omni.kit.window.collection-0.1.22
-# 	omni.kit.window.material-1.6.2
-# 	omni.kit.window.material_graph-1.8.19
-# 	omni.kit.window.movie_capture-2.4.2
-# 	omni.kit.window.quicksearch-2.4.4
-# 	omni.kit.window.section-107.0.1
-# 	omni.kit.window.usddebug-1.0.2
-# 	omni.kit.xr.advertise-106.4.3
-# 	omni.kit.xr.core-106.4.3
-# 	omni.kit.xr.example.usd_scene_ui-106.0.116
-# 	omni.kit.xr.profile.ar-106.4.3
-# 	omni.kit.xr.profile.common-106.4.3
-# 	omni.kit.xr.profile.tabletar-106.4.3
-# 	omni.kit.xr.profile.vr-106.4.3
-# 	omni.kit.xr.scene_view.core-106.4.3
-# 	omni.kit.xr.scene_view.utils-106.4.3
-# 	omni.kit.xr.system.cloudxr-106.4.3
-# 	omni.kit.xr.system.cloudxr41-106.4.3
-# 	omni.kit.xr.system.openxr-106.4.3
-# 	omni.kit.xr.system.playback-106.4.3
-# 	omni.kit.xr.system.steamvr-106.4.3
-# 	omni.kit.xr.telemetry-106.4.3
-# 	omni.kit.xr.ui.config.common-106.4.3
-# 	omni.kit.xr.ui.config.generic-106.4.3
-# 	omni.kit.xr.ui.config.htcvive-106.4.3
-# 	omni.kit.xr.ui.config.magicleap-106.4.3
-# 	omni.kit.xr.ui.config.metaquest-106.4.3
-# 	omni.kit.xr.ui.stage.common-106.4.3
-# 	omni.kit.xr.ui.window.profile-106.4.3
-# 	omni.kit.xr.ui.window.viewport-106.4.3
+# 	omni.kit.xr.advertise-106.4.8
+# 	omni.kit.xr.configurations-106.4.8
+# 	omni.kit.xr.core-106.4.8
+# 	omni.kit.xr.profile.common-106.4.8
+# 	omni.kit.xr.scene_view.core-106.4.8
+# 	omni.kit.xr.scene_view.utils-106.4.8
+# 	omni.kit.xr.system.cloudxr-106.4.8
+# 	omni.kit.xr.system.cloudxr41-106.4.8
+# 	omni.kit.xr.system.openxr-106.4.8
+# 	omni.kit.xr.system.steamvr-106.4.8
+# 	omni.kit.xr.telemetry-106.4.8
+# 	omni.kit.xr.ui.stage-106.4.8
+# 	omni.kit.xr.ui.window.profile-106.4.8
+# 	omni.kit.xr.ui.window.viewport-106.4.8
 # 	omni.kvdb-106.4.1
 # 	omni.localcache-106.4.1
 # 	omni.net-0.2.0-isaac
-# 	omni.no_code_ui.bundle-1.0.27
 # 	omni.physx-106.4.1
 # 	omni.physx.camera-106.4.1
 # 	omni.physx.cct-106.4.1
@@ -435,21 +309,14 @@ folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsD
 # 	omni.physx.telemetry-106.4.1
 # 	omni.physx.ui-106.4.1
 # 	omni.physx.vehicle-106.4.1
-# 	omni.product_configurator.panel-1.0.15
-# 	omni.product_configurator.utils-1.2.2
-# 	omni.ramp-105.1.15
 # 	omni.replicator.agent.camera_calibration-0.4.0
 # 	omni.replicator.agent.core-0.4.1
 # 	omni.replicator.agent.ui-0.4.0
 # 	omni.replicator.core-1.11.27
 # 	omni.replicator.object-0.3.8
 # 	omni.replicator.replicator_yaml-2.0.8
-# 	omni.scene.optimizer.bundle-106.1.1
-# 	omni.scene.optimizer.core-106.1.1
-# 	omni.scene.optimizer.ui-106.1.1
-# 	omni.scene.visualization.bundle-105.1.0
-# 	omni.scene.visualization.core-105.4.14
-# 	omni.scene.visualization.ui-105.1.2
+# 	omni.scene.optimizer.core-106.1.2
+# 	omni.scene.optimizer.ui-106.1.2
 # 	omni.sensors.nv.camera-0.16.0-isaac
 # 	omni.sensors.nv.common-2.3.0-isaac
 # 	omni.sensors.nv.ids-1.3.0-isaac
@@ -459,44 +326,11 @@ folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsD
 # 	omni.sensors.nv.ultrasonic-2.3.0-isaac
 # 	omni.sensors.nv.wpm-2.3.0-isaac
 # 	omni.sensors.tiled-0.0.6
-# 	omni.services.browser.asset-1.3.3
-# 	omni.services.carb.event_stream-1.0.0
-# 	omni.services.client-0.5.3
-# 	omni.services.core-1.9.0
-# 	omni.services.facilities.base-1.0.4
-# 	omni.services.facilities.workqueue-1.1.2
-# 	omni.services.pip_archive-0.13.6
-# 	omni.services.starfleet.auth-0.1.5
-# 	omni.services.streamclient.webrtc-1.3.8
-# 	omni.services.streamclient.websocket-2.0.0
-# 	omni.services.streaming.manager-0.3.10
-# 	omni.services.thumbnails.images-1.3.2
-# 	omni.services.transport.client.base-1.2.4
-# 	omni.services.transport.client.http_async-1.3.6
-# 	omni.services.transport.server.base-1.1.1
-# 	omni.services.transport.server.http-1.3.1
-# 	omni.services.transport.server.zeroconf-1.0.9
-# 	omni.services.usd-1.1.0
-# 	omni.simready.explorer-1.1.1
-# 	omni.slangnode-106.3.0
-# 	omni.tools.array-105.0.4
-# 	omni.usd.fileformat.e57-1.2.4
-# 	omni.usd.fileformat.pts-106.0.1
-# 	omni.usd.fileformat.sbsar-107.0.2
-# 	omni.usd.metrics.assembler-106.3.0
 # 	omni.usd.metrics.assembler.physics-106.2.0
-# 	omni.usd.metrics.assembler.ui-106.3.0
-# 	omni.usd.schema.destruction-0.7.0
-# 	omni.usd.schema.flow-106.0.8
 # 	omni.usd.schema.forcefield-106.4.1
-# 	omni.usd.schema.metrics.assembler-106.3.0
 # 	omni.usd.schema.physx-106.4.1
-# 	omni.usd.schema.scene.visualization-2.0.2
-# 	omni.usd.schema.sequence-2.3.1
 # 	omni.usdphysics-106.4.1
 # 	omni.usdphysics.ui-106.4.1
-# 	omni.vdb_timesample_editor-0.1.10
-# 	omni.warehouse_creator-0.4.2
 # 	omni.warp-1.3.1
 # 	omni.warp.core-1.3.1
 # 	semantics.schema.editor-0.3.9
@@ -505,16 +339,189 @@ folders = ["${app}/../exts", "${app}/../extsPhysics", "${app}", "${app}/../extsD
 # Version lock for all dependencies:
 [settings.app.exts]
 enabled = [
+	"omni.anim.behavior.schema-106.3.0",
+	"omni.anim.curve.bundle-1.2.3",
+	"omni.anim.curve.core-1.2.0",
+	"omni.anim.curve.ui-1.4.0",
+	"omni.anim.curve_editor-106.4.0",
+	"omni.anim.graph.bundle-106.3.0",
+	"omni.anim.graph.core-106.3.2",
+	"omni.anim.graph.schema-106.3.0",
+	"omni.anim.graph.ui-106.3.1",
+	"omni.anim.navigation.bundle-106.3.0",
+	"omni.anim.navigation.core-106.3.4",
+	"omni.anim.navigation.navmesh.recast-106.1.5",
+	"omni.anim.navigation.recast-106.3.3",
+	"omni.anim.navigation.schema-106.3.0",
+	"omni.anim.navigation.ui-106.3.1",
+	"omni.anim.retarget.bundle-106.3.0",
+	"omni.anim.retarget.core-106.3.2",
+	"omni.anim.retarget.ui-106.3.4",
+	"omni.anim.shared.core-106.0.1",
+	"omni.anim.skelJoint-106.3.2",
+	"omni.anim.timeline-106.4.0",
+	"omni.anim.window.timeline-106.4.0",
+	"omni.asset_validator.ui-0.14.2",
+	"omni.curve.creator-105.0.5",
+	"omni.curve.manipulator-105.2.9",
+	"omni.flowusd-106.4.6",
+	"omni.genproc.core-106.1.0",
+	"omni.graph.action-1.120.0",
+	"omni.graph.action_nodes-1.40.0",
+	"omni.graph.bundle.action-2.20.0",
+	"omni.graph.io-1.20.0",
+	"omni.graph.nodes-1.161.0",
+	"omni.graph.scriptnode-1.40.0",
+	"omni.graph.telemetry-2.30.1",
+	"omni.graph.tutorials-1.40.0",
+	"omni.graph.ui-1.90.1",
+	"omni.graph.ui_nodes-1.40.0",
+	"omni.graph.visualization.nodes-2.1.1",
+	"omni.graph.window.action-1.40.0",
+	"omni.graph.window.core-1.130.0",
+	"omni.graph.window.generic-1.40.0",
+	"omni.kit.agent.watcher-0.2.1",
+	"omni.kit.asset_converter-2.3.1",
+	"omni.kit.browser.asset-1.3.10",
+	"omni.kit.browser.asset_provider.local-1.0.9",
+	"omni.kit.browser.core-2.3.11",
+	"omni.kit.browser.deepsearch-1.1.8",
+	"omni.kit.browser.folder.core-1.10.0",
+	"omni.kit.browser.material-1.6.0",
+	"omni.kit.browser.sample-1.4.8",
+	"omni.kit.browser.texture-1.2.1",
+	"omni.kit.converter.cad-201.2.1",
 	"omni.kit.converter.common-500.0.26",
 	"omni.kit.converter.dgn-500.0.26",
 	"omni.kit.converter.dgn_core-500.0.26",
+	"omni.kit.converter.geojson-0.0.10",
 	"omni.kit.converter.hoops-500.0.26",
 	"omni.kit.converter.hoops_core-500.0.26",
 	"omni.kit.converter.jt-500.0.26",
 	"omni.kit.converter.jt_core-500.0.26",
+	"omni.kit.converter.lib3mf-1.1.3",
+	"omni.kit.converter.ogc-1.1.22",
+	"omni.kit.converter.stl-0.2.0",
+	"omni.kit.converter.vtk-2.3.1",
+	"omni.kit.core.collection-0.1.7",
+	"omni.kit.environment.core-1.3.14",
+	"omni.kit.graph.delegate.default-1.2.2",
+	"omni.kit.graph.delegate.modern-1.10.6",
+	"omni.kit.graph.delegate.neo-1.1.3",
+	"omni.kit.graph.editor.core-1.5.3",
+	"omni.kit.graph.editor.example-1.0.24",
+	"omni.kit.graph.usd.commands-1.3.1",
+	"omni.kit.graph.widget.variables-2.1.0",
 	"omni.kit.livestream.core-6.0.0",
+	"omni.kit.livestream.messaging-1.1.1",
 	"omni.kit.livestream.webrtc-6.0.0",
+	"omni.kit.manipulator.tool.mesh_snap-1.4.5",
+	"omni.kit.menu.stage-1.2.5",
+	"omni.kit.mesh.raycast-105.4.0",
+	"omni.kit.ngsearch-0.3.3",
+	"omni.kit.playlist.core-1.3.4",
+	"omni.kit.pointclouds-1.4.3",
+	"omni.kit.preferences.animation-1.2.0",
+	"omni.kit.prim.icon-1.0.13",
+	"omni.kit.profiler.window-2.2.3",
+	"omni.kit.property.collection-0.1.17",
+	"omni.kit.property.environment-1.2.1",
+	"omni.kit.property.sbsar-107.0.0",
+	"omni.kit.property.visualization-104.0.5",
+	"omni.kit.scripting-106.3.0",
+	"omni.kit.search.files-1.0.4",
+	"omni.kit.search.service-0.1.12",
+	"omni.kit.sequencer.core-103.4.2",
+	"omni.kit.sequencer.usd-103.4.6",
+	"omni.kit.stage_column.payload-2.0.0",
+	"omni.kit.stage_column.variant-1.0.13",
+	"omni.kit.stagerecorder.bundle-105.0.2",
+	"omni.kit.stagerecorder.core-105.0.5",
+	"omni.kit.stagerecorder.ui-105.0.6",
 	"omni.kit.streamsdk.plugins-6.0.0",
+	"omni.kit.thumbnails.mdl-1.0.24",
+	"omni.kit.thumbnails.usd-1.0.9",
+	"omni.kit.timeline.minibar-1.2.9",
+	"omni.kit.tool.asset_exporter-1.4.1",
+	"omni.kit.tool.asset_importer-2.10.3",
+	"omni.kit.tool.collect-2.2.15",
+	"omni.kit.tool.measure-105.2.7",
+	"omni.kit.tool.remove_unused.controller-0.1.3",
+	"omni.kit.tool.remove_unused.core-0.1.2",
+	"omni.kit.variant.editor-106.1.1",
+	"omni.kit.variant.presenter-106.0.0",
+	"omni.kit.viewport.menubar.lighting-106.0.2",
+	"omni.kit.viewport.menubar.waypoint-104.2.16",
+	"omni.kit.waypoint.bundle-1.0.4",
+	"omni.kit.waypoint.core-1.4.56",
+	"omni.kit.waypoint.playlist-1.0.8",
+	"omni.kit.widget.calendar-1.0.8",
+	"omni.kit.widget.collection-0.1.18",
+	"omni.kit.widget.extended_searchfield-1.0.28",
+	"omni.kit.widget.material_preview-1.0.16",
+	"omni.kit.widget.sliderbar-1.0.10",
+	"omni.kit.widget.timeline-105.0.1",
+	"omni.kit.widget.zoombar-1.0.5",
+	"omni.kit.widgets.custom-1.0.8",
+	"omni.kit.window.collection-0.1.22",
+	"omni.kit.window.material-1.6.2",
+	"omni.kit.window.material_graph-1.8.19",
+	"omni.kit.window.movie_capture-2.4.2",
+	"omni.kit.window.quicksearch-2.4.4",
+	"omni.kit.window.section-107.0.1",
+	"omni.kit.window.usddebug-1.0.2",
+	"omni.kit.xr.example.usd_scene_ui-106.0.116",
+	"omni.kit.xr.profile.ar-106.4.8",
+	"omni.kit.xr.profile.tabletar-106.4.8",
+	"omni.kit.xr.profile.vr-106.4.8",
+	"omni.kit.xr.system.playback-106.4.3",
+	"omni.kit.xr.ui.config.common-106.4.3",
+	"omni.kit.xr.ui.config.generic-106.4.3",
+	"omni.kit.xr.ui.config.htcvive-106.4.3",
+	"omni.kit.xr.ui.config.magicleap-106.4.3",
+	"omni.kit.xr.ui.config.metaquest-106.4.3",
+	"omni.kit.xr.ui.stage.common-106.4.3",
+	"omni.no_code_ui.bundle-1.0.27",
+	"omni.product_configurator.panel-1.0.15",
+	"omni.product_configurator.utils-1.2.2",
+	"omni.ramp-105.1.15",
+	"omni.scene.optimizer.bundle-106.1.2",
+	"omni.scene.visualization.bundle-105.1.0",
+	"omni.scene.visualization.core-105.4.14",
+	"omni.scene.visualization.ui-105.1.2",
+	"omni.services.browser.asset-1.3.3",
+	"omni.services.carb.event_stream-1.0.0",
+	"omni.services.client-0.5.3",
+	"omni.services.core-1.9.0",
+	"omni.services.facilities.base-1.0.4",
+	"omni.services.facilities.workqueue-1.1.2",
+	"omni.services.pip_archive-0.13.6",
+	"omni.services.starfleet.auth-0.1.5",
+	"omni.services.streamclient.webrtc-5.0.0",
+	"omni.services.streamclient.websocket-2.0.0",
+	"omni.services.streaming.manager-0.3.10",
+	"omni.services.thumbnails.images-1.3.2",
+	"omni.services.transport.client.base-1.2.4",
+	"omni.services.transport.client.http_async-1.3.6",
+	"omni.services.transport.server.base-1.1.1",
+	"omni.services.transport.server.http-1.3.1",
+	"omni.services.transport.server.zeroconf-1.0.9",
+	"omni.services.usd-1.1.0",
+	"omni.simready.explorer-1.1.1",
+	"omni.slangnode-106.4.0",
+	"omni.tools.array-105.0.4",
+	"omni.usd.fileformat.e57-1.2.4",
+	"omni.usd.fileformat.pts-106.0.1",
+	"omni.usd.fileformat.sbsar-107.0.2",
+	"omni.usd.metrics.assembler-106.3.0",
+	"omni.usd.metrics.assembler.ui-106.3.1",
+	"omni.usd.schema.destruction-0.7.0",
+	"omni.usd.schema.flow-107.0.0",
+	"omni.usd.schema.metrics.assembler-106.3.0",
+	"omni.usd.schema.scene.visualization-2.0.2",
+	"omni.usd.schema.sequence-2.3.1",
+	"omni.vdb_timesample_editor-0.1.10",
+	"omni.warehouse_creator-0.4.2",
 ]
 
 ########################################################################################################################
