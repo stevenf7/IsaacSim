@@ -12,15 +12,14 @@ import numpy as np
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.materials.preview_surface import PreviewSurface
 from isaacsim.core.api.materials.visual_material import VisualMaterial
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import SingleGeometryPrim, SingleRigidPrim
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.utils.string import find_unique_string_name
 from pxr import Gf, UsdGeom
 
 
-class VisualSphere(GeometryPrim):
+class VisualSphere(SingleGeometryPrim):
     """High level wrapper to create/encapsulate a visual sphere
 
     .. note::
@@ -94,7 +93,7 @@ class VisualSphere(GeometryPrim):
                     initial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
                 )
                 visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
-        GeometryPrim.__init__(
+        SingleGeometryPrim.__init__(
             self,
             prim_path=prim_path,
             name=name,
@@ -231,13 +230,13 @@ class FixedSphere(VisualSphere):
             radius=radius,
             visual_material=visual_material,
         )
-        GeometryPrim.set_collision_enabled(self, True)
+        SingleGeometryPrim.set_collision_enabled(self, True)
         if physics_material is not None:
             FixedSphere.apply_physics_material(self, physics_material)
         return
 
 
-class DynamicSphere(RigidPrim, FixedSphere):
+class DynamicSphere(SingleRigidPrim, FixedSphere):
     """High level wrapper to create/encapsulate a dynamic sphere
 
     .. note::
@@ -320,7 +319,7 @@ class DynamicSphere(RigidPrim, FixedSphere):
             visual_material=visual_material,
             physics_material=physics_material,
         )
-        RigidPrim.__init__(
+        SingleRigidPrim.__init__(
             self,
             prim_path=prim_path,
             name=name,

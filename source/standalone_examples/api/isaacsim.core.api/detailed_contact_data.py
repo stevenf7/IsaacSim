@@ -17,7 +17,7 @@ import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.prims import RigidPrim
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -55,7 +55,7 @@ class RigidViewExample:
             ).apply_physics_material(material)
 
         # add top box as filters to the view to receive contacts between the bottom boxes and top boxes
-        self._box_view = RigidPrimView(
+        self._box_view = RigidPrim(
             prim_paths_expr="/World/Box_*",
             name="box_view",
             positions=np.array(

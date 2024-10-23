@@ -11,7 +11,8 @@ from typing import Optional, Tuple
 
 import carb
 import numpy as np
-from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.articulations import ArticulationSubset
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot_motion.motion_generation.kinematics_interface import KinematicsSolver
 
@@ -23,13 +24,13 @@ class ArticulationKinematicsSolver:
     recognized by the robot Articulation
 
     Args:
-        robot_articulation (Articulation): Initialized robot Articulation object representing the simulated USD robot
+        robot_articulation (SingleArticulation): Initialized robot Articulation object representing the simulated USD robot
         kinematics_solver (KinematicsSolver): An instance of a class that implements the KinematicsSolver
         end_effector_frame_name (str): The name of the robot's end effector frame.  This frame must appear in kinematics_solver.get_all_frame_names()
     """
 
     def __init__(
-        self, robot_articulation: Articulation, kinematics_solver: KinematicsSolver, end_effector_frame_name: str
+        self, robot_articulation: SingleArticulation, kinematics_solver: KinematicsSolver, end_effector_frame_name: str
     ):
         self._robot_articulation = robot_articulation
         self._kinematics_solver = kinematics_solver

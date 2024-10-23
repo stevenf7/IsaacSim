@@ -16,9 +16,9 @@ import numpy as np
 import omni.kit.test
 from isaacsim.core.api.objects import FixedCuboid, VisualCuboid
 from isaacsim.core.api.objects.ground_plane import GroundPlane
-from isaacsim.core.api.prims import XFormPrim
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
@@ -128,7 +128,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior

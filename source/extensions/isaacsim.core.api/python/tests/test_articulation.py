@@ -17,7 +17,7 @@ import torch
 from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
@@ -31,7 +31,7 @@ from pxr import PhysxSchema, UsdPhysics
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestArticulation(omni.kit.test.AsyncTestCase):
+class TestSingleArticulation(omni.kit.test.AsyncTestCase):
     async def setUp(self, device="cpu"):
         World.clear_instance()
         await create_new_stage_async()
@@ -52,7 +52,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
-        franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
+        franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
         franka.get_applied_action()
         await self._my_world.stop_async()
@@ -67,7 +67,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
-        my_franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
+        my_franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
         joint_positions = my_franka.get_joint_positions()
         joint_targets = [None] * 9
@@ -87,7 +87,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             articulation_api = PhysxSchema.PhysxArticulationAPI.Apply(self.stage.GetPrimAtPath("/World/cartpole"))
             articulation_api.CreateSolverVelocityIterationCountAttr(0)
             articulation_api.CreateSolverPositionIterationCountAttr(8)
-        robot = self._my_world.scene.add(Articulation(prim_path="/World/cartpole", name="franka"))
+        robot = self._my_world.scene.add(SingleArticulation(prim_path="/World/cartpole", name="franka"))
         await self._my_world.reset_async()
         efforts = torch.ones((robot.num_dof), device="cpu") * 1000
         robot.set_joint_efforts(efforts)
@@ -102,7 +102,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
-        franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
+        franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
         efforts = torch.ones((franka.num_dof), device="cuda") * 100
         franka.set_joint_efforts(efforts)
@@ -116,7 +116,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/Simple/articulation_3_joints.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Articulation")
-        test_art = self._my_world.scene.add(Articulation(prim_path="/World/Articulation", name="test_art"))
+        test_art = self._my_world.scene.add(SingleArticulation(prim_path="/World/Articulation", name="test_art"))
         await self._my_world.reset_async()
         # test_position = torch.Tensor([0.14, 0.5, -0.14])
         test_position = test_art.get_joint_positions()

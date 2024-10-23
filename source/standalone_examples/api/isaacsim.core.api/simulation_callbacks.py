@@ -12,7 +12,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path
 
@@ -32,8 +32,7 @@ simulation_context.play()
 
 
 def step_callback_1(step_size):
-    art.set_joint_positions([-1.5], [dof_ptr])
-    return
+    art.set_joint_positions([[-1.5]], joint_indices=[dof_ptr])
 
 
 def step_callback_2(step_size):
@@ -41,10 +40,9 @@ def step_callback_2(step_size):
         "Current joint 2 position @ step "
         + str(simulation_context.current_time_step_index)
         + " : "
-        + str(art.get_joint_positions([dof_ptr])[0])
+        + str(art.get_joint_positions(joint_indices=[dof_ptr]).item())
     )
     print("TIME: ", simulation_context.current_time)
-    return
 
 
 def render_callback(event):

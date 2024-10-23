@@ -8,8 +8,8 @@
 #
 import numpy as np
 import omni.graph.core as og
-from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.nodes import BaseResetNode
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 from isaacsim.robot.manipulators.ogn.OgnIsaacGripperControllerDatabase import OgnIsaacGripperControllerDatabase
@@ -40,7 +40,7 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
     def initialize_controller(self):
         print("initializing robot")
         try:
-            self.robot_handle = Articulation(self.robot_prim)
+            self.robot_handle = SingleArticulation(self.robot_prim)
             self.robot_handle.initialize()
             self.joint_indices = [self.robot_handle.get_dof_index(name) for i, name in enumerate(self.joint_names)]
 

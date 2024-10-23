@@ -24,7 +24,7 @@ import numpy as np
 import yaml
 from isaacsim.core.api import World
 from isaacsim.core.api.objects.ground_plane import GroundPlane
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage, save_stage
@@ -85,8 +85,8 @@ class SceneGenerator:
                 prim = XFormPrim(
                     tile_name,
                     name=tile_name,
-                    position=np.array([-i * tile_size, -j * tile_size, 0.0]),
-                    orientation=euler_angles_to_quat([0.0, 0.0, math.pi / 2 * result.rotation]),
+                    positions=np.array([[-i * tile_size, -j * tile_size, 0.0]]),
+                    orientations=np.array([euler_angles_to_quat([0.0, 0.0, math.pi / 2 * result.rotation])]),
                 )
                 # If necessary, add tile level generation.
                 if "generation" in tile_config:
@@ -132,17 +132,17 @@ class SceneGenerator:
             fixed_prim = add_reference_to_stage(usd_path, config["prim_path"])
             # Move the xform prim to a position if required
             if "world_pose" in config:
-                position = np.array(config["world_pose"]["position"])
+                position = np.array([config["world_pose"]["position"]])
                 orientation = np.array(config["world_pose"]["orientation"])
                 scale = None
                 if "scale" in config:
-                    scale = np.array(config["scale"])
+                    scale = np.array([config["scale"]])
                 prim = XFormPrim(
                     config["prim_path"],
                     name=config["prim_path"],
-                    position=position,
-                    orientation=euler_angles_to_quat(orientation, degrees=True),
-                    scale=scale,
+                    positions=position,
+                    orientations=np.array([euler_angles_to_quat(orientation, degrees=True)]),
+                    scales=scale,
                 )
                 world.scene.add(prim)
             # Add semantic label if required

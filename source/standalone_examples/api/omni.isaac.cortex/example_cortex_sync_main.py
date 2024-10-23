@@ -28,7 +28,7 @@ simulation_app = SimulationApp({"headless": False})
 import numpy as np
 from behaviors.franka.franka_behaviors import ContextStateMonitor, behaviors
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.cortex.framework.cortex_object import CortexObject
 from isaacsim.cortex.framework.cortex_utils import load_behavior_module
@@ -57,10 +57,10 @@ def main():
     world = CortexWorld()
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/Franka"))
 
-    sim_prim = XFormPrim(prim_path="/Sim")
-    sim_prim.set_world_pose(position=np.array([-2.0, 0.0, 0.0]))
+    sim_prim = XFormPrim("/World")
+    sim_prim.set_world_poses(positions=np.array([[-2.0, 0.0, 0.0]]))
     sim_robot = world.add_robot(
-        add_franka_to_stage(name="franka_sim", prim_path="/Sim/Franka", use_motion_commander=False)
+        add_franka_to_stage(name="franka_sim", prim_path="/World/Franka", use_motion_commander=False)
     )
 
     obs_specs = [
@@ -87,7 +87,7 @@ def main():
 
         sim_obj = world.scene.add(
             DynamicCuboid(
-                prim_path="/Sim/Obs/{}".format(spec.name),
+                prim_path="/World/Obs/{}".format(spec.name),
                 name="{}_sim".format(spec.name),
                 size=width,
                 color=spec.color,

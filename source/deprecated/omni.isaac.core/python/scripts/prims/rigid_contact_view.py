@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.rigid_contact_view has been deprecated in favor of isaacsim.core.api.prims.rigid_contact_view. Please update your code accordingly."
+    "omni.isaac.core.prims.rigid_contact_view has been deprecated in favor of isaacsim.core.api.sensors.rigid_contact_view. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.rigid_contact_view import RigidContactView
+from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView

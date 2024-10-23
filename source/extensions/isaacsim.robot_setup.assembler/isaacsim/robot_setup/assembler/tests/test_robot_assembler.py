@@ -14,9 +14,8 @@ from typing import List
 import carb
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api.articulations import Articulation
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
@@ -70,9 +69,9 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(sphereLight.GetPath().pathString).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(sphereLight.GetPath().pathString).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robots: List[Articulation]):
+    async def _prepare_stage(self, robots: List[SingleArticulation]):
         # Set settings to ensure deterministic behavior
         # Initialize the robot
         # Play the timeline
@@ -99,8 +98,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         # Assert that the attach prim moves when the base prim moves
         # Move the prim somewhat smoothly across the stage to avoid physics errors
 
-        base_prim_xform = XFormPrim(base_prim)
-        attach_prim_xform = XFormPrim(attach_prim)
+        base_prim_xform = SingleXFormPrim(base_prim)
+        attach_prim_xform = SingleXFormPrim(attach_prim)
 
         base_position = base_prim_xform.get_world_pose()[0]
         attach_position = attach_prim_xform.get_world_pose()[0]
@@ -135,8 +134,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
     async def _assert_not_assembled(self, base_prim, attach_prim):
         # Assert that the two prims do not move together
 
-        base_prim_xform = XFormPrim(base_prim)
-        attach_prim_xform = XFormPrim(attach_prim)
+        base_prim_xform = SingleXFormPrim(base_prim)
+        attach_prim_xform = SingleXFormPrim(attach_prim)
 
         base_position = base_prim_xform.get_world_pose()[0]
         attach_position = attach_prim_xform.get_world_pose()[0]
@@ -186,10 +185,10 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
 
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/World/allegro_hand")
-        XFormPrim("/World/allegro_hand").set_world_pose(np.array([1.0, 0.0, 0.0]))
+        SingleXFormPrim("/World/allegro_hand").set_world_pose(np.array([1.0, 0.0, 0.0]))
 
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
-        XFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
+        SingleXFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
         # Move the Articulation root to different places in order to test that each location is handled correctly
         RobotAssembler.move_articulation_root(
@@ -229,7 +228,7 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             # Controlling the resulting assembled robot is different depending on the single_robot flag
             if single_robot:
                 # The robots will be considered to be part of a single Articulation at the base robot path
-                controllable_single_robot = Articulation(base_robot_path)
+                controllable_single_robot = SingleArticulation(base_robot_path)
                 await self._prepare_stage([controllable_single_robot])
 
                 joint_target = 0.3 * np.ones(22)
@@ -244,8 +243,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
 
             else:
                 # The robots are controlled independently from each other
-                base_robot = Articulation(base_robot_path)
-                attach_robot = Articulation(attach_robot_path)
+                base_robot = SingleArticulation(base_robot_path)
+                attach_robot = SingleArticulation(attach_robot_path)
                 await self._prepare_stage([base_robot, attach_robot])
 
                 base_robot_joint_target = np.array([0.3, 0, 0, 0, 0, 0])
@@ -287,10 +286,10 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
 
         add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount")
-        XFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
+        SingleXFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
-        XFormPrim("/World/ur10e").set_world_pose(np.array([1.0, 0.0, 0.0]))
+        SingleXFormPrim("/World/ur10e").set_world_pose(np.array([1.0, 0.0, 0.0]))
 
         await update_stage_async()
 
@@ -316,7 +315,7 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         offset, orient = assembled_bodies.get_fixed_joint_transform()
         assembled_bodies.set_fixed_joint_transform(np.array([0, 0, -0.2]), np.array([1, 0, 0, 0]))
 
-        await self._prepare_stage([Articulation(attach_robot_path)])
+        await self._prepare_stage([SingleArticulation(attach_robot_path)])
 
         attach_robot_mount_path = attach_robot_path + attach_robot_mount_frame
 
@@ -335,7 +334,7 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             mask_all_collisions=True,
         )
 
-        await self._prepare_stage([Articulation(attach_robot_path)])
+        await self._prepare_stage([SingleArticulation(attach_robot_path)])
 
         await self._assert_assembled(attach_robot_path, base_robot_path + "/assembler_mount_frame")
         assembled_bodies.disassemble()
@@ -347,10 +346,10 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         await self._create_light()
 
         add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount")
-        XFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
+        SingleXFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
         add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount_01")
-        XFormPrim("/World/ur10_mount_01").set_world_pose(np.array([1.0, 0.0, 0.0]))
+        SingleXFormPrim("/World/ur10_mount_01").set_world_pose(np.array([1.0, 0.0, 0.0]))
         await update_stage_async()
 
         robot_assembler = RobotAssembler()

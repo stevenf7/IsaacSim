@@ -12,7 +12,7 @@ import numpy as np
 import omni.replicator.core as rep
 import torch
 import warp as wp
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.carb import get_carb_setting
 from pxr import Usd, Vt
 
@@ -75,7 +75,7 @@ wp.overload(
 )
 
 
-class CameraView(XFormPrimView):
+class CameraView(XFormPrim):
     def __init__(
         self,
         prim_paths_expr: str = None,
@@ -89,7 +89,7 @@ class CameraView(XFormPrimView):
         visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         reset_xform_properties: bool = True,
     ):
-        XFormPrimView.__init__(
+        XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -268,7 +268,7 @@ class CameraView(XFormPrimView):
                 "] only".format(camera_axes)
             )
 
-        translations, orientations = XFormPrimView.get_world_poses(self, indices, usd=usd)
+        translations, orientations = XFormPrim.get_world_poses(self, indices, usd=usd)
 
         if orientations is not None:
             if camera_axes == "world":
@@ -315,7 +315,7 @@ class CameraView(XFormPrimView):
             elif camera_axes == "ros":
                 orientations = self._convert_camera_axes(orientations, R_U_TRANSFORM)
 
-        return XFormPrimView.set_world_poses(self, positions, orientations, indices, usd=usd)
+        return XFormPrim.set_world_poses(self, positions, orientations, indices, usd=usd)
 
     def get_local_poses(
         self,
@@ -352,7 +352,7 @@ class CameraView(XFormPrimView):
                 "] only".format(camera_axes)
             )
 
-        translations, orientations = XFormPrimView.get_local_poses(self, indices)
+        translations, orientations = XFormPrim.get_local_poses(self, indices)
 
         if orientations is not None:
             if camera_axes == "world":
@@ -398,7 +398,7 @@ class CameraView(XFormPrimView):
             elif camera_axes == "ros":
                 orientations = self._convert_camera_axes(orientations, R_U_TRANSFORM)
 
-        return XFormPrimView.set_local_poses(self, positions, orientations, indices)
+        return XFormPrim.set_local_poses(self, positions, orientations, indices)
 
     def get_rgb_tiled(self, out=None, device="cpu") -> np.ndarray | torch.Tensor:
         """Fetch the RGB data for all cameras as a single tiled image.

@@ -1,33 +1,12 @@
 .. _API isaacsim.core.api:
 
-
-Core [isaacsim.core.api]
+Core API [isaacsim.core.api]
 ######################################################
 
 |
 
 Articulations
 --------------
-
-Articulation
-=============
-
-.. autoclass:: isaacsim.core.api.articulations.Articulation
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-ArticulationView
-=================
-
-.. autoclass:: isaacsim.core.api.articulations.ArticulationView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
 
 ArticulationController
 ========================
@@ -367,129 +346,6 @@ Physics Context
 
 |
 
-Prims
---------------
-
-Base Sensor
-================
-
-.. autoclass:: isaacsim.core.api.prims.BaseSensor
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-XForm Prim
-================
-
-.. autoclass:: isaacsim.core.api.prims.XFormPrim
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-XForm Prim View
-===================
-
-.. autoclass:: isaacsim.core.api.prims.XFormPrimView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Geometry Prim
-================
-
-.. autoclass:: isaacsim.core.api.prims.GeometryPrim
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Geometry Prim View
-===================
-
-.. autoclass:: isaacsim.core.api.prims.GeometryPrimView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Rigid Prim
-===================
-
-.. autoclass:: isaacsim.core.api.prims.RigidPrim
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Rigid Prim View
-===================
-
-.. autoclass:: isaacsim.core.api.prims.RigidPrimView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Rigid Contact View
-===================
-
-.. autoclass:: isaacsim.core.api.prims.RigidContactView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Cloth Prim
-===================
-
-.. autoclass:: isaacsim.core.api.prims.ClothPrim
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Cloth Prim View
-===================
-.. autoclass:: isaacsim.core.api.prims.ClothPrimView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Particle System
-===================
-.. autoclass:: isaacsim.core.api.prims.ParticleSystem
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Particle System View
-=====================
-.. autoclass:: isaacsim.core.api.prims.ParticleSystemView
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-
 Robots
 --------------
 
@@ -529,6 +385,29 @@ Scene
 SceneRegistry
 =====================
 .. autoclass:: isaacsim.core.api.scenes.SceneRegistry
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+|
+
+Sensors
+--------------
+
+Base Sensor
+================
+
+.. autoclass:: isaacsim.core.api.sensors.BaseSensor
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Rigid Contact View
+===================
+
+.. autoclass:: isaacsim.core.api.sensors.RigidContactView
     :inherited-members:
     :members:
     :undoc-members:

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import isaacsim.robot_motion.motion_generation as mg
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 
 
 class RMPFlowController(mg.MotionPolicyController):
@@ -15,11 +15,11 @@ class RMPFlowController(mg.MotionPolicyController):
 
     Args:
         name (str): [description]
-        robot_articulation (Articulation): [description]
+        robot_articulation (SingleArticulation): [description]
         physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
     """
 
-    def __init__(self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0) -> None:
+    def __init__(self, name: str, robot_articulation: SingleArticulation, physics_dt: float = 1.0 / 60.0) -> None:
         self.rmp_flow_config = mg.interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         self.rmp_flow = mg.lula.motion_policies.RmpFlow(**self.rmp_flow_config)
 

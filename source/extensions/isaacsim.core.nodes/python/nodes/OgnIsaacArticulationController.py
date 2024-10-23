@@ -9,9 +9,9 @@
 
 
 import numpy as np
-from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.nodes.ogn.OgnIsaacArticulationControllerDatabase import OgnIsaacArticulationControllerDatabase
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 
 
@@ -30,7 +30,7 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         super().__init__(initialize=False)
 
     def initialize_controller(self):
-        self.controller_handle = Articulation(self.robot_prim)
+        self.controller_handle = SingleArticulation(self.robot_prim)
         self.controller_handle.initialize()
         self.num_dof = self.controller_handle.num_dof
         self.initialized = True

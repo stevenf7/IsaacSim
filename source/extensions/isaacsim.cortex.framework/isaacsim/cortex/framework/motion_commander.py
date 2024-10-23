@@ -27,8 +27,7 @@ from typing import Optional, Tuple, Union
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleGeometryPrim, SingleXFormPrim
 from isaacsim.core.utils.rotations import quat_to_rot_matrix
 from isaacsim.cortex.framework.commander import Commander
 from isaacsim.cortex.framework.cortex_object import CortexObject
@@ -37,10 +36,10 @@ from isaacsim.robot_motion.motion_generation.articulation_motion_policy import A
 from isaacsim.robot_motion.motion_generation.motion_policy_interface import MotionPolicy
 
 # The CortexObject wraps a core API object. Obstacles can either be the core API object or a
-# CortexObject wrapped variant. All of these objects derive from GeometryPrim, although the
+# CortexObject wrapped variant. All of these objects derive from SingleGeometryPrim, although the
 # specifics of the supportant variants are policy specific. See the specific motion policy's
 # obstacle support in isaacsim.robot_motion.motion_generation for details of which objects are supported.
-CortexObstacleType = Union[CortexObject, GeometryPrim]
+CortexObstacleType = Union[CortexObject, SingleGeometryPrim]
 
 
 class ApproachParams(object):
@@ -238,14 +237,14 @@ class MotionCommander(Commander):
     Args:
         amp: The ArticulationMotionPolicy interfacing to the underlying motion policy. Includes the
             reference to the underlying Articulation being controlled.
-        target_prim: The target XFormPrim defining where the current end-effector target is. This
+        target_prim: The target SingleXFormPrim defining where the current end-effector target is. This
             target pose is passed into amp to move the robot.
         use_smoothed_commands: Optional boolean signifying whether to smooth the commands coming in.
             Defaults to true. This smoothing helps reduce system jerk.
     """
 
     def __init__(
-        self, amp: ArticulationMotionPolicy, target_prim: XFormPrim, use_smoothed_commands: Optional[bool] = True
+        self, amp: ArticulationMotionPolicy, target_prim: SingleXFormPrim, use_smoothed_commands: Optional[bool] = True
     ):
         super().__init__(amp._active_joints_view)
 
@@ -300,7 +299,7 @@ class MotionCommander(Commander):
         """
         return self.amp.get_active_joints_subset().get_joint_subset_indices()
 
-    def register_target_prim(self, target_prim: XFormPrim) -> None:
+    def register_target_prim(self, target_prim: SingleXFormPrim) -> None:
         """Register the specified target prim with this commander.
 
         This prim will both visualize the commands being sent to the motion commander, and it can be

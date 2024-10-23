@@ -12,7 +12,7 @@ from typing import Optional, Sequence, Tuple
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.rotations import gf_quat_to_np_array
 from pxr import Gf, Usd
 
@@ -47,7 +47,7 @@ class CortexMeasuredPose(object):
 
 
 class CortexObject(object):
-    """A CortexObject is an object (derived from the core API XFormPrim) which may have measurement
+    """A CortexObject is an object (derived from the core API SingleXFormPrim) which may have measurement
     information from perception.
 
     It handles recording that measurement information and providing an API to both access it and
@@ -57,12 +57,12 @@ class CortexObject(object):
 
     Args:
         obj: The underlying object in the scene, wrapped in a core API class deriving from
-            XFormPrim.
+            SingleXFormPrim.
         sync_throttle_dt: Prevents synchronization (via sync_to_measured_pose()) within this number
             of seconds of a previous sync. Defaults to None, which means no throttling.
     """
 
-    def __init__(self, obj: XFormPrim, sync_throttle_dt: float = None):
+    def __init__(self, obj: SingleXFormPrim, sync_throttle_dt: float = None):
         self.obj = obj
         self.time_at_last_sync = None
         self.sync_throttle_dt = sync_throttle_dt

@@ -7,11 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import lula
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 
 
-def get_prim_pose_in_meters(prim: XFormPrim, meters_per_unit: float):
+def get_prim_pose_in_meters(prim: SingleXFormPrim, meters_per_unit: float):
     pos, quat_rot = prim.get_world_pose()
     rot = quats_to_rot_matrices(quat_rot)
     pos *= meters_per_unit

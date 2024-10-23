@@ -23,7 +23,7 @@ import omni.kit.test
 import omni.kit.usd
 import rospy
 import usdrt.Sdf
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
@@ -326,7 +326,7 @@ class TestRosJointStateSubscriber(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(0.5)
 
         # get the articulation review for the asset
-        art_handle = Articulation("/Articulation")
+        art_handle = SingleArticulation("/Articulation")
         art_handle.initialize()
         await simulate_async(0.5)
 

@@ -12,7 +12,7 @@ from enum import Enum
 import carb
 import numpy as np
 import omni.timeline as timeline
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 
 
@@ -54,7 +54,7 @@ class GainTuner:
 
     def setup(self, articulation_path):
         self._robot_prim_path = articulation_path
-        self._articulation = Articulation(articulation_path)
+        self._articulation = SingleArticulation(articulation_path)
         self._articulation.initialize()
 
         return self._articulation

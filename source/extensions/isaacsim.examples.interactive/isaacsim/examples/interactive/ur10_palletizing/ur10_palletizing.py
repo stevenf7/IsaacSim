@@ -13,8 +13,8 @@ import numpy as np
 import omni
 from isaacsim.core.api.objects.capsule import VisualCapsule
 from isaacsim.core.api.objects.sphere import VisualSphere
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.tasks.base_task import BaseTask
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.cortex.behaviors.ur10 import bin_stacking_behavior as behavior
@@ -119,7 +119,7 @@ class BinStacking(CortexBase):
         ur10_assets = Ur10Assets()
         add_reference_to_stage(usd_path=ur10_assets.ur10_table_usd, prim_path=env_path)
         add_reference_to_stage(usd_path=ur10_assets.background_usd, prim_path="/World/Background")
-        background_prim = XFormPrim(
+        background_prim = SingleXFormPrim(
             "/World/Background", position=[10.00, 2.00, -1.18180], orientation=[0.7071, 0, 0, 0.7071]
         )
         self.robot = world.add_robot(CortexUr10(name="robot", prim_path="{}/ur10".format(env_path)))

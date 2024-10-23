@@ -702,7 +702,7 @@ def create_prim(
         Usd.Prim(</World/panda>)
     """
     # Note: Imported here to prevent cyclic dependency in the module.
-    from isaacsim.core.api.prims.xform_prim import XFormPrim
+    from isaacsim.core.prims import XFormPrim
 
     # create prim in stage
     prim = define_prim(prim_path=prim_path, prim_type=prim_type)
@@ -719,7 +719,11 @@ def create_prim(
     if semantic_label is not None:
         add_update_semantics(prim, semantic_label, semantic_type)
     # apply the transformations
-    XFormPrim(prim_path=prim_path, position=position, translation=translation, orientation=orientation, scale=scale)
+    position = None if position is None else np.array([position])
+    translation = None if translation is None else np.array([translation])
+    orientation = None if orientation is None else np.array([orientation])
+    scale = None if scale is None else np.array([scale])
+    XFormPrim(prim_path, positions=position, translations=translation, orientations=orientation, scales=scale)
 
     return prim
 

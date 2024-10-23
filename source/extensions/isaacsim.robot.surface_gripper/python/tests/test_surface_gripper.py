@@ -21,7 +21,7 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.physics.tensors
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.physics import simulate_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -152,7 +152,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         self.sgp.stiffness = 1.0e10
 
         self.surface_gripper.initialize(self.sgp)
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=self.box1_props[3], orientation=self.box1_props[4])
         box1.set_linear_velocity([0.0, 0.0, 0.0])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
@@ -189,7 +189,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=self.box1_props[3], orientation=self.box1_props[4])
         box1.set_linear_velocity([0.0, 0.0, 0.0])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
@@ -245,8 +245,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         self.sgp.damping = 1.0e10
 
         self.surface_gripper.initialize(self.sgp)
-        box0 = RigidPrim(self.box0)
-        box1 = RigidPrim(self.box1)
+        box0 = SingleRigidPrim(self.box0)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=box1_props[3], orientation=box1_props[4])
         box1.set_linear_velocity([0.0, 0.0, 0.0])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
@@ -292,7 +292,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate_async(0.125)
         await omni.kit.app.get_app().next_update_async()
         self.surface_gripper.initialize(self.sgp)
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=box1_props[3], orientation=box1_props[4])
         box1.set_linear_velocity([0.0, 0.0, 0.0])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
@@ -312,7 +312,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         await self.test_close_surface_gripper()
 
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         self.surface_gripper.open()
         await omni.kit.app.get_app().next_update_async()
         self.surface_gripper.update()
@@ -347,7 +347,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate_async(0.125)
         await omni.kit.app.get_app().next_update_async()
         self.surface_gripper.initialize(self.sgp)
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=[0.06, 0, 2.005], orientation=box1_props[4])
         box1.set_linear_velocity([0.0, 0.0, 0.0])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
@@ -384,7 +384,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         self.sgp.stiffness = 1.0e-1
         self.sgp.damping = 1.0e-2
         self.surface_gripper.initialize(self.sgp)
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=[0.06, 0, 2.04], orientation=box1_props[4])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
         self.assertTrue(self.surface_gripper.close())
@@ -429,7 +429,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         self.sgp.damping = 1.0
         self.sgp.bendAngle = 0
         self.surface_gripper.initialize(self.sgp)
-        box1 = RigidPrim(self.box1)
+        box1 = SingleRigidPrim(self.box1)
         box1.set_world_pose(position=[0.06, 0, 2.04], orientation=box1_props[4])
         box1.set_angular_velocity([0.0, 0.0, 0.0])
         self.assertTrue(self.surface_gripper.close())

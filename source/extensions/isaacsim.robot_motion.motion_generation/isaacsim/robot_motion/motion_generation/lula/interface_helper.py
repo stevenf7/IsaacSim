@@ -11,7 +11,7 @@ from typing import List, Optional, Tuple, Union
 import lula
 import numpy as np
 from isaacsim.core.api import objects
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
 from isaacsim.core.utils.stage import get_stage_units

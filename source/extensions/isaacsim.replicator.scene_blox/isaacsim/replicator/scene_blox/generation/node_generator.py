@@ -25,10 +25,9 @@ from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 import omni
 import yaml
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.world.world import World
+from isaacsim.core.prims import GeometryPrim, RigidPrim, XFormPrim
+from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage
@@ -280,14 +279,15 @@ class NodeGenerator:
         chosen_usd = GlobalRNG().rng.choice(possible_usds)
         target_path = f"{root_path}/{prim_config['path']}_{index}"
         # Sample the position and orientation
-        position = sample_position(prim_config["position"])
-        orientation = sample_position(prim_config["orientation"])
+        position = np.array([sample_position(prim_config["position"])], dtype=np.float32)
+        orientation = np.array(sample_position(prim_config["orientation"]), dtype=np.float32)
         scale = None
         if "scale" in prim_config:
-            scale = np.array(prim_config["scale"])
+            scale = np.array([prim_config["scale"]])
         # Place the prim in the world
-        xform_prim = XFormPrim(target_path, name=target_path, scale=scale)
-        xform_prim.set_local_pose(position, euler_angles_to_quat(orientation, degrees=True))
+        define_prim(target_path, prim_type="Xform")
+        xform_prim = XFormPrim(target_path, name=target_path, scales=scale)
+        xform_prim.set_local_poses(position, np.array([euler_angles_to_quat(orientation, degrees=True)]))
         world.scene.add(xform_prim)
         if self.do_collision_check and "physics" in prim_config:
             if prim_config["physics"].get("rigid_body", False):
@@ -340,8 +340,8 @@ class NodeGenerator:
             target_path (str): Path of the target prim
         """
         if "collision" in prim_config:
-            collision_prim = GeometryPrim(target_path, name=target_path, collision=True)
-            collision_prim.set_collision_approximation(prim_config["collision"])
+            collision_prim = GeometryPrim(target_path, name=target_path, collisions=[True])
+            collision_prim.set_collision_approximations([prim_config["collision"]])
         if prim_config.get("rigid_body", False) and self.do_collision_check:
             rigid_prim = RigidPrim(target_path, target_path)
             rigid_prim.enable_rigid_body_physics()

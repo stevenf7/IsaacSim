@@ -6,19 +6,18 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
 import gc
 from collections import OrderedDict
 from typing import List, Optional, Tuple, Union
 
 import carb
-import isaacsim.core.api
+import isaacsim.core.utils.numpy as numpy_utils
 import numpy as np
 import omni.kit.app
 import omni.physx
 import torch
 import warp as wp
-from isaacsim.core.api import SimulationContext
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.utils.prims import (
     get_articulation_root_api_prim_path,
     get_prim_at_path,
@@ -29,8 +28,10 @@ from isaacsim.core.utils.prims import (
 from isaacsim.core.utils.types import ArticulationActions, JointsState, XFormPrimViewState
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
+from .xform_prim import XFormPrim
 
-class ArticulationView(XFormPrimView):
+
+class Articulation(XFormPrim):
     """High level wrapper to deal with prims (one or many) that have the Root Articulation API applied
     and their attributes/properties
 
@@ -81,7 +82,7 @@ class ArticulationView(XFormPrimView):
 
         >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from isaacsim.core.api.articulations import ArticulationView
+        >>> from isaacsim.core.prims import Articulation
         >>> from pxr import UsdGeom
         >>>
         >>> usd_path = "/home/<user>/Documents/Assets/Robots/Franka/franka_alt_fingers.usd"
@@ -98,9 +99,9 @@ class ArticulationView(XFormPrimView):
         >>> cloner.clone(source_prim_path=env_zero_path, prim_paths=cloner.generate_paths("/World/envs/env", num_envs))
         >>>
         >>> # wrap all articulations
-        >>> prims = ArticulationView(prim_paths_expr="/World/envs/env.*/panda", name="franka_panda_view")
+        >>> prims = Articulation(prim_paths_expr="/World/envs/env.*/panda", name="franka_panda_view")
         >>> prims
-        <isaacsim.core.api.articulations.articulation_view.ArticulationView object at 0x7ff174054b20>
+        <isaacsim.core.prims.articulation.Articulation object at 0x7ff174054b20>
     """
 
     def __init__(
@@ -121,7 +122,7 @@ class ArticulationView(XFormPrimView):
             ]
         else:
             prim_paths_expr = get_articulation_root_api_prim_path(prim_paths_expr)
-        XFormPrimView.__init__(
+        XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -167,7 +168,7 @@ class ArticulationView(XFormPrimView):
             9
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._num_dof
 
@@ -186,7 +187,7 @@ class ArticulationView(XFormPrimView):
             12
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._num_bodies
 
@@ -205,7 +206,7 @@ class ArticulationView(XFormPrimView):
             17
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._num_shapes
 
@@ -218,7 +219,7 @@ class ArticulationView(XFormPrimView):
 
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._num_joints
 
@@ -237,7 +238,7 @@ class ArticulationView(XFormPrimView):
             0
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._num_fixed_tendons
 
@@ -257,7 +258,7 @@ class ArticulationView(XFormPrimView):
              'panda_link6', 'panda_link7', 'panda_link8', 'panda_hand', 'panda_leftfinger', 'panda_rightfinger']
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._body_names
 
@@ -277,7 +278,7 @@ class ArticulationView(XFormPrimView):
              'panda_joint6', 'panda_joint7', 'panda_finger_joint1', 'panda_finger_joint2']
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._dof_names
 
@@ -290,7 +291,7 @@ class ArticulationView(XFormPrimView):
 
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._joint_names
 
@@ -430,7 +431,7 @@ class ArticulationView(XFormPrimView):
             10
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._body_indices[body_name]
 
@@ -452,7 +453,7 @@ class ArticulationView(XFormPrimView):
             7
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._dof_indices[dof_name]
 
@@ -480,7 +481,7 @@ class ArticulationView(XFormPrimView):
             [<DofType.Translation: 1>, <DofType.Translation: 1>]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if dof_names is None:
             return self._dof_types
@@ -521,7 +522,7 @@ class ArticulationView(XFormPrimView):
              [ 0.      0.04  ]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._physics_view.get_dof_limits()
 
@@ -534,7 +535,7 @@ class ArticulationView(XFormPrimView):
 
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._physics_view.get_drive_types()
 
@@ -549,7 +550,7 @@ class ArticulationView(XFormPrimView):
 
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._joint_indices[joint_name]
 
@@ -564,7 +565,7 @@ class ArticulationView(XFormPrimView):
 
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._link_indices[link_name]
 
@@ -601,7 +602,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_friction_coefficients(np.full((3, 2), 0.05), indices=np.array([0,2,4]), joint_indices=np.array([7,8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -683,7 +684,7 @@ class ArticulationView(XFormPrimView):
              [0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -746,7 +747,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_armatures(np.full((3, 2), 0.05), indices=np.array([0,2,4]), joint_indices=np.array([7,8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -824,7 +825,7 @@ class ArticulationView(XFormPrimView):
              [0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -868,7 +869,7 @@ class ArticulationView(XFormPrimView):
             12
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._metadata.link_count
 
@@ -919,7 +920,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_joint_position_targets(positions, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -981,7 +982,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_joint_positions(positions, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1044,7 +1045,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_joint_velocity_targets(velocities, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1106,7 +1107,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_joint_velocities(velocities, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1170,7 +1171,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_joint_efforts(efforts, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1235,7 +1236,7 @@ class ArticulationView(XFormPrimView):
              [0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1298,7 +1299,7 @@ class ArticulationView(XFormPrimView):
              [ 0.00516803 -0.00519108]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1400,7 +1401,7 @@ class ArticulationView(XFormPrimView):
               [-5.1910817e-03  9.7588263e-02 -9.7106427e-02  8.4128286e-12  1.2906602e-12 -1.9347754e-11]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1464,7 +1465,7 @@ class ArticulationView(XFormPrimView):
              [0.03991237 0.04      ]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1528,7 +1529,7 @@ class ArticulationView(XFormPrimView):
              [5.4033857e-04 1.0287426e-05]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1593,7 +1594,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.apply_action(action, indices=np.array([0, 2, 4]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1682,7 +1683,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0. 0. 0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             joint_positions = self._physics_view.get_dof_position_targets()
@@ -1767,9 +1768,7 @@ class ArticulationView(XFormPrimView):
             self._physics_view.set_root_transforms(pose, indices)
             return
         else:
-            XFormPrimView.set_world_poses(
-                self, positions=positions, orientations=orientations, indices=indices, usd=usd
-            )
+            XFormPrim.set_world_poses(self, positions=positions, orientations=orientations, indices=indices, usd=usd)
         return
 
     def get_world_poses(
@@ -1836,7 +1835,7 @@ class ArticulationView(XFormPrimView):
             rot = self._backend_utils.xyzw2wxyz(pose[indices, 3:7])
             return pos, rot
         else:
-            pos, rot = XFormPrimView.get_world_poses(self, indices=indices, usd=usd)
+            pos, rot = XFormPrim.get_world_poses(self, indices=indices, usd=usd)
             ret_pos = self._backend_utils.convert(pos, dtype="float32", device=self._device, indexed=True)
             ret_rot = self._backend_utils.convert(rot, dtype="float32", device=self._device, indexed=True)
             return ret_pos, ret_rot
@@ -1911,7 +1910,7 @@ class ArticulationView(XFormPrimView):
             )
             return res
         else:
-            return XFormPrimView.get_local_poses(self, indices=indices)
+            return XFormPrim.get_local_poses(self, indices=indices)
 
     def set_local_poses(
         self,
@@ -1961,7 +1960,7 @@ class ArticulationView(XFormPrimView):
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             if translations is None or orientations is None:
-                current_translations, current_orientations = ArticulationView.get_local_poses(self)
+                current_translations, current_orientations = Articulation.get_local_poses(self)
                 if translations is None:
                     translations = current_translations
                 if orientations is None:
@@ -1982,11 +1981,11 @@ class ArticulationView(XFormPrimView):
             calculated_positions, calculated_orientations = self._backend_utils.get_world_from_local(
                 parent_transforms, translations, orientations, self._device
             )
-            ArticulationView.set_world_poses(
+            Articulation.set_world_poses(
                 self, positions=calculated_positions, orientations=calculated_orientations, indices=indices
             )
         else:
-            XFormPrimView.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
+            XFormPrim.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
         return
 
     def set_velocities(
@@ -2031,7 +2030,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_velocities(velocities, indices=np.array([0, 2, 4]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             root_vel = self._physics_view.get_root_velocities()
@@ -2079,7 +2078,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             velocities = self._physics_view.get_root_velocities()
@@ -2132,7 +2131,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_linear_velocities(velocities, indices=np.array([0, 2, 4]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
@@ -2188,7 +2187,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             linear_velocities = self._physics_view.get_root_velocities()
@@ -2240,7 +2239,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_angular_velocities(velocities, indices=np.array([0, 2, 4]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
                 "set_angular_velocities function is not supported for the gpu pipeline, use set_velocities instead."
@@ -2296,7 +2295,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             angular_velocities = self._physics_view.get_root_velocities()
@@ -2425,7 +2424,7 @@ class ArticulationView(XFormPrimView):
                3.4824573e-02  8.8469200e-02  5.4033857e-04  1.0287426e-05]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
         # TODO: implement effort part
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             return JointsState(
@@ -2451,11 +2450,11 @@ class ArticulationView(XFormPrimView):
 
             >>> prims.post_reset()
         """
-        XFormPrimView.post_reset(self)
-        ArticulationView.set_joint_positions(self, self._default_joints_state.positions)
-        ArticulationView.set_joint_velocities(self, self._default_joints_state.velocities)
-        ArticulationView.set_joint_efforts(self, self._default_joints_state.efforts)
-        ArticulationView.set_gains(self, kps=self._default_kps, kds=self._default_kds)
+        XFormPrim.post_reset(self)
+        Articulation.set_joint_positions(self, self._default_joints_state.positions)
+        Articulation.set_joint_velocities(self, self._default_joints_state.velocities)
+        Articulation.set_joint_efforts(self, self._default_joints_state.efforts)
+        Articulation.set_gains(self, kps=self._default_kps, kds=self._default_kds)
 
     def get_effort_modes(
         self,
@@ -2547,7 +2546,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_effort_modes("force", indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if mode not in ["force", "acceleration"]:
             raise Exception("Effort Mode specified {} is not recognized".format(mode))
@@ -2604,7 +2603,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_max_efforts(max_efforts, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -2685,7 +2684,7 @@ class ArticulationView(XFormPrimView):
              [720. 720.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -2745,7 +2744,7 @@ class ArticulationView(XFormPrimView):
                                                                                  Defaults to None (i.e: all dofs).
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -2783,7 +2782,7 @@ class ArticulationView(XFormPrimView):
             Union[np.ndarray, torch.Tensor, wp.indexedarray]: maximum joint velocities for articulations dofs in the view. shape (M, K).
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -2841,7 +2840,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_gains(kps=stiffnesses, kds=dampings, indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         if (
             not omni.timeline.get_timeline_interface().is_stopped()
@@ -2904,20 +2903,14 @@ class ArticulationView(XFormPrimView):
                                 drive.CreateStiffnessAttr(kps[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.CreateStiffnessAttr(
-                                    1.0
-                                    / isaacsim.core.utils.numpy.rad2deg(
-                                        float(1.0 / kps[articulation_read_idx][dof_read_idx])
-                                    )
+                                    1.0 / numpy_utils.rad2deg(float(1.0 / kps[articulation_read_idx][dof_read_idx]))
                                 )
                         else:
                             if kps[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
                                 drive.GetStiffnessAttr().Set(kps[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.GetStiffnessAttr().Set(
-                                    1.0
-                                    / isaacsim.core.utils.numpy.rad2deg(
-                                        float(1.0 / kps[articulation_read_idx][dof_read_idx])
-                                    )
+                                    1.0 / numpy_utils.rad2deg(float(1.0 / kps[articulation_read_idx][dof_read_idx]))
                                 )
                     if kds is not None:
                         if not drive.GetDampingAttr():
@@ -2925,20 +2918,14 @@ class ArticulationView(XFormPrimView):
                                 drive.CreateDampingAttr(kds[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.CreateDampingAttr(
-                                    1.0
-                                    / isaacsim.core.utils.numpy.rad2deg(
-                                        float(1.0 / kds[articulation_read_idx][dof_read_idx])
-                                    )
+                                    1.0 / numpy_utils.rad2deg(float(1.0 / kds[articulation_read_idx][dof_read_idx]))
                                 )
                         else:
                             if kds[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
                                 drive.GetDampingAttr().Set(kds[articulation_read_idx][dof_read_idx])
                             else:
                                 drive.GetDampingAttr().Set(
-                                    1.0
-                                    / isaacsim.core.utils.numpy.rad2deg(
-                                        float(1.0 / kds[articulation_read_idx][dof_read_idx])
-                                    )
+                                    1.0 / numpy_utils.rad2deg(float(1.0 / kds[articulation_read_idx][dof_read_idx]))
                                 )
                     dof_read_idx += 1
                 articulation_read_idx += 1
@@ -3000,7 +2987,7 @@ class ArticulationView(XFormPrimView):
              [1000. 1000.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
@@ -3042,13 +3029,13 @@ class ArticulationView(XFormPrimView):
                     if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
                         kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
                     else:
-                        kps[articulation_write_idx][dof_write_idx] = 1.0 / isaacsim.core.utils.numpy.deg2rad(
+                        kps[articulation_write_idx][dof_write_idx] = 1.0 / numpy_utils.deg2rad(
                             float(1.0 / drive.GetStiffnessAttr().Get())
                         )
                     if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
                         kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
                     else:
-                        kds[articulation_write_idx][dof_write_idx] = 1.0 / isaacsim.core.utils.numpy.deg2rad(
+                        kds[articulation_write_idx][dof_write_idx] = 1.0 / numpy_utils.deg2rad(
                             float(1.0 / drive.GetDampingAttr().Get())
                         )
                     dof_write_idx += 1
@@ -3107,7 +3094,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.switch_control_mode("effort", indices=np.array([0, 2, 4]), joint_indices=np.array([7, 8]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -3189,7 +3176,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.switch_dof_control_mode("effort", dof_index=0, indices=np.array([0, 2, 4]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if mode == "velocity":
@@ -3635,7 +3622,7 @@ class ArticulationView(XFormPrimView):
             (11, 6, 9)
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         shape = self._physics_view.jacobian_shape
         return (shape[0] // 6, 6, shape[1])
@@ -3660,7 +3647,7 @@ class ArticulationView(XFormPrimView):
             (9, 9)
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         return self._physics_view.mass_matrix_shape
 
@@ -3706,7 +3693,7 @@ class ArticulationView(XFormPrimView):
                [ 9.9999976e-01 -3.8743019e-07  8.4210289e-01 ... -7.0438433e-01  0.0000000e+00  0.0000000e+00]]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -3757,7 +3744,7 @@ class ArticulationView(XFormPrimView):
                -1.2324269e-04 -3.6906206e-10  0.0000000e+00  1.4055224e-02]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -3821,7 +3808,7 @@ class ArticulationView(XFormPrimView):
              [-4.6237556e-06 -4.1627968e-06]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -3892,7 +3879,7 @@ class ArticulationView(XFormPrimView):
              [ 0.00518786 -0.00518785]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -3956,7 +3943,7 @@ class ArticulationView(XFormPrimView):
              [0.01405522 0.01405522]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4020,7 +4007,7 @@ class ArticulationView(XFormPrimView):
              [71.14793 71.14793]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4098,7 +4085,7 @@ class ArticulationView(XFormPrimView):
               [1. 0. 0. 0.]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4167,7 +4154,7 @@ class ArticulationView(XFormPrimView):
               [4.2041304e-10  0.0  0.0  0.0  3.9026365e-10  0.0  0.0  0.0  1.3347495e-10]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4230,7 +4217,7 @@ class ArticulationView(XFormPrimView):
               [2.3786132e+09  0.0  0.0  0.0  2.5623703e+09  0.0  0.0  0.0  7.4920422e+09]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4273,7 +4260,7 @@ class ArticulationView(XFormPrimView):
 
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4325,7 +4312,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_body_masses(masses, indices=np.array([0, 2, 4]), body_indices=np.array([10, 11]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
 
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -4375,7 +4362,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_body_inertias(inertias, indices=np.array([0, 2, 4]), body_indices=np.array([10, 11]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
 
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -4429,7 +4416,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_body_coms(positions, orientations, indices=np.array([0, 2, 4]), body_indices=np.array([10, 11]))
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
 
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -4482,7 +4469,7 @@ class ArticulationView(XFormPrimView):
                                                                                  Defaults to None (i.e: all bodies).
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
 
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
@@ -4530,7 +4517,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4575,7 +4562,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4620,7 +4607,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4667,7 +4654,7 @@ class ArticulationView(XFormPrimView):
              [[-0.001  0.001] [-0.001  0.001] [-0.001  0.001] [-0.001  0.001]]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4714,7 +4701,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4759,7 +4746,7 @@ class ArticulationView(XFormPrimView):
              [0. 0. 0. 0.]]
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4809,7 +4796,7 @@ class ArticulationView(XFormPrimView):
             >>> prims.set_fixed_tendon_properties(dampings=dampings, limit_stiffnesses=limit_stiffnesses)
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -4862,10 +4849,10 @@ class ArticulationView(XFormPrimView):
 
     def pause_motion(self) -> None:
         """
-        Pauses the motion of all articulations wrapped under the ArticulationView.
+        Pauses the motion of all articulations wrapped under the Articulation.
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(None, self.count, self._device)
@@ -4892,14 +4879,14 @@ class ArticulationView(XFormPrimView):
 
     def resume_motion(self):
         """
-        Resumes the motion of all articulations wrapped under the ArticulationView using the position and velocity dof targets
+        Resumes the motion of all articulations wrapped under the Articulation using the position and velocity dof targets
         cached when pause_motion was called.
         """
         if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
+            carb.log_warn("Articulation needs to be initialized.")
             return None
         if not self._paused_motion:
-            carb.log_warn("ArticulationView needs to be paused in order to use resume_motion.")
+            carb.log_warn("Articulation needs to be paused in order to use resume_motion.")
             return None
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:

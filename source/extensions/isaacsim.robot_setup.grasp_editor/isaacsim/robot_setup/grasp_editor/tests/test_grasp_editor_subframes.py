@@ -14,7 +14,7 @@ import numpy as np
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.test
 from isaacsim.core.api.objects import GroundPlane
-from isaacsim.core.api.prims import XFormPrim, XFormPrimView
+from isaacsim.core.prims import SingleXFormPrim, XFormPrim
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
@@ -46,7 +46,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         gripper_usd_path = asset_root_path + "/Isaac/Robots/Robotiq/2F-140/Robotiq_2F_140_config.usd"
         self._gripper_path = "/Robotiq_2F_140"
         add_reference_to_stage(gripper_usd_path, self._gripper_path)
-        self._gripper_xform = XFormPrim(self._gripper_path)
+        self._gripper_xform = SingleXFormPrim(self._gripper_path)
         self._gripper_xform.set_world_pose(np.array([-0.24, 0.02, 0.11]))
         self._gripper_subframe = "/Robotiq_2F_140/robotiq_base_link"
 
@@ -59,12 +59,12 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         self._rb_path = "/soup_can"
         add_reference_to_stage(asset_root_path + "/Isaac/Props/YCB/Axis_Aligned/005_tomato_soup_can.usd", self._rb_path)
 
-        self._rb_xform = XFormPrimView(self._rb_path)
+        self._rb_xform = XFormPrim(self._rb_path)
         self._rb_xform.set_world_poses(
             np.array([-0.06, 0.0, 0.14])[np.newaxis, :], np.array([0.707, -0.707, 0.0, 0.0])[np.newaxis, :]
         )
 
-        self._rb_subframe = XFormPrim(
+        self._rb_subframe = SingleXFormPrim(
             "/soup_can/subframe", translation=np.array([0.2, 0.1, -0.05]), orientation=np.array([0.5, 0.2, 0.6, -1])
         )
 
@@ -99,7 +99,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
     async def tearDown(self):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:

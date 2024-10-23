@@ -10,7 +10,7 @@ from typing import List, Optional
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 import numpy as np
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import PickPlaceController
 from isaacsim.robot.manipulators.grippers import SurfaceGripper
@@ -22,7 +22,7 @@ class StackingController(manipulators_controllers.StackingController):
     Args:
         name (str): [description]
         gripper (SurfaceGripper): [description]
-        robot_articulation(Articulation): [description]
+        robot_articulation(SingleArticulation): [description]
         picking_order_cube_names (List[str]): [description]
         robot_observation_name (str): [description]
     """
@@ -31,7 +31,7 @@ class StackingController(manipulators_controllers.StackingController):
         self,
         name: str,
         gripper: SurfaceGripper,
-        robot_articulation: Articulation,
+        robot_articulation: SingleArticulation,
         picking_order_cube_names: List[str],
         robot_observation_name: str,
     ) -> None:

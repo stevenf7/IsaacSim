@@ -13,7 +13,7 @@ from typing import Optional
 
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import RigidPrim
 
 from .collision_box import CollisionBox
 
@@ -101,13 +101,16 @@ class DynamicAssetSet(ABC):
 
         for rigid_prim in self._rigid_prims:
             random_force = np.random.uniform(-force_limit, force_limit, 3).tolist()
-            rigid_prim._rigid_prim_view.apply_forces_and_torques_at_pos(random_force, is_global=False)
+            rigid_prim.apply_forces_and_torques_at_pos(random_force, is_global=False)
 
     def randomize_glass_color(self):
         """Randomize the color of the assets in the dynamic asset set with a glass material applied."""
 
         for asset in itertools.chain(self.glass_assets):
-            glass_mat = asset.get_applied_visual_material()
+            try:
+                glass_mat = asset.get_applied_visual_materials()[0]
+            except:
+                glass_mat = asset.get_applied_visual_material()
             glass_mat.set_color(np.random.rand(3))
 
     def reset_position(self):

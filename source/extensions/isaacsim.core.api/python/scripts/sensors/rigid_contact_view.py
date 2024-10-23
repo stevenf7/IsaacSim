@@ -53,7 +53,7 @@ class RigidContactView(object):
 
         >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from isaacsim.core.api.prims import RigidContactView
+        >>> from isaacsim.core.api.sensors import RigidContactView
         >>> from pxr import UsdGeom
         >>>
         >>> env_zero_path = "/World/envs/env_0"
@@ -83,7 +83,7 @@ class RigidContactView(object):
         ...     max_contact_count=10,
         ... )
         >>> prims
-        <isaacsim.core.api.prims.rigid_contact_view.RigidContactView object at 0x7f8d4eb1abf0>
+        <isaacsim.core.api.sensors.rigid_contact_view.RigidContactView object at 0x7f8d4eb1abf0>
     """
 
     def __init__(

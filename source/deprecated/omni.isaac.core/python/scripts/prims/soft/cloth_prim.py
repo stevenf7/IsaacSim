@@ -10,8 +10,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.soft.cloth_prim has been deprecated in favor of isaacsim.core.api.prims.soft.cloth_prim. Please update your code accordingly."
+    "omni.isaac.core.prims.soft.cloth_prim.ClothPrim has been deprecated in favor of isaacsim.core.prims.SingleClothPrim. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
+from isaacsim.core.prims import SingleClothPrim as ClothPrim

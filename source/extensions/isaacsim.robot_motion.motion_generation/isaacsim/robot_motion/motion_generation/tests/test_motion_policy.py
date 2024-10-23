@@ -16,9 +16,9 @@ import isaacsim.core.api.objects as objects
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils import distance_metrics
 from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
 from isaacsim.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
@@ -84,7 +84,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(sphereLight.GetPath().pathString).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(sphereLight.GetPath().pathString).set_world_pose([6.5, 0, 12])
 
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior
@@ -430,7 +430,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         test_sphere = self._motion_policy.get_collision_spheres_as_prims()[16]
         test_ee_visual = self._motion_policy.get_end_effector_as_prim()
 
-        panda_hand_prim = XFormPrim("/panda/panda_hand")
+        panda_hand_prim = SingleXFormPrim("/panda/panda_hand")
 
         self._articulation_policy.move()
 

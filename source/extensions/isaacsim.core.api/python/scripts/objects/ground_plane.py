@@ -13,8 +13,7 @@ import numpy as np
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.materials.preview_surface import PreviewSurface
 from isaacsim.core.api.materials.visual_material import VisualMaterial
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleGeometryPrim, SingleXFormPrim
 from isaacsim.core.utils.prims import (
     get_first_matching_child_prim,
     get_prim_path,
@@ -112,10 +111,10 @@ class GroundPlane(object):
                 get_first_matching_child_prim(prim_path=prim_path, predicate=lambda x: get_prim_type_name(x) == "Plane")
             )
 
-        self._xform_prim = XFormPrim(
+        self._xform_prim = SingleXFormPrim(
             prim_path=prim_path, name=name, position=None, orientation=None, scale=scale, visible=visible
         )
-        self._collision_prim = GeometryPrim(
+        self._collision_prim = SingleGeometryPrim(
             prim_path=collision_prim_path,
             name=name + "_collision_plane",
             position=None,
@@ -184,32 +183,32 @@ class GroundPlane(object):
         return self._xform_prim.prim
 
     @property
-    def xform_prim(self) -> XFormPrim:
+    def xform_prim(self) -> SingleXFormPrim:
         """
         Returns:
-            XFormPrim: wrapped object as a XFormPrim
+            SingleXFormPrim: wrapped object as a SingleXFormPrim
 
         Example:
 
         .. code-block:: python
 
             >>> plane.xform_prim
-            <isaacsim.core.api.prims.xform_prim.XFormPrim object at 0x7f1578d32560>
+            <isaacsim.core.prims.single_xform_prim.SingleXFormPrim object at 0x7f1578d32560>
         """
         return self._xform_prim
 
     @property
-    def collision_geometry_prim(self) -> GeometryPrim:
+    def collision_geometry_prim(self) -> SingleGeometryPrim:
         """
         Returns:
-            GeometryPrim: wrapped object as a GeometryPrim
+            SingleGeometryPrim: wrapped object as a SingleGeometryPrim
 
         Example:
 
         .. code-block:: python
 
             >>> plane.collision_geometry_prim
-            <isaacsim.core.api.prims.geometry_prim.GeometryPrim object at 0x7f15ff3461a0>
+            <isaacsim.core.prims.single_geometry_prim.SingleGeometryPrim object at 0x7f15ff3461a0>
         """
         return self._collision_prim
 

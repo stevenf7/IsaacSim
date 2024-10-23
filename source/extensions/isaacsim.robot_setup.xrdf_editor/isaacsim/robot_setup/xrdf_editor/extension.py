@@ -24,8 +24,7 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 import yaml
-from isaacsim.core.api.articulations import Articulation, ArticulationView
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import Articulation, SingleArticulation, SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
 
@@ -241,7 +240,7 @@ class Extension(omni.ext.IExt):
         if self.articulation_list and prim_path != "None" and not self._timeline.is_stopped():
             # Create and Initialize the Articulation
             self._articulation_base_path = prim_path
-            self.articulation = Articulation(prim_path)
+            self.articulation = SingleArticulation(prim_path)
 
             if not self.articulation.handles_initialized:
                 self.articulation.initialize()
@@ -493,7 +492,7 @@ class Extension(omni.ext.IExt):
            Update the Properties UI.
 
         Args:
-            articulation (Articulation): Selected Articulation
+            articulation (SingleArticulation): Selected Articulation
         """
         # Update static dof properties on new selection
         if self.new_selection:
@@ -513,7 +512,7 @@ class Extension(omni.ext.IExt):
         """Updates the GUI with a new Articulation's properties.
 
         Args:
-            articulation (Articulation): [description]
+            articulation (SingleArticulation): [description]
         """
         # Get the latest articulation values and update the Properties UI
         self.get_articulation_values(articulation)
@@ -1396,8 +1395,8 @@ class Extension(omni.ext.IExt):
         vert_cts = np.array(geom_mesh.GetFaceVertexCountsAttr().Get())
 
         # Transform coordinates of points into Link frame
-        mesh_xform = XFormPrim(mesh_path)
-        link_xform = XFormPrim(link_path)
+        mesh_xform = SingleXFormPrim(mesh_path)
+        link_xform = SingleXFormPrim(link_path)
 
         mesh_trans, mesh_rot = mesh_xform.get_world_pose()
         link_trans, link_rot = link_xform.get_world_pose()
@@ -1758,7 +1757,7 @@ class Extension(omni.ext.IExt):
         else:
             parsed_file = {}
 
-        art_view = ArticulationView(self._articulation_base_path)
+        art_view = Articulation(self._articulation_base_path)
         art_view.initialize()
         ordered_links = art_view.body_names  # Links in order from root to end effector
 

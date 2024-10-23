@@ -8,9 +8,8 @@
 #
 
 import numpy as np
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid, FixedCuboid, GroundPlane
-from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
 from isaacsim.core.utils import distance_metrics
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats, quats_to_rot_matrices
 from isaacsim.core.utils.stage import add_reference_to_stage
@@ -45,10 +44,10 @@ class FrankaRmpFlowExampleScript:
         path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
 
         add_reference_to_stage(path_to_robot_usd, robot_prim_path)
-        self._articulation = Articulation(robot_prim_path)
+        self._articulation = SingleArticulation(robot_prim_path)
 
         add_reference_to_stage(get_assets_root_path() + "/Isaac/Props/UIElements/frame_prim.usd", "/World/target")
-        self._target = XFormPrim(
+        self._target = SingleXFormPrim(
             "/World/target",
             scale=[0.04, 0.04, 0.04],
             position=np.array([0.4, 0, 0.25]),

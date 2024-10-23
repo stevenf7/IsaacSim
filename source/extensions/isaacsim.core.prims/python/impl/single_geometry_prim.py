@@ -11,14 +11,13 @@ from typing import List, Optional, Sequence, Union
 
 import numpy as np
 import torch
-from isaacsim.core.api.materials.physics_material import PhysicsMaterial
-from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from pxr import UsdGeom
 
+from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .geometry_prim import GeometryPrim
 
-class GeometryPrim(_SinglePrimWrapper):
+
+class SingleGeometryPrim(_SinglePrimWrapper):
     """High level wrapper to deal with a Geom prim (only one geometry prim) and its attributes/properties.
 
     The ``prim_path`` should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder,
@@ -65,16 +64,16 @@ class GeometryPrim(_SinglePrimWrapper):
     .. code-block:: python
 
         >>> import isaacsim.core.utils.stage as stage_utils
-        >>> from isaacsim.core.api.prims import GeometryPrim
+        >>> from isaacsim.core.prims import SingleGeometryPrim
         >>>
         >>> # create a Cube at the given path
         >>> stage_utils.get_current_stage().DefinePrim("/World/Xform", "Xform")
         >>> stage_utils.get_current_stage().DefinePrim("/World/Xform/Cube", "Cube")
         >>>
         >>> # wrap the prim as geometry prim
-        >>> prim = GeometryPrim("/World/Xform", collision=True)
+        >>> prim = SingleGeometryPrim("/World/Xform", collision=True)
         >>> prim
-        <isaacsim.core.api.prims.geometry_prim.GeometryPrim object at 0x7fe960247400>
+        <isaacsim.core.prims.single_geometry_prim.SingleGeometryPrim object at 0x7fe960247400>
     """
 
     def __init__(
@@ -92,6 +91,8 @@ class GeometryPrim(_SinglePrimWrapper):
         disable_stablization: bool = True,
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
     ) -> None:
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -117,7 +118,7 @@ class GeometryPrim(_SinglePrimWrapper):
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
         collision = self._backend_utils.create_tensor_from_list([collision], dtype="bool", device=self._device)
-        self._geometry_prim_view = GeometryPrimView(
+        self._geometry_prim_view = GeometryPrim(
             prim_paths_expr=prim_path,
             name=name,
             positions=position,
@@ -436,7 +437,7 @@ class GeometryPrim(_SinglePrimWrapper):
         """
         return self._geometry_prim_view.is_collision_enabled()[0]
 
-    def apply_physics_material(self, physics_material: PhysicsMaterial, weaker_than_descendants: bool = False):
+    def apply_physics_material(self, physics_material: "PhysicsMaterial", weaker_than_descendants: bool = False):
         """Used to apply physics material to the held prim and optionally its descendants.
 
         Args:
@@ -466,7 +467,7 @@ class GeometryPrim(_SinglePrimWrapper):
         )
         return
 
-    def get_applied_physics_material(self) -> PhysicsMaterial:
+    def get_applied_physics_material(self) -> "PhysicsMaterial":
         """Return the current applied physics material in case it was applied using apply_physics_material or not.
 
         Returns:

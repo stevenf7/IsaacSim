@@ -9,7 +9,8 @@
 
 import carb
 import torch
-from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.articulations import ArticulationSubset
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 
 from .motion_policy_interface import MotionPolicy
@@ -19,7 +20,7 @@ class ArticulationMotionPolicy:
     """Wrapper class for running MotionPolicy on simulated robots.
 
     Args:
-        robot_articulation (Articulation): an initialized robot Articulation object
+        robot_articulation (SingleArticulation): an initialized robot Articulation object
         motion_policy (MotionPolicy): an instance of a class that implements the MotionPolicy interface
         default_physics_dt (float): Default physics step size to use when computing actions. A MotionPolicy computes a target
             position/velocity for the next frame of the simulation using the provided physics dt to know how far in the future that will be.
@@ -33,7 +34,7 @@ class ArticulationMotionPolicy:
     """
 
     def __init__(
-        self, robot_articulation: Articulation, motion_policy: MotionPolicy, default_physics_dt: float = 1 / 60.0
+        self, robot_articulation: SingleArticulation, motion_policy: MotionPolicy, default_physics_dt: float = 1 / 60.0
     ) -> None:
 
         self.physics_dt = default_physics_dt
@@ -121,11 +122,11 @@ class ArticulationMotionPolicy:
         """
         return self._watched_joints_view
 
-    def get_robot_articulation(self) -> Articulation:
+    def get_robot_articulation(self) -> SingleArticulation:
         """Get the underlying Articulation object representing the robot.
 
         Returns:
-            Articulation: Articulation object representing the robot.
+            SingleArticulation: Articulation object representing the robot.
         """
         return self._robot_articulation
 

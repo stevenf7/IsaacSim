@@ -9,7 +9,7 @@
 from typing import Optional
 
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 
@@ -18,12 +18,12 @@ class KinematicsSolver(ArticulationKinematicsSolver):
     """Kinematics Solver for Franka robot.  This class loads a LulaKinematicsSovler object
 
     Args:
-        robot_articulation (Articulation): An initialized Articulation object representing this Franka
+        robot_articulation (SingleArticulation): An initialized Articulation object representing this Franka
         end_effector_frame_name (Optional[str]): The name of the Franka end effector.  If None, an end effector link will
             be automatically selected.  Defaults to None.
     """
 
-    def __init__(self, robot_articulation: Articulation, end_effector_frame_name: Optional[str] = None) -> None:
+    def __init__(self, robot_articulation: SingleArticulation, end_effector_frame_name: Optional[str] = None) -> None:
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
 

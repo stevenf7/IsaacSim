@@ -13,8 +13,8 @@ import carb
 import numpy as np
 import omni.kit.utils
 import omni.usd
-from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.prims import SingleArticulation
 
 
 class EsSensorReading:
@@ -24,7 +24,7 @@ class EsSensorReading:
         self.value = value
 
 
-class EffortSensor(Articulation):
+class EffortSensor(SingleArticulation):
     def __init__(
         self,
         prim_path: str,

@@ -15,8 +15,8 @@ import carb.profiler
 import numpy as np
 import omni
 import omni.kit.commands
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.utils.stage import get_current_stage, get_stage_units
 from isaacsim.robot.policy.examples.controllers import A1QPController
@@ -25,7 +25,7 @@ from isaacsim.sensors.physics import _sensor
 from isaacsim.storage.native import get_assets_root_path
 
 
-class Unitree(Articulation):
+class Unitree(SingleArticulation):
     """For unitree based quadrupeds (A1 or Go1)"""
 
     def __init__(

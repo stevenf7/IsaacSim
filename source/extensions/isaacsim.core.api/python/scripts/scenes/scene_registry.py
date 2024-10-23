@@ -6,28 +6,30 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.articulations.articulation_view import ArticulationView
 from isaacsim.core.api.materials.deformable_material import DeformableMaterial
 from isaacsim.core.api.materials.deformable_material_view import DeformableMaterialView
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.materials.particle_material_view import ParticleMaterialView
-from isaacsim.core.api.prims.base_sensor import BaseSensor
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
-from isaacsim.core.api.prims.rigid_contact_view import RigidContactView
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
-from isaacsim.core.api.prims.soft.cloth_prim_view import ClothPrimView
-from isaacsim.core.api.prims.soft.deformable_prim import DeformablePrim
-from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
-from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
-from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.robots.robot_view import RobotView
+from isaacsim.core.api.sensors.base_sensor import BaseSensor
+from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
+from isaacsim.core.prims import (
+    Articulation,
+    ClothPrim,
+    DeformablePrim,
+    GeometryPrim,
+    ParticleSystem,
+    RigidPrim,
+    SingleArticulation,
+    SingleClothPrim,
+    SingleDeformablePrim,
+    SingleGeometryPrim,
+    SingleParticleSystem,
+    SingleRigidPrim,
+    SingleXFormPrim,
+    XFormPrim,
+)
 
 
 class SceneRegistry(object):
@@ -96,17 +98,17 @@ class SceneRegistry(object):
 
     @property
     def articulated_systems(self) -> dict:
-        """Registered ``Articulation`` objects"""
+        """Registered ``SingleArticulation`` objects"""
         return self._articulated_systems
 
     @property
     def rigid_objects(self) -> dict:
-        """Registered ``RigidPrim`` objects"""
+        """Registered ``SingleRigidPrim`` objects"""
         return self._rigid_objects
 
     @property
     def rigid_prim_views(self) -> dict:
-        """Registered ``RigidPrimView`` objects"""
+        """Registered ``RigidPrim`` objects"""
         return self._rigid_prim_views
 
     @property
@@ -116,12 +118,12 @@ class SceneRegistry(object):
 
     @property
     def geometry_prim_views(self) -> dict:
-        """Registered ``GeometryPrimView`` objects"""
+        """Registered ``GeometryPrim`` objects"""
         return self._geometry_prim_views
 
     @property
     def articulated_views(self) -> dict:
-        """Registered ``ArticulationView`` objects"""
+        """Registered ``Articulation`` objects"""
         return self._articulated_views
 
     @property
@@ -136,7 +138,7 @@ class SceneRegistry(object):
 
     @property
     def xforms(self) -> dict:
-        """Registered ``XFormPrim`` objects"""
+        """Registered ``SingleXFormPrim`` objects"""
         return self._xforms
 
     @property
@@ -146,17 +148,17 @@ class SceneRegistry(object):
 
     @property
     def xform_prim_views(self) -> dict:
-        """Registered ``XFormPrimView`` objects"""
+        """Registered ``XFormPrim`` objects"""
         return self._xform_prim_views
 
     @property
     def deformable_prims(self) -> dict:
-        """Registered ``DeformablePrim`` objects"""
+        """Registered ``SingleDeformablePrim`` objects"""
         return self._deformable_prims
 
     @property
     def deformable_prim_views(self) -> dict:
-        """Registered ``DeformablePrimView`` objects"""
+        """Registered ``DeformablePrim`` objects"""
         return self._deformable_prim_views
 
     @property
@@ -171,22 +173,22 @@ class SceneRegistry(object):
 
     @property
     def cloth_prims(self) -> dict:
-        """Registered ``ClothPrim`` objects"""
+        """Registered ``SingleClothPrim`` objects"""
         return self._cloth_prims
 
     @property
     def cloth_prim_views(self) -> dict:
-        """Registered ``ClothPrimView`` objects"""
+        """Registered ``ClothPrim`` objects"""
         return self._cloth_prim_views
 
     @property
     def particle_systems(self) -> dict:
-        """Registered ``ParticleSystem`` objects"""
+        """Registered ``SingleParticleSystem`` objects"""
         return self._particle_systems
 
     @property
     def particle_system_views(self) -> dict:
-        """Registered ``ParticleSystemView`` objects"""
+        """Registered ``ParticleSystem`` objects"""
         return self._particle_system_views
 
     @property
@@ -200,22 +202,22 @@ class SceneRegistry(object):
         return self._particle_material_views
 
     # TODO: add if name exists check uniqueness
-    def add_rigid_object(self, name: str, rigid_object: RigidPrim) -> None:
-        """Register a ``RigidPrim`` (or subclass) object
+    def add_rigid_object(self, name: str, rigid_object: SingleRigidPrim) -> None:
+        """Register a ``SingleRigidPrim`` (or subclass) object
 
         Args:
             name (str): object name
-            rigid_object (RigidPrim): object
+            rigid_object (SingleRigidPrim): object
         """
         self._rigid_objects[name] = rigid_object
         return
 
-    def add_rigid_prim_view(self, name: str, rigid_prim_view: RigidPrimView) -> None:
-        """Register a ``RigidPrimView`` (or subclass) object
+    def add_rigid_prim_view(self, name: str, rigid_prim_view: RigidPrim) -> None:
+        """Register a ``RigidPrim`` (or subclass) object
 
         Args:
             name (str): object name
-            rigid_prim_view (RigidPrimView): object
+            rigid_prim_view (RigidPrim): object
         """
         self._rigid_prim_views[name] = rigid_prim_view
         return
@@ -230,38 +232,38 @@ class SceneRegistry(object):
         self._rigid_contact_views[name] = rigid_contact_view
         return
 
-    def add_articulated_system(self, name: str, articulated_system: Articulation) -> None:
-        """Register a ``Articulation`` (or subclass) object
+    def add_articulated_system(self, name: str, articulated_system: SingleArticulation) -> None:
+        """Register a ``SingleArticulation`` (or subclass) object
 
         Args:
             name (str): object name
-            articulated_system (Articulation): object
+            articulated_system (SingleArticulation): object
         """
         self._articulated_systems[name] = articulated_system
         return
 
-    def add_articulated_view(self, name: str, articulated_view: ArticulationView) -> None:
-        """Register a ``ArticulationView`` (or subclass) object
+    def add_articulated_view(self, name: str, articulated_view: Articulation) -> None:
+        """Register a ``Articulation`` (or subclass) object
 
         Args:
             name (str): object name
-            articulated_view (ArticulationView): object
+            articulated_view (Articulation): object
         """
         self._articulated_views[name] = articulated_view
         return
 
-    def add_geometry_object(self, name: str, geometry_object: GeometryPrim) -> None:
-        """Register a ``GeometryPrim`` (or subclass) object
+    def add_geometry_object(self, name: str, geometry_object: SingleGeometryPrim) -> None:
+        """Register a ``SingleGeometryPrim`` (or subclass) object
 
         Args:
             name (str): object name
-            geometry_object (GeometryPrim): object
+            geometry_object (SingleGeometryPrim): object
         """
         self._geometry_objects[name] = geometry_object
         return
 
-    def add_geometry_prim_view(self, name: str, geometry_prim_view: GeometryPrimView) -> None:
-        """Register a ``GeometryPrimView`` (or subclass) object
+    def add_geometry_prim_view(self, name: str, geometry_prim_view: GeometryPrim) -> None:
+        """Register a ``GeometryPrim`` (or subclass) object
 
         Args:
             name (str): object name
@@ -290,32 +292,32 @@ class SceneRegistry(object):
         self._robot_views[name] = robot_view
         return
 
-    def add_xform_view(self, name: str, xform_prim_view: XFormPrimView) -> None:
-        """Register a ``XFormPrimView`` (or subclass) object
+    def add_xform_view(self, name: str, xform_prim_view: XFormPrim) -> None:
+        """Register a ``XFormPrim`` (or subclass) object
 
         Args:
             name (str): object name
-            xform_prim_view (XFormPrimView): object
+            xform_prim_view (XFormPrim): object
         """
         self._xform_prim_views[name] = xform_prim_view
         return
 
-    def add_deformable(self, name: str, deformable: DeformablePrim) -> None:
-        """Register a ``DeformablePrim`` (or subclass) object
+    def add_deformable(self, name: str, deformable: SingleDeformablePrim) -> None:
+        """Register a ``SingleDeformablePrim`` (or subclass) object
 
         Args:
             name (str): object name
-            deformable (DeformablePrim): object
+            deformable (SingleDeformablePrim): object
         """
         self._deformable_prims[name] = deformable
         return
 
-    def add_deformable_view(self, name: str, deformable_prim_view: DeformablePrimView) -> None:
-        """Register a ``DeformablePrimView`` (or subclass) object
+    def add_deformable_view(self, name: str, deformable_prim_view: DeformablePrim) -> None:
+        """Register a ``DeformablePrim`` (or subclass) object
 
         Args:
             name (str): object name
-            deformable_prim_view (DeformablePrimView): object
+            deformable_prim_view (DeformablePrim): object
         """
         self._deformable_prim_views[name] = deformable_prim_view
         return
@@ -340,42 +342,42 @@ class SceneRegistry(object):
         self._deformable_material_views[name] = deformable_material_view
         return
 
-    def add_cloth(self, name: str, cloth: ClothPrim) -> None:
-        """Register a ``ClothPrim`` (or subclass) object
+    def add_cloth(self, name: str, cloth: SingleClothPrim) -> None:
+        """Register a ``SingleClothPrim`` (or subclass) object
 
         Args:
             name (str): object name
-            cloth (ClothPrim): object
+            cloth (SingleClothPrim): object
         """
         self._cloth_prims[name] = cloth
         return
 
-    def add_cloth_view(self, name: str, cloth_prim_view: ClothPrimView) -> None:
-        """Register a ``ClothPrimView`` (or subclass) object
+    def add_cloth_view(self, name: str, cloth_prim_view: ClothPrim) -> None:
+        """Register a ``ClothPrim`` (or subclass) object
 
         Args:
             name (str): object name
-            cloth_prim_view (ClothPrimView): object
+            cloth_prim_view (ClothPrim): object
         """
         self._cloth_prim_views[name] = cloth_prim_view
         return
 
-    def add_particle_system(self, name: str, particle_system: ParticleSystem) -> None:
-        """Register a ``ParticleSystem`` (or subclass) object
+    def add_particle_system(self, name: str, particle_system: SingleParticleSystem) -> None:
+        """Register a ``SingleParticleSystem`` (or subclass) object
 
         Args:
             name (str): object name
-            particle_system (ParticleSystemView): object
+            particle_system (ParticleSystem): object
         """
         self._particle_systems[name] = particle_system
         return
 
-    def add_particle_system_view(self, name: str, particle_system_view: ParticleSystemView) -> None:
-        """Register a ``ParticleSystemView`` (or subclass) object
+    def add_particle_system_view(self, name: str, particle_system_view: ParticleSystem) -> None:
+        """Register a ``ParticleSystem`` (or subclass) object
 
         Args:
             name (str): object name
-            particle_system_view (ParticleSystemView): object
+            particle_system_view (ParticleSystem): object
         """
         self._particle_system_views[name] = particle_system_view
         return
@@ -400,8 +402,8 @@ class SceneRegistry(object):
         self._particle_material_views[name] = particle_material_view
         return
 
-    def add_xform(self, name: str, xform: XFormPrim) -> None:
-        """Register a ``XFormPrim`` (or subclass) object
+    def add_xform(self, name: str, xform: SingleXFormPrim) -> None:
+        """Register a ``SingleXFormPrim`` (or subclass) object
 
         Args:
             name (str): object name
@@ -470,14 +472,14 @@ class SceneRegistry(object):
                 return
         raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
 
-    def get_object(self, name: str) -> XFormPrim:
+    def get_object(self, name: str) -> SingleXFormPrim:
         """Get a registered object by its name if exists otherwise None
 
         Args:
             name (str): object name
 
         Returns:
-            XFormPrim: the object if it exists otherwise None
+            SingleXFormPrim: the object if it exists otherwise None
 
         Example:
 

@@ -18,14 +18,12 @@ import numpy as np
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
-from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
-from isaacsim.core.api.prims.soft.cloth_prim_view import ClothPrimView
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
+from isaacsim.core.prims import ClothPrim, SingleClothPrim, SingleParticleSystem
 from isaacsim.storage.native import get_assets_root_path
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, UsdGeom
 
-# The example shows how to create and manipulate environments with particle cloth through the ClothPrimView
+# The example shows how to create and manipulate environments with particle cloth through the ClothPrim
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
@@ -76,7 +74,7 @@ class ParticleClothExample:
             radius = 0.5 * (0.6 / 5.0)
             restOffset = radius
             contactOffset = restOffset * 1.5
-            self.particle_system = ParticleSystem(
+            self.particle_system = SingleParticleSystem(
                 prim_path=str(particle_system_path),
                 simulation_owner=self.my_world.get_physics_context().prim_path,
                 rest_offset=restOffset,
@@ -88,7 +86,7 @@ class ParticleClothExample:
             # note that no particle material is applied to the particle system at this point.
             # this can be done manually via self.particle_system.apply_particle_material(self.particle_material)
             # or to pass the material to the clothPrim which binds it internally to the particle system
-            self.cloth = ClothPrim(
+            self.cloth = SingleClothPrim(
                 name="clothPrim" + str(i),
                 prim_path=str(cloth_path),
                 particle_system=self.particle_system,
@@ -97,7 +95,7 @@ class ParticleClothExample:
             self.my_world.scene.add(self.cloth)
 
         # create a view to deal with all the cloths
-        self.clothView = ClothPrimView(prim_paths_expr="/World/Env*/cloth", name="clothView1")
+        self.clothView = ClothPrim(prim_paths_expr="/World/Env*/cloth", name="clothView1")
         self.my_world.scene.add(self.clothView)
         self.my_world.reset(soft=False)
 

@@ -15,8 +15,8 @@ import carb
 import numpy as np
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.articulations import Articulation, ArticulationSubset
-from isaacsim.core.api.prims import RigidPrimView, XFormPrim
+from isaacsim.core.api.articulations import ArticulationSubset
+from isaacsim.core.prims import RigidPrim, SingleArticulation
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 from isaacsim.core.utils.stage import set_stage_units, update_stage_async
 from isaacsim.core.utils.types import ArticulationAction
@@ -696,7 +696,7 @@ class UIBuilder:
                 rb_trans = art_trans - rb_rot @ art_trans_rel_rb
 
                 move_rb_subframe_to_position(self._rigid_body, self._rb_subframe.get_selection(), rb_trans, rb_quat)
-                # XFormPrim(self._rb_subframe.get_selection()).set_world_pose(rb_trans, rb_quat)
+                # SingleXFormPrim(self._rb_subframe.get_selection()).set_world_pose(rb_trans, rb_quat)
                 self.stop_rigid_body()
 
                 await update_stage_async()
@@ -773,10 +773,10 @@ class UIBuilder:
 
             await update_stage_async()
 
-            self._articulation = Articulation(self._gripper_selection_dropdown.get_selection())
+            self._articulation = SingleArticulation(self._gripper_selection_dropdown.get_selection())
             self._articulation.initialize()
 
-            self._rigid_body = RigidPrimView(rb_prim_path)
+            self._rigid_body = RigidPrim(rb_prim_path)
             self._rigid_body.initialize()
             self._rigid_body.disable_gravities()
 

@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.base_sensor has been deprecated in favor of isaacsim.core.api.prims.base_sensor. Please update your code accordingly."
+    "omni.isaac.core.prims.base_sensor has been deprecated in favor of isaacsim.core.api.sensors.base_sensor. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.base_sensor import BaseSensor
+from isaacsim.core.api.sensors.base_sensor import BaseSensor

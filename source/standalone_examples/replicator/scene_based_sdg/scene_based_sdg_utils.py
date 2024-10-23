@@ -14,7 +14,7 @@ import numpy as np
 import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils import prims
 from isaacsim.core.utils.bounds import compute_combined_aabb, compute_obb, create_bbox_cache, get_obb_corners
 from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
@@ -71,7 +71,7 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, max_sim_st
 
     # Wrap the pallet as simulation ready with a simplified collider
     add_colliders(pallet_prim, approx_type="boundingCube")
-    pallet_rigid_prim = RigidPrim(prim_path=str(pallet_prim.GetPrimPath()))
+    pallet_rigid_prim = SingleRigidPrim(prim_path=str(pallet_prim.GetPrimPath()))
     pallet_rigid_prim.enable_rigid_body_physics()
 
     # Use the height of the pallet as a spawn base for the boxes
@@ -96,7 +96,7 @@ def simulate_falling_objects(forklift_prim, assets_root_path, config, max_sim_st
 
         # Wrap the prim as simulation ready with a simplified collider
         add_colliders(box_prim, approx_type="boundingCube")
-        box_rigid_prim = RigidPrim(prim_path=str(box_prim.GetPrimPath()))
+        box_rigid_prim = SingleRigidPrim(prim_path=str(box_prim.GetPrimPath()))
         box_rigid_prim.enable_rigid_body_physics()
 
         # Cache the rigid prim

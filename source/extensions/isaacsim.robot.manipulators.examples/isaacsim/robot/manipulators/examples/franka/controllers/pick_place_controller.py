@@ -9,7 +9,7 @@
 from typing import List, Optional
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.robot.manipulators.examples.franka.controllers.rmpflow_controller import RMPFlowController
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
@@ -20,7 +20,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
     Args:
         name (str): [description]
         gripper (ParallelGripper): [description]
-        robot_articulation (Articulation): [description]
+        robot_articulation (SingleArticulation): [description]
         end_effector_initial_height (Optional[float], optional): [description]. Defaults to None.
         events_dt (Optional[List[float]], optional): [description]. Defaults to None.
     """
@@ -29,7 +29,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
         self,
         name: str,
         gripper: ParallelGripper,
-        robot_articulation: Articulation,
+        robot_articulation: SingleArticulation,
         end_effector_initial_height: Optional[float] = None,
         events_dt: Optional[List[float]] = None,
     ) -> None:

@@ -11,15 +11,13 @@ from typing import List, Optional, Sequence, Union
 import carb
 import numpy as np
 import omni.kit.app
-from isaacsim.core.api.articulations.articulation_view import ArticulationView
-from isaacsim.core.api.controllers.articulation_controller import ArticulationController
-from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.types import ArticulationAction, JointsState
 
+from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .articulation import Articulation
 
-class Articulation(_SinglePrimWrapper):
+
+class SingleArticulation(_SinglePrimWrapper):
     """High level wrapper to deal with an articulation prim (only one articulation prim) and its attributes/properties.
 
     .. warning::
@@ -53,7 +51,7 @@ class Articulation(_SinglePrimWrapper):
     .. code-block:: python
 
         >>> import isaacsim.core.utils.stage as stage_utils
-        >>> from isaacsim.core.api.articulations import Articulation
+        >>> from isaacsim.core.prims import SingleArticulation
         >>>
         >>> usd_path = "/home/<user>/Documents/Assets/Robots/Franka/franka_alt_fingers.usd"
         >>> prim_path = "/World/envs/env_0/panda"
@@ -62,9 +60,9 @@ class Articulation(_SinglePrimWrapper):
         >>> stage_utils.add_reference_to_stage(usd_path, prim_path)
         >>>
         >>> # wrap the prim as an articulation
-        >>> prim = Articulation(prim_path=prim_path, name="franka_panda")
+        >>> prim = SingleArticulation(prim_path=prim_path, name="franka_panda")
         >>> prim
-        <isaacsim.core.api.articulations.articulation.Articulation object at 0x7fdd165bf520>
+        <isaacsim.core.prims.single_articulation.SingleArticulation object at 0x7fdd165bf520>
     """
 
     def __init__(
@@ -76,8 +74,10 @@ class Articulation(_SinglePrimWrapper):
         orientation: Optional[Sequence[float]] = None,
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
-        articulation_controller: Optional[ArticulationController] = None,
+        articulation_controller: Optional["ArticulationController"] = None,
     ) -> None:
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -102,7 +102,7 @@ class Articulation(_SinglePrimWrapper):
             scale = self._backend_utils.expand_dims(scale, 0)
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
-        self._articulation_view = ArticulationView(
+        self._articulation_view = Articulation(
             prim_paths_expr=prim_path,
             name=name,
             positions=position,
@@ -113,6 +113,8 @@ class Articulation(_SinglePrimWrapper):
         )
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
+            from isaacsim.core.api.controllers.articulation_controller import ArticulationController
+
             self._articulation_controller = ArticulationController()
         _SinglePrimWrapper.__init__(self, view=self._articulation_view)
         return
@@ -788,7 +790,7 @@ class Articulation(_SinglePrimWrapper):
             return None
         return JointsState(positions=joints_state.positions[0], velocities=joints_state.velocities[0], efforts=None)
 
-    def get_articulation_controller(self) -> ArticulationController:
+    def get_articulation_controller(self) -> "ArticulationController":
         """Get the articulation controller
 
         .. note::

@@ -9,13 +9,13 @@
 from typing import Optional, Sequence
 
 import carb
-from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path, is_prim_path_valid
 
+from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .xform_prim import XFormPrim
 
-class XFormPrim(_SinglePrimWrapper):
+
+class SingleXFormPrim(_SinglePrimWrapper):
     """Provides high level functions to deal with an Xform prim (only one Xform prim) and its attributes/properties
 
     If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
@@ -51,17 +51,17 @@ class XFormPrim(_SinglePrimWrapper):
 
     .. code-block:: python
 
-        >>> from isaacsim.core.api.prims import XFormPrim
+        >>> from isaacsim.core.prims import SingleXFormPrim
         >>>
         >>> # given the stage: /World. Get the Xform prim at /World
-        >>> prim = XFormPrim("/World")
+        >>> prim = SingleXFormPrim("/World")
         >>> prim
-        <isaacsim.core.api.prims.xform_prim.XFormPrim object at 0x7f52381547c0>
+        <isaacsim.core.prims.single_xform_prim.SingleXFormPrim object at 0x7f52381547c0>
         >>>
         >>> # create a new Xform prim at path: /World/Objects
-        >>> prim = XFormPrim("/World/Objects", name="objects")
+        >>> prim = SingleXFormPrim("/World/Objects", name="objects")
         >>> prim
-        <isaacsim.core.api.prims.xform_prim.XFormPrim object at 0x7f525c11d420>
+        <isaacsim.core.prims.single_xform_prim.SingleXFormPrim object at 0x7f525c11d420>
     """
 
     def __init__(
@@ -80,6 +80,9 @@ class XFormPrim(_SinglePrimWrapper):
         else:
             carb.log_info("Creating a new XForm prim at path {}".format(prim_path))
             self._prim = define_prim(prim_path=prim_path, prim_type="Xform")
+
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -104,7 +107,7 @@ class XFormPrim(_SinglePrimWrapper):
             scale = self._backend_utils.expand_dims(scale, 0)
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
-        self._xform_prim_view = XFormPrimView(
+        self._xform_prim_view = XFormPrim(
             prim_paths_expr=prim_path,
             name=name,
             positions=position,

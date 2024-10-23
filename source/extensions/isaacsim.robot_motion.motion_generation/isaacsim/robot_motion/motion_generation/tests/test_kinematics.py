@@ -17,9 +17,9 @@ import carb
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.world import World
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils import distance_metrics
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.utils.prims import is_prim_path_valid
@@ -79,7 +79,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
     async def _prepare_stage(self, robot):
         # Set settings to ensure deterministic behavior
@@ -177,7 +177,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
                 art_fk.set_end_effector_frame(frame)
 
                 lula_frame_pos, lula_frame_rot = art_fk.compute_end_effector_pose()
-                usd_frame_pos, usd_frame_rot = XFormPrim(robot_prim_path + "/" + frame).get_world_pose()
+                usd_frame_pos, usd_frame_rot = SingleXFormPrim(robot_prim_path + "/" + frame).get_world_pose()
 
                 trans_dists.append(distance_metrics.weighted_translational_distance(lula_frame_pos, usd_frame_pos))
                 rot_dist.append(
@@ -310,7 +310,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
         # check IK consistent with USD robot frames
         if is_prim_path_valid(robot_prim_path + "/" + frame):
-            usd_pos, usd_rot = XFormPrim(robot_prim_path + "/" + frame).get_world_pose()
+            usd_pos, usd_rot = SingleXFormPrim(robot_prim_path + "/" + frame).get_world_pose()
             trans_dist = distance_metrics.weighted_translational_distance(usd_pos, position_target)
             self.assertTrue(trans_dist < position_tolerance, str(usd_pos) + str(position_target))
             if orientation_target is not None:

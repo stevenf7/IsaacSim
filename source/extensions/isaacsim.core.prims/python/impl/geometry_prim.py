@@ -14,13 +14,12 @@ import numpy as np
 import omni.kit.app
 import torch
 import warp as wp
-from isaacsim.core.api.materials.physics_material import PhysicsMaterial
-from isaacsim.core.api.prims.rigid_contact_view import RigidContactView
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from pxr import PhysxSchema, UsdGeom, UsdPhysics, UsdShade
 
+from .xform_prim import XFormPrim
 
-class GeometryPrimView(XFormPrimView):
+
+class GeometryPrim(XFormPrim):
     """High level wrapper to deal with geom prims (one or many) as well as their attributes/properties.
 
     This class wraps all matching geom prims found at the regex provided at the ``prim_paths_expr`` argument
@@ -92,7 +91,7 @@ class GeometryPrimView(XFormPrimView):
 
         >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.cloner import GridCloner
-        >>> from isaacsim.core.api.prims import GeometryPrimView
+        >>> from isaacsim.core.prims import GeometryPrim
         >>> from pxr import UsdGeom
         >>>
         >>> env_zero_path = "/World/envs/env_0"
@@ -111,13 +110,13 @@ class GeometryPrimView(XFormPrimView):
         ... )
         >>>
         >>> # wrap the prims
-        >>> prims = GeometryPrimView(
+        >>> prims = GeometryPrim(
         ...     prim_paths_expr="/World/envs/env.*/Xform",
         ...     name="geometry_prim_view",
         ...     collisions=[True] * num_envs
         ... )
         >>> prims
-        <isaacsim.core.api.prims.geometry_prim_view.GeometryPrimView object at 0x7f372bb21630>
+        <isaacsim.core.prims.geometry_prim.GeometryPrim object at 0x7f372bb21630>
     """
 
     def __init__(
@@ -137,7 +136,7 @@ class GeometryPrimView(XFormPrimView):
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
         max_contact_count: int = 0,
     ) -> None:
-        XFormPrimView.__init__(
+        XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -180,6 +179,8 @@ class GeometryPrimView(XFormPrimView):
         self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
         self._contact_filter_prim_paths_expr = contact_filter_prim_paths_expr
         if self._track_contact_forces:
+            from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
+
             self._contact_view = RigidContactView(
                 prim_paths_expr=prim_paths_expr,
                 filter_paths_expr=contact_filter_prim_paths_expr,
@@ -872,7 +873,7 @@ class GeometryPrimView(XFormPrimView):
 
     def apply_physics_materials(
         self,
-        physics_materials: Union[PhysicsMaterial, List[PhysicsMaterial]],
+        physics_materials: Union["PhysicsMaterial", List["PhysicsMaterial"]],
         weaker_than_descendants: Optional[Union[bool, List[bool]]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
@@ -976,7 +977,7 @@ class GeometryPrimView(XFormPrimView):
 
     def get_applied_physics_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[PhysicsMaterial]:
+    ) -> List["PhysicsMaterial"]:
         """Get the applied physics material to prims in the view.
 
         Args:
@@ -1025,6 +1026,8 @@ class GeometryPrimView(XFormPrimView):
                 if material_path == "":
                     result[write_idx] = None
                 else:
+                    from isaacsim.core.api.materials.physics_material import PhysicsMaterial
+
                     self._applied_physics_materials[i] = PhysicsMaterial(prim_path=material_path)
                     result[write_idx] = self._applied_physics_materials[i]
                 write_idx += 1
@@ -1055,7 +1058,7 @@ class GeometryPrimView(XFormPrimView):
             return self._contact_view.get_net_contact_forces(indices, clone, dt)
         else:
             carb.log_warn(
-                "contact forces cannot be retrieved with this API unless the GeometryPrimView is initialized with track_contact_forces = True or a list of contact filters is provided via contact_filter_prim_paths_expr"
+                "contact forces cannot be retrieved with this API unless the GeometryPrim is initialized with track_contact_forces = True or a list of contact filters is provided via contact_filter_prim_paths_expr"
             )
             return None
 
@@ -1085,7 +1088,7 @@ class GeometryPrimView(XFormPrimView):
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
         else:
             carb.log_warn(
-                "No filter is specified for get_contact_force_matrix. Initialize the GeometryPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+                "No filter is specified for get_contact_force_matrix. Initialize the GeometryPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None
 
@@ -1131,7 +1134,7 @@ class GeometryPrimView(XFormPrimView):
             return self._contact_view.get_contact_force_data(indices, clone, dt)
         else:
             carb.log_warn(
-                "No filter is specified for get_contact_force_data. Initialize the GeometryPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+                "No filter is specified for get_contact_force_data. Initialize the GeometryPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None
 
@@ -1174,6 +1177,6 @@ class GeometryPrimView(XFormPrimView):
             return self._contact_view.get_friction_data(indices, clone, dt)
         else:
             carb.log_warn(
-                "No filter is specified for get_friction_data. Initialize the GeometryPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
+                "No filter is specified for get_friction_data. Initialize the GeometryPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None

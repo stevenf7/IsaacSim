@@ -13,13 +13,13 @@ import numpy as np
 import omni.kit.app
 import torch
 import warp as wp
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
+from .geometry_prim import GeometryPrim
 
-class SdfShapeView(GeometryPrimView):
+
+class SdfShapePrim(GeometryPrim):
     """High level functions to deal with geometry prims that provide their Signed Distance Field (SDF).
 
     This object wraps all matching mesh geometry prims found at the regex provided at the prim_paths_expr.
@@ -92,7 +92,7 @@ class SdfShapeView(GeometryPrimView):
         disable_stablization: bool = True,
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
     ) -> None:
-        GeometryPrimView.__init__(
+        GeometryPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
             name=name,
@@ -209,7 +209,7 @@ class SdfShapeView(GeometryPrimView):
             else:
                 return self._backend_utils.clone_tensor(sdf_and_gradients[indices], device=self._device)
         else:
-            carb.log_warn("Physics Simulation View is not created yet to use the SdfShapeView")
+            carb.log_warn("Physics Simulation View is not created yet to use the SdfShapePrim")
             return None
 
     def get_sdf_margins(

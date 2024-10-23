@@ -20,10 +20,8 @@ import numpy as np
 import omni.kit.commands
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleArticulation, SingleRigidPrim, SingleXFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.rotations import quat_to_euler_angles
@@ -75,7 +73,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         self.my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / physics_rate, rendering_dt=1.0 / physics_rate)
         await self.my_world.initialize_simulation_context_async()
-        self.ant = XFormPrim("/Ant")
+        self.ant = SingleXFormPrim("/Ant")
         pass
 
     async def createSimpleArticulation(self, physics_rate=60):
@@ -158,7 +156,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        art = Articulation("/Articulation")
+        art = SingleArticulation("/Articulation")
         art.initialize()
         await omni.kit.app.get_app().next_update_async()
         num_dofs = art.num_dof
@@ -202,7 +200,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        art = Articulation("/Articulation")
+        art = SingleArticulation("/Articulation")
         art.initialize()
         await omni.kit.app.get_app().next_update_async()
         num_dofs = art.num_dof
@@ -257,7 +255,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.my_world.play()
 
         await omni.kit.app.get_app().next_update_async()
-        art = Articulation("/Articulation")
+        art = SingleArticulation("/Articulation")
         art.initialize()
         await omni.kit.app.get_app().next_update_async()
         num_dofs = art.num_dof
@@ -372,7 +370,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
                 init_reading = sensor_reading
                 first = False
 
-            rigid_body = RigidPrim(self.sphere_path)
+            rigid_body = SingleRigidPrim(self.sphere_path)
             rigid_body.initialize()
             rigid_body._rigid_prim_view.apply_forces_and_torques_at_pos(
                 forces=np.array([10, 10, 10]), positions=np.array([10, 10, 10]), is_global=True
@@ -679,7 +677,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         cube = self.my_world.scene.add(DynamicCuboid(prim_path="/World/Cube", position=np.array([10, 0, 0])))
 
         xform = self.my_world.scene.add(
-            XFormPrim(prim_path="/World/Cube/xform", name="xform", translation=np.array([10, 0, 0]))
+            SingleXFormPrim(prim_path="/World/Cube/xform", name="xform", translation=np.array([10, 0, 0]))
         )
 
         result, sensor = omni.kit.commands.execute(

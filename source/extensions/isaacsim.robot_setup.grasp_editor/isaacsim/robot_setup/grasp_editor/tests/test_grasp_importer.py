@@ -13,7 +13,7 @@ import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.test
-from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
@@ -44,7 +44,7 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
         gripper_usd_path = asset_root_path + "/Isaac/Robots/Robotiq/2F-85/Robotiq_2F_85_flattened.usd"
         self._gripper_path = "/gripper"
         add_reference_to_stage(gripper_usd_path, self._gripper_path)
-        self._gripper_xform = XFormPrim(self._gripper_path)
+        self._gripper_xform = SingleXFormPrim(self._gripper_path)
         self._gripper_xform.set_world_pose(np.array([0.0, 0.2, 0.0]), np.array([0.8, 0.0, 0.2, 0.0]))
 
         fixed_joint_path = self._gripper_path + "/FixedJoint"
@@ -56,7 +56,7 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
         self._cube_path = "/cube/RubikCube"
         add_reference_to_stage(asset_root_path + "/Isaac/Props/Rubiks_Cube/rubiks_cube.usd", self._cube_path)
 
-        self._cube_xform = XFormPrim(self._cube_path)
+        self._cube_xform = SingleXFormPrim(self._cube_path)
         self._cube_xform.set_world_pose(np.array([1.0, 0.0, 0.0]))
 
         self._grasp_spec = import_grasps_from_file(self._grasp_file)
@@ -71,7 +71,7 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        XFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
+        SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
     async def tearDown(self):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:

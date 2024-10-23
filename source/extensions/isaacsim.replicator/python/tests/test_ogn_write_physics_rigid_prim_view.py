@@ -18,7 +18,7 @@ import omni.timeline
 import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.prims import RigidPrim
 from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.replicator import physics_view as physics
 
@@ -51,7 +51,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         self._cube = DynamicCuboid(prim_path=self._cube_path)
 
         await omni.kit.app.get_app().next_update_async()
-        self._rb_view = RigidPrimView(prim_paths_expr="/World/Cube", name="cube")
+        self._rb_view = RigidPrim(prim_paths_expr="/World/Cube", name="cube")
         self._my_world.scene.add(self._rb_view)
 
         await self._my_world.reset_async()

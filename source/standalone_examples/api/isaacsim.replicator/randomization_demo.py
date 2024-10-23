@@ -14,10 +14,9 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.api.objects import DynamicSphere
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
 from isaacsim.core.cloner import GridCloner
+from isaacsim.core.prims import Articulation, RigidPrim
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
 from isaacsim.storage.native import get_assets_root_path
@@ -49,8 +48,8 @@ prim_paths = cloner.generate_paths("/World/envs/env", num_envs)
 env_pos = cloner.clone(source_prim_path="/World/envs/env_0", prim_paths=prim_paths)
 
 # creates the views and set up world
-object_view = RigidPrimView(prim_paths_expr="/World/envs/*/object", name="object_view")
-franka_view = ArticulationView(prim_paths_expr="/World/envs/*/franka", name="franka_view")
+object_view = RigidPrim(prim_paths_expr="/World/envs/*/object", name="object_view")
+franka_view = Articulation("/World/envs/*/franka", name="franka_view")
 world.scene.add(object_view)
 world.scene.add(franka_view)
 world.reset()

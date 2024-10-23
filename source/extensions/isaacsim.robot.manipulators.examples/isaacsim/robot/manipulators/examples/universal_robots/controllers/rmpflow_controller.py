@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import isaacsim.robot_motion.motion_generation as mg
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 
 
 class RMPFlowController(mg.MotionPolicyController):
@@ -15,13 +15,17 @@ class RMPFlowController(mg.MotionPolicyController):
 
     Args:
         name (str): [description]
-        robot_articulation (Articulation): [description]
+        robot_articulation (SingleArticulation): [description]
         physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
         attach_gripper (bool, optional): [description]. Defaults to False.
     """
 
     def __init__(
-        self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0, attach_gripper: bool = False
+        self,
+        name: str,
+        robot_articulation: SingleArticulation,
+        physics_dt: float = 1.0 / 60.0,
+        attach_gripper: bool = False,
     ) -> None:
 
         if attach_gripper:

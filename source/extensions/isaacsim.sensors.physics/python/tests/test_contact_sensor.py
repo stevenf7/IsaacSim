@@ -24,8 +24,7 @@ import omni.kit.commands
 import omni.kit.test
 import usdrt.Sdf
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleRigidPrim, SingleXFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import add_reference_to_stage, delete_prim
 from isaacsim.sensors.physics import _sensor
@@ -169,7 +168,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         block_0_prim = add_reference_to_stage(
             prim_path="/World/block_0", usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd"
         )
-        block_0 = RigidPrim(
+        block_0 = SingleRigidPrim(
             prim_path="/World/block_0/Cube", name="block_0", position=np.array([10, 0, 5.0]), scale=np.ones(3) * 1.0
         )
         PhysxSchema.PhysxContactReportAPI.Apply(block_0.prim)
@@ -177,7 +176,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         block_1_prim = add_reference_to_stage(
             prim_path="/World/block_1", usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd"
         )
-        block_1 = RigidPrim(
+        block_1 = SingleRigidPrim(
             prim_path="/World/block_1/Cube", name="block_1", position=np.array([10, 0, 10.0]), scale=np.ones(3) * 1.0
         )
         PhysxSchema.PhysxContactReportAPI.Apply(block_1.prim)
@@ -910,7 +909,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         # create four sensors with in an Xform. The offset needed to reach the tip of the leg is (40,0,0)
         # Break this down to (20,0,0) to the xform, (20,0,0) to the sensor.
         for i in range(4):
-            xform = XFormPrim(self.leg_paths[i] + "/xform", translation=Gf.Vec3d(20, 0, 0))
+            xform = SingleXFormPrim(self.leg_paths[i] + "/xform", translation=Gf.Vec3d(20, 0, 0))
 
             result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",

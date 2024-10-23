@@ -14,7 +14,6 @@ simulation_app = SimulationApp({"headless": False})
 import carb
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from isaacsim.robot.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup

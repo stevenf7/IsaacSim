@@ -15,7 +15,7 @@ import numpy as np
 import omni
 import omni.kit.commands
 import torch
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.utils.rotations import quat_to_rot_matrix
 from isaacsim.core.utils.stage import get_current_stage
@@ -62,7 +62,9 @@ class H1FlatTerrainPolicy:
 
                 prim.GetReferences().AddReference(asset_path)
 
-        self.robot = Articulation(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
+        self.robot = SingleArticulation(
+            prim_path=self._prim_path, name=name, position=position, orientation=orientation
+        )
 
         self._dof_control_modes: List[int] = list()
 

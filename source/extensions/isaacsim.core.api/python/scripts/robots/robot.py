@@ -8,12 +8,12 @@
 #
 from typing import Optional, Sequence
 
-from isaacsim.core.api.articulations.articulation import Articulation
 from isaacsim.core.api.controllers.articulation_controller import ArticulationController
+from isaacsim.core.prims import SingleArticulation
 
 
-class Robot(Articulation):
-    """Implementation (on ``Articulation`` class) to deal with an articulation prim as a robot
+class Robot(SingleArticulation):
+    """Implementation (on ``SingleArticulation`` class) to deal with an articulation prim as a robot
 
     .. warning::
 
@@ -70,7 +70,7 @@ class Robot(Articulation):
         visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
-        Articulation.__init__(
+        SingleArticulation.__init__(
             self,
             prim_path=prim_path,
             name=name,
@@ -99,5 +99,4 @@ class Robot(Articulation):
 
             >>> prim.post_reset()
         """
-        Articulation.post_reset(self)
-        return
+        SingleArticulation.post_reset(self)

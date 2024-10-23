@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.rigid_prim_view has been deprecated in favor of isaacsim.core.api.prims.rigid_prim_view. Please update your code accordingly."
+    "omni.isaac.core.prims.rigid_prim_view.RigidPrimView has been deprecated in favor of isaacsim.core.prims.RigidPrim. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.prims import RigidPrim as RigidPrimView

@@ -17,9 +17,7 @@ import numpy as np
 import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
+from isaacsim.core.prims import GeometryPrim, RigidPrim
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -55,7 +53,7 @@ class RigidViewExample:
             )
 
         # add top box as filters to the view to receive contacts between the bottom boxes and top boxes
-        self._box_view = RigidPrimView(
+        self._box_view = RigidPrim(
             prim_paths_expr="/World/Box_*",
             name="box_view",
             positions=self._array_container(
@@ -68,7 +66,7 @@ class RigidViewExample:
             contact_filter_prim_paths_expr=["/World/TopBox_*"],
         )
         # a view just to manipulate the top boxes
-        self._top_box_view = RigidPrimView(
+        self._top_box_view = RigidPrim(
             prim_paths_expr="/World/TopBox_*",
             name="top_box_view",
             positions=self._array_container(
@@ -81,16 +79,8 @@ class RigidViewExample:
             track_contact_forces=True,
         )
 
-        # can get contact forces with non-rigid body prims such as geometry prims either via the single prim class GeometryPrim, or the view class GeometryPrimView
-        self._geom_prim = GeometryPrim(
-            prim_path="/World/defaultGroundPlane",
-            name="groundPlane",
-            collision=True,
-            track_contact_forces=True,
-            prepare_contact_sensor=True,
-            contact_filter_prim_paths_expr=["/World/Box_1", "/World/Box_2"],
-        )
-        self._geom_view = GeometryPrimView(
+        # can get contact forces with non-rigid body prims such as geometry prims
+        self._geom_view = GeometryPrim(
             prim_paths_expr="/World/defaultGroundPlane*",
             name="groundPlaneView",
             collisions=self._array_container([True]),
@@ -101,7 +91,6 @@ class RigidViewExample:
 
         self.my_world.scene.add(self._box_view)
         self.my_world.scene.add(self._top_box_view)
-        self.my_world.scene.add(self._geom_prim)
         self.my_world.scene.add(self._geom_view)
         self.my_world.reset(soft=False)
 
@@ -135,14 +124,8 @@ class RigidViewExample:
                 print("Bottom box velocities: \n", states.linear_velocities)
                 print("Top box velocities: \n", top_states.linear_velocities)
 
-                print("ground net force from GeometryPrimView : \n", self._geom_view.get_net_contact_forces(dt=1 / 60))
-                print(
-                    "ground force matrix from GeometryPrimView: \n", self._geom_view.get_contact_force_matrix(dt=1 / 60)
-                )
-
-                print("ground net force from GeometryPrim : \n", self._geom_prim.get_net_contact_forces(dt=1 / 60))
-                print("ground force matrix from GeometryPrim: \n", self._geom_prim.get_contact_force_matrix(dt=1 / 60))
-
+                print("ground net force from GeometryPrim : \n", self._geom_view.get_net_contact_forces(dt=1 / 60))
+                print("ground force matrix from GeometryPrim: \n", self._geom_view.get_contact_force_matrix(dt=1 / 60))
                 if args.test is True:
                     break
         simulation_app.close()

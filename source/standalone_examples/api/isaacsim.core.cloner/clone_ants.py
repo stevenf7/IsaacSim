@@ -16,8 +16,8 @@ import sys
 import carb
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import ArticulationView
 from isaacsim.core.cloner import GridCloner
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.storage.native import get_assets_root_path
 
@@ -50,8 +50,8 @@ cloner.clone(
     base_env_path="/World/Ants",
 )
 
-# create ArticulationView
-ants = ArticulationView(prim_paths_expr="/World/Ants/.*/torso", name="ants_view")
+# create Articulation
+ants = Articulation("/World/Ants/.*/torso", name="ants_view")
 my_world.scene.add(ants)
 
 my_world.reset()

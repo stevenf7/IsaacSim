@@ -58,8 +58,8 @@ from collections import OrderedDict
 from typing import Optional
 
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import Articulation
 from isaacsim.core.api.simulation_context import SimulationContext
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.cortex.framework.df import DfBehavior, DfLogicalState, DfNetwork
 from isaacsim.cortex.framework.tools import SteadyRate
 
@@ -127,7 +127,7 @@ class Behavior:
         self.df_behavior.reset()
 
 
-class CommandableArticulation(ABC, Articulation):
+class CommandableArticulation(ABC, SingleArticulation):
     """A commandable articulation is an articulation with a collection of commanders controlling
     the joints. These commanders should be stepped through a call to step_commanders().
     """

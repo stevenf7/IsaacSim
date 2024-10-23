@@ -10,7 +10,7 @@
 import numpy as np
 import omni.timeline
 import omni.ui as ui
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import get_prim_object_type
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, DropDown, FloatField, TextBlock
@@ -180,7 +180,7 @@ class UIBuilder:
             self._invalidate_articulation()
             return
 
-        self.articulation = Articulation(selection)
+        self.articulation = SingleArticulation(selection)
         self.articulation.initialize()
 
         self._robot_control_frame.collapsed = False
@@ -222,7 +222,7 @@ class UIBuilder:
 
         This function assumes that there is a guarantee it is called safely.
         I.e. A valid Articulation has been selected and initialized
-        and the timeline is playing.  These gurantees are given by careful UI
+        and the timeline is playing. These guarantees are given by careful UI
         programming.  The joint control frames are only visible to the user when
         these guarantees are met.
 

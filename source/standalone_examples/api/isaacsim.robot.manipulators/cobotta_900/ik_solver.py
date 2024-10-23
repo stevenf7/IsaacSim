@@ -10,14 +10,14 @@
 import os
 from typing import Optional
 
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
-    def __init__(self, robot_articulation: Articulation, end_effector_frame_name: Optional[str] = None) -> None:
+    def __init__(self, robot_articulation: SingleArticulation, end_effector_frame_name: Optional[str] = None) -> None:
         urdf_extension_path = get_extension_path_from_name("omni.isaac.urdf")
         self._kinematics = LulaKinematicsSolver(
             robot_description_path=os.path.join(os.path.dirname(__file__), "../rmpflow/robot_descriptor.yaml"),

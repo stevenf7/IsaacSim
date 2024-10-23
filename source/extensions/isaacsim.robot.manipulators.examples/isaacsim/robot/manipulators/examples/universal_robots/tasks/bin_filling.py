@@ -10,10 +10,9 @@ import random
 
 import carb
 import numpy as np
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.xform_prim import XFormPrim
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks import BaseTask
+from isaacsim.core.prims import SingleRigidPrim, SingleXFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.robot.manipulators.examples.universal_robots import UR10
@@ -78,7 +77,7 @@ class BinFilling(BaseTask):
         self._ur10_robot.gripper.set_force_limit(value=8.0e1)
         self._ur10_robot.gripper.set_torque_limit(value=10.0e0)
         self._packing_bin = scene.add(
-            RigidPrim(
+            SingleRigidPrim(
                 prim_path="/World/Scene/bin",
                 name="packing_bin",
                 position=self._bin_initial_position,
@@ -158,7 +157,7 @@ class BinFilling(BaseTask):
         add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
         self._screws.append(
             self.scene.add(
-                XFormPrim(
+                SingleXFormPrim(
                     prim_path=prim_path,
                     name="screw_{}".format(len(self._screws)),
                     translation=self._pipe_position,

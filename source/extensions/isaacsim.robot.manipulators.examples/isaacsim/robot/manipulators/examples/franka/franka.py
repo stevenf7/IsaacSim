@@ -10,8 +10,8 @@ from typing import List, Optional
 
 import carb
 import numpy as np
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
 from isaacsim.core.api.robots.robot import Robot
+from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import add_reference_to_stage, get_stage_units
 from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
@@ -96,11 +96,11 @@ class Franka(Robot):
         return
 
     @property
-    def end_effector(self) -> RigidPrim:
+    def end_effector(self) -> SingleRigidPrim:
         """[summary]
 
         Returns:
-            RigidPrim: [description]
+            SingleRigidPrim: [description]
         """
         return self._end_effector
 
@@ -116,7 +116,7 @@ class Franka(Robot):
     def initialize(self, physics_sim_view=None) -> None:
         """[summary]"""
         super().initialize(physics_sim_view)
-        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
+        self._end_effector = SingleRigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         self._end_effector.initialize(physics_sim_view)
         self._gripper.initialize(
             physics_sim_view=physics_sim_view,

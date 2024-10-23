@@ -13,31 +13,33 @@ from typing import Optional, Tuple
 import carb
 import numpy as np
 import omni.usd.commands
-from isaacsim.core.api.articulations.articulation import Articulation
-from isaacsim.core.api.articulations.articulation_view import ArticulationView
 from isaacsim.core.api.materials.deformable_material import DeformableMaterial
 from isaacsim.core.api.materials.deformable_material_view import DeformableMaterialView
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.materials.particle_material_view import ParticleMaterialView
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.objects.ground_plane import GroundPlane
-from isaacsim.core.api.prims.base_sensor import BaseSensor
-from isaacsim.core.api.prims.geometry_prim import GeometryPrim
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
-from isaacsim.core.api.prims.rigid_contact_view import RigidContactView
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
-from isaacsim.core.api.prims.rigid_prim_view import RigidPrimView
-from isaacsim.core.api.prims.soft.cloth_prim import ClothPrim
-from isaacsim.core.api.prims.soft.cloth_prim_view import ClothPrimView
-from isaacsim.core.api.prims.soft.deformable_prim import DeformablePrim
-from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
-from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
-from isaacsim.core.api.prims.xform_prim import XFormPrim
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.robots.robot_view import RobotView
 from isaacsim.core.api.scenes.scene_registry import SceneRegistry
+from isaacsim.core.api.sensors.base_sensor import BaseSensor
+from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
+from isaacsim.core.prims import (
+    Articulation,
+    ClothPrim,
+    DeformablePrim,
+    GeometryPrim,
+    ParticleSystem,
+    RigidPrim,
+    SingleArticulation,
+    SingleClothPrim,
+    SingleDeformablePrim,
+    SingleGeometryPrim,
+    SingleParticleSystem,
+    SingleRigidPrim,
+    SingleXFormPrim,
+    XFormPrim,
+)
 from isaacsim.core.utils.prims import (
     get_prim_children,
     get_prim_parent,
@@ -95,71 +97,71 @@ class Scene(object):
         """
         return get_current_stage()
 
-    def add(self, obj: XFormPrim) -> XFormPrim:
+    def add(self, obj: SingleXFormPrim) -> SingleXFormPrim:
         """Add an object to the scene registry
 
         Args:
-            obj (XFormPrim): object to be added
+            obj (SingleXFormPrim): object to be added
 
         Raises:
             Exception: The object type is not supported yet
 
         Returns:
-            XFormPrim: object
+            SingleXFormPrim: object
 
         Example:
 
         .. code-block:: python
 
-            >>> from isaacsim.core.api.prims import XFormPrimView
+            >>> from isaacsim.core.prims import XFormPrim
             >>>
-            >>> prims = XFormPrimView(prim_paths_expr="/World")
+            >>> prims = XFormPrim(prim_paths_expr="/World")
             >>> scene.add(prims)
-            <isaacsim.core.api.prims.xform_prim_view.XFormPrimView object at 0x...>
+            <isaacsim.core.prims.XFormPrim object at 0x...>
         """
         if self._scene_registry.name_exists(obj.name):
             raise Exception("Cannot add the object {} to the scene since its name is not unique".format(obj.name))
-        if isinstance(obj, RigidPrim):
+        if isinstance(obj, SingleRigidPrim):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
-        elif isinstance(obj, RigidPrimView):
+        elif isinstance(obj, RigidPrim):
             self._scene_registry.add_rigid_prim_view(name=obj.name, rigid_prim_view=obj)
         elif isinstance(obj, RigidContactView):
             self._scene_registry.add_rigid_contact_view(name=obj.name, rigid_contact_view=obj)
-        elif isinstance(obj, GeometryPrim):
+        elif isinstance(obj, SingleGeometryPrim):
             self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
         elif isinstance(obj, GroundPlane):
             self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
-        elif isinstance(obj, GeometryPrimView):
+        elif isinstance(obj, GeometryPrim):
             self._scene_registry.add_geometry_prim_view(name=obj.name, geometry_prim_view=obj)
         elif isinstance(obj, Robot):
             self._scene_registry.add_robot(name=obj.name, robot=obj)
         elif isinstance(obj, RobotView):
             self._scene_registry.add_robot_view(name=obj.name, robot_view=obj)
-        elif isinstance(obj, Articulation):
+        elif isinstance(obj, SingleArticulation):
             self._scene_registry.add_articulated_system(name=obj.name, articulated_system=obj)
-        elif isinstance(obj, ArticulationView):
+        elif isinstance(obj, Articulation):
             self._scene_registry.add_articulated_view(name=obj.name, articulated_view=obj)
         elif isinstance(obj, BaseSensor):
             self._scene_registry.add_sensor(name=obj.name, sensor=obj)
-        elif isinstance(obj, XFormPrim):
+        elif isinstance(obj, SingleXFormPrim):
             self._scene_registry.add_xform(name=obj.name, xform=obj)
-        elif isinstance(obj, XFormPrimView):
+        elif isinstance(obj, XFormPrim):
             self._scene_registry.add_xform_view(name=obj.name, xform_prim_view=obj)
-        elif isinstance(obj, ClothPrim):
+        elif isinstance(obj, SingleClothPrim):
             self._scene_registry.add_cloth(name=obj.name, cloth=obj)
-        elif isinstance(obj, ClothPrimView):
+        elif isinstance(obj, ClothPrim):
             self._scene_registry.add_cloth_view(name=obj.name, cloth_prim_view=obj)
-        elif isinstance(obj, ParticleSystem):
+        elif isinstance(obj, SingleParticleSystem):
             self._scene_registry.add_particle_system(name=obj.name, particle_system=obj)
-        elif isinstance(obj, ParticleSystemView):
+        elif isinstance(obj, ParticleSystem):
             self._scene_registry.add_particle_system_view(name=obj.name, particle_system_view=obj)
         elif isinstance(obj, ParticleMaterial):
             self._scene_registry.add_particle_material(name=obj.name, particle_material=obj)
         elif isinstance(obj, ParticleMaterialView):
             self._scene_registry.add_particle_material_view(name=obj.name, particle_material_view=obj)
-        elif isinstance(obj, DeformablePrim):
+        elif isinstance(obj, SingleDeformablePrim):
             self._scene_registry.add_deformable(name=obj.name, deformable=obj)
-        elif isinstance(obj, DeformablePrimView):
+        elif isinstance(obj, DeformablePrim):
             self._scene_registry.add_deformable_view(name=obj.name, deformable_prim_view=obj)
         elif isinstance(obj, DeformableMaterial):
             self._scene_registry.add_deformable_material(name=obj.name, deformable_material=obj)
@@ -423,7 +425,7 @@ class Scene(object):
         del prim_object
         return
 
-    def get_object(self, name: str) -> XFormPrim:
+    def get_object(self, name: str) -> SingleXFormPrim:
         """Get a registered object by its name if exists otherwise None
 
         .. note::
@@ -434,7 +436,7 @@ class Scene(object):
             name str: object name
 
         Returns:
-            XFormPrim: object if it exists otherwise None
+            SingleXFormPrim: object if it exists otherwise None
 
         Example:
 

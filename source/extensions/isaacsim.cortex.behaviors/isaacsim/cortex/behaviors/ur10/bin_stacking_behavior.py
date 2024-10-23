@@ -12,7 +12,7 @@ import time
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 import omni
-from isaacsim.core.api.prims.xform_prim import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.math import normalized
 from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.cortex.framework.df import (
@@ -35,7 +35,7 @@ from isaacsim.cortex.framework.obstacle_monitor_context import ObstacleMonitor, 
 class BinState:
     def __init__(self, bin_obj):
         self.bin_obj = bin_obj
-        self.bin_base = XFormPrim(self.bin_obj.prim_path + "/Collision/Cube_03")
+        self.bin_base = SingleXFormPrim(self.bin_obj.prim_path + "/Collision/Cube_03")
         self.grasp_T = None
         self.is_grasp_reached = None
         self.is_attached = None

@@ -10,12 +10,12 @@
 import os
 
 import isaacsim.robot_motion.motion_generation as mg
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 
 
 class RMPFlowController(mg.MotionPolicyController):
-    def __init__(self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0) -> None:
+    def __init__(self, name: str, robot_articulation: SingleArticulation, physics_dt: float = 1.0 / 60.0) -> None:
         self.rmpflow = mg.lula.motion_policies.RmpFlow(
             robot_description_path=os.path.join(os.path.dirname(__file__), "../rmpflow/robot_descriptor.yaml"),
             rmpflow_config_path=os.path.join(os.path.dirname(__file__), "../rmpflow/denso_rmpflow_common.yaml"),

@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.articulations.articulation_view has been deprecated in favor of isaacsim.core.api.articulations.articulation_view. Please update your code accordingly."
+    "omni.isaac.core.articulations.articulation_view.ArticulationView has been deprecated in favor of isaacsim.core.prims.Articulation. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.articulations.articulation_view import ArticulationView
+from isaacsim.core.prims import Articulation as ArticulationView

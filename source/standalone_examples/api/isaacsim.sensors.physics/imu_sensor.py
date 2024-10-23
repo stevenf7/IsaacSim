@@ -16,7 +16,7 @@ import sys
 import carb
 import numpy as np
 from isaacsim.core.api import World
-from isaacsim.core.api.articulations import Articulation
+from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
@@ -35,9 +35,7 @@ if assets_root_path is None:
 asset_path = assets_root_path + "/Isaac/Robots/Carter/nova_carter_sensors.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
 
-my_carter = my_world.scene.add(
-    Articulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
-)
+my_carter = my_world.scene.add(Articulation("/World/Carter", name="my_carter", positions=np.array([[0, 0.0, 0.5]])))
 wheel_dof_names = ["joint_wheel_left", "joint_wheel_right"]
 
 my_controller = DifferentialController(name="simple_control", wheel_radius=0.04295, wheel_base=0.4132)

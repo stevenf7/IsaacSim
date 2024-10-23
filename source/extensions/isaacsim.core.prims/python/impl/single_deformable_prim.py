@@ -7,37 +7,28 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import List, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 import carb
-import isaacsim.core.utils.deformable_mesh_utils as deformableMeshUtils
 import numpy as np
-
-# omniverse
-import omni
 import torch
-from isaacsim.core.api.materials.deformable_material import DeformableMaterial
-from isaacsim.core.api.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
-
-# isaac.core.soft
-from isaacsim.core.api.prims.xform_prim import XFormPrim
-
-# isaac-core
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.utils.types import DynamicState
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics, UsdShade
 
+from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .deformable_prim import DeformablePrim
+from .single_xform_prim import SingleXFormPrim
 
-class DeformablePrim(_SinglePrimWrapper):
+
+class SingleDeformablePrim(_SinglePrimWrapper):
     """Deformable primitive object provide functionalities to create and control deformable objects"""
 
     def __init__(
         self,
         prim_path: str,
-        deformable_material: Optional[DeformableMaterial] = None,
+        deformable_material: Optional["DeformableMaterial"] = None,
         name: Optional[str] = "deformable",
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
@@ -97,6 +88,9 @@ class DeformablePrim(_SinglePrimWrapper):
         self._stage = get_current_stage()
         self._prim = self._stage.GetPrimAtPath(prim_path)
         self._mesh = UsdGeom.Mesh.Get(self._stage, prim_path)
+
+        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
@@ -175,7 +169,7 @@ class DeformablePrim(_SinglePrimWrapper):
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
 
-        self._deformable_prim_view = DeformablePrimView(
+        self._deformable_prim_view = DeformablePrim(
             prim_paths_expr=prim_path,
             name=name,
             positions=position,
@@ -242,10 +236,10 @@ class DeformablePrim(_SinglePrimWrapper):
             self._prim.GetAttribute("points").Get(), dtype="float32", device=self._device
         )
 
-    def apply_deformable_material(self, deformable_materials: DeformableMaterial) -> None:
+    def apply_deformable_material(self, deformable_materials: "DeformableMaterial") -> None:
         self._deformable_prim_view.apply_deformable_materials(deformable_materials)
 
-    def get_applied_deformable_material(self) -> DeformableMaterial:
+    def get_applied_deformable_material(self) -> "DeformableMaterial":
         return self._deformable_prim_view.get_applied_deformable_materials()[0]
 
     """

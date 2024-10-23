@@ -15,8 +15,7 @@ import numpy as np
 import omni.kit.test
 import torch
 from isaacsim.core.api import World
-from isaacsim.core.api.prims.soft.particle_system import ParticleSystem
-from isaacsim.core.api.prims.soft.particle_system_view import ParticleSystemView
+from isaacsim.core.prims import ParticleSystem, SingleParticleSystem
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
 
@@ -51,7 +50,7 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
         contactOffset = restOffset * 1.5
 
         for i in range(self.num_envs):
-            self.particle_system = ParticleSystem(
+            self.particle_system = SingleParticleSystem(
                 prim_path="/World/particleSystem_" + str(i),
                 simulation_owner=self.my_world.get_physics_context().prim_path,
                 rest_offset=restOffset,
@@ -62,7 +61,7 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
             )
 
         # create a view to deal with all the cloths
-        self.particle_system_view = ParticleSystemView(prim_paths_expr="/World/particleSystem_*")
+        self.particle_system_view = ParticleSystem(prim_paths_expr="/World/particleSystem_*")
         self.my_world.scene.add(self.particle_system_view)
         await update_stage_async()
 

@@ -12,7 +12,7 @@ import carb
 import numpy as np
 import omni.kit.commands
 import omni.timeline
-from isaacsim.core.api.prims import XFormPrim
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 from isaacsim.core.utils.prims import (
     delete_prim,
@@ -360,14 +360,14 @@ class RobotAssembler:
         if base_mount_frame == "":
             base_mount_path = base_path + "/assembler_mount_frame"
             base_mount_path = find_unique_string_name(base_mount_path, lambda x: not is_prim_path_valid(x))
-            XFormPrim(base_mount_path, translation=np.array([0, 0, 0]))
+            SingleXFormPrim(base_mount_path, translation=np.array([0, 0, 0]))
         else:
             base_mount_path = base_path + base_mount_frame
 
         if attach_mount_frame == "":
             attach_mount_path = attach_path + "/assembler_mount_frame"
             attach_mount_path = find_unique_string_name(attach_mount_path, lambda x: not is_prim_path_valid(x))
-            XFormPrim(attach_mount_path, translation=np.array([0, 0, 0]))
+            SingleXFormPrim(attach_mount_path, translation=np.array([0, 0, 0]))
         else:
             attach_mount_path = attach_path + attach_mount_frame
 
@@ -550,7 +550,7 @@ class RobotAssembler:
     @staticmethod
     def _move_obj_b_to_local_pos(base_mount_path, attach_path, attach_mount_path, rel_offset, rel_orient):
         # Get the position of base_mount_path as `a`
-        a_trans, a_orient = XFormPrim(base_mount_path).get_world_pose()
+        a_trans, a_orient = SingleXFormPrim(base_mount_path).get_world_pose()
 
         a_rot = quats_to_rot_matrices(a_orient)
         rel_rot = quats_to_rot_matrices(rel_orient)
@@ -569,14 +569,14 @@ class RobotAssembler:
         # t_bc denotes the translation that brings b to c
         # r_bc rotates from b to c
 
-        t_bc, q_bc = XFormPrim(attach_mount_path).get_local_pose()
+        t_bc, q_bc = SingleXFormPrim(attach_mount_path).get_local_pose()
         r_bc = quats_to_rot_matrices(q_bc)
 
         b_rot = c_rot @ r_bc.T
         b_trans = c_trans - b_rot @ t_bc
         b_orient = rot_matrices_to_quats(b_rot)
 
-        XFormPrim(attach_path).set_world_pose(b_trans, b_orient)
+        SingleXFormPrim(attach_path).set_world_pose(b_trans, b_orient)
 
         # These should be roughly equal
-        # print(c_trans,c_quat, XFormPrim(attach_mount_path).get_world_pose())
+        # print(c_trans,c_quat, SingleXFormPrim(attach_mount_path).get_world_pose())

@@ -12,7 +12,7 @@ import omni.kit.test
 from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.api.prims.xform_prim_view import XFormPrimView
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
 
 # NOTE:
@@ -41,16 +41,16 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         define_prim(prim_path="/World/Frame_1/Target")
         define_prim(prim_path="/World/Frame_2/Target")
         define_prim(prim_path="/World/Frame_3/Target")
-        self._frankas_view = XFormPrimView(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
-        self._targets_view = XFormPrimView(prim_paths_expr="/World/Frame_[1-3]/Target", name="targets_view")
-        self._frames_view = XFormPrimView(prim_paths_expr="/World/Frame_[1-3]", name="frames_view")
+        self._frankas_view = XFormPrim(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
+        self._targets_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]/Target", name="targets_view")
+        self._frames_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]", name="frames_view")
         pass
 
     async def tearDown(self):
         self._my_world.clear_instance()
 
     async def test_list_of_regular_exprs(self):
-        view = XFormPrimView(prim_paths_expr=["/World/Franka_[1-2]", "/World/Frame_*"], name="random_view")
+        view = XFormPrim(prim_paths_expr=["/World/Franka_[1-2]", "/World/Frame_*"], name="random_view")
         self.assertTrue(view.count == 5)
 
     async def test_world_poses(self):
@@ -106,7 +106,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
 
     async def test_local_on_init(self):
         initial_translations = np.array([[0, 0, 0], [0, 10, 5]])
-        view = XFormPrimView(
+        view = XFormPrim(
             prim_paths_expr="/World/Franka_[1-2]", name="frankas_view_2", translations=initial_translations
         )
         current_translations, current_orientations = view.get_local_poses()
@@ -116,7 +116,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
     async def test_visibilities(self):
         prim_paths = "/World/Franka_[1-2]"
         visibilities = np.array([False, True])
-        view = XFormPrimView(prim_paths_expr=prim_paths, visibilities=visibilities)
+        view = XFormPrim(prim_paths_expr=prim_paths, visibilities=visibilities)
         for i in range(len(view.prim_paths)):
             imageable = UsdGeom.Imageable(view.prims[i])
             visibility_attr = imageable.GetVisibilityAttr().Get()

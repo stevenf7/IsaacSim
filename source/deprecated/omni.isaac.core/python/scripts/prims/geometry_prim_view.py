@@ -10,8 +10,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.geometry_prim_view has been deprecated in favor of isaacsim.core.api.prims.geometry_prim_view. Please update your code accordingly."
+    "omni.isaac.core.prims.geometry_prim_view.GeometryPrimView has been deprecated in favor of isaacsim.core.prims.GeometryPrim Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.geometry_prim_view import GeometryPrimView
+from isaacsim.core.prims import GeometryPrim as GeometryPrimView

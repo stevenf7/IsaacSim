@@ -12,7 +12,7 @@ import omni.graph.core as og
 import omni.kit.test
 import usdrt.Sdf
 from isaacsim.core.api import World
-from isaacsim.core.api.prims import RigidPrim
+from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
@@ -108,7 +108,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_forklift_forward(self):
-        body_prim = RigidPrim("/SM_Forklift_C01_01/body")
+        body_prim = SingleRigidPrim("/SM_Forklift_C01_01/body")
 
         og.Controller.attribute(self.graph_path + "/ArticulationController.inputs:velocityCommand").set([5.0, 5.0])
 
@@ -129,7 +129,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_reverse(self):
-        body_prim = RigidPrim("/SM_Forklift_C01_01/body")
+        body_prim = SingleRigidPrim("/SM_Forklift_C01_01/body")
 
         og.Controller.attribute(self.graph_path + "/ArticulationController.inputs:velocityCommand").set([-5.0, -5.0])
 
@@ -150,7 +150,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_reverse_turn(self):
-        body_prim = RigidPrim("/SM_Forklift_C01_01/body")
+        body_prim = SingleRigidPrim("/SM_Forklift_C01_01/body")
 
         og.Controller.attribute(self.graph_path + "/ArticulationController.inputs:velocityCommand").set([-5.0, -5.0])
         og.Controller.attribute(self.graph_path + "/SteeringAngle.inputs:value").set(20.0)
@@ -172,7 +172,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_lift(self):
-        lift_prim = RigidPrim("/SM_Forklift_C01_01/lift")
+        lift_prim = SingleRigidPrim("/SM_Forklift_C01_01/lift")
 
         og.Controller.attribute(self.graph_path + "/LiftPosition.inputs:value").set(1.0)
 

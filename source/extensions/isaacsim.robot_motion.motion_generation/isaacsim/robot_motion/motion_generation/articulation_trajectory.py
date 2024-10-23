@@ -10,7 +10,8 @@ from typing import List
 
 import carb
 import numpy as np
-from isaacsim.core.api.articulations import Articulation, ArticulationSubset
+from isaacsim.core.api.articulations import ArticulationSubset
+from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction
 
 from .trajectory import Trajectory
@@ -20,12 +21,12 @@ class ArticulationTrajectory:
     """Wrapper class which takes in a Trajectory object and converts the output to discrete ArticulationActions that may be sent to the provided robot Articulation.
 
     Args:
-        robot_articulation (Articulation): Initialized robot Articulation object representing the simulated USD robot
+        robot_articulation (SingleArticulation): Initialized robot Articulation object representing the simulated USD robot
         trajectory (Trajectory): An instance of a class that implements the Trajectory interface.
         physics_dt (float): Duration of a physics step in Isaac Sim (typically 1/60 s).
     """
 
-    def __init__(self, robot_articulation: Articulation, trajectory: Trajectory, physics_dt: float) -> None:
+    def __init__(self, robot_articulation: SingleArticulation, trajectory: Trajectory, physics_dt: float) -> None:
         self._articulation = robot_articulation
         self._trajectory = trajectory
         self._physics_dt = physics_dt
@@ -88,11 +89,11 @@ class ArticulationTrajectory:
         """
         return self._active_joints_view
 
-    def get_robot_articulation(self) -> Articulation:
+    def get_robot_articulation(self) -> SingleArticulation:
         """Get the robot Articulation
 
         Returns:
-            Articulation: Articulation object describing the robot.
+            SingleArticulation: Articulation object describing the robot.
         """
         return self._articulation
 

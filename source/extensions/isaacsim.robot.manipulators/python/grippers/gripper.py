@@ -9,11 +9,11 @@
 from abc import abstractmethod
 
 import omni.kit.app
-from isaacsim.core.api.prims.rigid_prim import RigidPrim
+from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.types import ArticulationAction
 
 
-class Gripper(RigidPrim):
+class Gripper(SingleRigidPrim):
     """Provides high level functions to set/ get properties and actions of a gripper.
 
     Args:
@@ -21,7 +21,7 @@ class Gripper(RigidPrim):
     """
 
     def __init__(self, end_effector_prim_path: str) -> None:
-        RigidPrim.__init__(self, prim_path=end_effector_prim_path, name="gripper")
+        SingleRigidPrim.__init__(self, prim_path=end_effector_prim_path, name="gripper")
         self._end_effector_prim_path = end_effector_prim_path
         self._default_state = None
         return
@@ -34,7 +34,7 @@ class Gripper(RigidPrim):
         Args:
             physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
         """
-        RigidPrim.initialize(self, physics_sim_view=physics_sim_view)
+        SingleRigidPrim.initialize(self, physics_sim_view=physics_sim_view)
         return
 
     @abstractmethod

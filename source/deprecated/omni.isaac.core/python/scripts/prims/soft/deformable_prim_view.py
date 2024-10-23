@@ -10,8 +10,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.prims.soft.deformable_prim_view has been deprecated in favor of isaacsim.core.api.prims.soft.deformable_prim_view. Please update your code accordingly."
+    "omni.isaac.core.prims.soft.deformable_prim_view.DeformablePrimView has been deprecated in favor of isaacsim.core.prims.DeformablePrim. Please update your code accordingly."
 )
 
 
-from isaacsim.core.api.prims.soft.deformable_prim_view import DeformablePrimView
+from isaacsim.core.prims import DeformablePrim as DeformablePrimView
