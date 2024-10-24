@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "3.0.0"
+version = "3.0.1"
 category = "Simulation"
 authors = ["Isaac Sim team"]
 repository="https://gitlab-master.nvidia.com/Isaac/omni-isaacsim-schema/-/tree/isaacsim"

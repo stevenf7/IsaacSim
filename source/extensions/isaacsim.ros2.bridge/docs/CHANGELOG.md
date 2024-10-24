@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.2] - 2024-10-24
+### Changed
+- Updated dependencies and imports after renaming
+
 
 ## [3.1.1] - 2024-09-28
 ### Fixed

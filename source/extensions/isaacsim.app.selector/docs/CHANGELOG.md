@@ -1,4 +1,8 @@
 # Changelog
+## [2.8.4] - 2024-10-24
+### Changed
+- Updated dependencies and imports after renaming
+
 
 ## [3.0.0] - 2024-10-23
 ### Changed

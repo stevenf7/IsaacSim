@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.9"
+version = "0.1.10"
 category = "Simulation"
 title = "Articulation Inspector"
 description = "This extension can inspect and modify the properties of an articulation."
@@ -16,10 +16,8 @@ icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
 
-
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by omni.physx.inspector"
-
 
 [dependencies]
 "omni.physx" = {}
@@ -29,4 +27,3 @@ warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by omni.physx.in
 
 [[python.module]]
 name = "omni.isaac.articulation_inspector"
-
