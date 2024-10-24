@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-10-24
+### Fixed
+- fabric utils to be compatible with 1.4.0
+
 ## [2.0.0] - 2024-10-08
 ### Changed
 - Extension  renamed to [new extension name].
