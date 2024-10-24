@@ -304,9 +304,11 @@ public:
                 omni::core::steal(new HandTrackingImpl()).as<omni::kit::xr::openxr::IOpenXRComponent_v1>();
 
             m_component = component;
-            carb::getCachedInterface<omni::kit::xr::openxr::IOpenXRExtension_v1>()
-                ->getComponentRegistry()
-                ->registerOpenXRComponent(component);
+            auto* cached_interface = carb::getCachedInterface<omni::kit::xr::openxr::IOpenXRExtension_v1>();
+            if (cached_interface)
+            {
+                cached_interface->getComponentRegistry()->registerOpenXRComponent(component);
+            }
         }
         catch (...)
         {

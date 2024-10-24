@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2024-10-24
+### Fixed
+- Specify kitxr::openxr ext dep and fix crash if dep is missing
+
 ## [0.2.0] - 2024-10-17
 ### Added
 - v.0.2.0 Hand tracking python API
