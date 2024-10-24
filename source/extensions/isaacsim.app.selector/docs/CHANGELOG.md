@@ -1,7 +1,11 @@
 # Changelog
 
+## [3.0.0] - 2024-10-23
+### Changed
+- Rename to isaacsim.app.selector
+
 ## [2.8.3] - 2024-09-23
-### Changes
+### Changed
 - Update dependency omni.isaac.version to isaacsim.core.version
 
 ## [2.8.2] - 2024-09-02
