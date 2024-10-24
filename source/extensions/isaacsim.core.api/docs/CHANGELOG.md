@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.0] - 2024-10-24
+### Changed
+- Updated isaacsim.core.api to support live sync with Isaac Lab.
+
 ## [4.0.1] - 2024-10-03
 ### Changed
 - Updated omni.isaac.version dependency to isaacsim.core.version
