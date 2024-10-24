@@ -1,12 +1,16 @@
 # Changelog
 
+## [2.0.2] - 2024-10-24
+### Fixed
+- Backend conversion error when creating prims introduced by view classes replacement
+
 ## [2.0.1] - 2024-10-24
 ### Fixed
-- fabric utils to be compatible with 1.4.0
+- Fabric utils to be compatible with 1.4.0
 
 ## [2.0.0] - 2024-10-08
 ### Changed
-- Extension  renamed to [new extension name].
+- Extension renamed to isaacsim.core.utils.
 
 ## [1.0.1] - 2024-03-07
 ### Changed

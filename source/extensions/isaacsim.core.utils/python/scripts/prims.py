@@ -719,10 +719,23 @@ def create_prim(
     if semantic_label is not None:
         add_update_semantics(prim, semantic_label, semantic_type)
     # apply the transformations
-    position = None if position is None else np.array([position])
-    translation = None if translation is None else np.array([translation])
-    orientation = None if orientation is None else np.array([orientation])
-    scale = None if scale is None else np.array([scale])
+    from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+
+    if SimulationContext.instance() is None:
+        import isaacsim.core.utils.numpy as backend_utils
+
+        device = "cpu"
+    else:
+        backend_utils = SimulationContext.instance().backend_utils
+        device = SimulationContext.instance().device
+    if position is not None:
+        position = backend_utils.expand_dims(backend_utils.convert(position, device), 0)
+    if translation is not None:
+        translation = backend_utils.expand_dims(backend_utils.convert(translation, device), 0)
+    if orientation is not None:
+        orientation = backend_utils.expand_dims(backend_utils.convert(orientation, device), 0)
+    if scale is not None:
+        scale = backend_utils.expand_dims(backend_utils.convert(scale, device), 0)
     XFormPrim(prim_path, positions=position, translations=translation, orientations=orientation, scales=scale)
 
     return prim
