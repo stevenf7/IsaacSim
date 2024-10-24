@@ -13,8 +13,8 @@ import warp as wp
 def set_view_to_fabric_array(
     fabric_to_view: wp.fabricarray(dtype=wp.uint32), view_to_fabric: wp.array(ndim=1, dtype=wp.uint32)
 ):
-    fabic_idx = wp.tid()
-    view_idx = fabric_to_view[fabic_idx]
+    fabic_idx = int(wp.tid())
+    view_idx = int(fabric_to_view[fabic_idx])
     view_to_fabric[view_idx] = wp.uint32(fabic_idx)
 
 
@@ -26,9 +26,9 @@ def set_vec3d_array(
     new_vals: wp.array(ndim=2),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
 ):
-    i = wp.tid()
-    view_idx = view_indices[i]
-    fabric_idx = view_to_fabric[view_idx]
+    i = int(wp.tid())
+    view_idx = int(view_indices[i])
+    fabric_idx = int(view_to_fabric[view_idx])
     new_val = new_vals[i]
     fabric_vals[fabric_idx] = wp.vec3d(wp.float64(new_val[0]), wp.float64(new_val[1]), wp.float64(new_val[2]))
 
@@ -41,9 +41,9 @@ def get_vec3d_array(
     result: wp.array(ndim=2, dtype=wp.float32),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
 ):
-    i = wp.tid()
-    view_idx = view_indices[i]
-    fabric_idx = view_to_fabric[view_idx]
+    i = int(wp.tid())
+    view_idx = int(view_indices[i])
+    fabric_idx = int(view_to_fabric[view_idx])
     val = fabric_vals[fabric_idx]
     result[view_idx, 0] = wp.float32(val[0])
     result[view_idx, 1] = wp.float32(val[1])
@@ -58,9 +58,9 @@ def set_quatf_array(
     new_vals: wp.array(ndim=2),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
 ):
-    i = wp.tid()
-    view_idx = view_indices[i]
-    fabric_idx = view_to_fabric[view_idx]
+    i = int(wp.tid())
+    view_idx = int(view_indices[i])
+    fabric_idx = int(view_to_fabric[view_idx])
     new_val = new_vals[i]
     fabric_vals[fabric_idx] = wp.quatf(
         wp.float32(new_val[1]), wp.float32(new_val[2]), wp.float32(new_val[3]), wp.float32(new_val[0])
@@ -75,9 +75,9 @@ def get_quatf_array(
     result: wp.array(ndim=2, dtype=wp.float32),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
 ):
-    i = wp.tid()
-    view_idx = view_indices[i]
-    fabric_idx = view_to_fabric[view_idx]
+    i = int(wp.tid())
+    view_idx = int(view_indices[i])
+    fabric_idx = int(view_to_fabric[view_idx])
     val = fabric_vals[fabric_idx]
     result[view_idx, 0] = val[3]
     result[view_idx, 1] = val[0]
@@ -87,5 +87,5 @@ def get_quatf_array(
 
 @wp.kernel(enable_backward=False)
 def arange_k(a: wp.array(dtype=wp.uint32)):
-    tid = wp.uint32(wp.tid())
-    a[tid] = tid
+    tid = int(wp.tid())
+    a[tid] = wp.uint32(tid)
