@@ -145,7 +145,9 @@ class PhysicsContext(object):
                 substeps = None
             if "dt" in sim_params.keys():
                 self.set_physics_dt(dt=sim_params["dt"], substeps=substeps)
-                get_current_stage().SetTimeCodesPerSecond(1 / sim_params["dt"])
+                stage = get_current_stage()
+                with Usd.EditContext(stage, Usd.EditTarget(stage.GetRootLayer())):
+                    stage.SetTimeCodesPerSecond(1 / sim_params["dt"])
 
             if "use_gpu_pipeline" in sim_params.keys():
                 self._carb_settings.set_bool("/physics/suppressReadback", sim_params["use_gpu_pipeline"])

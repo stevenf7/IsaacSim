@@ -313,7 +313,9 @@ class Cloner:
         # We invert the collision group filters for more efficient collision filtering across environments
         physx_scene.CreateInvertCollisionGroupFilterAttr().Set(True)
 
-        collision_scope = UsdGeom.Scope.Define(self._stage, collision_root_path)
+        # Make sure we create the collision_scope in the RootLayer since the edit target may be a live layer in the case of Live Sync.
+        with Usd.EditContext(self._stage, Usd.EditTarget(self._stage.GetRootLayer())):
+            collision_scope = UsdGeom.Scope.Define(self._stage, collision_root_path)
 
         with Sdf.ChangeBlock():
             if len(global_paths) > 0:
