@@ -34,7 +34,7 @@ from .settings import (
 from .start_app import start_app
 
 CURRENT_PATH = Path(__file__).parent
-ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("icons")
+ICON_PATH = CURRENT_PATH.parent.parent.parent.joinpath("icons")
 
 GRAY = 0xFF4A4A4A
 LIGHT_GRAY = 0xFFA8A8A8

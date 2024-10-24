@@ -18,4 +18,4 @@ toggleable = false
 "isaacsim.core.version" = {}
 
 [[python.module]]
-name = "omni.isaac.app.selector"
+name = "isaacsim.app.selector"
