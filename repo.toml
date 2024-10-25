@@ -857,13 +857,15 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "isaacsim.asset.exporter.urdf",
     "omni.isaac.*",
+    "omni.exporter.urdf",
     "isaacsim.*",
     "omni.kit.loop-isaac",
     "omni.pip.cloud",
     "omni.pip.compute",
     "omni.usd.schema.isaac",
+    "omni.kit.property.isaac",
+    "omni.replicator.isaac",
 ]
 exts.exclude = ["isaacsim.util.internal"]
 
