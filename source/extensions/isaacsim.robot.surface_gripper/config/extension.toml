@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
@@ -15,6 +15,7 @@ readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
+writeTarget.platform = true
 
 [dependencies]
 "omni.isaac.dynamic_control" = {}

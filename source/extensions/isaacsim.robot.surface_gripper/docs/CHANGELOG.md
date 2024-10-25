@@ -1,8 +1,12 @@
 # Changelog
+
+## [2.0.3] - 2024-10-24
+### Fixed
+- Make extension OS specific
+
 ## [2.0.2] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [2.0.1] - 2024-10-14
 ### Fixed
