@@ -1,4 +1,8 @@
 # Changelog
+## [13.0.1] - 2024-10-24
+### Changed
+- Updated dependencies and imports after renaming
+
 
 ## [13.0.0] - 2024-09-24
 ### Deprecated
