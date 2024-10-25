@@ -2,9 +2,6 @@
 ## [2.0.2] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
-
-## [2.0.2] - 2024-10-24
 ### Fixed
 - Backend conversion error when creating prims introduced by view classes replacement
 
