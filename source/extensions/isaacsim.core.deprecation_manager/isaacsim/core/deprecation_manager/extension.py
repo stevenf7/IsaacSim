@@ -52,6 +52,7 @@ class Extension(omni.ext.IExt):
                 carb.log_warn(deprecation_message)
 
     def _on_stage_event(self, event):
+        usd_reference_paths = set()
         deprecation_changes = []
         for prim in omni.usd.get_context().get_stage().Traverse():
             # OmniGraph node
@@ -61,25 +62,48 @@ class Extension(omni.ext.IExt):
                 # iterate through entries
                 for entry in self._omnigraph_entries:
                     if entry["deprecated"] in value:
+                        # rename OmniGraph type
                         new_value = value.replace(entry["deprecated"], entry["new"])
                         attr.Set(new_value)
                         deprecation_changes.append((entry["deprecated"], entry["new"], value, new_value))
+                        # find USD references
+                        while (prim := prim.GetParent()).IsValid():
+                            references = omni.usd.get_composed_references_from_prim(prim, False)
+                            payloads = omni.usd.get_composed_payloads_from_prim(prim, False)
+                            if references or payloads:
+                                for reference in references:
+                                    usd_reference_paths.add((prim.GetPath().pathString, reference[0].assetPath))
+                                for payload in payloads:
+                                    usd_reference_paths.add((prim.GetPath().pathString, payload[0].assetPath))
+                                break
         if not deprecation_changes:
             return
+        usd_reference_paths = sorted(list(usd_reference_paths), key=lambda item: item[0], reverse=True)
+        usd_reference_paths = list(dict.fromkeys([item[1] for item in usd_reference_paths]))
         deprecation_changes = sorted(list(set(deprecation_changes)), key=lambda item: item[2])
         # show deprecation message
-        carb.log_warn(
-            "The stage contains the following deprecated nodes that have been updated. Save it to preserve the changes"
-        )
+        save_message = "" if usd_reference_paths else "Save it to preserve the changes."
+        carb.log_warn(f"The stage contains the following deprecated nodes that have been updated. {save_message}")
+        if usd_reference_paths:
+            carb.log_warn(
+                f"  |-- Referenced assets (open listed assets in order before the current one to preserve changes on each reference):"
+            )
+            for item in usd_reference_paths:
+                carb.log_warn(f"  |     |-- {item}")
+        carb.log_warn(f"  |-- Deprecated nodes:")
         for item in deprecation_changes:
-            carb.log_warn(f"  |-- {item[2]} -> {item[3]}")
+            carb.log_warn(f"  |     |-- {item[2]} -> {item[3]}")
         # show notification in Kit window
         try:
             import omni.kit.notification_manager as notification_manager
         except ImportError:
             pass
         else:
-            text = "The stage contains the following deprecated nodes that have been updated. Save it to preserve the changes\n"
+            text = f"The stage contains the following deprecated nodes that have been updated. {save_message}\n"
+            if usd_reference_paths:
+                text += "\nReferenced assets (open listed assets in order before the current one to preserve changes on each reference):\n"
+                text += "\n".join([f" - {item}" for item in usd_reference_paths]) + "\n"
+            text += "\nDeprecated nodes:\n"
             text += "\n".join([f" - {item[2]}" for item in deprecation_changes])
             notification_manager.post_notification(
                 text,
