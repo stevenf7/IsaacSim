@@ -327,6 +327,8 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.replicator",
+    "exts/isaacsim.replicator.behavior",
+    "exts/isaacsim.replicator.behavior.ui",    
     "exts/isaacsim.replicator.scene_blox",
     "exts/isaacsim.replicator.synthetic_recorder",
     # deprecated extensions

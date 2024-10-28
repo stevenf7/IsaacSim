@@ -1,0 +1,32 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Replicator Behavior Scripts"
+description = "Synthetic data generation workflow using behavior scripts"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.behavior"
+keywords = ["isaac", "behavior scripts", "replicator", "sdg", "randomization"]
+changelog = "docs/CHANGELOG.md"
+readme  = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+
+[dependencies]
+"isaacsim.storage.native" = {}
+"omni.kit.scripting" = {}
+"omni.physx" = {}
+"omni.usd" = {}
+
+
+[[python.module]]
+name = "isaacsim.replicator.behavior"
+
+[[test]]
+dependencies = [
+    "omni.kit.test"
+]
