@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
 ## [2.0.1] - 2024-05-16
 ### Fixed
 - Make platform specific

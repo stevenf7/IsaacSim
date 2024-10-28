@@ -7,6 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_generic import *
-from .test_lidar import *
-from .test_lightbeam_sensor import *
+scan_for_test_modules = True
