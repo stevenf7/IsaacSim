@@ -148,9 +148,7 @@ ext_folders = [
 
 # Apps to run and precache
 apps = [
-    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit",
-    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.headless.native.kit",
-    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.headless.webrtc.kit"
+    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"
 ]
 
 # Registries to use

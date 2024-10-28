@@ -1,17 +1,17 @@
 [package]
-title = "Isaac Sim (Headless Native)"
-description = "Headless Isaac Sim with Native Livestream using Streaming Client"
+title = "Isaac Sim (Headless)"
+description = "Headless Isaac Sim with Livestream using WebRTC"
 version = "4.5.0"
-execFile = "isaac-sim.headless.native"
+execFile = "isaac-sim.headless"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "omni.isaac.sim.base" = {}
-"omni.kit.livestream.core" = {version = "3.2.0", exact = true}
-"omni.kit.livestream.native" = {version = "4.1.0", exact = true}
-"omni.kit.streamsdk.plugins" = {version = "3.2.1", exact = true}
+"omni.kit.livestream.core" = {version = "6.1.0", exact = true}
+"omni.kit.livestream.webrtc" = {version = "6.0.0", exact = true}
+"omni.kit.streamsdk.plugins" = {version = "6.1.0", exact = true}
 
 [settings]
 app.name = "Isaac-Sim"
@@ -22,17 +22,20 @@ app.fastShutdown = true
 folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
 
 [settings.app.livestream]
-proto = "ws"
-allowResize = true
+# proto = "ws"
+# allowResize = true
 outDirectory = "${data}"
 
 [settings.app.window]
-title = "Isaac Sim Headless Native"
+title = "Isaac Sim Headless"
 hideUi = false
 
-width = 1920
-height = 1080
+# width = 1700
+# height = 900
 drawMouse = true
+
+# [settings.ngx]
+# enabled = false
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #

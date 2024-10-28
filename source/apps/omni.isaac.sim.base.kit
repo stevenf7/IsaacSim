@@ -223,14 +223,12 @@ exts."omni.kit.widget.graph".raster_nodes = true
 app.content.emptyStageOnStart = false
 # persistent.app.newStage.defaultTemplate = "default stage"
 exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from Viewport Next
-exts."omni.usd".locking.onClose = false # OMPE-21228 
+exts."omni.usd".locking.onClose = false # OMPE-21228
 
 # deprecate support for old kit.ui.menu
 app.menu.legacy_mode = false
 # use omni.ui.Menu for the MenuBar
 app.menu.compatibility_mode = false
-# Setting the port for the embedded http server
-exts."omni.services.transport.server.http".port = 8211
 
 # default viewport is fill
 app.runLoops.rendering_0.fillResolution = false
