@@ -29,20 +29,9 @@ from isaacsim.core.utils.extensions import enable_extension
 
 # Default Livestream settings
 kit.set_setting("/app/window/drawMouse", True)
-kit.set_setting("/app/livestream/proto", "ws")
-kit.set_setting("/ngx/enabled", False)
 
-# Note: Only one livestream extension can be enabled at a time
-
-# Enable Native Livestream extension
-# Default App: Streaming Client from the Omniverse Launcher
-enable_extension("omni.kit.streamsdk.plugins-3.2.1")
-enable_extension("omni.kit.livestream.core-3.2.0")
-enable_extension("omni.kit.livestream.native")
-
-# Enable WebRTC Livestream extension
-# Default URL: http://localhost:8211/streaming/webrtc-client/
-# enable_extension("omni.services.streamclient.webrtc")
+# Enable Livestream extension
+enable_extension("omni.kit.livestream.webrtc")
 
 # Run until closed
 while kit._app.is_running() and not kit.is_exiting():

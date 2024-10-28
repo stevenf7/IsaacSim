@@ -24,8 +24,7 @@ app.settings.standalone_mode = true
 
 ext.'isaacsim.app.selector'.apps = [
     "omni.isaac.sim",
-    "omni.isaac.sim.headless.native",
-    "omni.isaac.sim.headless.webrtc",
+    "omni.isaac.sim.headless",
 ]
 
 ext.'isaacsim.app.selector'.experimental_apps = []
@@ -47,7 +46,7 @@ app.runLoops.main.rateLimitUseBusyLoop = false
 
 # setup size
 app.window.width = 500
-app.window.height = 565
+app.window.height = 488
 app.window.noResize = true
 # center position
 app.window.x = -1
