@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.4] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
 ## [2.0.3] - 2024-10-24
 ### Fixed
 - Make extension OS specific

@@ -1,7 +1,7 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "3.0.1"
+version = "3.0.2"
 category = "Simulation"
 title = "Isaac Quadruped Robot"
 description = "Simulation for legged robots"

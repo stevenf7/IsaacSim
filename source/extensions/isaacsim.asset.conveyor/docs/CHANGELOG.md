@@ -1,20 +1,20 @@
 # Changelog
+
+## [1.0.2] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
-## [1.0.1] - 2024-10-10
-
 ### Removed
 - removed unecessary dependencies
 
 ## [1.0.0] - 2024-09-27
-
 ### Changed
 - Renamed extension to isaacsim.asset.conveyor
 
 ## [0.4.0] - 2024-06-13
-
 ### Changed
 - Updated Physics API to use SurfaceVelocity instead of rigid Body deprecated modified Velocities.
 - Added Velocity Variable in omnigraph to control the conveyor speed

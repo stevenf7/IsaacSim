@@ -7,5 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_ee_pose_tracking_mpc import *
-from .test_import_ocs2 import *
+scan_for_test_modules = True

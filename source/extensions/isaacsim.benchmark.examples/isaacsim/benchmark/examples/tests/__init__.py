@@ -7,8 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# scan_for_test_modules = True
-
-import sys
-
-from .test_benchmark_camera import *
+scan_for_test_modules = True

@@ -9,4 +9,3 @@
 
 from .base_isaac_benchmark import BaseIsaacBenchmark
 from .base_isaac_benchmark_async import BaseIsaacBenchmarkAsync
-from .tests import *

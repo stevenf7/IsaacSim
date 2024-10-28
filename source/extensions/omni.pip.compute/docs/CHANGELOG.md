@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
 ## [1.4.0] - 2024-07-05
 ### Changed
 - switch to opencv-python==4.9.0.80

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
 ## [1.1.3] - 2024-05-24
 ### Fixed
 - Manually add paths for pywintypes import

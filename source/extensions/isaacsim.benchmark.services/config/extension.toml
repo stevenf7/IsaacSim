@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.1"
+version = "2.0.2"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -19,10 +19,14 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "omni.isaac.nucleus" = {}
-
+"omni.kit.test" = {} # we derrive from the base test class and need this dependency
 
 [[python.module]]
 name = "isaacsim.benchmark.services"
+
+[[python.module]]
+name = "isaacsim.benchmark.services.tests"
+
 
 [settings]
 exts."isaacsim.benchmark.services".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
@@ -31,7 +35,3 @@ exts."isaacsim.benchmark.services".metrics.nvdataflow_default_test_suite_name = 
 # Set to true to add a random string to the metrics filename to distinguish runs
 exts."isaacsim.benchmark.services".metrics.randomize_filename_prefix = false
 
-[[test]]
-dependencies = [
-    "omni.kit.test"
-]

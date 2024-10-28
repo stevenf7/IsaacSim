@@ -7,8 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_a1 import *
-from .test_anymal import *
-from .test_go1 import *
-from .test_h1 import *
-from .test_spot import *
+scan_for_test_modules = True

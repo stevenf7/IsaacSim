@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_isaac_asset_browser import TestAssetBrowser
+scan_for_test_modules = True

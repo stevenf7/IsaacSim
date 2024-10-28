@@ -6,4 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from .test_base_isaac_benchmark import *
+scan_for_test_modules = True

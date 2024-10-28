@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.1"
+version = "2.0.2"
 category = "Simulation"
 title = "UI components for the Isaac Sim Occupancy Map"
 description = "2D Occupancy Map Generation"
@@ -24,3 +24,6 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.asset.generator.occupancy_map.ui"
+
+[[python.module]]
+name = "isaacsim.asset.generator.occupancy_map.ui.tests"

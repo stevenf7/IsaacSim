@@ -8,4 +8,3 @@
 #
 
 from .helper import *
-from .tests import *

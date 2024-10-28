@@ -6,4 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from .test_robot_assembler import *
+scan_for_test_modules = True

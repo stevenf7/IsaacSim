@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.1] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
 ## [2.3.0] - 2024-05-16
 ### Added
 - pyperclip==1.8.0
