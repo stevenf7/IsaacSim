@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "0.2.1"
 category = "Utility"
 title = "Deprecation manager"
 description = "Manage deprecated OmniGraph nodes and app/extension settings"

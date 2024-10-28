@@ -71,15 +71,27 @@ class Extension(omni.ext.IExt):
                             references = omni.usd.get_composed_references_from_prim(prim, False)
                             payloads = omni.usd.get_composed_payloads_from_prim(prim, False)
                             if references or payloads:
-                                for reference in references:
-                                    usd_reference_paths.add((prim.GetPath().pathString, reference[0].assetPath))
-                                for payload in payloads:
-                                    usd_reference_paths.add((prim.GetPath().pathString, payload[0].assetPath))
+                                for index, reference in enumerate(references):
+                                    usd_reference_paths.add(
+                                        (
+                                            prim.GetPath().pathString,
+                                            index,
+                                            reference[1].ComputeAbsolutePath(reference[0].assetPath),
+                                        )
+                                    )
+                                for index, payload in enumerate(payloads):
+                                    usd_reference_paths.add(
+                                        (
+                                            prim.GetPath().pathString,
+                                            index,
+                                            payload[1].ComputeAbsolutePath(payload[0].assetPath),
+                                        )
+                                    )
                                 break
         if not deprecation_changes:
             return
-        usd_reference_paths = sorted(list(usd_reference_paths), key=lambda item: item[0], reverse=True)
-        usd_reference_paths = list(dict.fromkeys([item[1] for item in usd_reference_paths]))
+        usd_reference_paths = sorted(list(usd_reference_paths), key=lambda item: (item[0], item[1]), reverse=True)
+        usd_reference_paths = list(dict.fromkeys([item[2] for item in usd_reference_paths]))
         deprecation_changes = sorted(list(set(deprecation_changes)), key=lambda item: item[2])
         # show deprecation message
         save_message = "" if usd_reference_paths else "Save it to preserve the changes."
