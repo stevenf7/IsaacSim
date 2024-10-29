@@ -79,6 +79,7 @@ class SimulationApp:
         "livesync_usd": None,
         "fast_shutdown": True,
         "profiler_backend": [],
+        "create_new_stage": True,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -108,6 +109,7 @@ class SimulationApp:
         livesync_usd (str): This is the location of the usd that you want to do your interactive work in.  The existing file is overwritten. Default is None
         fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
         profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
+        create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -233,7 +235,8 @@ class SimulationApp:
                 create_new_stage()
             else:
                 print("Done.")
-        else:
+
+        if self.config["create_new_stage"] is True:
             create_new_stage()
 
         self.livesync_usd = self.config.get("livesync_usd")
@@ -495,6 +498,10 @@ class SimulationApp:
     def _wait_for_viewport(self) -> None:
         try:
             from omni.kit.viewport.utility import get_active_viewport
+
+            # avoid infinite loop if no new stage was created
+            if self.config["create_new_stage"] is False:
+                raise Exception("create_new_stage is False")
 
             # Get every ViewportWindow, regardless of UsdContext it is attached to
             viewport_api = get_active_viewport()
