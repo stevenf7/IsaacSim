@@ -11,6 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 #include "Ros2Impl.h"
+#include "isaacsim/core/utils/UsdUtilities.h"
 #include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/image_encodings.hpp"
 
@@ -815,7 +816,9 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
 
             if (dof)
             {
-                Ros2MessageInterfaceImpl::writeRosString(dynamicControlPtr->getDofName(dof), jointStateMsg->name.data[j]);
+                Ros2MessageInterfaceImpl::writeRosString(isaacsim::core::utils::GetName(stage->GetPrimAtPath(
+                                                             pxr::SdfPath(dynamicControlPtr->getDofPath(dof)))),
+                                                         jointStateMsg->name.data[j]);
 
                 const char* parentName = dynamicControlPtr->getRigidBodyName(dynamicControlPtr->getDofParentBody(dof));
                 const char* jointPath = dynamicControlPtr->getDofPath(dof);

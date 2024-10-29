@@ -68,7 +68,7 @@ public:
             }
             else
             {
-                db.logError("Omnigraph Error: no chasis prim found");
+                db.logError("Omnigraph Error: no chassis prim found");
                 return false;
             }
 
