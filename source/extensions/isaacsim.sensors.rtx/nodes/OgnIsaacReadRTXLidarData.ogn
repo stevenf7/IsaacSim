@@ -83,7 +83,7 @@
             },
             "azimuths":{
                 "type": "float[]",
-                "description": "azimuth in deg [0, 360)",
+                "description": "azimuth in deg [-180, 180)",
                 "memoryType": "cpu",
                 "default": []
             },
