@@ -491,6 +491,7 @@ function create_tests()
         python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "standalone_examples/api/omni.isaac.kit/hello_world.py")
         python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "standalone_examples/api/omni.isaac.kit/change_resolution.py")
         python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "standalone_examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Isaac/Environments/Simple_Room/simple_room.usd --test --headless")
+        python_sample_test("tests-nativepython-testing-omni.isaac.kit.test_createstage_config", "standalone_examples/testing/omni.isaac.kit/test_createstage_config.py")
         -- isaacsim.core.cloner
         python_sample_test("tests-nativepython-isaacsim.core.cloner.clone_ants", "standalone_examples/api/isaacsim.core.cloner/clone_ants.py")
         -- isaacsim.core.api
