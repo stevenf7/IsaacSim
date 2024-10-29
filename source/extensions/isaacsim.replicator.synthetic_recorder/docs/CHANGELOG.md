@@ -1,8 +1,16 @@
 # Changelog
+
+## [2.1.0] - 2024-10-28
+### Fixed
+- moved from deprecated editor_menu.add_item to omni.kit.menu.utils
+
+### Changed
+- Removed unused "omni.pip.cloud" dependency
+- Moved recorder to separate window ui class (synthetic_recorder_window.py)
+
 ## [2.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [2.0.0] - 2024-09-23
 ### Changed
