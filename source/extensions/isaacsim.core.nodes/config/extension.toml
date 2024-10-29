@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.1.0"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Core"
@@ -47,7 +47,7 @@ dependencies = [
 ]
 
 stdoutFailPatterns.exclude = [
-    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacComputeOdometry: [/TestGraph] Omnigraph Error: no chasis prim found*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacComputeOdometry: [/TestGraph] Omnigraph Error: no chassis prim found*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacCreateRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacSetCameraOnRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacArticulationController: [/TestGraph] Omnigraph Error: No robot prim found for the articulation controller*',

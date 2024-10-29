@@ -159,7 +159,8 @@ public:
 
                 if (dof)
                 {
-                    msg.name.push_back(mDynamicControlPtr->getDofName(dof));
+                    msg.name.push_back(isaacsim::core::utils::GetName(
+                        stage->GetPrimAtPath(pxr::SdfPath(mDynamicControlPtr->getDofPath(dof)))));
 
                     // sign check
                     mParentName = mDynamicControlPtr->getRigidBodyName(mDynamicControlPtr->getDofParentBody(dof));

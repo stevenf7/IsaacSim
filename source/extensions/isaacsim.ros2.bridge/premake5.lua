@@ -52,6 +52,7 @@ project_with_location("isaacsim.ros2.bridge.foxy")
         "%{root}/source/extensions/isaacsim.ros2.bridge",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
         "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -112,6 +113,7 @@ project_with_location("isaacsim.ros2.bridge.humble")
         "%{root}/source/extensions/isaacsim.ros2.bridge",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
         "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
