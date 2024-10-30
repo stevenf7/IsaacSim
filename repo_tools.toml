@@ -138,3 +138,11 @@ entry_point = "${config_root}/tools/isaac/check_python_package_definitions.py:se
 [unzip_file]
 command = "unzip_file"
 entry_point = "${config_root}/tools/isaac/unzip_file.py:setup_repo_tool"
+
+########################################################################################################################
+# Update extscache
+########################################################################################################################
+
+[dump_extensions]
+command = "dump_extensions"
+entry_point = "${config_root}/tools/isaac/dump_extensions.py:setup_repo_tool"
