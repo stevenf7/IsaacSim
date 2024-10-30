@@ -119,12 +119,12 @@
             },
             "azimuth":{
                 "type": "float[]",
-                "description": "Azimuth angle (radians)",
+                "description": "Azimuth angle (degrees)",
                 "default": []
             },
             "elevation":{
                 "type": "float[]",
-                "description": "Angle of elevation (radians)",
+                "description": "Angle of elevation (degrees)",
                 "default": []
             },
             "rcs":{

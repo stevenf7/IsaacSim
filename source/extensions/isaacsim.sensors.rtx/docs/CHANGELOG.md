@@ -1,4 +1,9 @@
 # Changelog
+
+## [13.1.2] - 2024-10-29
+### Changed
+- Corrects output units for OgnIsaacComputeRTXLidarPointCloud, OgnIsaacComputeRTXRadarPointCloud, OgnIsaacReadRTXLidarData.
+
 ## [13.1.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
