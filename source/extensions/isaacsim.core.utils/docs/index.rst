@@ -17,8 +17,20 @@ Utilities [isaacsim.core.utils]
     :imported-members:
     :exclude-members: 
 
-Warp Utils
---------------
+Articulation Utils
+==================
+
+Utils for programmatically interacting with Articulations on the Stage.
+
+The utils can be used to:
+
+* Modify Articulation Roots.
+* Determine the base paths of every Articulation on the Stage.
+
+.. automodule:: isaacsim.core.utils.articulations
+    :members:
+    :undoc-members:
+    :exclude-members:
 
 Bounds Utils
 ================
