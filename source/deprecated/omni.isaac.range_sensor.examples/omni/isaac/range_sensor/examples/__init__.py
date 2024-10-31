@@ -16,6 +16,3 @@ new_extension_name = "isaacsim.sensors.physx.examples"
 carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
-
-from .generic_info import *
-from .lidar_info import *

@@ -1,8 +1,12 @@
 # Changelog
+
+## [2.0.2] - 2024-10-24
+### Changed
+- Removed aliased imports as they caused extensions to load twice
+
 ## [2.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [2.0.0] - 2024-09-24
 ### Deprecated
