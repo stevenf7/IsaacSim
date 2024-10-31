@@ -1,4 +1,7 @@
 # Changelog
+## [2.1.0] - 2024-10-29
+### Added
+- Added utility for finding the base paths of all Articulations on the stage.
 
 ## [2.0.4] - 2024-10-28
 ### Changed
