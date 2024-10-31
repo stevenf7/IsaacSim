@@ -26,10 +26,6 @@
         <package name="tinyxml2" version="linux_x64_20200823_2c5a6bf" platforms="linux-x86_64" />
         <package name="tinyxml2" version="win_x64_20200824_2c5a6bf" platforms="windows-x86_64" />
     </dependency>
-    <dependency name="assimp" linkPath="../_build/target-deps/assimp">
-        <package name="assimp" version="5.0.0.50.aa41375a-windows-x86_64-release" platforms="windows-x86_64"/>
-        <package name="assimp" version="5.0.0.50.aa41375a-linux-x86_64-release" platforms="linux-x86_64"/>
-    </dependency>
     <dependency name="doctest" linkPath="../_build/target-deps/doctest">
         <package name="doctest" version="2.4.5+nv4-0.7z" />
     </dependency>

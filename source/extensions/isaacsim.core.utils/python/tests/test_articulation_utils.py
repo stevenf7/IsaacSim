@@ -17,7 +17,7 @@ from isaacsim.core.utils.articulations import (
 )
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
-from omni.isaac.nucleus import get_assets_root_path_async
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will

@@ -25,6 +25,8 @@ writeTarget.platform = true
 "omni.kit.menu.utils" = {}
 "isaacsim.storage.native" = {}
 "isaacsim.core.deprecation_manager" = {}
+"omni.usd.schema.semantics" = {}
+"omni.isaac.ml_archive" = {}
 
 [[python.module]]
 name = "isaacsim.core.utils"
