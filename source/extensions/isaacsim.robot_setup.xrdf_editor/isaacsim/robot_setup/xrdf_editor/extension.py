@@ -25,6 +25,7 @@ import omni.ui as ui
 import omni.usd
 import yaml
 from isaacsim.core.prims import Articulation, SingleArticulation, SingleXFormPrim
+from isaacsim.core.utils.articulations import find_all_articulation_base_paths
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
 
@@ -274,7 +275,8 @@ class Extension(omni.ext.IExt):
             self._on_selection(item)
 
     def _refresh_selection_combobox(self):
-        self.articulation_list = self.get_all_articulations()
+        self.articulation_list = find_all_articulation_base_paths()
+        self.articulation_list.insert(0, "None")
         if self._prev_art_prim_path is not None and self._prev_art_prim_path not in self.articulation_list:
             self._reset_ui()
         self._models["ar_selection_model"] = DynamicComboBoxModel(self.articulation_list)
@@ -325,73 +327,6 @@ class Extension(omni.ext.IExt):
                 self._hide_link(self._prev_link)
 
         self._prev_link = self._get_selected_link()
-
-    def get_all_articulations(self):
-        """Get all the articulation objects from the Stage.
-
-        Returns:
-            list(str): list of prim_paths as strings
-        """
-        art_root_paths = []
-        articulation_candidates = set()
-
-        stage = omni.usd.get_context().get_stage()
-        if not stage:
-            return ["None"]
-
-        # Find all articulation root paths
-        # Find all paths that are the maximal subpath of all prims connected by a fixed joint
-        # I.e. a fixed joint connecting /ur10/link1 to /ur10/link0 would result in the path
-        # /ur10.  The path /ur10 becomes a candidate Articulation.
-        for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
-            if (
-                prim.HasAPI(UsdPhysics.ArticulationRootAPI)
-                and prim.GetProperty("physxArticulation:articulationEnabled").Get()
-            ):
-                art_root_paths.append(tuple(str(prim.GetPath()).split("/")[1:]))
-            elif UsdPhysics.Joint(prim):
-                bodies = prim.GetProperty("physics:body0").GetTargets()
-                bodies.extend(prim.GetProperty("physics:body1").GetTargets())
-                if len(bodies) == 1:
-                    continue
-                base_path_split = str(bodies[0]).split("/")[1:]
-                for body in bodies[1:]:
-                    body_path_split = str(body).split("/")[1:]
-                    for i in range(len(base_path_split)):
-                        if len(body_path_split) < i or base_path_split[i] != body_path_split[i]:
-                            base_path_split = base_path_split[:i]
-                            break
-                articulation_candidates.add(tuple(base_path_split))
-
-        # Only keep candidates whose path is not a subset of another candidate's path
-        unique_candidates = []
-        for c1 in articulation_candidates:
-            is_unique = True
-            for c2 in articulation_candidates:
-                if c1 == c2:
-                    continue
-                elif c2[: len(c1)] == c1:
-                    is_unique = False
-                    break
-            if is_unique:
-                unique_candidates.append(c1)
-
-        # Only keep candidates that are a subset of exactly one articulation root
-        art_base_paths = []
-        for c in unique_candidates:
-            subset_count = 0
-            for root in art_root_paths:
-                if root[: len(c)] == c:
-                    subset_count += 1
-            if subset_count == 1:
-                art_path = ""
-                for s in c:
-                    art_path += "/" + s
-                art_base_paths.append(art_path)
-
-        art_base_paths.insert(0, "None")
-
-        return art_base_paths
 
     def _refresh_sphere_gen_link_combobox(self):
         self._models["sphere_gen_link_selection_model"] = DynamicComboBoxModel(
