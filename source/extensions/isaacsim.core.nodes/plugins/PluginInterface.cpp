@@ -136,6 +136,7 @@ void onStop(void* userData)
 
 void onPhysicsStep(float timeElapsed, void* userData)
 {
+    CARB_PROFILE_ZONE(0, "isaacsim.code.nodes.plugin::onPhysicsStep");
     omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(gStageReaderWriterId);
     gSimTime += timeElapsed;
     gSimTimeMonotonic += timeElapsed;

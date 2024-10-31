@@ -117,6 +117,12 @@ public:
         }
     }
 
+    virtual std::vector<std::string> getComponentIsAVector() const
+    {
+        return { "IsaacSensorIsaacContactSensor", "IsaacSensorIsaacImuSensor" };
+    }
+
+
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
         isaacsim::core::utils::BridgeApplicationBase<IsaacBaseSensorComponent>::onComponentChange(prim);

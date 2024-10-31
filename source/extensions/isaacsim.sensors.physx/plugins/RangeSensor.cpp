@@ -975,6 +975,7 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 
 void onPhysicsStep(float dt, void* userData)
 {
+    CARB_PROFILE_ZONE(0, "RangeSensor::onPhysicsStep");
     if (gRangeSensorManager)
     {
         gRangeSensorManager->onPhysicsStep(static_cast<double>(dt));

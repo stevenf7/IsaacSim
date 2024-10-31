@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.11] - 2024-10-30
+### Changed
+- Add profiler marker
+
 ## [1.3.10] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
