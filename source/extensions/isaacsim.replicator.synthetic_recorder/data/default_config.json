@@ -5,7 +5,6 @@
     "rt_subframes": 0,
     "control_timeline": false,
     "out_dir": "_out_sdrec",
-    "out_write_type": "OVERWRITE",
     "basic_writer_params": {
         "rgb": true,
         "bounding_box_2d_tight": false,

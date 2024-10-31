@@ -62,7 +62,8 @@ class SyntheticRecorderExtension(omni.ext.IExt, MenuHelperExtension):
     def show_window(self, value):
         # Request for the window to be shown; a new window will be created and the visibility changed listener will be set
         if value:
-            self._window = SyntheticRecorderWindow(self._ext_id)
+            # Extension id is needed by the window to get the extension path to find the config directory
+            self._window = SyntheticRecorderWindow(SyntheticRecorderExtension.WINDOW_NAME, self._ext_id)
             self._window.set_visibility_changed_listener(self._visiblity_changed_fn)
         elif self._window:
             self._window.visible = False

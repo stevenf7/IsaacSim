@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0] - 2024-10-28
+### Changed
+- Split the recorder functionality into a separate class (synthetic_recorder.py)
+- Switched to only warn users when using large resolutions
+
+### Added
+- Added basic recorder test
+
 ## [2.1.0] - 2024-10-28
 ### Fixed
 - moved from deprecated editor_menu.add_item to omni.kit.menu.utils

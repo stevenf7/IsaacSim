@@ -24,3 +24,8 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.replicator.synthetic_recorder"
+
+[[test]]
+dependencies = [
+    "omni.kit.test"
+]
