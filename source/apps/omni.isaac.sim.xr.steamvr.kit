@@ -1,8 +1,8 @@
 [package]
-title = "Isaac Sim XR SteamVR"
 description = "Main Omniverse Isaac Sim Application with XR SteamVR"
-version = "4.5.0"
 execFile = "isaac-sim"
+title = "Isaac Sim XR SteamVR"
+version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
@@ -13,24 +13,30 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.xr.system.steamvr" = {}
 
 [settings]
+app.fastShutdown = true
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
-app.fastShutdown = true
 
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
 
 [settings.app.window]
-title = "Isaac Sim XR SteamVR"
 hideUi = false
+title = "Isaac Sim XR SteamVR"
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
+postToSlack = false
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
     { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
-postToSlack = false
 # # FOR PRODUCTION #
 # registries = [
 # 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/106/shared" },

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.4] - 2024-10-29
+### Changed
+- Updated dependencies and imports after renaming
+
 ## [2.0.3] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

@@ -1,6 +1,6 @@
 [package]
-title = "Isaac Sim Python"
 description = "A trimmed down app for use with python samples"
+title = "Isaac Sim Python"
 version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
@@ -18,15 +18,15 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.cortex.framework" = {}
 "isaacsim.gui.menu" = {}
 "isaacsim.gui.property" = {}
-"isaacsim.replicator.scene_blox" = {}
 "isaacsim.replicator" = {}
 "isaacsim.replicator.behavior" = {}
-"isaacsim.robot_motion.lula" = {}
-"isaacsim.robot_motion.motion_generation" = {}
+"isaacsim.replicator.scene_blox" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot.policy.examples" = {}
 "isaacsim.robot.surface_gripper" = {}
 "isaacsim.robot.wheeled_robots" = {}
+"isaacsim.robot_motion.lula" = {}
+"isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.sensors.camera" = {}
 "isaacsim.sensors.physics" = {}
 "isaacsim.sensors.physx" = {}
@@ -35,9 +35,9 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.storage.native" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.isaac.cloner" = {}
+"omni.isaac.core" = {}
 "omni.isaac.core_archive" = {}
 "omni.isaac.core_nodes" = {}
-"omni.isaac.core" = {}
 "omni.isaac.debug_draw" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ml_archive" = {}
@@ -105,7 +105,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.property" = {}
 "omni.kit.window.script_editor" = {}
 "omni.kit.window.stage" = {}
-"omni.kit.window.stats" = {order = 1000}
+"omni.kit.window.stats" = { order = 1000 }
 "omni.kit.window.status_bar" = {}
 "omni.kit.window.title" = {}
 "omni.kit.window.toolbar" = {}
@@ -124,18 +124,18 @@ keywords = ["experience", "app", "usd"]
 "semantics.schema.property" = {}
 
 [settings]
-renderer.active = "rtx"
-exts."omni.kit.viewport.menubar.camera".expand = true # Expand the extra-camera settings by default
-exts."omni.kit.window.file".useNewFilePicker = true
+exts."omni.kit.menu.utils".logDeprecated = false
+exts."omni.kit.pipapi".installCheckIgnoreVersion = true
+exts."omni.kit.renderer.core".imgui.enableMips = true
 exts."omni.kit.tool.asset_importer".useNewFilePicker = true
 exts."omni.kit.tool.collect".useNewFilePicker = true
-exts."omni.kit.widget.layers".useNewFilePicker = true
-exts."omni.kit.renderer.core".imgui.enableMips = true
+exts."omni.kit.viewport.menubar.camera".expand = true           # Expand the extra-camera settings by default
+exts."omni.kit.viewport.window".startup.windowName = "Viewport" # Rename from Viewport Next
 exts."omni.kit.widget.cloud_share".require_access_code = false
-exts."omni.kit.pipapi".installCheckIgnoreVersion = true
-exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from Viewport Next
-exts."omni.kit.menu.utils".logDeprecated = false
-exts."omni.usd".locking.onClose = false # OMPE-21228
+exts."omni.kit.widget.layers".useNewFilePicker = true
+exts."omni.kit.window.file".useNewFilePicker = true
+exts."omni.usd".locking.onClose = false                         # OMPE-21228
+renderer.active = "rtx"
 
 # app.content.emptyStageOnStart = false
 app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
@@ -148,68 +148,29 @@ app.menu.compatibility_mode = false
 # default viewport is fill
 app.runLoops.rendering_0.fillResolution = false
 
-exts."omni.kit.test".includeTests = [ "*isaac*" ]
+exts."omni.kit.test".includeTests = ["*isaac*"]
 
-
-[settings.app.python]
-# These disable the kit app from also printing out python output, which gets confusing
-interceptSysStdOutput = false
-logSysStdOutput = false
-
-[settings.app.settings]
-persistent = false
-dev_build = false
-fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 Still True?
-
-[settings.app.window]
-title = "Isaac Sim Python"
-hideUi = false
-_iconSize = 256
-iconPath = "${isaacsim.simulation_app}/data/omni.isaac.sim.png"
-
-# width = 1700
-# height = 900
-# x = -1
-# y = -1
-
-# Fonts
-[setting.app.font]
-file = "${fonts}/OpenSans-SemiBold.ttf"
-size = 16
-
-# [setting.app.runLoops]
-# main.rateLimitEnabled = false
-# main.rateLimitFrequency = 60
-# main.rateLimitUseBusyLoop = false
-# rendering_0.rateLimitEnabled = false
-
-[settings.exts.'omni.kit.window.extensions']
-# List extensions here we want to show as featured when extension manager is opened
-featuredExts = []
-
-
-[settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
 # only want to use a single GPU on your MGPU system
-renderer.multiGpu.enabled = true
 renderer.multiGpu.autoEnable = true
+renderer.multiGpu.enabled = true
 # This setting forces all GPUs to copy their render results to the main GPU.
 # This legacy setting should not be needed anymore
 app.gatherRenderResults = false
 'rtx-transient'.resourcemanager.enableTextureStreaming = true
 # app.hydra.aperture.conform = 4 # in 105.1 pixels are square by default
 app.hydraEngine.waitIdle = false
-rtx.newDenoiser.enabled = true
+
 
 # Enable Iray and pxr by setting this to "rtx,iray,pxr"
 renderer.enabled = "rtx"
 
-physics.autoPopupSimulationOutputWindow=false
+physics.autoPopupSimulationOutputWindow = false
 
 ### async rendering settings
-omni.replicator.asyncRendering = false
 app.asyncRendering = false
 app.asyncRenderingLowLatency = false
+omni.replicator.asyncRendering = false
 
 ### Render thread settings
 app.runLoops.main.rateLimitEnabled = false
@@ -228,36 +189,45 @@ app.runLoopsGlobal.syncToPresent = false
 app.vsync = false
 exts."omni.kit.renderer.core".present.enabled = false
 exts."omni.kit.renderer.core".present.presentAfterRendering = false
-persistent.app.viewport.defaults.tickRate = 120
 rtx-transient.dlssg.enabled = false
 
 app.audio.enabled = false
 
-# # FOR PRODUCTION #
-# privacy.externalBuild = true
 
 # Enable Vulkan
 app.vulkan = true
 
 # Basic Kit App
 ################################
-app.versionFile = "${app}/../VERSION"
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
+app.versionFile = "${app}/../VERSION"
 
-# hide NonToggleable Exts
-exts."omni.kit.window.extensions".hideNonToggleableExts = true
-exts."omni.kit.window.extensions".showFeatureOnly = false
+[settings.app.python]
+# These disable the kit app from also printing out python output, which gets confusing
+interceptSysStdOutput = false
+logSysStdOutput = false
 
-# Hang Detector
-################################
-# app.hangDetector.enabled = false
-# app.hangDetector.timeout = 120
+[settings.app.settings]
+dev_build = false
+fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 Still True?
+persistent = false
 
-# RTX Settings
-###############################
-[settings.rtx]
-translucency.worldEps = 0.005
+[settings.app.window]
+_iconSize = 256
+hideUi = false
+iconPath = "${isaacsim.simulation_app}/data/omni.isaac.sim.png"
+title = "Isaac Sim Python"
+
+# Fonts
+[setting.app.font]
+file = "${fonts}/OpenSans-SemiBold.ttf"
+size = 16
+
+[settings.exts.'omni.kit.window.extensions']
+hideNonToggleableExts = true
+showFeatureOnly = false
+featuredExts = [] # List extensions here we want to show as featured when extension manager is opened
 
 # Content Browser
 ###############################
@@ -268,11 +238,11 @@ enable_thumbnail_generation_images = false # temp fix to avoid leaking python pr
 ###############################
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
+postToSlack = false
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
     { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
-postToSlack = false
 # # FOR PRODUCTION #
 # registries = [
 # 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/106/shared" },
@@ -281,30 +251,35 @@ postToSlack = false
 # ]
 
 [settings.app.extensions]
-skipPublishVerification = false
 registryEnabled = true
+skipPublishVerification = false
 
 [settings.exts."omni.kit.window.modifier.titlebar"]
-titleFormatString = "  Isaac Sim  {version:${app}/../SHORT_VERSION,font_color=0x909090,font_size=16} {separator} {file, board=true}"
-showFileFullPath = true
-icon.file = "${app}/../exts/isaacsim.app.setup/data/nvidia-omniverse-isaacsim.ico"
-icon.size = 256
-defaultFont.name = "Arial"
-defaultFont.size = 16
-defaultFont.color = 0xD0D0D0
-separator.color = 0x00B976
-separator.width = 1
-windowBorder.color = 0x0F0F0F
-windowBorder.width = 2
+changeWindowRegion = true
 colors.caption = 0x0F0F0F
 colors.client = 0x0F0F0F
+defaultFont.color = 0xD0D0D0
+defaultFont.name = "Arial"
+defaultFont.size = 16
+icon.file = "${app}/../exts/isaacsim.app.setup/data/nvidia-omniverse-isaacsim.ico"
+icon.size = 256
 respondOnMouseUp = true
-changeWindowRegion = true
-
+separator.color = 0x00B976
+separator.width = 1
+showFileFullPath = true
+titleFormatString = "  Isaac Sim  {version:${app}/../SHORT_VERSION,font_color=0x909090,font_size=16} {separator} {file, board=true}"
+windowBorder.color = 0x0F0F0F
+windowBorder.width = 2
 
 # Register extension folder from this repo in kit
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
 
 [settings.crashreporter.data]
 experience = "Isaac Sim Python"
@@ -312,16 +287,11 @@ experience = "Isaac Sim Python"
 # Isaac Sim Settings
 ###############################
 [settings.app.renderer]
+resolution.height = 720
+resolution.width = 1280
 skipWhileMinimized = false
 sleepMsOnFocus = 0
 sleepMsOutOfFocus = 0
-resolution.width=1280
-resolution.height=720
-
-[settings.app.livestream]
-# proto = "ws"
-# allowResize = true
-outDirectory = "${data}"
 
 # default camera position in meters
 [settings.app.viewport]
@@ -330,49 +300,50 @@ defaultCamPos.y = 5
 defaultCamPos.z = 5
 
 [settings.rtx]
-raytracing.fractionalCutoutOpacity = false
 hydra.enableSemanticSchema = true
 mdltranslator.mdlDistilling = false
+newDenoiser.enabled = true
+raytracing.fractionalCutoutOpacity = false
+translucency.worldEps = 0.005
 # descriptorSets=60000
 # reservedDescriptors=500000
 # sceneDb.maxInstances=1000000
-# Enable this for static scenes, improves visual quality
-# directLighting.sampledLighting.enabled = true
 
 [settings.persistent]
 app.file.recentFiles = []
-app.stage.upAxis = "Z"
-app.stage.timeCodeRange = [0, 1000000]
-app.stage.movePrimInPlace = false
 app.stage.instanceableOnCreatingReference = false
 app.stage.materialStrength = "weakerThanDescendants"
+app.stage.movePrimInPlace = false
+app.stage.timeCodeRange = [0, 1000000]
+app.stage.upAxis = "Z"
 
+app.primCreation.DefaultXformOpOrder = "xformOp:translate, xformOp:orient, xformOp:scale"
+app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
+app.primCreation.typedDefaults.camera.clippingRange = [0.01, 10000000.0]
 app.transform.gizmoUseSRT = true
+app.viewport.camMoveVelocity = 0.05                                                       # 5 m/s
+app.viewport.displayOptions = 31887                                                       # Disable Frame Rate and Resolution by default
+app.viewport.gizmo.scale = 0.01                                                           # scaled to meters
 app.viewport.grid.scale = 1.0
 app.viewport.pickingMode = "kind:model.ALL"
-app.viewport.camMoveVelocity = 0.05 # 5 m/s
-app.viewport.gizmo.scale = 0.01 # scaled to meters
 app.viewport.previewOnPeek = false
 app.viewport.snapToSurface = false
-app.viewport.displayOptions = 31887 # Disable Frame Rate and Resolution by default
+app.viewport.defaults.tickRate = 120
 app.window.uiStyle = "NvidiaDark"
-app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
-app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp:scale"
-app.primCreation.typedDefaults.camera.clippingRange = [0.01, 10000000.0]
-simulation.minFrameRate = 15
-simulation.defaultMetersPerUnit = 1.0
+exts."omni.anim.navigation.core".navMesh.config.autoRebakeOnChanges = false
+exts."omni.anim.navigation.core".navMesh.viewNavMesh = false
+omni.replicator.captureOnPlay = true
+omnigraph.disablePrimNodes = true
 omnigraph.updateToUsd = false
 omnigraph.useSchemaPrims = true
-omnigraph.disablePrimNodes = true
 physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true
 physics.useFastCache = false
 physics.visualizationDisplayJoints = false
 physics.visualizationSimulationOutput = false
-omni.replicator.captureOnPlay = true
-exts."omni.anim.navigation.core".navMesh.viewNavMesh = false
-exts."omni.anim.navigation.core".navMesh.config.autoRebakeOnChanges = false
 resourcemonitor.timeBetweenQueries = 100
+simulation.defaultMetersPerUnit = 1.0
+simulation.minFrameRate = 15
 
 renderer.startupMessageDisplayed = true # hides the IOMMU popup window
 
@@ -381,14 +352,14 @@ app.omniverse.content_browser.options_menu.show_details = true
 app.omniverse.filepicker.options_menu.show_details = true
 
 [settings.ngx]
-enabled=true # Enable this for DLSS
+enabled = true # Enable this for DLSS
 
 # FOR DEVELOPMENT - START #
 [settings]
-persistent.isaac.asset_root.default = "omniverse://isaac-dev.ov.nvidia.com"
-persistent.isaac.asset_root.nvidia = "omniverse://isaac-dev.ov.nvidia.com/NVIDIA"
-persistent.isaac.asset_root.isaac = "omniverse://isaac-dev.ov.nvidia.com/Isaac"
 persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"
+persistent.isaac.asset_root.default = "omniverse://isaac-dev.ov.nvidia.com"
+persistent.isaac.asset_root.isaac = "omniverse://isaac-dev.ov.nvidia.com/Isaac"
+persistent.isaac.asset_root.nvidia = "omniverse://isaac-dev.ov.nvidia.com/NVIDIA"
 
 exts."isaacsim.asset.browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
@@ -400,3 +371,7 @@ exts."isaacsim.asset.browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
 ]
 # FOR DEVELOPMENT - END #
+
+
+# # FOR PRODUCTION #
+# privacy.externalBuild = true

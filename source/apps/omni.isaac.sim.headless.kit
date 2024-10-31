@@ -1,49 +1,44 @@
 [package]
-title = "Isaac Sim (Headless)"
 description = "Headless Isaac Sim with Livestream using WebRTC"
-version = "4.5.0"
 execFile = "isaac-sim.headless"
+title = "Isaac Sim (Headless)"
+version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "omni.isaac.sim.base" = {}
-"omni.kit.livestream.core" = {version = "6.1.0", exact = true}
-"omni.kit.livestream.webrtc" = {version = "6.0.0", exact = true}
-"omni.kit.streamsdk.plugins" = {version = "6.1.0", exact = true}
+"omni.kit.livestream.core" = { version = "6.1.0", exact = true }
+"omni.kit.livestream.webrtc" = { version = "6.0.0", exact = true }
+"omni.kit.streamsdk.plugins" = { version = "6.1.0", exact = true }
 
 [settings]
+app.fastShutdown = true
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
-app.fastShutdown = true
 
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
-
-[settings.app.livestream]
-# proto = "ws"
-# allowResize = true
-outDirectory = "${data}"
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
 
 [settings.app.window]
-title = "Isaac Sim Headless"
 hideUi = false
-
-# width = 1700
-# height = 900
+title = "Isaac Sim Headless"
 drawMouse = true
-
-# [settings.ngx]
-# enabled = false
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
+postToSlack = false
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
     { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
-postToSlack = false
 # # FOR PRODUCTION #
 # registries = [
 # 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/106/shared" },

@@ -1,43 +1,30 @@
 [package]
-title = "Isaac Sim App Selector"
 description = "Start Any Isaac Sim App"
+title = "Isaac Sim App Selector"
 version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["app", "isaac-sim"]
 
 [dependencies]
-"omni.kit.clipboard" = {}
 "isaacsim.app.selector" = {}
+"omni.kit.clipboard" = {}
 
 [settings]
-# OS Window default settings:
-app.window.title = "Isaac Sim App Selector"
 app.name = "Isaac-Sim_App_Selector"
 app.version = "4.5.0"
+app.window.title = "Isaac Sim App Selector"
 
-# this is a Kit Mini App
 app.extensions.enabledCore = []
 app.settings.persistent = true
 app.settings.standalone_mode = true
-# app.content.emptyStageOnStart = false
 
-ext.'isaacsim.app.selector'.apps = [
-    "omni.isaac.sim",
-    "omni.isaac.sim.headless",
-]
-
-ext.'isaacsim.app.selector'.experimental_apps = []
-
-# Some default for the App Selector
-ext.'isaacsim.app.selector'.default_app = "omni.isaac.sim"
+ext.'isaacsim.app.selector'.apps = ["omni.isaac.sim", "omni.isaac.sim.headless"]
 ext.'isaacsim.app.selector'.auto_start = false
+ext.'isaacsim.app.selector'.default_app = "omni.isaac.sim"
+ext.'isaacsim.app.selector'.experimental_apps = []
 ext.'isaacsim.app.selector'.persistent_selector = false
 ext.'isaacsim.app.selector'.show_console = true
-
-
-# then the app is launched from Isaac Sim it doesn't have $app token
-# app.folder = ""
 
 # controled update rate
 app.runLoops.main.rateLimitEnabled = true
@@ -45,8 +32,9 @@ app.runLoops.main.rateLimitFrequency = 60
 app.runLoops.main.rateLimitUseBusyLoop = false
 
 # setup size
-app.window.width = 500
 app.window.height = 488
+app.window.width = 500
+
 app.window.noResize = true
 # center position
 app.window.x = -1
@@ -57,15 +45,11 @@ app.window._iconSize = 256
 app.window.iconPath = "${isaacsim.app.selector}/icons/omni.isaac.sim.png"
 
 # window properties
+app.window.alwaysOnTop = false
 app.window.fullscreen = false
 app.window.noDecorations = false
-app.window.alwaysOnTop = false
 app.window.scaleToMonitor = true
 
-# faster load time as not need for RTX
-# exts."omni.kit.renderer.core".compatibilityMode = true
-
-# Exit faster
 app.fastShutdown = true
 
 [settings."filter:platform"."windows-x86_64"]
@@ -74,4 +58,10 @@ ext.'isaacsim.app.selector'.ros_bridge_extension = 0 # default is none
 ext.'isaacsim.app.selector'.ros_bridge_extension = 0 # default is none
 
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]

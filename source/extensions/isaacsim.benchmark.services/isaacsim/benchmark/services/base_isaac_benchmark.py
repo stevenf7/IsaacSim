@@ -17,7 +17,7 @@ from isaacsim.benchmark.services import utils
 from isaacsim.benchmark.services.datarecorders import interface
 from isaacsim.benchmark.services.metrics import backend, measurements
 from isaacsim.core.utils.stage import open_stage
-from omni.isaac.nucleus import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path
 
 from .recorders import *
 from .utils import wait_until_stage_is_fully_loaded

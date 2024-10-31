@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.1.1"
+version = "4.1.2"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -17,22 +17,22 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.isaac.core_archive" = {}
-"omni.isaac.ml_archive" = {}
-"omni.isaac.nucleus" = {}
-"omni.pip.compute" = {} # scipy
-"omni.pip.cloud" = {}
-"omni.physx.tensors" = {}
-"omni.kit.usd.layers" = {}
-"omni.kit.material.library" = {optional = true} # OmniGlass
-"omni.warp.core" = {}
-"omni.physx.stageupdate" = {}
-"omni.usd.schema.semantics" = {}
-"omni.kit.stage_templates" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.prims" = {}
 "isaacsim.core.utils" = {}
 "isaacsim.core.version" = {}
+"isaacsim.storage.native" = {}
+"omni.isaac.core_archive" = {}
+"omni.isaac.ml_archive" = {}
+"omni.kit.material.library" = {optional = true} # OmniGlass
+"omni.kit.stage_templates" = {}
+"omni.kit.usd.layers" = {}
+"omni.physx.stageupdate" = {}
+"omni.physx.tensors" = {}
+"omni.pip.cloud" = {}
+"omni.pip.compute" = {} # scipy
+"omni.usd.schema.semantics" = {}
+"omni.warp.core" = {}
 
 [[python.module]]
 name = "isaacsim.core.api"

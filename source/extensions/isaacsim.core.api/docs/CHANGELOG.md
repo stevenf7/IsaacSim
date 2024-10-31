@@ -1,8 +1,12 @@
 # Changelog
-## [4.1.1] - 2024-10-24
+
+## [4.1.2] - 2024-10-29
 ### Changed
 - Updated dependencies and imports after renaming
 
+## [4.1.1] - 2024-10-24
+### Changed
+- Updated dependencies and imports after renaming
 
 ## [4.1.0] - 2024-10-24
 ### Changed

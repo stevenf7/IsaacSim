@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
-"omni.isaac.nucleus" = {}
+"isaacsim.storage.native" = {}
 "omni.kit.test" = {} # we derrive from the base test class and need this dependency
 
 [[python.module]]
