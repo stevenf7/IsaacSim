@@ -1200,3 +1200,5 @@ archives = [
     "omni.pip.cloud",
     # "omni.kit.pip_archive",
 ]
+[repo_dump_extensions]
+root_folder = "${root}/_build/${platform}/${config}"
