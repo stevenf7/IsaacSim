@@ -214,6 +214,11 @@ public:
         }
     }
 
+    virtual std::vector<std::string> getComponentIsAVector() const
+    {
+        return { "RangeSensorLidar", "RangeSensorGeneric", "IsaacSensorIsaacLightBeamSensor" };
+    }
+
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
         isaacsim::core::utils::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);

@@ -14,6 +14,7 @@
 
 #include <omni/usd/UtilsIncludes.h>
 //
+#include <omni/fabric/usd/PathConversion.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <memory>
@@ -128,14 +129,31 @@ public:
      */
     virtual void initComponents()
     {
-        pxr::UsdPrimRange range = mStage->Traverse();
+        PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
+        omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(mStage).ToLongInt()) };
+        omni::fabric::IStageReaderWriter* iStageReaderWriter =
+            carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
+        usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
 
-        for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+        const std::vector<std::string> componentIsAVector = getComponentIsAVector();
+        for (const std::string& componentIsA : componentIsAVector)
         {
-            pxr::UsdPrim prim = *iter;
-            onComponentAdd(prim);
+            const std::vector<usdrt::SdfPath> componentPaths =
+                usdrtStage->GetPrimsWithTypeName(usdrt::TfToken(componentIsA));
+
+            for (const usdrt::SdfPath& usdrtPath : componentPaths)
+            {
+                const omni::fabric::PathC pathC(usdrtPath);
+                const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+                pxr::UsdPrim prim = mStage->GetPrimAtPath(usdPath);
+
+                onComponentAdd(prim);
+            }
         }
     }
+
+    virtual std::vector<std::string> getComponentIsAVector() const = 0;
 
 
     /**

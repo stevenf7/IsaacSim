@@ -165,6 +165,7 @@ public:
 
     static void onPhysicsStep(float timeElapsed, void* userData)
     {
+        CARB_PROFILE_ZONE(0, "OgnOnPysicsStep::onPhysicsStep");
         handleIDPair* idpair = reinterpret_cast<handleIDPair*>(userData);
         auto graphHandle = idpair->graphHandle;
         auto instanceId = idpair->instanceId;

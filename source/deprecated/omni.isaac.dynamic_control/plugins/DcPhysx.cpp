@@ -3703,6 +3703,7 @@ void SuStop()
 
 void SuUpdate(float timeElapsed, void* userData)
 {
+    CARB_PROFILE_ZONE(0, "DcPhysx::SuUpdate");
     if (g_dcCtx)
     {
         // if this extension is acquired with play happening, make sure that simulating is set to true

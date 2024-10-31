@@ -29,6 +29,7 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/fabric/usd/PathConversion.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/KitUtils.h>
@@ -210,29 +211,50 @@ void onPlay()
 {
     g_simulationView = g_tensorApi->createSimulationView(g_stageID);
 
+    PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
+    omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(g_stage).ToLongInt()) };
+    omni::fabric::IStageReaderWriter* iStageReaderWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+    omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
+    usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
+
+    const std::vector<usdrt::SdfPath> imuSensorPaths =
+        usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("IsaacSensorIsaacImuSensor"));
+
     // First create the sensors and find the sensor parents to create physics views
-    for (const pxr::UsdPrim& prim : g_stage->Traverse())
+    for (const usdrt::SdfPath& usdrtPath : imuSensorPaths)
     {
-        if (prim.IsA<pxr::IsaacSensorIsaacImuSensor>())
+        const omni::fabric::PathC pathC(usdrtPath);
+        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+        pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
+
+        // Add the root prim
+        g_isaacSensorManager->onComponentAdd(prim);
+        isaacsim::sensors::physics::ImuSensor* imuSensor = dynamic_cast<isaacsim::sensors::physics::ImuSensor*>(
+            g_isaacSensorManager->getComponent(prim.GetPath().GetString()));
+
+        //  if the imu has no valid parent, return
+        if (imuSensor != nullptr)
         {
-            // Add the root prim
-            g_isaacSensorManager->onComponentAdd(prim);
-            isaacsim::sensors::physics::ImuSensor* imuSensor = dynamic_cast<isaacsim::sensors::physics::ImuSensor*>(
-                g_isaacSensorManager->getComponent(prim.GetPath().GetString()));
+            std::string parentPath = imuSensor->getParentPrim().GetPath().GetString();
 
-            //  if the imu has no valid parent, return
-            if (imuSensor != nullptr)
+            if (std::find(g_rigidBodyPaths.begin(), g_rigidBodyPaths.end(), parentPath) == g_rigidBodyPaths.end())
             {
-                std::string parentPath = imuSensor->getParentPrim().GetPath().GetString();
-
-                if (std::find(g_rigidBodyPaths.begin(), g_rigidBodyPaths.end(), parentPath) == g_rigidBodyPaths.end())
-                {
-                    g_rigidBodyPaths.push_back(parentPath);
-                }
+                g_rigidBodyPaths.push_back(parentPath);
             }
         }
-        else if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
+    }
+
+    {
+        const std::vector<usdrt::SdfPath> contactSensorPaths =
+            usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("IsaacSensorIsaacContactSensor"));
+
+        // First create the sensors and find the sensor parents to create physics views
+        for (const usdrt::SdfPath& usdrtPath : contactSensorPaths)
         {
+            const omni::fabric::PathC pathC(usdrtPath);
+            const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+            pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
+
             // Add the root prim
             g_isaacSensorManager->onComponentAdd(prim);
         }
@@ -262,8 +284,12 @@ void onPlay()
     rigidBodyData.ownData = true;
 
     // pass in the view data and index to the sensor
-    for (const pxr::UsdPrim& prim : g_stage->Traverse())
+    for (const usdrt::SdfPath& usdrtPath : imuSensorPaths)
     {
+        const omni::fabric::PathC pathC(usdrtPath);
+        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+        pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
+
         isaacsim::sensors::physics::ImuSensor* imuSensor = g_isaacSensorManager->getImuSensor(prim);
         if (imuSensor != nullptr)
         {
@@ -319,10 +345,12 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 
 void onPhysicsStep(float dt, void* userData)
 {
+    CARB_PROFILE_ZONE(0, "IsaacSensor::onPhysicsStep");
     if (g_isaacSensorManager)
     {
         if (firstFrame)
         {
+            CARB_PROFILE_ZONE(0, "IsaacSensor::firstFramePlay");
             onPlay();
             firstFrame = false;
         }
