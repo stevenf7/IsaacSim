@@ -101,6 +101,9 @@ def get_exposed_variable(prim: Usd.Prim, full_attr_name: str):
 
 def remove_empty_scopes(prim: Usd.Prim, stage: Usd.Stage) -> None:
     """Recursively (post-order) remove Scope or GenericPrim prims with no valid children from stage."""
+    if not prim.IsValid():
+        return
+
     for child in prim.GetChildren():
         remove_empty_scopes(child, stage)
 
