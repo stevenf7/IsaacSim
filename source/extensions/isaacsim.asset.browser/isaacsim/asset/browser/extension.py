@@ -13,7 +13,7 @@ import carb.settings
 import omni.ext
 import omni.kit.menu.utils
 import omni.ui as ui
-from omni.kit.browser.folder.core import TreeFolderBrowserWidget
+from omni.kit.browser.folder.core import TreeFolderBrowserWidgetEx
 
 from .window import AssetBrowserWindow
 
@@ -29,7 +29,7 @@ class AssetBrowserExtension(omni.ext.IExt):
         return self._window
 
     @property
-    def browser_widget(self) -> Optional[TreeFolderBrowserWidget]:
+    def browser_widget(self) -> Optional[TreeFolderBrowserWidgetEx]:
         return self._window._widget
 
     def on_startup(self, ext_id):
@@ -55,6 +55,7 @@ class AssetBrowserExtension(omni.ext.IExt):
         _extension_instance = self
 
     def on_shutdown(self):
+        ui.Workspace.set_show_window_fn(AssetBrowserWindow.WINDOW_TITLE, None)
         omni.kit.menu.utils.remove_menu_items(self._menu_entry, name=BROWSER_MENU_ROOT)
 
         if self._window is not None:

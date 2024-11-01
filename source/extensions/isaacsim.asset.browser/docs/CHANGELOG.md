@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2024-10-23
+### Changed
+- Switch to UI backend that supports Option Panel. Variant selection available for assets that have it. 
+
+
 ## [1.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
@@ -8,9 +13,7 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-09-23
-
 ### Changed
 
 - Extension renamed to isaacsim.asset.browser
