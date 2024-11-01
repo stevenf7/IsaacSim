@@ -131,36 +131,36 @@ def to_list(data):
 
 
 @wp.kernel
-def _assign11(src: Any, dst: wp.array(dtype=float), indices: wp.array(dtype=int)):
+def _assign11(src: Any, dst: wp.array(dtype=Any), indices: wp.array(dtype=int)):
     tid = wp.tid()
     idx = indices[tid]
     dst[idx] = src[tid]
 
 
-wp.overload(_assign11, {"src": wp.array(dtype=float)})
-wp.overload(_assign11, {"src": wp.indexedarray(dtype=float)})
+wp.overload(_assign11, {"src": wp.array(dtype=float), "dst": wp.array(dtype=float)})
+wp.overload(_assign11, {"src": wp.indexedarray(dtype=float), "dst": wp.array(dtype=float)})
 
 
 @wp.kernel
-def _assign12(src: Any, dst: wp.array(dtype=float, ndim=2), indices: wp.array(dtype=int)):
+def _assign12(src: Any, dst: wp.array(dtype=Any, ndim=2), indices: wp.array(dtype=int)):
     i, j = wp.tid()
     idx = indices[i]
     dst[idx, j] = src[i, j]
 
 
-wp.overload(_assign12, {"src": wp.array(dtype=float, ndim=2)})
-wp.overload(_assign12, {"src": wp.indexedarray(dtype=float, ndim=2)})
+wp.overload(_assign12, {"src": wp.array(dtype=float, ndim=2), "dst": wp.array(dtype=float, ndim=2)})
+wp.overload(_assign12, {"src": wp.indexedarray(dtype=float, ndim=2), "dst": wp.array(dtype=float, ndim=2)})
 
 
 @wp.kernel
-def _assign13(src: Any, dst: wp.array(dtype=float, ndim=3), indices: wp.array(dtype=int)):
+def _assign13(src: Any, dst: wp.array(dtype=Any, ndim=3), indices: wp.array(dtype=int)):
     i, j, k = wp.tid()
     idx = indices[i]
     dst[idx, j, k] = src[i, j, k]
 
 
-wp.overload(_assign13, {"src": wp.array(dtype=float, ndim=3)})
-wp.overload(_assign13, {"src": wp.indexedarray(dtype=float, ndim=3)})
+wp.overload(_assign13, {"src": wp.array(dtype=float, ndim=3), "dst": wp.array(dtype=float, ndim=3)})
+wp.overload(_assign13, {"src": wp.indexedarray(dtype=float, ndim=3), "dst": wp.array(dtype=float, ndim=3)})
 
 
 @wp.kernel
