@@ -1,8 +1,11 @@
 # Changelog
+## [3.0.2] - 2024-10-31
+### Changed
+- Use core.utils.articulations.find_all_articulation_base_paths() to find articulations on the stage.
+
 ## [3.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [3.0.0] - 2024-10-08
 ### Changed
