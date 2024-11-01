@@ -30,7 +30,7 @@ class AssetBrowserModel(TreeFolderBrowserModel):
         super().__init__(
             *args,
             setting_folders=SETTING_FOLDER,
-            show_category_subfolders=True,
+            show_category_subfolders=False,
             hide_file_without_thumbnails=False,
             local_cache_file="${shared_documents}/isaacsim.asset.browser.cache.json",
             filter_file_suffixes=[".usd", ".usda", ".usdc"],
