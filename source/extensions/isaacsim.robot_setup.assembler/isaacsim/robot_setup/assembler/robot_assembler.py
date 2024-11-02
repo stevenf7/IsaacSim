@@ -13,6 +13,7 @@ import numpy as np
 import omni.kit.commands
 import omni.timeline
 from isaacsim.core.prims import SingleXFormPrim
+from isaacsim.core.utils.articulations import move_articulation_root
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 from isaacsim.core.utils.prims import (
     delete_prim,
@@ -23,7 +24,7 @@ from isaacsim.core.utils.prims import (
 )
 from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.utils.string import find_unique_string_name
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdPhysics
 
 
 class AssembledBodies:
@@ -106,7 +107,7 @@ class AssembledBodies:
             carb.log_warn("Cannot disassemble a robot that has already been disassembled")
             return
 
-        RobotAssembler.move_articulation_root(get_prim_at_path(self._attach_path), self._articulation_root)
+        move_articulation_root(get_prim_at_path(self._attach_path), self._articulation_root)
 
         # Reactivate the root joints tying attach robot to stage
         for root_joint in self.root_joints:
@@ -288,17 +289,20 @@ class RobotAssembler:
         self._timeline = omni.timeline.get_timeline_interface()
 
     @staticmethod
-    def move_articulation_root(src_prim, tgt_prim):
+    def move_articulation_root(src_prim, dst_prim):
         """
-        Move the articulation root from src to tgt
-        """
-        if src_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-            src_prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
-            if src_prim.HasAPI(PhysxSchema.PhysxArticulationAPI):
-                src_prim.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
+        Move the articulation root from src to dst.
 
-            tgt_prim.ApplyAPI(UsdPhysics.ArticulationRootAPI)
-            tgt_prim.ApplyAPI(PhysxSchema.PhysxArticulationAPI)
+        This function is deprecated in favor of
+        `isaacsim.core.utils.articulations.move_articulation_root()` and will be removed in a future
+        release.
+        """
+        carb.log_warn(
+            "`RobotAssembler.move_articulation_root()` has been deprecated in favor of "
+            "`isaacsim.core.utils.articulations.move_articulation_root()`.  It will be "
+            "removed in a future release."
+        )
+        move_articulation_root(src_prim, dst_prim)
 
     def is_root_joint(self, prim):
         return UsdPhysics.Joint(prim) and (
@@ -380,7 +384,7 @@ class RobotAssembler:
 
         # Move the Articulation root to the attach path to avoid edge cases with physics parsing.
         if articulation_root.HasAPI(UsdPhysics.ArticulationRootAPI):
-            self.move_articulation_root(articulation_root, attach_prim)
+            move_articulation_root(articulation_root, attach_prim)
 
         # Find and Disable Fixed Joints that Tie Object B to the Stage
         root_joints = [p for p in Usd.PrimRange(attach_prim) if self.is_root_joint(p)]
