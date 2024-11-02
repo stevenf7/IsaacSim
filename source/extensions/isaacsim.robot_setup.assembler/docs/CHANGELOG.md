@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.0] - 2024-10-31
+### Changed
+- Update Robot Assembler to use functions moved to isaacsim.core.utils.articulations
+- Deprecate RobotAssembler.move_articulation_root()
+
 ## [2.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

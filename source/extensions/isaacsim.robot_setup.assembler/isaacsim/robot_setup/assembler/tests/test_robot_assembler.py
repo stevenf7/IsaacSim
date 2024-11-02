@@ -16,6 +16,7 @@ import numpy as np
 import omni.kit.test
 from isaacsim.core.api.world import World
 from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
+from isaacsim.core.utils.articulations import find_all_articulation_base_paths, move_articulation_root
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
@@ -70,6 +71,12 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(sphereLight.GetPath().pathString).set_world_pose([6.5, 0, 12])
+
+    def assertListsSame(self, l1, l2):
+        for item in l1:
+            self.assertTrue(item in l2, f"{l1}, {l2}")
+
+        self.assertTrue(len(l2) == len(l1), f"{l1}, {l2}")
 
     async def _prepare_stage(self, robots: List[SingleArticulation]):
         # Set settings to ensure deterministic behavior
@@ -191,12 +198,10 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         SingleXFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
         # Move the Articulation root to different places in order to test that each location is handled correctly
-        RobotAssembler.move_articulation_root(
-            get_prim_at_path("/World/ur10e/root_joint"), get_prim_at_path(base_art_root)
-        )
-        RobotAssembler.move_articulation_root(
-            get_prim_at_path("/World/allegro_hand"), get_prim_at_path(attach_art_root)
-        )
+        move_articulation_root(get_prim_at_path("/World/ur10e/root_joint"), get_prim_at_path(base_art_root))
+        move_articulation_root(get_prim_at_path("/World/allegro_hand"), get_prim_at_path(attach_art_root))
+
+        self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e", "/World/allegro_hand"])
 
         await update_stage_async()
         await update_stage_async()
@@ -241,6 +246,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
                     controllable_single_robot.get_joint_positions(),
                 )
 
+                self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e"])
+
             else:
                 # The robots are controlled independently from each other
                 base_robot = SingleArticulation(base_robot_path)
@@ -256,6 +263,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
                 await self._wait_n_frames(num_frame_to_settle)
                 self.assertTrue(np.all(abs(base_robot.get_joint_positions() - base_robot_joint_target) < 0.01))
                 self.assertTrue(np.all(abs(attach_robot.get_joint_positions() - hand_joint_target) < 0.01))
+
+                self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e", "/World/allegro_hand"])
 
             attach_robot_mount_path = attach_robot_path + attach_robot_mount_frame
 
@@ -281,6 +290,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             self.assertTrue(attach_art_prim.HasAPI(UsdPhysics.ArticulationRootAPI))
             self.assertTrue(attach_art_prim.HasAPI(PhysxSchema.PhysxArticulationAPI))
             self.assertTrue(attach_art_prim.GetProperty("physxArticulation:articulationEnabled").IsValid())
+
+            self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e", "/World/allegro_hand"])
 
     async def testRobotToRigidBodyAssemble(self):
         assets_root_path = await get_assets_root_path_async()

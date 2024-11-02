@@ -17,8 +17,9 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
+from isaacsim.core.utils.articulations import find_all_articulation_base_paths
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
+from isaacsim.core.utils.prims import get_prim_object_type
 from isaacsim.core.utils.stage import update_stage_async
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.gui.components.element_wrappers import (
@@ -33,7 +34,7 @@ from isaacsim.gui.components.element_wrappers import (
     TextBlock,
 )
 from isaacsim.gui.components.ui_utils import get_style, setup_ui_headers
-from pxr import Usd, UsdGeom, UsdPhysics
+from pxr import Usd, UsdGeom
 
 from .global_variables import EXTENSION_TITLE
 from .robot_assembler import RobotAssembler
@@ -772,11 +773,11 @@ class UIBuilder:
         selections = [d.get_selection() for d in self._robot_dropdowns[:ind]]
         options = []
 
-        articulations = self._find_all_articulations()
+        self._articulation_options = find_all_articulation_base_paths()
         if self._show_art_cbs[ind].get_value():
-            options.extend(articulations)
+            options.extend(self._articulation_options)
         if self._show_rigid_body_cbs[ind].get_value():
-            rigid_bodies = self._find_all_rigid_bodies(articulations)
+            rigid_bodies = self._find_all_rigid_bodies(self._articulation_options)
             options.extend(rigid_bodies)
 
         for selection in selections:
@@ -787,72 +788,8 @@ class UIBuilder:
             self.assembly_frame.enabled = False
         else:
             self.assembly_frame.enabled = True
+
         return options
-
-    def _find_all_articulations(self):
-        art_root_paths = []
-        articulation_candidates = set()
-
-        stage = omni.usd.get_context().get_stage()
-
-        if not stage:
-            return art_root_paths
-
-        # Find all articulation root paths
-        # Find all paths that are the maximal subpath of all prims connected by a fixed joint
-        # I.e. a fixed joint connecting /ur10/link1 to /ur10/link0 would result in the path
-        # /ur10.  The path /ur10 becomes a candidate Articulation.
-        for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
-            if (
-                prim.HasAPI(UsdPhysics.ArticulationRootAPI)
-                and prim.GetProperty("physxArticulation:articulationEnabled").IsValid()
-                and prim.GetProperty("physxArticulation:articulationEnabled").Get()
-            ):
-                art_root_paths.append(tuple(str(prim.GetPath()).split("/")[1:]))
-            elif UsdPhysics.Joint(prim):
-                bodies = prim.GetProperty("physics:body0").GetTargets()
-                bodies.extend(prim.GetProperty("physics:body1").GetTargets())
-                if len(bodies) == 1:
-                    continue
-                base_path_split = str(bodies[0]).split("/")[1:]
-                for body in bodies[1:]:
-                    body_path_split = str(body).split("/")[1:]
-                    for i in range(len(base_path_split)):
-                        if len(body_path_split) < i or base_path_split[i] != body_path_split[i]:
-                            base_path_split = base_path_split[:i]
-                            break
-                articulation_candidates.add(tuple(base_path_split))
-
-        # Only keep candidates whose path is not a subset of another candidate's path
-        unique_candidates = []
-        for c1 in articulation_candidates:
-            is_unique = True
-            for c2 in articulation_candidates:
-                if c1 == c2:
-                    continue
-                elif c2[: len(c1)] == c1:
-                    is_unique = False
-                    break
-            if is_unique:
-                unique_candidates.append(c1)
-
-        # Only keep candidates that are a subset of exactly one articulation root
-        art_base_paths = []
-        for c in unique_candidates:
-            subset_count = 0
-            for root in art_root_paths:
-                if root[: len(c)] == c:
-                    subset_count += 1
-            if subset_count == 1:
-                art_path = ""
-                for s in c:
-                    art_path += "/" + s
-                art_base_paths.append(art_path)
-
-        # Keep memory of the Articulations in the DropDown menu to differentiate from Rigid Bodies
-        self._articulation_options = art_base_paths
-
-        return art_base_paths
 
     def _find_all_rigid_bodies(self, exclude_paths):
         items = []
