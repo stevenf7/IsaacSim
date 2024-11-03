@@ -31,7 +31,7 @@ except:
     # try to import app_framework, we *might* be running in custom app env
     from app_framework import SimulationApp
 
-APP_CONFIG = {"renderer": "RayTracedLighting", "headless": False, "width": 1920, "height": 1080}
+APP_CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 
 
 class AgentSDG:
