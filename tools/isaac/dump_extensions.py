@@ -74,6 +74,12 @@ def read_text_from_url(url):
         return None
 
 
+def read_text(file_path):
+    with open(file_path, "r") as file:
+        text = file.read()
+    return text
+
+
 def process_exact_version_dependencies(lines):
     start_index = None
     end_index = None
@@ -171,16 +177,21 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         all_exts["physics"] = list_folders(root_path + "/extsPhysics")
 
         url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/main/templates/omni.all.template.extensions.kit?ref_type=heads"
-
+        # url_p1 = "https://gitlab-master.nvidia.com/omniverse/sample-p1-extensions/-/raw/main/source/apps/omni.sample_p1.extensions.kit"
+        url_p1 = "/home/hmazhar/repos/omni_isaac_sim/omni.sample_p1.extensions.kit"
         text = read_text_from_url(url)
+        text_p1 = read_text(url_p1)
         all_exts["exact_versions"] = process_exact_version_dependencies(text.splitlines())
         all_exts["version_lock"] = process_version_lock(text)
 
+        all_exts["exact_versions_p1"] = process_exact_version_dependencies(text_p1.splitlines())
+        all_exts["version_lock_p1"] = process_version_lock(text_p1)
         all_exts_sets = convert_lists_to_sets(remove_after_hyphen_from_dict_lists(all_exts))
 
         all_isaac_sim_exts = all_exts_sets["isaac"] | all_exts_sets["isaac_deprecated"]
         template_exts = all_exts_sets["exact_versions"] | all_exts_sets["version_lock"]  # all extension template exts
-        non_template_exts = all_exts_sets["other_exts"] - template_exts
+        p1_exts = all_exts_sets["exact_versions_p1"] | all_exts_sets["version_lock_p1"]
+        non_template_exts = all_exts_sets["other_exts"] - template_exts - p1_exts
 
         print("Isaac Sim Extensions")
         pprint(all_isaac_sim_exts)
