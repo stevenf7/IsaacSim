@@ -16,8 +16,8 @@ parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs o
 parser.add_argument("--max-in-line", type=int, default=10, help="Max number of robots in line")
 parser.add_argument(
     "--backend-type",
-    default="OsmoKPIFile",
-    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
+    default="OmniPerfKPIFile",
+    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
 

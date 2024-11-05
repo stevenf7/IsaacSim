@@ -1,4 +1,7 @@
 # Changelog
+## [2.1.0] - 2024-11-03
+### Added
+- Added OmniPerfKPIFile backend and made default option
 
 ## [2.0.3] - 2024-10-29
 ### Changed

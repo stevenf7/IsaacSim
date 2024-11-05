@@ -61,7 +61,7 @@ class BaseIsaacBenchmark:
     def __init__(
         self,
         benchmark_name: str = "BaseIsaacBenchmark",
-        backend_type: str = "OsmoKPIFile",
+        backend_type: str = "OmniPerfKPIFile",
         workflow_metadata: dict = {},
     ):
         """
@@ -70,7 +70,7 @@ class BaseIsaacBenchmark:
             benchmark_name (str, optional): Name of benchmark - will be printed in outputs. Defaults to
                 "BaseIsaacBenchmark".
             backend_type (str, optional): Type of backend used to collect and print metrics. Supported values provided
-                in metrics.backend. Defaults to "OsmoKPIFile".
+                in metrics.backend. Defaults to "OmniPerfKPIFile".
             workflow_metadata (dict, optional): Metadata describing benchmark (eg. number of GPUs, number of cameras,
                 etc.) Most useful for OsmoKPIFile backend. Expected as JSON-style input - nested dictionary of
                 {"metadata": [{"name": <name>, "data": <value>}, ...]}. Defaults to {}.

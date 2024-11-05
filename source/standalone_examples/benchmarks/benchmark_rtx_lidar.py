@@ -19,10 +19,11 @@ parser.add_argument(
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
 parser.add_argument(
     "--backend-type",
-    default="OsmoKPIFile",
-    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
+    default="OmniPerfKPIFile",
+    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
+
 
 args, unknown = parser.parse_known_args()
 
