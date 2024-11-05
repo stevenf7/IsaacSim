@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.0] - 2024-11-05
+### Added
+- Added joint_names argument to ArticulationActions type.
+
 ## [2.1.0] - 2024-10-29
 ### Added
 - Added utility for finding the base paths of all Articulations on the stage.

@@ -795,10 +795,16 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
-                        old_efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
+                        old_efforts = self._frankas_view.get_max_efforts(
+                            indices=[1], joint_names=["panda_joint6", "panda_joint5"]
+                        )
                         new_efforts = torch.tensor([[100.0, 100.0]], device=device)
-                        self._frankas_view.set_max_efforts(new_efforts, indices=[1], joint_indices=[1, 2])
-                        efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
+                        self._frankas_view.set_max_efforts(
+                            new_efforts, indices=[1], joint_names=["panda_joint6", "panda_joint5"]
+                        )
+                        efforts = self._frankas_view.get_max_efforts(
+                            indices=[1], joint_names=["panda_joint6", "panda_joint5"]
+                        )
                     else:
                         old_efforts = self._frankas_view.get_max_efforts()
                         new_efforts = torch.tensor(

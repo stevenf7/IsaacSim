@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2024-11-05
+### Added
+- Added joint_names argument to all the joint related methods for ease of specifying which joints to manipulate/ query. 
+
 ## [0.2.0] - 2024-10-31
 ### Changed
 - changed .initialize and .post_reset methods to be event triggered
