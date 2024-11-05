@@ -83,6 +83,27 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 logger.error("No packages found.")
                 sys.exit(-1)
             for package in packages:
+
+                if package.lower().endswith((".7z")):
+                    print(f"Converting package {package} to a zip file.")
+                    with omni.repo.man.TemporaryDirectory() as temp_dir:
+                        target_dir = temp_dir
+                        logger.info("TempDir: %s" % target_dir)
+                        logger.info("NOTE: File attributes are not preserved when converting package on Windows.")
+                        try:
+                            packmanapi.extract_archive7z_to_folder(package, target_dir)
+                            new_package = f"{os.path.splitext(package)[0]}.zip"
+                            packmanapi.create_archivezip_from_folder(target_dir, new_package)
+                            omni.repo.package.try_remove(package)
+                            package = new_package
+                        except:
+                            print(f"Error converting {package}.")
+                            sys.exit(-1)
+
+                if not package.lower().endswith((".zip")):
+                    print(f"Invalid package {package}. Need to be a zip file.")
+                    sys.exit(-1)
+
                 print(f"Publishing Package {package}")
                 remote = "cloudfront"
                 try:
@@ -94,5 +115,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 package_info = packmanapi.resolve(name=package_name, package_version=package_version, remotes=[remote])
                 package_url = package_info["remote_url"]
                 print(f"package: {package_name}, url: {package_url}")
+
+                if "windows" in package:
+                    package_url_windows = package_url
+                else:
+                    package_url_linux = package_url
+
+        print(f"package_url_windows: {package_url_windows}")
+        print(f"package_url_linux: {package_url_linux}")
 
     return run_repo_tool
