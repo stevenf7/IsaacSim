@@ -16,9 +16,9 @@ parser.add_argument("--device", type=str, default="cpu", help="simulation device
 parser.add_argument("--visual", type=bool, default=False, help="Render for debugging purposes")
 parser.add_argument(
     "--backend-type",
-    default="OsmoKPIFile",
-    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
-    help="Benchmarking backend, defaults OsmoKPIFile",
+    default="OmniPerfKPIFile",
+    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
+    help="Benchmarking backend, defaults",
 )
 
 args, unknown = parser.parse_known_args()

@@ -48,10 +48,11 @@ parser.add_argument("--print-results", action="store_true", help="Print results 
 parser.add_argument("--headless", action="store_true", help="Run in headless mode")
 parser.add_argument(
     "--backend-type",
-    default="OsmoKPIFile",
-    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile"],
+    default="OmniPerfKPIFile",
+    choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
+
 parser.add_argument("--skip-write", action="store_true", help="Skip writing annotator data to disk")
 parser.add_argument("--env-url", default=None, help="Path to the environment url, default None")
 
