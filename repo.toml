@@ -154,8 +154,8 @@ apps = [
 
 # Registries to use
 registries = [
-    { name = "kit/default", url = "http://tmpexts.nvidia.com/default" },
-    { name = "kit/sdk", url = "http://tmpexts.nvidia.com/sdk/${kit_version_short}/${kit_git_hash}" },
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
 
 # Link selected extensions into a separate folder without a version. Used for build-time referencing extensions.
