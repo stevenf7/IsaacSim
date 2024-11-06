@@ -19,6 +19,7 @@ from .delegate import AssetDetailDelegate
 from .empty_property_delegate import EmptyPropertyDelegate
 from .model import AssetBrowserModel
 from .multi_property_delegate import MultiPropertyDelegate
+from .options_menu import FolderOptionsMenu
 from .prop_property_delegate import PropAssetPropertyDelegate
 from .style import PROPERTY_STYLE
 
@@ -28,7 +29,7 @@ class AssetBrowserWindow(ui.Window):
     Represent a window to show Assets
     """
 
-    WINDOW_TITLE = "Isaac Assets"
+    WINDOW_TITLE = "Isaac Sim Assets"
 
     def __init__(self, visible=True):
         super().__init__(self.WINDOW_TITLE, visible=visible)
@@ -36,6 +37,7 @@ class AssetBrowserWindow(ui.Window):
         self.__empty_delegate: Optional[EmptyPropertyDelegate] = None
         self.__prop_delegate: Optional[PropAssetPropertyDelegate] = None
         self.__multi_delegate: Optional[MultiPropertyDelegate] = None
+        self._options_menu: Optional[FolderOptionsMenu] = None
 
         self.frame.set_build_fn(self._build_ui)
 
@@ -65,6 +67,9 @@ class AssetBrowserWindow(ui.Window):
         if self._widget:
             self._widget.destroy()
             self._widget = None
+        if self._options_menu:
+            self._options_menu.destroy()
+            self._options_menu = None
 
         super().destroy()
 
@@ -75,12 +80,14 @@ class AssetBrowserWindow(ui.Window):
         preload_folder = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../predownload"))
         self._browser_model = AssetBrowserModel()
         self._delegate = AssetDetailDelegate(self._browser_model)
+        self._options_menu = FolderOptionsMenu()
 
         with self.frame:
             with ui.VStack(spacing=15):
                 self._widget = TreeFolderBrowserWidgetEx(
                     self._browser_model,
                     detail_delegate=self._delegate,
+                    options_menu=self._options_menu,
                     predownload_folder=preload_folder,
                     style=PROPERTY_STYLE,
                 )

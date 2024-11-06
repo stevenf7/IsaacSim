@@ -1,5 +1,5 @@
 [package]
-version = "0.3.6"
+version = "0.3.7"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
@@ -18,12 +18,15 @@ toggleable = false
 
 # Isaac Sim Core Extensions
 "isaacsim.core.api" = {}
-"isaacsim.storage.native" = {}
+"isaacsim.asset.browser" = {}
 
 [deprecation]
 warning = "omni.isaac.asset_check is deprecated in Isaac Sim 4.2.0 and will be removed in the future"
 
 [[python.module]]
 name = "omni.isaac.assets_check"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."
 
 

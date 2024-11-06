@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.2] - 2024-11-01
+### Changed
+- Deprecated get_nvidia_asset_root_path()
+- Deprecated get_isaac_asset_root_path()
+
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming

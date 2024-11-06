@@ -84,7 +84,7 @@ class AssetBrowserExtension(omni.ext.IExt):
                 name="Browsers",
                 sub_menu=[
                     omni.kit.menu.utils.MenuItemDescription(
-                        name="Isaac", ticked=True, ticked_fn=self._is_visible, onclick_fn=self._toggle_window
+                        name="Isaac Sim Assets", ticked=True, ticked_fn=self._is_visible, onclick_fn=self._toggle_window
                     )
                 ],
             )
