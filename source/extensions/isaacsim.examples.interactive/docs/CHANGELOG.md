@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.0] - 2024-10-29
+### Changed
+- Moved all the examples from Menu to Browser
+
 ## [4.1.3] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

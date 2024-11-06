@@ -16,6 +16,7 @@ import omni
 import omni.kit.commands
 import omni.physx as _physx
 import omni.ui as ui
+from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
 from isaacsim.sensors.physics import _sensor
@@ -31,108 +32,104 @@ class Imu_sensor_demo(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._ext_id = ext_id
         self._extension_path = ext_manager.get_extension_path(ext_id)
-
-        self._menu_items = [
-            MenuItemDescription(
-                name="Sensors",
-                sub_menu=[make_menu_item_description(ext_id, "IMU", lambda a=weakref.proxy(self): a.build_ui())],
-            )
-        ]
-        add_menu_items(self._menu_items, "Isaac Examples")
         self.meters_per_unit = 1.00
         self._window = None
+
+        get_browser_instance().register_example(
+            name="IMU Sensor",
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(),
+            category="Sensors",
+        )
+
+    def build_window(self):
+        pass
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
             self.on_closed()
 
     def build_ui(self):
-        if self._window is None:
-            self._is = _sensor.acquire_imu_sensor_interface()
+        with ui.VStack(spacing=5, height=0):
 
-            self._timeline = omni.timeline.get_timeline_interface()
-            self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
+            title = "IMU Sensor Example"
+            doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html"
 
-            self.body_path = "/Ant/Sphere"
+            overview = "This Example shows the output of the IMU sensor. "
+            overview += "The IMU sensor reads motion of the body of the robot and output simulated accelerometer and gyroscope readings"
+            overview += "\nPress PLAY to start the simulation, hold 'shift' and left click the model to drag it around"
+            overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
-            self.sliders = None
-            # self._window = ui.Window(
-            #     title="IMU Sensor Sample", width=300, height=200, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            # )
-            self.sliders = []
-            self.colors = [
-                0xFFBBBBFF,
-                0xFFBBFFBB,
-                0xBBFFBBBB,
-                0xBBAAEEFF,
-                0xAABBFFEE,
-                0xFFEEAABB,
-                0xFFC8D5D0,
-                0xFFC89BD0,
-                0xFFAF9BA7,
-                0xFFA4B99A,
-            ]
-            self.acc_names = ["Acc x", "Acc y", "Acc z"]
-            self.gyro_names = ["Gyro x", "Gyro y", "Gyro z"]
-            self.orient_names = ["Orient x", "Orient y", "Orient z", "Orient w"]
+            setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
+            ui.Button("Load Scene", clicked_fn=lambda: self._load_scene())
 
-            style = {"background_color": 0xFF888888, "color": 0xFF333333, "secondary_color": self.colors[0]}
+    def _load_scene(self):
+        if self._window:
+            # clear existing window
+            self.on_closed()
 
-            self.plots = []
-            self.plot_vals = []
-            self._window = ui.Window(
-                title=EXTENSION_NAME, width=600, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            )
-            with self._window.frame:
-                with ui.VStack(spacing=5, height=0):
+        self._is = _sensor.acquire_imu_sensor_interface()
 
-                    title = "IMU Sensor Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html"
+        self._timeline = omni.timeline.get_timeline_interface()
+        self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
 
-                    overview = "This Example shows the output of the IMU sensor. "
-                    overview += "The IMU sensor reads motion of the body of the robot and output simulated accelerometer and gyroscope readings"
-                    overview += (
-                        "\nPress PLAY to start the simulation, hold 'shift' and left click the model to drag it around"
-                    )
-                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+        self.body_path = "/Ant/Sphere"
 
-                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+        self.sliders = None
 
-                    frame = ui.CollapsableFrame(
-                        title="Sensor Readings",
-                        height=0,
-                        collapsed=False,
-                        style=get_style(),
-                        style_type_name_override="CollapsableFrame",
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    )
-                    with frame:
-                        with ui.VStack(style=get_style(), spacing=3):
-                            for i in range(3):
-                                with ui.HStack():
-                                    ui.Label(self.acc_names[i], width=LABEL_WIDTH, tooltip="acceleration in m/s^2")
-                                    # ui.Spacer(height=0, width=10)
-                                    style["secondary_color"] = self.colors[i]
-                                    self.sliders.append(ui.FloatDrag(min=-15.0, max=15.0, step=0.001, style=style))
-                                    self.sliders[-1].enabled = False
-                                    ui.Spacer(width=20)
-                            for j in range(3):
-                                with ui.HStack():
-                                    ui.Label(self.gyro_names[j], width=LABEL_WIDTH, tooltip="angular velocity in rad/s")
-                                    # ui.Spacer(height=0, width=10)
-                                    style["secondary_color"] = self.colors[3 + j]
-                                    self.sliders.append(ui.FloatDrag(min=-15.0, max=15.0, step=0.001, style=style))
-                                    self.sliders[-1].enabled = False
-                                    ui.Spacer(width=20)
-                            for k in range(4):
-                                with ui.HStack():
-                                    ui.Label(self.orient_names[k], width=LABEL_WIDTH, tooltip="orientation quaternion")
-                                    # ui.Spacer(height=0, width=10)
-                                    style["secondary_color"] = self.colors[6 + k]
-                                    self.sliders.append(ui.FloatDrag(min=-1.0, max=1.0, step=0.001, style=style))
-                                    self.sliders[-1].enabled = False
-                                    ui.Spacer(width=20)
+        self.sliders = []
+        self.colors = [
+            0xFFBBBBFF,
+            0xFFBBFFBB,
+            0xBBFFBBBB,
+            0xBBAAEEFF,
+            0xAABBFFEE,
+            0xFFEEAABB,
+            0xFFC8D5D0,
+            0xFFC89BD0,
+            0xFFAF9BA7,
+            0xFFA4B99A,
+        ]
+        self.acc_names = ["Acc x", "Acc y", "Acc z"]
+        self.gyro_names = ["Gyro x", "Gyro y", "Gyro z"]
+        self.orient_names = ["Orient x", "Orient y", "Orient z", "Orient w"]
+
+        style = {"background_color": 0xFF888888, "color": 0xFF333333, "secondary_color": self.colors[0]}
+
+        self.plots = []
+        self.plot_vals = []
+        self._window = ui.Window(
+            title=EXTENSION_NAME, width=300, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+
+        self._window.set_visibility_changed_fn(self._on_visibility_changed)
+
+        with self._window.frame:
+            with ui.VStack(style=get_style(), spacing=3):
+                for i in range(3):
+                    with ui.HStack():
+                        ui.Label(self.acc_names[i], width=LABEL_WIDTH, tooltip="acceleration in m/s^2")
+                        # ui.Spacer(height=0, width=10)
+                        style["secondary_color"] = self.colors[i]
+                        self.sliders.append(ui.FloatDrag(min=-15.0, max=15.0, step=0.001, style=style))
+                        self.sliders[-1].enabled = False
+                        ui.Spacer(width=20)
+                for j in range(3):
+                    with ui.HStack():
+                        ui.Label(self.gyro_names[j], width=LABEL_WIDTH, tooltip="angular velocity in rad/s")
+                        # ui.Spacer(height=0, width=10)
+                        style["secondary_color"] = self.colors[3 + j]
+                        self.sliders.append(ui.FloatDrag(min=-15.0, max=15.0, step=0.001, style=style))
+                        self.sliders[-1].enabled = False
+                        ui.Spacer(width=20)
+                for k in range(4):
+                    with ui.HStack():
+                        ui.Label(self.orient_names[k], width=LABEL_WIDTH, tooltip="orientation quaternion")
+                        # ui.Spacer(height=0, width=10)
+                        style["secondary_color"] = self.colors[6 + k]
+                        self.sliders.append(ui.FloatDrag(min=-1.0, max=1.0, step=0.001, style=style))
+                        self.sliders[-1].enabled = False
+                        ui.Spacer(width=20)
 
             asyncio.ensure_future(self.create_scenario())
 
@@ -140,15 +137,19 @@ class Imu_sensor_demo(omni.ext.IExt):
 
     def on_shutdown(self):
         self.on_closed()
-        remove_menu_items(self._menu_items, "Isaac Examples")
+        get_browser_instance().deregister_example(name="IMU Sensor", category="Sensors")
+
+    def _on_visibility_changed(self, visible):
+        if not visible:
+            self.on_closed()
 
     def on_closed(self):
         if self._window:
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
-
-        self._window = None
+            self._window.destroy()
+            self._window = None
 
     def _on_update(self, dt):
         if self._timeline.is_playing() and self.sliders:

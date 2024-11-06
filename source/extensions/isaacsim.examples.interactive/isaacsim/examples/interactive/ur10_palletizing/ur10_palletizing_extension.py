@@ -29,13 +29,42 @@ class BinStackingExtension(BaseSampleExtension):
             overview="This Example shows how to do Palletizing using UR10 robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=BinStacking(self.on_diagnostics),
             file_path=os.path.abspath(__file__),
-            number_of_extra_frames=2,
         )
         self.decision_stack = ""
-        self.task_ui_elements = {}
-        frame = self.get_frame(index=0)
-        self.build_task_controls_ui(frame)
         return
+
+    def build_ui(self):
+        extra_stacks = self.build_default_frame()
+        self.build_extra_frames(extra_stacks)
+
+    def build_extra_frames(self, extra_stacks):
+        self.task_ui_elements = {}
+
+        with extra_stacks:
+            with ui.CollapsableFrame(
+                title="Task Control",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+                self.build_task_controls_ui()
+
+            with ui.CollapsableFrame(
+                title="Diagnostic",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+
+                self.build_diagnostic_ui()
 
     def on_diagnostics(self, diagnostic, decision_stack):
         if self.decision_stack != decision_stack:
@@ -81,34 +110,27 @@ class BinStackingExtension(BaseSampleExtension):
         self.task_ui_elements["Start Palletizing"].enabled = False
         return
 
-    def build_task_controls_ui(self, frame):
-        with frame:
-            with ui.VStack(spacing=5):
-                # Update the Frame Title
-                frame.title = "Task Controls"
-                frame.visible = True
-                dict = {
-                    "label": "Start Palletizing",
-                    "type": "button",
-                    "text": "Start Palletizing",
-                    "tooltip": "Start Palletizing",
-                    "on_clicked_fn": self._on_start_button_event,
-                }
+    def build_task_controls_ui(self):
+        with ui.VStack(spacing=5):
 
-                self.task_ui_elements["Start Palletizing"] = btn_builder(**dict)
-                self.task_ui_elements["Start Palletizing"].enabled = False
-        # with self._main_stack:
-        with self.get_frame(index=1):
-            self.get_frame(index=1).title = "Diagnostics"
-            self.get_frame(index=1).visible = True
-            self._diagnostics = ui.VStack(spacing=5)
-            # self._diagnostics.enabled = False
-            with self._diagnostics:
-                ui.Label("Decision Stack", height=20)
-                self.state_model = ui.SimpleStringModel()
-                ui.StringField(self.state_model, multiline=True, height=120)
-                self.selected_bin = str_builder("Selected Bin", "<No Bin Selected>", read_only=True)
-                self.bin_base = str_builder("Bin Base", "", read_only=True)
-                self.grasp_reached = cb_builder("Grasp Reached", False)
-                self.is_attached = cb_builder("Is Attached", False)
-                self.needs_flip = cb_builder("Needs Flip", False)
+            dict = {
+                "label": "Start Palletizing",
+                "type": "button",
+                "text": "Start Palletizing",
+                "tooltip": "Start Palletizing",
+                "on_clicked_fn": self._on_start_button_event,
+            }
+
+            self.task_ui_elements["Start Palletizing"] = btn_builder(**dict)
+            self.task_ui_elements["Start Palletizing"].enabled = False
+
+    def build_diagnostic_ui(self):
+        with ui.VStack(spacing=5):
+            ui.Label("Decision Stack", height=20)
+            self.state_model = ui.SimpleStringModel()
+            ui.StringField(self.state_model, multiline=True, height=120)
+            self.selected_bin = str_builder("Selected Bin", "<No Bin Selected>", read_only=True)
+            self.bin_base = str_builder("Bin Base", "", read_only=True)
+            self.grasp_reached = cb_builder("Grasp Reached", False)
+            self.is_attached = cb_builder("Is Attached", False)
+            self.needs_flip = cb_builder("Needs Flip", False)

@@ -14,19 +14,18 @@ from abc import abstractmethod
 import omni.ext
 import omni.ui as ui
 from isaacsim.core.api import World
+from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.base_sample import BaseSample
-from isaacsim.gui.components.menu import make_menu_item_description
-from isaacsim.gui.components.ui_utils import btn_builder, get_style, scrolling_frame_builder, setup_ui_headers
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
 
 
 class BaseSampleExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._menu_items = None
         self._buttons = None
         self._ext_id = ext_id
         self._sample = None
         self._extra_frames = []
+        self._menu_dicts = None
         return
 
     def start_extension(
@@ -39,113 +38,102 @@ class BaseSampleExtension(omni.ext.IExt):
         overview: str,
         file_path: str,
         sample=None,
-        number_of_extra_frames=1,
-        window_width=350,
-        keep_window_open=False,
     ):
         if sample is None:
             self._sample = BaseSample()
         else:
             self._sample = sample
 
-        menu_items = [make_menu_item_description(self._ext_id, name, lambda a=weakref.proxy(self): a._menu_callback())]
-        if menu_name == "" or menu_name is None:
-            self._menu_items = menu_items
-        elif submenu_name == "" or submenu_name is None:
-            self._menu_items = [MenuItemDescription(name=menu_name, sub_menu=menu_items)]
-        else:
-            self._menu_items = [
-                MenuItemDescription(
-                    name=menu_name, sub_menu=[MenuItemDescription(name=submenu_name, sub_menu=menu_items)]
-                )
-            ]
-        add_menu_items(self._menu_items, "Isaac Examples")
+        self.example_name = name
+        self.category = menu_name
+
+        self._menu_dicts = {
+            "file_path": file_path,
+            "title": title,
+            "doc_link": doc_link,
+            "overview": overview,
+        }
 
         self._buttons = dict()
-        self._build_ui(
-            name=name,
-            title=title,
-            doc_link=doc_link,
-            overview=overview,
-            file_path=file_path,
-            number_of_extra_frames=number_of_extra_frames,
-            window_width=window_width,
-            keep_window_open=keep_window_open,
+
+        # register the example with examples browser
+        get_browser_instance().register_example(
+            name=name, execute_entrypoint=self.build_window, ui_hook=self.build_ui, category=menu_name
         )
+
+        # note: can't use weakref here, cause it's gets garbage collected during hotloading?
+        # instances of what is getting garbage collected?
+
         return
 
     @property
     def sample(self):
         return self._sample
 
-    def get_frame(self, index):
-        if index >= len(self._extra_frames):
-            raise Exception("there were {} extra frames created only".format(len(self._extra_frames)))
-        return self._extra_frames[index]
-
     def get_world(self):
         return World.instance()
 
-    def get_buttons(self):
-        return self._buttons
+    def build_window(self):
+        # separating out building the window and building the UI, so that example browser can build_ui but not the window
+        # self._window = omni.ui.Window(
+        #     self.example_name, width=350, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        # )
+        # with self._window.frame:
+        #     self.build_ui()
+        # return self._window
+        pass
 
-    def _build_ui(
-        self, name, title, doc_link, overview, file_path, number_of_extra_frames, window_width, keep_window_open
-    ):
-        self._window = omni.ui.Window(
-            name, width=window_width, height=0, visible=keep_window_open, dockPreference=ui.DockPreference.LEFT_BOTTOM
-        )
-        with self._window.frame:
-            self._main_stack = ui.VStack(spacing=5, height=0)
-            with self._main_stack:
-                setup_ui_headers(self._ext_id, file_path, title, doc_link, overview)
-                self._controls_frame = ui.CollapsableFrame(
-                    title="World Controls",
-                    width=ui.Fraction(1),
-                    height=0,
-                    collapsed=False,
-                    style=get_style(),
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                )
-                with ui.VStack(style=get_style(), spacing=5, height=0):
-                    for i in range(number_of_extra_frames):
-                        self._extra_frames.append(
-                            ui.CollapsableFrame(
-                                title="",
-                                width=ui.Fraction(0.33),
-                                height=0,
-                                visible=False,
-                                collapsed=False,
-                                style=get_style(),
-                                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                            )
-                        )
-                with self._controls_frame:
-                    with ui.VStack(style=get_style(), spacing=5, height=0):
-                        dict = {
-                            "label": "Load World",
-                            "type": "button",
-                            "text": "Load",
-                            "tooltip": "Load World and Task",
-                            "on_clicked_fn": self._on_load_world,
-                        }
-                        self._buttons["Load World"] = btn_builder(**dict)
-                        self._buttons["Load World"].enabled = True
-                        dict = {
-                            "label": "Reset",
-                            "type": "button",
-                            "text": "Reset",
-                            "tooltip": "Reset robot and environment",
-                            "on_clicked_fn": self._on_reset,
-                        }
-                        self._buttons["Reset"] = btn_builder(**dict)
-                        self._buttons["Reset"].enabled = False
+    def build_ui(self):
+        # separating out building default frame and extra frames, so examples can override the extra frames function
+        self.build_default_frame()
+        self.build_extra_frames()
         return
 
-    def _set_button_tooltip(self, button_name, tool_tip):
-        self._buttons[button_name].set_tooltip(tool_tip)
+    def build_default_frame(self):
+        file_path = self._menu_dicts["file_path"]
+        title = self._menu_dicts["title"]
+        doc_link = self._menu_dicts["doc_link"]
+        overview = self._menu_dicts["overview"]
+
+        self._main_stack = ui.VStack(spacing=5, height=0)
+        with self._main_stack:
+            setup_ui_headers(self._ext_id, file_path, title, doc_link, overview, info_collapsed=False)
+            self._controls_frame = ui.CollapsableFrame(
+                title="World Controls",
+                width=ui.Fraction(1),
+                height=0,
+                collapsed=False,
+                style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            )
+            extra_stacks = ui.VStack(margin=5, spacing=5, height=0)
+
+        with self._controls_frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                dict = {
+                    "label": "Load World",
+                    "type": "button",
+                    "text": "Load",
+                    "tooltip": "Load World and Task",
+                    "on_clicked_fn": self._on_load_world,
+                }
+                self._buttons["Load World"] = btn_builder(**dict)
+                self._buttons["Load World"].enabled = True
+                dict = {
+                    "label": "Reset",
+                    "type": "button",
+                    "text": "Reset",
+                    "tooltip": "Reset robot and environment",
+                    "on_clicked_fn": self._on_reset,
+                }
+                self._buttons["Reset"] = btn_builder(**dict)
+                self._buttons["Reset"].enabled = False
+
+        return extra_stacks
+
+    def build_extra_frames(self):
+        # print("no extra frames to build here")
         return
 
     def _on_load_world(self):
@@ -188,33 +176,24 @@ class BaseSampleExtension(omni.ext.IExt):
                 btn.enabled = flag
         return
 
-    def _menu_callback(self):
-        self._window.visible = not self._window.visible
-        return
-
-    def _on_window(self, status):
-        # if status:
-        return
-
     def on_shutdown(self):
+
         self._extra_frames = []
-        if self._sample._world is not None:
-            self._sample._world_cleanup()
-        if self._menu_items is not None:
-            self._sample_window_cleanup()
-        if self._buttons is not None:
+        self._buttons = {}
+        # if self._sample._world is not None:
+        #     self._sample._world_cleanup()
+        if self._buttons is not None:  ## something about passing this point triggers another error
             self._buttons["Load World"].enabled = True
             self._enable_all_buttons(False)
         self.shutdown_cleanup()
         return
 
     def shutdown_cleanup(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
         return
 
     def _sample_window_cleanup(self):
-        remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
-        self._menu_items = None
         self._buttons = None
         return
 

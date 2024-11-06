@@ -28,12 +28,29 @@ class SimpleStackExtension(BaseSampleExtension):
             overview="This Example shows how to stack two cubes using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=SimpleStack(),
             file_path=os.path.abspath(__file__),
-            number_of_extra_frames=1,
         )
-        self.task_ui_elements = {}
-        frame = self.get_frame(index=0)
-        self.build_task_controls_ui(frame)
+
         return
+
+    def build_ui(self):
+        extra_stacks = self.build_default_frame()
+        self.build_extra_frames(extra_stacks)
+
+    def build_extra_frames(self, extra_stacks):
+        self.task_ui_elements = {}
+
+        with extra_stacks:
+            with ui.CollapsableFrame(
+                title="Task Control",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+                self.build_task_controls_ui()
 
     def _on_stacking_button_event(self):
         asyncio.ensure_future(self.sample._on_stacking_event_async())
@@ -52,19 +69,15 @@ class SimpleStackExtension(BaseSampleExtension):
         self.task_ui_elements["Start Stacking"].enabled = False
         return
 
-    def build_task_controls_ui(self, frame):
-        with frame:
-            with ui.VStack(spacing=5):
-                # Update the Frame Title
-                frame.title = "Task Controls"
-                frame.visible = True
-                dict = {
-                    "label": "Start Stacking",
-                    "type": "button",
-                    "text": "Start Stacking",
-                    "tooltip": "Start Stacking",
-                    "on_clicked_fn": self._on_stacking_button_event,
-                }
+    def build_task_controls_ui(self):
+        with ui.VStack(spacing=5):
+            dict = {
+                "label": "Start Stacking",
+                "type": "button",
+                "text": "Start Stacking",
+                "tooltip": "Start Stacking",
+                "on_clicked_fn": self._on_stacking_button_event,
+            }
 
-                self.task_ui_elements["Start Stacking"] = btn_builder(**dict)
-                self.task_ui_elements["Start Stacking"].enabled = False
+            self.task_ui_elements["Start Stacking"] = btn_builder(**dict)
+            self.task_ui_elements["Start Stacking"].enabled = False

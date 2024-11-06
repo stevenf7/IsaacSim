@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.2.0"
+version = "3.3.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -34,6 +34,7 @@ preview_image = "data/preview.png"
 "isaacsim.gui.components" = {}
 "omni.pip.compute" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.examples.browser" = {}
 
 [settings]
 exts."isaacsim.ros2.bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.

@@ -26,7 +26,7 @@ class FrankaCortexExtension(BaseSampleExtension):
         sample_behaviors_id = ext_manager.get_enabled_extension_id("isaacsim.cortex.behaviors")
         behavior_path = (
             omni.kit.app.get_app().get_extension_manager().get_extension_path(sample_behaviors_id)
-            + "/omni/isaac/cortex/sample_behaviors/franka"
+            + "/isaacsim/cortex/behaviors/franka"
         )
 
         self.behavior_map = {
@@ -47,13 +47,77 @@ class FrankaCortexExtension(BaseSampleExtension):
             overview="This Example shows how to Use Cortex for multiple behaviors robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=FrankaCortex(self.on_diagnostics),
             file_path=os.path.abspath(__file__),
-            number_of_extra_frames=2,
         )
-        self.task_ui_elements = {}
-        frame = self.get_frame(index=0)
-        self.build_task_controls_ui(frame)
+
         self.loaded = False
         return
+
+    def build_ui(self):
+        self.task_ui_elements = {}
+        extra_stacks = self.build_default_frame()
+
+        # modification to the control frame
+        with self._controls_frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                self.task_ui_elements["Selected Behavior"] = dropdown_builder(
+                    "Selected Behavior",
+                    items=[
+                        "Block Stacking",
+                        "Simple State Machine",
+                        "Simple Decider Network",
+                        "Peck State Machine",
+                        "Peck Decider Network",
+                        "Peck Game",
+                    ],
+                    on_clicked_fn=self.__on_selected_behavior_changed,
+                )
+                dict = {
+                    "label": "Load World",
+                    "type": "button",
+                    "text": "Load",
+                    "tooltip": "Load World and Task",
+                    "on_clicked_fn": self._on_load_world,
+                }
+                self._buttons["Load World"] = btn_builder(**dict)
+                self._buttons["Load World"].enabled = True
+                dict = {
+                    "label": "Reset",
+                    "type": "button",
+                    "text": "Reset",
+                    "tooltip": "Reset robot and environment",
+                    "on_clicked_fn": self._on_reset,
+                }
+                self._buttons["Reset"] = btn_builder(**dict)
+                self._buttons["Reset"].enabled = False
+
+        self.build_extra_frames(extra_stacks)
+
+    def build_extra_frames(self, extra_stacks):
+        with extra_stacks:
+            with ui.CollapsableFrame(
+                title="Task Control",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+                self.build_task_controls_ui()
+
+            with ui.CollapsableFrame(
+                title="Diagnostic",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+
+                self.build_diagnostic_ui()
 
     def _on_load_world(self):
         self._sample.behavior = self.get_behavior()
@@ -96,64 +160,25 @@ class FrankaCortexExtension(BaseSampleExtension):
             asyncio.ensure_future(self._sample.load_behavior(self.get_behavior()))
             self.on_diagnostics("", "")
 
-    def build_task_controls_ui(self, frame):
-        with self._controls_frame:
-            with ui.VStack(style=get_style(), spacing=5, height=0):
-                self.task_ui_elements["Selected Behavior"] = dropdown_builder(
-                    "Selected Behavior",
-                    items=[
-                        "Block Stacking",
-                        "Simple State Machine",
-                        "Simple Decider Network",
-                        "Peck State Machine",
-                        "Peck Decider Network",
-                        "Peck Game",
-                    ],
-                    on_clicked_fn=self.__on_selected_behavior_changed,
-                )
-                dict = {
-                    "label": "Load World",
-                    "type": "button",
-                    "text": "Load",
-                    "tooltip": "Load World and Task",
-                    "on_clicked_fn": self._on_load_world,
-                }
-                self._buttons["Load World"] = btn_builder(**dict)
-                self._buttons["Load World"].enabled = True
-                dict = {
-                    "label": "Reset",
-                    "type": "button",
-                    "text": "Reset",
-                    "tooltip": "Reset robot and environment",
-                    "on_clicked_fn": self._on_reset,
-                }
-                self._buttons["Reset"] = btn_builder(**dict)
-                self._buttons["Reset"].enabled = False
-        with frame:
-            with ui.VStack(spacing=5):
-                # Update the Frame Title
-                frame.title = "Task Controls"
-                frame.visible = True
-                dict = {
-                    "label": "Start",
-                    "type": "button",
-                    "text": "Start",
-                    "tooltip": "Start",
-                    "on_clicked_fn": self._on_start_button_event,
-                }
-                self.task_ui_elements["Start"] = btn_builder(**dict)
-                self.task_ui_elements["Start"].enabled = False
-        with self.get_frame(index=1):
-            self.get_frame(index=1).title = "Diagnostics"
-            self.get_frame(index=1).visible = True
-            self._diagnostics = ui.VStack(spacing=5)
-            # self._diagnostics.enabled = False
-            with self._diagnostics:
-                ui.Label("Decision Stack", height=20)
-                self.state_model = ui.SimpleStringModel()
-                ui.StringField(self.state_model, multiline=True, height=120)
-                self.diagnostics_panel = ui.VStack(spacing=5)
-                with self.diagnostics_panel:
-                    ui.Label("Diagnostic message", height=20)
-                    self.diagostic_model = ui.SimpleStringModel()
-                    ui.StringField(self.diagostic_model, multiline=True, height=200)
+    def build_task_controls_ui(self):
+        with ui.VStack(spacing=5):
+            dict = {
+                "label": "Start",
+                "type": "button",
+                "text": "Start",
+                "tooltip": "Start",
+                "on_clicked_fn": self._on_start_button_event,
+            }
+            self.task_ui_elements["Start"] = btn_builder(**dict)
+            self.task_ui_elements["Start"].enabled = False
+
+    def build_diagnostic_ui(self):
+        with ui.VStack(spacing=5):
+            ui.Label("Decision Stack", height=20)
+            self.state_model = ui.SimpleStringModel()
+            ui.StringField(self.state_model, multiline=True, height=120)
+            self.diagnostics_panel = ui.VStack(spacing=5)
+            with self.diagnostics_panel:
+                ui.Label("Diagnostic message", height=20)
+                self.diagostic_model = ui.SimpleStringModel()
+                ui.StringField(self.diagostic_model, multiline=True, height=200)

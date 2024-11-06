@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.3.0] - 2024-10-29
+### Changed
+- moved examples from menu to browser
+
 ## [3.2.0] - 2024-10-28
 ### Added
 - Joint State publisher now publishes name defined in isaac:nameOverride if this attribute is set for a joint prim.

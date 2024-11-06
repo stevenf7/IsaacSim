@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2024-10-29
+### Changed
+- added an info_collapsed argument for setup_ui_headers
+
 ## [1.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

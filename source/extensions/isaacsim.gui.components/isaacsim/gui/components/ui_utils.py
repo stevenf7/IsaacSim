@@ -1255,6 +1255,7 @@ def setup_ui_headers(
     title="My Custom Extension",
     doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/index.html",
     overview="",
+    info_collapsed=True,
 ):
     """Creates the Standard UI Elements at the top of each Isaac Extension.
 
@@ -1269,7 +1270,7 @@ def setup_ui_headers(
     extension_path = ext_manager.get_extension_path(ext_id)
     ext_path = os.path.dirname(extension_path) if os.path.isfile(extension_path) else extension_path
     build_header(ext_path, file_path, title, doc_link)
-    build_info_frame(overview)
+    build_info_frame(overview, info_collapsed)
 
 
 def build_header(
@@ -1327,12 +1328,12 @@ def build_header(
             ui.Spacer(width=5)
 
 
-def build_info_frame(overview=""):
+def build_info_frame(overview="", info_collapse=True):
     """Info Frame with Overview, Instructions, and Metadata for an Extension"""
     frame = ui.CollapsableFrame(
         title="Information",
         height=0,
-        collapsed=True,
+        collapsed=info_collapse,
         horizontal_clipping=False,
         style=get_style(),
         style_type_name_override="CollapsableFrame",

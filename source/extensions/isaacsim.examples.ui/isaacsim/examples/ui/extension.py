@@ -57,24 +57,23 @@ class Extension(omni.ext.IExt):
         # Add EXTENSION_NAME to a Drop Down Menu
         # The UI for EXTENSION_NAME is created once selected from the Menu.
         menu_items = [
-            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, "GUI Templates", lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [
-            MenuItemDescription(name="Misc", sub_menu=[MenuItemDescription(name="Templates", sub_menu=menu_items)])
-        ]
-        add_menu_items(self._menu_items, "Isaac Examples")
+        self._menu_items = [MenuItemDescription(name="Examples", sub_menu=menu_items)]
+
+        add_menu_items(self._menu_items, "Window")
 
         # Add Dpad Controllers
         self.dpads = []
         for i in range(4):
             self.dpads.append(Dpad(name=f"Dpad Controller {i}"))
 
-        self._build_ui()
+        self.build_window()
 
     def on_shutdown(self):
         """Cleanup objects on extension shutdown"""
         self._app_event_subscription = None
-        remove_menu_items(self._menu_items, "Isaac Examples")
+        remove_menu_items(self._menu_items, "Window")
         self._window = None
         self._app_event_sub = None
         self._search_bar.destroy()
@@ -89,14 +88,20 @@ class Extension(omni.ext.IExt):
 
     def _menu_callback(self):
         """Call the UI builder once selected from the drop down menu"""
-        self._build_ui()
+        self.build_window()
 
         # Add Dpads on Top
         self.dpads = []
         for i in range(4):
             self.dpads.append(Dpad(name=f"Dpad Controller {i}"))
 
-    def _build_ui(self):
+    def build_window(self):
+
+        # Add Dpads on Top
+        self.dpads = []
+        for i in range(4):
+            self.dpads.append(Dpad(name=f"Dpad Controller {i}"))
+
         """Builds the UI for EXTENSION_NAME"""
         if not self._window:
             self._window = ui.Window(
@@ -128,6 +133,8 @@ class Extension(omni.ext.IExt):
 
                     # Shows how to Group UI elements
                     self.build_custom_ui()
+        else:
+            self._window.visible = True
 
     def build_example_gui_grid(self):
 

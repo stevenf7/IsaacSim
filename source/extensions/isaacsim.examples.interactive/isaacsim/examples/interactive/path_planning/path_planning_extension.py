@@ -29,14 +29,41 @@ class PathPlanningExtension(BaseSampleExtension):
             overview="This Example shows how to plan a path through a complicated static environment with the Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             sample=PathPlanning(),
             file_path=os.path.abspath(__file__),
-            number_of_extra_frames=2,
         )
-        self.task_ui_elements = {}
-        frame = self.get_frame(index=0)
-        self.build_task_controls_ui(frame)
-        frame = self.get_frame(index=1)
-        self.build_data_logging_ui(frame)
+
         return
+
+    def build_ui(self):
+        extra_stacks = self.build_default_frame()
+        self.build_extra_frames(extra_stacks)
+
+    def build_extra_frames(self, extra_stacks):
+        self.task_ui_elements = {}
+
+        with extra_stacks:
+            with ui.CollapsableFrame(
+                title="Task Control",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+                self.build_task_controls_ui()
+            with ui.CollapsableFrame(
+                title="Data Logging",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+
+                self.build_data_logging_ui()
 
     def _on_follow_target_button_event(self):
         asyncio.ensure_future(self.sample._on_follow_target_event_async())
@@ -90,80 +117,72 @@ class PathPlanningExtension(BaseSampleExtension):
     def shutdown_cleanup(self):
         return
 
-    def build_task_controls_ui(self, frame):
-        with frame:
-            with ui.VStack(spacing=5):
-                # Update the Frame Title
-                frame.title = "Task Controls"
-                frame.visible = True
+    def build_task_controls_ui(self):
+        with ui.VStack(spacing=5):
+            dict = {
+                "label": "Move To Target",
+                "type": "button",
+                "text": "Move To Target",
+                "tooltip": "Plan a Path and Move to Target",
+                "on_clicked_fn": self._on_follow_target_button_event,
+            }
+            self.task_ui_elements["Move To Target"] = btn_builder(**dict)
+            self.task_ui_elements["Move To Target"].enabled = False
 
-                dict = {
-                    "label": "Move To Target",
-                    "type": "button",
-                    "text": "Move To Target",
-                    "tooltip": "Plan a Path and Move to Target",
-                    "on_clicked_fn": self._on_follow_target_button_event,
-                }
-                self.task_ui_elements["Move To Target"] = btn_builder(**dict)
-                self.task_ui_elements["Move To Target"].enabled = False
+            dict = {
+                "label": "Add Wall",
+                "type": "button",
+                "text": "ADD",
+                "tooltip": "Add a Wall",
+                "on_clicked_fn": self._on_add_wall_button_event,
+            }
 
-                dict = {
-                    "label": "Add Wall",
-                    "type": "button",
-                    "text": "ADD",
-                    "tooltip": "Add a Wall",
-                    "on_clicked_fn": self._on_add_wall_button_event,
-                }
+            self.task_ui_elements["Add Wall"] = btn_builder(**dict)
+            self.task_ui_elements["Add Wall"].enabled = False
 
-                self.task_ui_elements["Add Wall"] = btn_builder(**dict)
-                self.task_ui_elements["Add Wall"].enabled = False
+            dict = {
+                "label": "Remove Wall",
+                "type": "button",
+                "text": "REMOVE",
+                "tooltip": "Remove Wall",
+                "on_clicked_fn": self._on_remove_wall_button_event,
+            }
 
-                dict = {
-                    "label": "Remove Wall",
-                    "type": "button",
-                    "text": "REMOVE",
-                    "tooltip": "Remove Wall",
-                    "on_clicked_fn": self._on_remove_wall_button_event,
-                }
+            self.task_ui_elements["Remove Wall"] = btn_builder(**dict)
+            self.task_ui_elements["Remove Wall"].enabled = False
 
-                self.task_ui_elements["Remove Wall"] = btn_builder(**dict)
-                self.task_ui_elements["Remove Wall"].enabled = False
+    def build_data_logging_ui(self):
+        with ui.VStack(spacing=5):
+            dict = {
+                "label": "Output Directory",
+                "type": "stringfield",
+                "default_val": os.path.join(os.getcwd(), "output_data.json"),
+                "tooltip": "Output Directory",
+                "on_clicked_fn": None,
+                "use_folder_picker": False,
+                "read_only": False,
+            }
+            self.task_ui_elements["Output Directory"] = str_builder(**dict)
 
-    def build_data_logging_ui(self, frame):
-        with frame:
-            with ui.VStack(spacing=5):
-                frame.title = "Data Logging"
-                frame.visible = True
-                dict = {
-                    "label": "Output Directory",
-                    "type": "stringfield",
-                    "default_val": os.path.join(os.getcwd(), "output_data.json"),
-                    "tooltip": "Output Directory",
-                    "on_clicked_fn": None,
-                    "use_folder_picker": False,
-                    "read_only": False,
-                }
-                self.task_ui_elements["Output Directory"] = str_builder(**dict)
+            dict = {
+                "label": "Start Logging",
+                "type": "button",
+                "a_text": "START",
+                "b_text": "PAUSE",
+                "tooltip": "Start Logging",
+                "on_clicked_fn": self._on_logging_button_event,
+            }
+            self.task_ui_elements["Start Logging"] = state_btn_builder(**dict)
+            self.task_ui_elements["Start Logging"].enabled = False
 
-                dict = {
-                    "label": "Start Logging",
-                    "type": "button",
-                    "a_text": "START",
-                    "b_text": "PAUSE",
-                    "tooltip": "Start Logging",
-                    "on_clicked_fn": self._on_logging_button_event,
-                }
-                self.task_ui_elements["Start Logging"] = state_btn_builder(**dict)
-                self.task_ui_elements["Start Logging"].enabled = False
+            dict = {
+                "label": "Save Data",
+                "type": "button",
+                "text": "Save Data",
+                "tooltip": "Save Data",
+                "on_clicked_fn": self._on_save_data_button_event,
+            }
 
-                dict = {
-                    "label": "Save Data",
-                    "type": "button",
-                    "text": "Save Data",
-                    "tooltip": "Save Data",
-                    "on_clicked_fn": self._on_save_data_button_event,
-                }
-
-                self.task_ui_elements["Save Data"] = btn_builder(**dict)
-                self.task_ui_elements["Save Data"].enabled = False
+            self.task_ui_elements["Save Data"] = btn_builder(**dict)
+            self.task_ui_elements["Save Data"].enabled = False
         return
