@@ -8,4 +8,5 @@
 #
 
 from .scripts.camera_info_utils import *
+from .scripts.collect_namespace import *
 from .scripts.extension import *

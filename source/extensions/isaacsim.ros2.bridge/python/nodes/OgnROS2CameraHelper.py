@@ -15,7 +15,7 @@ import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from isaacsim.core.nodes import BaseWriterNode, WriterRequest
-from isaacsim.ros2.bridge import read_camera_info
+from isaacsim.ros2.bridge import collect_namespace, read_camera_info
 from omni.kit.viewport.utility import get_viewport_from_window_name
 from pxr import Usd
 
@@ -111,7 +111,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(db.per_instance_state.rv + f"ROS2{time_type}PublishImage")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -125,7 +125,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(db.per_instance_state.rv + f"ROS2{time_type}PublishImage")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -141,7 +141,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(db.per_instance_state.rv + f"ROS2{time_type}PublishPointCloud")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -153,7 +153,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(f"ROS2{time_type}PublishInstanceSegmentation")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -164,7 +164,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(f"ROS2{time_type}PublishSemanticSegmentation")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -175,7 +175,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(f"ROS2{time_type}PublishBoundingBox2DTight")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -186,7 +186,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(f"ROS2{time_type}PublishBoundingBox2DLoose")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -197,7 +197,7 @@ class OgnROS2CameraHelper:
                         writer = rep.writers.get(f"ROS2{time_type}PublishBoundingBox3D")
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -213,7 +213,7 @@ class OgnROS2CameraHelper:
                         camera_info = read_camera_info(render_product_path=db.inputs.renderProductPath)
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
@@ -247,7 +247,7 @@ class OgnROS2CameraHelper:
                                 type_dict[sensor_type] + f"ROS2{time_type}PublishSemanticLabels"
                             )
                             semantic_writer.initialize(
-                                nodeNamespace=db.inputs.nodeNamespace,
+                                nodeNamespace=collect_namespace(db.inputs.nodeNamespace, db.inputs.renderProductPath),
                                 queueSize=db.inputs.queueSize,
                                 topicName=db.inputs.semanticLabelsTopicName,
                                 context=db.inputs.context,

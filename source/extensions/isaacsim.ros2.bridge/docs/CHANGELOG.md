@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0] - 2024-11-04
+### Added
+- Automatic namespacing for ROS2 nodes for prims defined with isaac:namespace attribute.
+
+### Changed
+- Updated OG nodes to use new ROS2 Node initialize function replacing spinOnce function
+
 ## [3.3.0] - 2024-10-29
 ### Changed
 - moved examples from menu to browser
@@ -7,7 +14,6 @@
 ## [3.2.0] - 2024-10-28
 ### Added
 - Joint State publisher now publishes name defined in isaac:nameOverride if this attribute is set for a joint prim.
-
 
 ## [3.1.3] - 2024-10-28
 ### Changed

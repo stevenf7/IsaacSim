@@ -51,10 +51,21 @@ public:
         const auto& nodeObj = db.abi_node();
 
         // Spin once calls reset automatically if it was not successful
-        if (!state.spinOnce(
-                std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
+        if (!state.isInitialized())
         {
-            return false;
+            // Find our stage
+            long stageId = context.iContext->getStageId(context);
+            auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
+            if (!state.initializeNodeHandle(
+                    std::string(nodeObj.iNode->getPrimPath(nodeObj)),
+                    collectNamespace(db.inputs.nodeNamespace(),
+                                     stage->GetPrimAtPath(pxr::SdfPath(nodeObj.iNode->getPrimPath(nodeObj)))),
+                    db.inputs.context()))
+            {
+                db.logError("Unable to create ROS2 node, please check that namespace is valid");
+                return false;
+            }
         }
 
         auto messagePackage = std::string(db.inputs.messagePackage());

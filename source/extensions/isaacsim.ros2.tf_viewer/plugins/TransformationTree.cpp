@@ -85,8 +85,14 @@ public:
 
     bool spin()
     {
-        if (!spinOnce("isaacsim_tf_viewer", "", 0))
-            return false;
+        if (!isInitialized())
+        {
+            if (!initializeNodeHandle("isaacsim_tf_viewer", "", 0))
+            {
+                CARB_LOG_ERROR("Unable to create isaacsim.ros2.tf_viewer ROS2 node");
+                return false;
+            }
+        }
 
         if (!mSubscriberTf)
         {
