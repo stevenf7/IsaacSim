@@ -1,8 +1,12 @@
 # Changelog
 
+## [1.1.1] - 2024-11-01
+### Changed
+- Rename browser
+-
 ## [1.1.0] - 2024-10-23
 ### Changed
-- Switch to UI backend that supports Option Panel. Variant selection available for assets that have it. 
+- Switch to UI backend that supports Option Panel. Variant selection available for assets that have it.
 
 
 ## [1.0.2] - 2024-10-28

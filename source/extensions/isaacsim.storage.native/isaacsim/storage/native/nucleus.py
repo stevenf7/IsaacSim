@@ -16,10 +16,11 @@ import typing
 from collections import namedtuple
 from urllib.parse import urlparse
 
-import carb
-
 # omniverse
+import carb
 import omni.client
+import omni.kit.app
+import omni.kit.commands
 from isaacsim.core.version import get_version
 from omni.client._omniclient import CopyBehavior, Result
 
@@ -435,136 +436,17 @@ async def get_full_asset_path_async(path: str) -> typing.Union[str, None]:
 
 
 def get_nvidia_asset_root_path() -> typing.Union[str, None]:
-    """Tries to find the root path to the NVIDIA assets
 
-    Raises:
-        RuntimeError: if the root path is not found.
+    carb.log_warn("get_nvidia_asset_root_path() has been deprecated. Use get_assets_root_path().")
 
-    Returns:
-        url (str): URL or root path to NVIDIA assets folder.
-        Returns None if NVIDIA assets not found.
-    """
-
-    # 1 - Check /persistent/isaac/asset_root/nvidia setting
-    carb.log_info("Check /persistent/isaac/asset_root/nvidia setting")
-    nvidia_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/nvidia")
-    if nvidia_asset_root:
-        result = check_server(nvidia_asset_root, "")
-        if result:
-            carb.log_info("NVIDIA assets found at {}".format(nvidia_asset_root))
-            return nvidia_asset_root
-
-    # 2 - Check root on /persistent/isaac/asset_root/nvidia and mountedDrives setting for /NVIDIA folder
-    nvidia_asset_path = "/NVIDIA"
-    server_root = get_url_root(nvidia_asset_path)
-    if server_root:
-        result = check_server(server_root, nvidia_asset_path)
-        if result:
-            carb.log_info("NVIDIA assets found at {}".format(nvidia_asset_root))
-            return server_root + nvidia_asset_path
-
-    connected_servers = build_server_list()
-    if len(connected_servers):
-        for server_name in connected_servers:
-            result = check_server(server_name, nvidia_asset_path)
-            if result:
-                carb.log_info("NVIDIA assets found at {}".format(server_name))
-                return server_name + nvidia_asset_path
-
-    # 3 - Check cloud for http://omniverse-content-production.s3-us-west-2.amazonaws.com folder
-    nvidia_assets_url = "http://omniverse-content-production.s3-us-west-2.amazonaws.com"
-    carb.log_info("Check {}".format(nvidia_assets_url))
-    if nvidia_assets_url:
-        result = check_server(nvidia_assets_url, "/Assets")
-        if result:
-            carb.log_info("NVIDIA assets found at {}".format(nvidia_assets_url))
-            return nvidia_assets_url
-
-    raise RuntimeError("Could not find NVIDIA assets folder")
+    return None
 
 
 def get_isaac_asset_root_path() -> typing.Union[str, None]:
-    """Tries to find the root path to the Isaac Sim assets.
 
-    Raises:
-        RuntimeError: if the root path is not found.
+    carb.log_warn("get_isaac_asset_root_path() has been deprecated. Use get_assets_root_path().")
 
-    Returns:
-        url (str): URL or root path to Isaac Sim assets folder.
-        Returns None if Isaac Sim assets not found.
-    """
-
-    _, _, version_major, version_minor, _, _, _, _ = get_version()
-
-    # 1 - Check /persistent/isaac/asset_root/isaac setting
-    carb.log_info("Check /persistent/isaac/asset_root/isaac setting")
-    isaac_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
-    if isaac_asset_root:
-        result = check_server(isaac_asset_root, "")
-        if result:
-            result, ver_asset = verify_asset_root_path(isaac_asset_root)
-            if result is Result.OK:
-                carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, isaac_asset_root))
-                return isaac_asset_root
-
-    # 2 - Check root on /persistent/isaac/asset_root/default and mountedDrives setting for /Isaac folder
-    carb.log_info("Check /persistent/isaac/asset_root/default setting")
-    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
-    isaac_path = "/Isaac"
-    server_root = get_url_root(isaac_asset_root)
-    if default_asset_root:
-        result = check_server(default_asset_root, isaac_path)
-        if result:
-            result, ver_asset = verify_asset_root_path(default_asset_root + isaac_path)
-            if result is Result.OK:
-                carb.log_info(
-                    "Isaac Sim assets version {} found at {}".format(ver_asset, default_asset_root + isaac_path)
-                )
-                return default_asset_root + isaac_path
-
-    connected_servers = build_server_list()
-    if len(connected_servers):
-        for server_name in connected_servers:
-            result = check_server(server_name, isaac_path)
-            if result:
-                result, ver_asset = verify_asset_root_path(server_name + isaac_path)
-                if result is Result.OK:
-                    carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, server_name + isaac_path))
-                    return server_name + isaac_path
-
-    # 3 - Check root on /persistent/isaac/asset_root/default and mountedDrives setting for /NVIDIA/Assets/Isaac/{version_major}.{version_minor} folder
-    isaac_path = f"/NVIDIA/Assets/Isaac/{version_major}.{version_minor}"
-    server_root = get_url_root(isaac_asset_root)
-    if server_root:
-        result = check_server(server_root, isaac_path)
-        if result:
-            result, ver_asset = verify_asset_root_path(server_root + isaac_path)
-            if result is Result.OK:
-                carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, server_root + isaac_path))
-                return server_root + isaac_path
-
-    connected_servers = build_server_list()
-    if len(connected_servers):
-        for server_name in connected_servers:
-            result = check_server(server_name, isaac_path)
-            if result:
-                result, ver_asset = verify_asset_root_path(server_name + isaac_path)
-                if result is Result.OK:
-                    carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, server_name + isaac_path))
-                    return server_name + isaac_path
-
-    # 4 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    cloud_assetsURL = carb.settings.get_settings().get_as_string("/persistent/isaac/asset_root/cloud")
-    carb.log_info("Check {}".format(cloud_assetsURL))
-    if cloud_assetsURL:
-        result = check_server(cloud_assetsURL, "")
-        if result:
-            result, ver_asset = verify_asset_root_path(cloud_assetsURL)
-            if result is Result.OK:
-                carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, cloud_assetsURL))
-                return cloud_assetsURL
-
-    raise RuntimeError("Could not find Isaac Sim assets folder")
+    return None
 
 
 def get_assets_root_path() -> typing.Union[str, None]:
@@ -584,7 +466,7 @@ def get_assets_root_path() -> typing.Union[str, None]:
     if not isinstance(timeout, (int, float)):
         timeout = 10.0
 
-    # 1 - Check /persistent/isaac/asset_root/default setting
+    # Check /persistent/isaac/asset_root/default setting
     carb.log_info("Check /persistent/isaac/asset_root/default setting")
     default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     if default_asset_root:
@@ -594,29 +476,6 @@ def get_assets_root_path() -> typing.Union[str, None]:
             if result:
                 carb.log_info("Assets root found at {}".format(default_asset_root))
                 return default_asset_root
-
-    # 2 - Check root on mountedDrives setting
-    connected_servers = build_server_list()
-    if len(connected_servers):
-        for server_name in connected_servers:
-            # carb.log_info("Found {}".format(server_name))
-            result = check_server(server_name, "/Isaac", timeout)
-            if result:
-                result = check_server(server_name, "/NVIDIA", timeout)
-                if result:
-                    carb.log_info("Assets root found at {}".format(server_name))
-                    return server_name
-
-    # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
-    carb.log_info("Checking {}...".format(cloud_assets_url))
-    if cloud_assets_url:
-        result = check_server(cloud_assets_url, "/Isaac", timeout)
-        if result:
-            result = check_server(cloud_assets_url, "/NVIDIA", timeout)
-            if result:
-                carb.log_info("Assets root found at {}".format(cloud_assets_url))
-                return cloud_assets_url
 
     raise RuntimeError("Could not find assets root folder")
 
@@ -637,7 +496,7 @@ async def get_assets_root_path_async() -> typing.Union[str, None]:
     if not isinstance(timeout, (int, float)):
         timeout = 10.0
 
-    # 1 - Check /persistent/isaac/asset_root/default setting
+    # Check /persistent/isaac/asset_root/default setting
     carb.log_info("Check /persistent/isaac/asset_root/default setting")
     default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     if default_asset_root:
@@ -647,29 +506,6 @@ async def get_assets_root_path_async() -> typing.Union[str, None]:
             if result:
                 carb.log_info("Assets root found at {}".format(default_asset_root))
                 return default_asset_root
-
-    # 2 - Check root on mountedDrives setting
-    connected_servers = build_server_list()
-    if len(connected_servers):
-        for server_name in connected_servers:
-            # carb.log_info("Found {}".format(server_name))
-            result = await check_server_async(server_name, "/Isaac", timeout)
-            if result:
-                result = await check_server_async(server_name, "/NVIDIA", timeout)
-                if result:
-                    carb.log_info("Assets root found at {}".format(server_name))
-                    return server_name
-
-    # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
-    carb.log_info("Checking {}...".format(cloud_assets_url))
-    if cloud_assets_url:
-        result = await check_server_async(cloud_assets_url, "/Isaac", timeout)
-        if result:
-            result = await check_server_async(cloud_assets_url, "/NVIDIA", timeout)
-            if result:
-                carb.log_info("Assets root found at {}".format(cloud_assets_url))
-                return cloud_assets_url
 
     raise RuntimeError("Could not find assets root folder")
 

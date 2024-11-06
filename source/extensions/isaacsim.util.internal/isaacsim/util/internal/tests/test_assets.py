@@ -38,10 +38,9 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         window = omni.kit.viewport.utility.get_active_viewport_window()
         window.viewport_api.updates_enabled = False
         # await omni.kit.app.get_app().next_update_async()
-        self.root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
-        self.nvidia_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/nvidia")
+        self.root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
         self.search_path = [
-            self.root_path,
+            self.root_path + "/Isaac",
             # self.nvidia_path + "/Assets/AnimGraph",
             # self.nvidia_path + "/Assets/ArchVis",
             # self.nvidia_path + "/Assets/Audio2Face",

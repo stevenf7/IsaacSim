@@ -9,7 +9,7 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.nucleus.nucleus has been deprecated in favor of isaacsim.storage.native.nucleus. Please update your code accordingly."
+    "omni.isaac.nucleus.nucleus has been deprecated in favor of isaacsim.storage.native. Please update your code accordingly."
 )
 
-from isaacsim.storage.native.nucleus import *
+from isaacsim.storage.native import *

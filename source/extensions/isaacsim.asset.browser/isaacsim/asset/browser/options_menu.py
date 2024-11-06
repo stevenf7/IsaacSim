@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -8,51 +8,61 @@
 #
 
 import asyncio
-import webbrowser
 
 import carb.settings
-import carb.tokens
-import omni.appwindow
 import omni.ext
-import omni.kit.app
-import omni.kit.commands
-import omni.kit.ui
 import omni.ui as ui
-from isaacsim.gui.components.menu import make_menu_item_description
-from omni.client._omniclient import Result
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.browser.core import OptionMenuDescription
+from omni.kit.browser.folder.core import FolderOptionsMenu
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 ASSETS_GUIDE_URL = DOCS_URL + "/isaacsim/latest/installation/install_faq.html#setting-the-default-nuc-short-server"
 
 
-class Extension(omni.ext.IExt):
-    """Create Final Configuration"""
+class FolderOptionsMenu(FolderOptionsMenu):
+    """
+    Represent options menu used in SimReady browser.
+    """
 
-    def on_startup(self, ext_id: str):
-        """setup the window layout, menu, final configuration of the extensions etc"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Do not use default menu items
+        self._menu_descs: List[OptionMenuDescription] = [
+            OptionMenuDescription(
+                "Check Default Assets Root Path",
+                clicked_fn=self._menu_callback,
+            ),
+        ]
         self._settings = carb.settings.get_settings()
 
         # this is a work around as some Extensions don't properly setup their default setting in time
         self._set_defaults()
 
-        self._menu_items = [make_menu_item_description(ext_id, "Nucleus Check", self._menu_callback)]
-        add_menu_items(self._menu_items, "Isaac Utils")
-
-        self.__await_new_scene = asyncio.ensure_future(self._nucleus_check_window())
+        self.__await_new_scene = asyncio.ensure_future(self._assets_check_window())
 
     def _set_defaults(self):
         # do not display sever check pop-up on start up
-        self._nucleus_check = False
+        self._assets_check = False
         self._startup_run = True
         self._cancel_download_btn = None
         self._server_window = None
         self._check_success = None
-        self._nucleus_server = None
+        self._assets_server = None
+
+    def destroy(self) -> None:
+        super().destroy()
+        self._server_window = None
+        self._check_success = None
+
+    def set_add_collection_fn(self, on_add_collection_fn: callable) -> None:
+        # Do not override "Refresh Assets" since "Add Collection" is removed
+        pass
 
     def _open_browser(self, path):
         import platform
         import subprocess
+        import webbrowser
 
         if platform.system().lower() == "windows":
             webbrowser.open(path)
@@ -70,9 +80,9 @@ class Extension(omni.ext.IExt):
             if self._check_success and self._check_success.visible:
                 self._check_success.visible = False
                 self._check_success = None
-            asyncio.ensure_future(self._nucleus_check_window())
+            asyncio.ensure_future(self._assets_check_window())
 
-    async def _nucleus_check_success_window(self):
+    async def _assets_check_success_window(self):
         self._check_success = ui.Window(
             "Isaac Sim Assets Check Successful",
             style={"alignment": ui.Alignment.CENTER},
@@ -91,8 +101,8 @@ class Extension(omni.ext.IExt):
         with self._check_success.frame:
             with ui.VStack():
                 ui.Spacer(height=1)
-                ui.Label("Isaac Sim assets found:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
-                ui.Label("{}".format(self._nucleus_server), style={"font_size": 18}, alignment=ui.Alignment.CENTER)
+                ui.Label("Isaac Sim Assets found:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
+                ui.Label("{}".format(self._assets_server), style={"font_size": 18}, alignment=ui.Alignment.CENTER)
                 ui.Spacer(height=5)
                 ui.Button(
                     "OK", spacing=10, alignment=ui.Alignment.CENTER, clicked_fn=lambda w=self._check_success: hide(w)
@@ -101,16 +111,15 @@ class Extension(omni.ext.IExt):
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def _nucleus_check_window(self):
-        # Check Nucleus server for assets
-        if self._nucleus_check is False and self._startup_run:
+    async def _assets_check_window(self):
+        if self._assets_check is False and self._startup_run:
             self._startup_run = False
             pass
         else:
-            from isaacsim.storage.native import get_assets_root_path_async
+            from isaacsim.storage.native import check_server_async
 
-            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets...")
-            self._check_window = ui.Window("Check Isaac Sim assets", height=120, width=600)
+            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim Assets...")
+            self._check_window = ui.Window("Check Isaac Sim Assets", height=120, width=600)
             with self._check_window.frame:
                 with ui.VStack(height=80):
                     ui.Spacer()
@@ -129,12 +138,24 @@ class Extension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
 
             # Looks for assets root
-            self._nucleus_server = await get_assets_root_path_async()
+            # Get timeout
+            timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
+            if not isinstance(timeout, (int, float)):
+                timeout = 10.0
+            # Check /persistent/isaac/asset_root/default setting
+            default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+            self._assets_server = await check_server_async(default_asset_root, "/Isaac", timeout)
+            if self._assets_server is False:
+                self._assets_server = None
+            else:
+                self._assets_server = default_asset_root + "/Isaac"
 
             self._check_window.visible = False
             self._check_window = None
-            if self._nucleus_server is None:
+            if self._assets_server is None:
                 self._startup_run = False
+
+                omni.kit.app.get_app().print_and_log("Warning: Isaac Sim Assets not found")
 
                 frame_height = 150
                 self._server_window = ui.Window(
@@ -142,19 +163,14 @@ class Extension(omni.ext.IExt):
                 )
                 with self._server_window.frame:
                     with ui.VStack():
-                        ui.Label("Warning: Isaac Sim assets not found", style={"color": 0xFF00FFFF})
+                        ui.Label("Warning: Isaac Sim Assets not found", style={"color": 0xFF00FFFF})
                         ui.Line()
                         ui.Label("See the documentation for details")
                         ui.Button("Open Documentation", clicked_fn=lambda: self._open_browser(ASSETS_GUIDE_URL))
                         ui.Spacer()
                         ui.Label("See terminal for additional information")
             else:
-                omni.kit.app.get_app().print_and_log(f"Isaac Sim assets found: {self._nucleus_server}")
+                omni.kit.app.get_app().print_and_log(f"Isaac Sim Assets found: {self._assets_server}")
                 if not self._startup_run:
-                    asyncio.ensure_future(self._nucleus_check_success_window())
+                    asyncio.ensure_future(self._assets_check_success_window())
                 self._startup_run = False
-
-    def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Utils")
-        self._server_window = None
-        self._check_success = None

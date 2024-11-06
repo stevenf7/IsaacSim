@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "A browser for Isaac Sim assets"
@@ -36,14 +36,14 @@ name = "isaacsim.asset.browser"
 
 [settings]
 exts."isaacsim.asset.browser".folders = [
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Robots",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/People",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/IsaacLab",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Props",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Environments",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Materials",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Samples",
-    "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Sensors",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/IsaacLab",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Materials",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/People",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples",
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
 ]
 
 exts."isaacsim.asset.browser".instanceable = []
@@ -52,7 +52,7 @@ exts."isaacsim.asset.browser".visible_after_startup = true
 
 [[trigger]]
 menu.name = "Window/Browsers/Isaac"
-menu.window = "Isaac Assets"
+menu.window = "Isaac Sim Assets"
 
 
 [[test]]
@@ -71,7 +71,7 @@ args = [
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
     "--/app/menu/legacy_mode=false",
-    "--/exts/omni.kit.browser.asset/folders/0='http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/Robots'",
+    "--/exts/omni.kit.browser.asset/folders/0=''",
     "--/exts/omni.kit.browser.asset/folders/1=''",
     "--/exts/omni.kit.browser.asset/folders/2=''",
     "--/exts/omni.kit.browser.asset/visible_after_startup=true",

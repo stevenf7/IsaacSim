@@ -1,8 +1,11 @@
 # Changelog
+## [0.3.7] - 2024-11-01
+### Changed
+- Moved extension
+
 ## [0.3.6] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [0.3.5] - 2024-07-25
 ### Changed

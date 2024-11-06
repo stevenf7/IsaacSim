@@ -197,6 +197,7 @@ class CreateSetupExtension(omni.ext.IExt):
     async def __dock_windows(self):
         await omni.kit.app.get_app().next_update_async()
 
+        assets = ui.Workspace.get_window("Isaac Sim Assets")
         content = ui.Workspace.get_window("Content")
         stage = ui.Workspace.get_window("Stage")
         layer = ui.Workspace.get_window("Layer")
@@ -211,10 +212,12 @@ class CreateSetupExtension(omni.ext.IExt):
 
         await omni.kit.app.get_app().next_update_async()
         if console:
-            console.dock_order = 1
+            console.dock_order = 2
         if content:
-            content.dock_order = 0
-            content.focus()
+            content.dock_order = 1
+        if assets:
+            assets.dock_order = 0
+            assets.focus()
 
     async def __property_window(self):
         await omni.kit.app.get_app().next_update_async()
@@ -322,6 +325,7 @@ class CreateSetupExtension(omni.ext.IExt):
                         "Browsers",
                         [
                             MenuLayout.Item("Content", source="Window/Content"),
+                            MenuLayout.Item("NVIDIA Assets", source="Window/Browsers/Assets"),
                             MenuLayout.Item("Materials"),
                             MenuLayout.Item("Skies"),
                         ],

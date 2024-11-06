@@ -60,7 +60,6 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.util.debug_draw" = {}
 "isaacsim.util.merge_mesh" = {}
 "isaacsim.util.physics" = {}
-"omni.isaac.assets_check" = { order = 1001 }
 "omni.isaac.block_world" = {}
 "omni.isaac.cloner" = {}
 "omni.isaac.core" = {}
@@ -441,19 +440,17 @@ enabled = true # Enable this for DLSS
 
 # FOR DEVELOPMENT - START #
 [settings]
-persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"
 persistent.isaac.asset_root.default = "omniverse://isaac-dev.ov.nvidia.com"
-persistent.isaac.asset_root.isaac = "omniverse://isaac-dev.ov.nvidia.com/Isaac"
-persistent.isaac.asset_root.nvidia = "omniverse://isaac-dev.ov.nvidia.com/NVIDIA"
 
 exts."isaacsim.asset.browser".folders = [
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/People",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Materials",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/IsaacLab",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Materials",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/People",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
 ]
 
 # Disable IOMMU Enabled pop-up message on warmup (OM-100381)
