@@ -91,18 +91,11 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         disable_stablization: bool = True,
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
     ) -> None:
-        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+        from isaacsim.core.simulation_manager import SimulationManager
 
-        if SimulationContext.instance() is not None:
-            self._backend = SimulationContext.instance().backend
-            self._device = SimulationContext.instance().device
-            self._backend_utils = SimulationContext.instance().backend_utils
-        else:
-            import isaacsim.core.utils.numpy as np_utils
-
-            self._backend = "numpy"
-            self._device = None
-            self._backend_utils = np_utils
+        self._backend = SimulationManager.get_backend()
+        self._device = SimulationManager.get_physics_sim_device()
+        self._backend_utils = SimulationManager._get_backend_utils()
         if position is not None:
             position = self._backend_utils.convert(position, self._device)
             position = self._backend_utils.expand_dims(position, 0)

@@ -143,10 +143,6 @@ class Scene(object):
             self._scene_registry.add_articulated_view(name=obj.name, articulated_view=obj)
         elif isinstance(obj, BaseSensor):
             self._scene_registry.add_sensor(name=obj.name, sensor=obj)
-        elif isinstance(obj, SingleXFormPrim):
-            self._scene_registry.add_xform(name=obj.name, xform=obj)
-        elif isinstance(obj, XFormPrim):
-            self._scene_registry.add_xform_view(name=obj.name, xform_prim_view=obj)
         elif isinstance(obj, SingleClothPrim):
             self._scene_registry.add_cloth(name=obj.name, cloth=obj)
         elif isinstance(obj, ClothPrim):
@@ -167,6 +163,10 @@ class Scene(object):
             self._scene_registry.add_deformable_material(name=obj.name, deformable_material=obj)
         elif isinstance(obj, DeformableMaterialView):
             self._scene_registry.add_deformable_material_view(name=obj.name, deformable_material_view=obj)
+        elif isinstance(obj, SingleXFormPrim):
+            self._scene_registry.add_xform(name=obj.name, xform=obj)
+        elif isinstance(obj, XFormPrim):
+            self._scene_registry.add_xform_view(name=obj.name, xform_prim_view=obj)
         else:
             raise Exception("object type is not supported yet")
         return obj
@@ -294,16 +294,13 @@ class Scene(object):
         prim_registries_available = [
             self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
-            self._scene_registry.rigid_prim_views,
             self._scene_registry.rigid_contact_views,
             self._scene_registry.geometry_prim_views,
             self._scene_registry._articulated_systems,
-            self._scene_registry._articulated_views,
             self._scene_registry._robots,
             self._scene_registry._sensors,
             self._scene_registry.xforms,
             self._scene_registry._robot_views,
-            self._scene_registry._xform_prim_views,
             self._scene_registry._cloth_prims,
             self._scene_registry._particle_systems,
             self._scene_registry._particle_materials,
@@ -332,8 +329,6 @@ class Scene(object):
     def _finalize(self, physics_sim_view) -> None:
         for xform_name, xform_object in self._scene_registry.xforms.items():
             xform_object.initialize(physics_sim_view)
-        for xform_name, xform_view in self._scene_registry.xform_prim_views.items():
-            xform_view.initialize(physics_sim_view)
         for deformable_name, deformable_object in self._scene_registry.deformable_prims.items():
             deformable_object.initialize(physics_sim_view)
         for deformable_name, deformable_object in self._scene_registry.deformable_prim_views.items():
@@ -365,16 +360,12 @@ class Scene(object):
             geometry_view.initialize(physics_sim_view)
         for articulation_name, articulated_system in self._scene_registry.articulated_systems.items():
             articulated_system.initialize(physics_sim_view)
-        for articulation_name, articulated_view in self._scene_registry.articulated_views.items():
-            articulated_view.initialize(physics_sim_view)
         for robot_name, robot in self._scene_registry.robots.items():
             robot.initialize(physics_sim_view)
         for robots_name, robot_view in self._scene_registry.robot_views.items():
             robot_view.initialize(physics_sim_view)
         for rigid_object_name, rigid_object in self._scene_registry.rigid_objects.items():
             rigid_object.initialize(physics_sim_view)
-        for rigid_prim_view_name, rigid_prim_view in self._scene_registry.rigid_prim_views.items():
-            rigid_prim_view.initialize(physics_sim_view)
         for rigid_contact_view_name, rigid_contact_view in self._scene_registry.rigid_contact_views.items():
             rigid_contact_view.initialize(physics_sim_view)
         return

@@ -985,7 +985,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(not robots.is_physics_handle_valid())
                 self.assertTrue(robots.get_world_poses() is not None)
                 await self._my_world.play_async()
-                self.assertTrue(not robots.is_physics_handle_valid())
+                self.assertTrue(robots.is_physics_handle_valid())
                 robots.initialize()
                 self.assertTrue(robots.is_physics_handle_valid())
                 self.assertTrue(robots.get_joint_positions() is not None)

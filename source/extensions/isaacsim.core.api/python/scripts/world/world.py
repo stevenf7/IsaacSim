@@ -18,6 +18,7 @@ from isaacsim.core.api.scenes.scene import Scene
 # isaac-core
 from isaacsim.core.api.simulation_context import SimulationContext
 from isaacsim.core.api.tasks import BaseTask
+from isaacsim.core.simulation_manager import IsaacEvents
 
 # omniverse
 from pxr import Usd
@@ -460,6 +461,7 @@ class World(SimulationContext):
             task.cleanup()
         await SimulationContext.reset_async(self, soft=soft)
         self._scene._finalize(self.physics_sim_view)
+        self._message_bus.dispatch(IsaacEvents.POST_RESET.value, payload={})
         self._scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()

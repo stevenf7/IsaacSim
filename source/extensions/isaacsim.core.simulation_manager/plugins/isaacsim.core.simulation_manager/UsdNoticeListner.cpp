@@ -1,0 +1,113 @@
+// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto. Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
+#include <isaacsim/core/simulation_manager/UsdNoticeListner.h>
+#include <physxSchema/physxSceneAPI.h>
+///
+#include <omni/usd/UsdContext.h>
+///
+#include <iostream>
+
+
+namespace isaacsim
+{
+namespace core
+{
+namespace simulation_manager
+{
+
+UsdNoticeListener::UsdNoticeListener()
+{
+    this->mCallbackIter = 0;
+    this->enableFlag = true;
+}
+
+void UsdNoticeListener::Handle(const pxr::UsdNotice::ObjectsChanged& objectsChanged)
+{
+    // TODO: only listen to the stage of interest here once Isaac can work with multiple stages
+    pxr::UsdStagePtr attachedStage = omni::usd::UsdContext::getContext()->getStage();
+    pxr::UsdStageWeakPtr stage = objectsChanged.GetStage();
+
+    if (!this->enableFlag || stage != attachedStage)
+    {
+        return;
+    }
+
+
+    for (const pxr::SdfPath& path : objectsChanged.GetResyncedPaths())
+    {
+        if (path.IsAbsoluteRootOrPrimPath())
+        {
+            const pxr::SdfPath primPath =
+                stage->GetPseudoRoot().GetPath() == path ? stage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+            pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
+            if (prim.IsValid() == false || !prim.IsActive())
+            {
+                if (this->mPhysicsScenes.find(primPath) != this->mPhysicsScenes.end())
+                {
+                    this->mPhysicsScenes.erase(primPath);
+                }
+                std::vector<int> deletionKeys;
+                std::transform(this->mDeletionCallbacks.begin(), this->mDeletionCallbacks.end(),
+                               std::back_inserter(deletionKeys), [](auto& p) { return p.first; });
+                for (auto const& key : deletionKeys)
+                    this->mDeletionCallbacks[key](primPath.GetString());
+            }
+            else
+            {
+                static const pxr::TfToken gkindToken("kind");
+                const auto& changedFields = objectsChanged.GetChangedFields(primPath);
+                const bool typeNameChange = std::find(changedFields.begin(), changedFields.end(),
+                                                      pxr::SdfFieldKeys->TypeName) != changedFields.end();
+                if (typeNameChange && std::find(changedFields.begin(), changedFields.end(),
+                                                PXR_NS::UsdTokens->apiSchemas) == changedFields.end())
+                {
+                    if (this->mPhysicsScenes.count(primPath) == 0)
+                    {
+                        static pxr::TfToken physicsSceneType("PhysicsScene");
+                        if (prim.GetTypeName() == physicsSceneType)
+                        {
+                            this->mPhysicsScenes.emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
+                            for (auto const& [key, AdditionFunc] : this->mPhysicsSceneAdditionCallbacks)
+                                AdditionFunc(primPath.GetString());
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+std::map<int, std::function<void(const std::string&)>>& UsdNoticeListener::getDeletionCallbacks()
+{
+    return this->mDeletionCallbacks;
+}
+
+std::map<int, std::function<void(const std::string&)>>& UsdNoticeListener::getPhysicsSceneAdditionCallbacks()
+{
+    return this->mPhysicsSceneAdditionCallbacks;
+}
+
+std::map<pxr::SdfPath, pxr::PhysxSchemaPhysxSceneAPI>& UsdNoticeListener::getPhysicsScenes()
+{
+    return this->mPhysicsScenes;
+}
+
+int& UsdNoticeListener::getCallbackIter()
+{
+    return this->mCallbackIter;
+}
+void UsdNoticeListener::enable(const bool& flag)
+{
+    this->enableFlag = flag;
+}
+
+}
+}
+}

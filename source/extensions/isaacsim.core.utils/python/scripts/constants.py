@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+
 from pxr import UsdGeom
 
 AXES_INDICES = {"X": 0, "x": 0, "Y": 1, "y": 1, "Z": 2, "z": 2}

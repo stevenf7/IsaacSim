@@ -94,17 +94,11 @@ class ParticleSystem:
         self._applied_particle_materials = [None] * self._count
         self._binding_apis = [None] * self._count
 
-        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+        from isaacsim.core.simulation_manager import SimulationManager
 
-        if SimulationContext.instance() is not None:
-            self._backend = SimulationContext.instance().backend
-            self._backend_utils = SimulationContext.instance().backend_utils
-        else:
-            import isaacsim.core.utils.numpy as np_utils
-
-            self._backend = "numpy"
-            self._backend_utils = np_utils
-
+        self._backend = SimulationManager.get_backend()
+        self._device = SimulationManager.get_physics_sim_device()
+        self._backend_utils = SimulationManager._get_backend_utils()
         # TODO: particleSystemView is currently supported only on the host
         self._device = "cpu"
 

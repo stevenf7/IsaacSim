@@ -10,6 +10,7 @@ from typing import List, Optional, Tuple
 
 import carb
 import omni
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.carb import get_carb_setting, set_carb_setting
 from isaacsim.core.utils.constants import AXES_INDICES
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
@@ -37,8 +38,6 @@ class PhysicsContext(object):
                                         gpu dynamics turned off,
                                         broadcast type is MBP,
                                         solver type is TGS]. Defaults to True.
-        backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
 
     Raises:
         Exception: If prim_path is not absolute.
@@ -51,10 +50,7 @@ class PhysicsContext(object):
         prim_path: str = "/physicsScene",
         sim_params: dict = None,
         set_defaults: bool = True,
-        backend: str = "numpy",
-        device: Optional[str] = None,
     ) -> None:
-        # TODO: add backend for physics
         self._prim_path = prim_path
         if not Sdf.Path(self._prim_path).IsAbsolutePath():
             raise Exception(f"Input prim path is not absolute: {self._path}")
@@ -79,40 +75,14 @@ class PhysicsContext(object):
                 self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(current_physics_prim)
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
-        self._use_gpu_pipeline = False
-        self._use_gpu = False
-        self._use_fabric = False
-        self._device = device
-        if self._device is None:
-            # infer the device
-            self._use_gpu_pipeline = self._carb_settings.get_as_bool("/physics/suppressReadback")
-            self._use_gpu = self._use_gpu_pipeline
-            if self._use_gpu_pipeline:
-                device_id = self._carb_settings.get_as_int("/physics/cudaDevice")
-                if device_id < 0:
-                    self._carb_settings.set_int("/physics/cudaDevice", 0)
-                    device_id = 0
-                self._device = f"cuda:{device_id}"
-            else:
-                self._device = "cpu"
-        elif "cuda" in self._device.lower():
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._device = SimulationManager.get_physics_sim_device()
+        if "cuda" in self._device:
             self._use_gpu_pipeline = True
             self._use_gpu = True
-            parsed_device = self._device.split(":")
-            if len(parsed_device) == 1:
-                device_id = self._carb_settings.get_as_int("/physics/cudaDevice")
-                if device_id < 0:
-                    self._carb_settings.set_int("/physics/cudaDevice", 0)
-                    device_id = 0
-                self._device = f"cuda:{device_id}"
-            else:
-                self._carb_settings.set_int("/physics/cudaDevice", int(parsed_device[1]))
-        elif "cpu" == self._device.lower():
-            self._carb_settings.set_bool("/physics/suppressReadback", False)
-            self._use_gpu_pipeline = False
-            self._use_gpu = self._use_gpu_pipeline
         else:
-            raise Exception("Device {} is not supported.".format(self._device))
+            self._use_gpu_pipeline = False
+            self._use_gpu = False
 
         if self._use_gpu:
             self.set_broadphase_type("GPU")
@@ -160,7 +130,6 @@ class PhysicsContext(object):
                 self._carb_settings.set_int("/persistent/physics/numThreads", sim_params["worker_thread_count"])
 
             if "use_fabric" in sim_params.keys() and sim_params["use_fabric"]:
-                self._use_fabric = True
                 self.enable_fabric(True)
 
             if "enable_scene_query_support" in sim_params.keys():
@@ -226,21 +195,25 @@ class PhysicsContext(object):
 
     @property
     def device(self) -> str:
-        return self._device
+        return SimulationManager.get_physics_sim_device()
 
     @property
     def use_gpu_sim(self):
-        return self._use_gpu
+        return True if "cuda" in SimulationManager.get_physics_sim_device() else False
 
     @property
     def use_gpu_pipeline(self):
-        return self._use_gpu_pipeline
+        return True if "cuda" in SimulationManager.get_physics_sim_device() else False
 
     @property
     def use_fabric(self):
-        return self._use_fabric
+        return SimulationManager.is_fabric_enabled()
 
     def __del__(self):
+        return
+
+    def warm_start(self):
+        carb.log_info("PhysicsContext.warm_start is deprecated.")
         return
 
     def get_current_physics_scene_prim(self) -> Optional[Usd.Prim]:
@@ -253,14 +226,6 @@ class PhysicsContext(object):
             if prim.HasAPI(PhysxSchema.PhysxSceneAPI) or prim.GetTypeName() == "PhysicsScene":
                 return prim
         return None
-
-    def warm_start(self):
-        # note: physics parsing of USD should happen before starting the simulation
-        self._physx_interface.force_load_physics_from_usd()
-        self._physx_interface.start_simulation()
-        self._physx_interface.update_simulation(self.get_physics_dt(), 0.0)
-        # self._physx_sim_interface.simulate(self.get_physics_dt(), 0.0) # This causes a hang
-        self._physx_sim_interface.fetch_results()
 
     def _create_new_physics_scene(self, prim_path: str):
         carb.log_info(f"Defining a new Physics Scene at path `{prim_path}`")
@@ -313,26 +278,10 @@ class PhysicsContext(object):
         Returns:
             float: physics dt.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        physics_hz = self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()
-        if physics_hz == 0:
-            return 0.0
-        else:
-            return 1.0 / physics_hz
+        return SimulationManager.get_physics_dt()
 
     def enable_fabric(self, enable):
-        manager = omni.kit.app.get_app().get_extension_manager()
-        fabric_was_enabled = manager.is_extension_enabled("omni.physx.fabric")
-        if not fabric_was_enabled and enable:
-            manager.set_extension_enabled_immediate("omni.physx.fabric", True)
-        elif fabric_was_enabled and not enable:
-            manager.set_extension_enabled_immediate("omni.physx.fabric", False)
-        self._carb_settings.set_bool("/physics/updateToUsd", not enable)
-        self._carb_settings.set_bool("/physics/updateParticlesToUsd", not enable)
-        self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", not enable)
-        self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", not enable)
-        self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", not enable)
+        SimulationManager.enable_fabric(enable=enable)
 
     def enable_ccd(self, flag: bool) -> None:
         """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling
@@ -404,13 +353,7 @@ class PhysicsContext(object):
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        if self._physx_scene_api.GetEnableGPUDynamicsAttr().Get() is None:
-            self._physx_scene_api.CreateEnableGPUDynamicsAttr(flag)
-        else:
-            self._physx_scene_api.GetEnableGPUDynamicsAttr().Set(flag)
-        return
+        SimulationManager.enable_gpu_dynamics(flag=flag)
 
     def is_gpu_dynamics_enabled(self) -> bool:
         """Checks if Gpu Dynamics is enabled.
@@ -421,9 +364,7 @@ class PhysicsContext(object):
         Returns:
             bool: True if Gpu Dynamics is enabled, otherwise False.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        return self._physx_scene_api.GetEnableGPUDynamicsAttr().Get()
+        return SimulationManager.is_gpu_dynamics_enabled()
 
     def set_broadphase_type(self, broadcast_type: str) -> None:
         """Broadcast phase algorithm used in simulation.
@@ -434,12 +375,7 @@ class PhysicsContext(object):
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        if self._physx_scene_api.GetBroadphaseTypeAttr().Get() is None:
-            self._physx_scene_api.CreateBroadphaseTypeAttr(broadcast_type)
-        else:
-            self._physx_scene_api.GetBroadphaseTypeAttr().Set(broadcast_type)
+        SimulationManager.set_broadphase_type(val=broadcast_type)
         return
 
     def get_broadphase_type(self) -> str:
@@ -451,9 +387,7 @@ class PhysicsContext(object):
         Returns:
             str: Broadcast phase algorithm used.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        return self._physx_scene_api.GetBroadphaseTypeAttr().Get()
+        return SimulationManager.get_broadphase_type()
 
     def set_solver_type(self, solver_type: str) -> None:
         """solver used for simulation.

@@ -21,6 +21,7 @@ writeTarget.kit = true
 "omni.usd.libs" = {}
 "omni.physx" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.simulation_manager" = {}
 "omni.isaac.ml_archive" = {}  # needed for torch
 
 [[python.module]]

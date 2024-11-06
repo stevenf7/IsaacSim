@@ -12,6 +12,7 @@ import carb
 import numpy as np
 import omni.usd
 import torch
+from isaacsim.core.simulation_manager import SimulationManager
 from omni.physx import get_physx_replicator_interface, get_physx_simulation_interface
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt
 
@@ -139,6 +140,7 @@ class Cloner:
             Exception: Raises exception if source prim path is not valid.
 
         """
+        SimulationManager.enable_usd_notice_handler(False)
         # check if inputs are valid
         if positions is not None:
             if len(positions) != len(prim_paths):
@@ -294,6 +296,7 @@ class Cloner:
             get_physx_replicator_interface().unregister_replicator(
                 UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
             )
+        SimulationManager.enable_usd_notice_handler(True)
 
     def filter_collisions(
         self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []

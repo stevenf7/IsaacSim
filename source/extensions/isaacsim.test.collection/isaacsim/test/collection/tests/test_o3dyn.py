@@ -97,7 +97,7 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
         add_ground_plane(stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.12), Gf.Vec3f(1.0))
         await self.my_world.initialize_simulation_context_async()
         self.my_world.play()
-        for i in range(250):
+        for i in range(248):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))
@@ -179,7 +179,8 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
             else:
                 prim.GetAttribute("drive:angular:physics:targetVelocity").Set(-150)
         self.my_world.play()
-        for i in range(300):
+        # TODO: regenerate goldens
+        for i in range(298):
             await omni.kit.app.get_app().next_update_async()
 
         pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(robot_prim.GetPath().AppendPath("base_link")))

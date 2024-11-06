@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import re
 import weakref
 from typing import List, Optional, Tuple, Union
 
@@ -14,12 +15,12 @@ import carb
 import isaacsim.core.utils.fabric as fabric_utils
 import isaacsim.core.utils.interops as interops_utils
 import numpy as np
-import omni.kit.app
 import torch
 import usdrt
 import warp as wp
+from isaacsim.core.prims.impl.prim import Prim
+from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.core.utils.prims import (
-    find_matching_prim_paths,
     get_prim_at_path,
     get_prim_parent,
     is_prim_non_root_articulation_link,
@@ -31,7 +32,7 @@ from isaacsim.core.utils.xforms import get_local_pose, get_world_pose
 from pxr import Gf, Usd, UsdGeom, UsdShade
 
 
-class XFormPrim(object):
+class XFormPrim(Prim):
     """Provides high level functions to deal with a Xform prim view (one or many) and its descendants
     as well as its attributes/properties.
 
@@ -126,35 +127,7 @@ class XFormPrim(object):
         self._non_root_link = False
         if not isinstance(prim_paths_expr, list):
             prim_paths_expr = [prim_paths_expr]
-        self._prim_paths = []
-        for prim_path_expression in prim_paths_expr:
-            self._prim_paths = self._prim_paths + find_matching_prim_paths(prim_path_expression)
-        if len(self._prim_paths) == 0:
-            raise Exception(
-                "Prim path expression {} is invalid, a prim matching the expression needs to created before wrapping it as view".format(
-                    prim_paths_expr
-                )
-            )
-        self._name = name
-        self._count = len(self._prim_paths)
-        self._prims = []
-        self._regex_prim_paths = prim_paths_expr
-        for prim_path in self._prim_paths:
-            self._prims.append(get_prim_at_path(prim_path))
-
-        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-
-        if SimulationContext.instance() is not None:
-            self._backend = SimulationContext.instance().backend
-            self._device = SimulationContext.instance().device
-            self._backend_utils = SimulationContext.instance().backend_utils
-        else:
-            import isaacsim.core.utils.numpy as np_utils
-
-            self._backend = "numpy"
-            self._device = "cpu"
-            self._backend_utils = np_utils
-
+        Prim.__init__(self, prim_paths_expr, name)
         self._default_state = None
         self._applied_visual_materials = [None] * self._count
         self._binding_apis = [None] * self._count
@@ -168,7 +141,8 @@ class XFormPrim(object):
         self._default_view_indices = None
         self._fabric_data_dicts = dict()
         self._fabric_data_valid = dict()
-        self._reset_fabric_selection_callback = None
+        if SimulationManager.get_physics_sim_view() is not None:
+            XFormPrim._on_physics_ready(self, None)
         if not self._non_root_link and reset_xform_properties:
             self._set_xform_properties()
         if not self._non_root_link:
@@ -193,64 +167,6 @@ class XFormPrim(object):
                 self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
         return
 
-    def __del__(self):
-        self._reset_fabric_selection_callback = None
-        return
-
-    @property
-    def prim_paths(self) -> List[str]:
-        """
-        Returns:
-            List[str]: list of prim paths in the stage encapsulated in this view.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.prim_paths
-            ['/World/envs/env_0', '/World/envs/env_1', '/World/envs/env_2', '/World/envs/env_3', '/World/envs/env_4']
-        """
-        return self._prim_paths
-
-    @property
-    def name(self) -> str:
-        """
-        Returns:
-            str: name given to the prims view when instantiating it.
-        """
-        return self._name
-
-    @property
-    def count(self) -> int:
-        """
-        Returns:
-            int: Number of prims encapsulated in this view.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.count
-            5
-        """
-        return self._count
-
-    @property
-    def prims(self) -> List[Usd.Prim]:
-        """
-        Returns:
-            List[Usd.Prim]: List of USD Prim objects encapsulated in this view.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.prims
-            [Usd.Prim(</World/envs/env_0>), Usd.Prim(</World/envs/env_1>), Usd.Prim(</World/envs/env_2>),
-             Usd.Prim(</World/envs/env_3>), Usd.Prim(</World/envs/env_4>)]
-        """
-        return self._prims
-
     @property
     def is_non_root_articulation_link(self) -> bool:
         """
@@ -258,66 +174,6 @@ class XFormPrim(object):
             bool: True if the prim corresponds to a non root link in an articulation. Otherwise False.
         """
         return self._non_root_link
-
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
-
-        .. note::
-
-            For this particular class, calling this method will do nothing
-
-        Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.initialize()
-        """
-        return
-
-    def _set_xform_properties(self) -> None:
-        current_positions, current_orientations = self.get_world_poses()
-        properties_to_remove = [
-            "xformOp:rotateX",
-            "xformOp:rotateXZY",
-            "xformOp:rotateY",
-            "xformOp:rotateYXZ",
-            "xformOp:rotateYZX",
-            "xformOp:rotateZ",
-            "xformOp:rotateZYX",
-            "xformOp:rotateZXY",
-            "xformOp:rotateXYZ",
-            "xformOp:transform",
-        ]
-        for i in range(self._count):
-            prop_names = self._prims[i].GetPropertyNames()
-            xformable = UsdGeom.Xformable(self._prims[i])
-            xformable.ClearXformOpOrder()
-            for prop_name in prop_names:
-                if prop_name in properties_to_remove:
-                    self._prims[i].RemoveProperty(prop_name)
-            if "xformOp:scale" not in prop_names:
-                xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
-                xform_op_scale.Set(Gf.Vec3d([1.0, 1.0, 1.0]))
-            else:
-                xform_op_scale = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:scale"))
-
-            if "xformOp:translate" not in prop_names:
-                xform_op_tranlsate = xformable.AddXformOp(
-                    UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
-                )
-            else:
-                xform_op_tranlsate = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:translate"))
-
-            if "xformOp:orient" not in prop_names:
-                xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
-            else:
-                xform_op_rot = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:orient"))
-            xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
-        self.set_world_poses(positions=current_positions, orientations=current_orientations)
-        return
 
     def set_visibilities(
         self,
@@ -340,17 +196,20 @@ class XFormPrim(object):
             >>> # make all prims not visible in the stage
             >>> prims.set_visibilities(visibilities=[False] * num_envs)
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        read_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        visibilities = self._backend_utils.to_list(visibilities)
-        for i in indices:
-            imageable = UsdGeom.Imageable(self._prims[i])
-            if visibilities[read_idx]:
-                imageable.MakeVisible()
-            else:
-                imageable.MakeInvisible()
-            read_idx += 1
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            read_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            visibilities = self._backend_utils.to_list(visibilities)
+            for i in indices:
+                imageable = UsdGeom.Imageable(self._prims[i])
+                if visibilities[read_idx]:
+                    imageable.MakeVisible()
+                else:
+                    imageable.MakeInvisible()
+                read_idx += 1
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         return
 
     def get_visibilities(
@@ -380,30 +239,21 @@ class XFormPrim(object):
             >>> prims.get_visibilities(indices=np.array([0, 2, 4]))
             [ True  True  True]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        visibilities = np.zeros(shape=indices.shape[0], dtype="bool")
-        write_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        for i in indices:
-            visibilities[write_idx] = (
-                UsdGeom.Imageable(self._prims[i]).ComputeVisibility(Usd.TimeCode.Default()) != UsdGeom.Tokens.invisible
-            )
-            write_idx += 1
-        visibilities = self._backend_utils.convert(visibilities, dtype="bool", device=self._device, indexed=True)
-        return visibilities
-
-    def post_reset(self) -> None:
-        """Reset the prims to its default state (positions and orientations)
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.post_reset()
-        """
-        if not self._non_root_link:
-            self.set_world_poses(self._default_state.positions, self._default_state.orientations)
-        return
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            visibilities = np.zeros(shape=indices.shape[0], dtype="bool")
+            write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            for i in indices:
+                visibilities[write_idx] = (
+                    UsdGeom.Imageable(self._prims[i]).ComputeVisibility(Usd.TimeCode.Default())
+                    != UsdGeom.Tokens.invisible
+                )
+                write_idx += 1
+            visibilities = self._backend_utils.convert(visibilities, dtype="bool", device=self._device, indexed=True)
+            return visibilities
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_default_state(self) -> XFormPrimViewState:
         """Get the default states (positions and orientations) defined with the ``set_default_state`` method
@@ -431,9 +281,12 @@ class XFormPrim(object):
              [1. 0. 0. 0.]
              [1. 0. 0. 0.]]
         """
-        if self._non_root_link:
-            carb.log_warn("This view corresponds to non root links that are included in an articulation")
-        return self._default_state
+        if self._is_valid:
+            if self._non_root_link:
+                carb.log_warn("This view corresponds to non root links that are included in an articulation")
+            return self._default_state
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def set_default_state(
         self,
@@ -471,32 +324,35 @@ class XFormPrim(object):
             >>> # set default states during post-reset
             >>> prims.post_reset()
         """
-        if self._non_root_link:
-            carb.log_warn("This view corresponds to non root links that are included in an articulation")
+        if self._is_valid:
+            if self._non_root_link:
+                carb.log_warn("This view corresponds to non root links that are included in an articulation")
+                return
+            if positions is not None:
+                if indices is None:
+                    self._default_state.positions = positions
+                else:
+                    if self._backend == "warp":
+                        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+                        self._default_state.positions = self._backend_utils.assign(
+                            positions, self._default_state.positions, indices
+                        )
+                    else:
+                        self._default_state.positions[indices] = positions
+            if orientations is not None:
+                if indices is None:
+                    self._default_state.orientations = orientations
+                else:
+                    if self._backend == "warp":
+                        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+                        self._default_state.orientations = self._backend_utils.assign(
+                            orientations, self._default_state.orientations, indices
+                        )
+                    else:
+                        self._default_state.orientations[indices] = orientations
             return
-        if positions is not None:
-            if indices is None:
-                self._default_state.positions = positions
-            else:
-                if self._backend == "warp":
-                    indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-                    self._default_state.positions = self._backend_utils.assign(
-                        positions, self._default_state.positions, indices
-                    )
-                else:
-                    self._default_state.positions[indices] = positions
-        if orientations is not None:
-            if indices is None:
-                self._default_state.orientations = orientations
-            else:
-                if self._backend == "warp":
-                    indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-                    self._default_state.orientations = self._backend_utils.assign(
-                        orientations, self._default_state.orientations, indices
-                    )
-                else:
-                    self._default_state.orientations[indices] = orientations
-        return
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def apply_visual_materials(
         self,
@@ -540,55 +396,58 @@ class XFormPrim(object):
             ... )
             >>> prims.apply_visual_materials(material)
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if isinstance(visual_materials, list):
-            if indices.shape[0] != len(visual_materials):
-                raise Exception("length of visual materials != length of prims indexed")
-            if weaker_than_descendants is None:
-                weaker_than_descendants = [False] * len(visual_materials)
-            if len(visual_materials) != len(weaker_than_descendants):
-                raise Exception("length of visual materials != length of weaker descendants bools arg")
-        if isinstance(visual_materials, list):
-            read_idx = 0
-            indices = self._backend_utils.to_list(indices)
-            for i in indices:
-                if self._binding_apis[i] is None:
-                    if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
-                        self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
+            if isinstance(visual_materials, list):
+                if indices.shape[0] != len(visual_materials):
+                    raise Exception("length of visual materials != length of prims indexed")
+                if weaker_than_descendants is None:
+                    weaker_than_descendants = [False] * len(visual_materials)
+                if len(visual_materials) != len(weaker_than_descendants):
+                    raise Exception("length of visual materials != length of weaker descendants bools arg")
+            if isinstance(visual_materials, list):
+                read_idx = 0
+                indices = self._backend_utils.to_list(indices)
+                for i in indices:
+                    if self._binding_apis[i] is None:
+                        if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
+                            self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
+                        else:
+                            self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
+                    if weaker_than_descendants[read_idx]:
+                        self._binding_apis[i].Bind(
+                            visual_materials[read_idx].material, bindingStrength=UsdShade.Tokens.weakerThanDescendants
+                        )
                     else:
-                        self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
-                if weaker_than_descendants[read_idx]:
-                    self._binding_apis[i].Bind(
-                        visual_materials[read_idx].material, bindingStrength=UsdShade.Tokens.weakerThanDescendants
-                    )
-                else:
-                    self._binding_apis[i].Bind(
-                        visual_materials[read_idx].material, bindingStrength=UsdShade.Tokens.strongerThanDescendants
-                    )
-                self._applied_visual_materials[i] = visual_materials[read_idx]
-                read_idx += 1
+                        self._binding_apis[i].Bind(
+                            visual_materials[read_idx].material, bindingStrength=UsdShade.Tokens.strongerThanDescendants
+                        )
+                    self._applied_visual_materials[i] = visual_materials[read_idx]
+                    read_idx += 1
+                return
+            else:
+                if weaker_than_descendants is None:
+                    weaker_than_descendants = False
+                indices = self._backend_utils.to_list(indices)
+                for i in indices:
+                    if self._binding_apis[i] is None:
+                        if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
+                            self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
+                        else:
+                            self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
+                    if weaker_than_descendants:
+                        self._binding_apis[i].Bind(
+                            visual_materials.material, bindingStrength=UsdShade.Tokens.weakerThanDescendants
+                        )
+                    else:
+                        self._binding_apis[i].Bind(
+                            visual_materials.material, bindingStrength=UsdShade.Tokens.strongerThanDescendants
+                        )
+                    self._applied_visual_materials[i] = visual_materials
             return
         else:
-            if weaker_than_descendants is None:
-                weaker_than_descendants = False
-            indices = self._backend_utils.to_list(indices)
-            for i in indices:
-                if self._binding_apis[i] is None:
-                    if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
-                        self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
-                    else:
-                        self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
-                if weaker_than_descendants:
-                    self._binding_apis[i].Bind(
-                        visual_materials.material, bindingStrength=UsdShade.Tokens.weakerThanDescendants
-                    )
-                else:
-                    self._binding_apis[i].Bind(
-                        visual_materials.material, bindingStrength=UsdShade.Tokens.strongerThanDescendants
-                    )
-                self._applied_visual_materials[i] = visual_materials
-        return
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_applied_visual_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
@@ -622,69 +481,72 @@ class XFormPrim(object):
              <isaacsim.core.api.materials.omni_glass.OmniGlass object at 0x7f829c165de0>,
              <isaacsim.core.api.materials.omni_glass.OmniGlass object at 0x7f829c165de0>]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = [None] * indices.shape[0]
-        write_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        for i in indices:
-            if self._binding_apis[i] is None:
-                if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
-                    self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
-                else:
-                    self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
-            if self._applied_visual_materials[i] is not None:
-                result[write_idx] = self._applied_visual_materials[i]
-                write_idx += 1
-            else:
-                visual_binding = self._binding_apis[i].GetDirectBinding()
-                material_path = str(visual_binding.GetMaterialPath())
-                if material_path == "":
-                    result[write_idx] = None
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            result = [None] * indices.shape[0]
+            write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            for i in indices:
+                if self._binding_apis[i] is None:
+                    if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
+                        self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
+                    else:
+                        self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
+                if self._applied_visual_materials[i] is not None:
+                    result[write_idx] = self._applied_visual_materials[i]
                     write_idx += 1
                 else:
-                    stage = get_current_stage()
-                    material = UsdShade.Material(stage.GetPrimAtPath(material_path))
-                    # getting the shader
-                    shader_info = material.ComputeSurfaceSource()
-                    if shader_info[0].GetPath() != "":
-                        shader = shader_info[0]
-                    elif is_prim_path_valid(material_path + "/shader"):
-                        shader_path = material_path + "/shader"
-                        shader = UsdShade.Shader(get_prim_at_path(shader_path))
-                    elif is_prim_path_valid(material_path + "/Shader"):
-                        shader_path = material_path + "/Shader"
-                        shader = UsdShade.Shader(get_prim_at_path(shader_path))
-                    else:
-                        carb.log_warn("the shader on xform prim {} is not supported".format(self._prim_paths[i]))
+                    visual_binding = self._binding_apis[i].GetDirectBinding()
+                    material_path = str(visual_binding.GetMaterialPath())
+                    if material_path == "":
                         result[write_idx] = None
                         write_idx += 1
-                        continue
-                    implementation_source = shader.GetImplementationSource()
-                    asset_sub_identifier = shader.GetPrim().GetAttribute("info:mdl:sourceAsset:subIdentifier").Get()
-                    shader_id = shader.GetShaderId()
-                    if implementation_source == "id" and shader_id == "UsdPreviewSurface":
-                        from isaacsim.core.api.materials.preview_surface import PreviewSurface
-
-                        self._applied_visual_materials[i] = PreviewSurface(prim_path=material_path, shader=shader)
-                        result[write_idx] = self._applied_visual_materials[i]
-                        write_idx += 1
-                    elif asset_sub_identifier == "OmniGlass":
-                        from isaacsim.core.api.materials.omni_glass import OmniGlass
-
-                        self._applied_visual_materials[i] = OmniGlass(prim_path=material_path, shader=shader)
-                        result[write_idx] = self._applied_visual_materials[i]
-                        write_idx += 1
-                    elif asset_sub_identifier == "OmniPBR":
-                        from isaacsim.core.api.materials.omni_pbr import OmniPBR
-
-                        self._applied_visual_materials[i] = OmniPBR(prim_path=material_path, shader=shader)
-                        result[write_idx] = self._applied_visual_materials[i]
-                        write_idx += 1
                     else:
-                        carb.log_warn("the shader on xform prim {} is not supported".format(self._prim_paths[i]))
-                        result[write_idx] = None
-                        write_idx += 1
-        return result
+                        stage = get_current_stage()
+                        material = UsdShade.Material(stage.GetPrimAtPath(material_path))
+                        # getting the shader
+                        shader_info = material.ComputeSurfaceSource()
+                        if shader_info[0].GetPath() != "":
+                            shader = shader_info[0]
+                        elif is_prim_path_valid(material_path + "/shader"):
+                            shader_path = material_path + "/shader"
+                            shader = UsdShade.Shader(get_prim_at_path(shader_path))
+                        elif is_prim_path_valid(material_path + "/Shader"):
+                            shader_path = material_path + "/Shader"
+                            shader = UsdShade.Shader(get_prim_at_path(shader_path))
+                        else:
+                            carb.log_warn("the shader on xform prim {} is not supported".format(self._prim_paths[i]))
+                            result[write_idx] = None
+                            write_idx += 1
+                            continue
+                        implementation_source = shader.GetImplementationSource()
+                        asset_sub_identifier = shader.GetPrim().GetAttribute("info:mdl:sourceAsset:subIdentifier").Get()
+                        shader_id = shader.GetShaderId()
+                        if implementation_source == "id" and shader_id == "UsdPreviewSurface":
+                            from isaacsim.core.api.materials.preview_surface import PreviewSurface
+
+                            self._applied_visual_materials[i] = PreviewSurface(prim_path=material_path, shader=shader)
+                            result[write_idx] = self._applied_visual_materials[i]
+                            write_idx += 1
+                        elif asset_sub_identifier == "OmniGlass":
+                            from isaacsim.core.api.materials.omni_glass import OmniGlass
+
+                            self._applied_visual_materials[i] = OmniGlass(prim_path=material_path, shader=shader)
+                            result[write_idx] = self._applied_visual_materials[i]
+                            write_idx += 1
+                        elif asset_sub_identifier == "OmniPBR":
+                            from isaacsim.core.api.materials.omni_pbr import OmniPBR
+
+                            self._applied_visual_materials[i] = OmniPBR(prim_path=material_path, shader=shader)
+                            result[write_idx] = self._applied_visual_materials[i]
+                            write_idx += 1
+                        else:
+                            carb.log_warn("the shader on xform prim {} is not supported".format(self._prim_paths[i]))
+                            result[write_idx] = None
+                            write_idx += 1
+            return result
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def is_visual_material_applied(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
@@ -712,25 +574,28 @@ class XFormPrim(object):
             >>> prims.is_visual_material_applied(indices=np.array([0, 2, 4]))
             [True, False, True]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        result = [None] * indices.shape[0]
-        write_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        for i in indices:
-            if self._binding_apis[i] is None:
-                if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
-                    self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            result = [None] * indices.shape[0]
+            write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            for i in indices:
+                if self._binding_apis[i] is None:
+                    if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
+                        self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
+                    else:
+                        self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
+                visual_binding = self._binding_apis[i].GetDirectBinding()
+                material_path = str(visual_binding.GetMaterialPath())
+                if material_path == "":
+                    result[write_idx] = False
+                    write_idx += 1
                 else:
-                    self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
-            visual_binding = self._binding_apis[i].GetDirectBinding()
-            material_path = str(visual_binding.GetMaterialPath())
-            if material_path == "":
-                result[write_idx] = False
-                write_idx += 1
-            else:
-                result[write_idx] = True
-                write_idx += 1
-        return result
+                    result[write_idx] = True
+                    write_idx += 1
+            return result
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_world_poses(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True
@@ -783,60 +648,65 @@ class XFormPrim(object):
              [1. 0. 0. 0.]
              [1. 0. 0. 0.]]
         """
-        if not usd:
-            if not self._view_in_fabric_prepared:
-                self._prepare_view_in_fabric()
-            if self._selection is None:
-                self._get_fabric_selection()
-            positions = wp.fabricarray(self._selection, "_worldPosition")
-            orientations = wp.fabricarray(self._selection, "_worldOrientation")
-            if indices is None:
-                indices = self._default_view_indices
+        if self._is_valid:
+            if not usd:
+                if not self._view_in_fabric_prepared:
+                    self._prepare_view_in_fabric()
+                if self._selection is None:
+                    self._get_fabric_selection()
+                positions = wp.fabricarray(self._selection, "_worldPosition")
+                orientations = wp.fabricarray(self._selection, "_worldOrientation")
+                if indices is None:
+                    indices = self._default_view_indices
+                else:
+                    indices = self._backend2warp(indices, dtype=wp.uint32)
+                wp.launch(
+                    fabric_utils.get_vec3d_array,
+                    dim=(indices.shape[0]),
+                    inputs=[
+                        positions,
+                        self._fabric_to_view,
+                        self._view_to_fabric,
+                        self._fabric_data_dicts["world_position"],
+                        indices,
+                    ],
+                    device=self._device,
+                )
+                wp.launch(
+                    fabric_utils.get_quatf_array,
+                    dim=(indices.shape[0]),
+                    inputs=[
+                        orientations,
+                        self._fabric_to_view,
+                        self._view_to_fabric,
+                        self._fabric_data_dicts["world_orientation"],
+                        indices,
+                    ],
+                    device=self._device,
+                )
+                self._fabric_data_valid["world_position"] = True
+                self._fabric_data_valid["world_orientation"] = True
+                return self._warp2backend(
+                    wp.indexedarray(self._fabric_data_dicts["world_position"], indices=indices.view(wp.int32))
+                ), self._warp2backend(
+                    wp.indexedarray(self._fabric_data_dicts["world_orientation"], indices=indices.view(wp.int32))
+                )
             else:
-                indices = self._backend2warp(indices, dtype=wp.uint32)
-            wp.launch(
-                fabric_utils.get_vec3d_array,
-                dim=(indices.shape[0]),
-                inputs=[
-                    positions,
-                    self._fabric_to_view,
-                    self._view_to_fabric,
-                    self._fabric_data_dicts["world_position"],
-                    indices,
-                ],
-                device=self._device,
-            )
-            wp.launch(
-                fabric_utils.get_quatf_array,
-                dim=(indices.shape[0]),
-                inputs=[
-                    orientations,
-                    self._fabric_to_view,
-                    self._view_to_fabric,
-                    self._fabric_data_dicts["world_orientation"],
-                    indices,
-                ],
-                device=self._device,
-            )
-            self._fabric_data_valid["world_position"] = True
-            self._fabric_data_valid["world_orientation"] = True
-            return self._warp2backend(
-                wp.indexedarray(self._fabric_data_dicts["world_position"], indices=indices.view(wp.int32))
-            ), self._warp2backend(
-                wp.indexedarray(self._fabric_data_dicts["world_orientation"], indices=indices.view(wp.int32))
-            )
+                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+                positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
+                orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
+                indices = self._backend_utils.to_list(indices)
+                write_idx = 0
+                for i in indices:
+                    positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i])
+                    write_idx += 1
+                positions = self._backend_utils.convert(positions, device=self._device, dtype="float32", indexed=True)
+                orientations = self._backend_utils.convert(
+                    orientations, device=self._device, dtype="float32", indexed=True
+                )
+                return positions, orientations
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
-            orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
-            indices = self._backend_utils.to_list(indices)
-            write_idx = 0
-            for i in indices:
-                positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i])
-                write_idx += 1
-            positions = self._backend_utils.convert(positions, device=self._device, dtype="float32", indexed=True)
-            orientations = self._backend_utils.convert(orientations, device=self._device, dtype="float32", indexed=True)
-            return positions, orientations
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def set_world_poses(
         self,
@@ -883,70 +753,73 @@ class XFormPrim(object):
             >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
             >>> prims.set_world_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
-        if not usd:
-            if not self._view_in_fabric_prepared:
-                self._prepare_view_in_fabric()
-            if self._selection is None:
-                self._get_fabric_selection()
-            if indices is None:
-                indices = self._default_view_indices
+        if self._is_valid:
+            if not usd:
+                if not self._view_in_fabric_prepared:
+                    self._prepare_view_in_fabric()
+                if self._selection is None:
+                    self._get_fabric_selection()
+                if indices is None:
+                    indices = self._default_view_indices
+                else:
+                    indices = self._backend2warp(indices, dtype=wp.uint32)
+                if positions is not None:
+                    current_positions = wp.fabricarray(self._selection, "_worldPosition")
+                    wp.launch(
+                        fabric_utils.set_vec3d_array,
+                        dim=(indices.shape[0]),
+                        inputs=[
+                            current_positions,
+                            self._fabric_to_view,
+                            self._view_to_fabric,
+                            self._backend2warp(positions),
+                            indices,
+                        ],
+                        device=self._device,
+                    )
+                if orientations is not None:
+                    current_orientations = wp.fabricarray(self._selection, "_worldOrientation")
+                    wp.launch(
+                        fabric_utils.set_quatf_array,
+                        dim=(indices.shape[0]),
+                        inputs=[
+                            current_orientations,
+                            self._fabric_to_view,
+                            self._view_to_fabric,
+                            self._backend2warp(orientations),
+                            indices,
+                        ],
+                        device=self._device,
+                    )
             else:
-                indices = self._backend2warp(indices, dtype=wp.uint32)
-            if positions is not None:
-                current_positions = wp.fabricarray(self._selection, "_worldPosition")
-                wp.launch(
-                    fabric_utils.set_vec3d_array,
-                    dim=(indices.shape[0]),
-                    inputs=[
-                        current_positions,
-                        self._fabric_to_view,
-                        self._view_to_fabric,
-                        self._backend2warp(positions),
-                        indices,
-                    ],
-                    device=self._device,
+                if positions is None or orientations is None:
+                    current_positions, current_orientations = self.get_world_poses(indices=indices)
+                    if positions is None:
+                        positions = current_positions
+                    if orientations is None:
+                        orientations = current_orientations
+                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+                parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
+                indices = self._backend_utils.to_list(indices)
+                write_idx = 0
+                for i in indices:
+                    parent_transforms[write_idx] = np.array(
+                        UsdGeom.Xformable(get_prim_parent(self._prims[i])).ComputeLocalToWorldTransform(
+                            Usd.TimeCode.Default()
+                        ),
+                        dtype="float32",
+                    )
+                    write_idx += 1
+                parent_transforms = self._backend_utils.convert(parent_transforms, dtype="float32", device=self._device)
+                calculated_translations, calculated_orientations = self._backend_utils.get_local_from_world(
+                    parent_transforms, positions, orientations, self._device
                 )
-            if orientations is not None:
-                current_orientations = wp.fabricarray(self._selection, "_worldOrientation")
-                wp.launch(
-                    fabric_utils.set_quatf_array,
-                    dim=(indices.shape[0]),
-                    inputs=[
-                        current_orientations,
-                        self._fabric_to_view,
-                        self._view_to_fabric,
-                        self._backend2warp(orientations),
-                        indices,
-                    ],
-                    device=self._device,
+                XFormPrim.set_local_poses(
+                    self, translations=calculated_translations, orientations=calculated_orientations, indices=indices
                 )
+            return
         else:
-            if positions is None or orientations is None:
-                current_positions, current_orientations = self.get_world_poses(indices=indices)
-                if positions is None:
-                    positions = current_positions
-                if orientations is None:
-                    orientations = current_orientations
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
-            indices = self._backend_utils.to_list(indices)
-            write_idx = 0
-            for i in indices:
-                parent_transforms[write_idx] = np.array(
-                    UsdGeom.Xformable(get_prim_parent(self._prims[i])).ComputeLocalToWorldTransform(
-                        Usd.TimeCode.Default()
-                    ),
-                    dtype="float32",
-                )
-                write_idx += 1
-            parent_transforms = self._backend_utils.convert(parent_transforms, dtype="float32", device=self._device)
-            calculated_translations, calculated_orientations = self._backend_utils.get_local_from_world(
-                parent_transforms, positions, orientations, self._device
-            )
-            XFormPrim.set_local_poses(
-                self, translations=calculated_translations, orientations=calculated_orientations, indices=indices
-            )
-        return
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_local_poses(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
@@ -999,17 +872,20 @@ class XFormPrim(object):
              [1. 0. 0. 0.]
              [1. 0. 0. 0.]]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        translations = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
-        orientations = np.zeros(shape=(indices.shape[0], 4), dtype="float32")
-        write_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        for i in indices:
-            translations[write_idx], orientations[write_idx] = get_local_pose(self._prim_paths[i])
-            write_idx += 1
-        translations = self._backend_utils.convert(translations, dtype="float32", device=self._device, indexed=True)
-        orientations = self._backend_utils.convert(orientations, dtype="float32", device=self._device, indexed=True)
-        return translations, orientations
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            translations = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
+            orientations = np.zeros(shape=(indices.shape[0], 4), dtype="float32")
+            write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            for i in indices:
+                translations[write_idx], orientations[write_idx] = get_local_pose(self._prim_paths[i])
+                write_idx += 1
+            translations = self._backend_utils.convert(translations, dtype="float32", device=self._device, indexed=True)
+            orientations = self._backend_utils.convert(orientations, dtype="float32", device=self._device, indexed=True)
+            return translations, orientations
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def set_local_poses(
         self,
@@ -1057,37 +933,42 @@ class XFormPrim(object):
             >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
             >>> prims.set_local_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
-        indices = self._backend_utils.to_list(self._backend_utils.resolve_indices(indices, self.count, self._device))
-        if translations is not None:
-            translations = self._backend_utils.to_list(translations)
-            write_idx = 0
-            for i in indices:
-                properties = self._prims[i].GetPropertyNames()
-                translation = Gf.Vec3d(*translations[write_idx])
-                if "xformOp:translate" not in properties:
-                    carb.log_error(
-                        "Translate property needs to be set for {} before setting its position".format(self.name)
-                    )
-                xform_op = self._prims[i].GetAttribute("xformOp:translate")
-                xform_op.Set(translation)
-                write_idx += 1
-        if orientations is not None:
-            orientations = self._backend_utils.to_list(orientations)
-            write_idx = 0
-            for i in indices:
-                properties = self._prims[i].GetPropertyNames()
-                if "xformOp:orient" not in properties:
-                    carb.log_error(
-                        "Orient property needs to be set for {} before setting its orientation".format(self.name)
-                    )
-                xform_op = self._prims[i].GetAttribute("xformOp:orient")
-                if xform_op.GetTypeName() == "quatf":
-                    rotq = Gf.Quatf(*orientations[write_idx])
-                else:
-                    rotq = Gf.Quatd(*orientations[write_idx])
-                xform_op.Set(rotq)
-                write_idx += 1
-        return
+        if self._is_valid:
+            indices = self._backend_utils.to_list(
+                self._backend_utils.resolve_indices(indices, self.count, self._device)
+            )
+            if translations is not None:
+                translations = self._backend_utils.to_list(translations)
+                write_idx = 0
+                for i in indices:
+                    properties = self._prims[i].GetPropertyNames()
+                    translation = Gf.Vec3d(*translations[write_idx])
+                    if "xformOp:translate" not in properties:
+                        carb.log_error(
+                            "Translate property needs to be set for {} before setting its position".format(self.name)
+                        )
+                    xform_op = self._prims[i].GetAttribute("xformOp:translate")
+                    xform_op.Set(translation)
+                    write_idx += 1
+            if orientations is not None:
+                orientations = self._backend_utils.to_list(orientations)
+                write_idx = 0
+                for i in indices:
+                    properties = self._prims[i].GetPropertyNames()
+                    if "xformOp:orient" not in properties:
+                        carb.log_error(
+                            "Orient property needs to be set for {} before setting its orientation".format(self.name)
+                        )
+                    xform_op = self._prims[i].GetAttribute("xformOp:orient")
+                    if xform_op.GetTypeName() == "quatf":
+                        rotq = Gf.Quatf(*orientations[write_idx])
+                    else:
+                        rotq = Gf.Quatd(*orientations[write_idx])
+                    xform_op.Set(rotq)
+                    write_idx += 1
+            return
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_world_scales(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
@@ -1123,18 +1004,21 @@ class XFormPrim(object):
              [1. 1. 1.]
              [1. 1. 1.]]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        scales = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
-        write_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        for i in indices:
-            prim_tf = UsdGeom.Xformable(self._prims[i]).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-            transform = Gf.Transform()
-            transform.SetMatrix(prim_tf)
-            scales[write_idx] = np.array(transform.GetScale(), dtype="float32")
-            write_idx += 1
-        scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
-        return scales
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            scales = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
+            write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            for i in indices:
+                prim_tf = UsdGeom.Xformable(self._prims[i]).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+                transform = Gf.Transform()
+                transform.SetMatrix(prim_tf)
+                scales[write_idx] = np.array(transform.GetScale(), dtype="float32")
+                write_idx += 1
+            scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
+            return scales
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def set_local_scales(
         self,
@@ -1163,18 +1047,23 @@ class XFormPrim(object):
             >>> scales = np.tile(np.array([1.0, 0.75, 0.5]), (3, 1))
             >>> prims.set_local_scales(scales, indices=np.array([0, 2, 4]))
         """
-        indices = self._backend_utils.to_list(self._backend_utils.resolve_indices(indices, self.count, self._device))
-        read_idx = 0
-        scales = self._backend_utils.to_list(scales)
-        for i in indices:
-            scale = Gf.Vec3d(*scales[read_idx])
-            properties = self._prims[i].GetPropertyNames()
-            if "xformOp:scale" not in properties:
-                carb.log_error("Scale property needs to be set for {} before setting its scale".format(self.name))
-            xform_op = self._prims[i].GetAttribute("xformOp:scale")
-            xform_op.Set(scale)
-            read_idx += 1
-        return
+        if self._is_valid:
+            indices = self._backend_utils.to_list(
+                self._backend_utils.resolve_indices(indices, self.count, self._device)
+            )
+            read_idx = 0
+            scales = self._backend_utils.to_list(scales)
+            for i in indices:
+                scale = Gf.Vec3d(*scales[read_idx])
+                properties = self._prims[i].GetPropertyNames()
+                if "xformOp:scale" not in properties:
+                    carb.log_error("Scale property needs to be set for {} before setting its scale".format(self.name))
+                xform_op = self._prims[i].GetAttribute("xformOp:scale")
+                xform_op.Set(scale)
+                read_idx += 1
+            return
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_local_scales(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
@@ -1210,41 +1099,18 @@ class XFormPrim(object):
              [1. 1. 1.]
              [1. 1. 1.]]
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        scales = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
-        write_idx = 0
-        indices = self._backend_utils.to_list(indices)
-        for i in indices:
-            scales[write_idx] = np.array(self._prims[i].GetAttribute("xformOp:scale").Get(), dtype="float32")
-            write_idx += 1
-        scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
-        return scales
-
-    def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> bool:
-        """Check that all prims have a valid USD Prim
-
-        Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-
-        Returns:
-            bool: True if all prim paths specified in the view correspond to a valid prim in stage. False otherwise.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.is_valid()
-            True
-        """
-        indices = self._backend_utils.to_list(self._backend_utils.resolve_indices(indices, self.count, self._device))
-        result = True
-        indices = self._backend_utils.to_list(indices)
-        for index in indices:
-            result = result and is_prim_path_valid(self._prim_paths[index])
-        return result
+        if self._is_valid:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            scales = np.zeros(shape=(indices.shape[0], 3), dtype="float32")
+            write_idx = 0
+            indices = self._backend_utils.to_list(indices)
+            for i in indices:
+                scales[write_idx] = np.array(self._prims[i].GetAttribute("xformOp:scale").Get(), dtype="float32")
+                write_idx += 1
+            scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
+            return scales
+        else:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def _get_fabric_selection(self) -> None:
         self._selection = self._usdrt_stage.SelectPrims(
@@ -1322,7 +1188,53 @@ class XFormPrim(object):
         self._fabric_data_valid["world_position"] = False
         self._fabric_data_dicts["world_orientation"] = wp.zeros([self.count, 4], dtype=wp.float32, device=self._device)
         self._fabric_data_valid["world_orientation"] = False
-        self._reset_fabric_selection_callback = omni.physx.acquire_physx_interface().subscribe_physics_step_events(
-            lambda step_dt, obj=weakref.proxy(self): obj._reset_fabric_selection(step_dt)
+        self._callbacks.append(
+            SimulationManager.register_callback(self._reset_fabric_selection, event=IsaacEvents.PHYSICS_STEP)
         )
         self._view_in_fabric_prepared = True
+
+    def _on_post_reset(self, event) -> None:
+        if not self._non_root_link:
+            self.set_world_poses(self._default_state.positions, self._default_state.orientations)
+
+    def _set_xform_properties(self) -> None:
+        current_positions, current_orientations = self.get_world_poses()
+        properties_to_remove = [
+            "xformOp:rotateX",
+            "xformOp:rotateXZY",
+            "xformOp:rotateY",
+            "xformOp:rotateYXZ",
+            "xformOp:rotateYZX",
+            "xformOp:rotateZ",
+            "xformOp:rotateZYX",
+            "xformOp:rotateZXY",
+            "xformOp:rotateXYZ",
+            "xformOp:transform",
+        ]
+        for i in range(self._count):
+            prop_names = self._prims[i].GetPropertyNames()
+            xformable = UsdGeom.Xformable(self._prims[i])
+            xformable.ClearXformOpOrder()
+            for prop_name in prop_names:
+                if prop_name in properties_to_remove:
+                    self._prims[i].RemoveProperty(prop_name)
+            if "xformOp:scale" not in prop_names:
+                xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
+                xform_op_scale.Set(Gf.Vec3d([1.0, 1.0, 1.0]))
+            else:
+                xform_op_scale = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:scale"))
+
+            if "xformOp:translate" not in prop_names:
+                xform_op_tranlsate = xformable.AddXformOp(
+                    UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
+                )
+            else:
+                xform_op_tranlsate = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:translate"))
+
+            if "xformOp:orient" not in prop_names:
+                xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
+            else:
+                xform_op_rot = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:orient"))
+            xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
+        self.set_world_poses(positions=current_positions, orientations=current_orientations)
+        return

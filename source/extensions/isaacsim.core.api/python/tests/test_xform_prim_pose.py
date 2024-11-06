@@ -16,6 +16,7 @@ import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.prims import SingleXFormPrim
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 
 
@@ -24,6 +25,7 @@ class TestXformPrimPose(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
+        SimulationManager.set_backend("numpy")
         pass
 
     async def tearDown(self):

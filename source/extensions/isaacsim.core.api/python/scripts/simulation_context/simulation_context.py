@@ -26,6 +26,7 @@ import isaacsim.core.utils.warp as warp_utils
 import omni.kit.app
 import omni.physics.tensors
 from isaacsim.core.api.physics_context import PhysicsContext
+from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.core.utils.carb import get_carb_setting, set_carb_setting
 from isaacsim.core.utils.prims import get_prim_type_name, is_prim_ancestral, is_prim_no_delete
 from isaacsim.core.utils.stage import (
@@ -112,7 +113,7 @@ class SimulationContext:
         self._initial_physics_prim_path = physics_prim_path
         self._set_defaults = set_defaults
         self._sim_params = sim_params
-        self._backend = backend
+        SimulationManager.set_backend(backend)
         self._device = device
         self._settings = carb.settings.get_settings()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -155,14 +156,10 @@ class SimulationContext:
                 .get_stage_event_stream()
                 .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
             )
-        if self._backend == "numpy":
-            self._backend_utils = np_utils
-        elif self._backend == "torch":
-            self._backend_utils = torch_utils
-        elif self._backend == "warp":
-            self._backend_utils = warp_utils
-        else:
-            raise Exception(f"Provided backend is not supported: {self._backend}. Supported: torch, numpy, warp.")
+        self._message_bus = omni.kit.app.get_app().get_message_bus_event_stream()
+        self._on_post_physics_ready_callback = self._message_bus.create_subscription_to_pop_by_type(
+            IsaacEvents.PHYSICS_READY.value, self._on_post_physics_ready
+        )
         return
 
     def __new__(cls, *args, **kwargs) -> SimulationContext:
@@ -210,14 +207,13 @@ class SimulationContext:
             >>> SimulationContext.clear_instance()
         """
         if SimulationContext._instance is not None:
-            if hasattr(SimulationContext._instance, "_physics_sim_view"):
-                del SimulationContext._instance._physics_sim_view
             SimulationContext._instance.clear_all_callbacks()
             SimulationContext._instance._stage_open_callback = None
             SimulationContext._instance._physics_timer_callback = None
             SimulationContext._instance._event_timer_callback = None
             SimulationContext._instance = None
             SimulationContext._sim_context_initialized = False
+            SimulationManager.set_backend("numpy")
         return
 
     """
@@ -300,7 +296,7 @@ class SimulationContext:
             >>> simulation_context.backend
             numpy
         """
-        return self._backend
+        return SimulationManager.get_backend()
 
     @property
     def device(self) -> str:
@@ -315,10 +311,7 @@ class SimulationContext:
             >>> simulation_context.device
             None
         """
-        if self._physics_context:
-            return self._physics_context._device
-        else:
-            return None
+        return SimulationManager.get_physics_sim_device()
 
     @property
     def backend_utils(self):
@@ -346,7 +339,7 @@ class SimulationContext:
             >>> simulation_context.backend_utils
             <module 'isaacsim.core.utils.numpy'>
         """
-        return self._backend_utils
+        return SimulationManager._get_backend_utils()
 
     @property
     def physics_sim_view(self):
@@ -366,7 +359,7 @@ class SimulationContext:
             >>> simulation_context.physics_sim_view
             <omni.physics.tensors.impl.api.SimulationView object at 0x...>
         """
-        return self._physics_sim_view
+        return SimulationManager.get_physics_sim_view()
 
     """
     Operations - Physics.
@@ -557,7 +550,6 @@ class SimulationContext:
             stage_units_in_meters=self._initial_stage_units_in_meters,
             physics_prim_path=self._initial_physics_prim_path,
             sim_params=self._sim_params,
-            backend=self._backend,
             device=self._device,
         )
         await omni.kit.app.get_app().next_update_async()
@@ -580,20 +572,11 @@ class SimulationContext:
 
             >>> simulation_context.initialize_physics()
         """
-        # remove current physics callbacks to avoid getting called before physics warmup
-        for callback_name in list(self._physics_callback_functions.keys()):
-            del self._physics_callback_functions[callback_name]
         if self.is_stopped() and not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
-        self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
-        self._physics_sim_view.set_subspace_roots("/")
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-            SimulationContext.step(self, render=True)
-        # add physics callback again here
-        for callback_name, callback_function in self._physics_functions.items():
-            self._physics_callback_functions[
-                callback_name
-            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
+            SimulationContext.step(self, render=False)
+            carb.log_warn("Deprecation warning: ``initialize_physics`` is not needed anymore.")
         return
 
     def reset(self, soft: bool = False) -> None:
@@ -616,11 +599,7 @@ class SimulationContext:
         if not soft:
             if not self.is_stopped():
                 self.stop()
-            SimulationContext.initialize_physics(self)
-        else:
-            if self._physics_sim_view is None:
-                msg = "Physics simulation view is not set. Please ensure the first reset(..) call is with soft=False."
-                carb.log_warn(msg)
+            self.play()
 
     async def reset_async(self, soft: bool = False) -> None:
         """Reset the physics simulation view (asynchronous version).
@@ -642,22 +621,7 @@ class SimulationContext:
         if not soft:
             if not self.is_stopped():
                 await self.stop_async()
-            # remove current physics callbacks to avoid getting called before physics warmup
-            for callback_name in list(self._physics_callback_functions.keys()):
-                del self._physics_callback_functions[callback_name]
             await self.play_async()
-            self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
-            self._physics_sim_view.set_subspace_roots("/")
-            await update_stage_async()
-            # add physics callback again here
-            for callback_name, callback_function in self._physics_functions.items():
-                self._physics_callback_functions[
-                    callback_name
-                ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
-        else:
-            if self._physics_sim_view is None:
-                msg = "Physics simulation view is not set. Please ensure the first reset(..) call is with soft=False."
-                carb.log_warn(msg)
 
     def step(self, render: bool = True) -> None:
         """Steps the physics simulation while rendering or without.
@@ -823,7 +787,7 @@ class SimulationContext:
             >>> simulation_context.is_simulating()
             True
         """
-        return self._physics_sim_view is not None
+        return SimulationManager.get_physics_sim_view() is not None
 
     """
     Operations- Timeline.
@@ -877,6 +841,7 @@ class SimulationContext:
         """
         self._timeline.play()
         self.get_physics_context().warm_start()
+        # self._timeline.commit()
         await self.render_async()
         return
 
@@ -894,8 +859,8 @@ class SimulationContext:
             >>> simulation_context.play()
         """
         self._timeline.play()
+        # self._timeline.commit()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.get_physics_context().warm_start()
             self.render()
         return
 
@@ -1331,10 +1296,9 @@ class SimulationContext:
             prim_path=physics_prim_path,
             sim_params=sim_params,
             set_defaults=set_defaults,
-            backend=backend,
-            device=device,
         )
-        self._device = self._physics_context.device
+        if device is not None:
+            SimulationManager.set_physics_sim_device(device)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
         return self.stage
@@ -1347,7 +1311,6 @@ class SimulationContext:
         physics_prim_path: str = "/physicsScene",
         sim_params: dict = None,
         set_defaults: bool = True,
-        backend: str = "numpy",
         device: Optional[str] = None,
     ) -> Usd.Stage:
         if get_current_stage() is None:
@@ -1357,14 +1320,10 @@ class SimulationContext:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
         await omni.kit.app.get_app().next_update_async()
         self._physics_context = PhysicsContext(
-            physics_dt=physics_dt,
-            prim_path=physics_prim_path,
-            sim_params=sim_params,
-            set_defaults=set_defaults,
-            backend=backend,
-            device=device,
+            physics_dt=physics_dt, prim_path=physics_prim_path, sim_params=sim_params, set_defaults=set_defaults
         )
-        self._device = self._physics_context.device
+        if device is not None:
+            SimulationManager.set_physics_sim_device(device)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
         return self.stage
@@ -1400,6 +1359,8 @@ class SimulationContext:
         # because we use create_subscription_to_pop_by_type for omni.timeline.TimelineEventType.STOP, there is no need to check the type here
         self._current_time = 0
         self._number_of_steps = 0
+        for callback_name in list(self._physics_callback_functions.keys()):
+            del self._physics_callback_functions[callback_name]
 
     def _stage_open_callback_fn(self, event):
         self._physics_callback_functions = dict()
@@ -1414,3 +1375,9 @@ class SimulationContext:
             )
         self._stage_open_callback = None
         return
+
+    def _on_post_physics_ready(self, event):
+        for callback_name, callback_function in self._physics_functions.items():
+            self._physics_callback_functions[
+                callback_name
+            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)

@@ -231,6 +231,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             num_frame_to_settle = 30
 
             # Controlling the resulting assembled robot is different depending on the single_robot flag
+            self._timeline.stop()
+            await update_stage_async()
             if single_robot:
                 # The robots will be considered to be part of a single Articulation at the base robot path
                 controllable_single_robot = SingleArticulation(base_robot_path)
@@ -344,7 +346,8 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
             fixed_joint_orient,
             mask_all_collisions=True,
         )
-
+        self._timeline.stop()
+        await update_stage_async()
         await self._prepare_stage([SingleArticulation(attach_robot_path)])
 
         await self._assert_assembled(attach_robot_path, base_robot_path + "/assembler_mount_frame")

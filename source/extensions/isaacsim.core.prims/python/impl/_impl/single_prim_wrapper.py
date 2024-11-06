@@ -16,6 +16,7 @@ from pxr import Usd
 class _SinglePrimWrapper(object):
     def __init__(self, view) -> None:
         self._prim_view = view
+        self._prim_view._remove_callbacks()
         return
 
     def initialize(self, physics_sim_view=None) -> None:
