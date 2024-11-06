@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.1.3"
+version = "4.2.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -33,6 +33,8 @@ writeTarget.kit = true
 "isaacsim.robot.wheeled_robots" = {}
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
+"isaacsim.examples.browser" = {}
+
 
 [[python.module]]
 name = "isaacsim.examples.interactive.tests"

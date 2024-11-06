@@ -17,10 +17,9 @@ import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.ui as ui
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, str_builder
 from isaacsim.sensors.physx import _range_sensor
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Generic Info"
@@ -31,24 +30,24 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements"""
         self._ext_id = ext_id
 
-        # The extension acquires the Generic Sensor interface at startup.  It will be released during extension shutdown.  We
-        # create a Generic prim using our schema, and then we interact with / query that prim using the python API found
-        # in generic/bindings
+        get_browser_instance().register_example(
+            name="Custom Pattern Range Sensor",
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(),
+            category="Sensors",
+        )
+
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name="Custom Pattern Range Sensor", category="Sensors")
+        # self._sensor.release_generic_sensor_interface()
+        # self._generic = False
+
+    def build_window(self):
+        pass
+
+    def build_ui(self):
         self._sensor = _range_sensor.acquire_generic_sensor_interface()
-
         self._timeline = omni.timeline.get_timeline_interface()
-
-        self._menu_items = [
-            MenuItemDescription(
-                name="Sensors",
-                sub_menu=[
-                    make_menu_item_description(
-                        ext_id, "Generic Range Sensor", lambda a=weakref.proxy(self): a._menu_callback()
-                    )
-                ],
-            )
-        ]
-        add_menu_items(self._menu_items, "Isaac Examples")
 
         self._pattern_set = False
         self._generic = False
@@ -58,91 +57,75 @@ class Extension(omni.ext.IExt):
         self._record_start = time.perf_counter()
         self._streaming = True
 
-        self._build_ui()
+        with ui.VStack(spacing=5, height=0):
+            title = "Read a Generic Range Sensor Data Stream"
+            doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html"
 
-    def _build_ui(self):
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
-        )
-        with self._window.frame:
-            with ui.VStack(spacing=5, height=0):
-                title = "Read a Generic Range Sensor Data Stream"
-                doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html"
+            overview = "This sample demonstrates the Generic range sensor python API for Isaac Sim. It shows how to create an Generic Range Sensor, set its properties, and read data streaming from it. "
+            overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
+            overview += "\n\nPress the 'Open in IDE' button to view the source code."
+            overview += "\nNote: The buttons above only work with an Generic range sensor made by the 'Load Sensor' button; not existing ones in the stage."
 
-                overview = "This sample demonstrates the Generic range sensor python API for Isaac Sim. It shows how to create an Generic Range Sensor, set its properties, and read data streaming from it. "
-                overview += "First press the 'Load Sensor' button and then press PLAY to simulate."
-                overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                overview += "\nNote: The buttons above only work with an Generic range sensor made by the 'Load Sensor' button; not existing ones in the stage."
+            setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
 
-                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+            frame = ui.CollapsableFrame(
+                title="Command Panel",
+                height=0,
+                collapsed=False,
+                style=get_style(),
+                style_type_name_override="CollapsableFrame",
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            )
+            with frame:
+                with ui.VStack(style=get_style(), spacing=5, height=0):
+                    dict = {
+                        "label": "Load Sensor",
+                        "type": "button",
+                        "text": "Load",
+                        "tooltip": "Loads a Range Sensor and sets its properties",
+                        "on_clicked_fn": self._on_spawn_generic_button,
+                    }
+                    btn_builder(**dict)
 
-                frame = ui.CollapsableFrame(
-                    title="Command Panel",
-                    height=0,
-                    collapsed=False,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                )
-                with frame:
-                    with ui.VStack(style=get_style(), spacing=5, height=0):
-                        dict = {
-                            "label": "Load Sensor",
-                            "type": "button",
-                            "text": "Load",
-                            "tooltip": "Loads a Range Sensor and sets its properties",
-                            "on_clicked_fn": self._on_spawn_generic_button,
-                        }
-                        btn_builder(**dict)
+                    dict = {
+                        "label": "Load Scene",
+                        "type": "button",
+                        "text": "Load",
+                        "tooltip": "Loads a obstacles for the Range Sensor to sense",
+                        "on_clicked_fn": self._on_spawn_obstacles_button,
+                    }
+                    btn_builder(**dict)
 
-                        dict = {
-                            "label": "Load Scene",
-                            "type": "button",
-                            "text": "Load",
-                            "tooltip": "Loads a obstacles for the Range Sensor to sense",
-                            "on_clicked_fn": self._on_spawn_obstacles_button,
-                        }
-                        btn_builder(**dict)
+                    dict = {
+                        "label": "Set Sensor Pattern",
+                        "type": "button",
+                        "text": "Set",
+                        "tooltip": "Sets a Custom Sensor pattern",
+                        "on_clicked_fn": self._set_sensor_pattern,
+                    }
+                    btn_builder(**dict)
 
-                        dict = {
-                            "label": "Set Sensor Pattern",
-                            "type": "button",
-                            "text": "Set",
-                            "tooltip": "Sets a Custom Sensor pattern",
-                            "on_clicked_fn": self._set_sensor_pattern,
-                        }
-                        btn_builder(**dict)
-
-                self._output_frame = ui.CollapsableFrame(
-                    title="Save Sensor Pattern Images",
-                    height=0,
-                    collapsed=False,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                )
-                with self._output_frame:
-                    with ui.VStack(style=get_style(), spacing=5, height=0):
-                        dict = {
-                            "label": "Output Directory",
-                            "type": "stringfield",
-                            "default_val": "/home/",
-                            "tooltip": "Save the Scanning Pattern Image on the Wall",
-                            "use_folder_picker": True,
-                        }
-                        self._filepath = str_builder(**dict)
-                        btn_builder("", "button", "Save Pattern Image", "", self._on_save_pattern)
-
-    def on_shutdown(self):
-        # Perform cleanup once the sample closes
-        remove_menu_items(self._menu_items, "Isaac Examples")
-        self._window = None
-        self._generic = False
-
-    def _menu_callback(self):
-        self._window.visible = not self._window.visible
+            self._output_frame = ui.CollapsableFrame(
+                title="Save Sensor Pattern Images",
+                height=0,
+                collapsed=False,
+                style=get_style(),
+                style_type_name_override="CollapsableFrame",
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            )
+            with self._output_frame:
+                with ui.VStack(style=get_style(), spacing=5, height=0):
+                    dict = {
+                        "label": "Output Directory",
+                        "type": "stringfield",
+                        "default_val": "/home/",
+                        "tooltip": "Save the Scanning Pattern Image on the Wall",
+                        "use_folder_picker": True,
+                    }
+                    self._filepath = str_builder(**dict)
+                    btn_builder("", "button", "Save Pattern Image", "", self._on_save_pattern)
 
     async def _spawn_generic_function(self, task):
         # Wait for stage clear to complete before creating Generic

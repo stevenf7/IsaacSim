@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -31,6 +31,7 @@ writeTarget.kit = true
 "isaacsim.robot.schema" = {}
 "omni.usd" = {} # needed for call to add aov
 "usdrt.scenegraph" = {}
+"isaacsim.examples.browser" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.physics"

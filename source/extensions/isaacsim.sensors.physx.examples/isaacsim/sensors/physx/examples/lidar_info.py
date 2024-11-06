@@ -14,10 +14,9 @@ import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.ui as ui
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import btn_builder, combo_cb_scrolling_frame_builder, get_style, setup_ui_headers
 from isaacsim.sensors.physx import _range_sensor
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "LIDAR Info"
@@ -28,92 +27,80 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements"""
         self._ext_id = ext_id
 
-        # The extension acquires the LIDAR interface at startup.  It will be released during extension shutdown.  We
-        # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
-        # in lidar/bindings
-        self._li = _range_sensor.acquire_lidar_sensor_interface()
-        self.lidar = None
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._menu_items = [
-            MenuItemDescription(
-                name="Sensors",
-                sub_menu=[
-                    make_menu_item_description(ext_id, "LIDAR", lambda a=weakref.proxy(self): a._menu_callback())
-                ],
-            )
-        ]
-        add_menu_items(self._menu_items, "Isaac Examples")
+        get_browser_instance().register_example(
+            name="Physx Lidar Sensor",
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(),
+            category="Sensors",
+        )
 
-        self._load_lidar_button = None
-        self._load_lidar_scene_button = None
-        self._build_ui()
+    def build_window(self):
+        pass
 
-    def _build_ui(self):
+    def build_ui(self):
         # This just defines the window we will use to access the lidar_info GUI.  Note that clicking on the menu item
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
-        self._window = omni.ui.Window(
-            EXTENSION_NAME, width=700, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
-        )
-        with self._window.frame:
-            with ui.VStack(spacing=5, height=10):
-                title = "Read a LIDAR Data Stream"
-                doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html"
 
-                overview = (
-                    "This example shows how to create a LIDAR, set its properties, and read data streaming from it. "
-                )
-                overview += "First press the 'Load LIDAR' button and then press PLAY to simulate."
-                overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                overview += "\nNote: The buttons above only work with a LIDAR made by the 'Load LIDAR' button; not existing ones in the stage."
+        self._li = _range_sensor.acquire_lidar_sensor_interface()
+        self.lidar = None
+        self._timeline = omni.timeline.get_timeline_interface()
 
-                setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+        self._load_lidar_button = None
+        self._load_lidar_scene_button = None
+        with ui.VStack(spacing=5, height=10):
+            title = "Read a LIDAR Data Stream"
+            doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html"
 
-                frame = ui.CollapsableFrame(
-                    title="Command Panel",
-                    height=0,
-                    collapsed=False,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                )
-                with frame:
-                    with ui.VStack(style=get_style(), spacing=5, height=0):
-                        dict = {
-                            "label": "Load LIDAR",
-                            "type": "button",
-                            "text": "Load",
-                            "tooltip": "Loads a LIDAR Sensor and sets its properties",
-                            "on_clicked_fn": self._on_spawn_lidar_button,
-                        }
-                        self._load_lidar_button = btn_builder(**dict)
+            overview = "This example shows how to create a LIDAR, set its properties, and read data streaming from it. "
+            overview += "First press the 'Load LIDAR' button and then press PLAY to simulate."
+            overview += "\n\nPress the 'Open in IDE' button to view the source code."
+            overview += "\nNote: The buttons above only work with a LIDAR made by the 'Load LIDAR' button; not existing ones in the stage."
 
-                        dict = {
-                            "label": "Load LIDAR Scene",
-                            "type": "button",
-                            "text": "Load",
-                            "tooltip": "Loads a obstacles for the LIDAR to sense",
-                            "on_clicked_fn": self._on_spawn_obstacles_button,
-                        }
-                        self._load_lidar_scene_button = btn_builder(**dict)
+            setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
 
-                        dict = {
-                            "label": "Show Data Stream",
-                            "type": "checkbox_scrolling_frame",
-                            "default_val": [False, "No Data To Display"],
-                            "tooltip": "Show incoming data from an active LIDAR",
-                        }
-                        self._info_cb, self._info_label = combo_cb_scrolling_frame_builder(**dict)
+            frame = ui.CollapsableFrame(
+                title="Command Panel",
+                height=0,
+                collapsed=False,
+                style=get_style(),
+                style_type_name_override="CollapsableFrame",
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            )
+            with frame:
+                with ui.VStack(style=get_style(), spacing=5, height=0):
+                    dict = {
+                        "label": "Load LIDAR",
+                        "type": "button",
+                        "text": "Load",
+                        "tooltip": "Loads a LIDAR Sensor and sets its properties",
+                        "on_clicked_fn": self._on_spawn_lidar_button,
+                    }
+                    self._load_lidar_button = btn_builder(**dict)
+
+                    dict = {
+                        "label": "Load LIDAR Scene",
+                        "type": "button",
+                        "text": "Load",
+                        "tooltip": "Loads a obstacles for the LIDAR to sense",
+                        "on_clicked_fn": self._on_spawn_obstacles_button,
+                    }
+                    self._load_lidar_scene_button = btn_builder(**dict)
+
+                    dict = {
+                        "label": "Show Data Stream",
+                        "type": "checkbox_scrolling_frame",
+                        "default_val": [False, "No Data To Display"],
+                        "tooltip": "Show incoming data from an active LIDAR",
+                    }
+                    self._info_cb, self._info_label = combo_cb_scrolling_frame_builder(**dict)
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        remove_menu_items(self._menu_items, "Isaac Examples")
-        self._window = None
+        get_browser_instance().deregister_example(name="Physx Lidar Sensor", category="Sensors")
         self._editor_event_subscription = None
-
-    def _menu_callback(self):
-        self._window.visible = not self._window.visible
+        # self._li.release_lidar_sensor_interface()
 
     async def _spawn_lidar_function(self, task):
         # Wait for stage clear to complete before creating LIDAR

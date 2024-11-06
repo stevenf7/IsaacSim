@@ -9,6 +9,7 @@
 
 import asyncio
 import gc
+import os
 import weakref
 
 import carb
@@ -16,13 +17,14 @@ import omni.appwindow
 import omni.ext
 import omni.graph.core as og
 import omni.kit.commands
+import omni.ui as ui
 import usdrt.Sdf
 from isaacsim.core.api import PhysicsContext
 from isaacsim.core.utils.prims import create_prim
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.gui.components.ui_utils import setup_ui_headers
 from isaacsim.storage.native import get_assets_root_path
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf
 
 MENU_NAME = "MoveIt"
@@ -31,18 +33,39 @@ FRANKA_STAGE_PATH = "/Franka"
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
+        self._ext_id = ext_id
         """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._window = None
 
-        menu_items = [make_menu_item_description(ext_id, MENU_NAME, lambda a=weakref.proxy(self): a._menu_callback())]
-        self._menu_items = [MenuItemDescription(name="ROS", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Examples")
+        # register the example with examples browser
+        get_browser_instance().register_example(
+            name=MENU_NAME, execute_entrypoint=self.build_window, ui_hook=self.build_ui, category="ROS/MoveIt"
+        )
 
-    def _menu_callback(self):
-        self._on_environment_setup()
+    def build_window(self):
+        pass
+
+    def build_ui(self):
+        # check if ros bridge is enabled before proceeding
+        extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros1.bridge")
+        if not extension_enabled:
+            msg = "ROS Bridge is not enabled. Please enable the extension to use this feature."
+            carb.log_error(msg)
+        else:
+
+            overview = "This sample demonstrates how to use MoveIt with Isaac Sim. \n\n The Environment Loaded already contains the Omnigraphs needed to connect with MoveIt."
+            self._main_stack = ui.VStack(spacing=5, height=0)
+            with self._main_stack:
+                setup_ui_headers(
+                    self._ext_id,
+                    file_path=os.path.abspath(__file__),
+                    title="MoveIt Example Environment",
+                    overview=overview,
+                    info_collapsed=False,
+                )
+                ui.Button("Load Sample Scene", clicked_fn=self._on_environment_setup)
 
     def create_ros_action_graph(self, franka_stage_path):
         try:
@@ -137,6 +160,5 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Cleanup objects on extension shutdown"""
         self._timeline.stop()
-        remove_menu_items(self._menu_items, "Isaac Examples")
-        self._window = None
+        get_browser_instance().deregister_example(name=MENU_NAME, category="ROS")
         gc.collect()

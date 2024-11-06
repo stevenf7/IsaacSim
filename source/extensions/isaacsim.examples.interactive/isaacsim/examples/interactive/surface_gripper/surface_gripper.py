@@ -20,6 +20,7 @@ import omni.physx as _physx
 import omni.ui as ui
 from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
     add_separator,
@@ -47,136 +48,120 @@ class Extension(omni.ext.IExt):
         # Loads interfaces
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
+        self._stage_event_sub = None
         self._window = None
         self._models = {}
-        # Creates UI window with default size of 600x300
-        # self._window = omni.ui.Window(
-        #     title=EXTENSION_NAME, width=300, height=200, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
-        # )
-        menu_items = [
-            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
-        ]
-        self._menu_items = [MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Examples")
 
-        self._build_ui()
+        # register the example with examples browser
+        get_browser_instance().register_example(
+            name=EXTENSION_NAME, execute_entrypoint=self.build_window, ui_hook=self.build_ui, category="Manipulation"
+        )
 
         self.surface_gripper = None
         self.cone = None
         self.box = None
         self._stage_id = -1
 
-    def _build_ui(self):
-        if not self._window:
-            self._window = ui.Window(
-                title=EXTENSION_NAME, width=0, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+    def build_window(self):
+        pass
+
+    def build_ui(self):
+        self._usd_context = omni.usd.get_context()
+        if self._usd_context is not None:
+            self._stage_event_sub = (
+                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
             )
-            self._window.set_visibility_changed_fn(self._on_window)
-            with self._window.frame:
-                with ui.VStack(spacing=5, height=0):
-                    title = "Surface Gripper Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_isaacsim_robot_surface_gripper.html"
 
-                    overview = "This Example shows how to simulate a suction-cup gripper in Isaac Sim. "
-                    overview += "It simulates suction by creating a Joint between two bodies when the parent and child bodies are close at the gripper's point of contact."
-                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+        with ui.VStack(spacing=5, height=0):
+            title = "Surface Gripper Example"
+            doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_isaacsim_robot_surface_gripper.html"
 
-                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+            overview = "This Example shows how to simulate a suction-cup gripper in Isaac Sim. "
+            overview += "It simulates suction by creating a Joint between two bodies when the parent and child bodies are close at the gripper's point of contact."
+            overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
-                    frame = ui.CollapsableFrame(
-                        title="Command Panel",
-                        height=0,
-                        collapsed=False,
-                        style=get_style(),
-                        style_type_name_override="CollapsableFrame",
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    )
-                    with frame:
-                        with ui.VStack(style=get_style(), spacing=5):
+            setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
 
-                            args = {
-                                "label": "Load Scene",
-                                "type": "button",
-                                "text": "Load",
-                                "tooltip": "Load a gripper into the Scene",
-                                "on_clicked_fn": self._on_create_scenario_button_clicked,
-                            }
-                            self._models["create_button"] = btn_builder(**args)
+            frame = ui.CollapsableFrame(
+                title="Command Panel",
+                height=0,
+                collapsed=False,
+                style=get_style(),
+                style_type_name_override="CollapsableFrame",
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            )
+            with frame:
+                with ui.VStack(style=get_style(), spacing=5):
 
-                            args = {
-                                "label": "Gripper State",
-                                "type": "button",
-                                "a_text": "Close",
-                                "b_text": "Open",
-                                "tooltip": "Open and Close the Gripper",
-                                "on_clicked_fn": self._on_toggle_gripper_button_clicked,
-                            }
-                            self._models["toggle_button"] = state_btn_builder(**args)
+                    args = {
+                        "label": "Load Scene",
+                        "type": "button",
+                        "text": "Load",
+                        "tooltip": "Load a gripper into the Scene",
+                        "on_clicked_fn": self._on_create_scenario_button_clicked,
+                    }
+                    self._models["create_button"] = btn_builder(**args)
 
-                            add_separator()
+                    args = {
+                        "label": "Gripper State",
+                        "type": "button",
+                        "a_text": "Close",
+                        "b_text": "Open",
+                        "tooltip": "Open and Close the Gripper",
+                        "on_clicked_fn": self._on_toggle_gripper_button_clicked,
+                    }
+                    self._models["toggle_button"] = state_btn_builder(**args)
 
-                            args = {
-                                "label": "Gripper Force (UP)",
-                                "default_val": 0,
-                                "min": 0,
-                                "max": 1.0e2,
-                                "step": 1,
-                                "tooltip": ["Force in ()", "Force in ()"],
-                            }
-                            self._models["force_slider"], slider = combo_floatfield_slider_builder(**args)
+                    add_separator()
 
-                            args = {
-                                "label": "Set Force",
-                                "type": "button",
-                                "text": "APPLY",
-                                "tooltip": "Apply the Gripper Force to the Z-Axis of the Cone",
-                                "on_clicked_fn": self._on_force_button_clicked,
-                            }
-                            self._models["force_button"] = btn_builder(**args)
+                    args = {
+                        "label": "Gripper Force (UP)",
+                        "default_val": 0,
+                        "min": 0,
+                        "max": 1.0e2,
+                        "step": 1,
+                        "tooltip": ["Force in ()", "Force in ()"],
+                    }
+                    self._models["force_slider"], slider = combo_floatfield_slider_builder(**args)
 
-                            args = {
-                                "label": "Gripper Speed (UP)",
-                                "default_val": 0,
-                                "min": 0,
-                                "max": 5.0e1,
-                                "step": 1,
-                                "tooltip": ["Speed in ()", "Speed in ()"],
-                            }
+                    args = {
+                        "label": "Set Force",
+                        "type": "button",
+                        "text": "APPLY",
+                        "tooltip": "Apply the Gripper Force to the Z-Axis of the Cone",
+                        "on_clicked_fn": self._on_force_button_clicked,
+                    }
+                    self._models["force_button"] = btn_builder(**args)
 
-                            add_separator()
+                    args = {
+                        "label": "Gripper Speed (UP)",
+                        "default_val": 0,
+                        "min": 0,
+                        "max": 5.0e1,
+                        "step": 1,
+                        "tooltip": ["Speed in ()", "Speed in ()"],
+                    }
 
-                            self._models["speed_slider"], slider = combo_floatfield_slider_builder(**args)
+                    add_separator()
 
-                            args = {
-                                "label": "Set Speed",
-                                "type": "button",
-                                "text": "APPLY",
-                                "tooltip": "Apply Cone Velocity in the Z-Axis",
-                                "on_clicked_fn": self._on_speed_button_clicked,
-                            }
-                            self._models["speed_button"] = btn_builder(**args)
+                    self._models["speed_slider"], slider = combo_floatfield_slider_builder(**args)
 
-                            ui.Spacer()
+                    args = {
+                        "label": "Set Speed",
+                        "type": "button",
+                        "text": "APPLY",
+                        "tooltip": "Apply Cone Velocity in the Z-Axis",
+                        "on_clicked_fn": self._on_speed_button_clicked,
+                    }
+                    self._models["speed_button"] = btn_builder(**args)
+
+                    ui.Spacer()
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Examples")
         self._physx_subs = None
+        self._stage_event_sub = None
         self._window = None
-
-    def _on_window(self, status):
-        if status:
-            self._usd_context = omni.usd.get_context()
-            if self._usd_context is not None:
-                self._stage_event_sub = (
-                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
-                )
-        else:
-            self._stage_event_sub = None
-            self._physx_subs = None
-
-    def _menu_callback(self):
-        self._window.visible = not self._window.visible
 
     def _on_update_ui(self, widget):
         self._models["create_button"].enabled = self._timeline.is_playing()

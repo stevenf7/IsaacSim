@@ -28,13 +28,27 @@ class ReplayFollowTargetExtension(BaseSampleExtension):
             overview="This Example shows how to use data logging to replay data collected\n\n from the follow target extension example.\n\n Press the 'Open in IDE' button to view the source code.",
             sample=ReplayFollowTarget(),
             file_path=os.path.abspath(__file__),
-            number_of_extra_frames=2,
-            window_width=700,
         )
-        self.task_ui_elements = {}
-        frame = self.get_frame(index=0)
-        self.build_data_logging_ui(frame)
         return
+
+    def build_ui(self):
+        extra_stacks = self.build_default_frame()
+        self.build_extra_frames(extra_stacks)
+
+    def build_extra_frames(self, extra_stacks):
+        self.task_ui_elements = {}
+        with extra_stacks:
+            with ui.CollapsableFrame(
+                title="Task Control",
+                width=ui.Fraction(0.33),
+                height=0,
+                visible=True,
+                collapsed=False,
+                # style=get_style(),
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+            ):
+                self.build_data_logging_ui()
 
     def _on_replay_trajectory_button_event(self):
         asyncio.ensure_future(
@@ -67,42 +81,39 @@ class ReplayFollowTargetExtension(BaseSampleExtension):
         self.task_ui_elements["Replay Scene"].enabled = False
         return
 
-    def build_data_logging_ui(self, frame):
-        with frame:
-            with ui.VStack(spacing=5):
-                frame.title = "Data Replay"
-                frame.visible = True
-                example_data_file = os.path.abspath(
-                    os.path.join(os.path.abspath(__file__), "../../../../../data/example_data_file.json")
-                )
-                dict = {
-                    "label": "Data File",
-                    "type": "stringfield",
-                    "default_val": example_data_file,
-                    "tooltip": "Data File",
-                    "on_clicked_fn": None,
-                    "use_folder_picker": False,
-                    "read_only": False,
-                }
-                self.task_ui_elements["Data File"] = str_builder(**dict)
-                dict = {
-                    "label": "Replay Trajectory",
-                    "type": "button",
-                    "text": "Replay Trajectory",
-                    "tooltip": "Replay Trajectory",
-                    "on_clicked_fn": self._on_replay_trajectory_button_event,
-                }
+    def build_data_logging_ui(self):
+        with ui.VStack(spacing=5):
+            example_data_file = os.path.abspath(
+                os.path.join(os.path.abspath(__file__), "../../../../../data/example_data_file.json")
+            )
+            dict = {
+                "label": "Data File",
+                "type": "stringfield",
+                "default_val": example_data_file,
+                "tooltip": "Data File",
+                "on_clicked_fn": None,
+                "use_folder_picker": False,
+                "read_only": False,
+            }
+            self.task_ui_elements["Data File"] = str_builder(**dict)
+            dict = {
+                "label": "Replay Trajectory",
+                "type": "button",
+                "text": "Replay Trajectory",
+                "tooltip": "Replay Trajectory",
+                "on_clicked_fn": self._on_replay_trajectory_button_event,
+            }
 
-                self.task_ui_elements["Replay Trajectory"] = btn_builder(**dict)
-                self.task_ui_elements["Replay Trajectory"].enabled = False
-                dict = {
-                    "label": "Replay Scene",
-                    "type": "button",
-                    "text": "Replay Scene",
-                    "tooltip": "Replay Scene",
-                    "on_clicked_fn": self._on_replay_scene_button_event,
-                }
+            self.task_ui_elements["Replay Trajectory"] = btn_builder(**dict)
+            self.task_ui_elements["Replay Trajectory"].enabled = False
+            dict = {
+                "label": "Replay Scene",
+                "type": "button",
+                "text": "Replay Scene",
+                "tooltip": "Replay Scene",
+                "on_clicked_fn": self._on_replay_scene_button_event,
+            }
 
-                self.task_ui_elements["Replay Scene"] = btn_builder(**dict)
-                self.task_ui_elements["Replay Scene"].enabled = False
+            self.task_ui_elements["Replay Scene"] = btn_builder(**dict)
+            self.task_ui_elements["Replay Scene"].enabled = False
         return

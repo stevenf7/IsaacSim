@@ -1,4 +1,7 @@
 # Changelog
+## [2.1.0] - 2024-10-29
+### Changed
+- moved examples from menu to browser
 
 
 ## [2.1.0] - 2024-10-30

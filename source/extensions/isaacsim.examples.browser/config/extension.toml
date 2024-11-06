@@ -1,0 +1,33 @@
+[core]
+reloadable = true
+order = 0
+ 
+[package]
+version = "0.1.0"
+category = "GUI"
+title = "Isaac Sim Example Browser"
+description = "A browser for Isaac Sim assets"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.examples.browser"
+keywords = ["isaac", "browser", "examples"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+feature = true
+# writeTarget.kit = true
+ 
+[dependencies]
+"omni.kit.browser.folder.core" = {}
+"omni.kit.commands" = {}
+"omni.kit.menu.utils" = {}
+"omni.usd" = {}
+"omni.kit.viewport.utility" = { }
+"omni.kit.tool.collect" = { optional=true }
+"omni.kit.menu.stage" = { optional=true }
+"omni.kit.clipboard" = { optional=true }
+
+ 
+[[python.module]]
+name = "isaacsim.examples.browser"
+ 

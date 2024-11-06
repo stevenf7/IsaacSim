@@ -15,6 +15,7 @@ import omni
 import omni.kit.commands
 import omni.physx as _physx
 import omni.ui as ui
+from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
 from isaacsim.sensors.physics import _sensor
@@ -30,96 +31,94 @@ class Contact_sensor_demo(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._ext_id = ext_id
         self._extension_path = ext_manager.get_extension_path(ext_id)
-
-        self._menu_items = [
-            MenuItemDescription(
-                name="Sensors",
-                sub_menu=[make_menu_item_description(ext_id, "Contact", lambda a=weakref.proxy(self): a.build_ui())],
-            )
-        ]
-        add_menu_items(self._menu_items, "Isaac Examples")
         self.meters_per_unit = 1.00
         self._window = None
+
+        get_browser_instance().register_example(
+            name="Contact Sensor",
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(),
+            category="Sensors",
+        )
+
+    def build_window(self):
+        pass
 
     def _on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
             self.on_closed()
 
     def build_ui(self):
-        if self._window is None:
-            self._cs = _sensor.acquire_contact_sensor_interface()
+        with ui.VStack(spacing=5, height=0):
 
-            self._timeline = omni.timeline.get_timeline_interface()
-            self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
+            title = "Contact Sensor Example"
+            doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_contact.html"
 
-            self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
+            overview = "This Example shows how to Surface load sensors applied to a body. "
+            overview += "It works by summing all forces applied on a given trigger shperical region intersected with the given body surface."
+            overview += "\nPress PLAY to start the simulation, hold 'shift' and left click the model to drag it around"
+            overview += "\n\nPress the 'Open in IDE' button to view the source code."
+            setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
+            ui.Button("Load Scene", clicked_fn=lambda: self._load_scene())
 
-            self.shoulder_joints = ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
+    def _load_scene(self):
+        if self._window:
+            # clear existing window
+            self.on_closed()
 
-            self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
-            self._sensor_handles = [0 for i in range(4)]
-            self.sliders = None
-            # self._window = ui.Window(
-            #     title="Contact Sensor Sample", width=300, height=200, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            # )
-            self.sliders = []
-            self.colors = [0xFFBBBBFF, 0xFFBBFFBB, 0xBBFFBBBB, 0xBBBBFFFF]
-            style = {"background_color": 0xFF888888, "color": 0xFF333333, "secondary_color": self.colors[0]}
+        self._cs = _sensor.acquire_contact_sensor_interface()
 
-            self.plots = []
-            self.plot_vals = []
-            self._window = ui.Window(
-                title=EXTENSION_NAME, width=600, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            )
-            with self._window.frame:
-                with ui.VStack(spacing=5, height=0):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
 
-                    title = "Contact Sensor Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_contact.html"
+        self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
 
-                    overview = "This Example shows how to Surface load sensors applied to a body. "
-                    overview += "It works by summing all forces applied on a given trigger shperical region intersected with the given body surface."
-                    overview += (
-                        "\nPress PLAY to start the simulation, hold 'shift' and left click the model to drag it around"
-                    )
-                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
-                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+        self.shoulder_joints = ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
 
-                    frame = ui.CollapsableFrame(
-                        title="Sensor Readings",
-                        height=0,
-                        collapsed=False,
-                        style=get_style(),
-                        style_type_name_override="CollapsableFrame",
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    )
-                    with frame:
-                        with ui.VStack(style=get_style(), spacing=5):
-                            for i in range(4):
-                                with ui.HStack():
-                                    ui.Label("Arm {}".format(i + 1), width=LABEL_WIDTH, tooltip="Force in Newtons")
-                                    # ui.Spacer(height=0, width=10)
-                                    style["secondary_color"] = self.colors[i]
-                                    self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
-                                    self.sliders[-1].enabled = False
-                                    ui.Spacer(width=20)
+        self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
+        self._sensor_handles = [0 for i in range(4)]
+        self.sliders = None
 
-            asyncio.ensure_future(self.create_scenario())
+        self.sliders = []
+        self.colors = [0xFFBBBBFF, 0xFFBBFFBB, 0xBBFFBBBB, 0xBBBBFFFF]
 
-        self._window.visible = True
+        self.plots = []
+        self.plot_vals = []
+        style = {"background_color": 0xFF888888, "color": 0xFF333333, "secondary_color": self.colors[0]}
+
+        self._window = ui.Window(
+            title=EXTENSION_NAME, width=300, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+        self._window.set_visibility_changed_fn(self._on_visibility_changed)
+
+        with self._window.frame:
+            with ui.VStack(style=get_style(), spacing=5):
+                for i in range(4):
+                    with ui.HStack():
+                        ui.Label("Arm {}".format(i + 1), width=LABEL_WIDTH, tooltip="Force in Newtons")
+                        # ui.Spacer(height=0, width=10)
+                        style["secondary_color"] = self.colors[i]
+                        self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
+                        self.sliders[-1].enabled = False
+                        ui.Spacer(width=20)
+
+        asyncio.ensure_future(self.create_scenario())
 
     def on_shutdown(self):
         self.on_closed()
-        remove_menu_items(self._menu_items, "Isaac Examples")
+        get_browser_instance().deregister_example(name="Contact Sensor", category="Sensors")
+
+    def _on_visibility_changed(self, visible):
+        if not visible:
+            self.on_closed()
 
     def on_closed(self):
         if self._window:
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
-
-        self._window = None
+            self._window.destroy()
+            self._window = None
 
     def _on_update(self, dt):
         if self._timeline.is_playing() and self.sliders:

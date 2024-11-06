@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.0"
+version = "2.2.0"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -33,6 +33,7 @@ preview_image = "data/preview.png"
 "usdrt.scenegraph" = {}
 "isaacsim.storage.native" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.examples.browser" = {}
 
 [[python.module]]
 name = "isaacsim.ros1.bridge"
