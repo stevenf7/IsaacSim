@@ -107,6 +107,7 @@ class CameraView(XFormPrim):
         self._setup_tiled_sensor()
 
     def __del__(self):
+        XFormPrim.__del__(self)
         self._clean_up_tiled_sensor()
 
     def _clean_up_tiled_sensor(self):

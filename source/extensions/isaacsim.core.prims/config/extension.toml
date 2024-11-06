@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Core API (Prims)"
 description = "Isaac Sim Core API to handle prims"
@@ -24,6 +24,7 @@ writeTarget.kit = true
 "omni.isaac.ml_archive" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.utils" = {}
+"isaacsim.core.simulation_manager" = {}
 
 # define the Python module that the extension provides
 [[python.module]]

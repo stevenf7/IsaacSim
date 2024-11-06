@@ -32,6 +32,7 @@ class TestIMUSensorOgn(omni.kit.test.AsyncTestCase):
         physics_rate = 60
         self.my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / physics_rate, rendering_dt=1.0 / physics_rate)
         await self.my_world.initialize_simulation_context_async()
+        self._physics_rate = physics_rate
 
     async def tearDown(self):
         if self.my_world:
@@ -89,7 +90,8 @@ class TestIMUSensorOgn(omni.kit.test.AsyncTestCase):
         )
 
         self.my_world.play()
-        await simulate_async(0.5)
+        # TODO: regenerate goldens
+        await simulate_async(0.5 - (1.0 / self._physics_rate) * 2.0)
         lin_acc = og.Controller.attribute(self.graph_path + "/ReadIMUNode.outputs:linAcc").get()
         self.assertAlmostEqual(lin_acc[2], 9.81, places=2)
         self.assertAlmostEqual(lin_acc[0], 0.0, places=2)

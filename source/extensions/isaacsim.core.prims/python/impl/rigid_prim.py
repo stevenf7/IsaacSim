@@ -11,9 +11,10 @@ from typing import List, Optional, Tuple, Union
 
 import carb
 import numpy as np
-import omni.kit.app
+import omni.physics.tensors
 import torch
 import warp as wp
+from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.core.utils.prims import get_prim_parent
 from isaacsim.core.utils.types import DynamicsViewState, XFormPrimViewState
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
@@ -142,6 +143,19 @@ class RigidPrim(XFormPrim):
     ) -> None:
         self._physics_view = None
         self._num_shapes = None
+        self._contact_filter_prim_paths_expr = contact_filter_prim_paths_expr
+        self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
+        if self._track_contact_forces:
+            from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
+
+            self._contact_view = RigidContactView(
+                prim_paths_expr=prim_paths_expr,
+                filter_paths_expr=contact_filter_prim_paths_expr,
+                name=name + "_contact",
+                prepare_contact_sensors=prepare_contact_sensors,
+                disable_stablization=disable_stablization,
+                max_contact_count=max_contact_count,
+            )
         XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -156,7 +170,6 @@ class RigidPrim(XFormPrim):
         self._rigid_body_apis = [None] * self._count
         self._physx_rigid_body_apis = [None] * self._count
         self._mass_apis = [None] * self._count
-        self._contact_filter_prim_paths_expr = contact_filter_prim_paths_expr
         if not self._non_root_link:
             if linear_velocities is not None:
                 self.set_linear_velocities(linear_velocities)
@@ -169,24 +182,26 @@ class RigidPrim(XFormPrim):
         self._dynamics_default_state = DynamicsViewState(
             positions=None, linear_velocities=None, orientations=None, angular_velocities=None
         )
-        self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
         self._apply_rigid_body_apis(prepare_contact_sensors or self._track_contact_forces)
-        if self._track_contact_forces:
-            from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
 
-            self._contact_view = RigidContactView(
-                prim_paths_expr=prim_paths_expr,
-                filter_paths_expr=contact_filter_prim_paths_expr,
-                name=name + "_contact",
-                prepare_contact_sensors=prepare_contact_sensors,
-                disable_stablization=disable_stablization,
-                max_contact_count=max_contact_count,
+        def invalidate_physics_handle_callback(event):
+            self._physics_view = None
+
+        self._invalidation_callback = (
+            SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+                int(omni.timeline.TimelineEventType.STOP), invalidate_physics_handle_callback
             )
+        )
+        if SimulationManager.get_physics_sim_view() is not None:
+            SimulationManager._physx_sim_interface.flush_changes()
+            RigidPrim._on_physics_ready(self, None)
         return
 
     def __del__(self):
-        del self._physics_view
-        self._invalidate_physics_handle_event = None
+        XFormPrim.__del__(self)
+        if hasattr(self, "_physics_view"):
+            del self._physics_view
+        self._invalidation_callback = None
         return
 
     @property
@@ -221,88 +236,7 @@ class RigidPrim(XFormPrim):
             >>> prims.is_physics_handle_valid()
             True
         """
-        return self._physics_view is not None
-
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
-
-        .. note::
-
-            If the rigid prim view has been added to the world scene (e.g., ``world.scene.add(prims)``),
-            it will be automatically initialized when the world is reset (e.g., ``world.reset()``).
-
-        .. warning::
-
-            This method needs to be called after each hard reset (e.g., Stop + Play on the timeline)
-            before interacting with any other class method.
-
-        Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.initialize()
-        """
-        if physics_sim_view is None:
-            physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
-            physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
-        self._physics_sim_view = physics_sim_view
-        self._physics_view = physics_sim_view.create_rigid_body_view(
-            [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths]
-        )
-        self._num_shapes = self._physics_view.max_shapes
-        if not self._non_root_link:
-            default_positions, default_orientations = self.get_world_poses()
-            linear_velocities = self.get_linear_velocities()
-            angular_velocities = self.get_angular_velocities()
-            if self._backend == "warp":
-                self._default_state = XFormPrimViewState(
-                    positions=default_positions.data, orientations=default_orientations.data
-                )
-                self._dynamics_default_state = DynamicsViewState(
-                    self._default_state.positions,
-                    self._default_state.orientations,
-                    linear_velocities.data,
-                    angular_velocities.data,
-                )
-            else:
-                self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
-                self._dynamics_default_state = DynamicsViewState(
-                    self._default_state.positions,
-                    self._default_state.orientations,
-                    linear_velocities,
-                    angular_velocities,
-                )
-        carb.log_info("Rigid Prim View Device: {}".format(self._device))
-        if self._track_contact_forces:
-            self._contact_view.initialize(self._physics_sim_view)
-        timeline = omni.timeline.get_timeline_interface()
-        self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._invalidate_physics_handle_callback
-        )
-
-    def _invalidate_physics_handle_callback(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._physics_view = None
-            self._invalidate_physics_handle_event = None
-        return
-
-    def _apply_rigid_body_apis(self, prepare_contact_reporter=False):
-        for i in range(self.count):
-            if self._prims[i].HasAPI(UsdPhysics.RigidBodyAPI):
-                rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i])
-            else:
-                rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i])
-            self._rigid_body_apis[i] = rigid_api
-
-            if prepare_contact_reporter:
-                # disable sleeping, because sleeping bodies don't get contact reports
-                rb_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i])
-                rb_api.CreateSleepThresholdAttr().Set(0)
-        return
+        return SimulationManager.get_physics_sim_view() is not None and self._physics_view is not None
 
     def set_world_poses(
         self,
@@ -349,7 +283,9 @@ class RigidPrim(XFormPrim):
             >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
             >>> prims.set_world_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_positions, current_orientations = self.get_world_poses(clone=False)
             if not hasattr(self, "_pose_buf"):
@@ -425,7 +361,9 @@ class RigidPrim(XFormPrim):
              [ 1.0000000e+00 -9.5171310e-07 -2.2615541e-07  5.5922797e-08]
              [ 1.0000000e+00 -7.9806580e-07 -1.3064776e-07  5.3154917e-08]]
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             pose = self._physics_view.get_transforms()
             if clone:
@@ -486,7 +424,9 @@ class RigidPrim(XFormPrim):
              [ 1.0000000e+00 -9.5164734e-07 -2.2613979e-07  5.5918935e-08]
              [ 1.0000000e+00 -7.9806864e-07 -1.3064822e-07  5.3155105e-08]]
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             world_positions, world_orientations = self.get_world_poses(indices=indices)
             parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype=np.float32)
@@ -545,7 +485,9 @@ class RigidPrim(XFormPrim):
             >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1))
             >>> prims.set_local_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             if translations is None or orientations is None:
                 current_translations, current_orientations = RigidPrim.get_local_poses(self, indices=indices)
                 if translations is None:
@@ -613,14 +555,15 @@ class RigidPrim(XFormPrim):
             >>> velocities = np.ones((3, 3))
             >>> prims.set_linear_velocities(velocities, indices=np.array([0, 2, 4]))
         """
-
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
                 "set_linear_velocities function is not supported for the gpu pipeline, use set_velocities instead."
             )
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             current_velocities = self._physics_view.get_velocities()
             if self._backend == "warp":
                 current_velocities = self._backend_utils.assign(
@@ -680,9 +623,11 @@ class RigidPrim(XFormPrim):
              [0. 0. 0.]
              [0. 0. 0.]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             linear_velocities = self._physics_view.get_velocities()
             if clone:
                 velocities = self._backend_utils.clone_tensor(linear_velocities, device=self._device)
@@ -746,12 +691,14 @@ class RigidPrim(XFormPrim):
             >>> velocities = np.full((3, 3), fill_value=5.0)
             >>> prims.set_angular_velocities(velocities, indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
                 "set_angular_velocities function is not supported for the gpu pipeline, use set_velocities instead."
             )
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             current_velocities = self._physics_view.get_velocities()
             if self._backend == "warp":
                 current_velocities = self._backend_utils.assign(
@@ -811,8 +758,10 @@ class RigidPrim(XFormPrim):
              [0. 0. 0.]
              [0. 0. 0.]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             angular_velocities = self._physics_view.get_velocities()
             if clone:
                 velocities = self._backend_utils.clone_tensor(angular_velocities, device=self._device)
@@ -877,9 +826,11 @@ class RigidPrim(XFormPrim):
             >>> velocities[:,3:] = 5.0
             >>> prims.set_velocities(velocities, indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             new_velocities = self._physics_view.get_velocities()
             new_velocities = self._backend_utils.assign(
                 self._backend_utils.move_data(velocities, self._device), new_velocities, indices
@@ -924,9 +875,11 @@ class RigidPrim(XFormPrim):
              [0. 0. 0. 0. 0. 0.]
              [0. 0. 0. 0. 0. 0.]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             velocities = self._physics_view.get_velocities()
             if clone:
                 velocities = self._backend_utils.clone_tensor(velocities, device=self._device)
@@ -965,7 +918,9 @@ class RigidPrim(XFormPrim):
             >>> forces = np.tile(np.array([2e5, 1e5, 0.0]), (3, 1))
             >>> prims.apply_forces(forces, indices=np.array([0, 2, 4]))
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             new_forces = self._backend_utils.create_zeros_tensor([self.count, 3], device=self._device, dtype="float32")
             new_forces = self._backend_utils.assign(
@@ -1016,7 +971,9 @@ class RigidPrim(XFormPrim):
             >>> torques = np.tile(np.array([2e5, 1e5, 0.0]), (3, 1))
             >>> prims.apply_forces_and_torques_at_pos(forces, torques, indices=np.array([0, 2, 4]))
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
             new_forces = new_torques = new_positions = None
@@ -1081,8 +1038,10 @@ class RigidPrim(XFormPrim):
             >>> prims.get_masses(indices=np.array([0, 2, 4]))
             [999.99994 999.99994 999.99994]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             current_values = self._backend_utils.move_data(
                 self._physics_view.get_masses().reshape(self._count), self._device
             )
@@ -1137,7 +1096,9 @@ class RigidPrim(XFormPrim):
              [0.001]
              [0.001]]
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(self._physics_view.get_inv_masses(), self._device)
             if clone:
@@ -1195,7 +1156,9 @@ class RigidPrim(XFormPrim):
              [[1. 0. 0. 0.]]
              [[1. 0. 0. 0.]]]
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(
                 self._physics_view.get_coms().reshape((self.count, 7)), self._device
@@ -1246,7 +1209,9 @@ class RigidPrim(XFormPrim):
              [166.66667  0.  0.  0.  166.66667  0.  0.  0.  166.66667]
              [166.66667  0.  0.  0.  166.66667  0.  0.  0.  166.66667]]
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(
                 self._physics_view.get_inertias().reshape((self.count, 9)), self._device
@@ -1291,7 +1256,9 @@ class RigidPrim(XFormPrim):
              [0.006 0.    0.    0.    0.006 0.    0.    0.    0.006]
              [0.006 0.    0.    0.    0.006 0.    0.    0.    0.006]]
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(
                 self._physics_view.get_inv_inertias().reshape((self.count, 9)), self._device
@@ -1327,8 +1294,10 @@ class RigidPrim(XFormPrim):
             >>> # set the rigid body masses for the first, middle and last of the 5 envs
             >>> prims.set_masses(np.full(3, 10.0), indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             data = self._physics_view.get_masses().reshape(self.count)
             data = self._backend_utils.assign(self._backend_utils.move_data(masses, device="cpu"), data, indices)
             self._physics_view.set_masses(data, indices)
@@ -1374,8 +1343,10 @@ class RigidPrim(XFormPrim):
             >>> inertias = np.tile(np.array([0.1, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.1]), (3, 1))
             >>> prims.set_inertias(inertias, indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             data = self._physics_view.get_inertias()
             data = self._backend_utils.assign(self._backend_utils.move_data(values, device="cpu"), data, indices)
             self._physics_view.set_inertias(data, indices)
@@ -1413,8 +1384,10 @@ class RigidPrim(XFormPrim):
             >>> orientations = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (3, 1, 1))
             >>> prims.set_coms(positions, orientations, indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             coms = self._physics_view.get_coms().reshape((self.count, 7))
             if positions is not None:
                 if self._backend == "warp":
@@ -1467,6 +1440,8 @@ class RigidPrim(XFormPrim):
             >>> # set rigid body densities for the first, middle and last of the 5 envs
             >>> prims.set_densities(np.full(3, 0.9), indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         read_idx = 0
         indices = self._backend_utils.to_list(indices)
@@ -1507,6 +1482,8 @@ class RigidPrim(XFormPrim):
             >>> prims.get_densities(indices=np.array([0, 2, 4]))
             [0. 0. 0.]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         densities = np.zeros(shape=(indices.shape[0]), dtype=np.float32)
         write_idx = 0
@@ -1552,6 +1529,8 @@ class RigidPrim(XFormPrim):
             >>> # set rigid body densities for the first, middle and last of the 5 envs
             >>> prims.set_sleep_thresholds(np.full(3, 1e-5), indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         read_idx = 0
         indices = self._backend_utils.to_list(indices)
@@ -1597,6 +1576,8 @@ class RigidPrim(XFormPrim):
             >>> prims.get_sleep_thresholds(indices=np.array([0, 2, 4]))
             [5.e-05 5.e-05 5.e-05]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         thresholds = np.zeros(indices.shape[0], dtype=np.float32)
         write_idx = 0
@@ -1637,7 +1618,9 @@ class RigidPrim(XFormPrim):
             >>> # enable the rigid body dynamics for the first, middle and last of the 5 envs
             >>> prims.enable_rigid_body_physics(indices=np.array([0, 2, 4]))
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._physics_view.get_disable_simulations().reshape(self._count)
             data = self._backend_utils.assign(
@@ -1680,8 +1663,10 @@ class RigidPrim(XFormPrim):
             >>> # enable the rigid body dynamics for the first, middle and last of the 5 envs
             >>> prims.disable_rigid_body_physics(indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             data = self._physics_view.get_disable_simulations().reshape(self._count)
             data = self._backend_utils.assign(
                 self._backend_utils.create_tensor_from_list([True] * len(indices), dtype="uint8"), data, indices
@@ -1718,7 +1703,9 @@ class RigidPrim(XFormPrim):
             >>> # enable the rigid body gravity for the first, middle and last of the 5 envs
             >>> prims.enable_gravities(indices=np.array([0, 2, 4]))
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+        if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._physics_view.get_disable_gravities().reshape(self._count)
             data = self._backend_utils.assign(
@@ -1756,8 +1743,10 @@ class RigidPrim(XFormPrim):
             >>> # disable the rigid body gravity for the first, middle and last of the 5 envs
             >>> prims.disable_gravities(indices=np.array([0, 2, 4]))
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if self.is_physics_handle_valid():
             data = self._physics_view.get_disable_gravities().reshape(self._count)
             data = self._backend_utils.assign(
                 self._backend_utils.create_tensor_from_list([True] * len(indices), dtype="uint8"), data, indices
@@ -1916,26 +1905,6 @@ class RigidPrim(XFormPrim):
         """
         return self._dynamics_default_state
 
-    def post_reset(self) -> None:
-        """Reset the rigid prims to their default states (positions, orientations and linear and angular velocities)
-
-        Example:
-
-        .. code-block:: python
-
-            >>> prims.post_reset()
-        """
-        XFormPrim.post_reset(self)
-        if not self._non_root_link:
-            self.set_velocities(
-                velocities=self._backend_utils.tensor_cat(
-                    [self._dynamics_default_state.linear_velocities, self._dynamics_default_state.angular_velocities],
-                    dim=-1,
-                    device=self._device,
-                )
-            )
-        return
-
     def get_current_dynamic_state(self) -> DynamicsViewState:
         """Get the current rigid body states (position, orientation and linear and angular velocities)
 
@@ -1975,6 +1944,8 @@ class RigidPrim(XFormPrim):
              [0. 0. 0.]
              [0. 0. 0.]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         positions, orientations = self.get_world_poses()
         return DynamicsViewState(
             positions=positions,
@@ -2026,6 +1997,8 @@ class RigidPrim(XFormPrim):
              [2.1967891e-05 0.0000000e+00 1.6350165e+02]
              [2.1966895e-05 0.0000000e+00 1.6349425e+02]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         if self._track_contact_forces:
             return self._contact_view.get_net_contact_forces(indices, clone, dt)
         else:
@@ -2076,6 +2049,8 @@ class RigidPrim(XFormPrim):
              [[ 5.2445102e-03 -5.5358098e-03  3.2710065e+02]]
              [[ 0.0000000e+00  0.0000000e+00  0.0000000e+00]]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
         else:
@@ -2196,6 +2171,8 @@ class RigidPrim(XFormPrim):
              [4]
              [8]]
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_contact_force_data(indices, clone, dt)
         else:
@@ -2239,6 +2216,8 @@ class RigidPrim(XFormPrim):
                 as well as two tensors with shape (M, self.num_filters) to indicate the starting index and the number of
                 contact data points per pair in the aforementioned buffers.
         """
+        if not self._is_valid:
+            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_friction_data(indices, clone, dt)
         else:
@@ -2246,3 +2225,90 @@ class RigidPrim(XFormPrim):
                 "No filter is specified for get_friction_data. Initialize the RigidPrim with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None
+
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
+        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
+
+        .. note::
+
+            For this particular class, calling this method will do nothing
+
+        Args:
+            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.initialize()
+        """
+        if not self.is_physics_handle_valid():
+            self._on_physics_ready(None)
+        return
+
+    def _on_physics_ready(self, event) -> None:
+        XFormPrim._on_physics_ready(self, event)
+        simulation_view = SimulationManager.get_physics_sim_view()
+        self._physics_view = simulation_view.create_rigid_body_view(
+            [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths]
+        )
+        self._num_shapes = self._physics_view.max_shapes
+        if not self._non_root_link:
+            default_positions, default_orientations = self.get_world_poses()
+            linear_velocities = self.get_linear_velocities()
+            angular_velocities = self.get_angular_velocities()
+            if self._backend == "warp":
+                self._default_state = XFormPrimViewState(
+                    positions=default_positions.data, orientations=default_orientations.data
+                )
+                self._dynamics_default_state = DynamicsViewState(
+                    self._default_state.positions,
+                    self._default_state.orientations,
+                    linear_velocities.data,
+                    angular_velocities.data,
+                )
+            else:
+                self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
+                self._dynamics_default_state = DynamicsViewState(
+                    self._default_state.positions,
+                    self._default_state.orientations,
+                    linear_velocities,
+                    angular_velocities,
+                )
+        carb.log_info("Rigid Prim View Device: {}".format(self._device))
+        if self._track_contact_forces:
+            self._contact_view.initialize(simulation_view)
+
+    def _apply_rigid_body_apis(self, prepare_contact_reporter=False):
+        for i in range(self.count):
+            if self._prims[i].HasAPI(UsdPhysics.RigidBodyAPI):
+                rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i])
+            else:
+                rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i])
+            self._rigid_body_apis[i] = rigid_api
+
+            if prepare_contact_reporter:
+                # disable sleeping, because sleeping bodies don't get contact reports
+                rb_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i])
+                rb_api.CreateSleepThresholdAttr().Set(0)
+        return
+
+    def _on_post_reset(self, event) -> None:
+        """Reset the rigid prims to their default states (positions, orientations and linear and angular velocities)
+
+        Example:
+
+        .. code-block:: python
+
+            >>> prims.post_reset()
+        """
+        XFormPrim._on_post_reset(self, event)
+        if not self._non_root_link:
+            self.set_velocities(
+                velocities=self._backend_utils.tensor_cat(
+                    [self._dynamics_default_state.linear_velocities, self._dynamics_default_state.angular_velocities],
+                    dim=-1,
+                    device=self._device,
+                )
+            )
+        return

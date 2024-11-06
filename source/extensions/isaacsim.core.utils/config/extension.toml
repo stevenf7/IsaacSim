@@ -27,6 +27,7 @@ writeTarget.platform = true
 "isaacsim.core.deprecation_manager" = {}
 "omni.usd.schema.semantics" = {}
 "omni.isaac.ml_archive" = {}
+"omni.warp.core" = {}
 
 [[python.module]]
 name = "isaacsim.core.utils"

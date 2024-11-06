@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.1.3] - 2024-11-05
+### Changed
+- removed backend and device arguments from PhysicsContext
+- warm start, simulation view creation and post reset ported to SimulationManager
+
 ## [4.1.2] - 2024-10-29
 ### Changed
 - Updated dependencies and imports after renaming

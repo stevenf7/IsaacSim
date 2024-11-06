@@ -162,7 +162,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         timeline.play()
-        for frame in range(60):
+        # TODO: regenerate goldens
+        for frame in range(58):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Z
         position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
@@ -172,7 +173,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         timeline.play()
-        for frame in range(60):
+        # TODO: regenerate goldens
+        for frame in range(58):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Y
         position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
@@ -194,7 +196,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         timeline.play()
-        for frame in range(60):
+        # TODO: regenerate goldens
+        for frame in range(58):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Z
         position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
@@ -205,7 +208,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         timeline.play()
-        for frame in range(60):
+        # TODO: regenerate goldens
+        for frame in range(58):
             await omni.kit.app.get_app().next_update_async()
         position = np.array(omni.usd.get_world_transform_matrix(cubePrim).ExtractTranslation())
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)

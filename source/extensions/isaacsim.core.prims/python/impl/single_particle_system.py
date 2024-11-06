@@ -92,18 +92,11 @@ class SingleParticleSystem:
                 are not needed.
         """
         # store constants
-        from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
+        from isaacsim.core.simulation_manager import SimulationManager
 
-        if SimulationContext.instance() is not None:
-            self._backend = SimulationContext.instance().backend
-            self._device = SimulationContext.instance().device
-            self._backend_utils = SimulationContext.instance().backend_utils
-        else:
-            import isaacsim.core.utils.numpy as np_utils
-
-            self._backend = "numpy"
-            self._device = None
-            self._backend_utils = np_utils
+        self._backend = SimulationManager.get_backend()
+        self._device = SimulationManager.get_physics_sim_device()
+        self._backend_utils = SimulationManager._get_backend_utils()
 
         self._name = name
         self._prim_path = prim_path
