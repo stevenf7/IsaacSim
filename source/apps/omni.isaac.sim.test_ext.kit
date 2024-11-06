@@ -8,7 +8,6 @@ app.asyncRendering = false                                          ### async re
 app.asyncRenderingLowLatency = false                                ### async rendering settings
 app.fastShutdown = 1
 app.file.ignoreUnsavedOnExit = true
-app.gatherRenderResults = false
 app.hydraEngine.waitIdle = false
 app.name = "Isaac-Sim"
 app.renderer.skipWhileMinimized = false
@@ -50,6 +49,8 @@ rtx.hydra.materialSyncLoads = true
 rtx.materialDb.syncLoads = true
 rtx.newDenoiser.enabled = true
 rtx.reservedDescriptors = 900000
+app.gatherRenderResults = true # True to prevent artifacts in multiple viewport configurations, can be set to false for better performance in some cases
+rendergraph.mgpu.backend = "copyQueue" # In MGPU configurations, This setting can be removed if IOMMU is disabled for better performance
 
 # TODO: Remove these settings
 exts."omni.kit.registry.nucleus".registries = [

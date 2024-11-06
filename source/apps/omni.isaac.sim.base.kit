@@ -236,9 +236,8 @@ exts."omni.kit.test".includeTests = ["*isaac*"]
 # only want to use a single GPU on your MGPU system
 renderer.multiGpu.autoEnable = true
 renderer.multiGpu.enabled = true
-# This setting forces all GPUs to copy their render results to the main GPU.
-# This legacy setting should not be needed anymore
-app.gatherRenderResults = false
+app.gatherRenderResults = true # True to prevent artifacts in multiple viewport configurations, can be set to false for better performance in some cases
+rendergraph.mgpu.backend = "copyQueue" # In MGPU configurations, This setting can be removed if IOMMU is disabled for better performance
 'rtx-transient'.resourcemanager.enableTextureStreaming = true
 # app.hydra.aperture.conform = 4 # in 105.1 pixels are square by default
 app.hydraEngine.waitIdle = false
