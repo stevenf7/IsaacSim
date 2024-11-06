@@ -12,43 +12,20 @@ This is where the Omniverse Isaac Sim application is developed.
 
 # Getting Started
 
-See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/requirements.html) for general hardware and driver requirements
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/installation/requirements.html) for general hardware and driver requirements
 
 There are multiple ways to use isaac sim based on your workflow:
 
 ## Source (This repository)
 See [Using The Source Repository](#using-the-source-repository) section below for how to compile source and set up `git lfs`
 #### Branches:
-* [Release/4.1](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/release/4.1): Current Release Candidates and Public Release (rc.x)
+* [Release/x.y](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/branches?state=all&sort=updated_desc&search=release%2F): Current Release Candidates and Public Releases (rc.x)
 * [Develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop): Latest internal codebase, updated daily (alpha.x, beta.x)
 * [Tagged Releases](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tags): Older release commits are tagged here
 
-Current public release: 4.0.0-rc.21
+Current public release: **4.2.0-rc.18**
 
-See [Isaac Sim Release Flow](https://docs.google.com/presentation/d/161QpSIxvXvAmZO1QeniJ-sMWdUhbX8iWUHpmg2sCHAA/edit?usp=sharing)
-
-## Binary Builds (Omniverse Launcher) **[Will be deprecated soon]**
-
-* Download the internal [Integration](https://web.launcher.omniverse.nvidia.com/exchange/app) Omniverse Launcher App
-* Use ``chmod +x`` to make it executable if needed
-
-Once launched you will see the builds under the ``Exchange`` tab
-
-Internal Developer Dailies:
-
-* [Isaac Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac-sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default. (Use the Alpha/Beta channel only)
-
-Staging builds for release (These will be available when we build x.y.z-rc.1):
-
-* [Isaac Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac-sim): Latest build from Release branch. This build works staging or production assets. (Use the Release channel only)
-* [Isaac Sim Assets Pack 1](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-1?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 1 of 4.
-* [Isaac Sim Assets Pack 2](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-2?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 2 of 4.
-* [Isaac Sim Assets Pack 3](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-3?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 3 of 4.
-* [Isaac Sim Assets Pack 4](https://web.launcher.omniverse.nvidia.com/exchange/content-pack/isaac-sim-assets-4?text=&kind=content-pack): Latest asset pack download for use in an air-gapped environment. Pack 4 of 4.
-
-For information on launching once you have downloaded a build [see here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_workstation.html).
-
-> Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac Sim is identical.
+> See [Isaac Sim Release Flow](https://docs.google.com/presentation/d/161QpSIxvXvAmZO1QeniJ-sMWdUhbX8iWUHpmg2sCHAA/edit?usp=sharing)
 
 ## Binary Builds (Packman Manual Download)
 * [Stable RC Builds from Release branch](https://omnipackages.nvidia.com/packages/cloudfront/isaac-sim-standalone?query=rc)
@@ -56,26 +33,27 @@ For information on launching once you have downloaded a build [see here](https:/
 * [Daily Beta Builds from Develop branch](http://packman.ov.nvidia.com/packages/cloudfront/isaac-sim-standalone?query=beta)
 * [Internal-only Builds from Develop branch (for internal tests/benchmarking)](https://omnipackages.nvidia.com/packages/cloudfront/isaac-sim-internal-standalone)
 
+> Notes:
+>  - Omniverse Launcher support is deprecated.
+>  - Download and extract .zip to a folder then run ./isaac-sim.(sh/bat)
+
 ## Docker Containers (GitLab)
 
-* Isaac Sim: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-x.y](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857?orderBy=NAME&sort=desc&search[]=rc) (Release branch, rc)
+* Isaac Sim Stable RC: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-x.y](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857?orderBy=NAME&sort=desc&search[]=rc) (Release branch, rc)
 * Isaac Sim Daily: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857?orderBy=NAME&sort=desc&search[]=develop) (Develop branch, alpha/beta)
 * Isaac Sim Internal-only: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/58656?orderBy=NAME&sort=desc&search[]=develop) (Develop branch, internal-only)
 
 ## Docker Containers (NGC)
 
-* Isaac Sim Public: [nvcr.io/nvidia/isaac-sim:x.y.z](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim) Similar to Prod-Isaac Sim from the Integ Launcher.
-* Isaac Sim: [nvcr.io/nvidian/isaac-sim:latest-x.y](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to RC Builds from the Integ Launcher. Built from the Release branch. For anyone in the ``nvidian`` org in NGC.
-* Isaac Sim Daily: [nvcr.io/nvidian/isaac-sim:latest-develop](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) Similar to Alpha and Beta Builds from the Integ Launcher. Built from the Develop branch.
-* Isaac Sim Internal-only: [nvcr.io/nvidian/isaac-sim/isaac-sim-internal:latest-develop](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim-internal/tags) Similar to Internal-only builds from the Develop branch (for internal tests/benchmarking).
+* [Isaac Sim Public](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim): ``nvcr.io/nvidia/isaac-sim:x.y.z``
+* [Isaac Sim Internal](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) For anyone in the ``nvidian`` org in NGC.
+  * Latest RC: ``nvcr.io/nvidian/isaac-sim:latest-x.y`` Built from the Release branch. 
+  * Latest Daily: ``nvcr.io/nvidian/isaac-sim:latest-develop`` Built from the Develop branch.
+* [Isaac Sim Internal-only](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim-internal/tags): ``nvcr.io/nvidian/isaac-sim/isaac-sim-internal:latest-develop`` Built from the Develop branch (for internal tests/benchmarking). For anyone in the ``nvidian`` org in NGC.
 
-* Isaac Sim individual versions: [nvcr.io/nvidian/isaac-sim/isaac-sim](https://registry.ngc.nvidia.com/orgs/nvidian/teams/isaac-sim/containers/isaac-sim/tags)
-* Isaac Sim Internal-Only individual versions: [nvcr.io/nvidian/isaac-sim/isaac-sim-internal](https://registry.ngc.nvidia.com/orgs/nvidian/teams/isaac-sim/containers/isaac-sim-internal/tags)
-
-Notes:
-  - Access to [``nvidian``](https://docs.google.com/forms/d/e/1FAIpQLScHfy_rMaUwpDVF7vpUuZe68fKESB7CN8twnXQnrZSUZnAfFA/viewform) org in NGC. 
-  - See [Branches](#branches)
-  - See [Binary Builds (Omniverse Launcher)](#binary-builds-omniverse-launcher-recommended)
+> Notes:
+>  - Access to [``nvidian``](https://docs.google.com/forms/d/e/1FAIpQLScHfy_rMaUwpDVF7vpUuZe68fKESB7CN8twnXQnrZSUZnAfFA/viewform) org in NGC. [#swngc-help](https://nvidia.enterprise.slack.com/archives/C7VGNG1V3)
+>  - See [Branches](#branches)
 
 ## Python packages
 
@@ -102,7 +80,7 @@ See the [wiki section](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isa
 
 See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_container.html) for more information on how to use the container.
 
-# List of internal nucleus servers:
+# List of internal Nucleus servers:
 * isaac-dev.ov.nvidia.com : http://isaac-dev.ov.nvidia.com/
     - For development work (most internal users use this)
     - Note: ov-isaac-dev.nvidia.com will redirect to the server above.
@@ -233,17 +211,6 @@ To debug a native python (normally run from `python.sh`) application:
 ## Running Tests
 
 - all tests are in the `_build/{platform}/{config}/tests` folder and start with `tests-*` in the filename. There are several categories of tests, extension, native python scripts, internal tests, startup tests, jupyter notebook tests.
-
-## Running TeamCity builds and tests locally
-
-Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
-
-Linux Tests  ``./tools/ci/testing/linux-x86_64-python-tests/step.sh``
-
-## TeamCity Pipelines
-Release: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Release_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Release_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Release_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Release=%3Cdefault%3E)
-
-Develop: [![pipeline status](http://teamcity.nvidia.com/app/rest/builds/buildType(id:Omniverse_IsaacSim_Develop_BuildAndValidation)/statusIcon)](https://teamcity.nvidia.com/viewType.html?buildTypeId=Omniverse_IsaacSim_Develop_BuildAndValidation&tab=buildTypeHistoryList&Omniverse_IsaacSim_Develop_BuildAndValidation=%3Cdefault%3E&branch_Omniverse_IsaacSim_Develop=%3Cdefault%3E)
 
 # Troubleshooting
 
