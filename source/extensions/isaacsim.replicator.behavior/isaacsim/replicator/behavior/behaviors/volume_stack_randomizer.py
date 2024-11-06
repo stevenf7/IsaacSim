@@ -32,6 +32,8 @@ from isaacsim.replicator.behavior.utils.scene_utils import (
     create_asset,
     create_collision_walls,
     create_physics_material,
+    disable_colliders,
+    disable_rigid_body_dynamics,
     disable_simulation_reset_on_stop,
     get_world_location,
     get_world_rotation,
@@ -41,7 +43,7 @@ from isaacsim.replicator.behavior.utils.scene_utils import (
 )
 from isaacsim.storage.native import get_assets_root_path_async
 from omni.kit.scripting import BehaviorScript
-from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
+from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
 
 
 class BehaviorState(Enum):
@@ -58,8 +60,8 @@ class VolumeStackRandomizer(BehaviorScript):
     """
 
     BEHAVIOR_NS = "volumeStackRandomizer"
-    EVENT_NAME_IN = f"{EXTENSION_NAME}.{BEHAVIOR_NS}_in"
-    EVENT_NAME_OUT = f"{EXTENSION_NAME}.{BEHAVIOR_NS}_out"
+    EVENT_NAME_IN = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.in"
+    EVENT_NAME_OUT = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.out"
     ACTION_FUNCTION_MAP = {
         "setup": "_setup_async",
         "run": "_run_behavior_async",
@@ -70,8 +72,8 @@ class VolumeStackRandomizer(BehaviorScript):
         {
             "attr_name": "includeChildren",
             "attr_type": Sdf.ValueTypeNames.Bool,
-            "default_value": False,
-            "doc": "Include prim children in the behavior.",
+            "default_value": True,
+            "doc": "Include valid prim children to the behavior.",
         },
         {
             "attr_name": "event:input",
@@ -98,7 +100,10 @@ class VolumeStackRandomizer(BehaviorScript):
         {
             "attr_name": "assets:csv",
             "attr_type": Sdf.ValueTypeNames.String,
-            "default_value": "",
+            "default_value": (
+                "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxC_01.usd,"
+                "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_01.usd"
+            ),
             "doc": "Assets to spawn as CSV paths.",
         },
         {
@@ -148,7 +153,6 @@ class VolumeStackRandomizer(BehaviorScript):
         self._valid_prims = []
         self._prim_collision_walls = {}
         self._prim_assets = {}
-        self._prim_asset_batches = []
         self._physx_dt = 1 / self.stage.GetTimeCodesPerSecond()
         self._reset_requested = False
 
@@ -239,12 +243,7 @@ class VolumeStackRandomizer(BehaviorScript):
 
         # Get the prims to apply the behavior to
         if include_children:
-            # Iterate only the direct children and check if the child or any of its descendants is a Gprim, if so, add it
-            for child in self.prim.GetChildren():
-                for prim in Usd.PrimRange(child):
-                    if prim.IsA(UsdGeom.Gprim):
-                        self._valid_prims.append(child)
-                        break  # Skip to the next child
+            self._valid_prims = [prim for prim in Usd.PrimRange(self.prim) if prim.IsA(UsdGeom.Gprim)]
         elif self.prim.IsA(UsdGeom.Gprim):
             self._valid_prims = [self.prim]
         else:
@@ -347,6 +346,11 @@ class VolumeStackRandomizer(BehaviorScript):
         self._set_state_and_publish(BehaviorState.FINISHED)
 
     def _create_sim_environment(self, assets_urls, height, num_assets_range):
+        # Early return if no spawn assets urls were provided
+        if not assets_urls:
+            carb.log_warn(f"[{self.prim_path}] No assets provided to spawn.")
+            return
+
         # Create the physics material to make allow objects to slide on surfaces and not bounce during the simulation
         physics_material_path = omni.usd.get_stage_next_free_path(
             self.stage, f"{SCOPE_NAME}/{self.BEHAVIOR_NS}/PhysicsMaterial", False
@@ -380,10 +384,21 @@ class VolumeStackRandomizer(BehaviorScript):
 
             # Spawn the assets and bind the physics material
             for i, asset_url in enumerate(rand_assets_urls):
+                # Create the asset (Xform with Reference) and bind the physics material
                 asset_prim = create_asset(self.stage, asset_url, f"{assets_root_path}/Asset_{i}")
+
+                # Bind the physics material to the asset
                 mat_binding_api = UsdShade.MaterialBindingAPI.Apply(asset_prim)
                 mat_binding_api.Bind(self._physics_material, UsdShade.Tokens.weakerThanDescendants, "physics")
+
+                # Disable any previously set rigid body dynamics and collisions until simulation starts
+                disable_colliders(asset_prim)
+                disable_rigid_body_dynamics(asset_prim)
+
+                # Set the spawn location and orientation to match the prim's world transform
                 set_transform_attributes(asset_prim, location=spawn_location, orientation=spawn_rotation.GetQuat())
+
+                # Cache the spawned assets for later use
                 assets.append(asset_prim)
 
             # Clear the cache to account for newly added prims and sort the assets by volume to drop large assets first
@@ -392,9 +407,6 @@ class VolumeStackRandomizer(BehaviorScript):
 
             # Store the assets in the dictionary
             self._prim_assets[prim] = assets
-
-        # Group the prims and their associated assets into batches to allow parallel simulation between the prims
-        self._prim_asset_batches = self._group_prims_and_assets_into_batches()
 
         # Create the collision walls around the top surface of the prims
         for prim in self._valid_prims:
@@ -411,8 +423,11 @@ class VolumeStackRandomizer(BehaviorScript):
             self._prim_collision_walls[prim] = collision_wall_prims
 
     async def _drop_assets_async(self, drop_interval_steps, settling_sim_steps):
+        # Group the prims and their associated assets into batches to allow parallel simulation between the prims
+        prim_asset_batches = self._group_prims_and_assets_into_batches()
+
         # Spawn the assets at random poses and simulate the drop start for a few frames for each batch of prim-asset pairs
-        for prim_asset_batch in self._prim_asset_batches:
+        for prim_asset_batch in prim_asset_batches:
             await self._start_batched_asset_drop_async(
                 prim_asset_batch, self._drop_height, sim_steps=drop_interval_steps
             )
@@ -430,9 +445,24 @@ class VolumeStackRandomizer(BehaviorScript):
         xform_cache = UsdGeom.XformCache()
         for prim, asset in prim_asset_batch:
             # Compute prim's size, midpoint, and calculate the drop area center at the specified height above the surface
-            prim_range = bbox_cache.ComputeWorldBound(prim).GetRange()
-            prim_width, prim_depth, prim_height = prim_range.GetSize()
-            drop_area_center = prim_range.GetMidpoint() + Gf.Vec3d(0, 0, prim_height / 2 + drop_height)
+            prim_bound = bbox_cache.ComputeWorldBound(prim)
+            prim_scale = Gf.Transform(prim_bound.GetMatrix()).GetScale()
+
+            # NOTE: GetRange() returns the untransformed size of the bounding box
+            prim_range_untransformed = bbox_cache.ComputeWorldBound(prim).GetRange()
+
+            # Apply the prim scale to the range to get the transformed size
+            prim_width, prim_depth, prim_height = prim_range_untransformed.GetSize()
+            prim_width *= prim_scale[0]
+            prim_depth *= prim_scale[1]
+            prim_height *= prim_scale[2]
+
+            # Calculate the drop area center at the specified height above the surface
+            mid_point = prim_range_untransformed.GetMidpoint()
+            mid_point[0] *= prim_scale[0]
+            mid_point[1] *= prim_scale[1]
+            mid_point[2] *= prim_scale[2]
+            drop_area_center = mid_point + Gf.Vec3d(0, 0, prim_height / 2 + drop_height)
 
             # Compute the asset's size and drop margin to avoid overlapping with the prim
             asset_width, asset_depth, asset_height = bbox_cache.ComputeWorldBound(asset).GetRange().GetSize()
@@ -562,6 +592,11 @@ class VolumeStackRandomizer(BehaviorScript):
             remove_empty_scopes(scope_root_prim, self.stage)
 
     def _group_prims_and_assets_into_batches(self):
+        # Early return if no valid prims or assets were found
+        if not self._prim_assets or not self._valid_prims:
+            print(f"[{self.prim_path}] No valid prims or assets found.")
+            return []
+
         # Group prims and their associated assets into batches, where each batch contains one asset for each prim.
         # Useful for parallel simulation of multiple prims with their corresponding assets.
         # from: {'prim1': ['asset1_0', 'asset1_1'], 'prim2': ['asset2_0']}
@@ -609,7 +644,6 @@ class VolumeStackRandomizer(BehaviorScript):
                         self.stage.RemovePrim(asset.GetPath())
 
         self._prim_assets.clear()
-        self._prim_asset_batches.clear()
 
     def _remove_physics_material(self):
         if self._physics_material:

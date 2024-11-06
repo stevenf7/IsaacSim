@@ -15,10 +15,9 @@ from pxr import Sdf, Usd
 def create_exposed_variable(
     prim: Usd.Prim, full_attr_name: str, attr_type: Sdf.ValueTypeName, default_value, doc: str = None
 ) -> Usd.Attribute:
-    """Creates a USD attribute on the prim to expose variables in the UI."""
+    """Creates a USD attribute on the prim to expose the variable to the UI, if the variable exits it returns it."""
     attr = prim.GetAttribute(full_attr_name)
     if attr:
-        carb.log_warn(f"Attribute {full_attr_name} already exists on {prim.GetPath()} with value {attr.Get()}")
         return attr
     attr = prim.CreateAttribute(full_attr_name, attr_type)
     attr.Set(default_value)

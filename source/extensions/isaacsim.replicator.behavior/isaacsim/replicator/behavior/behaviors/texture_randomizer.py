@@ -36,12 +36,12 @@ class TextureRandomizer(BehaviorScript):
             "attr_name": "includeChildren",
             "attr_type": Sdf.ValueTypeNames.Bool,
             "default_value": True,
-            "doc": "Include prim children in the randomization.",
+            "doc": "Include valid prim children to the behavior.",
         },
         {
             "attr_name": "interval",
             "attr_type": Sdf.ValueTypeNames.UInt,
-            "default_value": 5,
+            "default_value": 0,
             "doc": "Interval for updating the behavior. Value 0 means every frame.",
         },
         {

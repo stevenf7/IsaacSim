@@ -23,16 +23,16 @@ from pxr import Sdf, Usd
 
 class ExampleCustomEventBehavior(BehaviorScript):
     BEHAVIOR_NS = "exampleCustomEventBehavior"
-    EVENT_NAME_IN = f"{EXTENSION_NAME}.{BEHAVIOR_NS}_in"
-    EVENT_NAME_OUT = f"{EXTENSION_NAME}.{BEHAVIOR_NS}_out"
+    EVENT_NAME_IN = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.in"
+    EVENT_NAME_OUT = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.out"
     ALLOWED_FUNCTIONS = ["setup", "update", "reset"]
 
     VARIABLES_TO_EXPOSE = [
         {
             "attr_name": "includeChildren",
             "attr_type": Sdf.ValueTypeNames.Bool,
-            "default_value": False,
-            "doc": "Include prim children in the behavior.",
+            "default_value": True,
+            "doc": "Include valid prim children to the behavior.",
         },
         {
             "attr_name": "event:input",
