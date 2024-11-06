@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.5] - 2024-11-04
+### Changed
+- Remove isaacsim.asset.importer.heightmap as a dependency
+
 ## [2.0.4] - 2024-10-29
 ### Changed
 - Updated dependencies and imports after renaming
