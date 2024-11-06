@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2024-11-04
+### Changed
+- Updated tf viewer OG node replacing spinOnce function with new initialize ROS2 Node functions
+
 ## [1.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

@@ -16,6 +16,7 @@ import omni.replicator.core as rep
 import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode, WriterRequest
 from isaacsim.core.utils.render_product import get_camera_prim_path
+from isaacsim.ros2.bridge import collect_namespace
 from pxr import Usd, UsdGeom
 
 
@@ -118,7 +119,7 @@ class OgnROS2RtxLidarHelper:
                     if writer is not None:
                         writer.initialize(
                             frameId=db.inputs.frameId,
-                            nodeNamespace=db.inputs.nodeNamespace,
+                            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,

@@ -18,7 +18,7 @@ import omni.replicator.core as rep
 import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.core.utils.render_product import get_camera_prim_path, get_resolution
-from isaacsim.ros2.bridge import compute_relative_pose, read_camera_info
+from isaacsim.ros2.bridge import collect_namespace, compute_relative_pose, read_camera_info
 from pxr import Gf, Usd
 
 
@@ -61,7 +61,7 @@ class OgnROS2CameraInfoHelper:
         writer = rep.writers.get(f"ROS2PublishCameraInfo")
         writer.initialize(
             frameId=frameId,
-            nodeNamespace=db.inputs.nodeNamespace,
+            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
             queueSize=db.inputs.queueSize,
             topicName=topicName,
             context=db.inputs.context,

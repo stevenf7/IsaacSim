@@ -88,69 +88,14 @@ public:
     /**
      * Do node work to initialize the node handler once.
      *
-     * This function should be called before doing any work with any OmniGraph node (generally it should be called each
-     * frame). Changes to the node name are only handled if Stop and Play are pressed.
+     * This function should be called before doing any work with any OmniGraph node.
+     * Changes to the node name are only handled if Stop and Play are pressed.
      *
      * @param nodeName Name of the node.
      * @param namespaceName Namespace of the node.
      * @param contextHandleAddr Context handler's memory address.
      * @returns Whether the node handler has been initialized.
      */
-    bool spinOnce(const std::string& nodeName, const std::string namespaceName, uint64_t contextHandleAddr)
-    {
-        // If the handle was not initialized, try to initialize it
-        if (!initializeNodeHandle(nodeName, namespaceName, contextHandleAddr))
-        {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Add the specified prefix to the given topic name.
-     *
-     * This method will insert the separator character (`/`) between the prefix and the topic name.
-     *
-     * @param prefix Prefix to add to the topic.
-     * @param topicName Name of the topic.
-     * @returns Name of the topic prefixed with the specified prefix.
-     */
-    static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topicName)
-    {
-        if (topicName.size() == 0)
-        {
-            return std::string("");
-        }
-        return prefix + std::string("/") + trimNonAlnum(topicName);
-    }
-
-private:
-    static inline std::string sanitizeName(std::string input)
-    {
-        std::replace_if(
-            input.begin(), input.end(), [](auto ch) { return !(::isalnum(ch) || ch == '_'); }, '_');
-        return input;
-    }
-
-    static inline std::string trimNonAlnum(const std::string& s)
-    {
-        if (s.size() == 0)
-        {
-            return "";
-        }
-
-        size_t startIdx = 0;
-        size_t endIdx = s.size() - 1;
-
-        while (startIdx < s.size() && !std::isalnum(s[startIdx]))
-            startIdx++;
-
-        while (endIdx > startIdx && !std::isalnum(s[endIdx]))
-            endIdx--;
-
-        return s.substr(startIdx, endIdx - startIdx + 1);
-    }
-
     bool initializeNodeHandle(const std::string& nodeName, const std::string& namespaceName, uint64_t contextHandleAddr)
     {
         // Handle is initialized, so we should be ok, return true
@@ -206,6 +151,124 @@ private:
             return false;
         }
         return m_nodeHandle->getNode() != nullptr;
+    }
+
+    /**
+     * Get whether the ROS 2 node has been initialized.
+     *
+     * @returns True if the node handle has been initialized, False otherwise.
+     */
+    bool isInitialized() const
+    {
+        return m_nodeHandle != nullptr;
+    }
+
+    /**
+     * Add the specified prefix to the given topic name.
+     *
+     * This method will insert the separator character (`/`) between the prefix and the topic name.
+     *
+     * @param prefix Prefix to add to the topic.
+     * @param topicName Name of the topic.
+     * @returns Name of the topic prefixed with the specified prefix.
+     */
+    static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topicName)
+    {
+        if (topicName.size() == 0)
+        {
+            return std::string("");
+        }
+        return prefix + std::string("/") + trimNonAlnum(topicName);
+    }
+
+    /**
+     * Collect namespaces defined for parent prims in a stage and automatically form a node namespace.
+     *
+     * This method performs a reverse search up a USD stage and for each parent prim containing isaac:namespace
+     * attribute, it will continue prepending the each namespace value. It will insert the separator character (`/`)
+     * between each namespace value.
+     *
+     * @param prefix Prefix to add to the topic.
+     * @param topicName Name of the topic.
+     * @param tfNode Set to true if collecting namespace for a TF ROS 2 node
+     * @returns Name of the topic prefixed with the specified prefix.
+     */
+    static inline std::string collectNamespace(const std::string& namespaceInput,
+                                               const PXR_NS::UsdPrim& startPrim,
+                                               const bool tfNode = false)
+    {
+        if (namespaceInput.size() > 0)
+        {
+            return namespaceInput;
+        }
+        std::string namespaceString = "";
+        PXR_NS::UsdPrim currentPrim = startPrim;
+        static const PXR_NS::TfToken isaacNamespace("isaac:namespace");
+
+        std::string namespaceValue = "";
+
+        // Traverse upwards until there are no more parents
+        while (currentPrim.IsValid())
+        {
+            const pxr::UsdAttribute attr = currentPrim.GetAttribute(isaacNamespace);
+            if (currentPrim.GetAttribute(isaacNamespace).HasValue())
+            {
+                if (attr.Get(&namespaceValue))
+                {
+                    if (!tfNode)
+                    {
+                        // Prepend the value to the accumulated string
+                        if (!namespaceString.empty())
+                        {
+                            namespaceString = namespaceValue + "/" + namespaceString;
+                        }
+                        else
+                        {
+                            namespaceString = namespaceValue;
+                        }
+                    }
+                    else
+                    { // If collecting namespace for a TF node, only retrieve the highest level prim namespace
+                        if (!namespaceValue.empty())
+                        {
+                            namespaceString = namespaceValue;
+                        }
+                    }
+                }
+            }
+
+            // Move to the parent prim
+            currentPrim = currentPrim.GetParent();
+        }
+
+        return namespaceString;
+    }
+
+private:
+    static inline std::string sanitizeName(std::string input)
+    {
+        std::replace_if(
+            input.begin(), input.end(), [](auto ch) { return !(::isalnum(ch) || ch == '_'); }, '_');
+        return input;
+    }
+
+    static inline std::string trimNonAlnum(const std::string& s)
+    {
+        if (s.size() == 0)
+        {
+            return "";
+        }
+
+        size_t startIdx = 0;
+        size_t endIdx = s.size() - 1;
+
+        while (startIdx < s.size() && !std::isalnum(s[startIdx]))
+            startIdx++;
+
+        while (endIdx > startIdx && !std::isalnum(s[endIdx]))
+            endIdx--;
+
+        return s.substr(startIdx, endIdx - startIdx + 1);
     }
 
 protected:
