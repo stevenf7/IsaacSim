@@ -30,7 +30,7 @@ class UsdNoticeListener : public pxr::TfWeakBase
 {
 public:
     UsdNoticeListener();
-    void Handle(const pxr::UsdNotice::ObjectsChanged& objectsChanged);
+    void handle(const pxr::UsdNotice::ObjectsChanged& objectsChanged);
     void enable(const bool& flag);
     std::map<int, std::function<void(const std::string&)>>& getDeletionCallbacks();
     std::map<int, std::function<void(const std::string&)>>& getPhysicsSceneAdditionCallbacks();
@@ -38,11 +38,11 @@ public:
     int& getCallbackIter();
 
 private:
-    std::map<pxr::SdfPath, pxr::PhysxSchemaPhysxSceneAPI> mPhysicsScenes;
-    std::map<int, std::function<void(const std::string&)>> mDeletionCallbacks;
-    std::map<int, std::function<void(const std::string&)>> mPhysicsSceneAdditionCallbacks;
-    int mCallbackIter;
-    bool enableFlag;
+    std::map<pxr::SdfPath, pxr::PhysxSchemaPhysxSceneAPI> m_physicsScenes;
+    std::map<int, std::function<void(const std::string&)>> m_deletionCallbacks;
+    std::map<int, std::function<void(const std::string&)>> m_physicsSceneAdditionCallbacks;
+    int m_callbackIter;
+    bool m_enableFlag;
 };
 
 } // namespace isaacsim

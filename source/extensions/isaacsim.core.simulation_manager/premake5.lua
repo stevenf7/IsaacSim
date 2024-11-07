@@ -35,26 +35,6 @@ project_ext_plugin(ext, "isaacsim.core.simulation_manager.plugin")
     filter {}
 
 -- -------------------------------------
--- Build the C++ plugin that will be loaded by the tests
-project_ext_tests(ext, "isaacsim.core.simulation_manager.tests")
-    add_files("source", "plugins/isaacsim.core.simulation_manager.tests")
-    includedirs {
-        "include",
-        "plugins/",
-        "%{target_deps}/doctest/include",
-    }
-    -- link omni.kit.test (path or 'repo_precache_exts' config may need to be adjusted)
-    libdirs {
-        extsbuild_dir.."/omni.kit.test/bin",
-    }
-
-    filter { "configurations:debug" }
-        defines { "_DEBUG" }
-    filter { "configurations:release" }
-        defines { "NDEBUG" }
-    filter {}
-
--- -------------------------------------
 -- Build Python bindings that will be loaded by the extension
 project_ext_bindings {
     ext = ext,

@@ -32,7 +32,7 @@ public:
     {
         mUsdNoticeListener = new UsdNoticeListener();
         mUsdNoticeListenerKey =
-            pxr::TfNotice::Register(pxr::TfCreateWeakPtr(mUsdNoticeListener), &UsdNoticeListener::Handle);
+            pxr::TfNotice::Register(pxr::TfCreateWeakPtr(mUsdNoticeListener), &UsdNoticeListener::handle);
     }
 
     ~SimulationManagerImpl()
