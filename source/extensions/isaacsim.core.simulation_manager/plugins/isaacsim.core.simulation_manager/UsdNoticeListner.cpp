@@ -23,17 +23,17 @@ namespace simulation_manager
 
 UsdNoticeListener::UsdNoticeListener()
 {
-    this->mCallbackIter = 0;
-    this->enableFlag = true;
+    this->m_callbackIter = 0;
+    this->m_enableFlag = true;
 }
 
-void UsdNoticeListener::Handle(const pxr::UsdNotice::ObjectsChanged& objectsChanged)
+void UsdNoticeListener::handle(const pxr::UsdNotice::ObjectsChanged& objectsChanged)
 {
     // TODO: only listen to the stage of interest here once Isaac can work with multiple stages
     pxr::UsdStagePtr attachedStage = omni::usd::UsdContext::getContext()->getStage();
     pxr::UsdStageWeakPtr stage = objectsChanged.GetStage();
 
-    if (!this->enableFlag || stage != attachedStage)
+    if (!this->m_enableFlag || stage != attachedStage)
     {
         return;
     }
@@ -48,15 +48,15 @@ void UsdNoticeListener::Handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
             pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
             if (prim.IsValid() == false || !prim.IsActive())
             {
-                if (this->mPhysicsScenes.find(primPath) != this->mPhysicsScenes.end())
+                if (this->m_physicsScenes.find(primPath) != this->m_physicsScenes.end())
                 {
-                    this->mPhysicsScenes.erase(primPath);
+                    this->m_physicsScenes.erase(primPath);
                 }
                 std::vector<int> deletionKeys;
-                std::transform(this->mDeletionCallbacks.begin(), this->mDeletionCallbacks.end(),
+                std::transform(this->m_deletionCallbacks.begin(), this->m_deletionCallbacks.end(),
                                std::back_inserter(deletionKeys), [](auto& p) { return p.first; });
                 for (auto const& key : deletionKeys)
-                    this->mDeletionCallbacks[key](primPath.GetString());
+                    this->m_deletionCallbacks[key](primPath.GetString());
             }
             else
             {
@@ -67,13 +67,13 @@ void UsdNoticeListener::Handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
                 if (typeNameChange && std::find(changedFields.begin(), changedFields.end(),
                                                 PXR_NS::UsdTokens->apiSchemas) == changedFields.end())
                 {
-                    if (this->mPhysicsScenes.count(primPath) == 0)
+                    if (this->m_physicsScenes.count(primPath) == 0)
                     {
                         static pxr::TfToken physicsSceneType("PhysicsScene");
                         if (prim.GetTypeName() == physicsSceneType)
                         {
-                            this->mPhysicsScenes.emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
-                            for (auto const& [key, AdditionFunc] : this->mPhysicsSceneAdditionCallbacks)
+                            this->m_physicsScenes.emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
+                            for (auto const& [key, AdditionFunc] : this->m_physicsSceneAdditionCallbacks)
                                 AdditionFunc(primPath.GetString());
                         }
                     }
@@ -86,26 +86,26 @@ void UsdNoticeListener::Handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
 
 std::map<int, std::function<void(const std::string&)>>& UsdNoticeListener::getDeletionCallbacks()
 {
-    return this->mDeletionCallbacks;
+    return this->m_deletionCallbacks;
 }
 
 std::map<int, std::function<void(const std::string&)>>& UsdNoticeListener::getPhysicsSceneAdditionCallbacks()
 {
-    return this->mPhysicsSceneAdditionCallbacks;
+    return this->m_physicsSceneAdditionCallbacks;
 }
 
 std::map<pxr::SdfPath, pxr::PhysxSchemaPhysxSceneAPI>& UsdNoticeListener::getPhysicsScenes()
 {
-    return this->mPhysicsScenes;
+    return this->m_physicsScenes;
 }
 
 int& UsdNoticeListener::getCallbackIter()
 {
-    return this->mCallbackIter;
+    return this->m_callbackIter;
 }
 void UsdNoticeListener::enable(const bool& flag)
 {
-    this->enableFlag = flag;
+    this->m_enableFlag = flag;
 }
 
 }
