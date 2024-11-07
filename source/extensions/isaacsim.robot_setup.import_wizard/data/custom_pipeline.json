@@ -1,0 +1,29 @@
+{
+    "Saved Pipeline": [
+        "Rigging Robots",
+        "Articulation and Physics Inspector",
+        "Camera Inspector"
+    ],
+    "Import Pipeline": [
+        "Import URDF from File",
+        "Articulation and Physics Inspector",
+        "Gain Tuner",
+        "Controller OmniGraphs"
+    ],
+    "ROS Pipeline": [
+        "Import URDF from File",
+        "Articulation and Physics Inspector",
+        "Gain Tuner",
+        "Robot Assembler",
+        "Sensors: RTX Lidar",
+        "Controller OmniGraphs",
+        "ROS Bridge OmniGraphs"
+    ],
+    "Manipulator Pipeline": [
+        "Import from CAD",
+        "Articulation and Physics Inspector",
+        "Gain Tuner",
+        "Lula Tools for Kinematics",
+        "Controller OmniGraphs"
+    ]
+}

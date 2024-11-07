@@ -3,26 +3,22 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "1.0.0"
 category = "Other"
 title = "Isaac Sim Import Wizard [alpha]"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.import_wizard"
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.import_wizard"
 keywords = ["isaac","wizard","import"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.import_wizard."
-
-
 [dependencies]
-"isaacsim.core.deprecation_manager" = {}
-
+"isaacsim.gui.components" = {}
+"omni.kit.menu.utils" = {}
+"omni.physx.supportui" = {}
 
 [[python.module]]
-name = "omni.isaac.import_wizard"
+name = "isaacsim.robot_setup.import_wizard"
