@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,22 +11,21 @@ import numpy as np
 import omni.graph.core as og
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.utils.types import ArticulationAction
-from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import AckermannController
-from isaacsim.robot.wheeled_robots.ogn.OgnAckermannControllerDatabase import OgnAckermannControllerDatabase
+from isaacsim.robot.wheeled_robots.controllers.ackermann_controller_deprecated import AckermannController
+from isaacsim.robot.wheeled_robots.ogn.OgnAckermannControllerDeprecatedDatabase import (
+    OgnAckermannControllerDeprecatedDatabase,
+)
 
 
-class OgnAckermannControllerInternalState(BaseResetNode):
+class OgnAckermannControllerDeprecatedInternalState(BaseResetNode):
     def __init__(self):
         self.wheel_base = 0.0
         self.track_width = 0.0
-        self.front_wheel_radius = 0.0
-        self.back_wheel_radius = 0.0
+        self.turning_wheel_radius = 0.0
         self.max_wheel_velocity = 1.0e20
-        self.invert_steering = False
         self.max_wheel_rotation_angle = 6.28
-        self.max_acceleration = 0.0
-        self.max_steering_angle_velocity = 0.0
-
+        self.use_acceleration = False
+        self.invert_steering_angle = False
         self.node = None
         self.graph_id = None
         super().__init__(initialize=False)
@@ -34,72 +33,71 @@ class OgnAckermannControllerInternalState(BaseResetNode):
     def initialize_controller(self) -> None:
         self.controller_handle = AckermannController(
             name="ackermann_controller",
+            use_acceleration=self.use_acceleration,
+            turning_wheel_radius=self.turning_wheel_radius,
             wheel_base=self.wheel_base,
             track_width=self.track_width,
-            front_wheel_radius=self.front_wheel_radius,
-            back_wheel_radius=self.back_wheel_radius,
+            invert_steering_angle=self.invert_steering_angle,
             max_wheel_velocity=self.max_wheel_velocity,
-            invert_steering=self.invert_steering,
             max_wheel_rotation_angle=self.max_wheel_rotation_angle,
-            max_acceleration=self.max_acceleration,
-            max_steering_angle_velocity=self.max_steering_angle_velocity,
         )
-
         self.initialized = True
 
     def forward(self, command: np.ndarray) -> ArticulationAction:
         return self.controller_handle.forward(command)
 
     def custom_reset(self):
-        self.node.get_attribute("outputs:wheelAngles").set([0.0, 0.0])
-        self.node.get_attribute("outputs:wheelRotationVelocity").set([0.0, 0.0, 0.0, 0.0])
+        self.node.get_attribute("outputs:leftWheelAngle").set(0.0)
+        self.node.get_attribute("outputs:rightWheelAngle").set(0.0)
+        self.node.get_attribute("outputs:wheelRotationVelocity").set(0.0)
 
 
-class OgnAckermannController:
+class OgnAckermannControllerDeprecated:
     @staticmethod
     def init_instance(node, graph_instance_id):
-        state = OgnAckermannControllerDatabase.get_internal_state(node, graph_instance_id)
+        state = OgnAckermannControllerDeprecatedDatabase.get_internal_state(node, graph_instance_id)
         state.node = node
         state.graph_id = graph_instance_id
 
     @staticmethod
     def internal_state():
-        return OgnAckermannControllerInternalState()
+        return OgnAckermannControllerDeprecatedInternalState()
 
     @staticmethod
     def compute(db) -> bool:
-        state = db.per_instance_state
 
+        state = db.per_instance_state
         try:
             if not state.initialized:
-
+                state.acceleration = db.inputs.acceleration
                 state.wheel_base = db.inputs.wheelBase
                 state.track_width = db.inputs.trackWidth
-                state.front_wheel_radius = db.inputs.frontWheelRadius
-                state.back_wheel_radius = db.inputs.backWheelRadius
+                state.turning_wheel_radius = db.inputs.turningWheelRadius
                 state.max_wheel_velocity = db.inputs.maxWheelVelocity
-                state.invert_steering = db.inputs.invertSteering
+                state.use_acceleration = db.inputs.useAcceleration
+                state.invert_steering_angle = db.inputs.invertSteeringAngle
                 state.max_wheel_rotation_angle = db.inputs.maxWheelRotation
-                state.max_acceleration = db.inputs.maxAcceleration
-                state.max_steering_angle_velocity = db.inputs.maxSteeringAngleVelocity
-
                 state.initialize_controller()
+                db.log_warning(
+                    "This node is deprecated. Please replace with the AckermannController OmniGraph node instead."
+                )
 
             actions = state.forward(
                 [
                     db.inputs.steeringAngle,
-                    db.inputs.steeringAngleVelocity,
                     db.inputs.speed,
+                    db.inputs.currentLinearVelocity[0],
+                    db.inputs.DT,
                     db.inputs.acceleration,
-                    db.inputs.dt,
                 ]
             )
 
             if actions.joint_velocities is not None:
-                db.outputs.wheelRotationVelocity = actions.joint_velocities
+                db.outputs.wheelRotationVelocity = actions.joint_velocities[0]
 
             if actions.joint_positions is not None:
-                db.outputs.wheelAngles = actions.joint_positions
+                db.outputs.leftWheelAngle = actions.joint_positions[2]
+                db.outputs.rightWheelAngle = actions.joint_positions[3]
 
         except Exception as error:
             db.log_warning(str(error))
@@ -112,7 +110,7 @@ class OgnAckermannController:
     @staticmethod
     def release_instance(node, graph_instance_id):
         try:
-            state = OgnAckermannControllerDatabase.get_internal_state(node, graph_instance_id)
+            state = OgnAckermannControllerDeprecatedDatabase.get_internal_state(node, graph_instance_id)
         except Exception:
             state = None
             pass
