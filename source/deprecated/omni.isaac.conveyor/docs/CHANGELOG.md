@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.2] - 2024-11-07
+### Changed
+- Fix minor typo
+
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming

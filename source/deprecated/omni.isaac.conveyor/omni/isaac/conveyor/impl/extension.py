@@ -17,7 +17,7 @@ from omni.isaac.conveyor import old_extension_name as _old_ext
 # Get the file name
 _file_name = os.path.splitext(os.path.basename(__file__))[0]
 
-_new_package = __package__.replace(_old_ext, new_ext)
+_new_package = __package__.replace(_old_ext, _new_ext)
 carb.log_warn(
     f"{__package__}.{_file_name} has been deprecated in favor of {_new_package}.{_file_name}. Please update your code accordingly "
 )
