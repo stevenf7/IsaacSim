@@ -672,8 +672,10 @@ class Camera(BaseSensor):
                 )
         return BaseSensor.set_local_pose(self, translation, orientation)
 
-    def add_normals_to_frame(self) -> None:
+    def add_normals_to_frame(self, init_params: dict = None) -> None:
         """Attach the normals annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters
         The normals annotator returns:
 
             np.array
@@ -683,7 +685,7 @@ class Camera(BaseSensor):
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#normals
         """
         if self._custom_annotators["normals"] is None:
-            self._custom_annotators["normals"] = rep.AnnotatorRegistry.get_annotator("normals")
+            self._custom_annotators["normals"] = rep.AnnotatorRegistry.get_annotator("normals", init_params=init_params)
             self._custom_annotators["normals"].attach([self._render_product_path])
         self._current_frame["normals"] = None
         return
@@ -694,8 +696,10 @@ class Camera(BaseSensor):
             self._custom_annotators["normals"] = None
         self._current_frame.pop("normals", None)
 
-    def add_motion_vectors_to_frame(self) -> None:
+    def add_motion_vectors_to_frame(self, init_params: dict = None) -> None:
         """Attach the motion vectors annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters
         The motion vectors annotator returns:
 
             np.array
@@ -705,7 +709,9 @@ class Camera(BaseSensor):
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#motion-vectors
         """
         if self._custom_annotators["motion_vectors"] is None:
-            self._custom_annotators["motion_vectors"] = rep.AnnotatorRegistry.get_annotator("motion_vectors")
+            self._custom_annotators["motion_vectors"] = rep.AnnotatorRegistry.get_annotator(
+                "motion_vectors", init_params=init_params
+            )
             self._custom_annotators["motion_vectors"].attach([self._render_product_path])
         self._current_frame["motion_vectors"] = None
         return
@@ -716,8 +722,10 @@ class Camera(BaseSensor):
             self._custom_annotators["motion_vectors"] = None
         self._current_frame.pop("motion_vectors", None)
 
-    def add_occlusion_to_frame(self) -> None:
+    def add_occlusion_to_frame(self, init_params: dict = None) -> None:
         """Attach the occlusion annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters
         The occlusion annotator returns:
 
             np.array
@@ -725,7 +733,9 @@ class Camera(BaseSensor):
             dtype: np.dtype([("instanceId", "<u4"), ("semanticId", "<u4"), ("occlusionRatio", "<f4")])
         """
         if self._custom_annotators["occlusion"] is None:
-            self._custom_annotators["occlusion"] = rep.AnnotatorRegistry.get_annotator("occlusion")
+            self._custom_annotators["occlusion"] = rep.AnnotatorRegistry.get_annotator(
+                "occlusion", init_params=init_params
+            )
             self._custom_annotators["occlusion"].attach([self._render_product_path])
         self._current_frame["occlusion"] = None
         return
@@ -736,8 +746,10 @@ class Camera(BaseSensor):
             self._custom_annotators["occlusion"] = None
         self._current_frame.pop("occlusion", None)
 
-    def add_distance_to_image_plane_to_frame(self) -> None:
+    def add_distance_to_image_plane_to_frame(self, init_params: dict = None) -> None:
         """Attach the distance_to_image_plane annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters
         The distance_to_image_plane annotator returns:
 
             np.array
@@ -748,7 +760,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["distance_to_image_plane"] is None:
             self._custom_annotators["distance_to_image_plane"] = rep.AnnotatorRegistry.get_annotator(
-                "distance_to_image_plane"
+                "distance_to_image_plane", init_params=init_params
             )
             self._custom_annotators["distance_to_image_plane"].attach([self._render_product_path])
         self._current_frame["distance_to_image_plane"] = None
@@ -760,8 +772,10 @@ class Camera(BaseSensor):
             self._custom_annotators["distance_to_image_plane"] = None
         self._current_frame.pop("distance_to_image_plane", None)
 
-    def add_distance_to_camera_to_frame(self) -> None:
+    def add_distance_to_camera_to_frame(self, init_params: dict = None) -> None:
         """Attach the distance_to_camera_to_frame annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters
         The distance_to_camera_to_frame annotator returns:
 
             np.array
@@ -771,7 +785,9 @@ class Camera(BaseSensor):
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#distance-to-camera
         """
         if self._custom_annotators["distance_to_camera"] is None:
-            self._custom_annotators["distance_to_camera"] = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
+            self._custom_annotators["distance_to_camera"] = rep.AnnotatorRegistry.get_annotator(
+                "distance_to_camera", init_params=init_params
+            )
             self._custom_annotators["distance_to_camera"].attach([self._render_product_path])
         self._current_frame["distance_to_camera"] = None
         return
@@ -782,10 +798,12 @@ class Camera(BaseSensor):
             self._custom_annotators["distance_to_camera"] = None
         self._current_frame.pop("distance_to_camera", None)
 
-    def add_bounding_box_2d_tight_to_frame(self) -> None:
+    def add_bounding_box_2d_tight_to_frame(self, init_params: dict = None) -> None:
         """Attach the bounding_box_2d_tight annotator to this camera.
-        The bounding_box_2d_tight annotator returns:
+        Args:
+            init_params: Optional annotator parameters (e.g. init_params={"semanticTypes": ["prim"]})
 
+        The bounding_box_2d_tight annotator returns:
             np.array
             shape: (num_objects, 1)
             dtype: np.dtype([
@@ -804,7 +822,7 @@ class Camera(BaseSensor):
 
         if self._custom_annotators["bounding_box_2d_tight"] is None:
             self._custom_annotators["bounding_box_2d_tight"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_2d_tight"
+                "bounding_box_2d_tight", init_params=init_params
             )
             self._custom_annotators["bounding_box_2d_tight"].attach([self._render_product_path])
         self._current_frame["bounding_box_2d_tight"] = None
@@ -816,8 +834,11 @@ class Camera(BaseSensor):
             self._custom_annotators["bounding_box_2d_tight"] = None
         self._current_frame.pop("bounding_box_2d_tight", None)
 
-    def add_bounding_box_2d_loose_to_frame(self) -> None:
+    def add_bounding_box_2d_loose_to_frame(self, init_params: dict = None) -> None:
         """Attach the bounding_box_2d_loose annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters (e.g. init_params={"semanticTypes": ["prim"]})
+
         The bounding_box_2d_loose annotator returns:
 
             np.array
@@ -837,7 +858,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["bounding_box_2d_loose"] is None:
             self._custom_annotators["bounding_box_2d_loose"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_2d_loose"
+                "bounding_box_2d_loose", init_params=init_params
             )
             self._custom_annotators["bounding_box_2d_loose"].attach([self._render_product_path])
         self._current_frame["bounding_box_2d_loose"] = None
@@ -849,9 +870,17 @@ class Camera(BaseSensor):
             self._custom_annotators["bounding_box_2d_loose"] = None
         self._current_frame.pop("bounding_box_2d_loose", None)
 
-    def add_bounding_box_3d_to_frame(self) -> None:
+    def add_bounding_box_3d_to_frame(self, init_params: dict = None) -> None:
+        """Attach the bounding_box_3d annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters (e.g. init_params={"semanticTypes": ["prim"]})
+
+        See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-3d
+        """
         if self._custom_annotators["bounding_box_3d"] is None:
-            self._custom_annotators["bounding_box_3d"] = rep.AnnotatorRegistry.get_annotator("bounding_box_3d")
+            self._custom_annotators["bounding_box_3d"] = rep.AnnotatorRegistry.get_annotator(
+                "bounding_box_3d", init_params=init_params
+            )
             self._custom_annotators["bounding_box_3d"].attach([self._render_product_path])
         self._current_frame["bounding_box_3d"] = None
         return
@@ -862,19 +891,21 @@ class Camera(BaseSensor):
             self._custom_annotators["bounding_box_3d"] = None
         self._current_frame.pop("bounding_box_3d", None)
 
-    def add_semantic_segmentation_to_frame(self) -> None:
+    def add_semantic_segmentation_to_frame(self, init_params: dict = None) -> None:
         """Attach the semantic_segmentation annotator to this camera.
+        Args:
+            init_params: Optional parameters specifying the parameters to initialize the annotator with
         The semantic_segmentation annotator returns:
 
             np.array
             shape: (width, height, 1) or (width, height, 4) if `colorize` is set to true
-            dtype: np.uint32 or np.uint8 if `colorize` is set to true
+            dtype: np.uint32 or np.uint8 if `colorize` is set to true (e.g. init_params={"colorize": True})
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#semantic-segmentation
         """
         if self._custom_annotators["semantic_segmentation"] is None:
             self._custom_annotators["semantic_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "semantic_segmentation"
+                "semantic_segmentation", init_params=init_params
             )
             self._custom_annotators["semantic_segmentation"].attach([self._render_product_path])
         self._current_frame["semantic_segmentation"] = None
@@ -886,19 +917,22 @@ class Camera(BaseSensor):
             self._custom_annotators["semantic_segmentation"] = None
         self._current_frame.pop("semantic_segmentation", None)
 
-    def add_instance_id_segmentation_to_frame(self) -> None:
+    def add_instance_id_segmentation_to_frame(self, init_params: dict = None) -> None:
         """Attach the instance_id_segmentation annotator to this camera.
+        Args:
+            init_params: Optional parameters specifying the parameters to initialize the annotator with
+
         The instance_id_segmentation annotator returns:
 
             np.array
             shape: (width, height, 1) or (width, height, 4) if `colorize` is set to true
-            dtype: np.uint32 or np.uint8 if `colorize` is set to true
+            dtype: np.uint32 or np.uint8 if `colorize` is set to true (e.g. init_params={"colorize": True})
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-id-segmentation
         """
         if self._custom_annotators["instance_id_segmentation"] is None:
             self._custom_annotators["instance_id_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_id_segmentation"
+                "instance_id_segmentation", init_params=init_params
             )
             self._custom_annotators["instance_id_segmentation"].attach([self._render_product_path])
         self._current_frame["instance_id_segmentation"] = None
@@ -910,9 +944,11 @@ class Camera(BaseSensor):
             self._custom_annotators["instance_id_segmentation"] = None
         self._current_frame.pop("instance_id_segmentation", None)
 
-    def add_instance_segmentation_to_frame(self) -> None:
+    def add_instance_segmentation_to_frame(self, init_params: dict = None) -> None:
         """Attach the instance_segmentation annotator to this camera.
         The main difference between instance id segmentation and instance segmentation are that instance segmentation annotator goes down the hierarchy to the lowest level prim which has semantic labels, which instance id segmentation always goes down to the leaf prim.
+        Args:
+            init_params: Optional parameters specifying the parameters to initialize the annot (e.g. init_params={"colorize": True})
         The instance_segmentation annotator returns:
 
             np.array
@@ -923,7 +959,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["instance_segmentation"] is None:
             self._custom_annotators["instance_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_segmentation"
+                "instance_segmentation", init_params=init_params
             )
             self._custom_annotators["instance_segmentation"].attach([self._render_product_path])
         self._current_frame["instance_segmentation"] = None
@@ -935,8 +971,11 @@ class Camera(BaseSensor):
             self._custom_annotators["instance_segmentation"] = None
         self._current_frame.pop("instance_segmentation", None)
 
-    def add_pointcloud_to_frame(self, include_unlabelled: bool = False):
+    def add_pointcloud_to_frame(self, include_unlabelled: bool = False, init_params: dict = None) -> None:
         """Attach the pointcloud annotator to this camera.
+        Args:
+            include_unlabelled: Optional parameter to include unlabelled points in the pointcloud
+            init_params: Optional parameters specifying the parameters to initialize the annotator with
         The pointcloud annotator returns:
 
             np.array
@@ -946,8 +985,12 @@ class Camera(BaseSensor):
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#point-cloud
         """
         if self._custom_annotators["pointcloud"] is None:
+            if init_params is None:
+                init_params = {"includeUnlabelled": include_unlabelled}
+            else:
+                init_params["includeUnlabelled"] = include_unlabelled
             self._custom_annotators["pointcloud"] = rep.AnnotatorRegistry.get_annotator(
-                "pointcloud", init_params={"includeUnlabelled": include_unlabelled}
+                "pointcloud", init_params=init_params
             )
             self._custom_annotators["pointcloud"].attach([self._render_product_path])
         self._current_frame["pointcloud"] = None
