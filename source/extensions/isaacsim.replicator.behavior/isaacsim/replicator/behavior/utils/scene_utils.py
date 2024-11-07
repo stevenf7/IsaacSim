@@ -26,7 +26,8 @@ def get_world_rotation(prim: Usd.Prim, xform_cache: UsdGeom.XformCache | None = 
     """Get the absolute rotation of the prim."""
     if xform_cache is None:
         xform_cache = UsdGeom.XformCache()
-    return xform_cache.GetLocalToWorldTransform(prim).ExtractRotation()
+    # Wrap the matrix in a Gf.Transform to avoid any scale or shear issues
+    return Gf.Transform(xform_cache.GetLocalToWorldTransform(prim)).GetRotation()
 
 
 def get_rotation_op_and_value(prim: Usd.Prim) -> tuple[str, Gf.Quatf | Gf.Quatd | Gf.Rotation | Gf.Vec3d | Gf.Vec3f]:
@@ -408,6 +409,18 @@ def add_colliders(
             mesh_collision_api.CreateApproximationAttr().Set(approximation_type)
 
 
+def disable_colliders(prim: Usd.Prim, include_descendants: bool = True) -> None:
+    """Disable the colliders of the prim and its descendants."""
+    if include_descendants:
+        prims = Usd.PrimRange(prim)
+    else:
+        prims = [prim]
+    for p in prims:
+        if p.HasAPI(UsdPhysics.CollisionAPI):
+            collision_api = UsdPhysics.CollisionAPI(p)
+            collision_api.CreateCollisionEnabledAttr(False)
+
+
 def add_rigid_body_dynamics(
     prim: Usd.Prim,
     physics_scene: UsdPhysics.Scene | None = None,
@@ -435,6 +448,18 @@ def add_rigid_body_dynamics(
         physx_rigid_body_api.CreateAngularDampingAttr().Set(angular_damping)
     if linear_damping is not None:
         physx_rigid_body_api.CreateLinearDampingAttr().Set(linear_damping)
+
+
+def disable_rigid_body_dynamics(prim: Usd.Prim, include_descendants: bool = True) -> None:
+    """Disable the rigid body dynamics properties of the prim and its descendants."""
+    if include_descendants:
+        prims = Usd.PrimRange(prim)
+    else:
+        prims = [prim]
+    for p in prims:
+        if p.HasAPI(UsdPhysics.RigidBodyAPI):
+            rigid_body_api = UsdPhysics.RigidBodyAPI(p)
+            rigid_body_api.CreateRigidBodyEnabledAttr(False)
 
 
 def create_collision_walls(

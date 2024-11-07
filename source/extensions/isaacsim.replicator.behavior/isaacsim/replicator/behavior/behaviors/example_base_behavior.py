@@ -22,8 +22,8 @@ class ExampleBaseBehavior(BaseBehavior):
         {
             "attr_name": "includeChildren",
             "attr_type": Sdf.ValueTypeNames.Bool,
-            "default_value": False,
-            "doc": "Include prim children in the behavior.",
+            "default_value": True,
+            "doc": "Include valid prim children to the behavior.",
         },
     ]
 

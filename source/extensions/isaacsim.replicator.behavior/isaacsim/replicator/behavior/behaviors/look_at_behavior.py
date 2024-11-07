@@ -63,7 +63,7 @@ class LookAtBehavior(BehaviorScript):
         {
             "attr_name": "includeChildren",
             "attr_type": Sdf.ValueTypeNames.Bool,
-            "default_value": False,
+            "default_value": True,
             "doc": "Include prim children in the look-at randomization.",
         },
         {

@@ -51,8 +51,8 @@ class RotationRandomizer(BehaviorScript):
         {
             "attr_name": "includeChildren",
             "attr_type": Sdf.ValueTypeNames.Bool,
-            "default_value": False,
-            "doc": "Include prim children in the randomization.",
+            "default_value": True,
+            "doc": "Include valid prim children to the behavior.",
         },
         {
             "attr_name": "interval",
