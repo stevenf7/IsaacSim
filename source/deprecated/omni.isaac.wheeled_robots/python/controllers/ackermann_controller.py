@@ -14,4 +14,4 @@ carb.log_warn(
     "omni.isaac.wheeled_robots has been deprecated in favor of isaacsim.robot.wheeled_robots. Please update your code accordingly."
 )
 
-from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import *
+from isaacsim.robot.wheeled_robots.controllers.ackermann_controller_deprecated import *

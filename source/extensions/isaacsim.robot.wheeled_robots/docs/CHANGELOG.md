@@ -1,4 +1,11 @@
 # Changelog
+
+## [4.0.0] - 2024-10-30
+### Added
+- Enhanced AckermannController class by incorporating new parameters and a higher-fidelity kinematic model to minimize slip in a four-wheel-drive system.
+- Added new OgnAckermannController OmniGraph node. Previous OmniGraph node has been deprecated and renamed to OgnAckermannControllerDeprecated.
+
+
 ## [3.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming

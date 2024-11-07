@@ -124,8 +124,9 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         new_pos = body_prim.get_current_dynamic_state().position
 
         # check if the forklift moved
-        self.assertAlmostEqual(pos[0], new_pos[0], delta=1)
-        self.assertNotAlmostEqual(pos[1], new_pos[1], delta=1)
+        self.assertNotAlmostEqual(pos[0], new_pos[0], delta=1)
+        self.assertGreater(new_pos[0], pos[0])
+        self.assertAlmostEqual(pos[1], new_pos[1], delta=1)
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_reverse(self):
@@ -145,8 +146,9 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         new_pos = body_prim.get_current_dynamic_state().position
 
         # check if the forklift moved
-        self.assertAlmostEqual(pos[0], new_pos[0], delta=1)
-        self.assertNotAlmostEqual(pos[1], new_pos[1], delta=1)
+        self.assertNotAlmostEqual(pos[0], new_pos[0], delta=1)
+        self.assertLess(new_pos[0], pos[0])
+        self.assertAlmostEqual(pos[1], new_pos[1], delta=1)
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_reverse_turn(self):
