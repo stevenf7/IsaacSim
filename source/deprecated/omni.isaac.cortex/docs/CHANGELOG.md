@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2024-11-07
+### Changed
+- Fix minor typo
+
 ## [1.0.0] - 2024-09-27
 
 ### Deprecation
