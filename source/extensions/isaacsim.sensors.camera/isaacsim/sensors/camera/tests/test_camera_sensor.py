@@ -278,3 +278,237 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
         # Make sure that the two frames refer to different objects
         self.assertIsNot(current_frame_3, current_frame_4)
+
+    async def test_annotators_data(self):
+        # Add all annotators to the camera
+        self.camera.add_normals_to_frame()
+        self.camera.add_motion_vectors_to_frame()
+        self.camera.add_occlusion_to_frame()
+        self.camera.add_distance_to_image_plane_to_frame()
+        self.camera.add_distance_to_camera_to_frame()
+        self.camera.add_bounding_box_2d_tight_to_frame()
+        self.camera.add_bounding_box_2d_loose_to_frame()
+        self.camera.add_bounding_box_3d_to_frame()
+        self.camera.add_semantic_segmentation_to_frame()
+        self.camera.add_instance_id_segmentation_to_frame()
+        self.camera.add_instance_segmentation_to_frame()
+        self.camera.add_pointcloud_to_frame()
+
+        # Wait for the data to be available in the frame
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+        current_frame = self.camera.get_current_frame()
+
+        # Check the annotators data, shape, type and dtype
+        normals_data = current_frame.get("normals")
+        self.assertIsNotNone(normals_data)
+        self.assertTrue(normals_data.shape == (256, 256, 4))
+        self.assertTrue(isinstance(normals_data, np.ndarray))
+        self.assertTrue(normals_data.dtype == np.float32)
+
+        motion_vectors_data = current_frame.get("motion_vectors")
+        self.assertIsNotNone(motion_vectors_data)
+        self.assertTrue(motion_vectors_data.shape == (256, 256, 4))
+        self.assertTrue(isinstance(motion_vectors_data, np.ndarray))
+        self.assertTrue(motion_vectors_data.dtype == np.float32)
+
+        occlusion_data = current_frame.get("occlusion")
+        self.assertIsNotNone(occlusion_data)
+        self.assertTrue(occlusion_data.shape == (4,))
+        self.assertTrue(isinstance(occlusion_data, np.ndarray))
+        self.assertTrue(
+            occlusion_data.dtype
+            == np.dtype([("instanceId", np.uint32), ("semanticId", np.uint32), ("occlusionRatio", np.float32)])
+        )
+
+        distance_to_image_plane_data = current_frame.get("distance_to_image_plane")
+        self.assertIsNotNone(distance_to_image_plane_data)
+        self.assertTrue(distance_to_image_plane_data.shape == (256, 256))
+        self.assertTrue(isinstance(distance_to_image_plane_data, np.ndarray))
+        self.assertTrue(distance_to_image_plane_data.dtype == np.float32)
+
+        distance_to_camera_data = current_frame.get("distance_to_camera")
+        self.assertIsNotNone(distance_to_camera_data)
+        self.assertTrue(distance_to_camera_data.shape == (256, 256))
+        self.assertTrue(isinstance(distance_to_camera_data, np.ndarray))
+        self.assertTrue(distance_to_camera_data.dtype == np.float32)
+
+        bounding_box_2d_tight_data = current_frame.get("bounding_box_2d_tight")
+        self.assertIsNotNone(bounding_box_2d_tight_data)
+        self.assertTrue(bounding_box_2d_tight_data["data"].shape == (1,))
+        self.assertTrue(isinstance(bounding_box_2d_tight_data["data"], np.ndarray))
+        self.assertTrue(
+            bounding_box_2d_tight_data["data"].dtype
+            == np.dtype(
+                [
+                    ("semanticId", np.uint32),
+                    ("x_min", np.int32),
+                    ("y_min", np.int32),
+                    ("x_max", np.int32),
+                    ("y_max", np.int32),
+                    ("occlusionRatio", np.float32),
+                ]
+            )
+        )
+
+        bounding_box_2d_loose_data = current_frame.get("bounding_box_2d_loose")
+        self.assertIsNotNone(bounding_box_2d_loose_data)
+        self.assertTrue(bounding_box_2d_loose_data["data"].shape == (1,))
+        self.assertTrue(isinstance(bounding_box_2d_loose_data["data"], np.ndarray))
+        self.assertTrue(
+            bounding_box_2d_loose_data["data"].dtype
+            == np.dtype(
+                [
+                    ("semanticId", np.uint32),
+                    ("x_min", np.int32),
+                    ("y_min", np.int32),
+                    ("x_max", np.int32),
+                    ("y_max", np.int32),
+                    ("occlusionRatio", np.float32),
+                ]
+            )
+        )
+
+        bounding_box_3d_data = current_frame.get("bounding_box_3d")
+        self.assertIsNotNone(bounding_box_3d_data)
+        self.assertTrue(bounding_box_3d_data["data"].shape == (1,))
+        self.assertTrue(isinstance(bounding_box_3d_data["data"], np.ndarray))
+        self.assertTrue(
+            bounding_box_3d_data["data"].dtype
+            == np.dtype(
+                [
+                    ("semanticId", np.uint32),
+                    ("x_min", np.float32),
+                    ("y_min", np.float32),
+                    ("z_min", np.float32),
+                    ("x_max", np.float32),
+                    ("y_max", np.float32),
+                    ("z_max", np.float32),
+                    ("transform", np.float32, (4, 4)),
+                    ("occlusionRatio", np.float32),
+                ]
+            )
+        )
+
+        semantic_segmentation_data = current_frame.get("semantic_segmentation")
+        self.assertIsNotNone(semantic_segmentation_data)
+        self.assertTrue(semantic_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(isinstance(semantic_segmentation_data["data"], np.ndarray))
+        self.assertTrue(semantic_segmentation_data["data"].dtype == np.uint32)
+
+        instance_id_segmentation_data = current_frame.get("instance_id_segmentation")
+        self.assertIsNotNone(instance_id_segmentation_data)
+        self.assertTrue(instance_id_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(isinstance(instance_id_segmentation_data["data"], np.ndarray))
+        self.assertTrue(instance_id_segmentation_data["data"].dtype == np.uint32)
+
+        instance_segmentation_data = current_frame.get("instance_segmentation")
+        self.assertIsNotNone(instance_segmentation_data)
+        self.assertTrue(instance_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(isinstance(instance_segmentation_data["data"], np.ndarray))
+        self.assertTrue(instance_segmentation_data["data"].dtype == np.uint32)
+
+        pointcloud_data = current_frame.get("pointcloud")
+        self.assertIsNotNone(pointcloud_data)
+        # NOTE: 130 instead of 256*256 because only semantically labelled points are included
+        self.assertTrue(pointcloud_data["data"].shape == (130, 3))
+        self.assertTrue(isinstance(pointcloud_data["data"], np.ndarray))
+        self.assertTrue(pointcloud_data["data"].dtype == np.float32)
+
+    async def test_annotators_data_with_init_params(self):
+        # Add all annotators to the camera with dummy and known init_params entries
+        self.camera.add_bounding_box_2d_tight_to_frame(init_params={"semanticTypes": ["dummy"]})
+        self.camera.add_bounding_box_2d_loose_to_frame(init_params={"semanticTypes": ["dummy"]})
+        self.camera.add_bounding_box_3d_to_frame(init_params={"semanticTypes": ["dummy"]})
+        self.camera.add_semantic_segmentation_to_frame(init_params={"colorize": True})
+        self.camera.add_instance_id_segmentation_to_frame(init_params={"colorize": True})
+        self.camera.add_instance_segmentation_to_frame(init_params={"colorize": True})
+        self.camera.add_pointcloud_to_frame(init_params={"includeUnlabelled": True})
+
+        # Get the current frame
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+        current_frame = self.camera.get_current_frame()
+
+        bounding_box_2d_tight_data = current_frame.get("bounding_box_2d_tight")
+        self.assertIsNotNone(bounding_box_2d_tight_data)
+        self.assertTrue(bounding_box_2d_tight_data["data"].shape == (0,))  # No data since semanticTypes is dummy
+        self.assertTrue(isinstance(bounding_box_2d_tight_data["data"], np.ndarray))
+        self.assertTrue(
+            bounding_box_2d_tight_data["data"].dtype
+            == np.dtype(
+                [
+                    ("semanticId", np.uint32),
+                    ("x_min", np.int32),
+                    ("y_min", np.int32),
+                    ("x_max", np.int32),
+                    ("y_max", np.int32),
+                    ("occlusionRatio", np.float32),
+                ]
+            )
+        )
+
+        bounding_box_2d_loose_data = current_frame.get("bounding_box_2d_loose")
+        self.assertIsNotNone(bounding_box_2d_loose_data)
+        self.assertTrue(bounding_box_2d_loose_data["data"].shape == (0,))  # No data since semanticTypes is dummy
+        self.assertTrue(isinstance(bounding_box_2d_loose_data["data"], np.ndarray))
+        self.assertTrue(
+            bounding_box_2d_loose_data["data"].dtype
+            == np.dtype(
+                [
+                    ("semanticId", np.uint32),
+                    ("x_min", np.int32),
+                    ("y_min", np.int32),
+                    ("x_max", np.int32),
+                    ("y_max", np.int32),
+                    ("occlusionRatio", np.float32),
+                ]
+            )
+        )
+
+        bounding_box_3d_data = current_frame.get("bounding_box_3d")
+        self.assertIsNotNone(bounding_box_3d_data)
+        self.assertTrue(bounding_box_3d_data["data"].shape == (0,))  # No data since semanticTypes is dummy
+        self.assertTrue(isinstance(bounding_box_3d_data["data"], np.ndarray))
+        self.assertTrue(
+            bounding_box_3d_data["data"].dtype
+            == np.dtype(
+                [
+                    ("semanticId", np.uint32),
+                    ("x_min", np.float32),
+                    ("y_min", np.float32),
+                    ("z_min", np.float32),
+                    ("x_max", np.float32),
+                    ("y_max", np.float32),
+                    ("z_max", np.float32),
+                    ("transform", np.float32, (4, 4)),
+                    ("occlusionRatio", np.float32),
+                ]
+            )
+        )
+
+        semantic_segmentation_data = current_frame.get("semantic_segmentation")
+        self.assertIsNotNone(semantic_segmentation_data)
+        self.assertTrue(
+            semantic_segmentation_data["data"].shape == (256, 256, 4)
+        )  # Colorize is True, so 4 uint8 channels
+        self.assertTrue(isinstance(semantic_segmentation_data["data"], np.ndarray))
+        self.assertTrue(semantic_segmentation_data["data"].dtype == np.uint8)
+
+        # TODO: OMPE-27821 -- check if colorize is supported
+        instance_id_segmentation_data = current_frame.get("instance_id_segmentation")
+        self.assertIsNotNone(instance_id_segmentation_data)
+        self.assertTrue(instance_id_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(isinstance(instance_id_segmentation_data["data"], np.ndarray))
+        self.assertTrue(instance_id_segmentation_data["data"].dtype == np.uint32)
+
+        # TODO: OMPE-27821 -- check if colorize is supported
+        instance_segmentation_data = current_frame.get("instance_segmentation")
+        self.assertIsNotNone(instance_segmentation_data)
+        self.assertTrue(instance_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(isinstance(instance_segmentation_data["data"], np.ndarray))
+        self.assertTrue(instance_segmentation_data["data"].dtype == np.uint32)
+
+        pointcloud_data = current_frame.get("pointcloud")
+        self.assertIsNotNone(pointcloud_data)
+        self.assertTrue(pointcloud_data["data"].shape == (65536, 3))
+        self.assertTrue(isinstance(pointcloud_data["data"], np.ndarray))
+        self.assertTrue(pointcloud_data["data"].dtype == np.float32)
