@@ -1,0 +1,242 @@
+{
+    "begin":
+    {
+        "q_text": "Do you have a robot/scene model?",
+        "a_options":
+        {
+            "no": {
+                "a_text": "No, I would like to build a robot/scene inside Isaac Sim",
+                "tool":"Rigging Robots",
+                "next_qa": "inspection"
+            },
+            "sim":{
+                "a_text": "No, I would like to use a pre-built robot/scene from Isaac Sim",
+                "tool": "Common Tools",
+                "next_qa": "add_controller"
+            },
+            "single":{
+                "a_text": "Yes, I already have a robot/scene model I'd like to import",
+                "tool": "",
+                "next_qa": "robot_model"
+            },
+            "multiple":{
+                "a_text": "Yes, I have multiple sim-ready parts I'd like to combine into one robot",
+                "tool": "Robot Assembler",
+                "next_qa": "inspection"
+            }
+        }
+    },
+
+    "robot_model": 
+    {
+        "q_text" : "What format is your robot model in?",
+        "a_options":
+        {
+            "urdf": {
+                "a_text": "URDF/XACRO",
+                "tool": "Import URDF from File",
+                "next_qa": "inspection"
+            },
+            "mcjf":{
+                "a_text": "MCJF",
+                "tool": "Import MJCF from File",
+                "next_qa": "inspection"
+            },
+            "cad":{
+                "a_text": "CAD (STEP/STL)",
+                "tool": "Import from CAD",
+                "next_qa": "onshape"
+            },
+            "usd":{
+                "a_text": "USD",
+                "tool": "",
+                "next_qa": "rigging_robot"
+            }
+        }
+    },
+
+    "onshape":
+    {
+        "q_text": "Is the CAD file inside OnShape?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "Onshape Importer",
+                "next_qa": "mesh_merge"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "mesh_merge"
+            }
+        }
+    },
+    "mesh_merge":
+    {
+        "q_text": "Would you like to merge the meshes of the robot model?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "Merge Meshes",
+                "next_qa": "inspection"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "inspection"
+            }
+        }
+    },
+
+    "rigging_robot":
+    {
+        "q_text": "Does your robot have joints and drives already defined?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "",
+                "next_qa": "inspection"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "Rigging Robots",
+                "next_qa": "inspection"
+            },
+            "maybe":{
+                "a_text": "Not Sure",
+                "tool": "Common Tools",
+                "next_qa": "inspection"
+            }
+        }
+    },
+
+    "inspection":
+    {
+        "q_text": "Would you like to inspect the joints of the robot?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "Articulation and Physics Inspector",
+                "next_qa": "add_camera"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "add_camera"
+            }
+        }
+    },
+
+    "add_camera":
+    {
+        "q_text": "Do you want to add a Camera sensor to your Robot?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "Camera Inspector",
+                "next_qa": "add_lidar"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "Sensors: RTX Lidar",
+                "next_qa": "add_lidar"
+            }
+
+        }
+    },
+    "add_lidar":
+    {
+        "q_text": "Do you want to add a Lidar sensor to your Robot?",
+        "a_options":
+        {
+            "rtx": {
+                "a_text": "Yes, a RTX Lidar",
+                "tool": "Sensors: RTX Lidar",
+                "next_qa": "add_imu"
+            },
+            "physX":{
+                "a_text": "Yes, a PhysX Lidar",
+                "tool": "Sensors: PhysX Lidar",
+                "next_qa": "add_imu"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "add_imu"
+            }
+        }
+    },    
+    "add_imu":
+    {
+        "q_text": "Do you want to add a IMU sensor to your Robot?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "Sensors: IMU",
+                "next_qa": "add_contact"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "add_contact"
+            }
+        }
+    },
+    "add_contact":
+    {
+        "q_text": "Do you want to add a Contact sensor to your Robot?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "Sensors: Contact",
+                "next_qa": "add_controller"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "add_controller"
+            }
+        }
+    },
+    "add_controller":
+    {
+        "q_text": "How do you wish to move your robot?",
+        "a_options":
+        {
+            "joints": {
+                "a_text": "Joint Space Control (moving joints via position/velocity/effort commands)",
+                "tool": "Controller OmniGraphs",
+                "next_qa": "ros_bridge"
+            },
+            "ee":{
+                "a_text": "Operational Space Control (commands to move the end effector in Cartesian space)",
+                "tool": "Lula Tools for Kinematics",
+                "next_qa": "ros_bridge"
+            }
+        }
+    },
+    "ros_bridge":
+    {
+        "q_text": "Would you like to communicate with your robot via ROS?",
+        "a_options":
+        {
+            "yes": {
+                "a_text": "Yes",
+                "tool": "ROS Bridge OmniGraphs",
+                "next_qa": "end"
+            },
+            "no":{
+                "a_text": "No",
+                "tool": "",
+                "next_qa": "end"
+            }
+        }
+    }
+}

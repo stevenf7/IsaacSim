@@ -431,6 +431,7 @@ inventory.include = [
     # extensions
     "exts/isaacsim.robot_setup.assembler",
     "exts/isaacsim.robot_setup.gain_tuner",
+    "exts/isaacsim.robot_setup.import_wizard",
     "exts/isaacsim.robot_setup.xrdf_editor",
 
     # deprecated extensions
