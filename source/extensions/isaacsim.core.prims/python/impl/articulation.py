@@ -139,6 +139,7 @@ class Articulation(XFormPrim):
         self._paused_position_targets = None
         self._paused_velocity_targets = None
         self._paused_dof_velocities = None
+        self._joint_names_to_idx = None
         XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -331,6 +332,9 @@ class Articulation(XFormPrim):
         """
         return SimulationManager.get_physics_sim_view() is not None and self._physics_view is not None
 
+    def _convert_joint_names_to_indices(self, joint_names):
+        return [self._joint_names_to_idx[joint_name] for joint_name in joint_names]
+
     def get_body_index(self, body_name: str) -> int:
         """Get a ridig body (link) index in the articulation view given its name
 
@@ -492,6 +496,7 @@ class Articulation(XFormPrim):
         values: Union[np.ndarray, torch.Tensor],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set the friction coefficients for articulation joints in the view
 
@@ -507,6 +512,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -522,6 +530,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
@@ -562,6 +574,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.array]:
         """Get the friction coefficients for the articulation joints in the view
@@ -577,6 +590,10 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -604,6 +621,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -637,6 +658,7 @@ class Articulation(XFormPrim):
         values: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set armatures for articulation joints in the view
 
@@ -652,6 +674,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -667,6 +692,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
@@ -703,6 +732,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get armatures for articulation joints in the view
@@ -718,6 +748,10 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -745,6 +779,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -796,6 +834,7 @@ class Articulation(XFormPrim):
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set the joint position targets for the implicit Proportional-Derivative (PD) controllers
 
@@ -815,6 +854,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -840,6 +882,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -858,6 +904,7 @@ class Articulation(XFormPrim):
         positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set the joint positions of articulations in the view
 
@@ -877,6 +924,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -902,6 +952,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -921,6 +975,7 @@ class Articulation(XFormPrim):
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set the joint velocity targets for the implicit Proportional-Derivative (PD) controllers
 
@@ -940,6 +995,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -965,6 +1023,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -983,6 +1045,7 @@ class Articulation(XFormPrim):
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set the joint velocities of articulations in the view
 
@@ -1002,6 +1065,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -1027,6 +1093,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -1047,6 +1117,7 @@ class Articulation(XFormPrim):
         efforts: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set the joint efforts of articulations in the view
 
@@ -1066,6 +1137,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -1091,7 +1165,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
-
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -1114,6 +1191,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the joint efforts of articulations in the view
@@ -1129,6 +1207,9 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1156,6 +1237,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -1174,6 +1259,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction
@@ -1187,6 +1273,9 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1219,6 +1308,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -1237,6 +1330,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
         """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads
@@ -1261,6 +1355,9 @@ class Articulation(XFormPrim):
             joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): link indices to specify which link's incoming joints to query. Shape (K,).
                                                                                     Where K <= num of links/bodies.
                                                                                     Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1321,6 +1418,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_bodies, self._device)
@@ -1339,6 +1440,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the joint positions of articulations in the view
@@ -1352,6 +1454,9 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1385,6 +1490,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -1403,6 +1512,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the joint velocities of articulations in the view
@@ -1416,6 +1526,9 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1449,6 +1562,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -1516,9 +1633,11 @@ class Articulation(XFormPrim):
             return
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(
-                control_actions.joint_indices, self.num_dof, self._device
-            )
+            if control_actions.joint_names is not None:
+                joint_indices = self._convert_joint_names_to_indices(control_actions.joint_names)
+            else:
+                joint_indices = control_actions.joint_indices
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
 
             if control_actions.joint_positions is not None:
                 # TODO: optimize this operation
@@ -2356,6 +2475,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> List[str]:
         """Get effort modes for articulations in the view
 
@@ -2368,6 +2488,9 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Returns:
             List: Returns a List of size (M, K) indicating the effort modes: ``acceleration`` or ``force``
@@ -2391,6 +2514,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Physics Simulation View was never created in order to use get_effort_modes")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         dof_types = self.get_dof_types()
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -2417,6 +2544,7 @@ class Articulation(XFormPrim):
         mode: str,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set effort modes for articulations in the view
 
@@ -2430,6 +2558,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -2446,6 +2577,10 @@ class Articulation(XFormPrim):
             return
         if mode not in ["force", "acceleration"]:
             raise Exception("Effort Mode specified {} is not recognized".format(mode))
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         dof_types = self.get_dof_types()
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -2470,6 +2605,7 @@ class Articulation(XFormPrim):
         values: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set maximum efforts for articulation in the view
 
@@ -2483,6 +2619,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -2501,6 +2640,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
@@ -2542,6 +2685,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the maximum efforts for articulation in the view
@@ -2555,6 +2699,10 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -2582,6 +2730,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
@@ -2625,6 +2777,7 @@ class Articulation(XFormPrim):
         values: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Set maximum velocities for articulation in the view
 
@@ -2638,10 +2791,17 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
@@ -2659,6 +2819,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the maximum joint velocities for articulation dofs in the view
@@ -2672,6 +2833,10 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -2680,6 +2845,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
@@ -2702,6 +2871,7 @@ class Articulation(XFormPrim):
         kds: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         save_to_usd: bool = False,
     ) -> None:
         """Set the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view
@@ -2717,6 +2887,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             save_to_usd (bool, optional): True to save the gains in the usd. otherwise False.
 
         Example:
@@ -2738,6 +2911,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if (
             not omni.timeline.get_timeline_interface().is_stopped()
             and SimulationManager.get_physics_sim_view() is not None
@@ -2832,6 +3009,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor], Union[wp.indexedarray, wp.index]]:
         """Get the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view
@@ -2845,6 +3023,10 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+
             clone (bool, optional): True to return clones of the internal buffers. Otherwise False. Defaults to True.
 
         Returns:
@@ -2885,6 +3067,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, device=self._device)
@@ -2945,6 +3131,7 @@ class Articulation(XFormPrim):
         mode: str,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
         """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for all joints
 
@@ -2977,6 +3164,9 @@ class Articulation(XFormPrim):
                                                                                  to manipulate. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -2992,6 +3182,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
         if mode == "velocity":
@@ -3657,6 +3851,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the Coriolis and centrifugal forces (joint DOF forces required to counteract Coriolis and
@@ -3673,6 +3868,9 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -3706,6 +3904,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -3726,6 +3928,7 @@ class Articulation(XFormPrim):
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """Get the generalized gravity forces (joint DOF forces required to counteract gravitational
@@ -3742,6 +3945,10 @@ class Articulation(XFormPrim):
                                                                                  to query. Shape (K,).
                                                                                  Where K <= num of dofs.
                                                                                  Defaults to None (i.e: all dofs).
+            joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                              (can't be sppecified together with joint_indices). Shape (K,).
+                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -3777,6 +3984,10 @@ class Articulation(XFormPrim):
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
+        if joint_names is not None:
+            joint_indices = self._convert_joint_names_to_indices(joint_names)
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
@@ -4838,6 +5049,7 @@ class Articulation(XFormPrim):
             self._dof_paths = self._physics_view.dof_paths
             self._joint_indices = self._metadata.joint_indices
             self._joint_names = self._metadata.joint_names
+            self._joint_names_to_idx = {joint_name: idx for idx, joint_name in enumerate(self._joint_names)}
             self._joint_types = self._metadata.joint_types
             self._num_joints = self._metadata.joint_count
             self._link_indices = self._metadata.link_indices

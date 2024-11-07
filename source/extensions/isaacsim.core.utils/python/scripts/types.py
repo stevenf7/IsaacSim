@@ -265,6 +265,13 @@ class ArticulationActions(object):
         joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
         joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
         joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+        joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indices to specify which joints
+                                                                                 to manipulate. Shape (K,).
+                                                                                 Where K <= num of dofs.
+                                                                                 Defaults to None (i.e: all dofs).
+        joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
+                                            (can't be sppecified together with joint_indices). Shape (K,).
+                                            Where K <= num of dofs. Defaults to None (i.e: all dofs).
     """
 
     def __init__(
@@ -273,11 +280,15 @@ class ArticulationActions(object):
         joint_velocities: Optional[Union[List, np.ndarray]] = None,
         joint_efforts: Optional[Union[List, np.ndarray]] = None,
         joint_indices: Optional[Union[List, np.ndarray]] = None,
+        joint_names: Optional[List[str]] = None,
     ) -> None:
+        if joint_names is not None and joint_indices is not None:
+            raise Exception("joint indices and joint names can't be both specified")
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_efforts = joint_efforts
         self.joint_indices = joint_indices
+        self.joint_names = joint_names
 
 
 SDF_type_to_Gf = {
