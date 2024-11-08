@@ -1,4 +1,9 @@
 # Changelog
+## [3.1.0] - 2024-10-31
+### Added
+- First Version of Robot schema as a codeless implementation
+- a few utilities in a c header and python utils fashion to deal with the codeless schema
+
 ## [3.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming

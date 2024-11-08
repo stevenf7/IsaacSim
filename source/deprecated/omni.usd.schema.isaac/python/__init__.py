@@ -9,7 +9,7 @@
 
 import carb
 
-old_extension_name = isaacsim.robot.schema
+old_extension_name = "omni.usd.schema.isaac"
 new_extension_name = "isaacsim.robot.schema"
 
 carb.log_warn(

@@ -119,7 +119,8 @@ post_build.commands = [
     # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
     ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"],
-    ["${root}/repo${shell_ext}", "edit_sysconfig", "-c", "${config}"]
+    ["${root}/repo${shell_ext}", "edit_sysconfig", "-c", "${config}"],
+    ["${root}/repo${shell_ext}", "usd", "-c", "${config}"]
 ]
 
 [[repo_build.argument]]
@@ -232,7 +233,7 @@ python_paths = [
 ]
 library_paths = [
   "$root/_build/$platform/$config",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchenma/lib",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/kit/kernel/plugins",
@@ -334,6 +335,35 @@ bucket_name = "omniverse-docs-production"
 region = "us-west-1"
 bucket_dir = "py/isaacsim/"
 s3_exclude_patterns = []
+
+# #####################################################################
+# # schema
+# #############################
+[repo_usd]
+usd_root = "${root}/_build/target-deps/nv_usd/%{cfg.buildcfg}"
+usd_python_root = "${root}/_build/target-deps/python"
+generate_plugin_buildfiles = false
+plugin_buildfile_format = "premake"
+
+
+[repo_usd.plugin.robotSchema]
+schema_file = "${root}/source/robot_schema/RobotSchema.usda"
+generate_dir = "${root}/_build/$platform/$config/exts/isaacsim.robot.schema/plugins/robot_schema"
+build_dir = "${root}/_build/$platform/$config/robot_schema/"
+plugin_dir = "${root}/source/source/extensions/isaacsim.robot.schema/schema"
+
+library_prefix = "RobotSchema"
+generate_module_deps_cpp_file = false
+usd_lib_dependencies = [
+    "arch",
+    "tf",
+    "vt",
+    "sdf",
+    "usd",
+    "usdPhysics",
+    "usdGeom"
+]
+
 
 # ########################################################################################################################
 # # Build Number
