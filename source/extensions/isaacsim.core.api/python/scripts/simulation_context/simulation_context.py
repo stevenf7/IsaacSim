@@ -650,12 +650,12 @@ class SimulationContext:
         if render:
             # physics dt is zero, no need to step physics, just render
             if self.get_physics_dt() == 0:
-                self.render()
+                SimulationContext.render(self)
             # rendering dt is zero, but physics is not, call step and then render
             elif self.get_rendering_dt() == 0 and self.get_physics_dt() != 0:
                 if self.is_playing():
                     self._physics_context._step(current_time=self.current_time)
-                self.render()
+                SimulationContext.render(self)
             else:
                 self._app.update()
         else:
@@ -841,8 +841,7 @@ class SimulationContext:
         """
         self._timeline.play()
         self.get_physics_context().warm_start()
-        # self._timeline.commit()
-        await self.render_async()
+        self._timeline.commit()
         return
 
     def play(self) -> None:
@@ -859,9 +858,7 @@ class SimulationContext:
             >>> simulation_context.play()
         """
         self._timeline.play()
-        # self._timeline.commit()
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.render()
+        self._timeline.commit()
         return
 
     async def pause_async(self) -> None:
@@ -879,7 +876,7 @@ class SimulationContext:
             >>> run_coroutine(task())
         """
         self._timeline.pause()
-        await omni.kit.app.get_app().next_update_async()
+        self._timeline.commit()
         return
 
     def pause(self) -> None:
@@ -892,8 +889,7 @@ class SimulationContext:
             >>> simulation_context.pause()
         """
         self._timeline.pause()
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.render()
+        self._timeline.commit()
         return
 
     async def stop_async(self) -> None:
@@ -911,7 +907,10 @@ class SimulationContext:
             >>> run_coroutine(task())
         """
         self._timeline.stop()
+        self._timeline.commit()
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
         await omni.kit.app.get_app().next_update_async()
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     def stop(self) -> None:
@@ -924,8 +923,11 @@ class SimulationContext:
             >>> simulation_context.stop()
         """
         self._timeline.stop()
+        self._timeline.commit()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.render()
+            set_carb_setting(self._settings, "/app/player/playSimulations", False)
+            self._app.update()
+            set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     """
@@ -1286,11 +1288,11 @@ class SimulationContext:
     ) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
-            self.render()
+            SimulationContext.render(self)
         set_stage_up_axis("z")
         if stage_units_in_meters is not None:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
-        self.render()
+        SimulationContext.render(self)
         self._physics_context = PhysicsContext(
             physics_dt=physics_dt,
             prim_path=physics_prim_path,
@@ -1300,7 +1302,6 @@ class SimulationContext:
         if device is not None:
             SimulationManager.set_physics_sim_device(device)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
-        self.render()
         return self.stage
 
     async def _initialize_stage_async(
@@ -1325,7 +1326,6 @@ class SimulationContext:
         if device is not None:
             SimulationManager.set_physics_sim_device(device)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
-        await omni.kit.app.get_app().next_update_async()
         return self.stage
 
     def _setup_default_callback_fns(self):
