@@ -219,7 +219,8 @@ python_paths = [
   # "${root}/_build/${platform}/${config}/extscache/*",
   "${root}/_build/${platform}/${config}/extsPhysics/**",
   "${root}/_build/${platform}/${config}/extscache/omni.usd**",
-  "${root}/_build/${platform}/${config}/extscache/omni.usd**",
+  "${root}/_build/${platform}/${config}/extscache/omni.physx*",
+  "${root}/_build/${platform}/${config}/extscache/omni.physx.clashdetection*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit**",
   "${root}/_build/${platform}/${config}/extscache/omni.hydra**",
   "${root}/_build/${platform}/${config}/extscache/omni.appwindow**",
@@ -242,6 +243,9 @@ library_paths = [
   "$root/_build/$platform/$config/kit/plugins/rtx",
   "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
   "$root/_build/$platform/$config/extscache/omni.usd*/bin",
+  "$root/_build/$platform/$config/extscache/omni.ui*/bin",
+  "$root/_build/$platform/$config/extscache/omni.ui.scene*/bin",
+  "$root/_build/$platform/$config/extscache/omni.kit.renderer.imgui*/bin",
   # "$root/_build/$platform/$config/extscache/omni.usd*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
@@ -255,7 +259,7 @@ sphinx_conf_py_extra = """
     html_static_path += [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["torch", "omni.ui", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
+    autodoc_mock_imports = ["omni.physx.clashdetection", "torch", "omni.ui", "omni.ui_scene", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
     import sys
     if sys.platform == "win32":
         autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "osqp", "isaacsim.ros1.bridge"])
