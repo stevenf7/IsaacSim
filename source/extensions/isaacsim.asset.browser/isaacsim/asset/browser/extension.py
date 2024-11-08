@@ -21,6 +21,7 @@ _extension_instance = None
 BROWSER_MENU_ROOT = "Window"
 SETTING_ROOT = "/exts/isaacsim.asset.browser/"
 SETTING_VISIBLE_AFTER_STARTUP = SETTING_ROOT + "visible_after_startup"
+EXTENSION_NAME = "Isaac Sim Asset Browser"
 
 
 class AssetBrowserExtension(omni.ext.IExt):
@@ -33,6 +34,7 @@ class AssetBrowserExtension(omni.ext.IExt):
         return self._window._widget
 
     def on_startup(self, ext_id):
+        self._ext_id = ext_id
         self._window = None
         ui.Workspace.set_show_window_fn(
             AssetBrowserWindow.WINDOW_TITLE,
@@ -57,6 +59,8 @@ class AssetBrowserExtension(omni.ext.IExt):
     def on_shutdown(self):
         ui.Workspace.set_show_window_fn(AssetBrowserWindow.WINDOW_TITLE, None)
         omni.kit.menu.utils.remove_menu_items(self._menu_entry, name=BROWSER_MENU_ROOT)
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_id, f"open_isaac_sim_asset_browser")
 
         if self._window is not None:
             self._window.destroy()
@@ -79,6 +83,16 @@ class AssetBrowserExtension(omni.ext.IExt):
         self._show_window(not self._is_visible())
 
     def _register_menuitem(self):
+
+        ## register the menu action
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            "isaacsim.asset.browser",
+            f"open_isaac_sim_asset_browser",
+            lambda: self._show_window(True),
+            description=f"Open Isaac Sim Asset Browser",
+        )
+
         self._menu_entry = [
             omni.kit.menu.utils.MenuItemDescription(
                 name="Browsers",

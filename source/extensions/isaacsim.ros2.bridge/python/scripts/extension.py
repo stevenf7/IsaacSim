@@ -12,6 +12,7 @@ import asyncio
 import os
 import subprocess
 import sys
+import weakref
 
 import carb
 import omni

@@ -28,11 +28,7 @@ class RangeSensorMenu:
             ),
         ]
 
-        self._menu_items = [
-            MenuItemDescription(
-                name="Isaac", glyph="plug.svg", sub_menu=[MenuItemDescription(name="Sensors", sub_menu=menu_items)]
-            )
-        ]
+        self._menu_items = [MenuItemDescription(name="Sensors", glyph="plug.svg", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Create")
 
     def _get_stage_and_path(self):

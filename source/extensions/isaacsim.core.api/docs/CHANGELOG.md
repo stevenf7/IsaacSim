@@ -1,4 +1,7 @@
 # Changelog
+## [4.1.4] - 2024-11-06
+### Changed
+- Nucleus import update
 
 ## [4.1.3] - 2024-11-05
 ### Changed

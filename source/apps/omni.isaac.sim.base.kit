@@ -121,8 +121,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.menu.aov" = {}
 "omni.kit.menu.common" = {}
 "omni.kit.menu.create" = {}
-"omni.kit.menu.edit" = {}
-"omni.kit.menu.file" = {}
 "omni.kit.menu.stage" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.mesh.raycast" = {}
@@ -225,6 +223,25 @@ exts."omni.ui".raster.default_rasterpolicy_enabled = true
 renderer.active = "rtx"
 exts."omni.kit.viewport.window".startup.windowName = "Viewport" # Rename from Viewport Next
 exts."omni.usd".locking.onClose = false                         # OMPE-21228
+# menu styling
+[settings.exts."omni.kit.menu.utils"]
+logDeprecated = false
+margin_size=[18, 3]
+tick_spacing=[10, 6]
+margin_size_posttick=[0, 3]
+separator_size=[14, 10]
+root_spacing=3
+post_label_spaces=6
+color_tick_enabled=0xFFFAC434
+color_separator=0xFF7E7E7E
+color_label_enabled=0xFFEEEEEE
+menu_title_color=0xFF202020
+menu_title_line_color=0xFF5E5E5E
+menu_title_text_color=0xFF8F8F8F
+menu_title_text_height = 24
+menu_title_close_color = 0xFFC6C6C6
+indent_all_ticks=false
+show_menu_titles=true
 
 app.menu.legacy_mode = false # deprecate support for old kit.ui.menu
 app.menu.compatibility_mode = false # use omni.ui.Menu for the MenuBar

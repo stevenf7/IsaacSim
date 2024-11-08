@@ -1,4 +1,7 @@
 # Changelog
+## [3.4.1] - 2024-11-01
+### Changed
+- updated menu location for examples and OG shortcuts
 
 ## [3.4.0] - 2024-11-04
 ### Added

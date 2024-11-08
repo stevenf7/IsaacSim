@@ -38,6 +38,7 @@ KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent.parent.parent.parent
+EXT_FOLDER = "isaacsim.app.setup"
 
 
 async def _load_layout(layout_file: str, keep_windows_open=False):
@@ -62,8 +63,6 @@ class CreateSetupExtension(omni.ext.IExt):
         """setup the window layout, menu, final configuration of the extensions etc"""
         self._settings = carb.settings.get_settings()
         self._ext_manager = omni.kit.app.get_app().get_extension_manager()
-
-        self._menu_layout = []
 
         # this is a work around as some Extensions don't properly setup their default setting in time
         self._set_defaults()
@@ -247,20 +246,14 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def __menu_update(self):
 
-        self.HELP_REFERENCE_GUIDE_MENU = (
-            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Guide'
-        )
-        self.HELP_SCRIPTING_MANUAL = (
-            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Scripting Manual'
-        )
-        self.HELP_FORUMS_URL = (
-            f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Forums'
-        )
-        self.HELP_UI_DOCS = f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/book.svg")} Omni UI Docs'
-        self.HELP_KIT_MANUAL = f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Kit Programming Manual'
+        self.HELP_REFERENCE_GUIDE_MENU = "Help/Isaac Sim Online Guide"
+        self.HELP_SCRIPTING_MANUAL = "Help/Isaac Sim Scripting Manual"
+        self.HELP_FORUMS_URL = "Help/Isaac Sim Online Forums"
+        self.HELP_UI_DOCS = "Help/Omni UI Docs"
+        self.HELP_KIT_MANUAL = "Help/Kit Programming Manual"
         self.menus = []
 
-        # seperator
+        # separator
         priority = 50
 
         editor_menu = omni.kit.ui.get_editor_menu()
@@ -298,119 +291,6 @@ class CreateSetupExtension(omni.ext.IExt):
 
         editor_menu.set_priority("Help", 200)
 
-        from omni.kit.menu.utils import MenuLayout
-
-        self._menu_layout = [
-            MenuLayout.Menu(
-                "Window",
-                [
-                    MenuLayout.SubMenu(
-                        "Animation",
-                        [
-                            MenuLayout.Item("Timeline"),
-                            MenuLayout.Item("Sequencer"),
-                            MenuLayout.Item("Curve Editor"),
-                            MenuLayout.Item("Retargeting"),
-                            MenuLayout.Item("Animation Graph"),
-                            MenuLayout.Item("Animation Graph Samples"),
-                            # MenuLayout.Item("Keyframer"),
-                            # MenuLayout.Item("Recorder"),
-                        ],
-                    ),
-                    MenuLayout.SubMenu(
-                        "Layout",
-                        [MenuLayout.Item("Quick Save", remove=True), MenuLayout.Item("Quick Load", remove=True)],
-                    ),
-                    MenuLayout.SubMenu(
-                        "Browsers",
-                        [
-                            MenuLayout.Item("Content", source="Window/Content"),
-                            MenuLayout.Item("NVIDIA Assets", source="Window/Browsers/Assets"),
-                            MenuLayout.Item("Materials"),
-                            MenuLayout.Item("Skies"),
-                        ],
-                    ),
-                    MenuLayout.SubMenu(
-                        "Rendering",
-                        [
-                            MenuLayout.Item("Render Settings"),
-                            MenuLayout.Item("Movie Capture"),
-                            MenuLayout.Item("MDL Material Graph"),
-                            MenuLayout.Item("Tablet XR"),
-                        ],
-                    ),
-                    MenuLayout.SubMenu(
-                        "Simulation",
-                        [
-                            MenuLayout.Group("Flow", source="Window/Flow"),
-                            MenuLayout.Group("Blast Destruction", source="Window/Blast"),
-                            MenuLayout.Group("Blast Destruction", source="Window/Blast Destruction"),
-                            MenuLayout.Group("Boom Collision Audio", source="Window/Boom"),
-                            MenuLayout.Group("Boom Collision Audio", source="Window/Boom Collision Audio"),
-                            MenuLayout.Group("Physics", source="Window/Physics"),
-                        ],
-                    ),
-                    MenuLayout.SubMenu(
-                        "Utilities",
-                        [
-                            MenuLayout.Item("Console"),
-                            MenuLayout.Item("Profiler"),
-                            MenuLayout.Item("USD Paths"),
-                            MenuLayout.Item("Statistics"),
-                            MenuLayout.Item("Activity Monitor"),
-                            MenuLayout.Item("Actions"),
-                        ],
-                    ),
-                    MenuLayout.Sort(exclude_items=["Extensions"], sort_submenus=True),
-                    MenuLayout.Item("New Viewport Window", remove=True),
-                    # MenuLayout.Item("Material Preview", remove=True),
-                ],
-            ),
-            MenuLayout.Menu(
-                "Layout",
-                [
-                    # MenuLayout.Item("Default", source="Reset Layout"),
-                    # MenuLayout.Item("Animation"),
-                    # MenuLayout.Item("Animation Graph"),
-                    # MenuLayout.Item("Paint"),
-                    # MenuLayout.Item("Rendering"),
-                    # MenuLayout.Item("Visual Scripting"),
-                    # MenuLayout.Seperator(),
-                    MenuLayout.Item("UI Toggle Visibility", source="Window/UI Toggle Visibility"),
-                    MenuLayout.Item("Fullscreen Mode", source="Window/Fullscreen Mode"),
-                    MenuLayout.Seperator(),
-                    MenuLayout.Item("Save Layout", source="Window/Layout/Save Layout..."),
-                    MenuLayout.Item("Load Layout", source="Window/Layout/Load Layout..."),
-                    MenuLayout.Seperator(),
-                    MenuLayout.Item("Quick Save", source="Window/Layout/Quick Save"),
-                    MenuLayout.Item("Quick Load", source="Window/Layout/Quick Load"),
-                ],
-            ),
-            MenuLayout.Menu(
-                "Replicator",
-                [
-                    MenuLayout.Item("Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"),
-                    MenuLayout.Item("Semantics Schema Editor", source="Replicator/Semantics Schema Editor"),
-                    MenuLayout.Item("ReplicatorYAML", source="Replicator/ReplicatorYAML"),
-                    MenuLayout.Seperator(),
-                ],
-            ),
-            MenuLayout.Menu(
-                "Help",
-                [
-                    MenuLayout.Item(self.HELP_REFERENCE_GUIDE_MENU),
-                    MenuLayout.Item(self.HELP_SCRIPTING_MANUAL),
-                    MenuLayout.Item(self.HELP_FORUMS_URL),
-                    MenuLayout.Item(self.HELP_KIT_MANUAL),
-                    MenuLayout.Item(self.HELP_UI_DOCS),
-                    MenuLayout.Item("USD Reference Guide", remove=True),
-                    MenuLayout.Item("Discover Kit SDK", remove=True),
-                    MenuLayout.Item("Developers Manual", remove=True),
-                ],
-            ),
-        ]
-        omni.kit.menu.utils.add_layout(self._menu_layout)
-
         self._layout_menu_items = []
         self._current_layout_priority = 20
 
@@ -427,7 +307,9 @@ class CreateSetupExtension(omni.ext.IExt):
             else:
                 menu = editor_menu.add_item(
                     menu_path,
-                    lambda *_: asyncio.ensure_future(_load_layout(f"{DATA_PATH}/layouts/{parameter}.json")),
+                    lambda *_: asyncio.ensure_future(
+                        _load_layout(f"{DATA_PATH}/{EXT_FOLDER}/layouts/{parameter}.json")
+                    ),
                     False,
                     self._current_layout_priority,
                 )
@@ -437,12 +319,12 @@ class CreateSetupExtension(omni.ext.IExt):
 
             self._current_layout_priority = self._current_layout_priority + 1
 
-        # add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1)
+        add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1)
         # add_layout_menu_entry("Animation", "animation", carb.input.KeyboardInput.KEY_2)
         # add_layout_menu_entry("Animation Graph", "animationGraph", carb.input.KeyboardInput.KEY_3)
         # add_layout_menu_entry("Paint", "paint", carb.input.KeyboardInput.KEY_4)
         # add_layout_menu_entry("Rendering", "rendering", carb.input.KeyboardInput.KEY_5)
-        # add_layout_menu_entry("Visual Scripting", "visualScripting", carb.input.KeyboardInput.KEY_6)
+        add_layout_menu_entry("Visual Scripting", "visualScripting", carb.input.KeyboardInput.KEY_6)
 
         # create Quick Load & Quick Save
         from omni.kit.quicklayout import QuickLayout

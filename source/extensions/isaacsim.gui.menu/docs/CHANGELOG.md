@@ -1,8 +1,12 @@
 # Changelog
+
+## [2.0.0] - 2024-10-16
+### Removed
+- New menu layout
+
 ## [1.1.2] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [1.1.1] - 2024-10-15
 ### Changed

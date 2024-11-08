@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2024-11-01
+### Changed
+- Menu name
+
 ## [2.0.3] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
