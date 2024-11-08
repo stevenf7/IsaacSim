@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.2.0] - 2024-11-06
+### Added
+- Added residual reporting APIs
+
 ## [4.1.4] - 2024-11-06
 ### Changed
 - Nucleus import update

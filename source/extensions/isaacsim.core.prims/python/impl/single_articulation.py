@@ -75,6 +75,7 @@ class SingleArticulation(_SinglePrimWrapper):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
         articulation_controller: Optional["ArticulationController"] = None,
+        enable_residual_reports: bool = False,
     ) -> None:
         from isaacsim.core.simulation_manager import SimulationManager
 
@@ -103,6 +104,7 @@ class SingleArticulation(_SinglePrimWrapper):
             orientations=orientation,
             scales=scale,
             visibilities=visible,
+            enable_residual_reports=enable_residual_reports,
         )
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
@@ -385,6 +387,33 @@ class SingleArticulation(_SinglePrimWrapper):
         """
         velocities = self._articulation_view.get_velocities()
         return velocities[0]
+
+    def get_position_residual(self, report_max: Optional[bool] = True) -> float:
+        """Get physics solver position residuals for articulations. This is the residual across all joints that are part of articulations.
+            The solver residuals are computed according to impulse variation normalized by the effective mass.
+        Args:
+            report_max (Optional[bool]): whether to report max or RMS residual. Defaults to True, i.e. max criteria
+        Returns:
+            float: solver position/velocity max/rms residual.
+
+        """
+        result = self._articulation_view.get_position_residuals(report_max=report_max)
+        if result is not None:
+            return result[0]
+        return result
+
+    def get_velocity_residual(self, report_max: Optional[bool] = True) -> float:
+        """Get physics solver velocity residuals for articulations. This is the residual across all joints that are part of articulations.
+            The solver residuals are computed according to impulse variation normalized by the effective mass.
+        Args:
+            report_max (Optional[bool]): whether to report max or RMS residual. Defaults to True, i.e. max criteria
+        Returns:
+            float: solver velocity max/rms residual.
+        """
+        result = self._articulation_view.get_velocity_residuals(report_max=report_max)
+        if result is not None:
+            return result[0]
+        return result
 
     def set_joint_positions(
         self, positions: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
