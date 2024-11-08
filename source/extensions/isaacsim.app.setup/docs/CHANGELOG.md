@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.0] - 2024-11-06
+### Changed
+- enabled default and visual scripting layout. moved layout folder.
+
 ## [1.0.2] - 2024-11-01
 ### Changed
 - Make Isaac Sim Assets Browser in focus by default

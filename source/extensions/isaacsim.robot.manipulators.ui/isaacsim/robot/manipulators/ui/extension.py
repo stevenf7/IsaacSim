@@ -20,24 +20,19 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self.window_handle = None
         controller_menu = [
-            make_menu_item_description(
-                ext_id, "Articulation Position Controller", onclick_fun=self._open_articulation_position
-            ),
-            make_menu_item_description(
-                ext_id, "Articulation Velocity Controller", onclick_fun=self._open_articulation_velocity
-            ),
-            make_menu_item_description(ext_id, "Gripper Controller", onclick_fun=self._open_gripper_graph),
+            make_menu_item_description(ext_id, "Joint Position", onclick_fun=self._open_articulation_position),
+            make_menu_item_description(ext_id, "Joint Velocity", onclick_fun=self._open_articulation_velocity),
+            make_menu_item_description(ext_id, "Open Loop Gripper", onclick_fun=self._open_gripper_graph),
         ]
         self._menu_controller = [
             MenuItemDescription(
-                name="Common Omnigraphs",
-                sub_menu=controller_menu,
+                name="Robotics", sub_menu=[MenuItemDescription(name="Omnigraph Controllers", sub_menu=controller_menu)]
             )
         ]
-        add_menu_items(self._menu_controller, "Isaac Utils")
+        add_menu_items(self._menu_controller, "Tools")
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_controller, "Isaac Utils")
+        remove_menu_items(self._menu_controller, "Tools")
         if self.window_handle:
             self.window_handle.visible = False
 

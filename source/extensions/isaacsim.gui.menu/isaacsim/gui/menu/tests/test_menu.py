@@ -73,13 +73,11 @@ class TestMenuAssets(OmniUiTest):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_loading_robots(self):
 
-        self.robot_menu_dict = self.menu_dict["Create"]["Isaac"]["Robots"]
-        self.ee_menu_dict = self.menu_dict["Create"]["Isaac"]["End Effectors"]
+        self.robot_menu_dict = self.menu_dict["Create"]["Robots"]
 
         ## check everything under "Robot"
 
-        robot_root_path = "Create/Isaac/Robots"
-        ee_root_path = "Create/Isaac/End Effectors"
+        robot_root_path = "Create/Robots"
 
         def get_menu_path(d, path, result, root_path):
 
@@ -98,15 +96,11 @@ class TestMenuAssets(OmniUiTest):
         empty_list = []
         empty_path = ""
         robot_menu_list = get_menu_path(self.robot_menu_dict, empty_path, empty_list, robot_root_path)
-        empty_list = []
-        empty_path = ""
-        ee_menu_list = get_menu_path(self.ee_menu_dict, empty_path, empty_list, ee_root_path)
 
-        test_list = robot_menu_list + ee_menu_list
+        test_list = robot_menu_list
 
         skip_list = [
-            "Create/Isaac/End Effectors/Surface Gripper",  # surface gripper is just a graph
-            "Create/Isaac/Robots/Wheeled Robots/Idealworks/Idealworks iw.hub (static)",  # static mesh
+            "Create/Robots/Asset Browser",
         ]
 
         failed_robots = []
@@ -146,33 +140,12 @@ class TestMenuAssets(OmniUiTest):
         self.assertEqual(len(failed_robots), 0)
 
     async def test_apriltag_menu(self):
-        apriltag_root_path = "Create/Isaac/April Tag"
+        apriltag_path = "Create/April Tags"
 
-        def get_menu_path(d, path, result, root_path):
-
-            for key, value in d.items():
-                if key != "_":
-                    new_path = path + "/" + str(key)
-                if isinstance(value, dict):
-                    get_menu_path(value, new_path, result, root_path)
-                elif isinstance(value, str):
-                    result.append(root_path + path + "/" + str(value))
-                elif isinstance(value, list):
-                    for robot in value:
-                        result.append(root_path + path + "/" + str(robot))
-            return result
-
-        empty_list = []
-        empty_path = ""
-        apriltag_menu_list = get_menu_path(
-            self.menu_dict["Create"]["Isaac"]["April Tag"], empty_path, empty_list, apriltag_root_path
-        )
-
-        # for each item on the robot's asset path, load it and check if successful by checking if there is an articulation on stage
         clear_stage()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        await menu_click(apriltag_menu_list[0], human_delay_speed=10)
+        await menu_click(apriltag_path, human_delay_speed=10)
         await omni.kit.app.get_app().next_update_async()
 
         omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_type="Cube", above_ground=True)
@@ -187,9 +160,9 @@ class TestMenuAssets(OmniUiTest):
     async def test_loading_environments(self):
         from omni.kit.viewport.utility.tests.capture import capture_viewport_and_wait, finalize_capture_and_compare
 
-        self.environment_menu_dict = self.menu_dict["Create"]["Isaac"]["Environments"]
+        self.environment_menu_dict = self.menu_dict["Create"]["Environments"]
         ## check everything under "Environment"
-        environment_root_path = "Create/Isaac/Environments"
+        environment_root_path = "Create/Environments"
 
         def get_menu_path(d, path, result, root_path):
             for key, value in d.items():
@@ -205,7 +178,9 @@ class TestMenuAssets(OmniUiTest):
             return result
 
         empty_list = []
-        skip_list = []
+        skip_list = [
+            "Create/Environments/Asset Browser",
+        ]
         failed_environments = []
 
         empty_path = ""
@@ -277,8 +252,8 @@ class TestMenuAssets(OmniUiTest):
         self.assertEqual(len(failed_environments), 0)
 
     async def test_loading_sensors(self):
-        self.sensor_menu_dict = self.menu_dict["Create"]["Isaac"]["Sensors"]
-        sensor_root_path = "Create/Isaac/Sensors"
+        self.sensor_menu_dict = self.menu_dict["Create"]["Sensors"]
+        sensor_root_path = "Create/Sensors"
 
         def get_menu_path(d, path, result, root_path):
             for key, value in d.items():
@@ -294,7 +269,9 @@ class TestMenuAssets(OmniUiTest):
             return result
 
         empty_list = []
-        skip_list = []
+        skip_list = [
+            "Create/Sensors/Asset Browser",
+        ]
         failed_sensors = []
 
         # each type of sensor will get a different prim type test, RGBD and RTX will check for camera prim

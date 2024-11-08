@@ -27,18 +27,14 @@ class Extension(omni.ext.IExt):
             description="Create a physics based gripper for simulating suction/surface type grippers",
             tag="Create Surface Gripper",
         )
-        menu_items = [
+        self._menu_items = [
             MenuItemDescription(
-                name="End Effectors",
-                sub_menu=[
-                    MenuItemDescription(
-                        name="Surface Gripper", onclick_action=(ext_id, "isaac_create_surface_gripper")
-                    ),
-                ],
+                name="Surface Gripper",
+                # glyph="plug.svg",
+                onclick_action=(ext_id, "isaac_create_surface_gripper"),
             )
         ]
 
-        self._menu_items = [MenuItemDescription(name="Isaac", glyph="plug.svg", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Create")
 
     def on_shutdown(self):

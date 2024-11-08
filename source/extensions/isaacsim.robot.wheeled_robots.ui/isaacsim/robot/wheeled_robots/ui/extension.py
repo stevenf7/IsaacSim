@@ -31,16 +31,15 @@ class Extension(omni.ext.IExt):
         ]
         self._menu_controller = [
             MenuItemDescription(
-                name="Common Omnigraphs",
-                sub_menu=controller_menu,
+                name="Robotics", sub_menu=[MenuItemDescription(name="Omnigraph Controllers", sub_menu=controller_menu)]
             )
         ]
 
-        add_menu_items(self._menu_controller, "Isaac Utils")
+        add_menu_items(self._menu_controller, "Tools")
         self._window = None
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_controller, "Isaac Utils")
+        remove_menu_items(self._menu_controller, "Tools")
         if self._window:
             self._window.visible = False
         release_wheeled_robots_interface(self.__interface)

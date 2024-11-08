@@ -68,7 +68,7 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(ext_id, "Conveyor Track Builder", lambda a=weakref.proxy(self): a.create_ui())
         ]
 
-        self._menu_items = [MenuItemDescription(name="Isaac", glyph="plug.svg", sub_menu=menu_items)]
+        self._menu_items = [MenuItemDescription(name="Isaac Sim", glyph="plug.svg", sub_menu=menu_items)]
 
         add_menu_items(self._menu_items, "Create")
         add_menu_items(self._menu_items_2, "Tools")

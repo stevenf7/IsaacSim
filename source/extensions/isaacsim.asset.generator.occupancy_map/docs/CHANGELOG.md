@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.6] - 2024-11-06
+### Changed
+- nucleus import update
+
 ## [2.0.5] - 2024-11-04
 ### Changed
 - Remove isaacsim.asset.importer.heightmap as a dependency

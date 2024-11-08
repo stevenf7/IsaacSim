@@ -1,4 +1,7 @@
 # Changelog
+## [13.2.0] - 2024-11-01
+### Changed
+- menu names and location
 
 ## [13.1.2] - 2024-10-29
 ### Changed
