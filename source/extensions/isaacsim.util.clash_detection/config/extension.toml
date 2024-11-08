@@ -1,0 +1,28 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Clash Detection"
+description = "Mesh Collision Detection Utility"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.util.clash_detection"
+keywords = ["isaac", "clashdetection", "utils",]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.isaac.ui" = {}
+"omni.physx" = {}
+"omni.physx.clashdetection.bundle" = {}
+
+[[python.module]]
+name = "isaacsim.util.clash_detection"
+
+[[python.module]]
+name = "isaacsim.util.clash_detection.tests"
