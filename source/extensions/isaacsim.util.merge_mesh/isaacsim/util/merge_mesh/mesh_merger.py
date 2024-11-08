@@ -210,6 +210,7 @@ class MeshMerger(object):
                 mesh["vertex_counts"] = usdMesh.GetFaceVertexCountsAttr().Get()
                 mesh["vertex_indices"] = usdMesh.GetFaceVertexIndicesAttr().Get()
                 mesh["name"] = prim.GetName()
+                mesh["st"] = usdMesh.GetPrim().GetAttribute("primvars:st").Get()
                 mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
                 if mat and rel:
                     mat_path = str(mat.GetPath())
@@ -258,6 +259,7 @@ class MeshMerger(object):
         all_vertex_counts = []
         all_vertex_indices = []
         all_mats = {}
+        all_st = []
         index_offset = 0
         normals_offset = 0
         index = 0
@@ -273,7 +275,7 @@ class MeshMerger(object):
             all_vertex_counts.extend(mesh["vertex_counts"])
             mesh["vertex_indices"][:] = [x + index_offset for x in mesh["vertex_indices"]]
             all_vertex_indices.extend(mesh["vertex_indices"])
-            # all_st.extend(mesh["st"])
+            all_st.extend(mesh["st"])
             index_offset = index_offset + len(meshes[index]["points"])
             normals_offset = normals_offset + len(mesh["attr_normals_indices"])
             # print("Offset", index_offset)
@@ -324,8 +326,10 @@ class MeshMerger(object):
             )
         extent = merged_mesh.ComputeExtent(all_points)
         merged_mesh.CreateExtentAttr().Set(extent)
-        # texCoord = merged_mesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.varying)
-        # texCoord.Set(all_st)
+        texCoord = UsdGeom.PrimvarsAPI(merged_mesh).CreatePrimvar(
+            "st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying
+        )
+        texCoord.Set(all_st)
         # print(all_mats)
         for name, counts in sorted(all_mats.items(), key=lambda a: a[0].rsplit("/", 1)[-1]):
             subset_name = merged_path + "/{}".format(name.rsplit("/", 1)[-1])
