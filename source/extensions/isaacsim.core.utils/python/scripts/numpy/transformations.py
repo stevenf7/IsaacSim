@@ -52,7 +52,7 @@ def get_world_from_local(parent_transforms, translations, orientations, device=N
     my_local_transforms = tf_matrices_from_poses(translations=translations, orientations=orientations)
     # TODO: vectorize this
     for i in range(translations.shape[0]):
-        world_transform = np.matmul(parent_transforms[i], my_local_transforms[i])
+        world_transform = np.matmul(np.transpose(parent_transforms[i]), my_local_transforms[i])
         transform = Gf.Transform()
         transform.SetMatrix(Gf.Matrix4d(np.transpose(world_transform).tolist()))
         calculated_positions[i] = np.array(transform.GetTranslation())

@@ -8,6 +8,7 @@
 #
 
 import gc
+import weakref
 from collections import OrderedDict
 from typing import List, Optional, Tuple, Union
 
@@ -161,12 +162,10 @@ class Articulation(XFormPrim):
             for i in range(self.count):
                 self._articulation_residual_apis.append(self._apply_residual_reporting_api(self._prims[i]))
 
-        def invalidate_physics_handle_callback(event):
-            self._physics_view = None
-
         self._invalidation_callback = (
             SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.STOP), invalidate_physics_handle_callback
+                int(omni.timeline.TimelineEventType.STOP),
+                lambda event, obj=weakref.proxy(self): obj._invalidate_physics_handle_callback(event),
             )
         )
         if SimulationManager.get_physics_sim_view() is not None:
@@ -179,6 +178,9 @@ class Articulation(XFormPrim):
             del self._physics_view
         self._invalidation_callback = None
         return
+
+    def _invalidate_physics_handle_callback(self, event):
+        self._physics_view = None
 
     @property
     def num_dof(self) -> int:

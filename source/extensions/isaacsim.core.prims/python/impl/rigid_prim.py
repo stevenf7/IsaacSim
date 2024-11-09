@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import gc
+import weakref
 from typing import List, Optional, Tuple, Union
 
 import carb
@@ -184,12 +185,10 @@ class RigidPrim(XFormPrim):
         )
         self._apply_rigid_body_apis(prepare_contact_sensors or self._track_contact_forces)
 
-        def invalidate_physics_handle_callback(event):
-            self._physics_view = None
-
         self._invalidation_callback = (
             SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.STOP), invalidate_physics_handle_callback
+                int(omni.timeline.TimelineEventType.STOP),
+                lambda event, obj=weakref.proxy(self): obj._invalidate_physics_handle_callback(event),
             )
         )
         if SimulationManager.get_physics_sim_view() is not None:
@@ -203,6 +202,9 @@ class RigidPrim(XFormPrim):
             del self._physics_view
         self._invalidation_callback = None
         return
+
+    def _invalidate_physics_handle_callback(self, event):
+        self._physics_view = None
 
     @property
     def num_shapes(self) -> int:

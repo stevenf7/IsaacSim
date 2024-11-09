@@ -111,7 +111,7 @@ def get_world_from_local(parent_transforms, translations, orientations, device):
     )
     # TODO: vectorize this
     for i in range(translations.shape[0]):
-        world_transform = torch.matmul(parent_torch[i], my_local_transforms[i])
+        world_transform = torch.matmul(torch.transpose(parent_torch[i], 0, 1), my_local_transforms[i])
         transform = Gf.Transform()
         transform.SetMatrix(Gf.Matrix4d(torch.transpose(world_transform, 0, 1).tolist()))
         calculated_translations[i] = torch.tensor(transform.GetTranslation(), dtype=torch.float32, device=device)

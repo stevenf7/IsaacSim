@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2024-11-08
+### Changed
+- Changed Articulation.invalidate_physics_callback and RigidPrim.invalidate_physics_callback to weakref callbacks.
+
 ## [0.3.0] - 2024-11-05
 ### Added
 - Added joint_names argument to all the joint related methods for ease of specifying which joints to manipulate/ query. 
