@@ -50,7 +50,7 @@ def on_physics_step(step_size) -> None:
         first_step = True
     else:
         for robot in robots:
-            robot.advance(step_size, base_command)
+            robot.forward(step_size, base_command)
 
 
 # spawn world
@@ -69,6 +69,7 @@ for i in range(0, args.num_robots):
     h1 = H1FlatTerrainPolicy(
         prim_path="/World/H1_" + str(i),
         name="H1_" + str(i),
+        usd_path=assets_root_path + "/Isaac/Robots/Unitree/H1/h1.usd",
         position=np.array([0, i, 1.05]),
     )
 
@@ -87,13 +88,13 @@ while simulation_app.is_running():
     if my_world.is_playing():
         if i >= 0 and i < 80:
             # forward
-            base_command = np.array([1, 0, 0])
+            base_command = np.array([0.5, 0, 0])
         elif i >= 80 and i < 130:
             # rotate
-            base_command = np.array([1, 0, 1])
+            base_command = np.array([0.5, 0, 0.5])
         elif i >= 130 and i < 200:
             # side ways
-            base_command = np.array([0, 0, 1])
+            base_command = np.array([0, 0, 0.5])
         elif i == 200:
             i = 0
         i += 1

@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.0.0] - 2024-11-01
+### Removed
+- Unitree quadruped optimized controller class
+- optimized controller based standalone and ROS examples
+
+### Added
+- Policy Controller and config loader helpers for Isaac Lab based env config
+
 ## [3.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
@@ -10,7 +18,7 @@
 
 ## [3.0.0] - 2024-10-07
 ### Changed
-- Extension renamed to isaacsim.robot.policyl.example.
+- Extension renamed to isaacsim.robot.policy.example.
 - Optimization control based robot example removed.
 - Moved Humanoid template to robot policy examples
 

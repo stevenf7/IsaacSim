@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim.robot.policy.examples.controllers.a1_robot_control import A1RobotControl
-from isaacsim.robot.policy.examples.controllers.qp_controller import A1QPController
+from .config_loader import *
+from .policy_controller import *

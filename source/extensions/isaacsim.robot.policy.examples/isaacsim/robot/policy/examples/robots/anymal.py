@@ -8,23 +8,18 @@
 #
 
 import io
-from typing import List, Optional
+from typing import Optional
 
-import carb
 import numpy as np
 import omni
 import omni.kit.commands
-import torch
-from isaacsim.core.prims import SingleArticulation
-from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.core.utils.rotations import quat_to_rot_matrix
-from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.robot.policy.examples.controllers import PolicyController
 from isaacsim.robot.policy.examples.utils import LstmSeaNetwork
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf
 
 
-class AnymalFlatTerrainPolicy:
+class AnymalFlatTerrainPolicy(PolicyController):
     """The ANYmal Robot running a Flat Terrain Locomotion Policy"""
 
     def __init__(
@@ -46,49 +41,18 @@ class AnymalFlatTerrainPolicy:
             orientation {np.ndarray} -- orientation of the robot
 
         """
-        self._stage = get_current_stage()
-        self._prim_path = prim_path
-        prim = get_prim_at_path(self._prim_path)
-
         assets_root_path = get_assets_root_path()
-        if not prim.IsValid():
-            prim = define_prim(self._prim_path, "Xform")
-            if usd_path:
-                prim.GetReferences().AddReference(usd_path)
-            else:
-                if assets_root_path is None:
-                    carb.log_error("Could not find Isaac Sim assets folder")
+        if usd_path == None:
+            usd_path = assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd"
 
-                asset_path = assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd"
-
-                prim.GetReferences().AddReference(asset_path)
-
-        self.robot = SingleArticulation(
-            prim_path=self._prim_path, name=name, position=position, orientation=orientation
+        super().__init__(name, prim_path, usd_path, position, orientation)
+        self.load_policy(
+            assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_policy.pt",
+            assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml",
         )
-
-        # Policy
-        file_content = omni.client.read_file(assets_root_path + "/Isaac/Samples/Quadruped/Anymal_Policies/policy.pt")[2]
-
-        file = io.BytesIO(memoryview(file_content).tobytes())
-        self._policy = torch.jit.load(file)
-
-        # Policy Scales
-        self._base_vel_lin_scale = 1
-        self._base_vel_ang_scale = 1
         self._action_scale = 0.5
-        self._default_joint_pos = np.array([0.0, 0.0, 0.0, 0.0, 0.4, -0.4, 0.4, -0.4, -0.8, 0.8, -0.8, 0.8])
         self._previous_action = np.zeros(12)
         self._policy_counter = 0
-
-        # Actuator network
-        file_content = omni.client.read_file(
-            assets_root_path + "/Isaac/Samples/Quadruped/Anymal_Policies/sea_net_jit2.pt"
-        )[2]
-        file = io.BytesIO(memoryview(file_content).tobytes())
-        self._actuator_network = LstmSeaNetwork()
-        self._actuator_network.setup(file, self._default_joint_pos)
-        self._actuator_network.reset()
 
     def _compute_observation(self, command):
         """
@@ -113,20 +77,17 @@ class AnymalFlatTerrainPolicy:
 
         obs = np.zeros(48)
         # Base lin vel
-        obs[:3] = self._base_vel_lin_scale * lin_vel_b
+        obs[:3] = lin_vel_b
         # Base ang vel
-        obs[3:6] = self._base_vel_ang_scale * ang_vel_b
+        obs[3:6] = ang_vel_b
         # Gravity
         obs[6:9] = gravity_b
         # Command
-        obs[9] = self._base_vel_lin_scale * command[0]
-        obs[10] = self._base_vel_lin_scale * command[1]
-        obs[11] = self._base_vel_ang_scale * command[2]
-
+        obs[9:12] = command
         # Joint states
         current_joint_pos = self.robot.get_joint_positions()
         current_joint_vel = self.robot.get_joint_velocities()
-        obs[12:24] = current_joint_pos - self._default_joint_pos
+        obs[12:24] = current_joint_pos - self.default_pos
         obs[24:36] = current_joint_vel
 
         # Previous Action
@@ -134,7 +95,7 @@ class AnymalFlatTerrainPolicy:
 
         return obs
 
-    def advance(self, dt, command):
+    def forward(self, dt, command):
         """
         Compute the desired torques and apply them to the articulation
 
@@ -143,11 +104,9 @@ class AnymalFlatTerrainPolicy:
         command {np.ndarray} -- the robot command (v_x, v_y, w_z)
 
         """
-        if self._policy_counter % 4 == 0:
+        if self._policy_counter % self._decimation == 0:
             obs = self._compute_observation(command)
-            with torch.no_grad():
-                obs = torch.from_numpy(obs).view(1, -1).float()
-                self.action = self._policy(obs).detach().view(-1).numpy()
+            self.action = self._compute_action(obs)
             self._previous_action = self.action.copy()
 
         # The learning controller uses the order of
@@ -161,7 +120,6 @@ class AnymalFlatTerrainPolicy:
         joint_torques, _ = self._actuator_network.compute_torques(
             current_joint_pos, current_joint_vel, self._action_scale * self.action
         )
-
         self.robot.set_joint_efforts(joint_torques)
         self._policy_counter += 1
 
@@ -169,12 +127,14 @@ class AnymalFlatTerrainPolicy:
         """
         Initialize the articulation interface, set up drive mode
         """
-        self.robot.initialize(physics_sim_view=physics_sim_view)
-        self.robot.get_articulation_controller().set_effort_modes("force")
-        self.robot.get_articulation_controller().switch_control_mode("effort")
+        super().initialize(physics_sim_view=physics_sim_view, control_mode="effort")
 
-    def post_reset(self) -> None:
-        """
-        Post reset articulation
-        """
-        self.robot.post_reset()
+        # Actuator network
+        assets_root_path = get_assets_root_path()
+        file_content = omni.client.read_file(
+            assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/sea_net_jit2.pt"
+        )[2]
+        file = io.BytesIO(memoryview(file_content).tobytes())
+        self._actuator_network = LstmSeaNetwork()
+        self._actuator_network.setup(file, self.default_pos)
+        self._actuator_network.reset()

@@ -116,4 +116,4 @@ class TestH1ExampleExtension(omni.kit.test.AsyncTestCase):
 
     def on_physics_step(self, step_size):
         if self._h1:
-            self._h1.advance(step_size, self._base_command)
+            self._h1.forward(step_size, self._base_command)

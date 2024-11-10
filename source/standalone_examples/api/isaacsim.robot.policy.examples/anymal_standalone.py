@@ -83,11 +83,11 @@ class Anymal_runner(object):
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("anymal_advance", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("anymal_forward", callback_fn=self.on_physics_step)
 
     def on_physics_step(self, step_size) -> None:
         """
-        Physics call back, initialize robot (first frame) and call robot advance function to compute and apply joint torque
+        Physics call back, initialize robot (first frame) and call controller forward function to compute and apply joint torque
 
         """
         if self.first_step:
@@ -98,7 +98,7 @@ class Anymal_runner(object):
             self.needs_reset = False
             self.first_step = True
         else:
-            self._anymal.advance(step_size, self._base_command)
+            self._anymal.forward(step_size, self._base_command)
 
     def run(self) -> None:
         """

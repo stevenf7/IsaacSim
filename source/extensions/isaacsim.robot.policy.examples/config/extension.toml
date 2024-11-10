@@ -1,13 +1,13 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "3.0.2"
+version = "4.0.0"
 category = "Simulation"
-title = "Isaac Quadruped Robot"
+title = "Reinforcement Learning Inference Example for Robots in Isaac Sim"
 description = "Simulation for legged robots"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.policy.examples"
-keywords = ["isaac", "robot", "quadruped"]
+keywords = ["isaac", "robot", "quadruped", "humanoid", "policy", "inference"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
