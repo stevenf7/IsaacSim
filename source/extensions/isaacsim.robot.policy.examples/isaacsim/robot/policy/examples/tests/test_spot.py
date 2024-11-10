@@ -116,4 +116,4 @@ class TestSpot(omni.kit.test.AsyncTestCase):
 
     def on_physics_step(self, step_size):
         if self._spot:
-            self._spot.advance(step_size, self._base_command)
+            self._spot.forward(step_size, self._base_command)

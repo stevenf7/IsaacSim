@@ -11,8 +11,3 @@
 from isaacsim.robot.policy.examples.robots.anymal import AnymalFlatTerrainPolicy
 from isaacsim.robot.policy.examples.robots.h1 import H1FlatTerrainPolicy
 from isaacsim.robot.policy.examples.robots.spot import SpotFlatTerrainPolicy
-
-# Classical control based robot template classes
-from isaacsim.robot.policy.examples.robots.unitree import Unitree
-from isaacsim.robot.policy.examples.robots.unitree_direct import UnitreeDirect
-from isaacsim.robot.policy.examples.robots.unitree_vision import UnitreeVision

@@ -34,7 +34,7 @@ def on_physics_step(step_size) -> None:
         reset_needed = False
         first_step = True
     else:
-        spot.advance(step_size, base_command)
+        spot.forward(step_size, base_command)
 
 
 # spawn world

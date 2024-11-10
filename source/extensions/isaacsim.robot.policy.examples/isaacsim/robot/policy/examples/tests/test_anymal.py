@@ -117,4 +117,4 @@ class TestAnymal(omni.kit.test.AsyncTestCase):
 
     def on_physics_step(self, step_size):
         if self._anymal:
-            self._anymal.advance(step_size, self._base_command)
+            self._anymal.forward(step_size, self._base_command)

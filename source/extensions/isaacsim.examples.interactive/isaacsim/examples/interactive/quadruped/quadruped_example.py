@@ -63,28 +63,28 @@ class QuadrupedExample(BaseSample):
         self._event_timer_callback = timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
             int(omni.timeline.TimelineEventType.STOP), self._timeline_timer_callback_fn
         )
-        self.spot.robot.set_joints_default_state(self.spot._default_joint_pos)
 
     async def setup_post_load(self) -> None:
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("physics_step", callback_fn=self.on_physics_step)
         self._physics_ready = False
-        await self._world.play_async()
-        self.spot.initialize()
+        self.get_world().add_physics_callback("physics_step", callback_fn=self.on_physics_step)
+        await self.get_world().play_async()
 
     async def setup_post_reset(self) -> None:
-        await self._world.play_async()
         self._physics_ready = False
-        self.spot.initialize()
+        await self._world.play_async()
 
     def on_physics_step(self, step_size) -> None:
-        if self._physics_ready == True:
-            self.spot.advance(step_size, self._base_command)
+        if self._physics_ready:
+            self.spot.forward(step_size, self._base_command)
         else:
             self._physics_ready = True
+            self.spot.initialize()
+            self.spot.post_reset()
+            self.spot.robot.set_joints_default_state(self.spot.default_pos)
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
         """Subscriber callback to when kit is updated."""
@@ -103,7 +103,6 @@ class QuadrupedExample(BaseSample):
 
     def _timeline_timer_callback_fn(self, event) -> None:
         if self.spot:
-            self.spot.post_reset()
             self._physics_ready = False
 
     def world_cleanup(self):
