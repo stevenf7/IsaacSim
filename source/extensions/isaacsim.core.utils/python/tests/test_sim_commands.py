@@ -113,8 +113,8 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
     async def test_destroy_command(self):
         articulation_usd = self._assets_root_path + "/Isaac/Robots/Franka/franka.usd"
         omni.kit.commands.execute("IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka")
-        await omni.kit.app.get_app().next_update_async()
+        [await omni.kit.app.get_app().next_update_async() for _ in range(10)]
         self.assertIsNotNone(self._stage.GetPrimAtPath("/franka"))
         omni.kit.commands.execute("IsaacSimDestroyPrim", prim_path="/franka")
-        await omni.kit.app.get_app().next_update_async()
+        [await omni.kit.app.get_app().next_update_async() for _ in range(10)]
         self.assertFalse(self._stage.GetPrimAtPath("/franka"))

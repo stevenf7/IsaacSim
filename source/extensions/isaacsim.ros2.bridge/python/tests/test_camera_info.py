@@ -145,8 +145,7 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
         await open_stage_async(self._assets_root_path + scene_path)
 
         camera_path = "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
-        add_reference_to_stage(usd_path=camera_path, prim_path="/Hawk")
-
+        add_reference_to_stage(usd_path=self._assets_root_path + camera_path, prim_path="/Hawk")
         import rclpy
         import usdrt.Sdf
 
@@ -260,10 +259,7 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
         camera_path = self._assets_root_path + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
         add_reference_to_stage(usd_path=camera_path, prim_path="/Hawk")
 
-        checkerboard_path = (
-            self._assets_root_path
-            + "/Projects/isaac_amr_envoy/scenes/calibration/checkerboard/checkere_board_isaac_sim.usd"
-        )
+        checkerboard_path = self._assets_root_path + "/Isaac/Props/Camera/checkerboard_6x10.usd"
         add_reference_to_stage(usd_path=checkerboard_path, prim_path="/calibration_target")
         SingleXFormPrim("/calibration_target", name="calibration_target", position=[1.0, -0.075, -0.6])
 

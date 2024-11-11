@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2024-11-06
+### Fixed
+- Fix unit test
+
 ## [2.2.1] - 2024-11-08
 ### Fixed
 - Fixed backends.transformations.get_world_from_local functions

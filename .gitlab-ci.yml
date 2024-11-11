@@ -401,7 +401,7 @@ test-linux-x86_64-startuptests:
   script:
   - ./repo.sh ci test -- -s startuptests
 
-test-linux-x86_64-pythontests-1:
+test-linux-x86_64-pythontests-deprecated:
   extends:
   - .test-common
   - .test-linux-common
@@ -409,9 +409,9 @@ test-linux-x86_64-pythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 1
+  - ./repo.sh ci test -- -s pythontests -b deprecated
 
-test-linux-x86_64-pythontests-2:
+test-linux-x86_64-pythontests-asset:
   extends:
   - .test-common
   - .test-linux-common
@@ -419,9 +419,9 @@ test-linux-x86_64-pythontests-2:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 2
+  - ./repo.sh ci test -- -s pythontests -b asset
 
-test-linux-x86_64-pythontests-3:
+test-linux-x86_64-pythontests-core:
   extends:
   - .test-common
   - .test-linux-common
@@ -429,9 +429,9 @@ test-linux-x86_64-pythontests-3:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 3
+  - ./repo.sh ci test -- -s pythontests -b core
 
-test-linux-x86_64-pythontests-4:
+test-linux-x86_64-pythontests-examples_tests:
   extends:
   - .test-common
   - .test-linux-common
@@ -439,9 +439,9 @@ test-linux-x86_64-pythontests-4:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 4
+  - ./repo.sh ci test -- -s pythontests -b examples_tests
 
-test-linux-x86_64-pythontests-5:
+test-linux-x86_64-pythontests-replicator:
   extends:
   - .test-common
   - .test-linux-common
@@ -449,9 +449,9 @@ test-linux-x86_64-pythontests-5:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 5
+  - ./repo.sh ci test -- -s pythontests -b replicator
 
-test-linux-x86_64-pythontests-6:
+test-linux-x86_64-pythontests-ros:
   extends:
   - .test-common
   - .test-linux-common
@@ -459,9 +459,9 @@ test-linux-x86_64-pythontests-6:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 6
+  - ./repo.sh ci test -- -s pythontests -b ros
 
-test-linux-x86_64-pythontests-7:
+test-linux-x86_64-pythontests-sensors:
   extends:
   - .test-common
   - .test-linux-common
@@ -469,9 +469,9 @@ test-linux-x86_64-pythontests-7:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 7
+  - ./repo.sh ci test -- -s pythontests -b sensors
 
-test-linux-x86_64-pythontests-8:
+test-linux-x86_64-pythontests-utils_gui:
   extends:
   - .test-common
   - .test-linux-common
@@ -479,9 +479,9 @@ test-linux-x86_64-pythontests-8:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 8
+  - ./repo.sh ci test -- -s pythontests -b utils_gui
 
-test-linux-x86_64-pythontests-9:
+test-linux-x86_64-pythontests-robot:
   extends:
   - .test-common
   - .test-linux-common
@@ -489,7 +489,17 @@ test-linux-x86_64-pythontests-9:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s pythontests -b 9
+  - ./repo.sh ci test -- -s pythontests -b robot
+
+test-linux-x86_64-pythontests-other:
+  extends:
+  - .test-common
+  - .test-linux-common
+  - .install-linux-test-packages
+  - .runner-test-linux-x86_64-gpu
+  - .omni_nvks_gpu
+  script:
+  - ./repo.sh ci test -- -s pythontests -b other
 
 test-linux-x86_64-selectortests:
   extends:
@@ -619,77 +629,85 @@ test-windows-x86_64-startuptests:
   script:
   - ./repo.bat ci test -- -s startuptests
 
-test-windows-x86_64-pythontests-1:
+test-windows-x86_64-pythontests-deprecated:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 1
+  - ./repo.bat ci test -- -s pythontests -b deprecated
 
-test-windows-x86_64-pythontests-2:
+test-windows-x86_64-pythontests-asset:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 2
+  - ./repo.bat ci test -- -s pythontests -b asset
 
-test-windows-x86_64-pythontests-3:
+test-windows-x86_64-pythontests-core:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 3
+  - ./repo.bat ci test -- -s pythontests -b core
 
-test-windows-x86_64-pythontests-4:
+test-windows-x86_64-pythontests-examples_tests:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 4
+  - ./repo.bat ci test -- -s pythontests -b examples_tests
 
-test-windows-x86_64-pythontests-5:
+test-windows-x86_64-pythontests-replicator:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 5
+  - ./repo.bat ci test -- -s pythontests -b replicator
 
-test-windows-x86_64-pythontests-6:
+test-windows-x86_64-pythontests-ros:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 6
+  - ./repo.bat ci test -- -s pythontests -b ros
 
-test-windows-x86_64-pythontests-7:
+test-windows-x86_64-pythontests-sensors:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 7
+  - ./repo.bat ci test -- -s pythontests -b sensors
 
-test-windows-x86_64-pythontests-8:
+test-windows-x86_64-pythontests-utils_gui:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 8
+  - ./repo.bat ci test -- -s pythontests -b utils_gui
 
-test-windows-x86_64-pythontests-9:
+test-windows-x86_64-pythontests-robot:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s pythontests -b 9
+  - ./repo.bat ci test -- -s pythontests -b robot
+
+test-windows-x86_64-pythontests-other:
+  extends:
+  - .test-common
+  - .test-windows-common
+  - .runner-test-windows-x86_64-gpu
+  script:
+  - ./repo.bat ci test -- -s pythontests -b other
 
 test-windows-x86_64-selectortests:
   extends:
