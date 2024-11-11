@@ -27,11 +27,11 @@ from omni.isaac.core.utils.extensions import enable_extension
 enable_extension("isaacsim.util.clash_detection")
 simulation_app.update()
 
+from isaacsim.storage.native import get_assets_root_path
 from isaacsim.util.clash_detection import ClashDetector
 from omni.isaac.core.prims import XFormPrim, XFormPrimView
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage
-from omni.isaac.nucleus import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--export_json", default=False, action="store_true", help="Export clash detection results to JSON")

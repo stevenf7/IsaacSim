@@ -5,10 +5,10 @@
 [repo]
 # Use Kit Template repo configuration as a base. Only override things specific to the repo.
 import_configs = [
-    # Shared config for all kit extensions repos
-    "${root}/_repo/deps/repo_kit_tools/kit-template/repo.toml",
-    # Shared config for kit extensions repos that also publish an app to the Launcher
-    "${root}/_repo/deps/repo_kit_tools/kit-template/repo-app.toml"
+  # Shared config for all kit extensions repos
+  "${root}/_repo/deps/repo_kit_tools/kit-template/repo.toml",
+  # Shared config for kit extensions repos that also publish an app to the Launcher
+  "${root}/_repo/deps/repo_kit_tools/kit-template/repo-app.toml",
 ]
 
 # Repository Name. It is used for solution name and final package name
@@ -31,23 +31,23 @@ version_file = "${root}/VERSION"
 # List of packman projects to pull (in order)
 
 fetch.packman_target_files_to_pull = [
-    "${root}/deps/kit-sdk.packman.xml",
-    "${root}/deps/rtx-plugins.packman.xml",
-    "${root}/deps/omni-physics.packman.xml",
-    "${root}/deps/kit-sdk-deps.packman.xml",
-    "${root}/deps/ext-deps.packman.xml",
-    "${root}/deps/isaac-sim.packman.xml",
+  "${root}/deps/kit-sdk.packman.xml",
+  "${root}/deps/rtx-plugins.packman.xml",
+  "${root}/deps/omni-physics.packman.xml",
+  "${root}/deps/kit-sdk-deps.packman.xml",
+  "${root}/deps/ext-deps.packman.xml",
+  "${root}/deps/isaac-sim.packman.xml",
 ]
 
 fetch.pip.files_to_pull = [
-    "${root}/deps/pip.toml",
-    "${root}/deps/pip_ml.toml",
-    "${root}/deps/pip_lula.toml",
-    "${root}/deps/pip_ocs2.toml",
-    "${root}/deps/pip_repl.toml",
-    "${root}/deps/pip_compute.toml",
-    "${root}/deps/pip_usd_to_urdf.toml",
-    "${root}/deps/pip_cloud.toml",
+  "${root}/deps/pip.toml",
+  "${root}/deps/pip_ml.toml",
+  "${root}/deps/pip_lula.toml",
+  "${root}/deps/pip_ocs2.toml",
+  "${root}/deps/pip_repl.toml",
+  "${root}/deps/pip_compute.toml",
+  "${root}/deps/pip_usd_to_urdf.toml",
+  "${root}/deps/pip_cloud.toml",
 ]
 
 # # Extensions precache
@@ -61,7 +61,7 @@ fetch.pip.files_to_pull = [
 
 # vscode.python = "${root}/_build/$platform/release/kit/python"
 
-vscode.python_env.PYTHONPATH= [
+vscode.python_env.PYTHONPATH = [
   "$$$${PYTHONPATH}",
   "$root/_build/$platform/$config/kit/python/lib/python3.10/site-packages",
   "$root/_build/$platform/$config/python_packages",
@@ -78,7 +78,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/exts/omni.pip.cloud/pip_prebundle",
 ]
 
-vscode.python_env.PATH= [
+vscode.python_env.PATH = [
   "$$$${PATH}",
   "$root/_build/$platform/$config",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
@@ -105,29 +105,54 @@ msbuild.vs_version = "vs2017"
 # stage_files.error_if_missing = true
 
 # licensing.enabled = true
-licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/ext-deps.packman.xml", "${root}/deps/isaac-sim.packman.xml"]
+licensing.packages = [
+  "${root}/deps/rtx-target-deps.packman.xml",
+  "${root}/deps/ext-deps.packman.xml",
+  "${root}/deps/isaac-sim.packman.xml",
+]
 # licensing.fail_on_missing = true
 
 # By default, precache_exts is run after pull. Instead, running it after generating projects and staging files, so the necessary app file exists.
 fetch.after_pull_commands = []
 # Extensions precache before build to pick up headers/binaries for linking
-pre_build.commands = [
-    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
-]
 post_build.commands = [
-    # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
-    # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
-    # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
-    ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"],
-    ["${root}/repo${shell_ext}", "edit_sysconfig", "-c", "${config}"],
-    ["${root}/repo${shell_ext}", "usd", "-c", "${config}"]
+  # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
+  # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
+  # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
+  [
+    "${root}/repo${shell_ext}",
+    "generate_vscode_settings",
+    "-c",
+    "${config}",
+  ],
+  [
+    "${root}/repo${shell_ext}",
+    "edit_sysconfig",
+    "-c",
+    "${config}",
+  ],
+  [
+    "${root}/repo${shell_ext}",
+    "usd",
+    "-c",
+    "${config}",
+  ],
+]
+pre_build.commands = [
+  [
+    "${root}/repo${shell_ext}",
+    "precache_exts",
+    "-c",
+    "${config}",
+    "${precache_flag_0}",
+  ],
 ]
 
 [[repo_build.argument]]
-name = "-u"
+extra_tokens = {"precache_flag_0" = "-u"}
 help = "Update extensions: remove generated part from kit files and clean cache path before running exts precaching. (Pass -u flag to repo precache_exts tool)."
-extra_tokens = {"precache_flag_0" = "-u" }
 kwargs.required = false
+name = "-u"
 ########################################################################################################################
 # Extensions precacher
 ########################################################################################################################
@@ -145,34 +170,30 @@ cache_path = "${root}/_build/${platform}/${config}/extscache"
 ext_folders = [
   "${root}/_build/$platform/$config/exts",
   "${root}/_build/$platform/$config/extsDeprecated",
-  "${root}/_build/$platform/$config/extsPhysics"
+  "${root}/_build/$platform/$config/extsPhysics",
 ]
 
 # Apps to run and precache
-apps = [
-    "${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"
-]
+apps = ["${root}/_build/$platform/$config/apps/omni.isaac.sim.extscache.kit"]
 
 # Registries to use
 registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
-    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
+  {name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default"},
+  {name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}"},
 ]
 
 # Link selected extensions into a separate folder without a version. Used for build-time referencing extensions.
 # Wildcards are supported in the list.
-links.path = "${root}/_build/${platform}/${config}/extsbuild"
 links.exts.include = [
-    "omni.sensors.nv.*",
-    "omni.usd.core",
-    "omni.syntheticdata",
-    "usdrt.scenegraph",
-    "omni.graph.tools",
-    "omni.kit.test",
-    "omni.kit.xr.core",
+  "omni.sensors.nv.*",
+  "omni.usd.core",
+  "omni.syntheticdata",
+  "usdrt.scenegraph",
+  "omni.graph.tools",
+  "omni.kit.test",
+  "omni.kit.xr.core",
 ]
-
-
+links.path = "${root}/_build/${platform}/${config}/extsbuild"
 
 ########################################################################################################################
 # Documentation building
@@ -180,8 +201,8 @@ links.exts.include = [
 
 [repo_docs]
 
-enabled = true
 config = "release"
+enabled = true
 
 # the name of you project.  should be a single word. used to name files.
 project = "isaac_sim"
@@ -202,6 +223,28 @@ version_selector_enabled = false
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
 
 # Add all extensions to docs sys.path
+
+library_paths = [
+  "$root/_build/$platform/$config",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
+  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
+  "$root/_build/$platform/$config/kit",
+  "$root/_build/$platform/$config/kit/kernel/plugins",
+  "$root/_build/$platform/$config/kit/libs/iray",
+  "$root/_build/$platform/$config/kit/plugins",
+  "$root/_build/$platform/$config/kit/plugins/bindings-python",
+  "$root/_build/$platform/$config/kit/plugins/carb_gfx",
+  "$root/_build/$platform/$config/kit/plugins/rtx",
+  "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
+  "$root/_build/$platform/$config/extscache/omni.usd*/bin",
+  "$root/_build/$platform/$config/extscache/omni.ui*/bin",
+  "$root/_build/$platform/$config/extscache/omni.ui.scene*/bin",
+  "$root/_build/$platform/$config/extscache/omni.kit.renderer.imgui*/bin",
+  # "$root/_build/$platform/$config/extscache/omni.usd*/bin",
+  "$root/_build/$platform/$config/kit/extscore/*/bin",
+  "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
+  "$root/_build/$platform/$config/extsPhysics/*/bin",
+]
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
   # "${root}/_build/${platform}/${config}/kit/exts/*",
@@ -231,28 +274,6 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
   # "${root}/_build/${platform}/${config}/extscache/omni.replicator**",
 ]
-library_paths = [
-  "$root/_build/$platform/$config",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
-  "$root/_build/$platform/$config/kit",
-  "$root/_build/$platform/$config/kit/kernel/plugins",
-  "$root/_build/$platform/$config/kit/libs/iray",
-  "$root/_build/$platform/$config/kit/plugins",
-  "$root/_build/$platform/$config/kit/plugins/bindings-python",
-  "$root/_build/$platform/$config/kit/plugins/carb_gfx",
-  "$root/_build/$platform/$config/kit/plugins/rtx",
-  "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
-  "$root/_build/$platform/$config/extscache/omni.usd*/bin",
-  "$root/_build/$platform/$config/extscache/omni.ui*/bin",
-  "$root/_build/$platform/$config/extscache/omni.ui.scene*/bin",
-  "$root/_build/$platform/$config/extscache/omni.kit.renderer.imgui*/bin",
-  # "$root/_build/$platform/$config/extscache/omni.usd*/bin",
-  "$root/_build/$platform/$config/kit/extscore/*/bin",
-  "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
-  "$root/_build/$platform/$config/extsPhysics/*/bin",
-]
-
 sphinx_conf_py_extra = """
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
@@ -277,93 +298,89 @@ sphinx_conf_py_extra = """
 """
 
 sphinx_exclude_patterns = [
-    "**/omni.isaac.app",
-    "**/isaacsim.app.selector",
-    "**/omni.isaac.assets_check",
-    "**/isaacsim.util.internal",
-    "**/isaacsim.asset.browser",
-    "**/omni.isaac.core_archive",
-    "**/omni.isaac.ml_archive",
-    "**/omni.pip.compute",
-    "**/omni.pip.cloud",
-    "**/isaacsim.examples.interactive",     #TODO?
-    "**/omni.isaac.repl",
-    "**/omni.isaac.tests",
-    "**/isaacsim.core.utils_manager",
-    "**/isaacsim.gui.property",
-    "**/isaacsim.test.collection",
-    "**/omni.usd.schema.isaac",     #TODO?
-    "**/omni.isaac.window.about",
-    "**/isaacsim.app.about",
-    "**/omni.isaac.unit_converter",
-    "include",
-    "tools",
-    "tests",
-    "**/README.md",
-    "TESTING.md",
-    "**/CHANGELOG.md",
-    "CHANGELOG.md",
-    "**/*LICENSE.md",
-    "_deps_acl",
-    "source/deprecated_extensions",
-    "schemas",
-    ".cache",
-    ".local",
-    ".vscode",
-    ".nvidia-omniverse",
-    "_build",
+  "**/omni.isaac.app",
+  "**/isaacsim.app.selector",
+  "**/omni.isaac.assets_check",
+  "**/isaacsim.util.internal",
+  "**/isaacsim.asset.browser",
+  "**/omni.isaac.core_archive",
+  "**/omni.isaac.ml_archive",
+  "**/omni.pip.compute",
+  "**/omni.pip.cloud",
+  "**/isaacsim.examples.interactive", #TODO?
+  "**/omni.isaac.repl",
+  "**/omni.isaac.tests",
+  "**/isaacsim.core.utils_manager",
+  "**/isaacsim.gui.property",
+  "**/isaacsim.test.collection",
+  "**/omni.usd.schema.isaac",         #TODO?
+  "**/omni.isaac.window.about",
+  "**/isaacsim.app.about",
+  "**/omni.isaac.unit_converter",
+  "include",
+  "tools",
+  "tests",
+  "**/README.md",
+  "TESTING.md",
+  "**/CHANGELOG.md",
+  "CHANGELOG.md",
+  "**/*LICENSE.md",
+  "_deps_acl",
+  "source/deprecated_extensions",
+  "schemas",
+  ".cache",
+  ".local",
+  ".vscode",
+  ".nvidia-omniverse",
+  "_build",
 ]
 
 doxygen_input = [
-    "source/extensions/isaacsim.ros2.bridge/include/Ros2Bridge.h",
-    "source/extensions/isaacsim.ros2.bridge/include/Ros2Factory.h",
-    "source/extensions/isaacsim.ros2.bridge/include/Ros2Macros.h",
-    "source/extensions/isaacsim.ros2.bridge/include/Ros2Node.h",
-    "source/extensions/isaacsim.ros2.bridge/include/Ros2QoS.h",
+  "source/extensions/isaacsim.ros2.bridge/include/Ros2Bridge.h",
+  "source/extensions/isaacsim.ros2.bridge/include/Ros2Factory.h",
+  "source/extensions/isaacsim.ros2.bridge/include/Ros2Macros.h",
+  "source/extensions/isaacsim.ros2.bridge/include/Ros2Node.h",
+  "source/extensions/isaacsim.ros2.bridge/include/Ros2QoS.h",
 ]
-doxygen_predefined = [
-    "CARB_PLUGIN_INTERFACE=",
-]
+doxygen_predefined = ["CARB_PLUGIN_INTERFACE="]
 
 api_output_directory = "api"
 use_fast_doxygen_conversion = true
 
 [repo_docs.editions.production]
-protocol = "s3"
-formats_to_publish = ["html"]
-bucket_name = "omniverse-docs-production"
-region = "us-west-1"
 bucket_dir = "py/isaacsim/"
+bucket_name = "omniverse-docs-production"
+formats_to_publish = ["html"]
+protocol = "s3"
+region = "us-west-1"
 s3_exclude_patterns = []
 
 # #####################################################################
 # # schema
 # #############################
 [repo_usd]
-usd_root = "${root}/_build/target-deps/nv_usd/%{cfg.buildcfg}"
-usd_python_root = "${root}/_build/target-deps/python"
 generate_plugin_buildfiles = false
 plugin_buildfile_format = "premake"
-
+usd_python_root = "${root}/_build/target-deps/python"
+usd_root = "${root}/_build/target-deps/nv_usd/%{cfg.buildcfg}"
 
 [repo_usd.plugin.robotSchema]
-schema_file = "${root}/source/robot_schema/RobotSchema.usda"
-generate_dir = "${root}/_build/$platform/$config/exts/isaacsim.robot.schema/plugins/robot_schema"
 build_dir = "${root}/_build/$platform/$config/robot_schema/"
+generate_dir = "${root}/_build/$platform/$config/exts/isaacsim.robot.schema/plugins/robot_schema"
 plugin_dir = "${root}/source/source/extensions/isaacsim.robot.schema/schema"
+schema_file = "${root}/source/robot_schema/RobotSchema.usda"
 
-library_prefix = "RobotSchema"
 generate_module_deps_cpp_file = false
+library_prefix = "RobotSchema"
 usd_lib_dependencies = [
-    "arch",
-    "tf",
-    "vt",
-    "sdf",
-    "usd",
-    "usdPhysics",
-    "usdGeom"
+  "arch",
+  "tf",
+  "vt",
+  "sdf",
+  "usd",
+  "usdPhysics",
+  "usdGeom",
 ]
-
 
 # ########################################################################################################################
 # # Build Number
@@ -377,59 +394,59 @@ usd_lib_dependencies = [
 ########################################################################################################################
 
 [repo_package]
-windows_max_path_length=200
-ziponly = false
 archive_format = "7z"
+windows_max_path_length = 200
+ziponly = false
 # store_links_zip = true # preserve symlinks
 
 [repo_package.packages.isaac-sim]
-root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
 package_per_config = true
+root = "_build/$${platform}/$${config}"
 
 [repo_package.packages.isaac-sim-standalone]
-root = "_build/$${platform}/$${config}"
+append_config = true
 omniverse_flow_version_scheme = true
 package_per_config = true
-append_config = true
 replace_authors_in_kit_extensions = true
+root = "_build/$${platform}/$${config}"
 strip_package_infos = true
-windows_max_path_length = 220 #TODO: changed from default of 180 to make builds pass
+windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
 
 [repo_package.packages.isaac-sim-internal-standalone]
-root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true
 package_per_config = true
+root = "_build/$${platform}/$${config}"
 
 [repo_package.packages.isaac-sim-binaryscan]
-root = "_build/$${platform}/$${config}"
+append_config = true
 omniverse_flow_version_scheme = true
 package_per_config = true
-append_config = true
 replace_authors_in_kit_extensions = true
+root = "_build/$${platform}/$${config}"
 strip_package_infos = true
-windows_max_path_length = 220 #TODO: changed from default of 180 to make builds pass
+windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
 
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 ziponly = true
 
 # to generate launcher images package
 [repo_package.packages.isaac-sim-pipeline-images-beta]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
 
 [repo_package.packages.isaac-sim-pipeline-images-rc]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
 
 [repo_package.packages.isaac-sim-pipeline-images-assets]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
 
 # to generate docs package for isaac sim
@@ -438,25 +455,24 @@ omniverse_flow_version_scheme = true
 ziponly = true
 
 [repo_package.packages.isaac-sim-assets-1]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
 
 [repo_package.packages.isaac-sim-assets-2]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
 
 [repo_package.packages.isaac-sim-assets-3]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
 
 [repo_package.packages.isaac-sim-assets-4]
-omniverse_flow_version_scheme = true
 archive_format = "zip"
+omniverse_flow_version_scheme = true
 strip_package_infos = true
-
 
 ########################################################################################################################
 # Package publishing to packman
@@ -483,36 +499,45 @@ branch_prefix = "integ"
 ########################################################################################################################
 
 [publish_assets_launcher_1]
+branch_prefix = "integ"
 git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-1.git"
 template_path = "${root}/tools/repoman/assets-pipeline-template-1"
-branch_prefix = "integ"
 
 [publish_assets_launcher_2]
+branch_prefix = "integ"
 git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-2.git"
 template_path = "${root}/tools/repoman/assets-pipeline-template-2"
-branch_prefix = "integ"
 
 [publish_assets_launcher_3]
+branch_prefix = "integ"
 git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-3.git"
 template_path = "${root}/tools/repoman/assets-pipeline-template-3"
-branch_prefix = "integ"
 
 [publish_assets_launcher_4]
+branch_prefix = "integ"
 git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-4.git"
 template_path = "${root}/tools/repoman/assets-pipeline-template-4"
-branch_prefix = "integ"
 
 ########################################################################################################################
 # Test Runner
 ########################################################################################################################
 [repo_test]
 
-test_root = "$root/_build/$platform/$config"
 env_vars = [
-  ["LD_PRELOAD", "${root}/_build/${platform}/${config}/kit/libcarb.so"],
-  ["RMW_IMPLEMENTATION", "rmw_fastrtps_cpp"],
-  ["LD_LIBRARY_PATH", "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib"],
+  [
+    "LD_PRELOAD",
+    "${root}/_build/${platform}/${config}/kit/libcarb.so",
+  ],
+  [
+    "RMW_IMPLEMENTATION",
+    "rmw_fastrtps_cpp",
+  ],
+  [
+    "LD_LIBRARY_PATH",
+    "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib",
+  ],
 ]
+test_root = "$root/_build/$platform/$config"
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim*.7z"
@@ -523,20 +548,18 @@ archive_post_unpack_cmd = []
 [repo_test.suites.alltests]
 
 generate_report_cmd = [
-    "${test_root}/kit/kit${exe_ext}",
-    "--empty",
-    "--enable",
-    "omni.kit.test",
-    "--/app/enableStdoutOutput=0",
-    "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
-    "--/exts/omni.kit.test/testExtGenerateReport=1",
+  "${test_root}/kit/kit${exe_ext}",
+  "--empty",
+  "--enable",
+  "omni.kit.test",
+  "--/app/enableStdoutOutput=0",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/exts/omni.kit.test/testExtGenerateReport=1",
 ]
 stdout_fail_patterns.exclude = [
-    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
-    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+  '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
+  "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]
-
-
 
 [repo_test.suites.startuptests]
 kind = "glob_and_exec"
@@ -546,15 +569,14 @@ tests_per_process = 1
 
 # fnmatch module is used, matching is case insensitive. Refer to: https://docs.python.org/3/library/fnmatch.html
 # notice: to escape [ and ] symbols wrap them in [].
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 stdout_fail_patterns.exclude = [
-	"*Leaking graphics objects*",  # Exclude grahics leaks until fixed
-	"*leaking memory. Missing call to destroyResourceBindingSignature*",
-	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
-	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
-  "*USD stage detach not called, holding a loose ptr to a stage!*" # caused by fast exit
+  "*Leaking graphics objects*",                                                                        # Exclude grahics leaks until fixed
+  "*leaking memory. Missing call to destroyResourceBindingSignature*",
+  "*extension object is still alive*",                                                                 # Ignore any leaks for startup tests to not block pipeline
+  "*Failed to obtain username for current process, using cache directory without username as suffix*", # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
+  "*USD stage detach not called, holding a loose ptr to a stage!*",                                    # caused by fast exit
 ]
-
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Test Suite: 	Startup Tests
@@ -563,47 +585,43 @@ stdout_fail_patterns.exclude = [
 
 [[repo_test.suites.startuptests.group]]
 # Run Kit App Full.
-include = [
-  "tests-startup*${shell_ext}",
-]
-exclude = []
 args = [
   "--/app/settings/persistent=0",
   "--/app/settings/loadUserConfig=0",
   "--/app/content/emptyStageOnStart=1",
   "--/exts/omni.kit.registry.nucleus/registries/0/name=0",
   "--portable-root ${test_root}/portable_root",
-	"--portable",
-	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
-  "--reset-user"
+  "--portable",
+  "--/log/flushStandardStreamOutput=1",                    # Prevents mixed up piped stdout
+  "--reset-user",
 ]
+exclude = []
+include = ["tests-startup*${shell_ext}"]
 timeout = 500
 
 [repo_test.suites.selectortests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
-tests_per_process = 1
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 stdout_fail_patterns.exclude = [
-	"*Leaking graphics objects*",  # Exclude grahics leaks until fixed
-	"*leaking memory. Missing call to destroyResourceBindingSignature*",
-	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
-	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
+  "*Leaking graphics objects*",                                                                        # Exclude grahics leaks until fixed
+  "*leaking memory. Missing call to destroyResourceBindingSignature*",
+  "*extension object is still alive*",                                                                 # Ignore any leaks for startup tests to not block pipeline
+  "*Failed to obtain username for current process, using cache directory without username as suffix*", # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
 ]
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+tests_per_process = 1
 [[repo_test.suites.selectortests.group]]
-include = [
-  "tests-selector*${shell_ext}",
-]
 args = [
   "--/app/settings/persistent=0",
   "--/app/settings/loadUserConfig=0",
   "--/app/content/emptyStageOnStart=1",
   "--/exts/omni.kit.registry.nucleus/registries/0/name=0",
   "--portable-root ${test_root}/portable_root",
-	"--portable",
-	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
-  "--reset-user"
+  "--portable",
+  "--/log/flushStandardStreamOutput=1",                    # Prevents mixed up piped stdout
+  "--reset-user",
 ]
+include = ["tests-selector*${shell_ext}"]
 timeout = 500
 
 [repo_test.suites.postinstalltests]
@@ -612,9 +630,7 @@ path = "${test_root}"
 tests_per_process = 1
 
 [[repo_test.suites.postinstalltests.group]]
-include = [
-  "omni.isaac.sim.post.install.run${shell_ext}",
-]
+include = ["omni.isaac.sim.post.install.run${shell_ext}"]
 timeout = 1500
 
 [repo_test.suites.warmuptests]
@@ -623,9 +639,7 @@ path = "${test_root}"
 tests_per_process = 1
 
 [[repo_test.suites.warmuptests.group]]
-include = [
-  "omni.isaac.sim.warmup${shell_ext}",
-]
+include = ["omni.isaac.sim.warmup${shell_ext}"]
 timeout = 1500
 
 [repo_test.suites.pythontests]
@@ -633,166 +647,164 @@ kind = "glob_and_exec"
 path = "${test_root}/tests"
 
 [[repo_test.suites.pythontests.group]]
-include = ["tests-*${shell_ext}"]
+args = [
+  "--portable-root ${test_root}/portable_root",
+  "--reset-user",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+]
 exclude = [
   "tests-startup*${shell_ext}",
   "tests-selector*${shell_ext}",
   "tests-unit*${shell_ext}",
   "tests-isaacsim.util.internal*${shell_ext}",
-  "tests-omni.isaac.benchmarks*${shell_ext}",
+  "tests-isaacsim.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
   "tests-nativepython*${shell_ext}",
   "tests-internaldocker*${shell_ext}",
 ]
-args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
+include = ["tests-*${shell_ext}"]
+stdout_fail_patterns.exclude = [
+  "*Remote server does not support WebSockets*",
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
+]
 tc_report_enabled = false
 timeout = 3600
-stdout_fail_patterns.exclude = [
-	"*Remote server does not support WebSockets*",
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
-]
 
 [[repo_test.suites.pythontests.bucket]]
-name = "1"
+include = ["tests-omni.isaac*${shell_ext}"]
+name = "deprecated"
+[[repo_test.suites.pythontests.bucket]]
+include = ["tests-isaacsim.asset*${shell_ext}"]
+name = "asset"
+[[repo_test.suites.pythontests.bucket]]
+include = ["tests-isaacsim.core*${shell_ext}"]
+name = "core"
+[[repo_test.suites.pythontests.bucket]]
 include = [
-  "tests-omni.isaac.*motion*${shell_ext}",
-  "tests-omni.isaac.*dynamic*${shell_ext}",
+  "tests-isaacsim.examples*${shell_ext}",
+  "tests-isaacsim.test*${shell_ext}",
 ]
+name = "examples_tests"
 [[repo_test.suites.pythontests.bucket]]
-name = "2"
+include = ["tests-isaacsim.replicator*${shell_ext}"]
+name = "replicator"
+[[repo_test.suites.pythontests.bucket]]
 include = [
-  "tests-omni.isaac.example*${shell_ext}",
+  "tests-isaacsim.ros1*${shell_ext}",
+  "tests-isaacsim.ros2*${shell_ext}",
 ]
+name = "ros"
 [[repo_test.suites.pythontests.bucket]]
-name = "3"
+include = ["tests-isaacsim.sensors*${shell_ext}"]
+name = "sensors"
+[[repo_test.suites.pythontests.bucket]]
 include = [
-  "tests-omni.isaac.ros*${shell_ext}",
+  "tests-isaacsim.gui*${shell_ext}",
+  "tests-isaacsim.utils*${shell_ext}",
 ]
+name = "utils_gui"
 [[repo_test.suites.pythontests.bucket]]
-name = "4"
 include = [
-  "tests-isaacsim.core.*${shell_ext}",
-  "tests-isaacsim.core.api*${shell_ext}",
+  "tests-isaacsim.robot_motion*${shell_ext}",
+  "tests-isaacsim.robot_setup*${shell_ext}",
+  "tests-isaacsim.robot*${shell_ext}",
 ]
+name = "robot"
 [[repo_test.suites.pythontests.bucket]]
-name = "5"
-include = [
-  "tests-isaacsim.test.collection*${shell_ext}",
-  "tests-omni.isaac.tests*${shell_ext}",
-]
-[[repo_test.suites.pythontests.bucket]]
-name = "6"
-include = [
-  "tests-isaacsim.util.debug_draw*${shell_ext}",
-  "tests-omni.isaac.synthetic*${shell_ext}",
-  "tests-omni.replicator.isaac*${shell_ext}",
-  "tests-isaacsim.replicator*${shell_ext}",
-]
-[[repo_test.suites.pythontests.bucket]]
-name = "7"
-include = [
-  "tests-isaacsim.sensors.*${shell_ext}",
-  "tests-omni.isaac.*motion*${shell_ext}",
-]
-[[repo_test.suites.pythontests.bucket]]
-name = "8"
-include = [
-  "tests-isaacsim.gui.menu*${shell_ext}",
-  "tests-isaacsim.asset.browser*${shell_ext}",]
-[[repo_test.suites.pythontests.bucket]]
-name = "9"
 include = ["*"]
+name = "other"
 
 [repo_test.suites.benchmarks]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 
 generate_report_cmd = [
-    "./repo${shell_ext}",
-    "ci",
-    "standalone_report",
-    "--",
-    "${test_root}/_testoutput",
-    "benchmarks"
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "benchmarks",
 ]
 
 [[repo_test.suites.benchmarks.group]]
+args = [
+  "--portable-root ${test_root}/portable_root",
+  "--reset-user",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+]
+exclude = []
 include = [
   "tests-isaacsim.benchmark.*${shell_ext}",
   "tests-standalone_benchmarks*${shell_ext}",
 ]
-exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
+stdout_fail_patterns.exclude = [
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
+]
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 tc_report_enabled = false
 timeout = 5000
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-stdout_fail_patterns.exclude = [
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
-]
-
 
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 
 [[repo_test.suites.internalpythontests.group]]
-include = [
-  "tests-isaacsim.util.internal*${shell_ext}",
+args = [
+  "--portable-root ${test_root}/portable_root",
+  "--reset-user",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
 ]
 exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
+include = ["tests-isaacsim.util.internal*${shell_ext}"]
+stdout_fail_patterns.exclude = [
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
+]
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 tc_report_enabled = false
 timeout = 5000
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-stdout_fail_patterns.exclude = [
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
-]
 
 [[repo_test.suites.internalpythontests.bucket]]
+include = ["tests-isaacsim.util.internal*${shell_ext}"]
 name = "1"
-include = [
-  "tests-isaacsim.util.internal*${shell_ext}",
-]
 
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 
 generate_report_cmd = [
-    "./repo${shell_ext}",
-    "ci",
-    "standalone_report",
-    "--",
-    "${test_root}/_testoutput",
-    "nativepythontests"
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "nativepythontests",
 ]
 
 [[repo_test.suites.nativepythontests.group]]
-include = [
-  "tests-nativepython*${shell_ext}"
+args = [
+  "--portable-root ${test_root}/portable_root",
+  "--reset-user",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
 ]
 exclude = []
-args = ["--portable-root ${test_root}/portable_root", "--reset-user",  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'"]
+include = ["tests-nativepython*${shell_ext}"]
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 tc_report_enabled = false
 timeout = 960
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 
 [[repo_test.suites.nativepythontests.bucket]]
+include = ["tests-nativepython-replicator*${shell_ext}"]
 name = "1"
-include = [
-  "tests-nativepython-replicator*${shell_ext}"
-]
 [[repo_test.suites.nativepythontests.bucket]]
+include = ["tests-nativepython-testing*${shell_ext}"]
 name = "2"
-include = [
-  "tests-nativepython-testing*${shell_ext}"
-]
 [[repo_test.suites.nativepythontests.bucket]]
-name = "3"
 include = ["*"]
+name = "3"
 
 # [repo_test.suites.jupytertests]
 # kind = "glob_and_exec"
@@ -847,18 +859,16 @@ kind = "glob_and_exec"
 path = "${test_root}/tests"
 
 [[repo_test.suites.gympythontests.group]]
-include = [
-  "tests-omni.isaac.gym${shell_ext}",
-]
-exclude = []
 args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-tc_report_enabled = false
-timeout = 100000
+exclude = []
+include = ["tests-omni.isaac.gym${shell_ext}"]
 stdout_fail_patterns.exclude = [
   "*Remote server does not support WebSockets*",
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
 ]
+tc_report_enabled = false
+timeout = 100000
 
 ########################################################################################################################
 # Bump version
@@ -871,7 +881,6 @@ branch_name = "develop"
 # # FOR PRODUCTION #
 # branch_name = "release/4.5"
 
-
 ########################################################################################################################
 # Extensions publisher
 ########################################################################################################################
@@ -883,24 +892,21 @@ kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 
 publish_root = "${root}/_build/$platform/$config"
 
-ext_folders = [
-  "${publish_root}/exts",
-  "${publish_root}/extsDeprecated"
-]
+ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
-exts.include = [
-    "omni.isaac.*",
-    "omni.exporter.urdf",
-    "isaacsim.*",
-    "omni.kit.loop-isaac",
-    "omni.pip.cloud",
-    "omni.pip.compute",
-    "omni.usd.schema.isaac",
-    "omni.kit.property.isaac",
-    "omni.replicator.isaac",
-]
 exts.exclude = ["isaacsim.util.internal"]
+exts.include = [
+  "omni.isaac.*",
+  "omni.exporter.urdf",
+  "isaacsim.*",
+  "omni.kit.loop-isaac",
+  "omni.pip.cloud",
+  "omni.pip.compute",
+  "omni.usd.schema.isaac",
+  "omni.kit.property.isaac",
+  "omni.replicator.isaac",
+]
 
 # This is hardcoded in template
 # # Registries to publish to.
@@ -924,7 +930,6 @@ archive_pattern = "${root}/_build/packages/isaac-sim-standalone@*${platform_targ
 enroll_in_etm = false
 etm_emails = ["hmazhar@nvidia.com"]
 
-
 ########################################################################################################################
 # Code formatting
 ########################################################################################################################
@@ -932,26 +937,25 @@ etm_emails = ["hmazhar@nvidia.com"]
 [repo_format]
 
 cpp.files.exclude = [
-    "source/extensions/isaacsim.ros1.bridge/isaac_ros_messages/**",
-    "source/extensions/isaacsim.ros2.bridge/isaac_ros2_messages/**",
-    "tools/container/**",
+  "source/extensions/isaacsim.ros1.bridge/isaac_ros_messages/**",
+  "source/extensions/isaacsim.ros2.bridge/isaac_ros2_messages/**",
+  "tools/container/**",
 ]
 
 python.files.exclude = [
-    ".vscode/*",
-    "_build/*",
-    "_compiler/*",
-    "_repo/*",
-    ".git/*",
-    ".eggs/*",
-    ".venv/*",
-    ".local/*",
-    ".nvidia-omniverse/*",
-    "tools/packman/*",
-    "schemas/*",
-    "tools/container/**",
+  ".vscode/*",
+  "_build/*",
+  "_compiler/*",
+  "_repo/*",
+  ".git/*",
+  ".eggs/*",
+  ".venv/*",
+  ".local/*",
+  ".nvidia-omniverse/*",
+  "tools/packman/*",
+  "schemas/*",
+  "tools/container/**",
 ]
-
 
 ########################################################################################################################
 # Omnigraph Documentation Building
@@ -959,30 +963,33 @@ python.files.exclude = [
 
 [repo_ogn]
 
-home_path = "${root}/source/extensions"
 build_path = "${root}/_build/${platform}/release/exts"
+home_path = "${root}/source/extensions"
 ogn_exts_includes = [
-    "isaacsim.replicator",
-    "isaacsim.asset.conveyor",
-    "isaacsim.ros2.bridge",
-    "isaacsim.sensors.physics",
-    "isaacsim.sensors.physx",
-    "isaacsim.sensors.rtx",
-    "omni.isaac.conveyor",
-    "isaacsim.core.nodes",
-    "isaacsim.util.debug_draw",
-    "isaacsim.examples.interactive_nodes",
-    "isaacsim.ros1.bridge",
-    "isaacsim.robot.wheeled_robots",
+  "isaacsim.replicator",
+  "isaacsim.asset.conveyor",
+  "isaacsim.ros2.bridge",
+  "isaacsim.sensors.physics",
+  "isaacsim.sensors.physx",
+  "isaacsim.sensors.rtx",
+  "omni.isaac.conveyor",
+  "isaacsim.core.nodes",
+  "isaacsim.util.debug_draw",
+  "isaacsim.examples.interactive_nodes",
+  "isaacsim.ros1.bridge",
+  "isaacsim.robot.wheeled_robots",
 ]
 
 [repo_generate_vscode_settings]
 
-template_paths=["${root}/.vscode/settings.template.json", "${root}/source/scripts/vscode/${platform}/settings.json"]
-output_paths=["${root}/", "${root}/_build/${platform}/${config}"]
+output_paths = ["${root}/", "${root}/_build/${platform}/${config}"]
+template_paths = [
+  "${root}/.vscode/settings.template.json",
+  "${root}/source/scripts/vscode/${platform}/settings.json",
+]
 
 # paths specific to python autocomplete, not added to pythonpath/env
-python_analysis_extra_mapping=[
+python_analysis_extra_mapping = [
   "$root/_build/$platform/$config/exts/*",
   "$root/_build/$platform/$config/extscache/*",
   "$root/_build/$platform/$config/kit/exts/*",
@@ -991,34 +998,29 @@ python_analysis_extra_mapping=[
 ]
 
 [repo_generate_changelog]
+exts_exclude = ["isaacsim.util.internal"]
+extscache_paths = ["${root}/source/apps/omni.isaac.sim.extscache.kit"]
 home_path = "${root}/source/extensions/"
-exts_exclude = [
-  "isaacsim.util.internal",
-]
-extscache_paths = [
-  "${root}/source/apps/omni.isaac.sim.extscache.kit",
-]
 
 [repo_lint]
 files.exclude = [
-    ".vscode/*",
-    "_build/*",
-    "_compiler/*",
-    "_repo/*",
-    ".git/*",
-    ".eggs/*",
-    ".venv/*",
-    "tools/*",
-    "schemas/*",
-    "source/ros*",
-    "tests/*"
+  ".vscode/*",
+  "_build/*",
+  "_compiler/*",
+  "_repo/*",
+  ".git/*",
+  ".eggs/*",
+  ".venv/*",
+  "tools/*",
+  "schemas/*",
+  "source/ros*",
+  "tests/*",
 ]
 
 flake8.config = "${root}/.flake8"
 
 [repo_edit_sysconfig]
 sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10/_sysconfigdata__linux_x86_64-linux-gnu.py"
-
 
 ########################################################################################################################
 # Update extscache
@@ -1060,21 +1062,19 @@ deps_for_isaac = [
   "semantics.schema.editor-0.3.8",
   "semantics.schema.property-1.0.4",
   "omni.warp.core-1.3.1",
-  "omni.warp-1.3.1"
+  "omni.warp-1.3.1",
 ]
 
 windows_only = [
   "omni.kit.window.modifier.titlebar",
-  "omni.kit.converter.patchmanager"
+  "omni.kit.converter.patchmanager",
 ]
 
 linux_only = []
 
-exclude = [
-]
+exclude = []
 
-override = [
-]
+override = []
 
 output_file = "${root}/source/apps/omni.isaac.sim.extscache.kit"
 
@@ -1100,7 +1100,6 @@ script = "${config_root}/tools/ci/test_isaac.py"
 [repo_ci.jobs.standalone_report]
 script = "${config_root}/tools/ci/standalone_report.py"
 
-
 ########################################################################################################################
 # Tool to pull kit kernel and extensions before running
 ########################################################################################################################
@@ -1125,13 +1124,13 @@ enabled = true
 git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac_sim-app.git"
 
 [repo_deploy_launcher.slack]
-slack_url = "${env:SLACK_CHANGELOG_PUBLISH_URL}" # omni-usd-composer
-write_jira = true
 inline_changelog = false
-repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/"
-jira_service_account_name = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_NAME}"
-jira_service_account_api_key = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_API_KEY}"
 jira_server_url = "https://omniverse-jirasw.nvidia.com"
+jira_service_account_api_key = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_API_KEY}"
+jira_service_account_name = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_NAME}"
+repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/"
+slack_url = "${env:SLACK_CHANGELOG_PUBLISH_URL}"                                # omni-usd-composer
+write_jira = true
 
 ########################################################################################################################
 # Tool to promote extensions to the public registry pipeline
@@ -1168,72 +1167,68 @@ isaacsim = "isaacsim:main"
 """
 
 # package generation
-namespace = "isaacsim"
-definition_paths = [
-    "${root}/python_packages.toml",
-]
-source_folder = "${root}/_build/${platform}/release"
-packages_folder = "${root}/_build/packages/python"
+definition_paths = ["${root}/python_packages.toml"]
 distributions_folder = "${root}/_build/packages/dist"
+namespace = "isaacsim"
+packages_folder = "${root}/_build/packages/python"
+source_folder = "${root}/_build/${platform}/release"
 
 # package metadata (common)
 # pyproject.toml
-pyproject.requires-python = "==3.10.*"
-pyproject.version = "${build_string}"
-pyproject.authors = [
-    { name = "Isaac Sim team" },
-]
-pyproject.license = { text = "NVIDIA Proprietary Software" }
+pyproject.authors = [{name = "Isaac Sim team"}]
 pyproject.classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "License :: Other/Proprietary License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "License :: Other/Proprietary License",
 ]
+pyproject.license = {text = "NVIDIA Proprietary Software"}
 pyproject.readme = """
 See [Install Isaac Sim using PIP](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_python.html)
 for details on how to install and run Isaac Sim in a (virtual) Python environment.
 """
+pyproject.requires-python = "==3.10.*"
 pyproject.urls = [
-    { "Home page" = "https://developer.nvidia.com/isaac-sim" },
-    { "Documentation" = "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html" },
-    { "Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69" },
+  {"Home page" = "https://developer.nvidia.com/isaac-sim"},
+  {"Documentation" = "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html"},
+  {"Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"},
 ]
+pyproject.version = "${build_string}"
 
-wheel.platforms = { "linux-x86_64" = "manylinux_2_34_x86_64", "windows-x86_64" = "win_amd64" }
+wheel.platforms = {"linux-x86_64" = "manylinux_2_34_x86_64", "windows-x86_64" = "win_amd64"}
 
 # whl publishing (pypi)
 [[repo_python_package.publish.task]]
 packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
+pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
 pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
 pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
-pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
 
 # check python package definitions
 [repo_check_python_package_definitions]
+excluded_extensions = [
+  # archives
+  "omni.isaac.core_archive",
+  "omni.isaac.ml_archive",
+  "omni.pip.compute",
+  "omni.pip.cloud",
+  # others
+  "omni.isaac.common_includes",
+  "isaacsim.util.internal",
+  "omni.isaac.unit_converter",
+]
+extension_folder = "${root}/source/extensions"
 kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
 omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
-extension_folder = "${root}/source/extensions"
-excluded_extensions = [
-    # archives
-    "omni.isaac.core_archive",
-    "omni.isaac.ml_archive",
-    "omni.pip.compute",
-    "omni.pip.cloud",
-    # others
-    "omni.isaac.common_includes",
-    "isaacsim.util.internal",
-    "omni.isaac.unit_converter",
-]
 
 # comment archive extension dependencies
 [repo_comment_archive_deps]
-search_folder = "${root}/_build/packages/python"
 archives = [
-    "omni.isaac.core_archive",
-    "omni.isaac.ml_archive",
-    "omni.pip.compute",
-    "omni.pip.cloud",
-    # "omni.kit.pip_archive",
+  "omni.isaac.core_archive",
+  "omni.isaac.ml_archive",
+  "omni.pip.compute",
+  "omni.pip.cloud",
+  # "omni.kit.pip_archive",
 ]
+search_folder = "${root}/_build/packages/python"
 [repo_dump_extensions]
 root_folder = "${root}/_build/${platform}/${config}"

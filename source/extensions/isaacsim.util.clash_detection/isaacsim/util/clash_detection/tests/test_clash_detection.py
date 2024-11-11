@@ -7,8 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import asyncio
-
 import carb
 import numpy as np
 
@@ -16,18 +14,17 @@ import numpy as np
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from isaacsim.util.clash_detection import ClashDetector
-from omni.isaac.core.objects import GroundPlane
-from omni.isaac.core.prims import RigidPrimView, XFormPrim, XFormPrimView
-from omni.isaac.core.utils.stage import (
+from isaacsim.core.api.objects import GroundPlane
+from isaacsim.core.prims import XFormPrim
+from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,
     get_current_stage,
-    open_stage_async,
     update_stage_async,
 )
-from omni.isaac.nucleus import get_assets_root_path_async
-from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdLux, UsdPhysics
+from isaacsim.storage.native import get_assets_root_path_async
+from isaacsim.util.clash_detection import ClashDetector
+from pxr import Gf, UsdGeom
 
 
 class TestClashDetection(omni.kit.test.AsyncTestCase):
@@ -58,10 +55,10 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         for idx, location in enumerate(locations):
             carter_prim_path = f"/World/Carter_{idx}"
             add_reference_to_stage(usd_path=asset_path, prim_path=carter_prim_path)
-            translation = np.array([10 * location, 10 * location, location])
-            XFormPrim(carter_prim_path).set_local_pose(translation=translation)
+            translations = np.array([[10 * location, 10 * location, location]])
+            XFormPrim(carter_prim_path).set_local_poses(translations=translations)
         await update_stage_async()
-        self._carter_prim_view = XFormPrimView(prim_paths_expr="/World/Carter_*")
+        self._carter_prim_view = XFormPrim(prim_paths_expr="/World/Carter_*")
         pass
 
     async def add_mesh_cube(self, position):
