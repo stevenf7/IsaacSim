@@ -15,7 +15,7 @@ import numpy as np
 import omni.graph.core as og
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.transformations import pose_from_tf_matrix, tf_matrix_from_pose
-from isaacsim.replicator.scripts.utils import get_image_space_points, get_semantics
+from isaacsim.replicator.common.scripts.utils import get_image_space_points, get_semantics
 from omni.syntheticdata.scripts.helpers import get_bbox_3d_corners
 
 

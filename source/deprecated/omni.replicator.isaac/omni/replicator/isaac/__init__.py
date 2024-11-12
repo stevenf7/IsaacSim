@@ -10,14 +10,14 @@
 import carb
 
 old_extension_name = "omni.replicator.isaac"
-new_extension_name = "isaacsim.replicator"
+new_extension_name = "isaacsim.replicator.common"
 
 carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from isaacsim.replicator.scripts import context, gate, physics_view, trigger, utils
-from isaacsim.replicator.scripts.attributes import (
+from isaacsim.replicator.common.scripts import context, gate, physics_view, trigger, utils
+from isaacsim.replicator.common.scripts.attributes import (
     ARTICULATION_ATTRIBUTES,
     RIGID_PRIM_ATTRIBUTES,
     SIMULATION_CONTEXT_ATTRIBUTES,

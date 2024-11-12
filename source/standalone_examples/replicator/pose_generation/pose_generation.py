@@ -91,7 +91,7 @@ from isaacsim.core.api import World
 from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.semantics import add_update_semantics
-from isaacsim.replicator.scripts.writers import PoseWriter, YCBVideoWriter
+from isaacsim.replicator.common.scripts.writers import PoseWriter, YCBVideoWriter
 from isaacsim.storage.native import get_assets_root_path
 
 # Since the simulation is mostly collision checking, a larger physics dt can be used to speed up the object movements

@@ -18,7 +18,7 @@ import omni.replicator.core as rep
 import omni.usd
 import torch
 from isaacsim.core.utils.stage import create_new_stage_async
-from isaacsim.replicator.scripts.writers.pytorch_listener import PytorchListener
+from isaacsim.replicator.common.scripts.writers.pytorch_listener import PytorchListener
 from PIL import Image
 
 
@@ -152,7 +152,7 @@ class TestOgnCustomReplicatorRandomizer(omni.kit.test.AsyncTestCase):
             input_prims: ReplicatorItem | list[str] | None = None,
         ) -> ReplicatorItem:
 
-            node = create_node("isaacsim.replicator.OgnSampleOnSphere", radius=radius)
+            node = create_node("isaacsim.replicator.common.OgnSampleOnSphere", radius=radius)
             if input_prims:
                 set_target_prims(node, "inputs:prims", input_prims)
             return node
@@ -163,7 +163,7 @@ class TestOgnCustomReplicatorRandomizer(omni.kit.test.AsyncTestCase):
             input_prims: ReplicatorItem | list[str] | None = None,
         ) -> ReplicatorItem:
 
-            node = create_node("isaacsim.replicator.OgnSampleInSphere", radius=radius)
+            node = create_node("isaacsim.replicator.common.OgnSampleInSphere", radius=radius)
             if input_prims:
                 set_target_prims(node, "inputs:prims", input_prims)
             return node
@@ -175,7 +175,7 @@ class TestOgnCustomReplicatorRandomizer(omni.kit.test.AsyncTestCase):
             input_prims: ReplicatorItem | list[str] | None = None,
         ) -> ReplicatorItem:
 
-            node = create_node("isaacsim.replicator.OgnSampleBetweenSpheres", radius1=radius1, radius2=radius2)
+            node = create_node("isaacsim.replicator.common.OgnSampleBetweenSpheres", radius1=radius1, radius2=radius2)
             if input_prims:
                 set_target_prims(node, "inputs:prims", input_prims)
             return node

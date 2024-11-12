@@ -3,7 +3,7 @@
 local ext = get_current_extension_info()
 
 -- Helper variable containing standard configuration information for projects containing OGN files
-local ogn = get_ogn_project_information(ext, "isaacsim/replicator")
+local ogn = get_ogn_project_information(ext, "isaacsim/replicator/common")
 
 -- ----------------------------------------------------------------------
 -- Break this out as a separate project ensures the .ogn files are processed before their results are needed

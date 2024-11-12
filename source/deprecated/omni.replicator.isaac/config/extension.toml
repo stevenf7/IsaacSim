@@ -18,7 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.replicator" = {}
+"isaacsim.replicator.common" = {}
 
 [[python.module]]
 name = "omni.replicator.isaac"

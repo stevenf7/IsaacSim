@@ -11,7 +11,7 @@ import carb
 import numpy as np
 import torch
 import warp as wp
-from isaacsim.replicator.scripts.writers.pytorch_listener import PytorchListener
+from isaacsim.replicator.common.scripts.writers.pytorch_listener import PytorchListener
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 
 __version__ = "0.0.1"

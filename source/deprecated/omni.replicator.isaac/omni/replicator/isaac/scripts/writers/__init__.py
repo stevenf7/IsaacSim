@@ -10,16 +10,16 @@
 import carb
 
 old_extension_name = "omni.replicator.isaac"
-new_extension_name = "isaacsim.replicator"
+new_extension_name = "isaacsim.replicator.common"
 module_name = "writers"
 
 carb.log_warn(
     f"{old_extension_name}.{module_name} has been deprecated in favor of {new_extension_name}.{module_name}. Please update your code accordingly."
 )
 
-from isaacsim.replicator.scripts.writers.data_visualization_writer import *
-from isaacsim.replicator.scripts.writers.dope_writer import *
-from isaacsim.replicator.scripts.writers.pose_writer import *
-from isaacsim.replicator.scripts.writers.pytorch_listener import *
-from isaacsim.replicator.scripts.writers.pytorch_writer import *
-from isaacsim.replicator.scripts.writers.ycb_video_writer import *
+from isaacsim.replicator.common.scripts.writers.data_visualization_writer import *
+from isaacsim.replicator.common.scripts.writers.dope_writer import *
+from isaacsim.replicator.common.scripts.writers.pose_writer import *
+from isaacsim.replicator.common.scripts.writers.pytorch_listener import *
+from isaacsim.replicator.common.scripts.writers.pytorch_writer import *
+from isaacsim.replicator.common.scripts.writers.ycb_video_writer import *

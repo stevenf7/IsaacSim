@@ -19,7 +19,7 @@ def on_rl_frame(num_envs: int):
         num_envs (int): The number of environments corresponding to the number of prims
                         encapsulated in the RigidPrimViews and ArticulationViews.
     """
-    node = create_node("isaacsim.replicator.OgnOnRLFrame")
+    node = create_node("isaacsim.replicator.common.OgnOnRLFrame")
     node.get_attribute("inputs:num_envs").set(num_envs)
 
     initialize_context(num_envs, node)
