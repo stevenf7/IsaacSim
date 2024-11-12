@@ -841,7 +841,9 @@ class SimulationContext:
         """
         self._timeline.play()
         self.get_physics_context().warm_start()
-        self._timeline.commit()
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
+        await omni.kit.app.get_app().next_update_async()
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     def play(self) -> None:
@@ -858,7 +860,10 @@ class SimulationContext:
             >>> simulation_context.play()
         """
         self._timeline.play()
-        self._timeline.commit()
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+            set_carb_setting(self._settings, "/app/player/playSimulations", False)
+            self._app.update()
+            set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     async def pause_async(self) -> None:
@@ -876,7 +881,9 @@ class SimulationContext:
             >>> run_coroutine(task())
         """
         self._timeline.pause()
-        self._timeline.commit()
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
+        await omni.kit.app.get_app().next_update_async()
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     def pause(self) -> None:
@@ -889,7 +896,10 @@ class SimulationContext:
             >>> simulation_context.pause()
         """
         self._timeline.pause()
-        self._timeline.commit()
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+            set_carb_setting(self._settings, "/app/player/playSimulations", False)
+            self._app.update()
+            set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     async def stop_async(self) -> None:
@@ -907,7 +917,6 @@ class SimulationContext:
             >>> run_coroutine(task())
         """
         self._timeline.stop()
-        self._timeline.commit()
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         await omni.kit.app.get_app().next_update_async()
         set_carb_setting(self._settings, "/app/player/playSimulations", True)
@@ -923,7 +932,6 @@ class SimulationContext:
             >>> simulation_context.stop()
         """
         self._timeline.stop()
-        self._timeline.commit()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             set_carb_setting(self._settings, "/app/player/playSimulations", False)
             self._app.update()

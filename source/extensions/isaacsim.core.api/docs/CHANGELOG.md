@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.3] - 2024-11-12
+### Changed
+- Revert SimulationContext.play, .play_async, .pause and .pause_async to use app.update instead of timeline.commit.
+
 ## [4.2.2] - 2024-11-08
 ### Changed
 - Changed render calls after timeline changes to timeline.commit calls.
