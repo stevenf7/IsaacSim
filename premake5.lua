@@ -457,7 +457,7 @@ function create_tests()
         -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
         -- use "--reset-user" to reset user config file
         define_startup_experience("tests-startup.main", "isaacsim.full", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-        define_startup_experience("tests-startup.headless", "isaacsim.headless", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.streaming", "isaacsim.streaming", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
         define_startup_experience("tests-startup.extscache", "isaacsim.full", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
         -- -- Windows Only
         -- if os.target() == "windows" then
@@ -625,8 +625,8 @@ function create_tests()
     group "docker_tests"
 
         docker_test("tests-internaldocker-simple", "./dockertests/simple.sh")
-        docker_test("tests-internaldocker-headless", "./isaac-sim.headless.sh", "--allow-root --/app/quitAfter=10")
-        -- docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=10")
+        docker_test("tests-internaldocker-headless", "./isaac-sim.streaming.sh", "--allow-root --/app/quitAfter=10")
+        -- docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.streaming.sh", "--allow-root --/app/quitAfter=10")
         -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/isaacsim.simulation_app/livestream.py --/app/quitAfter=500")
         -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
         docker_test("tests-internaldocker-python-asset_usd_converter", "./python.sh", "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus")
@@ -647,7 +647,7 @@ function group_apps()
     define_local_experience("isaac-sim", "isaacsim.full")
     define_local_experience("isaac-sim.fabric", "isaacsim.fabric")
     define_local_experience("isaac-sim.selector", "isaacsim.selector")
-    define_local_experience("isaac-sim.headless", "isaacsim.headless", "--no-window ")
+    define_local_experience("isaac-sim.streaming", "isaacsim.streaming", "--no-window ")
     -- Windows Only
     if os.target() == "windows" then
         define_local_experience("isaac-sim.xr.steamvr", "isaacsim.xr.steamvr")

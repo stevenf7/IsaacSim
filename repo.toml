@@ -822,7 +822,7 @@ name = "3"
 # tests_per_process = 1
 #   [[repo_test.suites.dockertests.group]]
 #   include = ["isaac-sim.docker${shell_ext}"]
-#   args = ["nvidia-smi && ls && ./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500"]
+#   args = ["nvidia-smi && ls && ./isaac-sim.streaming.sh --allow-root --/app/quitAfter=500"]
 #   timeout = 1200
 #   [[repo_test.suites.dockertests.group]]
 #   include = ["isaac-sim.docker.gui${shell_ext}"]
