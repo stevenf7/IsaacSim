@@ -11,15 +11,22 @@
 #include <carb/PluginUtils.h>
 
 #include <geometry_msgs/msg/transform_stamped.h>
-#include <include/Tf2FactoryFoxy.h>
+#include <include/Tf2FactoryImpl.h>
 #include <tf2/buffer_core.h>
 #include <tf2_msgs/msg/tf_message.h>
 
-class Ros2BufferCoreFoxy : public Ros2BufferCore
+namespace isaacsim
+{
+namespace ros2
+{
+namespace tf_viewer
+{
+
+class Ros2BufferCoreImpl : public Ros2BufferCore
 {
 public:
-    Ros2BufferCoreFoxy();
-    virtual ~Ros2BufferCoreFoxy();
+    Ros2BufferCoreImpl();
+    virtual ~Ros2BufferCoreImpl();
     virtual bool setTransform(void* msg, const std::string& authority, bool isStatic);
     virtual bool getTransform(const std::string& targetFrame,
                               const std::string& sourceFrame,
@@ -30,6 +37,10 @@ public:
     virtual void clear();
 
 private:
-    tf2::BufferCore mBuffer;
-    std::vector<std::string> mFrames;
+    tf2::BufferCore m_buffer;
+    std::vector<std::string> m_frames;
 };
+
+} // namespace tf_viewer
+} // namespace ros2
+} // namespace isaacsim

@@ -16,16 +16,15 @@
 #include <TransformListener.h>
 
 
-const struct carb::PluginImplDesc pluginImplDesc = { "omni.isaac.transform_listener.plugin", "Transform Listener",
-                                                     "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc pluginImplDesc = { "isaacsim.ros2.tf_viewer.plugin", "Transform Listener", "NVIDIA",
+                                                     carb::PluginHotReload::eDisabled, "dev" };
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace ros2
 {
-namespace transform_listener
+namespace tf_viewer
 {
-
 
 class TransformListener : public ITransformListener, isaacsim::ros2::bridge::Ros2Node
 {
@@ -37,48 +36,47 @@ public:
             CARB_LOG_ERROR("Unsupported ROS_DISTRO: %s", rosDistro.c_str());
             return false;
         }
-        if (!mLibraryLoader)
+        if (!m_libraryLoader)
         {
-            mLibraryLoader =
-                std::make_shared<isaacsim::core::utils::LibraryLoader>("omni.isaac.transform_listener." + rosDistro);
-            if (!mLibraryLoader)
+            m_libraryLoader =
+                std::make_shared<isaacsim::core::utils::LibraryLoader>("isaacsim.ros2.tf_viewer." + rosDistro);
+            if (!m_libraryLoader)
             {
-                CARB_LOG_ERROR("Unable to load the omni.isaac.transform_listener.%s library", rosDistro.c_str());
+                CARB_LOG_ERROR("Unable to load the isaacsim.ros2.tf_viewer.%s library", rosDistro.c_str());
                 return false;
             }
         }
-        if (!mTf2Factory)
+        if (!m_tf2Factory)
         {
 
             typedef Tf2Factory* (*createFactory_binding)(void);
-            createFactory_binding createFactory = (mLibraryLoader->getSymbol<createFactory_binding>("createFactory"));
+            createFactory_binding createFactory = (m_libraryLoader->getSymbol<createFactory_binding>("createFactory"));
             if (!createFactory)
             {
-                CARB_LOG_ERROR(
-                    "Unable to load symbols from the omni.isaac.transform_listener.%s library", rosDistro.c_str());
+                CARB_LOG_ERROR("Unable to load symbols from the isaacsim.ros2.tf_viewer.%s library", rosDistro.c_str());
                 return false;
             }
-            mTf2Factory = (Tf2Factory*)createFactory();
+            m_tf2Factory = (Tf2Factory*)createFactory();
         }
-        if (!mBuffer)
+        if (!m_buffer)
         {
-            mBuffer = mTf2Factory->createBuffer();
-            mBuffer->clear();
+            m_buffer = m_tf2Factory->createBuffer();
+            m_buffer->clear();
         }
         return true;
     }
 
     void finalize()
     {
-        if (mSubscriberTf)
+        if (m_subscriberTf)
         {
-            mSubscriberTf.reset();
-            mSubscriberTf = nullptr;
+            m_subscriberTf.reset();
+            m_subscriberTf = nullptr;
         }
-        if (mMessageTfStatic)
+        if (m_messageTfStatic)
         {
-            mMessageTfStatic.reset();
-            mMessageTfStatic = nullptr;
+            m_messageTfStatic.reset();
+            m_messageTfStatic = nullptr;
         }
         Ros2Node::reset();
     }
@@ -94,117 +92,117 @@ public:
             }
         }
 
-        if (!mSubscriberTf)
+        if (!m_subscriberTf)
         {
             isaacsim::ros2::bridge::Ros2QoSProfile qos;
             qos.depth = 100;
-            mMessageTf = m_factory->createTfTreeMessage();
-            mSubscriberTf =
-                m_factory->createSubscriber(m_nodeHandle.get(), "/tf", mMessageTf->getTypeSupportHandle(), qos);
+            m_messageTf = m_factory->createTfTreeMessage();
+            m_subscriberTf =
+                m_factory->createSubscriber(m_nodeHandle.get(), "/tf", m_messageTf->getTypeSupportHandle(), qos);
             return true;
         }
-        if (!mSubscriberTfStatic)
+        if (!m_subscriberTfStatic)
         {
             isaacsim::ros2::bridge::Ros2QoSProfile qos;
             qos.depth = 100;
-            mMessageTfStatic = m_factory->createTfTreeMessage();
-            mSubscriberTfStatic = m_factory->createSubscriber(
-                m_nodeHandle.get(), "/tf_static", mMessageTfStatic->getTypeSupportHandle(), qos);
+            m_messageTfStatic = m_factory->createTfTreeMessage();
+            m_subscriberTfStatic = m_factory->createSubscriber(
+                m_nodeHandle.get(), "/tf_static", m_messageTfStatic->getTypeSupportHandle(), qos);
             return true;
         }
 
         bool status = true;
-        status &= subscriberCallback(false);
-        status &= subscriberCallback(true);
+        status &= _subscriberCallback(false);
+        status &= _subscriberCallback(true);
         return status;
     }
 
     void reset()
     {
-        if (!mBuffer)
+        if (!m_buffer)
             return;
-        mBuffer->clear();
+        m_buffer->clear();
     }
 
-    void getTransformations(const std::string& rootFrame)
+    void computeTransforms(const std::string& rootFrame)
     {
-        if (!mBuffer)
+        if (!m_buffer)
             return;
         // clear containers
-        mFrames.clear();
-        mRelations.clear();
-        mTransformations.clear();
+        m_frames.clear();
+        m_relations.clear();
+        m_transforms.clear();
         // get all frames
-        mFrames = mBuffer->getFrames();
+        m_frames = m_buffer->getFrames();
         // get transformations
         std::string parentFrame;
-        for (auto& frame : mFrames)
+        for (auto& frame : m_frames)
         {
-            bool retval = mBuffer->getParentFrame(frame, parentFrame);
+            bool retval = m_buffer->getParentFrame(frame, parentFrame);
             if (retval)
             {
-                mRelations.push_back({ frame, parentFrame });
+                m_relations.push_back({ frame, parentFrame });
                 double translation[3], rotation[4];
-                retval = mBuffer->getTransform(rootFrame, frame, translation, rotation);
+                retval = m_buffer->getTransform(rootFrame, frame, translation, rotation);
                 if (retval)
-                    mTransformations[frame] = { { translation[0], translation[1], translation[2] },
-                                                { rotation[0], rotation[1], rotation[2], rotation[3] } };
+                    m_transforms[frame] = { { translation[0], translation[1], translation[2] },
+                                            { rotation[0], rotation[1], rotation[2], rotation[3] } };
             }
         }
     }
 
     const std::vector<std::string>& getFrames()
     {
-        return mFrames;
+        return m_frames;
     };
     const std::vector<std::tuple<std::string, std::string>>& getRelations()
     {
-        return mRelations;
+        return m_relations;
     };
     const std::unordered_map<std::string,
                              std::tuple<std::tuple<double, double, double>, std::tuple<double, double, double, double>>>&
     getTransforms()
     {
-        return mTransformations;
+        return m_transforms;
     };
 
 private:
-    std::shared_ptr<isaacsim::core::utils::LibraryLoader> mLibraryLoader = nullptr;
-    Tf2Factory* mTf2Factory = nullptr;
+    std::shared_ptr<isaacsim::core::utils::LibraryLoader> m_libraryLoader = nullptr;
+    Tf2Factory* m_tf2Factory = nullptr;
 
-    std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> mSubscriberTf = nullptr;
-    std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> mSubscriberTfStatic = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> m_subscriberTf = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> m_subscriberTfStatic = nullptr;
 
-    std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> mMessageTf = nullptr;
-    std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> mMessageTfStatic = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> m_messageTf = nullptr;
+    std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> m_messageTfStatic = nullptr;
 
-    std::shared_ptr<Ros2BufferCore> mBuffer = nullptr;
+    std::shared_ptr<Ros2BufferCore> m_buffer = nullptr;
 
-    std::vector<std::string> mFrames;
-    std::vector<std::tuple<std::string, std::string>> mRelations;
+    std::vector<std::string> m_frames;
+    std::vector<std::tuple<std::string, std::string>> m_relations;
     std::unordered_map<std::string, std::tuple<std::tuple<double, double, double>, std::tuple<double, double, double, double>>>
-        mTransformations;
+        m_transforms;
 
-    bool subscriberCallback(bool isStatic)
+    bool _subscriberCallback(bool isStatic)
     {
-        if (!mBuffer)
+        if (!m_buffer)
             return false;
-        auto subscriber = isStatic ? mSubscriberTfStatic : mSubscriberTf;
-        auto message = isStatic ? mMessageTfStatic : mMessageTf;
+        auto subscriber = isStatic ? m_subscriberTfStatic : m_subscriberTf;
+        auto message = isStatic ? m_messageTfStatic : m_messageTf;
         while (subscriber->spin(message->getPtr()))
         {
-            mBuffer->setTransform(message->getPtr(), "", isStatic);
+            m_buffer->setTransform(message->getPtr(), "", isStatic);
         }
         return true;
     }
 };
 
-} // namespace transform_listener
-} // namespace isaac
-} // namespace omni
+} // namespace tf_viewer
+} // namespace ros2
+} // namespace isaacsim
 
-CARB_PLUGIN_IMPL(pluginImplDesc, omni::isaac::transform_listener::TransformListener)
+CARB_PLUGIN_IMPL(pluginImplDesc, isaacsim::ros2::tf_viewer::TransformListener)
 
-void fillInterface(omni::isaac::transform_listener::TransformListener& iface)
+void fillInterface(isaacsim::ros2::tf_viewer::TransformListener& iface)
 {
 }

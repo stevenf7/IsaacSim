@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2024-11-11
+### Added
+- Add the root frame transform if it is not in the list to be rendered (configurable via carb settings)
+
+### Changed
+- Unify ROS 2 backend implementations
+- Update source code to follow the Isaac Sim's Coding Style Guidelines for C++
+
 ## [1.1.0] - 2024-11-04
 ### Changed
 - Updated tf viewer OG node replacing spinOnce function with new initialize ROS2 Node functions

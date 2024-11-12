@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.2.0"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
@@ -27,6 +27,7 @@ name = "isaacsim.ros2.tf_viewer"
 
 [settings]
 exts."isaacsim.ros2.tf_viewer".cpp = true
+exts."isaacsim.ros2.tf_viewer".include_root_frame = true
 
 [test]
 stdoutFailPatterns.exclude = [

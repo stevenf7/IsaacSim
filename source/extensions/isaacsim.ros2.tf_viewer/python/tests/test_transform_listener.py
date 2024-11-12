@@ -62,7 +62,7 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
         ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         print(ext_path)
         carb.get_framework().load_plugins(
-            loaded_file_wildcards=["omni.isaac.transform_listener.plugin"],
+            loaded_file_wildcards=["isaacsim.ros2.tf_viewer.plugin"],
             search_paths=[os.path.abspath(os.path.join(ext_path, "bin"))],
         )
 

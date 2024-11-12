@@ -64,7 +64,7 @@ class UIBuilder:
     def _build_ui(self):
         if not self._window:
             label_width = 120
-            self._window = ui.Window(title=self._window_title, visible=False, width=375, height=223)
+            self._window = ui.Window(title=self._window_title, visible=False, width=375, height=270)
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
                     self._view = ui.CollapsableFrame(

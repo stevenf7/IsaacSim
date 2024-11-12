@@ -28,6 +28,7 @@ class Extension(omni.ext.IExt):
         # get extension settings
         settings = carb.settings.get_settings()
         self._cpp = settings.get("/exts/isaacsim.ros2.tf_viewer/cpp")
+        self._include_root_frame = settings.get("/exts/isaacsim.ros2.tf_viewer/include_root_frame")
 
         # load plugin
         if self._cpp:
@@ -39,7 +40,7 @@ class Extension(omni.ext.IExt):
                     os.environ["PATH"] = ext_path + "/bin"
             # load carb plugin
             carb.get_framework().load_plugins(
-                loaded_file_wildcards=["omni.isaac.transform_listener.plugin"],
+                loaded_file_wildcards=["isaacsim.ros2.tf_viewer.plugin"],
                 search_paths=[os.path.abspath(os.path.join(ext_path, "bin"))],
             )
             from .. import _transform_listener as _transform_listener_ros2_cpp
@@ -128,7 +129,11 @@ class Extension(omni.ext.IExt):
             if self._cpp:
                 self._interface.spin()
             # get transforms
-            frames, transforms, relations = self._interface.get_transforms(self._ui_builder.root_frame)
+            root_frame = self._ui_builder.root_frame
+            frames, transforms, relations = self._interface.get_transforms(root_frame)
+            # add root frame if not listed
+            if self._include_root_frame and root_frame not in transforms:
+                transforms[root_frame] = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 1.0))
             # update frames and ui
             self._frames.update(frames)
             self._ui_builder.update(self._frames)

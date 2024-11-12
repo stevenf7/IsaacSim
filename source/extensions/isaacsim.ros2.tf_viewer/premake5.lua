@@ -2,14 +2,15 @@ local ext = get_current_extension_info()
 project_ext (ext)
 
 -- backend (ROS2 Humble)
-project_with_location("omni.isaac.transform_listener.humble")
+project_with_location("isaacsim.ros2.tf_viewer.humble")
     targetdir (ext.bin_dir)
     kind "SharedLib"
     language "C++"
 
     pic "On"
     staticruntime "Off"
-    add_files("impl", "backend/humble")
+    defines { "ROS2_BACKEND_HUMBLE" }
+    add_files("impl", "backend")
     add_files("iface", "include")
     add_files("source", "%{root}/_build/target-deps/nv_ros2_humble/src/geometry2/tf2/src")
     includedirs {
@@ -56,14 +57,15 @@ project_with_location("omni.isaac.transform_listener.humble")
 
 -- backend (ROS2 Foxy) -- Linux only
 if os.target() == "linux" then
-    project_with_location("omni.isaac.transform_listener.foxy")
+    project_with_location("isaacsim.ros2.tf_viewer.foxy")
         targetdir (ext.bin_dir)
         kind "SharedLib"
         language "C++"
 
         pic "On"
         staticruntime "Off"
-        add_files("impl", "backend/foxy")
+        defines { "ROS2_BACKEND_FOXY" }
+        add_files("impl", "backend")
         add_files("iface", "include")
         add_files("source", "%{root}/_build/target-deps/nv_ros2/src/geometry2/tf2/src")
         includedirs {
@@ -91,7 +93,7 @@ if os.target() == "linux" then
 end
 
 -- build the C++ plugin that will be loaded by the extension
-project_ext_plugin(ext, "omni.isaac.transform_listener.plugin")
+project_ext_plugin(ext, "isaacsim.ros2.tf_viewer.plugin")
     rtti "On"
 
     add_files("include", "include")
@@ -130,7 +132,7 @@ project_ext_plugin(ext, "omni.isaac.transform_listener.plugin")
 -- build Python bindings that will be loaded by the extension
 project_ext_bindings {
     ext = ext,
-    project_name = "omni.isaac.transform_listener.python",
+    project_name = "isaacsim.ros2.tf_viewer.python",
     module = "_transform_listener",
     src = "bindings",
     target_subdir = "isaacsim/ros2/tf_viewer"
