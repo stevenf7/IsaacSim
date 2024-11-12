@@ -20,7 +20,7 @@ import torch
 from isaacsim.core.prims import Articulation, RigidPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
 from isaacsim.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
-from isaacsim.replicator.scripts import context
+from isaacsim.replicator.common.scripts import context
 from omni.replicator.core import distribution
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, utils
 
@@ -219,7 +219,7 @@ def _write_physics_view_node(view, attribute, values, operation, node_type, num_
             values.node.get_attribute("inputs:lower").connect(node.get_attribute("inputs:dist_param_1"), True)
             values.node.get_attribute("inputs:upper").connect(node.get_attribute("inputs:dist_param_2"), True)
 
-    counter = ReplicatorItem(utils.create_node, "isaacsim.replicator.OgnCountIndices")
+    counter = ReplicatorItem(utils.create_node, "isaacsim.replicator.common.OgnCountIndices")
 
     upstream_node = ReplicatorItem._get_context()
     upstream_node.get_attribute("outputs:indices").connect(counter.node.get_attribute("inputs:indices"), True)
@@ -275,13 +275,13 @@ def randomize_rigid_prim_view(
 
     # check whether randomization occurs within the correct context
     upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
-    if upstream_node_name != "isaacsim.replicator.OgnIntervalFiltering":
+    if upstream_node_name != "isaacsim.replicator.common.OgnIntervalFiltering":
         raise ValueError(
-            "randomize_rigid_prim_view() is expected to be called within the isaacsim.replicator.randomize.on_interval"
-            + " or isaacsim.replicator.randomize.on_env_reset context managers."
+            "randomize_rigid_prim_view() is expected to be called within the isaacsim.replicator.common.randomize.on_interval"
+            + " or isaacsim.replicator.common.randomize.on_env_reset context managers."
         )
 
-    node_type = "isaacsim.replicator.OgnWritePhysicsRigidPrimView"
+    node_type = "isaacsim.replicator.common.OgnWritePhysicsRigidPrimView"
 
     if _rigid_prim_views.get(view_name) is None:
         raise ValueError(f"Expected a registered rigid prim view, but instead received {view_name}")
@@ -399,13 +399,13 @@ def randomize_articulation_view(
     """
     # check whether randomization occurs within the correct context
     upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
-    if upstream_node_name != "isaacsim.replicator.OgnIntervalFiltering":
+    if upstream_node_name != "isaacsim.replicator.common.OgnIntervalFiltering":
         raise ValueError(
-            "randomize_articulation_view() is expected to be called within the isaacsim.replicator.randomize.on_interval"
-            + " or isaacsim.replicator.randomize.on_env_reset context managers."
+            "randomize_articulation_view() is expected to be called within the isaacsim.replicator.common.randomize.on_interval"
+            + " or isaacsim.replicator.common.randomize.on_env_reset context managers."
         )
 
-    node_type = "isaacsim.replicator.OgnWritePhysicsArticulationView"
+    node_type = "isaacsim.replicator.common.OgnWritePhysicsArticulationView"
 
     if _articulation_views.get(view_name) is None:
         raise ValueError(f"Expected a registered articulation view, but instead received {view_name}")
@@ -505,13 +505,13 @@ def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorI
     """
     # check whether randomization occurs within the correct context
     upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
-    if upstream_node_name != "isaacsim.replicator.OgnIntervalFiltering":
+    if upstream_node_name != "isaacsim.replicator.common.OgnIntervalFiltering":
         raise ValueError(
-            "randomize_simulation_context() is expected to be called within the isaacsim.replicator.randomize.on_interval"
-            + " or isaacsim.replicator.randomize.on_env_reset context managers."
+            "randomize_simulation_context() is expected to be called within the isaacsim.replicator.common.randomize.on_interval"
+            + " or isaacsim.replicator.common.randomize.on_env_reset context managers."
         )
 
-    node_type = "isaacsim.replicator.OgnWritePhysicsSimulationContext"
+    node_type = "isaacsim.replicator.common.OgnWritePhysicsSimulationContext"
 
     global _simulation_context
     if _simulation_context is None:

@@ -15,9 +15,9 @@ def on_interval(interval):
     """
     Args:
         interval (int): The frequency interval for randomization. The interval is incremented
-                        by isaacsim.replicator.physics_view.step_randomization() call.
+                        by isaacsim.replicator.common.physics_view.step_randomization() call.
     """
-    node = create_node("isaacsim.replicator.OgnIntervalFiltering")
+    node = create_node("isaacsim.replicator.common.OgnIntervalFiltering")
     trigger_node = ReplicatorItem._get_context()
 
     node.get_attribute("inputs:interval").set(interval)
@@ -29,7 +29,7 @@ def on_interval(interval):
 
 @ReplicatorWrapper
 def on_env_reset():
-    node = create_node("isaacsim.replicator.OgnIntervalFiltering")
+    node = create_node("isaacsim.replicator.common.OgnIntervalFiltering")
     trigger_node = ReplicatorItem._get_context()
 
     node.get_attribute("inputs:ignoreInterval").set(True)

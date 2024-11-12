@@ -11,8 +11,8 @@ import carb
 import numpy as np
 import omni.graph.core as og
 import torch
-from isaacsim.replicator import SIMULATION_CONTEXT_ATTRIBUTES
-from isaacsim.replicator import physics_view as physics
+from isaacsim.replicator.common import SIMULATION_CONTEXT_ATTRIBUTES
+from isaacsim.replicator.common import physics_view as physics
 
 OPERATION_TYPES = ["direct", "additive", "scaling"]
 

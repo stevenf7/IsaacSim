@@ -127,7 +127,7 @@ class DOPEWriter(Writer):
                 "InstanceMapping",
                 NodeConnectionTemplate("bounding_box_3d", attributes_mapping={"outputs:data": "inputs:boundingBox3d"}),
             ],
-            node_type_id="isaacsim.replicator.Dope",
+            node_type_id="isaacsim.replicator.common.Dope",
             init_params={
                 "width": config_data["WIDTH"],
                 "height": config_data["HEIGHT"],

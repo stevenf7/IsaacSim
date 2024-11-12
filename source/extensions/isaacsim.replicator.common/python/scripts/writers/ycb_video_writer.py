@@ -167,7 +167,7 @@ class YCBVideoWriter(Writer):
                 "InstanceMappingWithTransforms",
                 "CameraParams",
             ],
-            node_type_id="isaacsim.replicator.Pose",
+            node_type_id="isaacsim.replicator.common.Pose",
             init_params={
                 "imageWidth": config_data["WIDTH"],
                 "imageHeight": config_data["HEIGHT"],

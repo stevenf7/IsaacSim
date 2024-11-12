@@ -10,11 +10,11 @@
 import carb
 
 old_extension_name = "omni.replicator.isaac"
-new_extension_name = "isaacsim.replicator"
+new_extension_name = "isaacsim.replicator.common"
 module_name = "scripts"
 
 carb.log_warn(
     f"{old_extension_name}.{module_name} has been deprecated in favor of {new_extension_name}.{module_name}. Please update your code accordingly."
 )
 
-from isaacsim.replicator.scripts.writers import *
+from isaacsim.replicator.common.scripts.writers import *

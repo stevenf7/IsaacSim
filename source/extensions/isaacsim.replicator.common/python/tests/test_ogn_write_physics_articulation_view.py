@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import isaacsim.replicator as dr
+import isaacsim.replicator.common as dr
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -19,7 +19,7 @@ import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
-from isaacsim.replicator import physics_view as physics
+from isaacsim.replicator.common import physics_view as physics
 from isaacsim.storage.native import get_assets_root_path_async
 from scipy.spatial.transform import Rotation as R
 
@@ -41,7 +41,7 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         self._graph = self._controller.create_graph("/World/PushGraph")
 
         self._articulation_view_node = self._controller.create_node(
-            ("articulation_view", self._graph), "isaacsim.replicator.OgnWritePhysicsArticulationView"
+            ("articulation_view", self._graph), "isaacsim.replicator.common.OgnWritePhysicsArticulationView"
         )
         self._distribution_node = self._controller.create_node(
             ("uniform", self._graph), "omni.replicator.core.OgnSampleUniform"

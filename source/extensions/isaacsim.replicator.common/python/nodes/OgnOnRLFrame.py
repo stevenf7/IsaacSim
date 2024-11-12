@@ -9,7 +9,7 @@
 
 import numpy as np
 import omni.graph.core as og
-from isaacsim.replicator.scripts import context
+from isaacsim.replicator.common.scripts import context
 
 
 class OgnOnRLFrameInternalState:

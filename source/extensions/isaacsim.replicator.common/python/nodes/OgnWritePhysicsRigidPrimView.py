@@ -13,8 +13,8 @@ import omni.graph.core as og
 import torch
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
-from isaacsim.replicator import RIGID_PRIM_ATTRIBUTES
-from isaacsim.replicator import physics_view as physics
+from isaacsim.replicator.common import RIGID_PRIM_ATTRIBUTES
+from isaacsim.replicator.common import physics_view as physics
 
 OPERATION_TYPES = ["direct", "additive", "scaling"]
 

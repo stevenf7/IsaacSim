@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim.replicator.scripts.writers.data_visualization_writer import *
+from isaacsim.replicator.common.scripts.writers.data_visualization_writer import *

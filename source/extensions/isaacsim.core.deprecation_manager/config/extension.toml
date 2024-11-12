@@ -80,5 +80,5 @@ exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.isaac.surface_gripper", new = "isaacsim.robot.surface_gripper" },
     { deprecated = "omni.isaac.wheeled_robots", new = "isaacsim.robot.wheeled_robots" },
     { deprecated = "omni.isaac.wheeled_robots.AckermannController", new = "isaacsim.robot.wheeled_robots.AckermannControllerDeprecated" },
-    { deprecated = "omni.replicator.isaac", new = "isaacsim.replicator" },
+    { deprecated = "omni.replicator.isaac", new = "isaacsim.replicator.common" },
 ]

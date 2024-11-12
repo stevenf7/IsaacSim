@@ -10,7 +10,7 @@
 from functools import partial
 
 import numpy as np
-from isaacsim.replicator.scripts.utils import calculate_truncation_ratio_simple
+from isaacsim.replicator.common.scripts.utils import calculate_truncation_ratio_simple
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.replicator.core.scripts.functional import write_image, write_json
 from PIL import Image, ImageDraw

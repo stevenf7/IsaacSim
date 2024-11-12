@@ -3,12 +3,12 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.1.0"
 category = "SyntheticData"
 title = "Replicator Isaac"
 description="Omni Replicator Isaac Sim Extension"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.common"
 keywords = ["Synthetic", "Data", "Randomization", "Generator", "Domain Randomization", "DR"]
 changelog = "docs/CHANGELOG.md"
 readme  = "docs/README.md"
@@ -30,7 +30,7 @@ writeTarget.platform = true
 "omni.graph.bundle.action" = {}
 
 [[python.module]]
-name = "isaacsim.replicator"
+name = "isaacsim.replicator.common"
 
 # Watch the .ogn files for hot reloading (only works for Python files)
 [fswatcher.patterns]

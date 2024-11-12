@@ -15,14 +15,14 @@ simulations where *update to USD* is disabled for faster simulation speed. These
 set randomized values to PhysX as opposed to existing methods in omni.replicator.core, 
 such as omni.replicator.core.modify.pose or omni.replicator.core.physics.physics_material, which
 utilizes USD APIs to set values and hence cannot be used when *update to USD* is disabled. 
-Therefore, the following methods provided in isaacsim.replicator are particularly useful 
+Therefore, the following methods provided in isaacsim.replicator.common are particularly useful 
 for domain randomization in reinforcement learning (RL) as RL usecases benefit immensely from 
 disabling *update to USD* to achieve faster simulation speed.
 
 The following is a simple demo that showcases the workflow and the various features of
 ``isaacsim.replicator`` for domain randomization. This demo script can be launched as
 a standalone example, which can be found by going to Isaac Sim's root directory and
-go to ``standalone_examples/api/isaacsim.replicator/randomization_demo.py``.
+go to ``standalone_examples/api/isaacsim.replicator.common/randomization_demo.py``.
 
 The ``isaacsim.replicator`` extension for domain randomization functions by constructing
 an OmniGraph action graph, which consists of nodes that generate random values, regulate
@@ -102,7 +102,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
     num_dof = franka_view.num_dof
 
     # set up randomization with isaacsim.replicator, imported as dr
-    import isaacsim.replicator as dr
+    import isaacsim.replicator.common as dr
     import omni.replicator.core as rep
 
     dr.physics_view.register_simulation_context(world)
@@ -180,12 +180,12 @@ the user in both default format (eg. PNG for RGB data) and batched pytorch tenso
 provides an API to directly retrieve data sent to the PytorchWriter without the need to access the stored 
 by omni.replicator's BackendDispatch. 
 
-.. automodule:: isaacsim.replicator.scripts.writers.pytorch_writer
+.. automodule:: isaacsim.replicator.common.scripts.writers.pytorch_writer
     :members:
     :undoc-members:
     :exclude-members:
 
-.. automodule:: isaacsim.replicator.scripts.writers.pytorch_listener
+.. automodule:: isaacsim.replicator.common.scripts.writers.pytorch_listener
     :members:
     :undoc-members:
     :exclude-members:

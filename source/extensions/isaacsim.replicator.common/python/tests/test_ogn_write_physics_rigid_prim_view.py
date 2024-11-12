@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import isaacsim.replicator as dr
+import isaacsim.replicator.common as dr
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -20,7 +20,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.prims import RigidPrim
 from isaacsim.core.utils.stage import create_new_stage_async
-from isaacsim.replicator import physics_view as physics
+from isaacsim.replicator.common import physics_view as physics
 
 
 class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
@@ -39,7 +39,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         self._graph = self._controller.create_graph("/World/PushGraph")
 
         self._rigid_prim_view_node = self._controller.create_node(
-            ("rigid_prim_view", self._graph), "isaacsim.replicator.OgnWritePhysicsRigidPrimView"
+            ("rigid_prim_view", self._graph), "isaacsim.replicator.common.OgnWritePhysicsRigidPrimView"
         )
         self._distribution_node = self._controller.create_node(
             ("uniform", self._graph), "omni.replicator.core.OgnSampleUniform"

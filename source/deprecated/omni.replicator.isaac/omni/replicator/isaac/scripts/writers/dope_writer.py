@@ -6,4 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from isaacsim.replicator.scripts.writers.dope_writer import *
+from isaacsim.replicator.common.scripts.writers.dope_writer import *

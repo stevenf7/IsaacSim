@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim.replicator.scripts.attributes import *
+from isaacsim.replicator.common.scripts.attributes import *
