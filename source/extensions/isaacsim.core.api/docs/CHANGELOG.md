@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.2] - 2024-11-08
+### Changed
+- Changed render calls after timeline changes to timeline.commit calls.
+
 ## [4.2.1] - 2024-11-08
 ### Changed
 - Changed local_pose tests in xform_prim_view and rigid_prim_view
