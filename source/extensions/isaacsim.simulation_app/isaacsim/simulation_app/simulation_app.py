@@ -227,7 +227,7 @@ class SimulationApp:
 
         self._carb_settings = carb.settings.get_settings()
         # apply render settings specified in config
-        self._carb_settings.set("/app/player/useFixedTimeStepping", False)
+        self._carb_settings.set("/app/player/useFixedTimeStepping", False) # Set to False since the loop runner controls stepping
         self.reset_render_settings()
 
         self._app.print_and_log("Simulation App Starting")

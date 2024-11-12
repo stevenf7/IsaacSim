@@ -11,6 +11,7 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.base" = {}
 
 # Isaac Sim extensions
+"isaacsim.app.setup" = { order = 1000 }
 "isaacsim.asset.generator.occupancy_map.ui" = {}
 "isaacsim.asset.importer.heightmap" = {}
 "isaacsim.examples.extension" = {}
@@ -127,6 +128,16 @@ keywords = ["experience", "app", "usd"]
 [settings]
 app.name = "Isaac-Sim Full"
 app.version = "4.5.0"
+
+# default internal ros2 bridge distro to use if no ros2 distro is sourced
+exts."isaacsim.ros2.bridge".ros_distro = "humble"
+
+# set the default ros bridge to enable on startup
+[settings."filter:platform"."windows-x86_64"]
+isaac.startup.ros_bridge_extension = ""
+[settings."filter:platform"."linux-x86_64"]
+isaac.startup.ros_bridge_extension = "isaacsim.ros2.bridge"
+
 
 [settings.app.window]
 title = "Isaac Sim Full"
