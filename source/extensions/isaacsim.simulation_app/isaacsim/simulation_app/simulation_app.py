@@ -51,7 +51,7 @@ class SimulationApp:
 
     Arguments:
         config (dict): A dictionary containing the configuration for the app. (default: None)
-        experience (str): Path to the application config loaded by the launcher (default: "", will load apps/omni.isaac.sim.python.kit if left blank)
+        experience (str): Path to the application config loaded by the launcher (default: "", will load apps/isaacsim.kit if left blank)
     """
 
     DEFAULT_LAUNCHER_CONFIG = {
@@ -182,7 +182,14 @@ class SimulationApp:
         # Override settings from input config
         self.config = self.DEFAULT_LAUNCHER_CONFIG
         if experience == "":
-            experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit'
+            for exp in [
+                f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
+                f'{os.environ["EXP_PATH"]}/isaacsim.python.kit',
+                f'{os.environ["EXP_PATH"]}/isaacsim.base.kit',
+            ]:
+                if os.path.isfile(exp):
+                    experience = exp
+                    break
         self.config.update({"experience": experience})
         if launch_config is not None:
             self.config.update(launch_config)

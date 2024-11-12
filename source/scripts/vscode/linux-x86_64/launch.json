@@ -29,7 +29,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/kit/kit",
-            "args": ["${workspaceFolder}/apps/omni.isaac.sim.kit",
+            "args": ["${workspaceFolder}/apps/isaacsim.full.kit",
                 "--ext-folder", "${workspaceFolder}/exts",
                 "--ext-folder", "${workspaceFolder}/apps"],
             "stopAtEntry": false,

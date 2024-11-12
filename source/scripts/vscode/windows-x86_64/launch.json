@@ -31,7 +31,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/kit/kit.exe",
-            "args": ["${workspaceFolder}/apps/omni.isaac.sim.kit",
+            "args": ["${workspaceFolder}/apps/isaacsim.full.kit",
                 "--ext-folder", "${workspaceFolder}/apps"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

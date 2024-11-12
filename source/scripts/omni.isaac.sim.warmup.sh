@@ -11,7 +11,7 @@ set +e # Workaround post-install script failure
 echo "Python app shader cache is warmed up."
 
 # Warm up shader cache
-"$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/omni.isaac.sim.kit" \
+"$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/isaacsim.full.kit" \
     --no-window \
     --/persistent/renderer/startupMessageDisplayed=true \
     --ext-folder "$SCRIPT_DIR/exts" \

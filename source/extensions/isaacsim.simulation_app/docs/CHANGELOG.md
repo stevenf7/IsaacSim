@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2024-11-10
+### Changed
+- Try and load multiple kit files for python app based on what exists
+
 ## [2.1.0] - 2024-10-25
 ### Added
 - New config arg "create_new_stage" to create empty stage on startup

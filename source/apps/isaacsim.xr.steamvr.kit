@@ -1,17 +1,16 @@
 [package]
-description = "Headless Isaac Sim with Livestream using WebRTC"
-execFile = "isaac-sim.headless"
-title = "Isaac Sim (Headless)"
+description = "Main Omniverse Isaac Sim Application with XR SteamVR"
+execFile = "isaac-sim"
+title = "Isaac Sim XR SteamVR"
 version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-"omni.isaac.sim.base" = {}
-"omni.kit.livestream.core" = { version = "6.1.0", exact = true }
-"omni.kit.livestream.webrtc" = { version = "6.0.0", exact = true }
-"omni.kit.streamsdk.plugins" = { version = "6.1.0", exact = true }
+"isaacsim.base" = {}
+"omni.kit.xr.profile.vr" = {}
+"omni.kit.xr.system.steamvr" = {}
 
 [settings]
 app.fastShutdown = true
@@ -29,8 +28,7 @@ folders = [
 
 [settings.app.window]
 hideUi = false
-title = "Isaac Sim Headless"
-drawMouse = true
+title = "Isaac Sim XR SteamVR"
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #

@@ -10,9 +10,7 @@ import os
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(
-    {"headless": True}, experience=f'{os.environ["EXP_PATH"]}/omni.isaac.sim.zero_delay.python.kit'
-)
+simulation_app = SimulationApp({"headless": True}, experience=f'{os.environ["EXP_PATH"]}/isaacsim.zero_delay.kit')
 
 import sys
 

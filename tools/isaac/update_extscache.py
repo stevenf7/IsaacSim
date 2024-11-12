@@ -12,7 +12,7 @@ from urllib.request import urlopen
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
-    parser.description = "Update extensions cache (omni.isaac.sim.extscache.kit)."
+    parser.description = "Update extensions cache (isaacsim.extscache.kit)."
     parser.add_argument(
         "-o",
         "--offline",
@@ -25,7 +25,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
     def run_repo_tool(options: Dict, config: Dict):
         print(
-            'Please review the output of this script at ./source/apps/omni.isaac.sim.extscache.kit before committing changes to the repo. Run "./build.sh -u -r" to update the cache. See the results of the cache update at the bottom of the omni.isaac.sim.extscache.kit file. To make changes to the configuration of this script, edit ./repo.toml.'
+            'Please review the output of this script at ./source/apps/isaacsim.extscache.kit before committing changes to the repo. Run "./build.sh -u -r" to update the cache. See the results of the cache update at the bottom of the isaacsim.extscache.kit file. To make changes to the configuration of this script, edit ./repo.toml.'
         )
 
         if options.offline:
@@ -138,10 +138,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         windows = dict()
         linux = dict()
 
-        # Used to store the new text that will be written to omni.isaac.sim.extscache.kit
+        # Used to store the new text that will be written to isaacsim.extscache.kit
         output = []
 
-        # If there are dependencies currently in omni.isaac.sim.extscache.kit that were manually added to the top of the file, keep them
+        # If there are dependencies currently in isaacsim.extscache.kit that were manually added to the top of the file, keep them
         for line in dest_file_lines:
             output.append(line)
             line = line.strip()
@@ -235,7 +235,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         output.append("# END AUTOUPDATED PART\n")
         output.append(commentline)
 
-        # Write the output text to omni.isaac.sim.extscache.kit
+        # Write the output text to isaacsim.extscache.kit
         dest_file = open(tool_config["output_file"], "w")
         dest_file.writelines(output)
         dest_file.close()
@@ -307,7 +307,7 @@ def read_source(file):
     return (exacts, enableds)
 
 
-# Print a dependency in the format used by omni.isaac.sim.extscache.kit --> "extension.name" = {version = "version.number", exact = true}, or "extension.name" = {tag = "tag_name", version = "version.number", exact = true}
+# Print a dependency in the format used by isaacsim.extscache.kit --> "extension.name" = {version = "version.number", exact = true}, or "extension.name" = {tag = "tag_name", version = "version.number", exact = true}
 def print_dep(dep, ver):
     # If the version is a tuple, it contains the version and the tag
     if type(ver) is tuple:

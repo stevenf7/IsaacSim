@@ -188,7 +188,7 @@ class CreateSetupExtension(omni.ext.IExt):
     def _show_selector(self):
         """show the app selector as an external Application"""
         self._start_app(
-            "omni.isaac.sim.selector.kit",
+            "isaacsim.selector.kit",
             console=False,
             custom_args={"--/persistent/ext/isaacsim.app.selector/auto_start=false"},
         )

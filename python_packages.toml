@@ -226,7 +226,7 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # apps
-    "apps/omni.isaac.sim.python.kit",
+    "apps/isaacsim.python.kit",
     # extensions
     "exts/isaacsim.core.throttling",
     "exts/isaacsim.simulation_app",
