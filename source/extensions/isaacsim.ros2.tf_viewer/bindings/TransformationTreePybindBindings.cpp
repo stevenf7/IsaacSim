@@ -11,25 +11,25 @@
 
 #include <TransformListener.h>
 
-CARB_BINDINGS("omni.isaac.transform_listener")
+CARB_BINDINGS("isaacsim.ros2.tf_viewer")
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace ros2
 {
-namespace transform_listener
+namespace tf_viewer
 {
-} // namespace transform_listener
-} // namespace isaac
-} // namespace omni
+} // namespace tf_viewer
+} // namespace ros2
+} // namespace isaacsim
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_transform_listener, m)
 {
-    using namespace omni::isaac::transform_listener;
+    using namespace isaacsim::ros2::tf_viewer;
 
-    m.doc() = "pybind11 omni.isaac.transform_listener bindings";
+    m.doc() = "pybind11 isaacsim.ros2.tf_viewer bindings";
 
     carb::defineInterfaceClass<ITransformListener>(
         m, "ITransformListener", "acquire_transform_listener_interface", "release_transform_listener_interface")
@@ -40,7 +40,7 @@ PYBIND11_MODULE(_transform_listener, m)
         .def("get_transforms",
              [](ITransformListener& m, std::string rootFrame)
              {
-                 m.getTransformations(rootFrame);
+                 m.computeTransforms(rootFrame);
                  return std::make_tuple(m.getFrames(), m.getTransforms(), m.getRelations());
              });
 }

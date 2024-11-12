@@ -6,14 +6,25 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#include "Tf2Foxy.h"
+#include "Tf2Impl.h"
 
-std::shared_ptr<Ros2BufferCore> Tf2FactoryFoxy::createBuffer()
+namespace isaacsim
 {
-    return std::make_shared<Ros2BufferCoreFoxy>();
+namespace ros2
+{
+namespace tf_viewer
+{
+
+std::shared_ptr<Ros2BufferCore> Tf2FactoryImpl::createBuffer()
+{
+    return std::make_shared<Ros2BufferCoreImpl>();
 }
 
-Tf2Factory* createFactory()
+} // namespace tf_viewer
+} // namespace ros2
+} // namespace isaacsim
+
+isaacsim::ros2::tf_viewer::Tf2Factory* createFactory()
 {
-    return new Tf2FactoryFoxy();
+    return new isaacsim::ros2::tf_viewer::Tf2FactoryImpl();
 }

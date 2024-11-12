@@ -6,17 +6,24 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#include "Tf2Humble.h"
+#include "Tf2Impl.h"
 
-Ros2BufferCoreHumble::Ros2BufferCoreHumble()
+namespace isaacsim
+{
+namespace ros2
+{
+namespace tf_viewer
+{
+
+Ros2BufferCoreImpl::Ros2BufferCoreImpl()
 {
 }
 
-Ros2BufferCoreHumble::~Ros2BufferCoreHumble()
+Ros2BufferCoreImpl::~Ros2BufferCoreImpl()
 {
 }
 
-bool Ros2BufferCoreHumble::setTransform(void* msg, const std::string& authority, bool isStatic)
+bool Ros2BufferCoreImpl::setTransform(void* msg, const std::string& authority, bool isStatic)
 {
     if (!msg)
         return false;
@@ -40,7 +47,7 @@ bool Ros2BufferCoreHumble::setTransform(void* msg, const std::string& authority,
         // call tf2::BufferCore setTransform method
         try
         {
-            mBuffer.setTransform(transformStamped, authority, isStatic);
+            m_buffer.setTransform(transformStamped, authority, isStatic);
         }
         catch (tf2::TransformException& ex)
         {
@@ -52,14 +59,14 @@ bool Ros2BufferCoreHumble::setTransform(void* msg, const std::string& authority,
     return true;
 }
 
-bool Ros2BufferCoreHumble::getTransform(const std::string& targetFrame,
-                                        const std::string& sourceFrame,
-                                        double translation[],
-                                        double rotation[])
+bool Ros2BufferCoreImpl::getTransform(const std::string& targetFrame,
+                                      const std::string& sourceFrame,
+                                      double translation[],
+                                      double rotation[])
 {
     try
     {
-        auto transformStamped = mBuffer.lookupTransform(targetFrame, sourceFrame, tf2::TimePointZero);
+        auto transformStamped = m_buffer.lookupTransform(targetFrame, sourceFrame, tf2::TimePointZero);
         translation[0] = transformStamped.transform.translation.x;
         translation[1] = transformStamped.transform.translation.y;
         translation[2] = transformStamped.transform.translation.z;
@@ -91,26 +98,29 @@ bool Ros2BufferCoreHumble::getTransform(const std::string& targetFrame,
     catch (...)
     {
         std::string errorString = "UNKNOW EXCEPTION";
-        // std::string errorString = ex.what();
         CARB_LOG_ERROR(errorString.c_str());
         return false;
     }
     return true;
 }
 
-bool Ros2BufferCoreHumble::getParentFrame(const std::string& frame, std::string& parentFrame)
+bool Ros2BufferCoreImpl::getParentFrame(const std::string& frame, std::string& parentFrame)
 {
-    return mBuffer._getParent(frame, tf2::TimePointZero, parentFrame);
+    return m_buffer._getParent(frame, tf2::TimePointZero, parentFrame);
 }
 
-std::vector<std::string> Ros2BufferCoreHumble::getFrames()
+std::vector<std::string> Ros2BufferCoreImpl::getFrames()
 {
-    mFrames.clear();
-    mBuffer._getFrameStrings(mFrames);
-    return mFrames;
+    m_frames.clear();
+    m_buffer._getFrameStrings(m_frames);
+    return m_frames;
 }
 
-void Ros2BufferCoreHumble::clear()
+void Ros2BufferCoreImpl::clear()
 {
-    mBuffer.clear();
+    m_buffer.clear();
 }
+
+} // namespace tf_viewer
+} // namespace ros2
+} // namespace isaacsim

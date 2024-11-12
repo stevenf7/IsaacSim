@@ -10,15 +10,25 @@
 
 #include <include/Tf2Factory.h>
 
-class Tf2FactoryFoxy : public Tf2Factory
+namespace isaacsim
+{
+namespace ros2
+{
+namespace tf_viewer
+{
+
+class Tf2FactoryImpl : public Tf2Factory
 {
 public:
     virtual std::shared_ptr<Ros2BufferCore> createBuffer();
 };
 
+} // namespace tf_viewer
+} // namespace ros2
+} // namespace isaacsim
 
 #ifdef _MSC_VER
-extern "C" __declspec(dllexport) Tf2Factory* createFactory();
+extern "C" __declspec(dllexport) isaacsim::ros2::tf_viewer::Tf2Factory* createFactory();
 #else
-extern "C" Tf2Factory* createFactory();
+extern "C" isaacsim::ros2::tf_viewer::Tf2Factory* createFactory();
 #endif
