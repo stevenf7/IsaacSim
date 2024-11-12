@@ -173,7 +173,6 @@ function setup_common_folder_links()
             {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/clear_caches*${shell_ext}",  "_build/%{platform}/%{config}"},
-            {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
             {"source/scripts/vscode/%{platform}",  "_build/%{platform}/%{config}/.vscode"},
             {"source/scripts/telemetry/*",  "_build/%{platform}/%{config}/config"},
         }
@@ -457,33 +456,33 @@ function create_tests()
     group "startup_tests"
         -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
         -- use "--reset-user" to reset user config file
-        define_startup_experience("tests-startup.main", "omni.isaac.sim", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-        define_startup_experience("tests-startup.headless", "omni.isaac.sim.headless", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-        define_startup_experience("tests-startup.extscache", "omni.isaac.sim", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.main", "isaacsim.full", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.headless", "isaacsim.headless", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.extscache", "isaacsim.full", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
         -- -- Windows Only
         -- if os.target() == "windows" then
-        --     define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
+        --     define_startup_experience("tests-startup.xr.steamvr", "isaacsim.xr.steamvr", "--no-window --/app/quitAfter=500")
         -- end
 
     group "selector_tests"
         define_startup_experience(
             "tests-selector.default",
-            "omni.isaac.sim.selector",
+            "isaacsim.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=false"
         )
         define_startup_experience(
             "tests-selector.autolaunch_and_persist",
-            "omni.isaac.sim.selector",
+            "isaacsim.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
         define_startup_experience(
             "tests-selector.no_show_console",
-            "omni.isaac.sim.selector",
+            "isaacsim.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
         define_startup_experience(
             "tests-selector.persist",
-            "omni.isaac.sim.selector",
+            "isaacsim.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
 
@@ -645,13 +644,13 @@ function group_apps()
         write_version_file(config)
     end
 
-    define_local_experience("isaac-sim", "omni.isaac.sim")
-    define_local_experience("isaac-sim.fabric", "omni.isaac.sim.fabric")
-    define_local_experience("isaac-sim.selector", "omni.isaac.sim.selector")
-    define_local_experience("isaac-sim.headless", "omni.isaac.sim.headless", "--no-window ")
+    define_local_experience("isaac-sim", "isaacsim.full")
+    define_local_experience("isaac-sim.fabric", "isaacsim.fabric")
+    define_local_experience("isaac-sim.selector", "isaacsim.selector")
+    define_local_experience("isaac-sim.headless", "isaacsim.headless", "--no-window ")
     -- Windows Only
     if os.target() == "windows" then
-        define_local_experience("isaac-sim.xr.steamvr", "omni.isaac.sim.xr.steamvr")
+        define_local_experience("isaac-sim.xr.steamvr", "isaacsim.xr.steamvr")
     end
 end
 

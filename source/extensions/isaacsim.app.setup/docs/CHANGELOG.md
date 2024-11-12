@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2024-11-10
+### Changed
+- Renamed to isaacsim.selector.kit
+
 ## [1.1.0] - 2024-11-06
 ### Changed
 - enabled default and visual scripting layout. moved layout folder.
