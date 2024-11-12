@@ -113,7 +113,6 @@ PACKAGE-DEPS.yaml
 .local
 conf.py
 
-.nvcode
 
 # ignore omnigraph docs file
 ogn.rst
@@ -137,3 +136,8 @@ tools/container/VERSION.md
 report.json
 
 Temp_Config*.json
+
+# Ignore .nvcode
+
+.nvcode/
+.nvcode.json
