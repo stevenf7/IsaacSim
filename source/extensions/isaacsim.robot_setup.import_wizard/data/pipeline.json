@@ -17,7 +17,7 @@
     "Import URDF from File":
     {
         "App Name": "URDF Importer",
-        "Extension": "omni.importer.urdf",
+        "Extension": "isaacsim.asset.importer.urdf",
         "Window": 1,
         "Summary":"Import assets from URDF",
         "Basic Instructions":"- Merge Fixed Joints: Consolidate links that are connected by fixed joints, so that an articulation is only applied to joints that move. Merged frames will still appear as children of the parent Frame they were merged to.\n\n- Fix Base Link: Uncheck for robots that will travel, Check for fixed arms \n\n- Clean Stage: When checked, cleans the stage before loading the new MJCF, otherwise loads it on current open stage at position (0,0,0).\n\n- Drive Strength: How strongly the default drive force will be for joints when importing. On position based joints it will add on the drive stiffness. On velocity drives it adds to the drive damping \n\n- the importer will create folders pertaining to the usd files in the source folder if you do not specify an Output Directory. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
@@ -26,14 +26,14 @@
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_urdf.html#isaac-sim-urdf-importer",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_urdf.html#tutorials-examples",
-            "Script Folder": "omni.importer.urdf"
+            "Script Folder": "isaacsim.asset.importer.urdf"
         }
     },
  
     "Import MJCF from File":
     {
         "App Name": "MJCF Importer",
-        "Extension": "omni.importer.mjcf",
+        "Extension": "isaacsim.asset.importer.mjcf",
         "Window": 1,
         "Summary":"Importing a MJCF (MuJoCo) model",
         "Basic Instructions":"Fix Base Link: When checked, the robot will have its base fixed where it’s placed in world coordinates. \n\nClean Stage: When checked, cleans the stage before loading the new MJCF, otherwise loads it on current open stage at position (0,0,0).",
@@ -42,7 +42,7 @@
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_mjcf.html",
             "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_import_mjcf.html",
-            "Script Folder": "omni.importer.mjcf"
+            "Script Folder": "isaacsim.asset.importer.mjcf"
         }                      
     },
 

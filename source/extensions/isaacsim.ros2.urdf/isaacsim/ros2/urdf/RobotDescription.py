@@ -18,8 +18,8 @@ import omni.ui as ui
 import rclpy
 import rclpy.node
 from ament_index_python.packages import get_package_share_directory
-from omni.importer.urdf import UrdfImporter
-from omni.importer.urdf.scripts.ui import cb_builder, get_option_style, str_builder
+from isaacsim.asset.importer.urdf import UrdfImporter
+from isaacsim.asset.importer.urdf.scripts.ui import cb_builder, get_option_style, str_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from rcl_interfaces.srv import GetParameters
 from rclpy.node import Node

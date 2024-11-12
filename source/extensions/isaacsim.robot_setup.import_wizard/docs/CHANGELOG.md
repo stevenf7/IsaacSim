@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.1] - 2024-11-09
+### Changed
+- Updated dependencies and imports after renaming
+
 ## [1.0.0] - 2024-11-05
 ### Changed
 - renamed extension. updated extension paths in json descriptor file

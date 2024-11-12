@@ -25,7 +25,7 @@ import_config.fix_base = False
 import_config.distance_scale = 100
 
 # Get path to extension data:
-extension_path = get_extension_path_from_name("omni.importer.urdf")
+extension_path = get_extension_path_from_name("isaacsim.asset.importer.urdf")
 # Import URDF, prim_path contains the path the path to the usd prim in the stage.
 status, prim_path = omni.kit.commands.execute(
     "URDFParseAndImportFile",
@@ -66,8 +66,8 @@ distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
 distantLight.CreateIntensityAttr(500)
 
 # Get handle to the Drive API for both wheels
-left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
-right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
+left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/joints/left_wheel"), "angular")
+right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/joints/right_wheel"), "angular")
 
 # Set the velocity drive target in degrees/second
 left_wheel_drive.GetTargetVelocityAttr().Set(150)
