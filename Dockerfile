@@ -34,7 +34,7 @@
 #   -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
 #   -v ~/docker/isaac-sim/documents:/root/Documents:rw \
 # 	isaac-sim:local \
-# 	./isaac-sim.headless.native.sh --allow-root
+# 	./isaac-sim.streaming.sh --allow-root
 #
 # More info:
 # https://developer.nvidia.com/isaac-sim
@@ -90,4 +90,4 @@ WORKDIR /isaac-sim
 RUN ln -s exts/isaacsim.examples.interactive/isaacsim/examples/interactive extension_examples
 
 # Default entrypoint to launch headless with streaming
-ENTRYPOINT ./isaac-sim.headless.native.sh --/persistent/isaac/asset_root/default="${OMNI_SERVER_ENV}" --allow-root
+ENTRYPOINT ./isaac-sim.streaming.sh --/persistent/isaac/asset_root/default="${OMNI_SERVER_ENV}" --allow-root

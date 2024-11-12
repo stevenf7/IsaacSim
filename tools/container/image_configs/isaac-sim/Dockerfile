@@ -79,7 +79,7 @@ RUN echo '#! /bin/sh' > runapp.sh && \
     chmod u+x runapp.sh
 
 RUN echo '#! /bin/sh' > runheadless.sh && \
-    echo '/isaac-sim/license.sh && /isaac-sim/privacy.sh && /isaac-sim/isaac-sim.headless.sh \\' >> runheadless.sh && \
+    echo '/isaac-sim/license.sh && /isaac-sim/privacy.sh && /isaac-sim/isaac-sim.streaming.sh \\' >> runheadless.sh && \
     echo '  --/persistent/isaac/asset_root/default="$OMNI_SERVER" \\' >> runheadless.sh && \
     echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" --allow-root "$@" ' >> runheadless.sh && \
     chmod u+x runheadless.sh

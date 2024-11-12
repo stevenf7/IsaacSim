@@ -52,12 +52,12 @@ cd "$SCRIPT_DIR/../../../../tools"
 
 # echo "##teamcity[testStarted name='isaac-sim.docker-3']"
 # docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
-# ./isaac-sim.docker.sh "./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500"
+# ./isaac-sim.docker.sh "./isaac-sim.streaming.sh --allow-root --/app/quitAfter=500"
 # echo "##teamcity[testFinished name='isaac-sim.docker-3']"
 
 
 
-# nvidia-smi && ls && ./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500
+# nvidia-smi && ls && ./isaac-sim.streaming.sh --allow-root --/app/quitAfter=500
 # docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 # -v $SCRIPT_DIR/../../../../_build/linux-x86_64/release:/isaac-sim:rw \
 # gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop

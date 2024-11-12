@@ -283,7 +283,7 @@ docker run --name isaac-sim --entrypoint bash -it --runtime=nvidia --gpus all -e
   -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
   -v ~/docker/isaac-sim/documents:/root/Documents:rw \
   isaac-sim:<version_tag> \
-  ./isaac-sim.headless.native.sh --/persistent/isaac/asset_root/default="omniverse://isaac-dev.ov.nvidia.com" --allow-root -v
+  ./isaac-sim.streaming.sh --/persistent/isaac/asset_root/default="omniverse://isaac-dev.ov.nvidia.com" --allow-root -v
 ```
 
 To run the container and start Isaac Sim as a windowed app:
