@@ -34,9 +34,6 @@ class AssetBrowserWindow(ui.Window):
     def __init__(self, visible=True):
         super().__init__(self.WINDOW_TITLE, visible=visible)
 
-        self.__empty_delegate: Optional[EmptyPropertyDelegate] = None
-        self.__prop_delegate: Optional[PropAssetPropertyDelegate] = None
-        self.__multi_delegate: Optional[MultiPropertyDelegate] = None
         self._options_menu: Optional[FolderOptionsMenu] = None
 
         self.frame.set_build_fn(self._build_ui)
@@ -49,15 +46,6 @@ class AssetBrowserWindow(ui.Window):
         self.deferred_dock_in("Content")
 
     def destroy(self):
-        if self.__empty_delegate:
-            self.__empty_delegate.destroy()
-            self.__empty_delegate = None
-        if self.__prop_delegate:
-            self.__prop_delegate.destroy()
-            self.__prop_delegate = None
-        if self.__multi_delegate:
-            self.__multi_delegate.destroy()
-            self.__multi_delegate = None
         if self._browser_model:
             self._browser_model.destroy()
             self._browser_model = None
@@ -74,9 +62,6 @@ class AssetBrowserWindow(ui.Window):
         super().destroy()
 
     def _build_ui(self):
-        self.__empty_delegate = EmptyPropertyDelegate()
-        self.__prop_delegate = PropAssetPropertyDelegate()
-        self.__multi_delegate = MultiPropertyDelegate()
         preload_folder = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../predownload"))
         self._browser_model = AssetBrowserModel()
         self._delegate = AssetDetailDelegate(self._browser_model)
@@ -90,4 +75,5 @@ class AssetBrowserWindow(ui.Window):
                     options_menu=self._options_menu,
                     predownload_folder=preload_folder,
                     style=PROPERTY_STYLE,
+                    property_delegates=[EmptyPropertyDelegate(), PropAssetPropertyDelegate(), MultiPropertyDelegate()],
                 )
