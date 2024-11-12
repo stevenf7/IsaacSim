@@ -16,7 +16,9 @@ Usage:
 """
 
 import argparse
+import asyncio
 import os
+import sys
 
 import numpy as np
 
@@ -35,46 +37,54 @@ APP_CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, 
 
 
 class AgentSDG:
-    def __init__(self, config_file_path, camera_file_path, save_usd):
+    def __init__(self, sim_app, config_file_path, camera_file_path, save_usd):
+        self._sim_app = sim_app
         self.config_file_path = config_file_path
         self.camera_file_path = camera_file_path
         self.save_usd = save_usd
         self.camera_placements_json = None
-        self._sim_app = None
         self._sim_manager = None
         self._setup_sim_sub = None
+        self._setup_sim_succeed = False
         self._dg_sub = None
         self._settings = None
 
-    def run(self):
-        # Start kit app
-        self._sim_app = SimulationApp(launch_config=APP_CONFIG, experience=CUSTOM_APP_PATH)
-        self._sim_app.update()
+    async def run(self):
         # Enable all required extensions
         self._enable_extensions()
+        await self._sim_app.app.next_update_async()
+
         # Set up global settings
         self._set_simulation_settings()
-        # Set up simulation and start data generation
-        self._setup_simulation_and_start_data_generation()
-        # Wait for data generation finishes
-        while self._dg_sub:
-            self._sim_app.update()
-        # [Optional] Save the scene
-        if self.save_usd == True:
-            try:
-                import omni.client
-                import omni.usd
+        await self._sim_app.app.next_update_async()
 
-                writer_selection = self._sim_manager.get_config_file_property_group("replicator", "writer_selection")
-                params = writer_selection.content_prop.get_value()
-                save_to_path = omni.client.combine_urls("{}/".format(params["output_dir"]), "scene.usd")
-                omni.usd.get_context().save_as_stage(save_to_path)
-                print("Save scene to: " + str(save_to_path))
-                self._sim_app.update()
-            except:
-                print("Caught exception. Unable to save USD.")
-        # Close app
-        self._sim_app.close()
+        # Init SimulatonManager
+        from isaacsim.replicator.agent.core.simulation import SimulationManager
+
+        self._sim_manager = SimulationManager()
+        can_load_config = self._sim_manager.load_config_file(self.config_file_path)
+        if not can_load_config:
+            return
+
+        # Set up sim
+        await self._setup_sim()
+
+        # [Optional] Camera placement
+        if self.camera_file_path:
+            self._do_camera_placement()
+
+        self._gen_random_commands()
+
+        # Wait for data generation callback
+        try:
+            await self._sim_manager.run_data_generation_async()
+        finally:
+            # [Optional] Save the scene
+            if self.save_usd:
+                self._save_usd()
+
+            # Close app
+            self._sim_app.close()
 
     def _enable_extensions(self):
         import omni.kit.app
@@ -94,8 +104,6 @@ class AgentSDG:
         ext_manager.set_extension_enabled_immediate("isaacsim.replicator.agent.core", True)
         ext_manager.set_extension_enabled_immediate("omni.kit.mesh.raycast", True)
         ext_manager.set_extension_enabled_immediate("omni.extended.materials", True)
-
-        self._sim_app.update()
 
     def _set_simulation_settings(self):
         import carb
@@ -117,40 +125,34 @@ class AgentSDG:
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/character_focus_height", 0.7)
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/frame_write_interval", 1)
 
-    def _setup_simulation_and_start_data_generation(self):
-        import carb
-        from isaacsim.replicator.agent.core.simulation import SimulationManager
-
-        self._sim_manager = SimulationManager()
-        load_succeed = self._sim_manager.load_config_file(self.config_file_path)
-        if not load_succeed:
-            carb.log_error(
-                "Loading config file ({0}) fails. Data generation will not start.".format(self.config_file_path)
-            )
-            return
-
-        # [Optional] Update camera number by placement file
-        if self.camera_file_path:
-            self._read_camera_json()
-            self.self._sim_manager.get_config_file()["global"]["camera_num"] = len(self.camera_placements_json)
-
-        def setup_sim_callback(e):
-            # [Optional] Update spawned cameras positions by placement file
-            if self.camera_file_path:
-                self._place_cameras()
+    async def _setup_sim(self):
+        def done_callback(e):
+            self._setup_sim_succeed = True
             self._setup_sim_sub = None
 
-        def generate_data_callback(e):
-            self._dg_sub = None
-
         # Set up simulation and start data generation
-        self._setup_sim_sub = self._sim_manager.register_set_up_simulation_done_callback(setup_sim_callback)
-        self._dg_sub = self._sim_manager.register_data_generation_callback(generate_data_callback)
-        self._sim_manager.set_up_simulation_from_config_file(
-            will_generate_random_commands=True, will_run_data_generation=True
-        )
+        self._setup_sim_sub = self._sim_manager.register_set_up_simulation_done_callback(done_callback)
+        self._sim_manager.set_up_simulation_from_config_file()
+
+        while self._setup_sim_sub and not self._sim_app.is_exiting():
+            await self._sim_app.app.next_update_async()
+
+    def _gen_random_commands(self):
+        if self._sim_manager.get_config_file_valid_value("character", "command_file"):
+            commands_list = self._sim_manager.generate_random_commands()
+            self._sim_manager.save_commands(commands_list)
+        if self._sim_manager.get_config_file_valid_value("robot", "command_file"):
+            commands_list = self._sim_manager.generate_random_robot_commands()
+            self._sim_manager.save_robot_commands(commands_list)
 
     # ===== Camera placement related =====
+
+    def _do_camera_placement(self):
+        self._read_camera_json()
+        prop = self._sim_manager.get_config_file_property("sensor", "camera_num")
+        prop.set_value(len(self.camera_placements_json))
+        self._sim_manager.load_camera_from_config_file()
+        self._place_cameras()
 
     def _read_camera_json(self):
         import json
@@ -209,16 +211,34 @@ class AgentSDG:
         ov_rot = rot_matrix.ExtractRotation().GetQuat()
         CameraUtil.set_camera(camera_prim, ov_pos, ov_rot, ov_focal_length)
 
+    # ===== Save USD =====
+
+    def _save_usd(self):
+        print("Saving USD...")
+        try:
+            import omni.client
+            import omni.usd
+
+            writer_selection = self._sim_manager.get_config_file_property_group("replicator", "writer_selection")
+            params = writer_selection.content_prop.get_value()
+            save_to_path = omni.client.combine_urls("{}/".format(params["output_dir"]), "scene.usd")
+            omni.usd.get_context().save_as_stage(save_to_path)
+            print("Save scene to: " + str(save_to_path))
+            self._sim_app.update()
+        except Exception as e:
+            print("Caught exception. Unable to save USD. " + str(e), file=sys.stderr)
+
 
 def get_args():
     parser = argparse.ArgumentParser("Agent SDG")
-    parser.add_argument("-c", "--config_file", required=True, help="Path to a ORA config file")
+    parser.add_argument("-c", "--config_file", required=True, help="Path to a IRA config file")
     parser.add_argument(
         "-f", "--camera_placement_json_file", required=False, help="Path to camera placement json file."
     )
     parser.add_argument(
         "--save_usd",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
+        default=False,
         help="Save the simulated scene when data generation finishes.",
     )
     args, _ = parser.parse_known_args()
@@ -231,16 +251,25 @@ def main():
     config_file_path = args.config_file
     camera_file_path = args.camera_placement_json_file
     save_usd = args.save_usd
+    print("Using Config file path: {}".format(config_file_path))
+    print("Using Camera placement file path: {}".format(camera_file_path))
+    print("Save USD: {}".format(save_usd))
+
     # Check files exist
     if not os.path.isfile(config_file_path):
-        print("Invalid config file path. Exit.")
+        print("Invalid config file path. Exit.", file=sys.stderr)
         return
     if camera_file_path and not os.path.isfile(camera_file_path):
-        print("Invalid camera placement path. Exit.")
+        print("Invalid camera placement path. Exit.", file=sys.stderr)
         return
+
+    # Start SimApp
+    sim_app = SimulationApp(launch_config=APP_CONFIG, experience=CUSTOM_APP_PATH)
     # Start SDG
-    sdg = AgentSDG(config_file_path, camera_file_path, save_usd)
-    sdg.run()
+    sdg = AgentSDG(sim_app, config_file_path, camera_file_path, save_usd)
+    task = asyncio.ensure_future(sdg.run())
+    while not task.done():
+        sim_app.update()
 
 
 if __name__ == "__main__":
