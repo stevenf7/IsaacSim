@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2024-11-12
+### Fixed
+- fix for browser option panel interference
+
 ## [1.1.2] - 2024-11-01
 ### Added
 - Registered action of opening asset browser

@@ -30,10 +30,6 @@ class ExampleBrowserWindow(ui.Window):
     def __init__(self, model: ExampleBrowserModel, visible=True):
         super().__init__(self.WINDOW_TITLE, visible=visible)
 
-        self.__empty_delegate: Optional[EmptyPropertyDelegate] = None
-        self.__prop_delegate: Optional[PropAssetPropertyDelegate] = None
-        self.__multi_delegate: Optional[MultiPropertyDelegate] = None
-
         self.frame.set_build_fn(self._build_ui)
 
         self._browser_model = model
@@ -43,21 +39,7 @@ class ExampleBrowserWindow(ui.Window):
         # Dock it to the same space where Stage is docked.
         self.deferred_dock_in("Content")
 
-    def destroy(self):
-        if self.__empty_delegate:
-            self.__empty_delegate.destroy()
-            self.__empty_delegate = None
-        if self.__prop_delegate:
-            self.__prop_delegate.destroy()
-            self.__prop_delegate = None
-        if self.__multi_delegate:
-            self.__multi_delegate.destroy()
-            self.__multi_delegate = None
-
     def _build_ui(self):
-        self.__empty_delegate = EmptyPropertyDelegate()
-        self.__prop_delegate = PropAssetPropertyDelegate()
-        self.__multi_delegate = MultiPropertyDelegate()
         preload_folder = os.path.abspath(carb.tokens.get_tokens_interface().resolve("${app}/../predownload"))
         self._delegate = AssetDetailDelegate(self._browser_model)
 
@@ -70,4 +52,5 @@ class ExampleBrowserWindow(ui.Window):
                     min_thumbnail_size=32,
                     max_thumbnail_size=128,
                     detail_thumbnail_size=64,
+                    property_delegates=[EmptyPropertyDelegate(), PropAssetPropertyDelegate(), MultiPropertyDelegate()],
                 )
