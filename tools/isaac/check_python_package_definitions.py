@@ -75,7 +75,9 @@ def _check_omniverse_kit_version(package_definitions, kit_sdk_packman, omniverse
 
 def _check_extensions(package_definitions, extension_folder, excluded_extensions):
     # get extension names
-    extensions = [d for d in os.listdir(extension_folder) if os.path.isdir(os.path.join(extension_folder, d))]
+    extensions = []
+    for folder in extension_folder:
+        extensions += [d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d))]
 
     missing_extensions = False
     for extension in extensions:
@@ -86,7 +88,7 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
         found = False
         for i, (name, spec) in enumerate(package_definitions.items()):
             inventory = spec.get("inventory", {}).get("include", [])
-            if f"exts/{extension}" in inventory:
+            if f"exts/{extension}" in inventory or f"extsDeprecated/{extension}" in inventory:
                 found = True
                 break
         if not found:

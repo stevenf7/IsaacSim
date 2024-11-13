@@ -1216,7 +1216,10 @@ excluded_extensions = [
   "isaacsim.util.internal",
   "omni.isaac.unit_converter",
 ]
-extension_folder = "${root}/source/extensions"
+extension_folder = [
+  "${root}/source/extensions",
+  "${root}/source/deprecated",
+]
 kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
 omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
 
