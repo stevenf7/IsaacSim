@@ -2,7 +2,8 @@
 local ext = get_current_extension_info()
 ext.target_dir = deprecated_exts_path.."/"..ext.id
 
--- Link only those files and folders into the extension target directory
+project_ext (ext)
+
 repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },

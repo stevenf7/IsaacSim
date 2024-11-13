@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.8] - 2024-11-12
+### Changed
+- Moved extension
+
 ## [0.3.7] - 2024-11-01
 ### Changed
 - Moved extension
