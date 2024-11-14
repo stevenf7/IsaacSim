@@ -1,5 +1,5 @@
 # NVBug SWIPAT for packages: https://nvbugswb.nvidia.com/NvBugs5/SWBug.aspx?bugid=4081238
-FROM gitlab-master.nvidia.com:5005/omniverse/containers/apps/ov-base/ov-base-ubuntu-22:2024.5.0
+FROM gitlab-master.nvidia.com:5005/omniverse/containers/apps/ov-base/ov-base-ubuntu-22:latest
 
 # Switch to root user
 USER root

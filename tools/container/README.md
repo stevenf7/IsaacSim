@@ -80,10 +80,7 @@ cd ..
 
 ```bash
 ./repo.sh ci build -c release
-./tools/packman/packman install "7za" "16.02.4" -l "7za"
-rm -rf tools/container/_inputs/*/
-7za/linux-x86/64/7za x _build/packages/isaac-sim-standalone*.7z -otools/container/_inputs/isaac-sim
-env BUILD=isaac-sim-dev ./tools/container/bin/docker/build.sh
+./tools/container/publish_container.sh
 ```
 
 See **[omniverse image scripts](https://gitlab-master.nvidia.com/omniverse/farm/devops/scripts/omniverse-image-scripts)** for build details.
