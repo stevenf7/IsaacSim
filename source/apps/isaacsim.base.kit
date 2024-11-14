@@ -151,22 +151,22 @@ isaac.startup.ros_bridge_extension = "" #ROS bridge disabled for minimal applica
 # menu styling
 [settings.exts."omni.kit.menu.utils"]
 logDeprecated = false
-margin_size=[18, 3]
-tick_spacing=[10, 6]
-margin_size_posttick=[0, 3]
-separator_size=[14, 10]
-root_spacing=3
-post_label_spaces=6
-color_tick_enabled=0xFFFAC434
-color_separator=0xFF7E7E7E
-color_label_enabled=0xFFEEEEEE
-menu_title_color=0xFF202020
-menu_title_line_color=0xFF5E5E5E
-menu_title_text_color=0xFF8F8F8F
+margin_size = [18, 3]
+tick_spacing = [10, 6]
+margin_size_posttick = [0, 3]
+separator_size = [14, 10]
+root_spacing = 3
+post_label_spaces = 6
+color_tick_enabled = 0xFFFAC434
+color_separator = 0xFF7E7E7E
+color_label_enabled = 0xFFEEEEEE
+menu_title_color = 0xFF202020
+menu_title_line_color = 0xFF5E5E5E
+menu_title_text_color = 0xFF8F8F8F
 menu_title_text_height = 24
 menu_title_close_color = 0xFFC6C6C6
-indent_all_ticks=false
-show_menu_titles=true
+indent_all_ticks = false
+show_menu_titles = true
 
 [settings.app]
 name = "Isaac-Sim"
@@ -178,7 +178,7 @@ font.file = "${fonts}/OpenSans-SemiBold.ttf"
 font.size = 16
 hangDetector.enabled = true
 hangDetector.timeout = 120
-settings.persistent = true                  # settings are persistent for this app
+settings.persistent = true                       # settings are persistent for this app
 settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
 fastShutdown = true
 
@@ -186,7 +186,6 @@ vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default
 ### async rendering settings
 asyncRendering = false
 asyncRenderingLowLatency = false
-
 
 [settings.app.window]
 iconPath = "${isaacsim.app.setup}/data/omni.isaac.sim.png"
@@ -213,6 +212,9 @@ defaultCamPos.x = 5
 defaultCamPos.y = 5
 defaultCamPos.z = 5
 defaults.fillViewport = false # default to not fill viewport
+grid.enabled = true
+outline.enabled = true
+boundingBoxes.enabled = false
 
 [settings.telemetry]
 # Anonymous Kit application usage telemetry
@@ -226,15 +228,21 @@ app.primCreation.typedDefaults.camera.clippingRange = [
     0.01,
     10000000.0,
 ] # Meters default
+app.primCreation.DefaultXformOpPrecision = "Double"
+app.primCreation.DefaultRotationOrder = "ZYX"
+app.primCreation.PrimCreationWithDefaultXformOps = true
 app.stage.timeCodeRange = [0, 1000000]
 app.stage.upAxis = "Z" # Isaac Sim default Z up
 app.viewport.camMoveVelocity = 0.05 # Meters default
 app.viewport.gizmo.scale = 0.01 # Meters default
 app.viewport.grid.scale = 1.0 # Meters default
+app.viewport.camShowSpeedOnStart = false # Hide camera speed on startup
+app.omniverse.gamepadCameraControl = false # Disable gamepad control for camera by default
 exts."omni.anim.navigation.core".navMesh.config.autoRebakeOnChanges = false
 exts."omni.anim.navigation.core".navMesh.viewNavMesh = false
 physics.visualizationDisplayJoints = false # improves performance
 physics.visualizationSimulationOutput = false # improves performance
+physics.resetOnStop = true # Physics state is reset on stop
 renderer.startupMessageDisplayed = true # hides the IOMMU popup window
 resourcemonitor.timeBetweenQueries = 100 # improves performance
 simulation.defaultMetersPerUnit = 1.0 # Meters default

@@ -64,14 +64,6 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings = carb.settings.get_settings()
         self._ext_manager = omni.kit.app.get_app().get_extension_manager()
 
-        # this is a work around as some Extensions don't properly setup their default setting in time
-        self._set_defaults()
-
-        # adjust couple of viewport settings
-        self._settings.set("/app/viewport/grid/enabled", True)
-        self._settings.set("/app/viewport/outline/enabled", True)
-        self._settings.set("/app/viewport/boundingBoxes/enabled", False)
-
         # FOR DEVELOPMENT #
         self._settings.set("/privacy/externalBuild", False)
 
@@ -93,27 +85,6 @@ class CreateSetupExtension(omni.ext.IExt):
 
         # Increase hang detection timeout
         omni.client.set_hang_detection_time_ms(10000)
-
-    def _set_defaults(self):
-        """this is trying to setup some defaults for extensions to avoid warning"""
-        self._settings.set_default("/persistent/app/omniverse/bookmarks", {})
-        self._settings.set_default("/persistent/app/stage/timeCodeRange", [0, 100])
-
-        self._settings.set_default("/persistent/audio/context/closeAudioPlayerOnStop", False)
-
-        self._settings.set_default("/persistent/app/primCreation/PrimCreationWithDefaultXformOps", True)
-        self._settings.set_default("/persistent/app/primCreation/DefaultXformOpType", "Scale, Orient, Translate")
-        self._settings.set_default("/persistent/app/primCreation/DefaultRotationOrder", "ZYX")
-        self._settings.set_default("/persistent/app/primCreation/DefaultXformOpPrecision", "Double")
-
-        # camera settings
-        self._settings.set("persistent/app/viewport/camShowSpeedOnStart", False)
-        self._settings.set("persistent/app/omniverse/gamepadCameraControl", False)
-        # physics settings
-        self._settings.set("persistent/physics/resetOnStop", True)
-        # omnigraph settings
-        self._settings.set("persistent/omnigraph/disablePrimNodes", True)
-        self._settings.set("persistent/omnigraph/useSchemaPrims", True)
 
     async def __new_stage(self):
 

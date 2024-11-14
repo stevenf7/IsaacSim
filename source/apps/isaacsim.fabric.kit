@@ -16,6 +16,14 @@ keywords = ["experience", "app", "usd"]
 [settings]
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
+app.useFabricSceneDelegate = false
+
+[settings.persistent]
+omnigraph.updateToUsd = false
+omnihydra.useFastSceneDelegate = true
+omnihydra.useSceneGraphInstancing = true
+physics.updateForceSensorsToUsd = false
+physics.visualizationDisplayJoints = false
 
 [settings.app.exts]
 folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
@@ -33,11 +41,5 @@ postToSlack = false
 # 	{ name = "kit/community", url = "https://dw290v42wisod.cloudfront.net/exts/kit/community" },
 # ]
 
-[settings]
-app.useFabricSceneDelegate = false
-[settings.persistent]
-omnigraph.updateToUsd = false
-omnihydra.useFastSceneDelegate = true
-omnihydra.useSceneGraphInstancing = true
-physics.updateForceSensorsToUsd = false
-physics.visualizationDisplayJoints = false
+
+

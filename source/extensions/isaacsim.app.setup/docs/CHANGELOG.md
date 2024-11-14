@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2024-11-10
+### Changed
+- Moved settings to isaacsim.base.kit
+
 ## [1.2.0] - 2024-11-10
 ### Changed
 - Renamed to isaacsim.selector.kit
