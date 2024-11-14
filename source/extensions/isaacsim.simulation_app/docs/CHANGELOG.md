@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.0] - 2024-11-13
+### Changed
+- Add extra_args config argument that allows a user to pass in additional arguments from a script
+
 ## [2.2.0] - 2024-11-10
 ### Changed
 - Try and load multiple kit files for python app based on what exists
