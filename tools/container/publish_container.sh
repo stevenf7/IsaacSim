@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+SCRIPT_DIR=$(realpath $(dirname ${BASH_SOURCE}))
 # APP_NAME="isaac-sim"
 # CI_COMMIT_BRANCH=local
 
@@ -35,6 +35,11 @@ cd "$SCRIPT_DIR"
 env BUILD=$APP_NAME ./bin/docker/build.sh -f $FAMILY_NAME
 # docker login nvcr.io
 docker_image_tag=`cat docker/__most_recent_image_${APP_NAME}`
+echo !Built container $docker_image_tag!
+
+if [[ "${CI_COMMIT_BRANCH}" == "local" ]]; then
+  exit
+fi
 
 # Publish Container
 echo !Start publishing container!
