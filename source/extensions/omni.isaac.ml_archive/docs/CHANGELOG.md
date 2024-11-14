@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0] - 2024-11-14
+### Changed
+- Update to torch==2.5.1+cu118, torchvision==0.20.1+cu118, torchaudio==2.5.0+cu118
+- Update to filelock==3.13.1, fsspec==2024.2.0, networkx==3.2.1, sympy==1.12
+- Update to nvidia-nccl-cu11==2.20.5
+
 ## [2.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
