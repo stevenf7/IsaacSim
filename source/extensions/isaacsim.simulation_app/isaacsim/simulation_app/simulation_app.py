@@ -80,6 +80,7 @@ class SimulationApp:
         "fast_shutdown": True,
         "profiler_backend": [],
         "create_new_stage": True,
+        "extra_args": [],
     }
     """
     The config variable is a dictionary containing the following entries
@@ -110,6 +111,7 @@ class SimulationApp:
         fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
         profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
         create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True
+        extra_args: (list): List of extra command line arguments to pass down to the kit process
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -331,6 +333,13 @@ class SimulationApp:
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/apps',  # so we can reference other kit files
         ]
+        # Add additional command line arguments
+        extra_args = self.config.get("extra_args", [])
+        if isinstance(extra_args, list):
+            args.extend(self.config.get("extra_args", []))
+        else:
+            print("Ignoring extra_args, extra_args must be of type list")
+
         if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         if self.config.get("physics_gpu") is not None:
