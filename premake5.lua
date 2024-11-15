@@ -456,9 +456,9 @@ function create_tests()
     group "startup_tests"
         -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
         -- use "--reset-user" to reset user config file
-        define_startup_experience("tests-startup.main", "isaacsim.full", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-        define_startup_experience("tests-startup.streaming", "isaacsim.streaming", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
-        define_startup_experience("tests-startup.extscache", "isaacsim.full", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.main", "isaacsim.exp.full", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.streaming", "isaacsim.exp.full.streaming", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
+        define_startup_experience("tests-startup.extscache", "isaacsim.exp.full", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
         -- -- Windows Only
         -- if os.target() == "windows" then
         --     define_startup_experience("tests-startup.xr.steamvr", "isaacsim.xr.steamvr", "--no-window --/app/quitAfter=500")
@@ -644,10 +644,10 @@ function group_apps()
         write_version_file(config)
     end
 
-    define_local_experience("isaac-sim", "isaacsim.full")
-    define_local_experience("isaac-sim.fabric", "isaacsim.fabric")
+    define_local_experience("isaac-sim", "isaacsim.exp.full")
+    define_local_experience("isaac-sim.fabric", "isaacsim.exp.full.fabric")
     define_local_experience("isaac-sim.selector", "isaacsim.selector")
-    define_local_experience("isaac-sim.streaming", "isaacsim.streaming", "--no-window ")
+    define_local_experience("isaac-sim.streaming", "isaacsim.exp.full.streaming", "--no-window ")
     -- Windows Only
     if os.target() == "windows" then
         define_local_experience("isaac-sim.xr.steamvr", "isaacsim.xr.steamvr")

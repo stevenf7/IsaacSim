@@ -134,7 +134,7 @@ def main():
             exit()
 
     # experience file
-    experience = args[0] if len(args) and not args[0].startswith("-") else "isaacsim.full"
+    experience = args[0] if len(args) and not args[0].startswith("-") else "isaacsim.exp.full"
     experience = experience if experience.endswith(".kit") else f"{experience}.kit"
     if not os.path.isfile(experience):
         for experience_dir in [os.path.join(isaacsim_path, "apps"), os.path.join(kit_path, "apps")]:
