@@ -8,7 +8,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.1"
+version = "0.2.2"
 category = "other"
 title = "Isaac Sim OpenXR support"
 description = "Additional APIs for integrating Isaac Sim and OpenXR for robotics"
@@ -22,6 +22,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.xr.system.openxr" = {}
+"omni.kit.xr.profile.ar" = {}
 
 # define the Python module that the extension provides
 [[python.module]]
@@ -34,4 +35,3 @@ recursive = false
 
 # [settings]
 # exts."isaacsim.xr.openxr".timeout = 5
-

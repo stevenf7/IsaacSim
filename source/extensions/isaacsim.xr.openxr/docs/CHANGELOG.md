@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2024-11-13
+### Fixed
+- Specify all openxr dependancies
+
 ## [0.2.1] - 2024-10-24
 ### Fixed
 - Specify kitxr::openxr ext dep and fix crash if dep is missing

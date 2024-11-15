@@ -1,0 +1,48 @@
+[package]
+description = "Main Omniverse Isaac Sim Application with XR OpenXR"
+execFile = "isaac-sim.app.xr.openxr"
+title = "Isaac Sim XR OpenXR"
+version = "4.5.0"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd", "isaacsim", "xr"]
+
+[dependencies]
+"isaacsim.base" = {}
+"omni.kit.xr.system.openxr" = {}
+"omni.kit.xr.profile.ar" = {}
+"isaacsim.xr.openxr" = {}
+
+[settings]
+app.fastShutdown = true
+app.name = "Isaac-Sim"
+app.version = "4.5.0"
+xr.ui.enabled = false
+xrstage.profile.ar.anchorMode = "scene origin"
+
+[settings.app.exts]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
+
+[settings.app.window]
+hideUi = false
+title = "Isaac Sim XR OpenXR"
+
+[settings.exts."omni.kit.registry.nucleus"]
+# FOR DEVELOPMENT #
+postToSlack = false
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
+]
+# # FOR PRODUCTION #
+# registries = [
+# 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/106/shared" },
+# 	{ name = "kit/sdk", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/sdk/${kit_version_short}/${kit_git_hash}" },
+# 	{ name = "kit/community", url = "https://dw290v42wisod.cloudfront.net/exts/kit/community" },
+# ]

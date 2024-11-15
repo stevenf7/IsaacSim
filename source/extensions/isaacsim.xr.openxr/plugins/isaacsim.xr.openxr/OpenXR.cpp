@@ -187,7 +187,6 @@ protected:
 
     virtual void onSessionStart(XrSession session, omni::kit::xr::XRToken mode) override
     {
-        CARB_LOG_ERROR("Calling onSessionStart");
         m_session = session;
 
         createSpace();
