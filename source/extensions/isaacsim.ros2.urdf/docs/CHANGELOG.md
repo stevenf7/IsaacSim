@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.3] - 2024-11-14
+### Changed
+- Update omni.isaac.urdf to isaacsim.asset.importer.urdf
+
 ## [1.1.2] - 2024-11-09
 ### Changed
 - Updated dependencies and imports after renaming
