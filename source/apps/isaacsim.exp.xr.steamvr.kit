@@ -1,30 +1,41 @@
 [package]
-title = "Isaac Sim Python"
-description = "A trimmed down app for use with python providing zero frame delay"
+description = "Main Omniverse Isaac Sim Application with XR SteamVR"
+execFile = "isaac-sim.xr.steamvr"
+title = "Isaac Sim XR SteamVR"
 version = "4.5.0"
-execFile = "isaac-sim.zero_delay"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-"isaacsim.base" = {}
+"isaacsim.exp.base" = {}
+"omni.kit.xr.profile.vr" = {}
+"omni.kit.xr.system.steamvr" = {}
 
 [settings]
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
-app.hydraEngine.waitIdle = true
-app.updateOrder.checkForHydraRenderComplete = 1000
 
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
+
+[settings.app.window]
+hideUi = false
+title = "Isaac Sim XR SteamVR"
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
+postToSlack = false
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
-postToSlack = false
 # # FOR PRODUCTION #
 # registries = [
 # 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/106/shared" },

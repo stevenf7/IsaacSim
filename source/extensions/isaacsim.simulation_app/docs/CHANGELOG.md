@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.1] - 2024-11-14
+### Changed
+- Updated default experience list 
+
+
 ## [2.3.0] - 2024-11-13
 ### Changed
 - Add extra_args config argument that allows a user to pass in additional arguments from a script

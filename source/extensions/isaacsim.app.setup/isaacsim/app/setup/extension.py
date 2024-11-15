@@ -154,7 +154,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def _show_ui_docs(self):
         """show the omniverse ui documentation as an external Application"""
-        self._start_app("omni.app.uidoc.kit")
+        self._start_app("isaacsim.exp.uidoc.kit")
 
     def _show_selector(self):
         """show the app selector as an external Application"""

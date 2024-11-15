@@ -186,8 +186,8 @@ class SimulationApp:
         if experience == "":
             for exp in [
                 f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
-                f'{os.environ["EXP_PATH"]}/isaacsim.python.kit',
-                f'{os.environ["EXP_PATH"]}/isaacsim.base.kit',
+                f'{os.environ["EXP_PATH"]}/isaacsim.exp.base.python.kit',
+                f'{os.environ["EXP_PATH"]}/isaacsim.exp.base.kit',
             ]:
                 if os.path.isfile(exp):
                     experience = exp

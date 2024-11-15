@@ -174,7 +174,7 @@ ext_folders = [
 ]
 
 # Apps to run and precache
-apps = ["${root}/_build/$platform/$config/apps/isaacsim.extscache.kit"]
+apps = ["${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.kit"]
 
 # Registries to use
 registries = [
@@ -999,7 +999,7 @@ python_analysis_extra_mapping = [
 
 [repo_generate_changelog]
 exts_exclude = ["isaacsim.util.internal"]
-extscache_paths = ["${root}/source/apps/isaacsim.extscache.kit"]
+extscache_paths = ["${root}/source/apps/isaacsim.exp.extscache.kit"]
 home_path = "${root}/source/extensions/"
 
 [repo_lint]
@@ -1076,7 +1076,7 @@ exclude = []
 
 override = []
 
-output_file = "${root}/source/apps/isaacsim.extscache.kit"
+output_file = "${root}/source/apps/isaacsim.exp.extscache.kit"
 
 ########################################################################################################################
 # Find duplicate files

@@ -1,45 +1,46 @@
 [package]
-title = "Isaac Sim"
-description = "Main Omniverse Isaac Sim Application"
+description = "Headless Isaac Sim with Livestream using WebRTC"
+execFile = "isaac-sim.streaming"
+title = "Isaac Sim (Streaming)"
 version = "4.5.0"
-execFile = "isaac-sim.fabric"
 
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
 [dependencies]
-"isaacsim.base" = {}
-"omni.physx.fabric" = {}
-"omni.physx.stageupdate" = {}
-"usdrt.scenegraph" = {}
+"isaacsim.exp.full" = {}
+"omni.kit.livestream.core" = { version = "6.1.0", exact = true }
+"omni.kit.livestream.webrtc" = { version = "6.0.0", exact = true }
+"omni.kit.streamsdk.plugins" = { version = "6.1.0", exact = true }
 
 [settings]
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
-app.useFabricSceneDelegate = false
-
-[settings.persistent]
-omnigraph.updateToUsd = false
-omnihydra.useFastSceneDelegate = true
-omnihydra.useSceneGraphInstancing = true
-physics.updateForceSensorsToUsd = false
-physics.visualizationDisplayJoints = false
 
 [settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
+
+[settings.app.window]
+hideUi = false
+title = "Isaac Sim Headless"
+drawMouse = true
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
+postToSlack = false
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+    { name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
 ]
-postToSlack = false
 # # FOR PRODUCTION #
 # registries = [
 # 	{ name = "kit/default", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/106/shared" },
 # 	{ name = "kit/sdk", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/sdk/${kit_version_short}/${kit_git_hash}" },
 # 	{ name = "kit/community", url = "https://dw290v42wisod.cloudfront.net/exts/kit/community" },
 # ]
-
-
-
