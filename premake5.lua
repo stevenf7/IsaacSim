@@ -534,6 +534,9 @@ function create_tests()
         -- python_sample_test("tests-nativepython-isaacsim.ros1.bridge.contact", "standalone_examples/api/isaacsim.ros1.bridge/contact.py") # disabling as this requires isaac sim custom message to be sourced, which doesn't work on TC
         python_sample_test("tests-nativepython-isaacsim.ros1.bridge.carter_stereo", "standalone_examples/api/isaacsim.ros1.bridge/carter_stereo.py", "--test")
         -- Replicator data samples:
+        
+        python_sample_test("tests-nativepython-replicator.infinigen_sdg_default", "standalone_examples/replicator/infinigen/infinigen_sdg.py", "--close-on-completion")
+        python_sample_test("tests-nativepython-replicator.infinigen_sdg_config", "standalone_examples/replicator/infinigen/infinigen_sdg.py", "--close-on-completion --config standalone_examples/replicator/infinigen/config/infinigen_multi_writers_pt.yaml")
         python_sample_test("tests-nativepython-replicator.scene_based_sdg", "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py")
         python_sample_test("tests-nativepython-replicator.scene_based_sdg_basic_writer", "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py", "--config standalone_examples/replicator/scene_based_sdg/config/config_basic_writer.yaml")
         python_sample_test("tests-nativepython-replicator.scene_based_sdg_default_writer", "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py", "--config standalone_examples/replicator/scene_based_sdg/config/config_default_writer.json")
