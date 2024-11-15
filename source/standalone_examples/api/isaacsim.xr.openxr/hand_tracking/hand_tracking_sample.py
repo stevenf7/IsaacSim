@@ -7,10 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
+
 import numpy as np
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp({"headless": False}, experience=f'{os.environ["EXP_PATH"]}/isaacsim.exp.xr.openxr.kit')
 
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.omni_pbr import OmniPBR
@@ -53,20 +55,26 @@ while simulation_app.is_running():
             my_world.reset()
             reset_needed = False
 
-        left_hand_joints = openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_LEFT_EXT)
-        if left_hand_joints is not None:
-            for joint_idx in range(int(OpenXRSpec.HandJointEXT.XR_HAND_JOINT_LITTLE_TIP_EXT) + 1):
-                joint_pos = left_hand_joints[joint_idx].pose.position
-                my_world.scene.get_object(f"left_cube_{joint_idx}").set_world_pose(
-                    (joint_pos.x, -joint_pos.z, joint_pos.y)
-                )
+        def update_joints(joints, prim_prefix):
+            if joints is not None:
+                for joint_idx in range(int(OpenXRSpec.HandJointEXT.XR_HAND_JOINT_LITTLE_TIP_EXT) + 1):
+                    location_flags = joints[joint_idx].locationFlags
+                    if (
+                        location_flags & OpenXRSpec.XR_SPACE_LOCATION_POSITION_VALID_BIT
+                        and location_flags & OpenXRSpec.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT
+                    ):
+                        joint_pos = joints[joint_idx].pose.position
+                        joint_quat = joints[joint_idx].pose.orientation
+                        obj = my_world.scene.get_object(f"{prim_prefix}{joint_idx}")
+                        obj.set_world_pose(
+                            (joint_pos.x, -joint_pos.z, joint_pos.y),
+                            (joint_quat.w, joint_quat.x, -joint_quat.z, joint_quat.y),
+                        )
+                        obj.set_visibility(True)
+                    else:
+                        my_world.scene.get_object(f"{prim_prefix}{joint_idx}").set_visibility(False)
 
-        right_hand_joints = openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_RIGHT_EXT)
-        if right_hand_joints is not None:
-            for joint_idx in range(int(OpenXRSpec.HandJointEXT.XR_HAND_JOINT_LITTLE_TIP_EXT) + 1):
-                joint_pos = right_hand_joints[joint_idx].pose.position
-                my_world.scene.get_object(f"right_cube_{joint_idx}").set_world_pose(
-                    (joint_pos.x, -joint_pos.z, joint_pos.y)
-                )
+        update_joints(openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_LEFT_EXT), "left_cube_")
+        update_joints(openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_RIGHT_EXT), "right_cube_")
 
 simulation_app.close()
