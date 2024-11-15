@@ -28,6 +28,7 @@ class Attributes(Enum):
     TR_Z_OFFSET = (f"{_attr_prefix}:physics:Tr_Z:DofOffset", pxr.Sdf.ValueTypeNames.Int)
     ACCELERATION_LIMIT = (f"{_attr_prefix}:physics:AccelerationLimit", pxr.Sdf.ValueTypeNames.FloatArray)
     JERK_LIMIT = (f"{_attr_prefix}:physics:JerkLimit", pxr.Sdf.ValueTypeNames.FloatArray)
+    ACTUATOR = (f"{_attr_prefix}:physics:JerkLimit", pxr.Sdf.ValueTypeNames.BoolArray)
     # Custom properties for name and type
     @property
     def name(self):
@@ -38,15 +39,23 @@ class Attributes(Enum):
         return self.value[1]
 
 
+class Relations(Enum):
+    ROBOT_LINKS = f"{_attr_prefix}:physics:robotLinks"
+    ROBOT_JOINTS = f"{_attr_prefix}:physics:robotjoints"
+
+
 def ApplyRobotAPI(prim: pxr.Usd.Prim):
     prim.AddAppliedSchema(Classes.ROBOT_API.value)
     for attr in [Attributes.DESCRIPTION, Attributes.NAMESPACE]:
         prim.CreateAttribute(attr.name, attr.type, True)
 
+    for rel in [Relations.ROBOT_LINKS, Relations.ROBOT_JOINTS]:
+        prim.CreateRelationship(rel.value, custom=True)
+
 
 def ApplyLinkAPI(prim: pxr.Usd.Prim):
     prim.AddAppliedSchema(Classes.LINK_API.value)
-    for attr in [Attributes.INDEX, Attributes.NAME_OVERRIDE]:
+    for attr in [Attributes.NAME_OVERRIDE]:
         prim.CreateAttribute(attr.name, attr.type, True)
 
 
@@ -59,7 +68,6 @@ def ApplyReferencePointAPI(prim: pxr.Usd.Prim):
 def ApplyJointAPI(prim: pxr.Usd.Prim):
     prim.AddAppliedSchema(Classes.JOINT_API.value)
     for attr in [
-        Attributes.JOINT_INDEX,
         Attributes.ROT_X_OFFSET,
         Attributes.ROT_Y_OFFSET,
         Attributes.ROT_Z_OFFSET,

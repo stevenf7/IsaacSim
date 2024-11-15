@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.1] - 2024-11-12
+### Changed
+- minor update to Robot Schema
+
 ## [3.1.0] - 2024-10-31
 ### Added
 - First Version of Robot schema as a codeless implementation

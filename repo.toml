@@ -365,13 +365,15 @@ usd_python_root = "${root}/_build/target-deps/python"
 usd_root = "${root}/_build/target-deps/nv_usd/%{cfg.buildcfg}"
 
 [repo_usd.plugin.robotSchema]
-build_dir = "${root}/_build/$platform/$config/robot_schema/"
-generate_dir = "${root}/_build/$platform/$config/exts/isaacsim.robot.schema/plugins/robot_schema"
-plugin_dir = "${root}/source/source/extensions/isaacsim.robot.schema/schema"
-schema_file = "${root}/source/robot_schema/RobotSchema.usda"
+schema_file = "${root}/source/extensions/isaacsim.robot.schema/robot_schema/RobotSchema.usda"
+generate_dir = "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+plugin_dir = "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+install_root =  "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+build_dir =  "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
 
-generate_module_deps_cpp_file = false
 library_prefix = "RobotSchema"
+generate_module_deps_cpp_file = false
+is_codeless = true
 usd_lib_dependencies = [
   "arch",
   "tf",
