@@ -219,7 +219,7 @@ pyproject.dependencies = [
     "numpy<2.0.0",
     "scipy",
     "matplotlib",
-    "torch>=2.4.0",
+    "torch>=2.5.1",
     "opencv-python",
     "psutil",
     "boto3",
