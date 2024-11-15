@@ -35,6 +35,8 @@ class SimulationManager:
     _physics_scene_apis = OrderedDict()
     _callbacks = dict()
     _simulation_manager_interface = None
+    _assets_loaded = True
+    _assets_loading_callback = None
 
     @classmethod
     def _initialize(cls) -> None:
@@ -65,6 +67,7 @@ class SimulationManager:
         SimulationManager._physics_sim_view = None
         SimulationManager._post_warm_start_callback = None
         SimulationManager._stage_open_callback = None
+        SimulationManager._assets_loading_callback = None
         SimulationManager._simulation_manager_interface.reset()
         SimulationManager._physics_scene_apis.clear()
         SimulationManager._callbacks.clear()
@@ -74,6 +77,18 @@ class SimulationManager:
         SimulationManager._physics_scene_apis.clear()
         SimulationManager._callbacks.clear()
         SimulationManager._track_physics_scenes()
+        SimulationManager._assets_loaded = True
+        SimulationManager._assets_loading_callback = None
+
+        def on_stage_event(event: omni.usd.StageEventType):
+            if event.type == int(omni.usd.StageEventType.ASSETS_LOADING):
+                SimulationManager._assets_loaded = False
+            elif event.type == int(omni.usd.StageEventType.ASSETS_LOADED):
+                SimulationManager._assets_loaded = True
+
+        SimulationManager._assets_loading_callback = (
+            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(on_stage_event)
+        )
 
     def _track_physics_scenes() -> None:
         def add_physics_scenes(physics_scene_prim_path):
@@ -105,9 +120,11 @@ class SimulationManager:
             SimulationManager._physics_sim_view = None
 
     def _create_simulation_view(event) -> None:
+        if "cuda" in SimulationManager.get_physics_sim_device() and SimulationManager._backend == "numpy":
+            SimulationManager._backend = "torch"
+            carb.log_warn("changing backend from numpy to torch since numpy backend cannot be used with GPU piplines")
         SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(SimulationManager._backend)
         SimulationManager._physics_sim_view.set_subspace_roots("/")
-        # TODO: remove the extra simulate here
         SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
         SimulationManager._message_bus.dispatch(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
         SimulationManager._message_bus.dispatch(IsaacEvents.PHYSICS_READY.value, payload={})
@@ -520,3 +537,12 @@ class SimulationManager:
     def enable_usd_notice_handler(cls, flag):
         SimulationManager._simulation_manager_interface.enable_usd_notice_handler(flag)
         return
+
+    @classmethod
+    def assets_loading(cls) -> bool:
+        """Checks if textures are loaded.
+
+        Returns:
+            bool: True if textures are loading and not done yet, otherwise False.
+        """
+        return not SimulationManager._assets_loaded
