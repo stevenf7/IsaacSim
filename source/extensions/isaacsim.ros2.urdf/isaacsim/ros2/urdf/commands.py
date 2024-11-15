@@ -4,11 +4,11 @@ from functools import partial
 
 import omni.client
 import omni.kit.commands
+from isaacsim.asset.importer.urdf import _urdf
 from isaacsim.ros2.urdf.RobotDescription import RobotDefinitionReader
 
 # import omni.kit.utils
 from omni.client._omniclient import Result
-from omni.importer.urdf import _urdf
 from pxr import Usd, UsdUtils
 
 

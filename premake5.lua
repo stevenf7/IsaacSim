@@ -527,8 +527,8 @@ function create_tests()
         python_sample_test("tests-nativepython-isaacsim.robot.wheeled_robots.examples.jetbot_differential_move", "standalone_examples/api/isaacsim.robot.wheeled_robots.examples/jetbot_differential_move.py", "--test")
         -- omni.isaac.dynamic_control
         python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
-        -- omni.isaac.urdf
-        python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.importer.urdf/urdf_import.py")
+        -- isaacsim.asset.importer.urdf
+        python_sample_test("tests-nativepython-isaacsim.asset.importer.urdf.urdf_import", "standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py")
         -- isaacsim.ros1.bridge
         python_sample_test("tests-nativepython-isaacsim.ros1.bridge.clock", "standalone_examples/api/isaacsim.ros1.bridge/clock.py", "--test")
         -- python_sample_test("tests-nativepython-isaacsim.ros1.bridge.contact", "standalone_examples/api/isaacsim.ros1.bridge/contact.py") # disabling as this requires isaac sim custom message to be sourced, which doesn't work on TC
