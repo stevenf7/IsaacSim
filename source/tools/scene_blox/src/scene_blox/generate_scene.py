@@ -27,8 +27,14 @@ def main(args):
     simulation_app = SimulationApp()
 
     # Late import because of runtime modules
+    import omni.kit.app
     from isaacsim.core.api import World
     from isaacsim.core.utils.stage import close_stage
+
+    ext_manager = omni.kit.app.get_app().get_extension_manager()
+    if not ext_manager.is_extension_enabled("isaacsim.replicator.scene_blox"):
+        ext_manager.set_extension_enabled_immediate("isaacsim.replicator.scene_blox", True)
+
     from isaacsim.replicator.scene_blox.generation.scene_generator import SceneGenerator
     from isaacsim.replicator.scene_blox.grid_utils import config
     from isaacsim.replicator.scene_blox.grid_utils.grid import Grid
