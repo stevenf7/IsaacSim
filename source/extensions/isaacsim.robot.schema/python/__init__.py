@@ -17,5 +17,5 @@ pluginsRoot = os.path.join(os.path.dirname(__file__), "../../../plugins")
 
 Plug.Registry().RegisterPlugins(pluginsRoot + "/IsaacSensorSchema/resources")
 Plug.Registry().RegisterPlugins(pluginsRoot + "/RangeSensorSchema/resources")
-Plug.Registry().RegisterPlugins(pluginsRoot + "/robot_schema")
+Plug.Registry().RegisterPlugins(f"{os.path.dirname(__file__)}/robot_schema")
 ISAAC_NAME_OVERRIDE = "isaac:nameOverride"
