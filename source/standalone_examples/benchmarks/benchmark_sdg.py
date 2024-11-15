@@ -62,6 +62,7 @@ num_frames = args.num_frames
 num_cameras = args.num_cameras
 width, height = args.resolution[0], args.resolution[1]
 asset_count = args.asset_count
+annotators_str = ", ".join(args.annotators)
 disable_viewport_rendering = args.disable_viewport_rendering
 delete_data_when_done = args.delete_data_when_done
 print_results = args.print_results
@@ -119,7 +120,7 @@ benchmark = BaseIsaacBenchmark(
             {"name": "width", "data": width},
             {"name": "height", "data": height},
             {"name": "asset_count", "data": asset_count},
-            {"name": "annotators", "data": args.annotators},
+            {"name": "annotators", "data": annotators_str},
             {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
         ]
     },
