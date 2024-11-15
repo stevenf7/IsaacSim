@@ -532,7 +532,7 @@ test-linux-x86_64-postinstalltests:
   - ./repo.sh ci test -- -s postinstalltests
 
 
-test-linux-x86_64-nativepythontests-1:
+test-linux-x86_64-nativepythontests-api:
   extends:
   - .test-common
   - .test-linux-common
@@ -540,11 +540,11 @@ test-linux-x86_64-nativepythontests-1:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 1 --generate-report
+  - ./repo.sh ci test -- -s nativepythontests -b api --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
 
-test-linux-x86_64-nativepythontests-2:
+test-linux-x86_64-nativepythontests-replicator:
   extends:
   - .test-common
   - .test-linux-common
@@ -552,12 +552,12 @@ test-linux-x86_64-nativepythontests-2:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 2 --generate-report
+  - ./repo.sh ci test -- -s nativepythontests -b replicator --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 
-test-linux-x86_64-nativepythontests-3:
+test-linux-x86_64-nativepythontests-testing:
   extends:
   - .test-common
   - .test-linux-common
@@ -565,7 +565,7 @@ test-linux-x86_64-nativepythontests-3:
   - .runner-test-linux-x86_64-gpu
   - .omni_nvks_gpu
   script:
-  - ./repo.sh ci test -- -s nativepythontests -b 3 --generate-report
+  - ./repo.sh ci test -- -s nativepythontests -b testing --generate-report
   after_script:
   - !reference [.datadog-test-visibility-linux-x86_64, script]
 
@@ -743,33 +743,33 @@ test-windows-x86_64-internalpythontests-1:
   rules:
   - !reference [.rules-nightly-tests, rules]
 
-test-windows-x86_64-nativepythontests-1:
+test-windows-x86_64-nativepythontests-api:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s nativepythontests -b 1 --generate-report
+  - ./repo.bat ci test -- -s nativepythontests -b api --generate-report
   rules:
   - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
-test-windows-x86_64-nativepythontests-2:
+test-windows-x86_64-nativepythontests-replicator:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s nativepythontests -b 2 --generate-report
+  - ./repo.bat ci test -- -s nativepythontests -b replicator --generate-report
   rules:
   - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
-test-windows-x86_64-nativepythontests-3:
+test-windows-x86_64-nativepythontests-testing:
   extends:
   - .test-common
   - .test-windows-common
   - .runner-test-windows-x86_64-gpu
   script:
-  - ./repo.bat ci test -- -s nativepythontests -b 3 --generate-report
+  - ./repo.bat ci test -- -s nativepythontests -b testing --generate-report
   rules:
   - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 

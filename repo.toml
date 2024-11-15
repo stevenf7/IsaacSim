@@ -798,13 +798,13 @@ timeout = 960
 
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["tests-nativepython-replicator*${shell_ext}"]
-name = "1"
+name = "replicator"
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["tests-nativepython-testing*${shell_ext}"]
-name = "2"
+name = "testing"
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["*"]
-name = "3"
+name = "api"
 
 # [repo_test.suites.jupytertests]
 # kind = "glob_and_exec"
