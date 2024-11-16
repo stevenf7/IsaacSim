@@ -12,7 +12,9 @@ import os
 import numpy as np
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False}, experience=f'{os.environ["EXP_PATH"]}/isaacsim.exp.xr.openxr.kit')
+simulation_app = SimulationApp(
+    {"headless": False}, experience=f'{os.environ["EXP_PATH"]}/isaacsim.exp.base.xr.openxr.kit'
+)
 
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.omni_pbr import OmniPBR

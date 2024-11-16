@@ -1,24 +1,19 @@
 [package]
-description = "Main Omniverse Isaac Sim Application with XR OpenXR"
-execFile = "isaac-sim.app.xr.openxr"
-title = "Isaac Sim XR OpenXR"
+description = "Main Omniverse Isaac Sim Application with XR VR"
+execFile = "isaac-sim.xr.vr"
+title = "Isaac Sim XR VR"
 version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd", "isaacsim", "xr"]
+keywords = ["experience", "app", "usd"]
 
 [dependencies]
-"isaacsim.base" = {}
-"omni.kit.xr.system.openxr" = {}
-"omni.kit.xr.profile.ar" = {}
-"isaacsim.xr.openxr" = {}
+"isaacsim.exp.base" = {}
+"omni.kit.xr.profile.vr" = {}
 
 [settings]
-app.fastShutdown = true
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
-xr.ui.enabled = false
-xrstage.profile.ar.anchorMode = "scene origin"
 
 [settings.app.exts]
 folders = [
@@ -31,7 +26,7 @@ folders = [
 
 [settings.app.window]
 hideUi = false
-title = "Isaac Sim XR OpenXR"
+title = "Isaac Sim XR VR"
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #

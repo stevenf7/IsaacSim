@@ -459,10 +459,7 @@ function create_tests()
         define_startup_experience("tests-startup.main", "isaacsim.exp.full", "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
         define_startup_experience("tests-startup.streaming", "isaacsim.exp.full.streaming", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
         define_startup_experience("tests-startup.extscache", "isaacsim.exp.full", "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1")
-        -- -- Windows Only
-        -- if os.target() == "windows" then
-        --     define_startup_experience("tests-startup.xr.steamvr", "isaacsim.xr.steamvr", "--no-window --/app/quitAfter=500")
-        -- end
+        define_startup_experience("tests-startup.xr.vr", "isaacsim.exp.base.xr.vr", "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1")
 
     group "selector_tests"
         define_startup_experience(
@@ -649,12 +646,9 @@ function group_apps()
 
     define_local_experience("isaac-sim", "isaacsim.exp.full")
     define_local_experience("isaac-sim.fabric", "isaacsim.exp.full.fabric")
-    define_local_experience("isaac-sim.selector", "isaacsim.selector")
     define_local_experience("isaac-sim.streaming", "isaacsim.exp.full.streaming", "--no-window ")
-    -- Windows Only
-    if os.target() == "windows" then
-        define_local_experience("isaac-sim.xr.steamvr", "isaacsim.xr.steamvr")
-    end
+    define_local_experience("isaac-sim.xr.vr", "isaacsim.exp.base.xr.vr")
+    define_local_experience("isaac-sim.selector", "isaacsim.selector")
 end
 
 nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");
