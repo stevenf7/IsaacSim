@@ -3,7 +3,7 @@ setlocal
 
 :: Use half of available CPU cores for the warmup not to take all the resources from user's PC during installation
 set /a TASKING_THREAD_CNT = %NUMBER_OF_PROCESSORS% / 2
-call "%~dp0kit\kit.exe"  "%%~dp0apps/isaacsim.exp.full.kit" ^
+call "%~dp0kit\kit.exe"  "%%~dp0apps/isaacsim.exp.base.kit" ^
     --no-window ^
     --/persistent/renderer/startupMessageDisplayed=true ^
     --ext-folder "%~dp0/exts" ^

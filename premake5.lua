@@ -464,22 +464,22 @@ function create_tests()
     group "selector_tests"
         define_startup_experience(
             "tests-selector.default",
-            "isaacsim.selector",
+            "isaacsim.exp.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=false"
         )
         define_startup_experience(
             "tests-selector.autolaunch_and_persist",
-            "isaacsim.selector",
+            "isaacsim.exp.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
         define_startup_experience(
             "tests-selector.no_show_console",
-            "isaacsim.selector",
+            "isaacsim.exp.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
         define_startup_experience(
             "tests-selector.persist",
-            "isaacsim.selector",
+            "isaacsim.exp.selector",
             "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
         )
 
@@ -646,9 +646,9 @@ function group_apps()
 
     define_local_experience("isaac-sim", "isaacsim.exp.full")
     define_local_experience("isaac-sim.fabric", "isaacsim.exp.full.fabric")
+    define_local_experience("isaac-sim.selector", "isaacsim.exp.selector")
     define_local_experience("isaac-sim.streaming", "isaacsim.exp.full.streaming", "--no-window ")
     define_local_experience("isaac-sim.xr.vr", "isaacsim.exp.base.xr.vr")
-    define_local_experience("isaac-sim.selector", "isaacsim.selector")
 end
 
 nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");

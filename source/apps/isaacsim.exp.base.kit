@@ -10,7 +10,6 @@ keywords = ["experience", "app", "usd"]
 # Isaac Sim extensions
 "isaacsim.app.about" = {}
 "isaacsim.asset.browser" = {}
-"isaacsim.asset.generator.occupancy_map" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.cloner" = {}
 "isaacsim.core.deprecation_manager" = { order = -100 }
@@ -25,7 +24,6 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.gui.property" = {}
 "isaacsim.replicator.behavior" = {}
 "isaacsim.replicator.common" = {}
-"isaacsim.replicator.scene_blox" = {}
 "isaacsim.robot_motion.lula" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.robot.manipulators" = {}
@@ -48,10 +46,8 @@ keywords = ["experience", "app", "usd"]
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ml_archive" = {}
 "omni.isaac.nucleus" = {}
-"omni.isaac.occupancy_map" = {}
 "omni.isaac.quadruped" = {}
 "omni.isaac.range_sensor" = {}
-"omni.isaac.scene_blox" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.utils" = {}
 "omni.kit.loop-isaac" = {}
@@ -215,6 +211,8 @@ defaults.fillViewport = false # default to not fill viewport
 grid.enabled = true
 outline.enabled = true
 boundingBoxes.enabled = false
+show.camera=false
+show.lights=false
 
 [settings.telemetry]
 # Anonymous Kit application usage telemetry
@@ -261,3 +259,5 @@ exts."isaacsim.asset.browser".folders = [
     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
 ]
 # FOR DEVELOPMENT - END #
+
+
