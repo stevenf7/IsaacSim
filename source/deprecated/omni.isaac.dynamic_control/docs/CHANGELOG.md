@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.12] - 2024-11-15
+### Changed
+- Fix unit test
+
 ## [1.3.11] - 2024-10-30
 ### Changed
 - Add profiler marker
