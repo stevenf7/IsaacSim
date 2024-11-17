@@ -12,6 +12,7 @@ keywords = ["experience", "app", "usd"]
 
 # Isaac Sim extensions
 "isaacsim.app.setup" = { order = 1000 }
+"isaacsim.asset.generator.occupancy_map" = {}
 "isaacsim.asset.generator.occupancy_map.ui" = {}
 "isaacsim.asset.importer.heightmap" = {}
 "isaacsim.examples.extension" = {}
@@ -19,6 +20,7 @@ keywords = ["experience", "app", "usd"]
 "isaacsim.gui.components" = {}
 "isaacsim.examples.browser" = {}
 "isaacsim.replicator.behavior.ui" = {}
+"isaacsim.replicator.scene_blox" = {}
 "isaacsim.replicator.synthetic_recorder" = {}
 "isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot.manipulators.ui" = {}
@@ -38,11 +40,13 @@ keywords = ["experience", "app", "usd"]
 "omni.isaac.gain_tuner" = {}
 "omni.isaac.grasp_editor" = {}
 "omni.isaac.occupancy_map.ui" = {}
+"omni.isaac.occupancy_map" = {}
 "omni.isaac.physics_inspector" = {}
 "omni.isaac.range_sensor.examples" = {}
 "omni.isaac.range_sensor.ui" = {}
 "omni.isaac.robot_assembler" = {}
 "omni.isaac.robot_description_editor" = {}
+"omni.isaac.scene_blox" = {}
 "omni.isaac.synthetic_recorder" = {}
 "omni.isaac.throttling" = {}
 "omni.isaac.version" = {}
@@ -126,20 +130,20 @@ keywords = ["experience", "app", "usd"]
 "omni.usd.schema.scene.visualization" = {}
 
 [settings]
-app.name = "Isaac-Sim Full"
-app.version = "4.5.0"
-
 # default internal ros2 bridge distro to use if no ros2 distro is sourced
 exts."isaacsim.ros2.bridge".ros_distro = "humble"
+
+[settings.app]
+name = "Isaac-Sim Full"
+version = "4.5.0"
+file.ignoreUnsavedOnExit = false
+window.title = "Isaac Sim Full"
 
 # set the default ros bridge to enable on startup
 [settings."filter:platform"."windows-x86_64"]
 isaac.startup.ros_bridge_extension = ""
 [settings."filter:platform"."linux-x86_64"]
 isaac.startup.ros_bridge_extension = "isaacsim.ros2.bridge"
-
-[settings.app.window]
-title = "Isaac Sim Full"
 
 [settings.app.exts]
 folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
