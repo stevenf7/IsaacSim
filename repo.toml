@@ -174,7 +174,10 @@ ext_folders = [
 ]
 
 # Apps to run and precache
-apps = ["${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.kit"]
+apps = [
+    "${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.kit",
+    "${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.deprecated.kit"
+]
 
 # Registries to use
 registries = [
