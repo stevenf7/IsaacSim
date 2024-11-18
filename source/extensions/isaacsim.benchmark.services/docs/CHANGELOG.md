@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.0] - 2024-11-15
+### Changed
+- Use subscription method to get physics simulation profiling data
+
 ## [2.1.0] - 2024-11-03
 ### Added
 - Added OmniPerfKPIFile backend and made default option
