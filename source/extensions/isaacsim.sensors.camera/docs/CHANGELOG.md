@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2024-11-18
+### Fixed
+- Fixed camera sensor custom parameter output test
+
 ## [0.2.1] - 2024-11-07
 ### Added
 - Added init_params to camera sensor parameters
