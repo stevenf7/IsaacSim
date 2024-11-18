@@ -58,9 +58,9 @@ class IsaacUpdateFrametimeCollector:
         try:
             import omni.physx
 
-            self.__physx_iface = omni.physx.acquire_physx_interface()
+            self.__physx_benchmarks_iface = omni.physx.get_physx_benchmarks_interface()
         except:
-            self.__physx_iface = None
+            self.__physx_benchmarks_iface = None
             carb.log_warn("physx interface not loaded, physics frametimes will not be measured")
 
         self.app_frametimes_ms: List[float] = []
@@ -68,12 +68,9 @@ class IsaacUpdateFrametimeCollector:
         self.physics_frametimes_ms: List[float] = []
 
         self.__last_frametime_timestamp_ns = 0
-        self.__pre_physics_timestamp_ns = 0
-        self.__post_physics_timestamp_ns = 0
 
         self.__subscription: Optional[carb.events.ISubscription] = None
-        self.__pre_physics = None
-        self.__post_physics = None
+        self.__physx_subscription = None
 
         self.elapsed_sim_time = 0.0
 
@@ -87,13 +84,11 @@ class IsaacUpdateFrametimeCollector:
         self.gpu_frametimes_ms.append(gpu_frametime_ms)
         self.elapsed_sim_time += event.payload["dt"]
 
-    def __pre_physics_callback(self, step):
-        self.__pre_physics_timestamp_ns = time.perf_counter_ns()
-
-    def __post_physics_callback(self, step):
-        self.__post_physics_timestamp_ns = time.perf_counter_ns()
-        physics_time_ms = round((self.__post_physics_timestamp_ns - self.__pre_physics_timestamp_ns) / 1000 / 1000, 6)
-        self.physics_frametimes_ms.append(physics_time_ms)
+    def __physics_stats_callback(self, profile_stats):
+        if len(profile_stats) > 0:
+            for stat in profile_stats:
+                if stat.zone_name == "PhysX Update":
+                    self.physics_frametimes_ms.append(stat.ms)
 
     def start_collecting(self):
         # reset our tracking variables
@@ -105,20 +100,17 @@ class IsaacUpdateFrametimeCollector:
         self.__subscription = (
             omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self.__update_event_callback)
         )
-        if self.__physx_iface:
-            self.__pre_physics = self.__physx_iface.subscribe_physics_on_step_events(
-                self.__pre_physics_callback, True, 0
-            )
-            self.__post_physics = self.__physx_iface.subscribe_physics_on_step_events(
-                self.__post_physics_callback, False, 100000
-            )
+
+        self.__physx_subscription = self.__physx_benchmarks_iface.subscribe_profile_stats_events(
+            self.__physics_stats_callback
+        )
 
         self.elapsed_sim_time = 0.0
 
     def stop_collecting(self) -> Tuple[List[float], List[float], List[float]]:
         self.__subscription = None
-        self.__pre_physics = None
-        self.__post_physics = None
+        self.__physx_subscription = None
+
         # drop the first frame since the interval approach doesn't work for
         # the render frame
         if len(self.app_frametimes_ms) > 0:
