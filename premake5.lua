@@ -531,7 +531,6 @@ function create_tests()
         -- python_sample_test("tests-nativepython-isaacsim.ros1.bridge.contact", "standalone_examples/api/isaacsim.ros1.bridge/contact.py") # disabling as this requires isaac sim custom message to be sourced, which doesn't work on TC
         python_sample_test("tests-nativepython-isaacsim.ros1.bridge.carter_stereo", "standalone_examples/api/isaacsim.ros1.bridge/carter_stereo.py", "--test")
         -- Replicator data samples:
-        
         python_sample_test("tests-nativepython-replicator.infinigen_sdg_default", "standalone_examples/replicator/infinigen/infinigen_sdg.py", "--close-on-completion")
         python_sample_test("tests-nativepython-replicator.infinigen_sdg_config", "standalone_examples/replicator/infinigen/infinigen_sdg.py", "--close-on-completion --config standalone_examples/replicator/infinigen/config/infinigen_multi_writers_pt.yaml")
         python_sample_test("tests-nativepython-replicator.scene_based_sdg", "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py")
@@ -648,6 +647,7 @@ function group_apps()
     define_local_experience("isaac-sim.fabric", "isaacsim.exp.full.fabric")
     define_local_experience("isaac-sim.selector", "isaacsim.exp.selector")
     define_local_experience("isaac-sim.streaming", "isaacsim.exp.full.streaming", "--no-window ")
+    define_local_experience("isaac-sim.old_streaming", "isaacsim.exp.full.old_streaming", "--no-window ")
     define_local_experience("isaac-sim.xr.vr", "isaacsim.exp.base.xr.vr")
 end
 

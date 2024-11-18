@@ -84,9 +84,16 @@ RUN echo '#! /bin/sh' > runheadless.sh && \
     echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" --allow-root "$@" ' >> runheadless.sh && \
     chmod u+x runheadless.sh
 
+RUN echo '#! /bin/sh' > runoldstreaming.sh && \
+    echo '/isaac-sim/license.sh && /isaac-sim/privacy.sh && /isaac-sim/isaac-sim.old_streaming.sh \\' >> runoldstreaming.sh && \
+    echo '  --/persistent/isaac/asset_root/default="$OMNI_SERVER" \\' >> runoldstreaming.sh && \
+    echo '  --merge-config="/isaac-sim/config/open_endpoint.toml" --allow-root "$@" ' >> runoldstreaming.sh && \
+    chmod u+x runoldstreaming.sh
+
 # Update .bashrc
 RUN echo 'alias runapp=/isaac-sim/runapp.sh' >> ~/.bashrc && \
-    echo 'alias runheadless=/isaac-sim/runheadless.sh' >> ~/.bashrc
+    echo 'alias runheadless=/isaac-sim/runheadless.sh' >> ~/.bashrc && \
+    echo 'alias runoldstreaming=/isaac-sim/runoldstreaming.sh' >> ~/.bashrc
 
 # Default entrypoint to launch headless with streaming
 ENTRYPOINT /isaac-sim/runheadless.sh

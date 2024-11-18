@@ -1,0 +1,39 @@
+[package]
+description = "Headless Isaac Sim [DEPRECATED]"
+execFile = "isaac-sim.old_streaming"
+title = "Isaac Sim (DEPRECATED Streaming)"
+version = "4.5.0"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd"]
+
+[dependencies]
+"isaacsim.exp.full" = {}
+"omni.kit.livestream.core" = { version = "4.1.2", exact = true }
+"omni.kit.livestream.native" = { version = "5.0.1", exact = true }
+"omni.kit.streamsdk.plugins" = { version = "4.1.1", exact = true }
+
+[settings]
+app.name = "Isaac-Sim"
+app.version = "4.5.0"
+
+[settings.app.exts]
+folders = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
+
+[settings.app.window]
+hideUi = false
+title = "Isaac Sim Headless [DEPRECATED]"
+drawMouse = true
+width = 1920
+height = 1080
+
+[settings.app.livestream]
+proto = "ws"
+allowResize = true
+outDirectory = "${data}"
