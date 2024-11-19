@@ -338,6 +338,7 @@ if __name__ == "__main__":
     import argparse
     import struct
 
+    import matplotlib
     import matplotlib.pyplot as plt
 
     parser = argparse.ArgumentParser("Dataset test")
@@ -383,6 +384,7 @@ if __name__ == "__main__":
 
     # Directory to save the example images to
     out_dir = os.path.join(os.getcwd(), "_out_gen_imgs", "")
+    print(f"[Online-SDG] Saving images to {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
     image_num = 0
@@ -419,8 +421,10 @@ if __name__ == "__main__":
                 ax.add_patch(box)
                 ax.text(bb[0], bb[1], label, fontdict={"family": "sans-serif", "color": colour, "size": 10})
 
-        plt.draw()
-        plt.pause(0.01)
+        # Use plt.pause only if the backend is interactive
+        if matplotlib.get_backend() in ["TkAgg", "nbAgg"]:
+            plt.draw()
+            plt.pause(0.01)
         fig_name = os.path.join(out_dir, f"domain_randomization_test_image_{image_num}.png")
         plt.savefig(fig_name)
         image_num += 1
