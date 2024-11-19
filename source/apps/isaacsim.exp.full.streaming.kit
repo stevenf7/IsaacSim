@@ -1,7 +1,7 @@
 [package]
 description = "Headless Isaac Sim with Livestream using WebRTC"
 execFile = "isaac-sim.streaming"
-title = "Isaac Sim (Streaming)"
+title = "Isaac Sim Full Streaming"
 version = "4.5.0"
 
 # That makes it browsable in UI with "experience" filter
@@ -28,8 +28,12 @@ folders = [
 
 [settings.app.window]
 hideUi = false
-title = "Isaac Sim Headless"
-drawMouse = true
+title = "Isaac Sim Full Streaming"
+drawMouse = false
+
+[settings.app.livestream]
+allowResize = false
+outDirectory = "${data}"
 
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
