@@ -108,7 +108,7 @@ struct Ros2QoSProfile
      */
     Ros2QoSProfile()
     {
-        // These are the values from the `rmw_qos_profile_default`, which match in both Foxy and Humble distributions
+        // These are the values from the `rmw_qos_profile_default`
         history = Ros2QoSHistoryPolicy::eKeepLast;
         depth = 10;
         reliability = Ros2QoSReliabilityPolicy::eReliable;

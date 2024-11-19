@@ -91,7 +91,7 @@ std::shared_ptr<Ros2ImageMessage> Ros2FactoryImpl::createImageMessage()
 
 std::shared_ptr<Ros2NitrosBridgeImageMessage> Ros2FactoryImpl::createNitrosBridgeImageMessage()
 {
-#if defined(_WIN32) || defined(ROS2_BACKEND_FOXY)
+#if defined(_WIN32)
     return nullptr;
 #else
     return std::make_shared<Ros2NitrosBridgeImageMessageImpl>();

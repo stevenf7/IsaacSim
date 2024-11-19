@@ -31,7 +31,7 @@ class TransformListener : public ITransformListener, isaacsim::ros2::bridge::Ros
 public:
     bool initialize(const std::string& rosDistro)
     {
-        if (!(rosDistro == "foxy" || rosDistro == "humble"))
+        if (!(rosDistro == "humble"))
         {
             CARB_LOG_ERROR("Unsupported ROS_DISTRO: %s", rosDistro.c_str());
             return false;

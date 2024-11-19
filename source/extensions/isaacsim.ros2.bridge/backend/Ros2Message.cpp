@@ -321,7 +321,7 @@ Ros2NitrosBridgeImageMessageImpl::Ros2NitrosBridgeImageMessageImpl()
     : Ros2MessageInterfaceImpl(
           "isaac_ros_nitros_bridge_interfaces", "msg", "NitrosBridgeImage", BackendMessageType::eMessage, true)
 {
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     if (m_typesupportLibrary->isValid())
     {
         m_msg = create();
@@ -340,7 +340,7 @@ void Ros2NitrosBridgeImageMessageImpl::writeHeader(const double timeStamp, const
     {
         return;
     }
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* imageMsg =
         static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(m_msg);
     Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), imageMsg->header);
@@ -355,7 +355,7 @@ void Ros2NitrosBridgeImageMessageImpl::generateBuffer(const uint32_t height,
     {
         return;
     }
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* imageMsg =
         static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(m_msg);
     imageMsg->height = height;
@@ -388,7 +388,7 @@ void Ros2NitrosBridgeImageMessageImpl::writeData(const std::vector<int32_t>& dat
     {
         return;
     }
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* imageMsg =
         static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(m_msg);
 
@@ -407,7 +407,7 @@ Ros2NitrosBridgeImageMessageImpl::~Ros2NitrosBridgeImageMessageImpl()
     {
         return;
     }
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* imageMsg =
         static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(m_msg);
 
@@ -470,13 +470,8 @@ void Ros2BoundingBox2DMessageImpl::writeBboxData(const void* bboxArray, const si
         const Bbox2DData& box = bboxData[i];
 
         detectionMsg->detections.data[i].bbox.center.theta = 0;
-#ifdef ROS2_BACKEND_FOXY
-        detectionMsg->detections.data[i].bbox.center.x = (box.x_max + box.x_min) / 2.0;
-        detectionMsg->detections.data[i].bbox.center.y = (box.y_max + box.y_min) / 2.0;
-#else
         detectionMsg->detections.data[i].bbox.center.position.x = (box.x_max + box.x_min) / 2.0;
         detectionMsg->detections.data[i].bbox.center.position.y = (box.y_max + box.y_min) / 2.0;
-#endif
         detectionMsg->detections.data[i].bbox.size_x = box.x_max - box.x_min;
         detectionMsg->detections.data[i].bbox.size_y = box.y_max - box.y_min;
         // TODO: Detection sub message header for all detections
@@ -485,15 +480,9 @@ void Ros2BoundingBox2DMessageImpl::writeBboxData(const void* bboxArray, const si
         m_generatorLibrary->callSymbolWithArg<void>(
             "vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init", &detectionMsg->detections.data[i].results, 1);
 
-#ifdef ROS2_BACKEND_FOXY
-        detectionMsg->detections.data[i].results.data[0].score = 1.0;
-        Ros2MessageInterfaceImpl::writeRosString(
-            std::to_string(box.semanticId), detectionMsg->detections.data[i].results.data[0].id);
-#else
         detectionMsg->detections.data[i].results.data[0].hypothesis.score = 1.0;
         Ros2MessageInterfaceImpl::writeRosString(
             std::to_string(box.semanticId), detectionMsg->detections.data[i].results.data[0].hypothesis.class_id);
-#endif
     }
 }
 
@@ -586,15 +575,9 @@ void Ros2BoundingBox3DMessageImpl::writeBboxData(const void* bboxArray, size_t n
         m_generatorLibrary->callSymbolWithArg<void>(
             "vision_msgs__msg__ObjectHypothesisWithPose__Sequence__init", &detectionMsg->detections.data[i].results, 1);
 
-#ifdef ROS2_BACKEND_FOXY
-        detectionMsg->detections.data[i].results.data[0].score = 1.0;
-        Ros2MessageInterfaceImpl::writeRosString(
-            std::to_string(box.semanticId), detectionMsg->detections.data[i].results.data[0].id);
-#else
         detectionMsg->detections.data[i].results.data[0].hypothesis.score = 1.0;
         Ros2MessageInterfaceImpl::writeRosString(
             std::to_string(box.semanticId), detectionMsg->detections.data[i].results.data[0].hypothesis.class_id);
-#endif
     }
 }
 

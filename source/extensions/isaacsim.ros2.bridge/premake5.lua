@@ -30,67 +30,6 @@ project_with_location("isaacsim.ros2.bridge.check")
         }
     filter {}
 
-
-project_with_location("isaacsim.ros2.bridge.foxy")
-    targetdir (ext.bin_dir)
-    kind "SharedLib"
-    language "C++"
-
-    pic "On"
-    staticruntime "Off"
-    defines { "ROS2_BACKEND_FOXY" }
-    add_files("impl", "backend")
-    add_files("iface", "include")
-    includedirs {
-        "%{root}/source/extensions/isaacsim.core.includes/include",
-        "%{root}/_build/target-deps/cuda/include",
-        "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/%{config}/include",
-        "%{root}/_build/target-deps/nv_ros2/include",
-        "%{root}/_build/target-deps/nlohmann-json/include",
-        "%{root}/source/extensions/isaacsim.ros2.bridge",
-        "%{root}/source/extensions/isaacsim.ros2.bridge/include",
-        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-        "%{root}/_build/target-deps/omni_client_library/include",
-    }
-    libdirs {
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        extsbuild_dir.."/omni.usd.core/bin",
-        "%{root}/_build/target-deps/nv_ros2/lib",
-    }
-    links{
-        "gf",  "sdf", "tf", "usd", "usdPhysics",
-        "rosidl_runtime_c", "rcutils", "rcl", "rmw",
-        "tf2_msgs__rosidl_typesupport_c", "tf2_msgs__rosidl_generator_c",
-        "geometry_msgs__rosidl_typesupport_c", "geometry_msgs__rosidl_generator_c",
-        "nav_msgs__rosidl_typesupport_c", "nav_msgs__rosidl_generator_c",
-        "std_msgs__rosidl_typesupport_c", "std_msgs__rosidl_generator_c",
-        "rosgraph_msgs__rosidl_typesupport_c", "rosgraph_msgs__rosidl_generator_c",
-        "sensor_msgs__rosidl_typesupport_c", "sensor_msgs__rosidl_generator_c",
-        -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
-        -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
-    }
-
-    filter { "system:linux" }
-        disablewarnings {"error=pragmas"}
-        includedirs {
-            "%{root}/_build/target-deps/python/include/python3.10"
-        }
-        buildoptions("-fvisibility=default")
-        linkoptions { "-Wl,--export-dynamic" }
-    filter { "system:windows" }
-        libdirs {
-            "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
-        }
-    filter {}
-
-    filter { "configurations:debug" }
-        defines { "_DEBUG" }
-    filter { "configurations:release" }
-        defines { "NDEBUG" }
-    filter {}
-
 -- Humble stuff
 project_with_location("isaacsim.ros2.bridge.humble")
     targetdir (ext.bin_dir)
@@ -254,15 +193,12 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/isaacsim/ros2/bridge" },
-    { "rclpy/*.py", ext.target_dir.."/foxy/rclpy" },
     { "rclpy/*.py", ext.target_dir.."/humble/rclpy" },
 }
 
 if os.target() == "linux" then
     repo_build.prebuild_copy {
-        { "%{root}/_build/target-deps/nv_ros2/lib/lib**", ext.target_dir.."/foxy/lib" },
         { "%{root}/_build/target-deps/nv_ros2_humble/lib/lib**", ext.target_dir.."/humble/lib" },
-        { "%{root}/_build/target-deps/nv_ros2/lib/python3.10/site-packages", ext.target_dir.."/foxy/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.10/site-packages", ext.target_dir.."/humble/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.10/dist-packages", ext.target_dir.."/humble/rclpy" },
 
@@ -271,13 +207,9 @@ end
 
 if os.target() == "windows" then
     repo_build.prebuild_copy {
-        { "%{root}/_build/target-deps/nv_ros2/bin/**.dll", ext.target_dir.."/foxy/lib" },
         { "%{root}/_build/target-deps/nv_ros2_humble/bin/**.dll", ext.target_dir.."/humble/lib" },
-        { "%{root}/_build/target-deps/nv_ros2/Lib/site-packages", ext.target_dir.."/foxy/rclpy" },
         { "%{root}/_build/target-deps/nv_ros2_humble/Lib/site-packages", ext.target_dir.."/humble/rclpy" },
-        { "%{root}/_build/target-deps/tinyxml2/bin/**.dll", ext.target_dir.."/foxy/lib" },
         { "%{root}/_build/target-deps/tinyxml2/bin/**.dll", ext.target_dir.."/humble/lib" },
-        { "%{root}/_build/target-deps/openssl/lib/release/rt_dynamic/**.dll", ext.target_dir.."/foxy/lib" },
         { "%{root}/_build/target-deps/openssl/lib/release/rt_dynamic/**.dll", ext.target_dir.."/humble/lib" },
     }
 end

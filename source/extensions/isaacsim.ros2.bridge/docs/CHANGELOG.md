@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.0] - 2024-11-18
+### Removed
+- Removed ROS Foxy distro support from ROS 2 bridge
+
 ## [3.4.1] - 2024-11-01
 ### Changed
 - updated menu location for examples and OG shortcuts

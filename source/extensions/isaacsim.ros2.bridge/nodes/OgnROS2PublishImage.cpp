@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
 #    include <include/ipc_buffer_manager.hpp>
 #endif
 
@@ -74,7 +74,7 @@ public:
     int* nitrosBridgeStreamDevice;
     bool* nitrosBridgeStreamNotCreated;
 
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     std::shared_ptr<IPCBufferManager> ipcBufferManager;
 #endif
 
@@ -366,7 +366,7 @@ public:
         threadData.nitrosBridgeStreamDevice = &state.m_nitrosBridgeStreamDevice;
         threadData.nitrosBridgeStreamNotCreated = &state.m_nitrosBridgeStreamNotCreated;
 
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
         threadData.ipcBufferManager = state.m_ipcBufferManager;
 #endif
 
@@ -378,7 +378,7 @@ public:
 
     bool publishNitrosBridgeImage(OgnROS2PublishImageDatabase& db)
     {
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
         CARB_PROFILE_ZONE(1, "publish nitros bridge image function");
         auto& state = db.perInstanceState<OgnROS2PublishImage>();
         auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
@@ -480,7 +480,7 @@ public:
 
     static bool publishNitrosBridgeHelper(PublishNitrosBridgeImageThreadData& data)
     {
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
         CARB_PROFILE_ZONE(1, "publish nitros image thread");
         isaacsim::core::utils::ScopedDevice scopedDev(data.cudaDeviceIndex);
 
@@ -578,7 +578,7 @@ public:
             m_nitrosBridgeStreamNotCreated = true;
         }
 
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
         m_ipcBufferManager.reset();
         m_ipcBufferManager = nullptr;
 #endif
@@ -593,7 +593,7 @@ private:
     std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
     std::shared_ptr<Ros2ImageMessage> m_message = nullptr;
 
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
     std::shared_ptr<IPCBufferManager> m_ipcBufferManager = nullptr; // CUDA IPC memory pool manager
 #endif
     std::shared_ptr<Ros2Publisher> m_nitrosBridgePublisher = nullptr;

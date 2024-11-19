@@ -55,43 +55,6 @@ project_with_location("isaacsim.ros2.tf_viewer.humble")
         defines { "NDEBUG" }
     filter {}
 
--- backend (ROS2 Foxy) -- Linux only
-if os.target() == "linux" then
-    project_with_location("isaacsim.ros2.tf_viewer.foxy")
-        targetdir (ext.bin_dir)
-        kind "SharedLib"
-        language "C++"
-
-        pic "On"
-        staticruntime "Off"
-        defines { "ROS2_BACKEND_FOXY" }
-        add_files("impl", "backend")
-        add_files("iface", "include")
-        add_files("source", "%{root}/_build/target-deps/nv_ros2/src/geometry2/tf2/src")
-        includedirs {
-            "%{root}/_build/target-deps/nv_ros2/include",
-            "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
-        }
-        libdirs {
-            "%{root}/_build/target-deps/nv_ros2/lib",
-        }
-        links{
-            "rcutils"
-        }
-
-        filter { "system:linux" }
-            disablewarnings {"error=pragmas"}
-            buildoptions{"-fvisibility=default", "-Wno-sign-compare", "-Wno-reorder"}
-            linkoptions { "-Wl,--export-dynamic" }
-        filter {}
-
-        filter { "configurations:debug" }
-            defines { "_DEBUG" }
-        filter { "configurations:release" }
-            defines { "NDEBUG" }
-        filter {}
-end
-
 -- build the C++ plugin that will be loaded by the extension
 project_ext_plugin(ext, "isaacsim.ros2.tf_viewer.plugin")
     rtti "On"

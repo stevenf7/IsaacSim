@@ -9,7 +9,7 @@
 
 #pragma once
 
-#if !defined(_WIN32) && !defined(ROS2_BACKEND_FOXY)
+#if !defined(_WIN32)
 #    include "isaac_ros_nitros_bridge_interfaces/msg/nitros_bridge_image.h"
 #endif
 
