@@ -2,11 +2,6 @@
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
         <package name="nv_ros" version="noetic_20240811_2bd464e-linux64_release" platforms="linux-x86_64"/>
     </dependency>
-    <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
-        <package name="nv_ros2" version="foxy_20240905_34f2adb-linux64_release" platforms="linux-x86_64"/>
-        <package name="nv_ros2" version="foxy_20231120_win64_release.7z" platforms="windows-x86_64"/>
-        
-    </dependency>
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
         <package name="nv_ros2" version="humble_20240905_34f2adb-linux64_release" platforms="linux-x86_64"/>
         <package name="nv_ros2" version="humble_20240905_win64_release.7z" platforms="windows-x86_64"/>

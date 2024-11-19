@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2024-11-18
+### Removed
+- Removed ROS Foxy distro support
+
 ## [1.2.0] - 2024-11-11
 ### Added
 - Add the root frame transform if it is not in the list to be rendered (configurable via carb settings)

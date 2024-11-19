@@ -196,21 +196,6 @@ class SelectorWindow:
                         "LD_LIBRARY_PATH"
                     ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/humble/lib"
 
-                # Use Internal libs for Foxy
-                elif internal_libs_selection == 2:
-
-                    if os.getenv("ROS_DISTRO") is not None:
-                        self.ros2_error_field.text = "ROS_DISTRO is already set. If ROS2 is already sourced, using internal libs can cause undefined behavior"
-
-                    if os.getenv("RMW_IMPLEMENTATION") is None:
-                        # Default to FastDDS
-                        self.env_vars["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"
-
-                    self.env_vars["ROS_DISTRO"] = "foxy"
-                    self.env_vars[
-                        "LD_LIBRARY_PATH"
-                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/foxy/lib"
-
         self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, ros_bridge_selection)
         self._settings.set(PERSISTENT_ROS_INTERNAL_LIBS_SETTING, internal_libs_selection)
 
@@ -568,7 +553,6 @@ class SelectorWindow:
                         self._settings.get_as_int(PERSISTENT_ROS_INTERNAL_LIBS_SETTING),
                         "",
                         "humble",
-                        "foxy (deprecated)",
                         tooltip=textwrap.fill(
                             "Select the distro for the internal ROS2 library. Leave blank to use source installed ROS. (Only applicable for ROS2 Bridge)",
                             80,
