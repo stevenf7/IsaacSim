@@ -1037,7 +1037,7 @@ url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1
 
 # please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
 deps_for_isaac = [
-  "omni.anim.people-0.6.0",
+  "omni.anim.people-0.6.1",
   "omni.cuopt.examples-1.2.0",
   "omni.cuopt.service-1.2.0",
   "omni.cuopt.visualization-1.2.0",
@@ -1047,9 +1047,9 @@ deps_for_isaac = [
   "isaacsim.asset.importer.urdf-2.2.0",
   "omni.kit.test_helpers_gfx",
   "omni.net-0.2.0-isaac",
-  "isaacsim.replicator.agent.camera_calibration-0.5.0",
-  "isaacsim.replicator.agent.core-0.5.2",
-  "isaacsim.replicator.agent.ui-0.5.2",
+  "isaacsim.replicator.agent.camera_calibration-0.5.1",
+  "isaacsim.replicator.agent.core-0.5.3",
+  "isaacsim.replicator.agent.ui-0.5.3",
   "omni.replicator.core-1.11.30",
   "isaacsim.replicator.object-0.3.15",
   "omni.replicator.replicator_yaml-2.0.9",
