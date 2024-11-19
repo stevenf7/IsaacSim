@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
+
 import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World
@@ -133,3 +135,17 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
                 self.assertEqual(visibility_attr, "inherited")
             else:
                 self.assertEqual(visibility_attr, "invisible")
+
+    async def test_scale_units_resolve(self):
+        World.clear_instance()
+        await create_new_stage_async()
+        self._my_world = World()
+        await self._my_world.initialize_simulation_context_async()
+        os.path.dirname(os.path.abspath(__file__))
+        add_reference_to_stage(
+            usd_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/cm_asset.usd"), prim_path="/World"
+        )
+        prim_view = XFormPrim(prim_paths_expr="/World/cereal_box_967a98eb_6ee6_43df_82b5_405633eba8b3")
+        xformable = UsdGeom.Xformable(prim_view.prims[0])
+        self.assertTrue("xformOp:scale:unitsResolve" not in xformable.GetXformOpOrderAttr().Get())
+        self.assertTrue(np.isclose(prim_view.get_local_scales()[0], np.array([0.01, 0.01, 0.01])).all())

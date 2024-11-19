@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2024-11-19
+### Fixed
+- XformPrim._set_xform_properties to take in consideration scale:unitsResolve attribute if authored.
+
 ## [0.3.1] - 2024-11-08
 ### Changed
 - Changed Articulation.invalidate_physics_callback and RigidPrim.invalidate_physics_callback to weakref callbacks.

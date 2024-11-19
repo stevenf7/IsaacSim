@@ -1224,6 +1224,13 @@ class XFormPrim(Prim):
             else:
                 xform_op_scale = UsdGeom.XformOp(self._prims[i].GetAttribute("xformOp:scale"))
 
+                if "xformOp:scale:unitsResolve" in prop_names:
+                    new_scale = np.array(self._prims[i].GetAttribute("xformOp:scale").Get()) * np.array(
+                        self._prims[i].GetAttribute("xformOp:scale:unitsResolve").Get()
+                    )
+                    self._prims[i].GetAttribute("xformOp:scale").Set(Gf.Vec3d(*list(new_scale)))
+                    self._prims[i].RemoveProperty("xformOp:scale:unitsResolve")
+
             if "xformOp:translate" not in prop_names:
                 xform_op_tranlsate = xformable.AddXformOp(
                     UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
