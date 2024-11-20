@@ -14,9 +14,9 @@ import omni.kit.app
 import omni.ui as ui
 import omni.usd
 import requests
-from isaacsim.core.utils.stage import get_next_free_path
+from isaacsim.core.utils.stage import get_next_free_path, open_stage
 from omni.kit.browser.folder.core import BrowserPropertyDelegate, FileDetailItem
-from pxr import Usd, UsdGeom
+from pxr import Usd
 
 
 class PropAssetPropertyDelegate(BrowserPropertyDelegate):
@@ -53,14 +53,21 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
 
         self._container = ui.VStack(height=0, spacing=5)
         with self._container:
-            if item.thumbnail:
-                self._build_thumbnail(item)
+            # if item.thumbnail:
+            #     self._build_thumbnail(item)
 
             with ui.VStack(margin=5):
-                ui.Spacer()
+                ui.Spacer(height=12)
                 self._name_label = ui.Label("File name: " + item.name, height=0)
                 ui.Label("File size: " + str(self.file_size) + " KB", height=0)
-                ui.Spacer()
+                ui.Spacer(height=24)
+                with ui.HStack():
+                    ref_load_btn = ui.Button("Load as Reference", height=36)
+                    ref_load_btn.set_clicked_fn(lambda: self.load_as_reference(item))
+                    ui.Spacer(width=12)
+                    open_asset_btn = ui.Button("Open File", height=36)
+                    open_asset_btn.set_clicked_fn(lambda: self.open_asset(item))
+
             self._build_variant_options(item)
 
     def _build_thumbnail(self, item: FileDetailItem):
@@ -93,11 +100,7 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
         self.has_variants = False
         if self.file_size > 50:
             self.has_variants = False
-            with ui.VStack():
-                ui.Spacer(height=12)
-                load_btn = ui.Button("Load Asset", height=36)
-                load_btn.set_clicked_fn(lambda: self.load_asset(item))
-
+            # display nothing additional than the load buttons
         else:
             self.has_variants = True
             self.variant_overwrite = {}
@@ -143,14 +146,11 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
                         collection_model = collection.model
                         collection_model.add_value_changed_fn(lambda m, name=name: _variants_added(m, name))
 
-                load_btn = ui.Button("Load Asset", height=36)
-                load_btn.set_clicked_fn(lambda: self.load_asset(item))
-
         def _variants_added(m, name):
             checked = m.get_value_as_int()
             self.variant_overwrite[name] = self.variant_dict[name][checked]
 
-    def load_asset(self, item: FileDetailItem):
+    def load_as_reference(self, item: FileDetailItem):
         url = item.url
         robot_filename = item.name
         stage = omni.usd.get_context().get_stage()
@@ -168,4 +168,13 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
         if self.has_variants:
             for name, variant in self.variant_overwrite.items():
                 variant_set = ref_prim.GetVariantSets().GetVariantSet(name)
+                variant_set.SetVariantSelection(variant)
+
+    def open_asset(self, item: FileDetailItem):
+        open_stage(item.url)
+        # update the variant set if there is any
+        if self.has_variants:
+            asset_prim = omni.usd.get_context().get_stage().GetDefaultPrim()
+            for name, variant in self.variant_overwrite.items():
+                variant_set = asset_prim.GetVariantSets().GetVariantSet(name)
                 variant_set.SetVariantSelection(variant)

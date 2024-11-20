@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2024-11-13
+### Changed
+- separate buttons for loading asset as reference and for opening the original usd
+
 ## [1.1.3] - 2024-11-12
 ### Fixed
 - fix for browser option panel interference
