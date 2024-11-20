@@ -41,5 +41,5 @@ class OpenXR(omni.ext.IExt):
         _openxr.release_openxr_interface(_openxr_interface)
         _openxr_interface = None
 
-    def locate_hand_joints(self, hand, time=None):
-        return _openxr_interface.locate_hand_joints(hand, time)
+    def locate_hand_joints(self, hand, time=None, stage_axis=True):
+        return _openxr_interface.locate_hand_joints(hand, time, stage_axis)

@@ -69,8 +69,8 @@ while simulation_app.is_running():
                         joint_quat = joints[joint_idx].pose.orientation
                         obj = my_world.scene.get_object(f"{prim_prefix}{joint_idx}")
                         obj.set_world_pose(
-                            (joint_pos.x, -joint_pos.z, joint_pos.y),
-                            (joint_quat.w, joint_quat.x, -joint_quat.z, joint_quat.y),
+                            (joint_pos.x, joint_pos.y, joint_pos.z),
+                            (joint_quat.w, joint_quat.x, joint_quat.y, joint_quat.z),
                         )
                         obj.set_visibility(True)
                     else:

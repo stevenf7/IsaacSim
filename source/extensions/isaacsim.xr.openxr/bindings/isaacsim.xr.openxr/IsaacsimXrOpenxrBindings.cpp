@@ -103,7 +103,8 @@ PYBIND11_MODULE(_openxr, m)
 
     // carb interface
     carb::defineInterfaceClass<IOpenxr>(m, "IOpenxr", "acquire_openxr_interface", "release_openxr_interface")
-        .def("locate_hand_joints", &IOpenxr::locate_hand_joints, py::arg("hand"), py::arg("time") = std::nullopt);
+        .def("locate_hand_joints", &IOpenxr::locate_hand_joints, py::arg("hand"), py::arg("time") = std::nullopt,
+             py::arg("axisStage"));
 }
 
 }
