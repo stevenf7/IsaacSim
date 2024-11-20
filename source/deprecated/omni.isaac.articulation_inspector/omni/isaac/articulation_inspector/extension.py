@@ -64,9 +64,8 @@ class Extension(omni.ext.IExt):
         menu_items = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Utils")
-
+        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=menu_items)]
+        add_menu_items(self._menu_items, "Tools")
         # Selection
         self.new_selection = True
         self._selected_index = None
@@ -84,7 +83,7 @@ class Extension(omni.ext.IExt):
         self._timeline_event_sub = None
         self._physx_subscription = None
         self._models = {}
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Tools")
         if self._window:
             self._window = None
         gc.collect()

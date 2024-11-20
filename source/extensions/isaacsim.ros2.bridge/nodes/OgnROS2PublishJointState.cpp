@@ -20,7 +20,9 @@
 #include <isaacsim/core/utils/Math.h>
 #include <omni/fabric/FabricUSD.h>
 
-#include <DynamicControl.h>
+#include <omni/physics/tensors/TensorApi.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/IArticulationView.h>
 #include <OgnROS2PublishJointStateDatabase.h>
 
 using namespace isaacsim::ros2::bridge;
@@ -31,11 +33,10 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2PublishJointStateDatabase::sPerInstanceState<OgnROS2PublishJointState>(nodeObj, instanceId);
-
-        state.m_dynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-        if (!state.m_dynamicControlPtr)
+        state.m_tensorInterface = carb::getCachedInterface<omni::physics::tensors::TensorApi>();
+        if (!state.m_tensorInterface)
         {
-            CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
+            CARB_LOG_ERROR("*** Failed to acquire Tensor Api interface\n");
             return;
         }
     }
@@ -64,6 +65,7 @@ public:
             // Find our stage
             long stageId = context.iContext->getStageId(context);
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+            state.m_simView = state.m_tensorInterface->createSimulationView(stageId);
 
             if (!state.initializeNodeHandle(
                     std::string(nodeObj.iNode->getPrimPath(nodeObj)),
@@ -90,19 +92,10 @@ public:
             state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // Verify we have a valid articulation prim
-            if (state.m_dynamicControlPtr->peekObjectType(primPath) == omni::isaac::dynamic_control::eDcObjectArticulation)
+            state.m_articulation = state.m_simView->createArticulationView(std::vector<std::string>{primPath});
+            if (!state.m_articulation)
             {
-                state.m_articulationHandle = state.m_dynamicControlPtr->getArticulation(primPath);
-            }
-            else
-            {
-                db.logError("Prim is not an articulation");
-                return false;
-            }
-
-            if (!state.m_articulationHandle)
-            {
-                db.logError("Articulation %s not found", primPath);
+                db.logError("Prim %s is not an articulation", primPath);
                 return false;
             }
 
@@ -156,8 +149,8 @@ public:
         long stageId = context.iContext->getStageId(context);
         m_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-        state.m_message->writeData(db.inputs.timeStamp(), m_dynamicControlPtr, m_articulationHandle, m_stage,
-                                   m_dofProperties, m_previousJointPosition, m_calculatedJointVelocity, dt, stageUnits);
+        state.m_message->writeData(db.inputs.timeStamp(), m_articulation, m_stage, m_jointPositions, m_jointVelocities,
+                                   m_jointEfforts, m_dofTypes, dt, stageUnits);
         state.m_publisher.get()->publish(state.m_message->getPtr());
         return true;
     }
@@ -170,10 +163,17 @@ public:
 
     virtual void reset()
     {
+        if (m_simView)
+        {
+            m_simView->release(true);
+            m_simView = nullptr;
+        }
+
         m_stage = nullptr;
-        m_dofProperties.clear();
-        m_previousJointPosition.clear();
-        m_calculatedJointVelocity.clear();
+        m_jointPositions.clear();
+        m_jointVelocities.clear();
+        m_jointEfforts.clear();
+        m_dofTypes.clear();
         m_previousTimeStamp = 0;
         m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
@@ -184,12 +184,13 @@ private:
     std::shared_ptr<Ros2JointStateMessage> m_message = nullptr;
 
     pxr::UsdStageWeakPtr m_stage = nullptr;
-    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
-    omni::isaac::dynamic_control::DcHandle m_articulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-
-    std::vector<float> m_previousJointPosition;
-    std::vector<float> m_calculatedJointVelocity;
-    std::vector<omni::isaac::dynamic_control::DcDofProperties> m_dofProperties;
+    omni::physics::tensors::TensorApi* m_tensorInterface = nullptr;
+    omni::physics::tensors::ISimulationView* m_simView = nullptr;
+    omni::physics::tensors::IArticulationView* m_articulation = nullptr;
+    std::vector<float> m_jointPositions;
+    std::vector<float> m_jointVelocities;
+    std::vector<float> m_jointEfforts;
+    std::vector<uint8_t> m_dofTypes;
 
     double m_unitScale = 1;
     double m_previousTimeStamp = 0;

@@ -20,8 +20,9 @@
 
 #include <isaacsim/core/utils/Math.h>
 #include <omni/fabric/FabricUSD.h>
-
-#include <DynamicControl.h>
+#include <omni/physics/tensors/TensorApi.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/IArticulationView.h>
 #include <OgnROS1PublishJointStateDatabase.h>
 #include <RosNode.h>
 
@@ -32,10 +33,10 @@ public:
     {
         auto& state = OgnROS1PublishJointStateDatabase::sPerInstanceState<OgnROS1PublishJointState>(nodeObj, instanceId);
 
-        state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-        if (!state.mDynamicControlPtr)
+        state.m_tensorInterface = carb::getCachedInterface<omni::physics::tensors::TensorApi>();
+        if (!state.m_tensorInterface)
         {
-            CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
+            CARB_LOG_ERROR("*** Failed to acquire Tensor Api interface\n");
             return;
         }
     }
@@ -70,29 +71,21 @@ public:
         {
             // Find our stage
             long stageId = context.iContext->getStageId(context);
-            auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-            if (!stage)
+            auto m_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+            state.m_simView = state.m_tensorInterface->createSimulationView(stageId);
+            if (!m_stage)
             {
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
-            state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
+            state.mUnitScale = UsdGeomGetStageMetersPerUnit(m_stage);
 
+            
             // Verify we have a valid articulation prim
-            if (state.mDynamicControlPtr->peekObjectType(primPath) == omni::isaac::dynamic_control::eDcObjectArticulation)
+            state.m_articulation = state.m_simView->createArticulationView(std::vector<std::string>{primPath});
+            if (!state.m_articulation)
             {
-                state.mArticulationHandle = state.mDynamicControlPtr->getArticulation(primPath);
-            }
-            else
-            {
-                db.logError("Prim is not an articulation");
-                return false;
-            }
-
-            if (!state.mArticulationHandle)
-            {
-
-                db.logError("Articulation %s not found", primPath);
+                db.logError("Prim %s is not an articulation", primPath);
                 return false;
             }
 
@@ -113,6 +106,20 @@ public:
         return true;
     }
 
+    template <typename T>
+    static void createTensorDesc(omni::physics::tensors::TensorDesc& tensorDesc,
+                                 std::vector<T>& buffer,
+                                 size_t numElements,
+                                 omni::physics::tensors::TensorDataType type)
+    {
+        buffer.resize(numElements);
+        tensorDesc.dtype = type;
+        tensorDesc.numDims = 1;
+        tensorDesc.dims[0] = numElements;
+        tensorDesc.data = buffer.data();
+        tensorDesc.ownData = true;
+        tensorDesc.device = -1;
+    }
 
     void publishJointStates(OgnROS1PublishJointStateDatabase& db, const GraphContextObj& context)
     {
@@ -130,66 +137,63 @@ public:
             return;
         }
 
-        double dt = db.inputs.timeStamp() - mPreviousTimeStamp;
-        mPreviousTimeStamp = db.inputs.timeStamp();
-
-        mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-        int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
-        mDofProps.resize(num_dofs);
-        mDynamicControlPtr->getArticulationDofProperties(mArticulationHandle, mDofProps.data());
-        mStates =
-            mDynamicControlPtr->getArticulationDofStates(mArticulationHandle, omni::isaac::dynamic_control::kDcStateAll);
-
-        mPrevJointPosition.resize(num_dofs);
-        mCalculatedJointVelocity.resize(num_dofs);
-
-        long stageId = context.iContext->getStageId(context);
-        auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-
-        if (mStates != nullptr)
+        size_t num_dofs = m_articulation->getMaxDofs();
+        omni::physics::tensors::TensorDesc positionTensor;
+        omni::physics::tensors::TensorDesc velocityTensor;
+        omni::physics::tensors::TensorDesc effortTensor;
+        omni::physics::tensors::TensorDesc dofTypeTensor;
+        createTensorDesc(positionTensor, m_jointPositions, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
+        createTensorDesc(velocityTensor, m_jointVelocities, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
+        createTensorDesc(effortTensor, m_jointEfforts, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
+        createTensorDesc(dofTypeTensor, m_dofTypes, num_dofs, omni::physics::tensors::TensorDataType::eUint8);
+        bool hasDofStates = true;
+        if (!m_articulation->getDofPositions(&positionTensor))
         {
-            for (int j = 0; j < num_dofs; j++)
+            printf("Failed to get dof positions\n");
+            hasDofStates = false;
+        }
+        if (!m_articulation->getDofVelocities(&velocityTensor))
+        {
+            printf("Failed to get dof velocities\n");
+            hasDofStates = false;
+        }
+        if (!m_articulation->getDofProjectedJointForces(&effortTensor))
+        {
+            printf("Failed to get dof efforts\n");
+            hasDofStates = false;
+        }
+        if (!m_articulation->getDofTypes(&dofTypeTensor))
+        {
+            printf("Failed to get dof types\n");
+            hasDofStates = false;
+        }
+
+        if (hasDofStates)
+        {
+            for (size_t j = 0; j < num_dofs; j++)
             {
-                // calculate velocity
-                mCalculatedJointVelocity[j] = (mStates[j].pos - mPrevJointPosition[j]) / dt;
-                mPrevJointPosition[j] = mStates[j].pos;
+                const char* jointPath = m_articulation->getUsdDofPath(0, j);
 
-                omni::isaac::dynamic_control::DcHandle dof =
-                    mDynamicControlPtr->getArticulationDof(mArticulationHandle, j);
-
-                if (dof)
+                if (jointPath)
                 {
-                    msg.name.push_back(isaacsim::core::utils::GetName(
-                        stage->GetPrimAtPath(pxr::SdfPath(mDynamicControlPtr->getDofPath(dof)))));
-
-                    // sign check
-                    mParentName = mDynamicControlPtr->getRigidBodyName(mDynamicControlPtr->getDofParentBody(dof));
-                    const char* jointPath = mDynamicControlPtr->getDofPath(dof);
-                    pxr::SdfPathVector targets;
-                    pxr::UsdPhysicsJoint joint = pxr::UsdPhysicsJoint::Get(stage, pxr::SdfPath(jointPath));
-                    joint.GetBody0Rel().GetTargets(&targets);
-                    const char* body0Name = targets.at(0).GetName().c_str();
-                    signCheck = (strcmp(mParentName, body0Name) == 0) ? 1 : -1;
-                    // printf("signCheck %d\n", signCheck);
+                    msg.name.push_back(isaacsim::core::utils::GetName(m_stage->GetPrimAtPath(pxr::SdfPath(jointPath))));
                 }
 
-                if (mDofProps[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
+                if (omni::physics::tensors::DofType(m_dofTypes[j]) == omni::physics::tensors::DofType::eTranslation)
                 {
-                    msg.position.push_back(isaacsim::core::utils::math::roundNearest(
-                        mStates[j].pos * stageUnits * signCheck, 10000.0)); // m
-                    msg.velocity.push_back(isaacsim::core::utils::math::roundNearest(
-                        mCalculatedJointVelocity[j] * stageUnits * signCheck, 10000.0)); // m/s
-                    msg.effort.push_back(isaacsim::core::utils::math::roundNearest(
-                        mStates[j].effort * stageUnits * signCheck, 10000.0)); // N
+                    msg.position.push_back(
+                        isaacsim::core::utils::math::roundNearest(m_jointPositions[j] * stageUnits, 10000.0)); // m
+                    msg.velocity.push_back(
+                        isaacsim::core::utils::math::roundNearest(m_jointVelocities[j] * stageUnits, 10000.0)); // m/s
+                    msg.effort.push_back(
+                        isaacsim::core::utils::math::roundNearest(m_jointEfforts[j] * stageUnits, 10000.0)); // N
                 }
                 else
                 {
-                    msg.position.push_back(
-                        isaacsim::core::utils::math::roundNearest(mStates[j].pos * signCheck, 10000.0)); // rad
-                    msg.velocity.push_back(isaacsim::core::utils::math::roundNearest(
-                        mCalculatedJointVelocity[j] * signCheck, 10000.0)); // rad/s
+                    msg.position.push_back(isaacsim::core::utils::math::roundNearest(m_jointPositions[j], 10000.0)); // rad
+                    msg.velocity.push_back(isaacsim::core::utils::math::roundNearest(m_jointVelocities[j], 10000.0)); // rad/s
                     msg.effort.push_back(isaacsim::core::utils::math::roundNearest(
-                        mStates[j].effort * stageUnits * stageUnits * signCheck, 10000.0)); // N*m
+                        m_jointEfforts[j] * stageUnits * stageUnits, 10000.0)); // N*m
                 }
             }
             mPublisher->publish(msg);
@@ -205,11 +209,19 @@ public:
 
     virtual void reset()
     {
+        if (m_simView)
+        {
+            m_simView->release(true);
+            m_simView = nullptr;
+        }
+
+        m_stage = nullptr;
+        m_jointPositions.clear();
+        m_jointVelocities.clear();
+        m_jointEfforts.clear();
+        m_dofTypes.clear();
+
         mResetJointState = true;
-        mStates = nullptr;
-        mDofProps.clear();
-        mPrevJointPosition.clear();
-        mCalculatedJointVelocity.clear();
         mPreviousTimeStamp = 0;
         mPublisher.reset(); // This should be reset before we reset the handle.
         RosNode::reset();
@@ -217,18 +229,17 @@ public:
 
 private:
     std::unique_ptr<ros::Publisher> mPublisher;
-
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
-    omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     pxr::SdfPath mArticulationPath;
 
-    std::vector<float> mPrevJointPosition;
-    std::vector<float> mCalculatedJointVelocity;
-    omni::isaac::dynamic_control::DcDofState* mStates = nullptr;
-    std::vector<omni::isaac::dynamic_control::DcDofProperties> mDofProps;
+    pxr::UsdStageWeakPtr m_stage = nullptr;
+    omni::physics::tensors::TensorApi* m_tensorInterface = nullptr;
+    omni::physics::tensors::ISimulationView* m_simView = nullptr;
+    omni::physics::tensors::IArticulationView* m_articulation = nullptr;
+    std::vector<float> m_jointPositions;
+    std::vector<float> m_jointVelocities;
+    std::vector<float> m_jointEfforts;
+    std::vector<uint8_t> m_dofTypes;
 
-    const char* mParentName;
-    int signCheck = 1;
 
     double mUnitScale = 1;
     double mPreviousTimeStamp = 0;
