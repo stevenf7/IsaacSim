@@ -1072,7 +1072,6 @@ deps_for_isaac = [
 
 windows_only = [
   "omni.kit.window.modifier.titlebar",
-  "omni.kit.converter.patchmanager",
 ]
 
 linux_only = []
