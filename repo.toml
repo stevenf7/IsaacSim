@@ -63,6 +63,7 @@ fetch.pip.files_to_pull = [
 
 vscode.python_env.PYTHONPATH = [
   "$$$${PYTHONPATH}",
+  "$root/_build/$platform/$config/kit/python/lib/python3.10",
   "$root/_build/$platform/$config/kit/python/lib/python3.10/site-packages",
   "$root/_build/$platform/$config/python_packages",
   "$root/_build/$platform/$config/exts/isaacsim.simulation_app",
