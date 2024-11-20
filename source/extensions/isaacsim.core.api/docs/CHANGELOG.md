@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.4] - 2024-11-20
+### Changed
+- Added SimulationContext._physics_sim_view initialization.
+
 ## [4.2.3] - 2024-11-12
 ### Changed
 - Revert SimulationContext.play, .play_async, .pause and .pause_async to use app.update instead of timeline.commit.
