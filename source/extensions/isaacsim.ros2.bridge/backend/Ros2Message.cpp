@@ -753,25 +753,13 @@ const void* Ros2JointStateMessageImpl::getTypeSupportHandle()
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState);
 }
 
-template<typename T>
-static void createTensorDesc(omni::physics::tensors::TensorDesc& tensorDesc, std::vector<T>& buffer, size_t numElements, omni::physics::tensors::TensorDataType type)
-{
-    buffer.resize(numElements);
-    tensorDesc.dtype = type;
-    tensorDesc.numDims = 1;
-    tensorDesc.dims[0] = numElements;
-    tensorDesc.data = buffer.data();
-    tensorDesc.ownData = true;
-    tensorDesc.device = -1;
-}
-
 void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
-                                          omni::physics::tensors::IArticulationView* articulation,
+                                          omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                                          omni::isaac::dynamic_control::DcHandle articulationHandle,
                                           pxr::UsdStageWeakPtr stage,
-                                          std::vector<float>& jointPositions,
-                                          std::vector<float>& jointVelocities,
-                                          std::vector<float>& jointEfforts,
-                                          std::vector<uint8_t>& dofTypes,
+                                          std::vector<omni::isaac::dynamic_control::DcDofProperties>& dofProperties,
+                                          std::vector<float>& previousJointPosition,
+                                          std::vector<float>& calculatedJointVelocity,
                                           const double& dt,
                                           const double& stageUnits)
 {
@@ -782,67 +770,64 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
     sensor_msgs__msg__JointState* jointStateMsg = static_cast<sensor_msgs__msg__JointState*>(m_msg);
     Ros2MessageInterfaceImpl::writeRosHeader("", static_cast<int64_t>(timeStamp * 1e9), jointStateMsg->header);
 
-    size_t num_dofs = articulation->getMaxDofs();
-    omni::physics::tensors::TensorDesc positionTensor;
-    omni::physics::tensors::TensorDesc velocityTensor;
-    omni::physics::tensors::TensorDesc effortTensor;
-    omni::physics::tensors::TensorDesc dofTypeTensor;
-    createTensorDesc(positionTensor, jointPositions, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
-    createTensorDesc(velocityTensor, jointVelocities, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
-    createTensorDesc(effortTensor, jointEfforts, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
-    createTensorDesc(dofTypeTensor, dofTypes, num_dofs, omni::physics::tensors::TensorDataType::eUint8);
-    bool hasDofStates = true;
-    if (!articulation->getDofPositions(&positionTensor))
-    {
-        printf("Failed to get dof positions\n");
-        hasDofStates = false;
-    }
-    if (!articulation->getDofVelocities(&velocityTensor)){
-        printf("Failed to get dof velocities\n");
-        hasDofStates = false;
-    }
-    if (!articulation->getDofProjectedJointForces(&effortTensor)){
-        printf("Failed to get dof efforts\n");
-        hasDofStates = false;
-    }
-    if (!articulation->getDofTypes(&dofTypeTensor)){
-        printf("Failed to get dof types\n");
-        hasDofStates = false;
-    }
+    omni::isaac::dynamic_control::DcDofState* dofStates = nullptr;
+    dynamicControlPtr->wakeUpArticulation(articulationHandle);
+    size_t num_dofs = dynamicControlPtr->getArticulationDofCount(articulationHandle);
+    dofProperties.resize(num_dofs);
+    dynamicControlPtr->getArticulationDofProperties(articulationHandle, dofProperties.data());
+    dofStates =
+        dynamicControlPtr->getArticulationDofStates(articulationHandle, omni::isaac::dynamic_control::kDcStateAll);
+
+    previousJointPosition.resize(num_dofs);
+    calculatedJointVelocity.resize(num_dofs);
 
     rosidl_runtime_c__String__Sequence__init(&jointStateMsg->name, num_dofs);
     rosidl_runtime_c__double__Sequence__init(&jointStateMsg->position, num_dofs);
     rosidl_runtime_c__double__Sequence__init(&jointStateMsg->velocity, num_dofs);
     rosidl_runtime_c__double__Sequence__init(&jointStateMsg->effort, num_dofs);
 
-    if (hasDofStates)
+    if (dofStates != nullptr)
     {
         for (size_t j = 0; j < num_dofs; j++)
         {
-            const char* jointPath = articulation->getUsdDofPath(0, j);
-            if (jointPath)
+            // calculate velocity
+            calculatedJointVelocity[j] = static_cast<float>((dofStates[j].pos - previousJointPosition[j]) / dt);
+            previousJointPosition[j] = dofStates[j].pos;
+
+            omni::isaac::dynamic_control::DcHandle dof = dynamicControlPtr->getArticulationDof(articulationHandle, j);
+            int signCheck = 1;
+
+            if (dof)
             {
-                Ros2MessageInterfaceImpl::writeRosString(
-                    isaacsim::core::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(jointPath))),
-                    jointStateMsg->name.data[j]);
+                Ros2MessageInterfaceImpl::writeRosString(isaacsim::core::utils::GetName(stage->GetPrimAtPath(
+                                                             pxr::SdfPath(dynamicControlPtr->getDofPath(dof)))),
+                                                         jointStateMsg->name.data[j]);
+
+                const char* parentName = dynamicControlPtr->getRigidBodyName(dynamicControlPtr->getDofParentBody(dof));
+                const char* jointPath = dynamicControlPtr->getDofPath(dof);
+                pxr::SdfPathVector targets;
+                pxr::UsdPhysicsJoint joint = pxr::UsdPhysicsJoint::Get(stage, pxr::SdfPath(jointPath));
+                joint.GetBody0Rel().GetTargets(&targets);
+                const char* body0Name = targets.at(0).GetName().c_str();
+                signCheck = (strcmp(parentName, body0Name) == 0) ? 1 : -1;
             }
-            if (omni::physics::tensors::DofType(dofTypes[j]) == omni::physics::tensors::DofType::eTranslation)
+            if (dofProperties[j].type == omni::isaac::dynamic_control::DcDofType::eTranslation)
             {
                 jointStateMsg->position.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointPositions[j] * stageUnits, 10000.0); // m
+                    isaacsim::core::utils::math::roundNearest(dofStates[j].pos * stageUnits * signCheck, 10000.0); // m
                 jointStateMsg->velocity.data[j] = isaacsim::core::utils::math::roundNearest(
-                    jointVelocities[j] * stageUnits, 10000.0); // m/s
+                    calculatedJointVelocity[j] * stageUnits * signCheck, 10000.0); // m/s
                 jointStateMsg->effort.data[j] = isaacsim::core::utils::math::roundNearest(
-                    jointEfforts[j] * stageUnits, 10000.0); // N
+                    dofStates[j].effort * stageUnits * signCheck, 10000.0); // N
             }
             else
             {
                 jointStateMsg->position.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointPositions[j], 10000.0); // rad
+                    isaacsim::core::utils::math::roundNearest(dofStates[j].pos * signCheck, 10000.0); // rad
                 jointStateMsg->velocity.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointVelocities[j], 10000.0); // rad/s
+                    isaacsim::core::utils::math::roundNearest(calculatedJointVelocity[j] * signCheck, 10000.0); // rad/s
                 jointStateMsg->effort.data[j] = isaacsim::core::utils::math::roundNearest(
-                    jointEfforts[j] * stageUnits * stageUnits, 10000.0); // N*m
+                    dofStates[j].effort * stageUnits * stageUnits * signCheck, 10000.0); // N*m
             }
         }
     }

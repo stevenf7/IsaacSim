@@ -24,11 +24,6 @@
 #include <string>
 #include <vector>
 
-namespace omni::physics::tensors
-{
-class IArticulationView;
-}
-
 namespace isaacsim
 {
 namespace ros2
@@ -895,12 +890,12 @@ public:
      * @param stageUnits Unit scale of the stage.
      */
     virtual void writeData(const double& timeStamp,
-                           omni::physics::tensors::IArticulationView* articulation,
+                           omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
+                           omni::isaac::dynamic_control::DcHandle articulationHandle,
                            pxr::UsdStageWeakPtr stage,
-                           std::vector<float>& jointPosition,
-                           std::vector<float>& jointVelocity,
-                           std::vector<float>& jointEffort,
-                           std::vector<uint8_t>& dofTypes,
+                           std::vector<omni::isaac::dynamic_control::DcDofProperties>& dofProperties,
+                           std::vector<float>& previousJointPosition,
+                           std::vector<float>& calculatedJointVelocity,
                            const double& dt,
                            const double& stageUnits) = 0;
 
