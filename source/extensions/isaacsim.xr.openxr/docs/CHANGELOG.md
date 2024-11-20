@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2024-11-19
+### Fixed
+- Transforms respect USD stage axis/units
+
 ## [0.2.2] - 2024-11-13
 ### Fixed
 - Specify all openxr dependancies

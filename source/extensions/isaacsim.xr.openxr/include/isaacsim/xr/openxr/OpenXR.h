@@ -38,7 +38,7 @@ struct IOpenxr
     CARB_PLUGIN_INTERFACE("isaacsim::xr::openxr::IOpenxr", 1, 0);
 
     virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locate_hand_joints(
-        XrHandEXT hand, std::optional<XrTime> time) noexcept(false) = 0;
+        XrHandEXT hand, std::optional<XrTime> time, bool stageAxis) noexcept(false) = 0;
 };
 
 } // namespace isaacsim

@@ -34,6 +34,17 @@ CARB_PLUGIN_IMPL_DEPS(carb::settings::ISettings,
                       carb::dictionary::IDictionary,
                       omni::kit::xr::openxr::IOpenXRExtension_v1)
 
+namespace
+{
+constexpr XrQuaternionf operator*(const XrQuaternionf& lhs, const XrQuaternionf& rhs)
+{
+    return XrQuaternionf{ lhs.w * rhs.x + rhs.w * lhs.x + lhs.y * rhs.z - rhs.y * lhs.z,
+                          lhs.w * rhs.y + rhs.w * lhs.y + lhs.z * rhs.x - rhs.z * lhs.x,
+                          lhs.w * rhs.z + rhs.w * lhs.z + lhs.x * rhs.y - rhs.x * lhs.y,
+                          lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z };
+}
+}
+
 namespace isaacsim::xr::openxr
 {
 
@@ -98,7 +109,8 @@ public:
 
     // Returns true if hand is visible or a reasonable interpolation was possible at "time".
     // Results are stored in jointLocations / jointVelocities / jointPoses respectively
-    std::optional<HandJointResult> querySingleHandJoints(XrHandEXT hand, std::optional<XrTime> time)
+    // if stageAxis is true, axis/units will respect USD stage conventions
+    std::optional<HandJointResult> querySingleHandJoints(XrHandEXT hand, std::optional<XrTime> time, bool stageAxis)
     {
         auto& tracker = hand == XR_HAND_LEFT_EXT ? m_handTrackerLeft : m_handTrackerRight;
         CARB_PROFILE_ZONE(carb::profiler::kCaptureMaskDefault, "HandTrackingExtension::querySingleHandJoints");
@@ -135,6 +147,32 @@ public:
         if (!locationTarget.isActive)
         {
             return {};
+        }
+
+        if (stageAxis)
+        {
+            if (m_lastFrameData.upAxis == omni::kit::xr::XRUpAxis::eZUp)
+            {
+                std::for_each(result.jointLocations.begin(), result.jointLocations.end(),
+                              [](auto& location)
+                              {
+                                  std::swap(location.pose.position.y, location.pose.position.z);
+                                  location.pose.position.y *= -1.0f;
+                                  location.pose.orientation =
+                                      XrQuaternionf{ 0.7071f, 0.0f, 0.0f, 0.7071f } * location.pose.orientation;
+                              });
+            }
+
+            if (m_lastFrameData.metersPerUnit != 1.0)
+            {
+                std::for_each(result.jointLocations.begin(), result.jointLocations.end(),
+                              [&](auto& location)
+                              {
+                                  location.pose.position.x /= static_cast<float>(m_lastFrameData.metersPerUnit);
+                                  location.pose.position.y /= static_cast<float>(m_lastFrameData.metersPerUnit);
+                                  location.pose.position.z /= static_cast<float>(m_lastFrameData.metersPerUnit);
+                              });
+            }
         }
 
         return result;
@@ -274,7 +312,7 @@ public:
     virtual ~OpenxrImpl() = default;
 
     virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locate_hand_joints(
-        XrHandEXT hand, std::optional<XrTime> time) noexcept(false) override
+        XrHandEXT hand, std::optional<XrTime> time, bool stageAxis) noexcept(false) override
     {
         auto hand_tracker = m_component.getObjectPtr().as<HandTrackingImpl>().get();
         if (hand_tracker == nullptr)
@@ -282,7 +320,7 @@ public:
             return {};
         }
 
-        const auto result = hand_tracker->querySingleHandJoints(hand, time);
+        const auto result = hand_tracker->querySingleHandJoints(hand, time, stageAxis);
 
         if (result)
         {
