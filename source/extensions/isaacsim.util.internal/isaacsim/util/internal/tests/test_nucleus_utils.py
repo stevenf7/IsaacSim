@@ -20,10 +20,6 @@ from isaacsim.storage.native import (
     get_server_path_async,
 )
 
-# import json
-# import time
-# from omni.client._omniclient import Result, CopyBehavior
-
 
 # This test is part of internal utils because it needs internal servers
 class TestNucleusUtils(omni.kit.test.AsyncTestCase):

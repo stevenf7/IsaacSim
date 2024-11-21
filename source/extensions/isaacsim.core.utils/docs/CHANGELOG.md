@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.3] - 2024-11-18
+### Changed
+- omni.client._omniclient to omni.client
+
 ## [2.2.2] - 2024-11-06
 ### Fixed
 - Fix unit test

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.4] - 2024-11-18
+### Changed
+- omni.client._omniclient to omni.client
+
 ## [2.0.3] - 2024-11-05
 ### Changed
 - Update assets default path

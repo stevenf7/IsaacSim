@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.3] - 2024-11-18
+### Changed
+- omni.client._omniclient to omni.client
+
 ## [1.0.2] - 2024-11-01
 ### Changed
 - Deprecated get_nvidia_asset_root_path()

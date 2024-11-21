@@ -8,7 +8,7 @@ from isaacsim.asset.importer.urdf import _urdf
 from isaacsim.ros2.urdf.RobotDescription import RobotDefinitionReader
 
 # import omni.kit.utils
-from omni.client._omniclient import Result
+from omni.client import Result
 from pxr import Usd, UsdUtils
 
 

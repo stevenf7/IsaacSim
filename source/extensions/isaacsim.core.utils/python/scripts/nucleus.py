@@ -12,7 +12,7 @@ import typing
 import carb
 import omni.client
 from isaacsim.storage.native import *
-from omni.client._omniclient import CopyBehavior, Result
+from omni.client import CopyBehavior
 
 
 def get_url_root(url: str) -> str:

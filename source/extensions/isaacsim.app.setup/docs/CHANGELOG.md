@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2] - 2024-11-19
+### Fixed
+- Startup test
+
+## [1.3.1] - 2024-11-18
+### Changed
+- omni.client._omniclient to omni.client
+
 ## [1.3.0] - 2024-11-10
 ### Changed
 - Moved settings to isaacsim.base.kit

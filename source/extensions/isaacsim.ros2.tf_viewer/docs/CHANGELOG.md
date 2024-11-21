@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-11-19
+### Fixed
+- Startup test
+
 ## [2.0.0] - 2024-11-18
 ### Removed
 - Removed ROS Foxy distro support

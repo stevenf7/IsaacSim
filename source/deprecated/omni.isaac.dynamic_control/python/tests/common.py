@@ -14,7 +14,7 @@ import typing
 import carb
 import omni
 import omni.client
-from omni.client._omniclient import Result
+from omni.client import Result
 from pxr import Usd
 
 
