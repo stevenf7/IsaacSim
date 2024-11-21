@@ -121,7 +121,6 @@ keywords = ["experience", "app", "usd"]
 # "omni.kit.viewport.ready" = {}
 
 [settings]
-app.gatherRenderResults = true # True to prevent artifacts in multiple viewport configurations, can be set to false for better performance in some cases
 exts."omni.kit.material.library".ui_show_list = [
     "OmniPBR",
     "OmniGlass",
@@ -141,7 +140,12 @@ rtx.hydra.mdlMaterialWarmup = true # start loading the MDL shaders needed before
 omni.replicator.asyncRendering = false # Async rendering must be disabled for SDG
 exts."omni.kit.test".includeTests = ["*isaac*"] # Add isaac tests to test runner
 foundation.verifyOsVersion.enabled = false
-isaac.startup.ros_bridge_extension = "" #ROS bridge disabled for minimal application
+
+# Disable for base application
+[settings."filter:platform"."windows-x86_64"]
+isaac.startup.ros_bridge_extension = ""
+[settings."filter:platform"."linux-x86_64"]
+isaac.startup.ros_bridge_extension = ""
 
 # menu styling
 [settings.exts."omni.kit.menu.utils"]
@@ -168,15 +172,16 @@ name = "Isaac-Sim"
 version = "4.5.0"
 versionFile = "${app}/../VERSION"
 content.emptyStageOnStart = true
+fastShutdown = true
 file.ignoreUnsavedOnExit = true
 font.file = "${fonts}/OpenSans-SemiBold.ttf"
 font.size = 16
+gatherRenderResults = true # True to prevent artifacts in multiple viewport configurations, can be set to false for better performance in some cases
 hangDetector.enabled = true
 hangDetector.timeout = 120
-settings.persistent = true                       # settings are persistent for this app
-settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
-fastShutdown = true
 player.useFixedTimeStepping = true
+settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
+settings.persistent = true                       # settings are persistent for this app
 
 vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
 ### async rendering settings
