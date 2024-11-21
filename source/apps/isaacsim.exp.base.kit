@@ -129,7 +129,6 @@ exts."omni.kit.material.library".ui_show_list = [
     "USD Preview Surface",
 ]
 exts."omni.kit.renderer.core".present.enabled = false # Fixes MGPU stability issue
-exts."omni.kit.viewport.menubar.lighting".defaultRigIgnorePattern = "" # Allows auto light rig with anon layers
 exts."omni.kit.viewport.window".windowMenu.entryCount = 2 # Allow user to create two viewports by default
 exts."omni.kit.viewport.window".windowMenu.label = "" # Put Viewport menuitem under Window menu
 exts."omni.rtx.window.settings".window_menu = "Window" # Where to put the render settings menuitem
@@ -177,6 +176,7 @@ hangDetector.timeout = 120
 settings.persistent = true                       # settings are persistent for this app
 settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
 fastShutdown = true
+player.useFixedTimeStepping = true
 
 vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
 ### async rendering settings
