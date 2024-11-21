@@ -22,7 +22,7 @@ import omni.client
 import omni.kit.app
 import omni.kit.commands
 from isaacsim.core.version import get_version
-from omni.client._omniclient import CopyBehavior, Result
+from omni.client import CopyBehavior, Result
 
 
 class Version(namedtuple("Version", "major minor patch")):

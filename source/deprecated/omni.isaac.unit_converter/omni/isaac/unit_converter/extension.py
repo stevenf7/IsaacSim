@@ -15,7 +15,7 @@ from pathlib import PurePath, PurePosixPath
 import carb
 import omni.ext
 import omni.ui as ui
-from omni.client._omniclient import Result
+from omni.client import Result
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     btn_builder,

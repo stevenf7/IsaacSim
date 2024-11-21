@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2024-11-19
+### Fixed
+- Startup test
+
 ## [1.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

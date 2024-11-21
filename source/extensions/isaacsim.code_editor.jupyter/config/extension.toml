@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Utility"
 title = "Jupyter notebook integration"
 description = "Jupyter notebook version of Omniverse's script editor"
@@ -40,3 +40,10 @@ exts."isaacsim.code_editor.jupyter".notebook_token = ""
 exts."isaacsim.code_editor.jupyter".notebook_dir = ""
 # jupyter notebook's command line options other than: '--ip', '--port', '--token', '--notebook-dir'
 exts."isaacsim.code_editor.jupyter".command_line_options = "--allow-root --no-browser --JupyterApp.answer_yes=True"
+
+[[test]]
+name = "startup"
+enabled = false
+
+[[test]]
+enabled = true

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2024-11-18
+### Changed
+- omni.client._omniclient to omni.client
+
 ## [1.1.3] - 2024-11-14
 ### Changed
 - Update omni.isaac.urdf to isaacsim.asset.importer.urdf

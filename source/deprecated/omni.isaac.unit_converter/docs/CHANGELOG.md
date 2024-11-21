@@ -1,11 +1,14 @@
 # Changelog
+
+## [0.1.10] - 2024-11-18
+### Changed
+- omni.client._omniclient to omni.client
+
 ## [0.1.9] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [0.1.8] - 2023-09-11
-
 ### Deprecated
 - Add Deprecation Warning
 

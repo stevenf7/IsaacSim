@@ -11,7 +11,7 @@ import asyncio
 import os
 
 import omni
-from omni.client._omniclient import Result
+from omni.client import Result
 from omni.kit.widget.stage.stage_model import AssetType
 from pxr import Sdf, UsdUtils
 
