@@ -1389,3 +1389,4 @@ class SimulationContext:
             self._physics_callback_functions[
                 callback_name
             ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
+        self._physics_sim_view = SimulationManager.get_physics_sim_view()
