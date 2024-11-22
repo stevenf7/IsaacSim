@@ -76,7 +76,7 @@ class OgnWritePhysicsSimulationContext:
 
         if attribute_name == "gravity":
             gravity = apply_randomization_operation(operation, attribute_name, samples, on_reset)
-            simulation_context._physics_sim_view.set_gravity(carb.Float3(gravity[0], gravity[1], gravity[2]))
+            simulation_context.physics_sim_view.set_gravity(carb.Float3(gravity[0], gravity[1], gravity[2]))
 
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         return True
