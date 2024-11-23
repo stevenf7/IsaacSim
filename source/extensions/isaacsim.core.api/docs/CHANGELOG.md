@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.5] - 2024-11-22
+### Removed
+- Removed SimulationContext._physics_sim_view.
+
 ## [4.2.4] - 2024-11-20
 ### Changed
 - Added SimulationContext._physics_sim_view initialization.

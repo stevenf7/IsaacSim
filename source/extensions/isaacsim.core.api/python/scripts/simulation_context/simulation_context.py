@@ -127,7 +127,6 @@ class SimulationContext:
         self._loop_runner = None
         self._physics_context = None
         self._current_time = 0
-        self._physics_sim_view = None
         if self._set_defaults:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
@@ -680,10 +679,10 @@ class SimulationContext:
         if (
             self.device is not None
             and "cuda" in self.device
-            and self._physics_sim_view is not None
+            and self.physics_sim_view is not None
             and self.is_playing()
         ):
-            self._physics_sim_view.update_articulations_kinematic()
+            self.physics_sim_view.update_articulations_kinematic()
         if self._physx_fabric_interface is None:
             if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
                 from omni.physxfabric import get_physx_fabric_interface
@@ -718,10 +717,10 @@ class SimulationContext:
         if (
             self.device is not None
             and "cuda" in self.device
-            and self._physics_sim_view is not None
+            and self.physics_sim_view is not None
             and self.is_playing()
         ):
-            self._physics_sim_view.update_articulations_kinematic()
+            self.physics_sim_view.update_articulations_kinematic()
 
         if self._physx_fabric_interface is None:
             if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
@@ -1389,4 +1388,3 @@ class SimulationContext:
             self._physics_callback_functions[
                 callback_name
             ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
-        self._physics_sim_view = SimulationManager.get_physics_sim_view()
