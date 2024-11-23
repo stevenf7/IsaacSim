@@ -14,5 +14,3 @@ old_extension_name = "omni.isaac.sensor"
 carb.log_warn(
     f"{old_extension_name}.scripts.samples.lightbeam_sensor has been deprecated in favor of isaacsim.sensors.physx.scripts.samples.lightbeam_sensor. Please update your code accordingly."
 )
-
-from isaacsim.sensors.physx.scripts.samples.lightbeam_sensor import *

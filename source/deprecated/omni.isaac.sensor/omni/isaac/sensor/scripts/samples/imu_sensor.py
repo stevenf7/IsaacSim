@@ -14,5 +14,3 @@ old_extension_name = "omni.isaac.sensor"
 carb.log_warn(
     f"{old_extension_name}.scripts.samples.imu_sensor has been deprecated in favor of isaacsim.sensors.physics.scripts.samples.imu_sensor. Please update your code accordingly."
 )
-
-from isaacsim.sensors.physics.scripts.samples.imu_sensor import *
