@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2024-11-22
+### Fixed
+- Changed OgnROS1PublishJointState to use tensor data instead of dynamic control extension
+
 ## [2.2.0] - 2024-10-29
 ### Changed
 - moved examples from menu to browser

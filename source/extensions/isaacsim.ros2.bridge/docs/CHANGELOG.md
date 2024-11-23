@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.1] - 2024-11-22
+### Fixed
+- Changed OgnROS2PublishJointState to use tensor data instead of dynamic control extension
+
 ## [4.0.0] - 2024-11-18
 ### Removed
 - Removed ROS Foxy distro support from ROS 2 bridge

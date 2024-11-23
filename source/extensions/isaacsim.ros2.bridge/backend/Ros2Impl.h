@@ -39,12 +39,12 @@
 
 #include <include/Ros2FactoryImpl.h>
 #include <nlohmann/json.hpp>
+#include <omni/physics/tensors/IArticulationView.h>
 #include <rcl/error_handling.h>
 #include <rcl/rcl.h>
 #include <rosgraph_msgs/msg/clock.h>
 #include <std_msgs/msg/header.h>
 #include <std_msgs/msg/string.h>
-
 namespace isaacsim
 {
 namespace ros2
@@ -190,13 +190,12 @@ public:
     virtual ~Ros2JointStateMessageImpl();
     virtual const void* getTypeSupportHandle();
     virtual void writeData(const double& timeStamp,
-                           omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr,
-                           omni::isaac::dynamic_control::DcHandle articulationHandle,
+                           omni::physics::tensors::IArticulationView* articulation,
                            pxr::UsdStageWeakPtr stage,
-                           std::vector<omni::isaac::dynamic_control::DcDofProperties>& dofProperties,
-                           std::vector<float>& previousJointPosition,
-                           std::vector<float>& calculatedJointVelocity,
-                           const double& dt,
+                           std::vector<float>& jointPosition,
+                           std::vector<float>& jointVelocity,
+                           std::vector<float>& jointEffort,
+                           std::vector<uint8_t>& dofTypes,
                            const double& stageUnits);
 
     virtual void readData(std::vector<char*>& jointNames,
