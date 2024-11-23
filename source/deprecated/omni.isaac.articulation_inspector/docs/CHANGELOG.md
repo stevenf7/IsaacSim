@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.11] - 2024-11-22
+### Fixed
+- menu location
+
 ## [0.1.10] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
