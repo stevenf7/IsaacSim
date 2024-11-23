@@ -1,8 +1,12 @@
 # Changelog
+
+## [13.0.2] - 2024-11-22
+### Fixed
+- Remove import alias of new sample from deprecated sample to prevent sample duplication
+
 ## [13.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [13.0.0] - 2024-09-24
 ### Deprecated
