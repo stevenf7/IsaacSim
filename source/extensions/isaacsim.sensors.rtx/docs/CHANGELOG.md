@@ -1,4 +1,8 @@
 # Changelog
+## [13.3.0] - 2024-11-25
+### Changed
+- Re-enabled per-view TLAS.
+
 ## [13.2.0] - 2024-11-01
 ### Changed
 - menu names and location
