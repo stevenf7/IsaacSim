@@ -881,7 +881,7 @@ timeout = 100000
 ########################################################################################################################
 
 [bump_version]
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
+git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #
