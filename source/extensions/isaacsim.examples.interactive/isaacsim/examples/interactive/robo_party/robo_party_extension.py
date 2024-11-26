@@ -10,33 +10,50 @@
 import asyncio
 import os
 
+import omni.ext
 import omni.ui as ui
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.robo_party import RoboParty
 from isaacsim.gui.components.ui_utils import btn_builder
 
 
-class RoboPartyExtension(BaseSampleExtension):
+class RoboPartyExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
-        super().start_extension(
-            menu_name="Multi-Robot",
-            submenu_name="",
-            name="RoboParty",
-            title="RoboParty",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_core_adding_multiple_robots.html",
-            overview="This Example shows how to run multiple tasks in the same scene.\n\nPress the 'Open in IDE' button to view the source code.",
-            sample=RoboParty(),
-            file_path=os.path.abspath(__file__),
+        self.example_name = "RoboParty"
+        self.category = "Multi-Robot"
+
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "RoboParty",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_core_adding_multiple_robots.html",
+            "overview": "This Example shows how to run multiple tasks in the same scene.\n\nPress the 'Open in IDE' button to view the source code.",
+            "sample": RoboParty(),
+        }
+
+        ui_handle = RoboPartyUI(**ui_kwargs)
+
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
         )
 
         return
 
-    def build_ui(self):
-        extra_stacks = self.build_default_frame()
-        self.build_extra_frames(extra_stacks)
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+        return
 
-    def build_extra_frames(self, extra_stacks):
+
+class RoboPartyUI(BaseSampleUITemplate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def build_extra_frames(self):
+        extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
 
         with extra_stacks:

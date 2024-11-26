@@ -10,34 +10,53 @@
 import asyncio
 import os
 
+import omni.ext
 import omni.ui as ui
 from isaacsim.cortex.framework.cortex_world import CortexWorld
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.ur10_palletizing.ur10_palletizing import BinStacking
 from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, get_style, str_builder
 
 
-class BinStackingExtension(BaseSampleExtension):
+class BinStackingExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
-        super().start_extension(
-            menu_name="Cortex",
-            submenu_name="",
-            name="UR10 Palletizing",
-            title="UR10 Palletizing",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/replicator_tutorials/tutorial_replicator_ur10_palletizing.html#isaac-sim-app-tutorial-replicator-ur10-palletizing",
-            overview="This Example shows how to do Palletizing using UR10 robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
-            sample=BinStacking(self.on_diagnostics),
-            file_path=os.path.abspath(__file__),
+
+        self.example_name = "UR10 Palletizing"
+        self.category = "Cortex"
+
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "UR10 Palletizing",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/replicator_tutorials/tutorial_replicator_ur10_palletizing.html#isaac-sim-app-tutorial-replicator-ur10-palletizing",
+            "overview": "This Example shows how to do Palletizing using UR10 robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+        }
+
+        ui_handle = BinStackingUI(**ui_kwargs)
+        ui_handle.sample = BinStacking(ui_handle.on_diagnostics)
+
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
         )
-        self.decision_stack = ""
+
         return
 
-    def build_ui(self):
-        extra_stacks = self.build_default_frame()
-        self.build_extra_frames(extra_stacks)
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+        return
 
-    def build_extra_frames(self, extra_stacks):
+
+class BinStackingUI(BaseSampleUITemplate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.decision_stack = ""
+
+    def build_extra_frames(self):
+        extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
 
         with extra_stacks:

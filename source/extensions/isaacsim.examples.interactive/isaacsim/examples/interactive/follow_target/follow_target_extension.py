@@ -7,35 +7,52 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import asyncio
 import os
 
-import carb
+import omni.ext
 import omni.ui as ui
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.follow_target import FollowTarget
-from isaacsim.gui.components.ui_utils import btn_builder, state_btn_builder, str_builder
+from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, state_btn_builder, str_builder
 
 
-class FollowTargetExtension(BaseSampleExtension):
+class FollowTargetExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
-        super().start_extension(
-            menu_name="Manipulation",
-            submenu_name="",
-            name="Follow Target",
-            title="Follow Target Task",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_adding_new_manipulator.html",
-            overview="This Example shows how to follow a target using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
-            sample=FollowTarget(),
-            file_path=os.path.abspath(__file__),
+        self.example_name = "Follow Target"
+        self.category = "Manipulation"
+
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "Follow Target Task",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_adding_new_manipulator.html",
+            "overview": "This Example shows how to follow a target using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+            "sample": FollowTarget(),
+        }
+
+        ui_handle = FollowTargetUI(**ui_kwargs)
+
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
         )
 
-    def build_ui(self):
-        extra_stacks = self.build_default_frame()
-        self.build_extra_frames(extra_stacks)
+        return
 
-    def build_extra_frames(self, extra_stacks):
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+        return
+
+
+class FollowTargetUI(BaseSampleUITemplate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def build_extra_frames(self):
+        extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
 
         with extra_stacks:

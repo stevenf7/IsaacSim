@@ -29,16 +29,18 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
         self._ext_id = ext_id
+        self.example_name = "Custom Pattern Range Sensor"
+        self.category = "Sensors"
 
         get_browser_instance().register_example(
-            name="Custom Pattern Range Sensor",
-            execute_entrypoint=self.build_window,
+            name=self.example_name,
+            execute_entrypoint=lambda a=weakref.proxy(self): a.build_window(),
             ui_hook=lambda a=weakref.proxy(self): a.build_ui(),
-            category="Sensors",
+            category=self.category,
         )
 
     def on_shutdown(self):
-        get_browser_instance().deregister_example(name="Custom Pattern Range Sensor", category="Sensors")
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
         # self._sensor.release_generic_sensor_interface()
         # self._generic = False
 

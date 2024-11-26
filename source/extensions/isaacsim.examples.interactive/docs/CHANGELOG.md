@@ -1,4 +1,7 @@
 # Changelog
+## [4.3.0] - 2024-11-25
+### Changed
+- Base Sample Extension now only have UI Templates. Each example has its own Extension startup and shutdown.
 
 ## [4.2.0] - 2024-10-29
 ### Changed

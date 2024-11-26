@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2024-11-25
+### Fixed
+- lidar examples pointers and shutting down properly
+
 ## [2.1.0] - 2024-10-29
 ### Changed
 - moved examples from menu to browser

@@ -9,13 +9,18 @@
 
 import os
 
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+import omni.ext
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.omnigraph_keyboard import OmnigraphKeyboard
 
 
-class OmnigraphKeyboardExtension(BaseSampleExtension):
+class OmnigraphKeyboardExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
+
+        self.example_name = "Omnigraph Keyboard"
+        self.category = "Input Devices"
+
         overview = "This Example shows how to change the size of a cube using the keyboard through omnigraph progrmaming in Isaac Sim."
         overview += "\n\tKeybord Input:"
         overview += "\n\t\ta: Grow"
@@ -23,13 +28,28 @@ class OmnigraphKeyboardExtension(BaseSampleExtension):
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
         overview += "\nOpen Visual Scripting Window to see Omnigraph"
 
-        super().start_extension(
-            menu_name="Input Devices",
-            submenu_name="",
-            name="Omnigraph Keyboard",
-            title="NVIDIA Omnigraph Scripting Example",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_advanced_input_devices.html",
-            overview=overview,
-            file_path=os.path.abspath(__file__),
-            sample=OmnigraphKeyboard(),
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "Omnigraph Keyboard Example",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_advanced_input_devices.html",
+            "overview": overview,
+            "sample": OmnigraphKeyboard(),
+        }
+
+        ui_handle = BaseSampleUITemplate(**ui_kwargs)
+
+        # register the example with examples browser
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
         )
+
+        return
+
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+
+        return

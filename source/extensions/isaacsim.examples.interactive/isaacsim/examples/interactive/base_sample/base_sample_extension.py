@@ -8,67 +8,34 @@
 #
 
 import asyncio
-import weakref
 from abc import abstractmethod
 
-import omni.ext
+import omni.kit.app
 import omni.ui as ui
 from isaacsim.core.api import World
-from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.base_sample import BaseSample
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
 
 
-class BaseSampleExtension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
-        self._buttons = None
-        self._ext_id = ext_id
-        self._sample = None
-        self._extra_frames = []
-        self._menu_dicts = None
-        return
-
-    def start_extension(
-        self,
-        menu_name: str,
-        submenu_name: str,
-        name: str,
-        title: str,
-        doc_link: str,
-        overview: str,
-        file_path: str,
-        sample=None,
-    ):
-        if sample is None:
-            self._sample = BaseSample()
-        else:
-            self._sample = sample
-
-        self.example_name = name
-        self.category = menu_name
-
-        self._menu_dicts = {
-            "file_path": file_path,
-            "title": title,
-            "doc_link": doc_link,
-            "overview": overview,
-        }
+class BaseSampleUITemplate:
+    def __init__(self, *args, **kwargs):
+        self._ext_id = kwargs.get("ext_id")
+        self._file_path = kwargs.get("file_path", "")
+        self._title = kwargs.get("title", "Isaac Sim Example")
+        self._doc_link = kwargs.get("doc_link", "")
+        self._overview = kwargs.get("overview", "")
+        self._sample = kwargs.get("sample", BaseSample())
 
         self._buttons = dict()
-
-        # register the example with examples browser
-        get_browser_instance().register_example(
-            name=name, execute_entrypoint=self.build_window, ui_hook=self.build_ui, category=menu_name
-        )
-
-        # note: can't use weakref here, cause it's gets garbage collected during hotloading?
-        # instances of what is getting garbage collected?
-
-        return
+        self.extra_stacks = None
 
     @property
     def sample(self):
         return self._sample
+
+    @sample.setter
+    def sample(self, sample):
+        self._sample = sample
 
     def get_world(self):
         return World.instance()
@@ -90,14 +57,11 @@ class BaseSampleExtension(omni.ext.IExt):
         return
 
     def build_default_frame(self):
-        file_path = self._menu_dicts["file_path"]
-        title = self._menu_dicts["title"]
-        doc_link = self._menu_dicts["doc_link"]
-        overview = self._menu_dicts["overview"]
-
         self._main_stack = ui.VStack(spacing=5, height=0)
         with self._main_stack:
-            setup_ui_headers(self._ext_id, file_path, title, doc_link, overview, info_collapsed=False)
+            setup_ui_headers(
+                self._ext_id, self._file_path, self._title, self._doc_link, self._overview, info_collapsed=False
+            )
             self._controls_frame = ui.CollapsableFrame(
                 title="World Controls",
                 width=ui.Fraction(1),
@@ -107,7 +71,7 @@ class BaseSampleExtension(omni.ext.IExt):
                 horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
                 vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
             )
-            extra_stacks = ui.VStack(margin=5, spacing=5, height=0)
+            self.extra_stacks = ui.VStack(margin=5, spacing=5, height=0)
 
         with self._controls_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
@@ -130,10 +94,13 @@ class BaseSampleExtension(omni.ext.IExt):
                 self._buttons["Reset"] = btn_builder(**dict)
                 self._buttons["Reset"].enabled = False
 
-        return extra_stacks
+        return
 
+    def get_extra_frames_handle(self):
+        return self.extra_stacks
+
+    @abstractmethod
     def build_extra_frames(self):
-        # print("no extra frames to build here")
         return
 
     def _on_load_world(self):
@@ -178,30 +145,16 @@ class BaseSampleExtension(omni.ext.IExt):
 
     def on_shutdown(self):
 
-        self._extra_frames = []
+        self.extra_stacks = None
         self._buttons = {}
-        # if self._sample._world is not None:
-        #     self._sample._world_cleanup()
-        if self._buttons is not None:  ## something about passing this point triggers another error
-            self._buttons["Load World"].enabled = True
-            self._enable_all_buttons(False)
-        self.shutdown_cleanup()
-        return
-
-    def shutdown_cleanup(self):
-        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
-        return
-
-    def _sample_window_cleanup(self):
-        self._window = None
-        self._buttons = None
+        self._sample = None
         return
 
     def on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
             if World.instance() is not None:
-                self.sample._world_cleanup()
-                self.sample._world.clear_instance()
+                self._sample._world_cleanup()
+                self._sample._world.clear_instance()
                 if hasattr(self, "_buttons"):
                     if self._buttons is not None:
                         self._enable_all_buttons(False)

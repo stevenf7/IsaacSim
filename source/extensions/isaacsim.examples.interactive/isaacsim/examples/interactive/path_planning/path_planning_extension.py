@@ -11,33 +11,51 @@ import asyncio
 import os
 
 import carb
+import omni.ext
 import omni.ui as ui
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.path_planning import PathPlanning
 from isaacsim.gui.components.ui_utils import btn_builder, state_btn_builder, str_builder
 
 
-class PathPlanningExtension(BaseSampleExtension):
+class PathPlanningExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
-        super().start_extension(
-            menu_name="Manipulation",
-            submenu_name="",
-            name="Path Planning",
-            title="Path Planning Task",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_motion_generation_rrt.html#isaac-sim-app-tutorial-motion-generation-rrt",
-            overview="This Example shows how to plan a path through a complicated static environment with the Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
-            sample=PathPlanning(),
-            file_path=os.path.abspath(__file__),
+
+        self.example_name = "Path Planning"
+        self.category = "Manipulation"
+
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "Path Planning Task",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_motion_generation_rrt.html#isaac-sim-app-tutorial-motion-generation-rrt",
+            "overview": "This Example shows how to plan a path through a complicated static environment with the Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+            "sample": PathPlanning(),
+        }
+
+        ui_handle = PathPlanningUI(**ui_kwargs)
+
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
         )
 
         return
 
-    def build_ui(self):
-        extra_stacks = self.build_default_frame()
-        self.build_extra_frames(extra_stacks)
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+        return
 
-    def build_extra_frames(self, extra_stacks):
+
+class PathPlanningUI(BaseSampleUITemplate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def build_extra_frames(self):
+        extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
 
         with extra_stacks:
@@ -112,9 +130,6 @@ class PathPlanningExtension(BaseSampleExtension):
         self.task_ui_elements["Add Wall"].enabled = False
         self.task_ui_elements["Start Logging"].enabled = False
         self.task_ui_elements["Save Data"].enabled = False
-        return
-
-    def shutdown_cleanup(self):
         return
 
     def build_task_controls_ui(self):
