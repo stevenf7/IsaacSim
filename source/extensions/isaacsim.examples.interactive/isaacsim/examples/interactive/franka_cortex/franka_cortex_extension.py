@@ -12,23 +12,53 @@ import asyncio
 import os
 
 import omni
+import omni.ext
 import omni.ui as ui
 from isaacsim.cortex.framework.cortex_world import CortexWorld
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.franka_cortex.franka_cortex import FrankaCortex
 from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, dropdown_builder, get_style, str_builder
 
 
-class FrankaCortexExtension(BaseSampleExtension):
+class FrankaCortexExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
+        self.example_name = "Franka Cortex Examples"
+        self.category = "Cortex"
+
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "Franka Cortex Examples",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/cortex_tutorials/tutorial_cortex_4_franka_block_stacking.html#isaac-sim-app-tutorial-cortex-4-franka-block-stacking",
+            "overview": "This Example shows how to Use Cortex for multiple behaviors robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+        }
+
+        ui_handle = FrankaCortexUI(**ui_kwargs)
+
+        ui_handle.sample = FrankaCortex(ui_handle.on_diagnostics)
+
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
+        )
+
+        return
+
+
+class FrankaCortexUI(BaseSampleUITemplate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         sample_behaviors_id = ext_manager.get_enabled_extension_id("isaacsim.cortex.behaviors")
         behavior_path = (
             omni.kit.app.get_app().get_extension_manager().get_extension_path(sample_behaviors_id)
             + "/isaacsim/cortex/behaviors/franka"
         )
-
+        # example starter parameters
         self.behavior_map = {
             "Block Stacking": f"{behavior_path}/block_stacking_behavior.py",
             "Simple State Machine": f"{behavior_path}/simple/simple_state_machine.py",
@@ -38,23 +68,12 @@ class FrankaCortexExtension(BaseSampleExtension):
             "Peck Game": f"{behavior_path}/peck_game.py",
         }
         self.selected_behavior = "Block Stacking"
-        super().start_extension(
-            menu_name="Cortex",
-            submenu_name="",
-            name="Franka Cortex Examples",
-            title="Franka Cortex Examples",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/cortex_tutorials/tutorial_cortex_4_franka_block_stacking.html#isaac-sim-app-tutorial-cortex-4-franka-block-stacking",
-            overview="This Example shows how to Use Cortex for multiple behaviors robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
-            sample=FrankaCortex(self.on_diagnostics),
-            file_path=os.path.abspath(__file__),
-        )
-
         self.loaded = False
-        return
 
     def build_ui(self):
+        # overwriting the baseSample's default frame
         self.task_ui_elements = {}
-        extra_stacks = self.build_default_frame()
+        self.build_default_frame()
 
         # modification to the control frame
         with self._controls_frame:
@@ -90,9 +109,11 @@ class FrankaCortexExtension(BaseSampleExtension):
                 self._buttons["Reset"] = btn_builder(**dict)
                 self._buttons["Reset"].enabled = False
 
-        self.build_extra_frames(extra_stacks)
+        self.build_extra_frames()
 
-    def build_extra_frames(self, extra_stacks):
+    def build_extra_frames(self):
+        extra_stacks = self.get_extra_frames_handle()
+
         with extra_stacks:
             with ui.CollapsableFrame(
                 title="Task Control",

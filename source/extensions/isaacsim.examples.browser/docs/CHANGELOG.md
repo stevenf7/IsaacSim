@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2024-11-25
+### Fixed
+- Refreshing browser during hotloading
+
 ## [0.1.2] - 2024-11-19
 ### Fixed
 - Startup test

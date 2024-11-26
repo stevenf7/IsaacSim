@@ -60,7 +60,8 @@ class Extension(omni.ext.IExt):
             return
         from omni.kit.property.usd import PrimPathWidget
 
-        PrimPathWidget.remove_button_menu_entry(self._menu_button1)
+        if self._menu_button1:
+            PrimPathWidget.remove_button_menu_entry(self._menu_button1)
         self._registered = False
 
     def _is_material(self, objects):

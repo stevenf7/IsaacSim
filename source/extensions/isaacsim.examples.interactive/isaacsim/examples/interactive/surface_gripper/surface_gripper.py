@@ -162,6 +162,7 @@ class Extension(omni.ext.IExt):
         self._physx_subs = None
         self._stage_event_sub = None
         self._window = None
+        get_browser_instance().deregister_example(name=EXTENSION_NAME, category="Manipulation")
 
     def _on_update_ui(self, widget):
         self._models["create_button"].enabled = self._timeline.is_playing()

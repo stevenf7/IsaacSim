@@ -26,12 +26,14 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
         self._ext_id = ext_id
+        self.example_name = "Physx Lidar Sensor"
+        self.category = "Sensors"
 
         get_browser_instance().register_example(
-            name="Physx Lidar Sensor",
-            execute_entrypoint=self.build_window,
+            name=self.example_name,
+            execute_entrypoint=lambda a=weakref.proxy(self): a.build_window(),
             ui_hook=lambda a=weakref.proxy(self): a.build_ui(),
-            category="Sensors",
+            category=self.category,
         )
 
     def build_window(self):
@@ -98,7 +100,8 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
-        get_browser_instance().deregister_example(name="Physx Lidar Sensor", category="Sensors")
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+
         self._editor_event_subscription = None
         # self._li.release_lidar_sensor_interface()
 

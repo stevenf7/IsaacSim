@@ -8,4 +8,4 @@
 #
 
 from isaacsim.examples.interactive.base_sample.base_sample import BaseSample
-from isaacsim.examples.interactive.base_sample.base_sample_extension import BaseSampleExtension
+from isaacsim.examples.interactive.base_sample.base_sample_extension import BaseSampleUITemplate

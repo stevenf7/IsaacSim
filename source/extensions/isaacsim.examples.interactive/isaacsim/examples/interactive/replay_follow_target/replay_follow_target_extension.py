@@ -10,33 +10,53 @@
 import asyncio
 import os
 
+import omni.ext
 import omni.ui as ui
-from isaacsim.examples.interactive.base_sample import BaseSampleExtension
+from isaacsim.examples.browser import get_instance as get_browser_instance
+from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.replay_follow_target import ReplayFollowTarget
 from isaacsim.gui.components.ui_utils import btn_builder, str_builder
 
 
-class ReplayFollowTargetExtension(BaseSampleExtension):
+class ReplayFollowTargetExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        super().on_startup(ext_id)
-        super().start_extension(
-            menu_name="Manipulation",
-            submenu_name="",
-            name="Replay Follow Target",
-            title="Replay Follow Target Task",
-            doc_link="https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_advanced_data_logging.html",
-            overview="This Example shows how to use data logging to replay data collected\n\n from the follow target extension example.\n\n Press the 'Open in IDE' button to view the source code.",
-            sample=ReplayFollowTarget(),
-            file_path=os.path.abspath(__file__),
+
+        self.example_name = "Replay Follow Target"
+        self.category = "Manipulation"
+
+        ui_kwargs = {
+            "ext_id": ext_id,
+            "file_path": os.path.abspath(__file__),
+            "title": "Replay Follow Target Task",
+            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_advanced_data_logging.html",
+            "overview": "This Example shows how to use data logging to replay data collected\n\n from the follow target extension example.\n\n Press the 'Open in IDE' button to view the source code.",
+            "sample": ReplayFollowTarget(),
+        }
+
+        ui_handle = ReplayFollowTargetUI(**ui_kwargs)
+
+        get_browser_instance().register_example(
+            name=self.example_name,
+            execute_entrypoint=ui_handle.build_window,
+            ui_hook=ui_handle.build_ui,
+            category=self.category,
         )
+
         return
 
-    def build_ui(self):
-        extra_stacks = self.build_default_frame()
-        self.build_extra_frames(extra_stacks)
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+        return
 
-    def build_extra_frames(self, extra_stacks):
+
+class ReplayFollowTargetUI(BaseSampleUITemplate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def build_extra_frames(self):
+        extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
+
         with extra_stacks:
             with ui.CollapsableFrame(
                 title="Task Control",
