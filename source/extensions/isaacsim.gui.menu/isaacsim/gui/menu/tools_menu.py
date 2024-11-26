@@ -72,14 +72,14 @@ class ToolsMenuExtension:
                     MenuLayout.SubMenu(
                         "Replicator",
                         [
+                            MenuLayout.Item(
+                                name="Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"
+                            ),
                             MenuLayout.Item(name="Replicator YAML", source="Replicator/Replicator YAML"),
                             MenuLayout.Item(
                                 name="Semantics Schema Editor", source="Replicator/Semantics Schema Editor"
                             ),
-                            MenuLayout.Seperator("Data Recorder"),
-                            MenuLayout.Item(
-                                name="Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"
-                            ),
+                            MenuLayout.Seperator("Orchestrator"),
                             MenuLayout.Item(name="Preview", source="Replicator/Preview"),
                             MenuLayout.Item(name="Start", source="Replicator/Start"),
                             MenuLayout.Item(name="Step", source="Replicator/Step"),

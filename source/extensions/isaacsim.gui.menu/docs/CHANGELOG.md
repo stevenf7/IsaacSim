@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2024-11-26
+### Changed
+- Replicator new menu layout restructure
+
 ## [2.0.0] - 2024-10-16
 ### Removed
 - New menu layout
