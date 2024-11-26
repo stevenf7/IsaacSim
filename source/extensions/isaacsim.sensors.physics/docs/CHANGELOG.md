@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.1] - 2024-11-25
+### Fixed
+- Error when user attempts to create contact sensor without having selected valid parent prim
+
 ## [0.3.0] - 2024-10-31
 ### Changed
 - moved examples from menu to browser
