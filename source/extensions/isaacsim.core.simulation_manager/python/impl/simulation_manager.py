@@ -539,6 +539,15 @@ class SimulationManager:
         return
 
     @classmethod
+    def enable_fabric_usd_notice_handler(cls, stage_id, flag):
+        SimulationManager._simulation_manager_interface.enable_fabric_usd_notice_handler(stage_id, flag)
+        return
+
+    @classmethod
+    def is_fabric_usd_notice_handler_enabled(cls, stage_id):
+        return SimulationManager._simulation_manager_interface.is_fabric_usd_notice_handler_enabled(stage_id)
+
+    @classmethod
     def assets_loading(cls) -> bool:
         """Checks if textures are loaded.
 

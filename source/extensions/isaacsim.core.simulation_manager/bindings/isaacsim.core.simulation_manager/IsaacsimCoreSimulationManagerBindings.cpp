@@ -36,7 +36,9 @@ PYBIND11_MODULE(_simulation_manager, m)
         .def("reset", &ISimulationManager::reset)
         .def("set_callback_iter", &ISimulationManager::setCallbackIter)
         .def("get_callback_iter", &ISimulationManager::getCallbackIter)
-        .def("enable_usd_notice_handler", &ISimulationManager::enableUsdNoticeHandler);
+        .def("enable_usd_notice_handler", &ISimulationManager::enableUsdNoticeHandler)
+        .def("enable_fabric_usd_notice_handler", &ISimulationManager::enableFabricUsdNoticeHandler)
+        .def("is_fabric_usd_notice_handler_enabled", &ISimulationManager::isFabricUsdNoticeHandlerEnabled);
 }
 
 }

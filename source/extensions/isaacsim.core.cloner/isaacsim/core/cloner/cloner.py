@@ -107,6 +107,42 @@ class Cloner:
             stageId, replicationAttachFn, replicationAttachEndFn, hierarchyRenameFn
         )
 
+    def disable_change_listener(self):
+
+        # first try to disable omni physx UI notice handler
+        try:
+            from omni.physxui import get_physxui_interface
+
+            self._physx_ui_notice_enabled = get_physxui_interface().is_usd_notice_handler_enabled()
+            if self._physx_ui_notice_enabled:
+                get_physxui_interface().block_usd_notice_handler(True)
+        except:
+            pass
+
+        # second disable Fabric USD notice handler
+        stage_id = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+        self._fabric_usd_notice_enabled = SimulationManager.is_fabric_usd_notice_handler_enabled(stage_id)
+        if self._fabric_usd_notice_enabled:
+            SimulationManager.enable_fabric_usd_notice_handler(stage_id, False)
+
+        # third disable SimulationManager notice handler
+        SimulationManager.enable_usd_notice_handler(False)
+
+    def enable_change_listener(self):
+        try:
+            from omni.physxui import get_physxui_interface
+
+            if self._physx_ui_notice_enabled:
+                get_physxui_interface().block_usd_notice_handler(False)
+        except:
+            pass
+
+        if self._fabric_usd_notice_enabled:
+            stage_id = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+            SimulationManager.enable_fabric_usd_notice_handler(stage_id, True)
+
+        SimulationManager.enable_usd_notice_handler(True)
+
     def clone(
         self,
         source_prim_path: str,
@@ -140,7 +176,8 @@ class Cloner:
             Exception: Raises exception if source prim path is not valid.
 
         """
-        SimulationManager.enable_usd_notice_handler(False)
+        self.disable_change_listener()
+
         # check if inputs are valid
         if positions is not None:
             if len(positions) != len(prim_paths):
@@ -296,7 +333,8 @@ class Cloner:
             get_physx_replicator_interface().unregister_replicator(
                 UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
             )
-        SimulationManager.enable_usd_notice_handler(True)
+
+        self.enable_change_listener()
 
     def filter_collisions(
         self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2024-11-25
+### Added
+- SimulationManager.enable_fabric_usd_notice_handler method to enable/disable fabric USD notice handler.
+- SimulationManager.is_fabric_usd_notice_handler_enabled method to query whether fabric USD notice handler is enabled.
+
 ## [0.3.0] - 2024-11-15
 ### Added
 - SimulationManager.assets_loading method to query if textures finished loading.
