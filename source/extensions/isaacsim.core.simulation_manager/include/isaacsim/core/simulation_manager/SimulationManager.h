@@ -58,6 +58,8 @@ struct ISimulationManager
     DllExport virtual int& getCallbackIter() = 0;
     DllExport virtual void setCallbackIter(int const& val) = 0;
     DllExport virtual void enableUsdNoticeHandler(bool const& flag) = 0;
+    DllExport virtual void enableFabricUsdNoticeHandler(long stageId, bool const& flag) = 0;
+    DllExport virtual bool isFabricUsdNoticeHandlerEnabled(long stageId) = 0;
     // ------------------
 };
 

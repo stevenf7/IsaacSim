@@ -1,8 +1,12 @@
 # Changelog
+
+## [1.2.0] - 2024-11-26
+### Added
+- Ability to disable notice handling during cloning process to improve performance
+
 ## [1.1.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [1.1.0] - 2024-10-10
 ### Changed

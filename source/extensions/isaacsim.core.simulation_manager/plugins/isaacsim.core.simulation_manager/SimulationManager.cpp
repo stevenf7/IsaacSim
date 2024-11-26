@@ -11,6 +11,8 @@
 #include <isaacsim/core/simulation_manager/SimulationManager.h>
 #include <isaacsim/core/simulation_manager/UsdNoticeListner.h>
 #include <omni/ext/IExt.h>
+#include <omni/fabric/FabricUSD.h>
+#include <omni/fabric/stage/StageReaderWriter.h>
 
 #include <algorithm>
 
@@ -88,6 +90,39 @@ public:
     void enableUsdNoticeHandler(bool const& flag) override
     {
         mUsdNoticeListener->enable(flag);
+    }
+
+    void enableFabricUsdNoticeHandler(long stageId, bool const& flag) override
+    {
+        auto iFabricUsd = carb::getCachedInterface<omni::fabric::IFabricUsd>();
+        auto iStageReadWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        if (iFabricUsd && iStageReadWriter)
+        {
+            omni::fabric::StageReaderWriterId stageRwId = iStageReadWriter->get(stageId);
+            auto fabricId = iStageReadWriter->getFabricId(stageRwId);
+            iFabricUsd->setEnableChangeNotifies(fabricId, flag);
+            if (flag)
+            {
+                CARB_PROFILE_ZONE(0, "EnableFabricUsdNoticeHandler::forceMinulaPopulate");
+                iFabricUsd->forceMinimalPopulate(fabricId);
+            }
+        }
+    }
+
+    bool isFabricUsdNoticeHandlerEnabled(long stageId) override
+    {
+        auto iFabricUsd = carb::getCachedInterface<omni::fabric::IFabricUsd>();
+        auto iStageReadWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        if (iFabricUsd && iStageReadWriter)
+        {
+            omni::fabric::StageReaderWriterId stageRwId = iStageReadWriter->get(stageId);
+            auto fabricId = iStageReadWriter->getFabricId(stageRwId);
+            return iFabricUsd->getEnableChangeNotifies(fabricId);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     void reset() override
