@@ -68,6 +68,11 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         pass
 
     def do(self):
+
+        if self._parent is None:
+            carb.log_error("Valid parent prim must be selected before creating contact sensor prim.")
+            return None
+
         success, self._prim = omni.kit.commands.execute(
             "IsaacSensorCreatePrim",
             path=self._path,
@@ -75,7 +80,6 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
             schema_type=IsaacSensorSchema.IsaacContactSensor,
             translation=self._translation,
         )
-
         if success and self._prim:
             self._prim.CreateThresholdAttr().Set((self._min_threshold, self._max_threshold))
             self._prim.CreateColorAttr().Set(self._color)
