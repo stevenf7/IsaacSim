@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.0] - 2024-11-27
+### Added
+- Waypoint Follower example for Nav2
+
 ## [4.0.1] - 2024-11-22
 ### Fixed
 - Changed OgnROS2PublishJointState to use tensor data instead of dynamic control extension
