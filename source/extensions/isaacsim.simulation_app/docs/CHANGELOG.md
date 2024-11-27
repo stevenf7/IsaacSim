@@ -1,9 +1,12 @@
 # Changelog
 
+## [2.4.0] - 2024-11-26
+### Removed
+- Remove livesync_usd entry from SimulationApp configuration
+
 ## [2.3.1] - 2024-11-14
 ### Changed
 - Updated default experience list 
-
 
 ## [2.3.0] - 2024-11-13
 ### Changed

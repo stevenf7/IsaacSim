@@ -76,7 +76,6 @@ class SimulationApp:
         "max_specular_transmission_bounces": 6,
         "max_volume_bounces": 4,
         "open_usd": None,
-        "livesync_usd": None,
         "fast_shutdown": True,
         "profiler_backend": [],
         "create_new_stage": True,
@@ -107,7 +106,6 @@ class SimulationApp:
         max_specular_transmission_bounces (int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
         max_volume_bounces (int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
-        livesync_usd (str): This is the location of the usd that you want to do your interactive work in.  The existing file is overwritten. Default is None
         fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
         profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
         create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True
@@ -225,7 +223,7 @@ class SimulationApp:
         signal.signal(signal.SIGINT, signal_handler)
 
         # once app starts, we can set settings
-        from .utils import create_new_stage, open_stage, set_livesync_stage
+        from .utils import create_new_stage, open_stage
 
         self._carb_settings = carb.settings.get_settings()
         # apply render settings specified in config
@@ -249,14 +247,6 @@ class SimulationApp:
 
         if self.config["create_new_stage"] is True:
             create_new_stage()
-
-        self.livesync_usd = self.config.get("livesync_usd")
-        if self.livesync_usd is not None:
-            print("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
-            if set_livesync_stage(self.livesync_usd, True):
-                print("Done.")
-            else:
-                print("Could not save usd file to ", self.livesync_usd)
 
         # Update the app
         self._app.update()
