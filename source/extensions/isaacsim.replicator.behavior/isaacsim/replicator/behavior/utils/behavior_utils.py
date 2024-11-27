@@ -54,19 +54,23 @@ async def lock_exposed_variables(attr_paths):
 
 
 def check_if_exposed_variables_should_be_removed(prim: Usd.Prim, script_file_path: str) -> bool:
-    """Exposed variables should be removed if the script is no longer assigned to the prim (not in list)."""
+    """Remove exposed variables if the script is no longer assigned to the prim."""
     if not prim.IsValid():
+        # Invalid prim, cannot remove variables
         return False
 
     scripts_attr = prim.GetAttribute("omni:scripting:scripts")
     if not scripts_attr:
+        # No scripts attribute, remove variables
         return True
 
     scripts_paths: Sdf.AssetPathArray = scripts_attr.Get()
-    is_script_in_list = any(script_file_path == asset.path for asset in scripts_paths)
+    if not scripts_paths:
+        # Empty scripts attribute, remove variables
+        return True
 
-    # Return True if the script_file_path is not in the list of scripts
-    return not is_script_in_list
+    # Remove variables if script is not in the attached scripts list (e.g. script was removed)
+    return not any(script_file_path == asset.path for asset in scripts_paths)
 
 
 def remove_exposed_variable(prim: Usd.Prim, full_attr_name: str) -> None:
@@ -91,6 +95,9 @@ def remove_exposed_variables(prim: Usd.Prim, exposed_attr_ns: str, behavior_ns: 
 
 def get_exposed_variable(prim: Usd.Prim, full_attr_name: str):
     """Helper function to get the value of an exposed attribute."""
+    if not prim.IsValid():
+        carb.log_warn(f"Prim {prim.GetPath()} is not valid, cannot receive exposed variable {full_attr_name}")
+        return None
     attr = prim.GetAttribute(full_attr_name)
     if attr:
         return attr.Get()
