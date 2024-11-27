@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.1"
+version = "4.1.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -51,6 +51,9 @@ public = false
 
 [[python.module]]
 name = "isaacsim.ros2.bridge.scripts.samples.ros_samples"
+
+[[python.module]]
+name = "isaacsim.ros2.bridge.scripts.samples.ros_waypoint_follower_sample"
 
 [[python.module]]
 name = "isaacsim.ros2.bridge.scripts.samples.ros_moveit_sample"
