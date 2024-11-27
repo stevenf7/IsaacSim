@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2024-11-27
+### Fixed
+- Fixed error when removing all the scripts widget during runtime
+
 ## [1.0.2] - 2024-11-06
 ### Fixed
 - Fixed stacking bounding box drop area calculation for scaled assets
