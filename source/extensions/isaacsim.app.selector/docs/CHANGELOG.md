@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.6] - 2024-11-19
+### Changed
+- Updated icons
+
 ## [2.8.5] - 2024-10-28
 ### Changed
 - Merge headless modes

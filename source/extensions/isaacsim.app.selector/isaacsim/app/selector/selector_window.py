@@ -280,7 +280,7 @@ class SelectorWindow:
     def _build_compact_app_widget(self, app_id):
         import omni.ui as ui
 
-        with ui.HStack(width=480, height=40):
+        with ui.HStack(width=480, height=30):
             with ui.ZStack(style={"ZStack": {"margin": 5}}):
                 bg_color = "gray_bg"
                 if app_id == self._default_app:
@@ -292,7 +292,7 @@ class SelectorWindow:
                 ui.RadioButton(
                     text=app_title,
                     image_width=ui.Pixel(40),
-                    image_height=ui.Pixel(32),
+                    image_height=ui.Pixel(30),
                     style={
                         ":": {
                             "margin": 0,
@@ -314,7 +314,7 @@ class SelectorWindow:
 
         # Application Column
         if not self._app_list_frame:
-            self._app_list_frame = ui.ScrollingFrame(width=620)
+            self._app_list_frame = ui.ScrollingFrame(width=650)
         else:
             self._app_list_frame.clear()
 
@@ -323,13 +323,13 @@ class SelectorWindow:
 
             with ui.VStack():
                 ui.Label("   Main Apps", height=0, style={"font_size": 20})
-                with ui.HStack(height=230):
+                with ui.HStack(height=250):
                     for an_app in self._apps:
                         self._build_app_widget(an_app)
 
                 ui.Spacer(height=10)
                 ui.Label("   Experimental Apps", height=0, style={"font_size": 20})
-                with ui.VGrid(column_count=3, row_height=230):
+                with ui.VGrid(column_count=3, row_height=250):
                     for an_app in self._experimental_apps:
                         self._build_app_widget(an_app)
 
@@ -348,7 +348,7 @@ class SelectorWindow:
 
         # Application Column
         if not self._app_list_frame:
-            self._app_list_frame = ui.ScrollingFrame(width=500)
+            self._app_list_frame = ui.ScrollingFrame(width=510)
         else:
             self._app_list_frame.clear()
 
@@ -448,9 +448,9 @@ class SelectorWindow:
 
         with ui.VStack():
             ui.Spacer(height=30)
-            with ui.HStack(height=200):
+            with ui.HStack(height=250):
                 ui.Spacer()
-                with ui.ZStack(width=200, heigh=200):
+                with ui.ZStack(width=250, heigh=250):
                     ui.Rectangle(style={"background_color": 0xFF666666})
                     with ui.Frame(style={"margin": 3}):
                         ui.Rectangle(style={"background_color": 0xFF000000})
@@ -690,7 +690,7 @@ class SelectorWindow:
         import omni.ui as ui
 
         self._window = ui.Window(
-            "AppSelector", noTabBar=True, detachable=False, padding_x=0, padding_y=0, style={"Window": {"pading": 0}}
+            "AppSelector", noTabBar=True, detachable=False, padding_x=-5, padding_y=-5, style={"Window": {"pading": 0}}
         )
         self._window.frame.set_style(selector_style)
         with self._window.frame:

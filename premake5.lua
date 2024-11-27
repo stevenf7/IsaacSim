@@ -470,17 +470,17 @@ function create_tests()
         define_startup_experience(
             "tests-selector.autolaunch_and_persist",
             "isaacsim.exp.selector",
-            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args=\"--/app/quitAfter=10 --/app/file/ignoreUnsavedOnExit=1\""
         )
         define_startup_experience(
             "tests-selector.no_show_console",
             "isaacsim.exp.selector",
-            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args=\"--/app/quitAfter=10 --/app/file/ignoreUnsavedOnExit=1\""
         )
         define_startup_experience(
             "tests-selector.persist",
             "isaacsim.exp.selector",
-            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args='--/app/quitAfter=10'"
+            "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args=\"--/app/quitAfter=10\""
         )
 
     group "python_samples"
