@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.0] - 2024-11-26
+### Added
+- Added summary report generation for formatted KPI data
+
 ## [2.2.0] - 2024-11-15
 ### Changed
 - Use subscription method to get physics simulation profiling data

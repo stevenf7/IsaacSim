@@ -65,35 +65,35 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
 
         measurements_out.append(
             measurements.SingleMeasurement(
-                name=f"Mean Render Thread Frametime",
+                name=f"Mean App_Update Frametime",
                 value=frametime_stats.app_stats["mean"],
                 unit="ms",
             )
         )
         measurements_out.append(
             measurements.SingleMeasurement(
-                name=f"Stdev Render Thread Frametime",
+                name=f"Stdev App_Update Frametime",
                 value=frametime_stats.app_stats["stdev"],
                 unit="ms",
             )
         )
         measurements_out.append(
             measurements.SingleMeasurement(
-                name=f"Min Render Thread Frametime",
+                name=f"Min App_Update Frametime",
                 value=frametime_stats.app_stats["min"],
                 unit="ms",
             )
         )
         measurements_out.append(
             measurements.SingleMeasurement(
-                name=f"Max Render Thread Frametime",
+                name=f"Max App_Update Frametime",
                 value=frametime_stats.app_stats["max"],
                 unit="ms",
             )
         )
         measurements_out.append(
             measurements.ListMeasurement(
-                name=f"Render Thread Frametime Samples",
+                name=f"App_Update Frametime Samples",
                 value=frametime_stats.app_frametime_samples,
             )
         )
@@ -159,8 +159,14 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
 
         measurements_out.append(
             measurements.SingleMeasurement(
+                name=f"Mean FPS", value=round(1000 / (frametime_stats.app_stats["mean"]), 3), unit="FPS"
+            )
+        )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
                 name=f"Real Time Factor",
-                value=self.frametime_collector.elapsed_sim_time / self.elapsed_real_time,
+                value=round(self.frametime_collector.elapsed_sim_time / self.elapsed_real_time, 3),
                 unit="",
             )
         )
@@ -261,7 +267,7 @@ class IsaacRuntimeRecorder(interface.MeasurementDataRecorder):
         if self.phase != self.context.phase:
             return interface.MeasurementData(measurements=[])
 
-        m1 = measurements.SingleMeasurement(name=f"Runtime", value=self.elapsed_time, unit="ms")
+        m1 = measurements.SingleMeasurement(name=f"Runtime", value=round(self.elapsed_time, 3), unit="ms")
         return interface.MeasurementData(measurements=[m1])
 
 
