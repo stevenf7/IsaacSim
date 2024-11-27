@@ -493,19 +493,17 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(isinstance(semantic_segmentation_data["data"], np.ndarray))
         self.assertTrue(semantic_segmentation_data["data"].dtype == np.uint8)
 
-        # TODO: OMPE-27821 -- check if colorize is supported
         instance_id_segmentation_data = current_frame.get("instance_id_segmentation")
         self.assertIsNotNone(instance_id_segmentation_data)
-        self.assertTrue(instance_id_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(instance_id_segmentation_data["data"].shape == (256, 256, 4))
         self.assertTrue(isinstance(instance_id_segmentation_data["data"], np.ndarray))
-        self.assertTrue(instance_id_segmentation_data["data"].dtype == np.uint32)
+        self.assertTrue(instance_id_segmentation_data["data"].dtype == np.uint8)
 
-        # TODO: OMPE-27821 -- check if colorize is supported
         instance_segmentation_data = current_frame.get("instance_segmentation")
         self.assertIsNotNone(instance_segmentation_data)
-        self.assertTrue(instance_segmentation_data["data"].shape == (256, 256))
+        self.assertTrue(instance_segmentation_data["data"].shape == (256, 256, 4))
         self.assertTrue(isinstance(instance_segmentation_data["data"], np.ndarray))
-        self.assertTrue(instance_segmentation_data["data"].dtype == np.uint32)
+        self.assertTrue(instance_segmentation_data["data"].dtype == np.uint8)
 
         pointcloud_data = current_frame.get("pointcloud")
         self.assertIsNotNone(pointcloud_data)

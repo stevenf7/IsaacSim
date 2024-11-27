@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2024-11-26
+### Fixed
+- Camera sensor tests fix for colorize param
+
 ## [0.2.2] - 2024-11-18
 ### Fixed
 - Fixed camera sensor custom parameter output test
