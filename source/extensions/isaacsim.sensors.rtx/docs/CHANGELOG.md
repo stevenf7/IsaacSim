@@ -1,4 +1,9 @@
 # Changelog
+
+## [13.3.1] - 2024-11-25
+### Changed
+- Added logic to automatically add usd in given folders to menu
+
 ## [13.3.0] - 2024-11-25
 ### Changed
 - Re-enabled per-view TLAS.

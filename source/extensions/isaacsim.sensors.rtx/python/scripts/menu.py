@@ -9,8 +9,10 @@
 
 import json
 import os
+import re
 import weakref
 
+import omni
 import omni.kit.commands
 from isaacsim.core.utils.extensions import get_extension_path
 from isaacsim.core.utils.prims import create_prim, set_prim_visibility
@@ -231,6 +233,8 @@ class IsaacSensorMenu:
                 if file.endswith(".json"):
                     data = json.load(open(os.path.join(d, file)))
                     ui_name = data["name"]
+                    # the regex will substitute symbols from the sensor name with space, to match the file name
+                    ui_name = re.sub(r'[@#!$%^&<>:"/\\|?*\0_]', " ", ui_name)
                     file_name = file[:-5]
                     sub_menu[ui_name] = make_menu_item_description(
                         ext_id,
@@ -263,6 +267,23 @@ class IsaacSensorMenu:
         update_lidar_menu_item_with_usd_path(
             "Velodyne", "Velodyne VLS-128", "/Isaac/Sensors/Velodyne/vls-128/vls_128.usd"
         )
+
+        # search each nucleus folder OS0, OS1, OS2, get all usd files
+        os_lidars = ["OS0", "OS1", "OS2"]
+        for os_lidar in os_lidars:
+            os_lidar_path = get_assets_root_path() + f"/Isaac/Sensors/Ouster/{os_lidar}"
+            result, files = omni.client.list(os_lidar_path)
+
+            if not result:
+                carb.log_error(f"Unable to find {os_lidar_path}")
+
+            for file in files:
+                if file.relative_path.endswith(".usd"):
+                    name = os.path.splitext(os.path.basename(file.relative_path))[0]
+                    # make sure the file name matches the menu display name by replace underscore with space
+                    update_lidar_menu_item_with_usd_path(
+                        f"{os_lidar}", name.replace("_", " "), f"/Isaac/Sensors/Ouster/{os_lidar}/{name}.usd"
+                    )
 
         # Convert lidar submenu dictionary into list
         rtx_lidar_sub_menu_as_list = [
