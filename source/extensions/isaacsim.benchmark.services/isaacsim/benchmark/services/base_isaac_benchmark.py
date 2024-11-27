@@ -15,7 +15,7 @@ import time
 import carb
 from isaacsim.benchmark.services import utils
 from isaacsim.benchmark.services.datarecorders import interface
-from isaacsim.benchmark.services.metrics import backend, measurements
+from isaacsim.benchmark.services.metrics import backend, measurements, report
 from isaacsim.core.utils.stage import open_stage
 from isaacsim.storage.native import get_assets_root_path
 
@@ -62,6 +62,7 @@ class BaseIsaacBenchmark:
         self,
         benchmark_name: str = "BaseIsaacBenchmark",
         backend_type: str = "OmniPerfKPIFile",
+        report_generation: bool = True,
         workflow_metadata: dict = {},
     ):
         """
@@ -71,11 +72,14 @@ class BaseIsaacBenchmark:
                 "BaseIsaacBenchmark".
             backend_type (str, optional): Type of backend used to collect and print metrics. Supported values provided
                 in metrics.backend. Defaults to "OmniPerfKPIFile".
+            report_generation (bool, optional): Generates a formatted, ordered report of all phases/metrics in local
+                log.
             workflow_metadata (dict, optional): Metadata describing benchmark (eg. number of GPUs, number of cameras,
                 etc.) Most useful for OsmoKPIFile backend. Expected as JSON-style input - nested dictionary of
                 {"metadata": [{"name": <name>, "data": <value>}, ...]}. Defaults to {}.
         """
         self.benchmark_name = benchmark_name
+        self.report = report_generation
         self._test_phases = []
 
         self.settings = carb.settings.get_settings()
@@ -110,6 +114,11 @@ class BaseIsaacBenchmark:
 
         if not self._metrics_output_folder:
             self._metrics_output_folder = tempfile.gettempdir()
+
+        # Create report
+        logger.info(f"Generating formatted report = {self.report}")
+        if self.report:
+            self.final_report = report.Report()
 
         # Get metrics backend based on user-provided type
         logger.info(f"Using metrics backend = {backend_type}")
@@ -147,7 +156,12 @@ class BaseIsaacBenchmark:
         # Finalize by adding all test phases to the backend metrics
         for test_phase in self._test_phases:
             self._metrics.add_metrics(test_phase)
+            if self.report:
+                self.final_report.add_metric_phase(test_phase)
+
         self._metrics.finalize(self._metrics_output_folder, randomize_filename_prefix)
+        if self.report:
+            self.final_report.create_report()
 
         self.test_run = None
         self.recorders = None
