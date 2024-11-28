@@ -75,7 +75,7 @@ public:
         auto& state = db.perInstanceState<OgnIsaacComputeRTXRadarPointCloud>();
 
         GenericModelOutputHelper helper(input);
-        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, AuxType::RADAR))
+        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, Modality::RADAR))
         {
             CARB_LOG_WARN(
                 "Input to IsaacComputeRTXRadarPointCloud is not a valid RADAR POINTCLOUD type. Buffer will not be parsed.");
@@ -130,7 +130,6 @@ public:
         db.outputs.maxAzRad() = aux->maxAzRad; /**< The max unambiguous azimuth for the aux */
         db.outputs.minElRad() = aux->minElRad; /**< The min unambiguous elevation for the aux */
         db.outputs.maxElRad() = aux->maxElRad; /**< The max unambiguous elevation for the aux */
-        db.outputs.numDetections() = aux->numDetections; /**< The number of valid detections in the array */
 
         size_t outSize = helper.m_gmo.numElements; // aux->numDetections;
 
@@ -151,16 +150,15 @@ public:
         _DEF_OUT_VAR(azimuth);
         _DEF_OUT_VAR(elevation);
         _DEF_OUT_VAR(rcs);
-        _DEF_OUT_VAR(semanticId);
-        _DEF_OUT_VAR(materialId);
-        _DEF_OUT_VAR(objectId);
 #undef _DEF_OUT_VAR
-        bool hasSemId = ((aux->filledAuxMembers & RadarAuxHas::SEM_ID) == RadarAuxHas::SEM_ID);
-        bool hasMatId = ((aux->filledAuxMembers & RadarAuxHas::MAT_ID) == RadarAuxHas::MAT_ID);
-        bool hasObjId = ((aux->filledAuxMembers & RadarAuxHas::OBJ_ID) == RadarAuxHas::OBJ_ID);
 
         for (uint32_t i = 0; i < outSize; ++i)
         {
+            // Test for point validiy
+            if ((helper.m_gmo.elements.flags[i] & ElementFlags::VALID) != ElementFlags::VALID)
+            {
+                continue;
+            }
             convertDetectionToPoint(helper.m_gmo, i, dataPtr[i]);
 
             // x = az_ang_deg
@@ -174,9 +172,6 @@ public:
             _IF_ASSIGN_OUT(true, azimuth, helper.m_gmo.elements.x);
             _IF_ASSIGN_OUT(true, elevation, helper.m_gmo.elements.y);
             _IF_ASSIGN_OUT(true, rcs, helper.m_gmo.elements.scalar);
-            _IF_ASSIGN_OUT(hasSemId, semanticId, aux->semId);
-            _IF_ASSIGN_OUT(hasMatId, materialId, aux->matId);
-            _IF_ASSIGN_OUT(hasObjId, objectId, aux->objId);
 #undef _IF_ASSIGN_OUT
         }
 

@@ -40,7 +40,6 @@ struct LidarPoint
 inline void convertReturnToPoint(const unsigned int idx,
                                  const omni::sensors::GenericModelOutput& gmo,
                                  const LidarProfile* profile,
-                                 const uint32_t emitterId,
                                  const float accuracyErrorAzimuthDeg,
                                  const float accuracyErrorElevationDeg,
                                  LidarPoint& point)
@@ -70,14 +69,19 @@ inline void convertReturnToPoint(const unsigned int idx,
     float beamOriginMY = 0.0f;
     float beamOriginMZ = 0.0f;
     float beamOriginDistM = 0.0f;
-    if (0 <= emitterId && emitterId < profile->emitterStateCount * profile->numberOfEmitters)
+
+    if (gmo.auxType > AuxType::BASIC)
     {
-        distanceCorrectionM = profile->emitterProfileSoA.distanceCorrectionM[emitterId];
-        beamOriginMY = profile->emitterProfileSoA.horOffsetM[emitterId];
-        beamOriginMZ = profile->emitterProfileSoA.vertOffsetM[emitterId];
-        rayOrigin = { -sinAzimuth * beamOriginMY, cosAzimuth * beamOriginMY, beamOriginMZ };
-        beamOriginDistM = beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ;
-        beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
+        uint32_t emitterId = static_cast<const omni::sensors::LidarAuxiliaryData*>(gmo.auxiliaryData)->emitterId[idx];
+        if (0 <= emitterId && emitterId < profile->emitterStateCount * profile->numberOfEmitters)
+        {
+            distanceCorrectionM = profile->emitterProfileSoA.distanceCorrectionM[emitterId];
+            beamOriginMY = profile->emitterProfileSoA.horOffsetM[emitterId];
+            beamOriginMZ = profile->emitterProfileSoA.vertOffsetM[emitterId];
+            rayOrigin = { -sinAzimuth * beamOriginMY, cosAzimuth * beamOriginMY, beamOriginMZ };
+            beamOriginDistM = beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ;
+            beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
+        }
     }
 
     const float distanceM = rawDistanceM + distanceCorrectionM;
@@ -123,7 +127,7 @@ public:
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarPointCloud>();
 
         GenericModelOutputHelper helper(input);
-        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, AuxType::LIDAR))
+        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, Modality::LIDAR))
         {
             CARB_LOG_WARN(
                 "Input to IsaacComputeRTXLidarPointCloud is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
@@ -191,18 +195,21 @@ public:
         float accuracyErrorElevationDeg = db.inputs.accuracyErrorElevationDeg();
 
         uint32_t atomicOutIdx = 0; // not atomic, but it will need to be if you parallelize this
-        const omni::sensors::LidarAuxiliaryData* auxPoints =
-            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
         for (uint32_t pointIdx = 0; pointIdx < helper.m_gmo.numElements; pointIdx++)
         {
 
+            // Test for point validiy
+            if ((helper.m_gmo.elements.flags[pointIdx] & ElementFlags::VALID) != ElementFlags::VALID)
+            {
+                continue;
+            }
             // This is just for runtime efficiency
             if (!keepOnlyPositiveDistance || distances[pointIdx] > 0.f)
             {
                 const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
                 LidarPoint p;
-                convertReturnToPoint(pointIdx, helper.m_gmo, state.profile, auxPoints->emitterId[pointIdx],
-                                     accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
+                convertReturnToPoint(
+                    pointIdx, helper.m_gmo, state.profile, accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
                 p.x += accuracyErrorPosition.x;
                 p.y += accuracyErrorPosition.y;
                 p.z += accuracyErrorPosition.z;

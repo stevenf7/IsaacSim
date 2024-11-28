@@ -134,17 +134,17 @@
             },
             "semanticId":{
                 "type": "uint[]",
-                "description": "semantic ID",
+                "description": "semantic ID - DEPRECATED, no longer provided.",
                 "default": []
             },
             "materialId":{
                 "type": "uint[]",
-                "description": "material ID",
+                "description": "material ID - DEPRECATED, no longer provided.",
                 "default": []
             },
             "objectId":{
                 "type": "uint[]",
-                "description": "object ID",
+                "description": "object ID - DEPRECATED, no longer provided.",
                 "default": []
             }
         }
