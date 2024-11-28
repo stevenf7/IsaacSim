@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.4.0] - 2024-11-26
+### Added
+- New settings to toggle auxiliary data output for lidar, radar
+### Changed
+- Updated omni.sensor extension dependencies to latest.
+- Updated GMO struct layout
+
 ## [13.3.1] - 2024-11-25
 ### Changed
 - Added logic to automatically add usd in given folders to menu

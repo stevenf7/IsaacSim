@@ -95,10 +95,10 @@ public:
         cudaMemcpyAsync(&m_gmo, gmoPtr, sizeof(omni::sensors::GenericModelOutput), kind);
         setGenericModelOutputPtrs();
     }
-    bool isValid(const OutputType& outType, const CoordsType& coordType, const AuxType& auxType)
+    bool isValid(const OutputType& outType, const CoordsType& coordType, const Modality& modality)
     {
         if (m_gmo.magicNumber != MAGIC_NUMBER_GMO || m_gmo.outputType != outType || m_gmo.coordsType != coordType ||
-            m_gmo.auxType != auxType)
+            m_gmo.modality != modality)
         {
             return false;
         }
@@ -140,16 +140,22 @@ public:
         offset += sizeof(float) * modelOutput->numElements;
         modelOutput->elements.flags = reinterpret_cast<uint8_t*>(data + offset);
         offset += sizeof(uint8_t) * modelOutput->numElements;
+        // For the contiguous buffer, additional padding bytes are added after the last flags element (just before the
+        // auxiliary data struct) to ensure that the structure is aligned to a multiple of 8 bytes.
+        if (offset % 8 != 0)
+        {
+            offset += 8 - (offset % 8); // This has to be done for reading the auxiliary data from the buffer
+        }
         // aux elements
-        if (modelOutput->auxType == AuxType::LIDAR)
+        if (modelOutput->modality == Modality::LIDAR)
         {
             setLidarAuxiliaryDataPtrs();
         }
-        else if (modelOutput->auxType == AuxType::USS)
+        else if (modelOutput->modality == Modality::USS)
         {
             setUSSAuxiliaryDataPtrs();
         }
-        else if (modelOutput->auxType == AuxType::RADAR)
+        else if (modelOutput->modality == Modality::RADAR)
         {
             setRadarAuxiliaryDataPtrs();
         }
@@ -171,6 +177,7 @@ public:
         {
             auxData->emitterId = nullptr;
         }
+
         if ((auxData->filledAuxMembers & LidarAuxHas::CHANNEL_ID) == LidarAuxHas::CHANNEL_ID)
         {
             auxData->channelId = reinterpret_cast<uint32_t*>(data + offset);
@@ -180,15 +187,7 @@ public:
         {
             auxData->channelId = nullptr;
         }
-        if ((auxData->filledAuxMembers & LidarAuxHas::ECHO_ID) == LidarAuxHas::ECHO_ID)
-        {
-            auxData->echoId = reinterpret_cast<uint8_t*>(data + offset);
-            offset += sizeof(uint8_t) * modelOutput->numElements;
-        }
-        else
-        {
-            auxData->echoId = nullptr;
-        }
+
         if ((auxData->filledAuxMembers & LidarAuxHas::MAT_ID) == LidarAuxHas::MAT_ID)
         {
             auxData->matId = reinterpret_cast<uint32_t*>(data + offset);
@@ -198,15 +197,7 @@ public:
         {
             auxData->matId = nullptr;
         }
-        if ((auxData->filledAuxMembers & LidarAuxHas::OBJ_ID) == LidarAuxHas::OBJ_ID)
-        {
-            auxData->objId = reinterpret_cast<uint8_t*>(data + offset);
-            offset += sizeof(uint8_t) * modelOutput->numElements;
-        }
-        else
-        {
-            auxData->objId = nullptr;
-        }
+
         if ((auxData->filledAuxMembers & LidarAuxHas::TICK_ID) == LidarAuxHas::TICK_ID)
         {
             auxData->tickId = reinterpret_cast<uint32_t*>(data + offset);
@@ -216,19 +207,11 @@ public:
         {
             auxData->tickId = nullptr;
         }
-        if ((auxData->filledAuxMembers & LidarAuxHas::TICK_STATES) == LidarAuxHas::TICK_STATES)
-        {
-            auxData->tickStates = reinterpret_cast<uint8_t*>(data + offset);
-            offset += sizeof(uint8_t) * modelOutput->numElements;
-        }
-        else
-        {
-            auxData->tickStates = nullptr;
-        }
+
         if ((auxData->filledAuxMembers & LidarAuxHas::HIT_NORMALS) == LidarAuxHas::HIT_NORMALS)
         {
             auxData->hitNormals = reinterpret_cast<float*>(data + offset);
-            offset += sizeof(float) * 3 * modelOutput->numElements;
+            offset += sizeof(float) * modelOutput->numElements * 3;
         }
         else
         {
@@ -242,6 +225,36 @@ public:
         else
         {
             auxData->velocities = nullptr;
+        }
+
+        if ((auxData->filledAuxMembers & LidarAuxHas::OBJ_ID) == LidarAuxHas::OBJ_ID)
+        {
+            auxData->objId = reinterpret_cast<uint8_t*>(data + offset);
+            offset += sizeof(uint8_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->objId = nullptr;
+        }
+
+        if ((auxData->filledAuxMembers & LidarAuxHas::ECHO_ID) == LidarAuxHas::ECHO_ID)
+        {
+            auxData->echoId = reinterpret_cast<uint8_t*>(data + offset);
+            offset += sizeof(uint8_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->echoId = nullptr;
+        }
+
+        if ((auxData->filledAuxMembers & LidarAuxHas::TICK_STATES) == LidarAuxHas::TICK_STATES)
+        {
+            auxData->tickStates = reinterpret_cast<uint8_t*>(data + offset);
+            offset += sizeof(uint8_t) * modelOutput->numElements;
+        }
+        else
+        {
+            auxData->tickStates = nullptr;
         }
     }
     inline void setUSSAuxiliaryDataPtrs()
@@ -263,36 +276,6 @@ public:
 
         auxData->rv_ms = reinterpret_cast<float*>(data + offset);
         offset += sizeof(float) * modelOutput->numElements;
-
-        if ((auxData->filledAuxMembers & RadarAuxHas::SEM_ID) == RadarAuxHas::SEM_ID)
-        {
-            auxData->semId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
-        }
-        else
-        {
-            auxData->semId = nullptr;
-        }
-
-        if ((auxData->filledAuxMembers & RadarAuxHas::MAT_ID) == RadarAuxHas::MAT_ID)
-        {
-            auxData->matId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
-        }
-        else
-        {
-            auxData->matId = nullptr;
-        }
-
-        if ((auxData->filledAuxMembers & RadarAuxHas::OBJ_ID) == RadarAuxHas::OBJ_ID)
-        {
-            auxData->objId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
-        }
-        else
-        {
-            auxData->objId = nullptr;
-        }
     }
 };
 

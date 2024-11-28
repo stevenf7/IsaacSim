@@ -58,7 +58,7 @@ public:
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
 
         GenericModelOutputHelper helper(dataPtr);
-        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, AuxType::LIDAR))
+        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, Modality::LIDAR))
         {
             CARB_LOG_WARN(
                 "Input to IsaacComputeRTXLidarFlatScan is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
