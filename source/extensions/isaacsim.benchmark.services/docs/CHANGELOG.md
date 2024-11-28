@@ -1,4 +1,7 @@
 # Changelog
+## [2.4.0] - 2024-11-26
+### Added
+- Added function to compute frametime metrics statistics using the middle 80% of data points
 
 ## [2.3.0] - 2024-11-26
 ### Added
