@@ -63,9 +63,31 @@ class FrametimeStats:
         ninety_nine_p = self._percentile_inc(sorted(values), 0.99)
         return statistics.mean([x for x in values if x >= ninety_nine_p])
 
+    def trim_outliers(self, values: List) -> List:
+        """
+        Given a list of floats, remove the top 10% and bottom 10% of the values,
+        if the list is over 100 values long.
+
+        Args:
+            values: A list of floats
+
+        Returns:
+            The middle 80% of values
+        """
+        if len(values) < 100:
+            return values
+
+        sorted_data = sorted(values)
+        num_values = len(sorted_data)
+        remove_count = math.floor(num_values * 0.1)
+
+        trimmed_data = sorted_data[remove_count:-remove_count]
+        return trimmed_data
+
     def stats_helper(self, metric: List[float]):
         result = {"mean": 0, "median": 0, "stdev": 0, "min": 0, "max": 0, "one_percent": 0}
         try:
+            metric = self.trim_outliers(metric)
             result["mean"] = round(statistics.mean(metric), 2)
             result["median"] = round(statistics.median(metric), 2)
             result["stdev"] = round(statistics.stdev(metric), 2)
