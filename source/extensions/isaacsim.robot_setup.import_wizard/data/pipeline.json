@@ -311,7 +311,7 @@
     "Occupancy Map":
     {
         "App Name": "Occupancy Map",
-        "Extension":"isaacsim.asset.generator.occupancy_map",
+        "Extension":"isaacsim.asset.gen.omap",
         "Window": 1,
         "Summary":"Generate a 2D binary occupancy map flattened from a defined 3D space in a scene",
         "Basic Instructions":"To start creating an occupancy map, load a USD scene and open the occupancy map generation tool by going to Isaac Utils -> Occupancy Map. \n\nNext, set the location of origin and the upper and lower bounds of the bounding area. Ensure to set a height difference between upper and lower bounds. You will notice a bounding box will appear in the stage. You can also select multiple objects in the scene and use the CENTER TO SELECTION and BOUND SELECTION buttons to center the map origin and define the bounds respective to the selected objects. \n\nClick CALCULATE followed by VISUALIZE IMAGE. This will open a popup window showing the generated occupancy map and letting you save the map as a png file.",
@@ -319,8 +319,8 @@
         "Menu": "Isaac Utils -> Occupancy Map",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/mapping/ext_omni_isaac_occupancy_map.html",
-            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.occupancy_map/docs/index.html",
-            "Script Folder": "isaacsim.asset.generator.occupancy_map"
+            "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/isaacsim.asset.gen.omap/docs/index.html",
+            "Script Folder": "isaacsim.asset.gen.omap"
         }
     },
 

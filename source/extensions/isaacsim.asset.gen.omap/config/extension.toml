@@ -1,0 +1,43 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "2.0.6"
+category = "Simulation"
+title = "Block Worlds"
+description = "Generate 3D block worlds from 2D occupancy maps"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.block_world"
+keywords = ["isaac", "block world"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.api" = {}
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.util.debug_draw" = {}
+"isaacsim.gui.components" = {}
+"omni.kit.pip_archive" = {} # pulls in pillow
+"omni.kit.uiapp" = {}
+"omni.kit.viewport.window" = {}
+"omni.physx" = {}
+
+[[python.module]]
+name = "isaacsim.asset.gen.omap"
+
+[[python.module]]
+name = "isaacsim.asset.gen.omap.tests"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[[test]]
+dependencies = [
+    "isaacsim.storage.native" # test only
+]
+timeout = 960

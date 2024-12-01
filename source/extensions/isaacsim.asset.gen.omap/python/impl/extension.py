@@ -6,15 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import omni.ext
+import omni.kit.commands
 
-import carb
+from ..bindings import _omap
 
-old_extension_name = "omni.isaac.occupancy_map.ui"
-new_extension_name = "isaacsim.asset.gen.omap.ui"
 
-# Provide deprecation warning to user
-carb.log_warn(
-    f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
-)
+class Extension(omni.ext.IExt):
+    def on_startup(self, ext_id: str):
+        self._interface = _omap.acquire_omap_interface()
 
-from isaacsim.asset.gen.omap.ui import *
+    def on_shutdown(self):
+        _omap.release_omap_interface(self._interface)
