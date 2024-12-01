@@ -1,12 +1,32 @@
 # Changelog
-## [2.0.1] - 2024-10-24
+
+## [2.0.6] - 2024-11-06
+### Changed
+- nucleus import update
+
+## [2.0.5] - 2024-11-04
+### Changed
+- Remove isaacsim.asset.importer.heightmap as a dependency
+
+## [2.0.4] - 2024-10-29
 ### Changed
 - Updated dependencies and imports after renaming
 
+## [2.0.3] - 2024-10-28
+### Changed
+- Remove test imports from runtime
 
-## [2.0.0] - 2024-11-07
-### Deprecated
-- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.omap
+## [2.0.2] - 2024-10-24
+### Changed
+- Updated dependencies and imports after renaming
+
+## [2.0.1] - 2024-10-08
+### Changed
+- Updated occupancy map namespace
+
+## [2.0.0] - 2024-10-04
+### Changed
+- Extension renamed to isaacsim.asset.gen.omap.
 
 ## [1.0.3] - 2024-09-03
 ### Fixed
@@ -32,7 +52,6 @@
 ### Fixed
 - Issues with instanceable assets when using non physx collision mesh option
 - Cell size not updating based on the current stage units. On stage load the cell size is set to 5cm or 0.05m depending on the units. 
-
 
 ## [0.4.1] - 2024-01-18
 ### Changed
@@ -69,28 +88,24 @@
 ## [0.2.5] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
-## [0.2.4] - 2022-05-24
 
+## [0.2.4] - 2022-05-24
 ### Fixed
 - block world default to meters
 
 ## [0.2.3] - 2022-05-16
-
 ### Fixed
 - scale_to_meters parameter
 
 ## [0.2.2] - 2022-05-14
-
 ### Fixed
 - Deadlock when generating data
 
 ## [0.2.1] - 2022-03-16
-
 ### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
 ## [0.2.0] - 2022-03-07
-
 ### Added
 - Add ability to generate 3d occupancy data
 
@@ -98,19 +113,15 @@
 - Api's always return 3d point data
 
 ## [0.1.1] - 2020-09-15
-
 ### Added
-
 - 3D Occupancy Map support that allow 2D maps to be generated from 3D volumes
 - Block World Extension that allows a 2D map image to be converted to 3D geometry
 
 ### Changed
-
 - Made UI Simpler
 - Improved performance
 - Added debug visualization
 
 ## [0.1.0] - 2020-07-08
-
 ### Added
 - Initial version of Isaac Sim Occupancy Map Extension

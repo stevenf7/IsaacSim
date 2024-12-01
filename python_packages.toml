@@ -155,8 +155,8 @@ inventory.include = [
     "exts/isaacsim.asset.conveyor",
     "exts/isaacsim.asset.conveyor.ui",
     "exts/isaacsim.asset.exporter.urdf",
-    "exts/isaacsim.asset.generator.occupancy_map",
-    "exts/isaacsim.asset.generator.occupancy_map.ui",
+    "exts/isaacsim.asset.gen.omap",
+    "exts/isaacsim.asset.gen.omap.ui",
     "exts/isaacsim.asset.importer.heightmap",
     # deprecated extensions
     "extsDeprecated/omni.exporter.urdf",

@@ -17,7 +17,7 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.asset.generator.occupancy_map" = {}
+"isaacsim.asset.gen.omap" = {}
 "isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]
