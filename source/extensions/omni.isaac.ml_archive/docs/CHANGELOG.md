@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.1] - 2024-12-01
+### Changed
+- Make this extension python version specific
+
 ## [2.1.0] - 2024-11-14
 ### Changed
 - Update to torch==2.5.1+cu118, torchvision==0.20.1+cu118, torchaudio==2.5.0+cu118

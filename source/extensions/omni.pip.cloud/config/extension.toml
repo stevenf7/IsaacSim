@@ -4,7 +4,7 @@ order = -100
 reloadable = false
 
 [package]
-version = "1.1.4"
+version = "1.1.5"
 category = "Internal"
 title = "Cloud package Pip Archive"
 description = "General packages for cloud"
@@ -17,6 +17,7 @@ icon = "data/icon.png"
 preview_image = "data/preview.png"
 
 writeTarget.platform = true # pip prebundle makes this extension os specific
+writeTarget.python = true
 
 [dependencies]
 "omni.kit.pip_archive" = {} # import the base kit python archive
