@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.3] - 2024-12-01
+### Changed
+- Make extension python version specific
+
 ## [4.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
