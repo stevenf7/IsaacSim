@@ -1,935 +1,913 @@
 include:
-# external
-- project: 'omniverse/devplat/gitlab/templates/runners'
-  file: 'modules/include.yml'
-  ref: v1_latest
-- project: 'omniverse/devplat/gitlab/templates/common/utilities'
-  file: 'modules/include.yml'
-  ref: v1_latest
-- project: 'omniverse/sectools/vault'
-  file:
-    - 'templates/v3/common/token_job.gitlab-ci.yml'
-    - 'templates/v2/omni-codesign-creds.yml'
-    - 'templates/v3/linux/codesign.gitlab-ci.yml'
-    - 'templates/v2/windows/repo-codesign-creds.yml'
-    - 'templates/v3/windows/codesign.gitlab-ci.yml'
-    - 'templates/v2/omni-packman-s3-creds.yml'
-    - 'templates/v3/linux/packman_s3.gitlab-ci.yml'
-    - 'templates/v2/windows/packman-s3-creds.gitlab-ci.yml'
-    - 'templates/v3/windows/packman_s3.gitlab-ci.yml'
-    - 'templates/v3/linux/nucleus/kit-extensions.ov.nvidia.com/kit-extension-svc.gitlab-ci.yml'
-- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  # local to devplat/gitlab/templates/runners, external to this repo:
-  file: 'modules/common.yml'
-- project: omniverse/benchmark/reggie
-  #- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  #  file: 'modules/benchmarks.yml'
-  ref: release/v2
-  file: /ci/detect.yml
-- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  #   file: 'modules/stage-build.yml'
-  # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  #   file: 'modules/etm.yml'
-  file: 'modules/stage-deploy.yml'
-- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  file: 'modules/stage-security.yml'
-- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-  file: 'modules/sanitizers.yml'
+  # external
+  - project: 'omniverse/devplat/gitlab/templates/runners'
+    file: 'modules/include.yml'
+    ref: v1_latest
+  - project: 'omniverse/devplat/gitlab/templates/common/utilities'
+    file: 'modules/include.yml'
+    ref: v1_latest
+  - project: 'omniverse/sectools/vault'
+    file:
+      - 'templates/v3/common/token_job.gitlab-ci.yml'
+      - 'templates/v2/omni-codesign-creds.yml'
+      - 'templates/v3/linux/codesign.gitlab-ci.yml'
+      - 'templates/v2/windows/repo-codesign-creds.yml'
+      - 'templates/v3/windows/codesign.gitlab-ci.yml'
+      - 'templates/v2/omni-packman-s3-creds.yml'
+      - 'templates/v3/linux/packman_s3.gitlab-ci.yml'
+      - 'templates/v2/windows/packman-s3-creds.gitlab-ci.yml'
+      - 'templates/v3/windows/packman_s3.gitlab-ci.yml'
+      - 'templates/v3/linux/nucleus/kit-extensions.ov.nvidia.com/kit-extension-svc.gitlab-ci.yml'
+  - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    # local to devplat/gitlab/templates/runners, external to this repo:
+    file: 'modules/common.yml'
+  - project: omniverse/benchmark/reggie
+    #- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    #  file: 'modules/benchmarks.yml'
+    ref: release/v2
+    file: /ci/detect.yml
+  - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    #   file: 'modules/stage-build.yml'
+    # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    #   file: 'modules/etm.yml'
+    file: 'modules/stage-deploy.yml'
+  - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    file: 'modules/stage-security.yml'
+  - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
+    file: 'modules/sanitizers.yml'
 
 # ==============================================================================================================
 stages:
-- check
-- build
-- test
-- security
-- deploy
-- prod-test
-- pages
-
+  - check
+  - build
+  - test
+  - security
+  - deploy
+  - prod-test
+  - pages
 
 # ==============================================================================================================
 # Default values applied to all jobs
 default:
-  # Only retry on Gitlab failures (not on script failures for example)
-  retry:
-    max: 2
-    when:
-    - api_failure
-    - runner_system_failure
-    - stuck_or_timeout_failure
-    - scheduler_failure
-    - unknown_failure
+    # Only retry on Gitlab failures (not on script failures for example)
+    retry:
+        max: 2
+        when:
+          - api_failure
+          - runner_system_failure
+          - stuck_or_timeout_failure
+          - scheduler_failure
+          - unknown_failure
 
 workflow:
-  auto_cancel:
-    on_new_commit: interruptible
-    on_job_failure: none
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     auto_cancel:
-      on_new_commit: conservative
-  - if: $CI_COMMIT_BRANCH == "develop"
-    auto_cancel:
-      on_new_commit: conservative
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED
-    auto_cancel:
-      on_new_commit: none
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_REF_PROTECTED
-    auto_cancel:
-      on_new_commit: none
-
-
+        on_new_commit: interruptible
+        on_job_failure: none
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        auto_cancel:
+            on_new_commit: conservative
+      - if: $CI_COMMIT_BRANCH == "develop"
+        auto_cancel:
+            on_new_commit: conservative
+      - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED
+        auto_cancel:
+            on_new_commit: none
+      - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_REF_PROTECTED
+        auto_cancel:
+            on_new_commit: none
 
 # ==============================================================================================================
 # More variables can be found in common.yml - here we put the ones controlling the jobs workflow
 variables:
-  OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
-  OSEC_CHECKMARX_ENABLED: 'false'
-  OSEC_GITLAB_SAST_ENABLED: 'false'
-  OSEC_PULSE_TRUFFLEHOG_ENABLED: 'false'
-  OSEC_OMNI_PULSE_ENABLED: 'false'
-  OSEC_README_ENABLED: 'false' # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
-  ALLOW_PUBLISH_DOCS:
-    value: "false"
-    description: "Set to true to publish docs"
-  ALLOW_PUBLISH_TO_LAUNCHER:
-    value: "false"
-    description: "Set to true to for Kit apps that are published to the Launcher. That adds jobs for that."
-  ALLOW_PUBLISH_TO_PACKMAN:
-    value: "true"
-    description: "Set to true to for Kit apps that are published to the Packman. That adds jobs for that."
-  ALLOW_PUBLISH_PYTHON_PACKAGES:
-    value: "true"
-    description: "Set to true to create and publish python packages."
-  ALLOW_PUBLISH_EXTENSIONS:
-    value: "true"
-    description: "Set to true to publish extension updates."
-  ALLOW_PUBLISH_CONTAINERS:
-    value: "true"
-    description: "Set to true to publish containers to NGC."
-  ALLOW_SECURITY_SCAN:
-    value: "false"
-    description: "Set to true to trigger a security scan as a child pipeline (non blocking)"
-  ALLOW_SCHEDULE_PIPELINE:
-    value: "true"
-    description: "Set to 'false' to disable schedule pipeline on a all jobs, useful to set it back on only some jobs."
-  ALLOW_TAG_PIPELINE:
-    value: "true"
-    description: "Set to 'false' to disable tag pipeline on a all push jobs."
-  RUN_EXTENSION_BENCHMARKS:
-    value: "false"
-    description: "Set to true to run benchmarks for kit extensions."
-  RUN_ETM_TESTS:
-    value: "false"
-    description: "Set to true to run ETM tests for kit extensions. Only happens on push (extensions need to be published first)."
-  DATADOG_TEST_VISIBILITY:
-    value: "true"
-    description: "Set to false to skip sending tests results to Datadog (internal)"
-  OMNI_CI_ENABLE_CXX_COVERAGE:
-    value: "false"
-    description: "Set to 'true' to enable C++ code coverage testing."
-  OMNI_CI_ENABLE_SANITIZERS:
-    value: "false"
-    description: "Set to 'true' to enable C++ sanitizer builds."
-  RUN_BUMP_VERSION:
-    value: "false"
-    description: "Set to true to run bump version. Only happens on schedule."
-  RUN_NIGHTLY_TESTS:
-    value: "false"
-    description: "Set to true to run nightly tests. Only happens on schedule."
-  RUN_DOCS_PUBLISH:
-    value: "false"
-    description: "Set to true to publish omni docs. Only happens on schedule."
-  RUN_DOCS_BUILD:
-    value: "false"
-    description: "Set to true to build omni docs. Only happens on schedule."
+    OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
+    OSEC_CHECKMARX_ENABLED: 'false'
+    OSEC_GITLAB_SAST_ENABLED: 'false'
+    OSEC_PULSE_TRUFFLEHOG_ENABLED: 'false'
+    OSEC_OMNI_PULSE_ENABLED: 'false'
+    OSEC_README_ENABLED: 'false' # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
+    ALLOW_PUBLISH_DOCS:
+        value: "false"
+        description: "Set to true to publish docs"
+    ALLOW_PUBLISH_TO_LAUNCHER:
+        value: "false"
+        description: "Set to true to for Kit apps that are published to the Launcher. That adds jobs for that."
+    ALLOW_PUBLISH_TO_PACKMAN:
+        value: "true"
+        description: "Set to true to for Kit apps that are published to the Packman. That adds jobs for that."
+    ALLOW_PUBLISH_PYTHON_PACKAGES:
+        value: "true"
+        description: "Set to true to create and publish python packages."
+    ALLOW_PUBLISH_EXTENSIONS:
+        value: "true"
+        description: "Set to true to publish extension updates."
+    ALLOW_PUBLISH_CONTAINERS:
+        value: "true"
+        description: "Set to true to publish containers to NGC."
+    ALLOW_SECURITY_SCAN:
+        value: "false"
+        description: "Set to true to trigger a security scan as a child pipeline (non blocking)"
+    ALLOW_SCHEDULE_PIPELINE:
+        value: "true"
+        description: "Set to 'false' to disable schedule pipeline on a all jobs, useful to set it back on only some jobs."
+    ALLOW_TAG_PIPELINE:
+        value: "true"
+        description: "Set to 'false' to disable tag pipeline on a all push jobs."
+    RUN_EXTENSION_BENCHMARKS:
+        value: "false"
+        description: "Set to true to run benchmarks for kit extensions."
+    RUN_ETM_TESTS:
+        value: "false"
+        description: "Set to true to run ETM tests for kit extensions. Only happens on push (extensions need to be published first)."
+    DATADOG_TEST_VISIBILITY:
+        value: "true"
+        description: "Set to false to skip sending tests results to Datadog (internal)"
+    OMNI_CI_ENABLE_CXX_COVERAGE:
+        value: "false"
+        description: "Set to 'true' to enable C++ code coverage testing."
+    OMNI_CI_ENABLE_SANITIZERS:
+        value: "false"
+        description: "Set to 'true' to enable C++ sanitizer builds."
+    RUN_BUMP_VERSION:
+        value: "false"
+        description: "Set to true to run bump version. Only happens on schedule."
+    RUN_NIGHTLY_TESTS:
+        value: "false"
+        description: "Set to true to run nightly tests. Only happens on schedule."
+    RUN_DOCS_PUBLISH:
+        value: "false"
+        description: "Set to true to publish omni docs. Only happens on schedule."
+    RUN_DOCS_BUILD:
+        value: "false"
+        description: "Set to true to build omni docs. Only happens on schedule."
 
 # ==============================================================================================================
 .check-common:
-  stage: check
-  timeout: 20 minutes
-  interruptible: true
-  rules:
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
-    when: never
-  - !reference [.rules-workflow, rules]
+    stage: check
+    timeout: 20 minutes
+    interruptible: true
+    rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      - !reference [ .rules-workflow, rules ]
 
 .repo-artifacts:
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-    - _repo/repo.log
-    - _repo/repolog*.txt
-
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _repo/repo.log
+          - _repo/repolog*.txt
 
 # ==============================================================================================================
 # Rule for running nightly tests on scheduled pipeline on develop and release branches
 .rules-bump-version:
-  rules:
-  - if: $CI_COMMIT_TITLE =~ /^Bumped version/
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_BUMP_VERSION == "true" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
-
+    rules:
+      - if: $CI_COMMIT_TITLE =~ /^Bumped version/
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_BUMP_VERSION == "true" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
 
 # ==============================================================================================================
 # Rule for running nightly tests on scheduled pipeline on protected and release branches
 .rules-nightly-tests:
-  rules:
-  # allow schedule pipeline if RUN_NIGHTLY_TESTS is set to "true" and on protected and release/* branches
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
-    # allow on bump version
-    changes:
-    - VERSION.md
-    - VERSION
+    rules:
+      # allow schedule pipeline if RUN_NIGHTLY_TESTS is set to "true" and on protected and release/* branches
+      - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        # allow on bump version
+        changes:
+          - VERSION.md
+          - VERSION
 
 .rules-publish-docs:
-  rules:
-  # allow schedule pipeline if RUN_DOCS_PUBLISH is set to "true" and its scheduled
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_PUBLISH == "true"
-    when: always
-  - when: never
+    rules:
+      # allow schedule pipeline if RUN_DOCS_PUBLISH is set to "true" and its scheduled
+      - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_PUBLISH == "true"
+        when: always
+      - when: never
 
 .rules-build-docs:
-  rules:
-  # allow schedule pipeline if RUN_DOCS_BUILD is set to "true" and its scheduled
-  - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
-    when: always
-  - when: never
+    rules:
+      # allow schedule pipeline if RUN_DOCS_BUILD is set to "true" and its scheduled
+      - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
+        when: always
+      - when: never
 
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
 .rules-version-changed:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
-    changes:
-    - VERSION.md
-    - VERSION
-
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        changes:
+          - VERSION.md
+          - VERSION
 
 # ==============================================================================================================
 # Job that ensures that the MR has a JIRA ticket reference in the title
 check-jira-ticket:
-  extends:
-  - .check-common
-  - .check-jira-ticket
-  - .omni_nvks_runner
-  allow_failure: true
-  rules:
-  - !reference [.rules-mr, rules]
-
+    extends:
+      - .check-common
+      - .check-jira-ticket
+      - .omni_nvks_runner
+    allow_failure: true
+    rules:
+      - !reference [ .rules-mr, rules ]
 
 # ==============================================================================================================
 # Job to dump out the current configuration environment variables
 dump-env-vars:
-  extends:
-  - .check-common
-  - .dump-env-vars
-  - .omni_nvks_runner
-  allow_failure: true
-  when: manual
-  rules:
-  - !reference [.rules-workflow, rules]
-
+    extends:
+      - .check-common
+      - .dump-env-vars
+      - .omni_nvks_runner
+    allow_failure: true
+    when: manual
+    rules:
+      - !reference [ .rules-workflow, rules ]
 
 # ==============================================================================================================
 check-code-format:
-  extends:
-  - .check-common
-  - .repo-artifacts
-  - .runner-utility-linux-x86_64
-  variables:
-    GIT_DEPTH: 0 # needed to update copyrights
-  script:
-  - ./repo.sh format --verify
+    extends:
+      - .check-common
+      - .repo-artifacts
+      - .runner-utility-linux-x86_64
+    variables:
+        GIT_DEPTH: 0 # needed to update copyrights
+    script:
+      - ./repo.sh format --verify
 
 # ==============================================================================================================
 check-python-packages:
-  extends:
-  - .check-common
-  - .repo-artifacts
-  - .runner-utility-linux-x86_64
-  script:
-  - ./repo.sh check_python_package_definitions
+    extends:
+      - .check-common
+      - .repo-artifacts
+      - .runner-utility-linux-x86_64
+    script:
+      - ./repo.sh check_python_package_definitions
 
 # ==============================================================================================================
 .build-artifacts:
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-    - _build/**/*.gcno # produced by the coverage build
-    - _build/**/*.log
-    - _build/packages/
-    - _repo/repo.log
-    - _repo/repolog*.txt
-
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/**/*.gcno # produced by the coverage build
+          - _build/**/*.log
+          - _build/packages/
+          - _repo/repo.log
+          - _repo/repolog*.txt
 
 # ==============================================================================================================
 .build-common:
-  stage: build
-  timeout: 3 hours
-  interruptible: true
-  extends:
-  - .build-artifacts
-  retry:
-    max: 2
-    when:
-    - always
-  rules:
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
-    when: never
-  - !reference [.rules-workflow, rules]
-
+    stage: build
+    timeout: 3 hours
+    interruptible: true
+    extends:
+      - .build-artifacts
+    retry:
+        max: 2
+        when:
+          - always
+    rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      - !reference [ .rules-workflow, rules ]
 
 # ==============================================================================================================
 build-linux-x86_64-release:
-  extends:
-  - .build-common
-  - .runner-build-linux-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - set -eu
-  - yum install -y bsdtar
-  - yum install -y rdfind
-  - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.sh ci build -c release
+    extends:
+      - .build-common
+      - .runner-build-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - set -eu
+      - yum install -y bsdtar
+      - yum install -y rdfind
+      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.sh ci build -c release
 
 # ==============================================================================================================
 build-linux-x86_64-debug:
-  extends:
-  - .build-common
-  - .runner-build-linux-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - set -eu
-  - yum install -y bsdtar
-  - yum install -y rdfind
-  - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.sh ci build -c debug
+    extends:
+      - .build-common
+      - .runner-build-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - set -eu
+      - yum install -y bsdtar
+      - yum install -y rdfind
+      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.sh ci build -c debug
 
 # ==============================================================================================================
 build-windows-x86_64-release:
-  extends:
-  - .build-common
-  - .runner-build-windows-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.bat ci build -c release
+    extends:
+      - .build-common
+      - .runner-build-windows-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.bat ci build -c release
 
 # ==============================================================================================================
 build-windows-x86_64-debug:
-  extends:
-  - .build-common
-  - .runner-build-windows-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.bat ci build -c debug
-
-
+    extends:
+      - .build-common
+      - .runner-build-windows-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.bat ci build -c debug
 
 # ==============================================================================================================
 .test-artifacts:
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-    - _build/**/*.log
-    - _build/**/debug/*.xml
-    - _build/**/release/*.xml
-    - _build/coverage.info
-    - _build/coverage/**
-    - _repo/repo.log
-    - _repo/repolog*.txt
-    - _build/**/_testoutput/
-    reports:
-      junit:
-      - _build/**/debug/*.xml
-      - _build/**/release/*.xml
-      - _build/**/_testoutput/results.xml
-
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/**/*.log
+          - _build/**/debug/*.xml
+          - _build/**/release/*.xml
+          - _build/coverage.info
+          - _build/coverage/**
+          - _repo/repo.log
+          - _repo/repolog*.txt
+          - _build/**/_testoutput/
+        reports:
+            junit:
+              - _build/**/debug/*.xml
+              - _build/**/release/*.xml
+              - _build/**/_testoutput/results.xml
 
 # ==============================================================================================================
 .test-common:
-  stage: test
-  timeout: 3 hour
-  interruptible: true
-  extends:
-  - .test-artifacts
-  allow_failure: true
-  rules:
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
-    when: never
-  - !reference [.rules-workflow, rules]
+    stage: test
+    timeout: 3 hour
+    interruptible: true
+    extends:
+      - .test-artifacts
+    allow_failure: true
+    rules:
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      - !reference [ .rules-workflow, rules ]
 
 .test-linux-common:
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-  - ./repo.sh ci test -- --generate-report
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - ./repo.sh ci test -- --generate-report
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
 
 .test-windows-common:
-  after_script:
-  - !reference [.datadog-test-visibility-windows-x86_64, script]
-  - ./repo.bat ci test -- --generate-report
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
+    after_script:
+      - !reference [ .datadog-test-visibility-windows-x86_64, script ]
+      - ./repo.bat ci test -- --generate-report
+    needs:
+      - job: build-windows-x86_64-release
+        artifacts: true
 
 # ==============================================================================================================
 test-linux-x86_64-startuptests:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s startuptests
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s startuptests
 
 test-linux-x86_64-pythontests-deprecated:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b deprecated
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b deprecated
 
 test-linux-x86_64-pythontests-asset:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b asset
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b asset
 
 test-linux-x86_64-pythontests-core:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b core
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b core
 
 test-linux-x86_64-pythontests-examples_tests:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b examples_tests
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b examples_tests
 
 test-linux-x86_64-pythontests-replicator:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b replicator
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b replicator
 
 test-linux-x86_64-pythontests-ros:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b ros
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b ros
 
 test-linux-x86_64-pythontests-sensors:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b sensors
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b sensors
 
 test-linux-x86_64-pythontests-utils_gui:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b utils_gui
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b utils_gui
 
 test-linux-x86_64-pythontests-robot:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b robot
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b robot
 
 test-linux-x86_64-pythontests-other:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s pythontests -b other
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s pythontests -b other
 
 test-linux-x86_64-selectortests:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s selectortests
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s selectortests
 
 test-linux-x86_64-warmuptests:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s warmuptests
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s warmuptests
 
 test-linux-x86_64-postinstalltests:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s postinstalltests
-
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s postinstalltests
 
 test-linux-x86_64-nativepythontests-api:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s nativepythontests -b api --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s nativepythontests -b api --generate-report
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
 
 test-linux-x86_64-nativepythontests-replicator:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s nativepythontests -b replicator --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s nativepythontests -b replicator --generate-report
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
 
 test-linux-x86_64-nativepythontests-testing:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s nativepythontests -b testing --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s nativepythontests -b testing --generate-report
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
 
 test-linux-x86_64-benchmarks-1-gpu:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - export ISAAC_TEST_MODE=1
-  - ./repo.sh ci test -- -s benchmarks --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - export ISAAC_TEST_MODE=1
+      - ./repo.sh ci test -- -s benchmarks --generate-report
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
 
 test-linux-x86_64-benchmarks-2-gpu:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu_2x
-  script:
-  - export ISAAC_TEST_MODE=1
-  - ./repo.sh ci test -- -s benchmarks --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu_2x
+    script:
+      - export ISAAC_TEST_MODE=1
+      - ./repo.sh ci test -- -s benchmarks --generate-report
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
 
 test-linux-x86_64-benchmarks-4-gpu:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu_4x
-  script:
-  - export ISAAC_TEST_MODE=1
-  - ./repo.sh ci test -- -s benchmarks --generate-report
-  after_script:
-  - !reference [.datadog-test-visibility-linux-x86_64, script]
-
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu_4x
+    script:
+      - export ISAAC_TEST_MODE=1
+      - ./repo.sh ci test -- -s benchmarks --generate-report
+    after_script:
+      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
 
 test-linux-x86_64-internalpythontests-1:
-  extends:
-  - .test-common
-  - .test-linux-common
-  - .install-linux-test-packages
-  - .runner-test-linux-x86_64-gpu
-  - .omni_nvks_gpu
-  script:
-  - ./repo.sh ci test -- -s internalpythontests -b 1
-  rules:
-  - !reference [.rules-nightly-tests, rules]
+    extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s internalpythontests -b 1
+    rules:
+      - !reference [ .rules-nightly-tests, rules ]
 
 test-windows-x86_64-startuptests:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s startuptests
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s startuptests
 
 test-windows-x86_64-pythontests-deprecated:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b deprecated
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b deprecated
 
 test-windows-x86_64-pythontests-asset:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b asset
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b asset
 
 test-windows-x86_64-pythontests-core:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b core
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b core
 
 test-windows-x86_64-pythontests-examples_tests:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b examples_tests
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b examples_tests
 
 test-windows-x86_64-pythontests-replicator:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b replicator
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b replicator
 
 test-windows-x86_64-pythontests-ros:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b ros
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b ros
 
 test-windows-x86_64-pythontests-sensors:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b sensors
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b sensors
 
 test-windows-x86_64-pythontests-utils_gui:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b utils_gui
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b utils_gui
 
 test-windows-x86_64-pythontests-robot:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b robot
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b robot
 
 test-windows-x86_64-pythontests-other:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s pythontests -b other
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s pythontests -b other
 
 test-windows-x86_64-selectortests:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s selectortests
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s selectortests
 
 test-windows-x86_64-warmuptests:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s warmuptests
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s warmuptests
 
 test-windows-x86_64-postinstalltests:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s postinstalltests
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s postinstalltests
 
 test-windows-x86_64-internalpythontests-1:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s internalpythontests -b 1
-  rules:
-  - !reference [.rules-nightly-tests, rules]
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s internalpythontests -b 1
+    rules:
+      - !reference [ .rules-nightly-tests, rules ]
 
 test-windows-x86_64-nativepythontests-api:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s nativepythontests -b api --generate-report
-  rules:
-  - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s nativepythontests -b api --generate-report
+    rules:
+      - !reference [ .rules-nightly-tests, rules ] #only run linux ones per MR and these nightly
 
 test-windows-x86_64-nativepythontests-replicator:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s nativepythontests -b replicator --generate-report
-  rules:
-  - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s nativepythontests -b replicator --generate-report
+    rules:
+      - !reference [ .rules-nightly-tests, rules ] #only run linux ones per MR and these nightly
 
 test-windows-x86_64-nativepythontests-testing:
-  extends:
-  - .test-common
-  - .test-windows-common
-  - .runner-test-windows-x86_64-gpu
-  script:
-  - ./repo.bat ci test -- -s nativepythontests -b testing --generate-report
-  rules:
-  - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
-
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .runner-test-windows-x86_64-gpu
+    script:
+      - ./repo.bat ci test -- -s nativepythontests -b testing --generate-report
+    rules:
+      - !reference [ .rules-nightly-tests, rules ] #only run linux ones per MR and these nightly
 
 # ==============================================================================================================
 .deploy-artifacts:
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-    - _build/packages/python/requirements.txt # produced by repo_python_package
-    - _build/**/*.log
-    - _repo/repo.log
-    - _repo/repolog*.txt
-    - _logs/**/*.log
-
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/packages/python/requirements.txt # produced by repo_python_package
+          - _build/**/*.log
+          - _repo/repo.log
+          - _repo/repolog*.txt
+          - _logs/**/*.log
 
 # ==============================================================================================================
 .deploy-common:
-  stage: deploy
-  extends:
-  - .deploy-artifacts
-  - .osec:vault:v3:prod_token_job
-  timeout: 3 hour
-  interruptible: false
-  before_script:
-  - set -eu
-  - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
-  - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
-  - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
-  rules:
-  - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
-    when: never
+    stage: deploy
+    extends:
+      - .deploy-artifacts
+      - .osec:vault:v3:prod_token_job
+    timeout: 3 hour
+    interruptible: false
+    before_script:
+      - set -eu
+      - !reference [ .osec:vault:v3:linux, codesign:perform_vault_requests ]
+      - !reference [ .osec:vault:v3:linux, packman_s3:perform_vault_requests ]
+      - !reference [ .osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests ]
+    rules:
+      - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
+        when: never
 
 pages:
-  stage: pages
-  extends:
-  - .build-common
-  - .runner-utility-linux-x86_64
-  script:
-  - mkdir .public
-  - ls
-  - export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
-  # - curl -o ./docs.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-docs
-  # - unzip docs.zip
-  - mv isaacsim-docs/_build/docs/isaac-sim/latest/* .public/
-  - ls .public
-  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
-  - unzip artifact.zip
-  - 7z x _build/packages/docs@*.7z -oisaacsim
-  - mkdir -p .public/py/
-  - mv isaacsim .public/py/
-  - ls .public/py/isaacsim
-  - mv .public public
-  artifacts:
-    paths:
-    - public
-  rules:
-  - !reference [.rules-publish-docs, rules]
-  needs:
-  - job: build-docs
-    artifacts: true
+    stage: pages
+    extends:
+      - .build-common
+      - .runner-utility-linux-x86_64
+    script:
+      - mkdir .public
+      - ls
+      - export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
+      # - curl -o ./docs.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-docs
+      # - unzip docs.zip
+      - mv isaacsim-docs/_build/docs/isaac-sim/latest/* .public/
+      - ls .public
+      - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
+      - unzip artifact.zip
+      - 7z x _build/packages/docs@*.7z -oisaacsim
+      - mkdir -p .public/py/
+      - mv isaacsim .public/py/
+      - ls .public/py/isaacsim
+      - mv .public public
+    artifacts:
+        paths:
+          - public
+    rules:
+      - !reference [ .rules-publish-docs, rules ]
+    needs:
+      - job: build-docs
+        artifacts: true
 
 build-docs:
-  extends:
-  - .build-common
-  - .runner-utility-linux-x86_64
-  - .osec:vault:v3:prod_token_job
-  timeout: 3 hours
-  before_script:
-  - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-  script:
-  # - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
-  # - echo "Build log is captured in the build logs. Running build..."
-  # - pushd omni-docs
-  # - ./repo docs --warn-as-error=0 > ../build_log_full.txt
-  # - ./repo docs --stage sphinx > ../build_log_sphinx.txt
-  # - ./repo docs --stage post > ../build_log_post.txt
-  # - popd
-  - git clone -q --depth=1 -b main --single-branch https://gitlab-master.nvidia.com/omniverse/isaac/isaacsim-docs.git
-  - echo "Build log is captured in the build logs. Running build..."
-  - pushd isaacsim-docs
-  - ./repo docs > ../build_log_full.txt
-  - popd
+    extends:
+      - .build-common
+      - .runner-utility-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    timeout: 3 hours
+    before_script:
+      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+    script:
+      # - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
+      # - echo "Build log is captured in the build logs. Running build..."
+      # - pushd omni-docs
+      # - ./repo docs --warn-as-error=0 > ../build_log_full.txt
+      # - ./repo docs --stage sphinx > ../build_log_sphinx.txt
+      # - ./repo docs --stage post > ../build_log_post.txt
+      # - popd
+      - git clone -q --depth=1 -b main --single-branch https://gitlab-master.nvidia.com/omniverse/isaac/isaacsim-docs.git
+      - echo "Build log is captured in the build logs. Running build..."
+      - pushd isaacsim-docs
+      - ./repo docs > ../build_log_full.txt
+      - popd
 
-  rules:
-  - !reference [.rules-build-docs, rules]
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-    - isaacsim-docs/_build/docs/isaac-sim/latest
-    - build_log_full.txt
-    # - build_log_sphinx.txt
-    # - build_log_post.txt
+    rules:
+      - !reference [ .rules-build-docs, rules ]
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - isaacsim-docs/_build/docs/isaac-sim/latest
+          - build_log_full.txt
+          # - build_log_sphinx.txt
+          # - build_log_post.txt
 
 
-# ==============================================================================================================
+          # ==============================================================================================================
 .benchmark-artifacts:
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-    - '_testoutput/benchmark.*.json'
-    - .reggie-out/
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - '_testoutput/benchmark.*.json'
+          - .reggie-out/
 
 # ==============================================================================================================
 .benchmark-common:
-  stage: test
-  timeout: 1 hour
-  interruptible: true
-  extends:
-  - .benchmark-artifacts
-  variables:
-    MAX_RETRIES: 2
-  retry: 2
-  rules:
-  - if: $RUN_EXTENSION_BENCHMARKS != "true"
-    when: never
-  - !reference [.rules-workflow, rules]
-
+    stage: test
+    timeout: 1 hour
+    interruptible: true
+    extends:
+      - .benchmark-artifacts
+    variables:
+        MAX_RETRIES: 2
+    retry: 2
+    rules:
+      - if: $RUN_EXTENSION_BENCHMARKS != "true"
+        when: never
+      - !reference [ .rules-workflow, rules ]
 
 # ==============================================================================================================
 benchmark-linux-x86_64:
-  extends:
-  - .benchmark-common
-  tags:
-  - instance/gitlab-gtl-performance
-  - omni-perf-only/linux
-  variables:
-    MACHINE_OS: "ubuntu22"
-    MACHINE_KIND: "AMD EPYC 7313P"
-    MACHINE_DRIVER: "NVIDIA-Linux-x86_64-525.85.05"
-  script:
-  - ./repo.sh bench
-  - !reference [.reggie_detect_ubuntu, commands]
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-
+    extends:
+      - .benchmark-common
+    tags:
+      - instance/gitlab-gtl-performance
+      - omni-perf-only/linux
+    variables:
+        MACHINE_OS: "ubuntu22"
+        MACHINE_KIND: "AMD EPYC 7313P"
+        MACHINE_DRIVER: "NVIDIA-Linux-x86_64-525.85.05"
+    script:
+      - ./repo.sh bench
+      - !reference [ .reggie_detect_ubuntu, commands ]
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
 
 # ==============================================================================================================
 benchmark-windows-x86_64:
-  extends:
-  - .benchmark-common
-  tags:
-  - instance/gitlab-gtl-performance
-  - omni-perf-only/windows
-  variables:
-    MACHINE_OS: "windows10-20H2"
-    MACHINE_KIND: "AMD EPYC 7313P"
-    MACHINE_DRIVER: "537.70-sandbag_UDA_QuadroWeb_Public-wddm2-x64-dch-AttestedDriverSigning"
-  script:
-  - ./repo.bat bench
-  - !reference [.reggie_detect_windows, commands]
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
-
-
+    extends:
+      - .benchmark-common
+    tags:
+      - instance/gitlab-gtl-performance
+      - omni-perf-only/windows
+    variables:
+        MACHINE_OS: "windows10-20H2"
+        MACHINE_KIND: "AMD EPYC 7313P"
+        MACHINE_DRIVER: "537.70-sandbag_UDA_QuadroWeb_Public-wddm2-x64-dch-AttestedDriverSigning"
+    script:
+      - ./repo.bat bench
+      - !reference [ .reggie_detect_windows, commands ]
+    needs:
+      - job: build-windows-x86_64-release
+        artifacts: true
 
 # autoupdate-kit:
 #   rules:
@@ -998,254 +976,252 @@ benchmark-windows-x86_64:
 #    [repo_publish_exts]
 #    platforms = ["linux-x86_64"]
 verify-publish-extensions:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ./repo.sh build --fetch-only -rd
-  - ./repo.sh publish_exts -a --from-package -c release --verify
-  - ./repo.sh publish_exts -a --from-package -c debug --verify
-  # - ./repo.sh ci publish_extensions
-  needs:
-  # We set all dependencies as optional just in case a platform is not needed,
-  # then the yml file can override both build/test on one platform and deploy will still work.
-  - job: build-windows-x86_64-release
-    artifacts: true
-    optional: false
-  - job: build-linux-x86_64-release
-    artifacts: true
-    optional: false
-  - job: build-windows-x86_64-debug
-    artifacts: true
-    optional: false
-  - job: build-linux-x86_64-debug
-    artifacts: true
-    optional: false
-  #   - job: test-windows-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  #   - job: test-linux-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  rules:
-  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-push, rules]
-  # - !reference [.rules-version-changed, rules]
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ./repo.sh build --fetch-only -rd
+      - ./repo.sh publish_exts -a --from-package -c release --verify
+      - ./repo.sh publish_exts -a --from-package -c debug --verify
+      # - ./repo.sh ci publish_extensions
+    needs:
+      # We set all dependencies as optional just in case a platform is not needed,
+      # then the yml file can override both build/test on one platform and deploy will still work.
+      - job: build-windows-x86_64-release
+        artifacts: true
+        optional: false
+      - job: build-linux-x86_64-release
+        artifacts: true
+        optional: false
+      - job: build-windows-x86_64-debug
+        artifacts: true
+        optional: false
+      - job: build-linux-x86_64-debug
+        artifacts: true
+        optional: false
+      #   - job: test-windows-x86_64-startuptests
+      #     artifacts: false
+      #     optional: true
+      #   - job: test-linux-x86_64-startuptests
+      #     artifacts: false
+      #     optional: true
+    rules:
+      - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - !reference [ .rules-push, rules ]
+      # - !reference [.rules-version-changed, rules]
 
 
-# ==============================================================================================================
-# By default, all platforms (windows-x86_64, linux-x86_64) are published,
-# but this can be changed in repo.toml config if necessary:
-#    [repo_publish_exts]
-#    platforms = ["linux-x86_64"]
-# Currently, extensions are published frome the 'develop' branch only
+      # ==============================================================================================================
+      # By default, all platforms (windows-x86_64, linux-x86_64) are published,
+      # but this can be changed in repo.toml config if necessary:
+      #    [repo_publish_exts]
+      #    platforms = ["linux-x86_64"]
+      # Currently, extensions are published frome the 'develop' branch only
 publish-extensions:
-  extends:
-  - .deploy-common
-  - .runner-build-linux-x86_64
-  script:
-  - ./repo.sh build --fetch-only -rd
-  - ./repo.sh publish_exts -a --from-package -c release
-  - ./repo.sh publish_exts -a --from-package -c debug
-  needs:
-  # We set all dependencies as optional just in case a platform is not needed,
-  # then the yml file can override both build/test on one platform and deploy will still work.
-  - job: sign-windows-x86_64-release
-    artifacts: true
-    optional: false
-  - job: build-linux-x86_64-release
-    artifacts: true
-    optional: false
-  - job: build-windows-x86_64-debug
-    artifacts: true
-    optional: false
-  - job: build-linux-x86_64-debug
-    artifacts: true
-    optional: false
-  rules:
-  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-
+    extends:
+      - .deploy-common
+      - .runner-build-linux-x86_64
+    script:
+      - ./repo.sh build --fetch-only -rd
+      - ./repo.sh publish_exts -a --from-package -c release
+      - ./repo.sh publish_exts -a --from-package -c debug
+    needs:
+      # We set all dependencies as optional just in case a platform is not needed,
+      # then the yml file can override both build/test on one platform and deploy will still work.
+      - job: sign-windows-x86_64-release
+        artifacts: true
+        optional: false
+      - job: build-linux-x86_64-release
+        artifacts: true
+        optional: false
+      - job: build-windows-x86_64-debug
+        artifacts: true
+        optional: false
+      - job: build-linux-x86_64-debug
+        artifacts: true
+        optional: false
+    rules:
+      - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - if: '$CI_COMMIT_BRANCH != "develop"'
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 
 # ==============================================================================================================
 publish-python-packages-linux:
-  extends:
-  - .deploy-common
-  - .runner-build-linux-x86_64
-  script:
-  - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.linux-x86_64.release.7z --dst _build/linux-x86_64/release
-  - ls _build/linux-x86_64/release
-  - ./repo.sh python_package --create
-  - ./repo.sh comment_archive_deps
-  - ./repo.sh python_package --wheel
-  - ls _build/packages/dist
-  - ./repo.sh python_package --publish
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-  rules:
-  - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .deploy-common
+      - .runner-build-linux-x86_64
+    script:
+      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.linux-x86_64.release.7z --dst _build/linux-x86_64/release
+      - ls _build/linux-x86_64/release
+      - ./repo.sh python_package --create
+      - ./repo.sh comment_archive_deps
+      - ./repo.sh python_package --wheel
+      - ls _build/packages/dist
+      - ./repo.sh python_package --publish
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
+    rules:
+      - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 
 publish-python-packages-windows:
-  extends:
-  - .deploy-common
-  - .runner-build-windows-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
-  - ls _build/windows-x86_64/release
-  - ./repo.bat python_package --create
-  - ./repo.bat comment_archive_deps
-  - ./repo.bat python_package --wheel
-  - ls _build/packages/dist
-  - ./repo.bat python_package --publish
-  needs:
-  - job: sign-windows-x86_64-release
-    artifacts: true
-  rules:
-  - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .deploy-common
+      - .runner-build-windows-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
+      - ls _build/windows-x86_64/release
+      - ./repo.bat python_package --create
+      - ./repo.bat comment_archive_deps
+      - ./repo.bat python_package --wheel
+      - ls _build/packages/dist
+      - ./repo.bat python_package --publish
+    needs:
+      - job: sign-windows-x86_64-release
+        artifacts: true
+    rules:
+      - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 
 verify-publish-python-packages-linux:
-  interruptible: true
-  allow_failure: true
-  extends:
-  - .deploy-common
-  - .runner-test-linux-x86_64-gpu
-  timeout: 5 hour
-  script:
-  # install Python 3.10
-  - sudo apt update
-  - sudo apt -y install python3.10-venv
-  # create and source a virtual environment
-  - python3.10 -m venv env_isaacsim
-  - source env_isaacsim/bin/activate
-  # upgrade pip and install Isaac Sim - Python packages
-  - pip install --upgrade pip
-  - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
-  # accept EULA
-  - export OMNI_KIT_ACCEPT_EULA=YES
-  # run tests
-  - python -c "import isaacsim"
-  - isaacsim isaacsim.exp.full --/app/quitAfter=100 --no-window
-  needs:
-  - job: publish-python-packages-linux
-    artifacts: true
-  rules:
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    interruptible: true
+    allow_failure: true
+    extends:
+      - .deploy-common
+      - .runner-test-linux-x86_64-gpu
+    timeout: 5 hour
+    script:
+      # install Python 3.10
+      - sudo apt update
+      - sudo apt -y install python3.10-venv
+      # create and source a virtual environment
+      - python3.10 -m venv env_isaacsim
+      - source env_isaacsim/bin/activate
+      # upgrade pip and install Isaac Sim - Python packages
+      - pip install --upgrade pip
+      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+      # accept EULA
+      - export OMNI_KIT_ACCEPT_EULA=YES
+      # run tests
+      - python -c "import isaacsim"
+      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --no-window
+    needs:
+      - job: publish-python-packages-linux
+        artifacts: true
+    rules:
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 
 verify-publish-python-packages-windows:
-  interruptible: true
-  allow_failure: true
-  extends:
-  - .deploy-common
-  - .runner-test-windows-x86_64-gpu
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  timeout: 5 hour
-  script:
-  # install Python 3.10
-  - curl -o python-3.10.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
-  - cmd /c start /wait python-3.10.exe /quiet TargetDir=C:\Python310
-  # create and source a virtual environment
-  - C:\Python310\python.exe -m venv C:\env_isaacsim
-  - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
-  - C:\env_isaacsim\Scripts\activate.ps1
-  # install Isaac Sim - Python packages
-  - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
-  # accept EULA
-  - $env:OMNI_KIT_ACCEPT_EULA = "YES"
-  # run tests
-  - python -c "import isaacsim"
-  - isaacsim isaacsim.exp.full --/app/quitAfter=100 --no-window
-  needs:
-  - job: publish-python-packages-windows
-    artifacts: true
-  rules:
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    interruptible: true
+    allow_failure: true
+    extends:
+      - .deploy-common
+      - .runner-test-windows-x86_64-gpu
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    timeout: 5 hour
+    script:
+      # install Python 3.10
+      - curl -o python-3.10.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
+      - cmd /c start /wait python-3.10.exe /quiet TargetDir=C:\Python310
+      # create and source a virtual environment
+      - C:\Python310\python.exe -m venv C:\env_isaacsim
+      - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
+      - C:\env_isaacsim\Scripts\activate.ps1
+      # install Isaac Sim - Python packages
+      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+      # accept EULA
+      - $env:OMNI_KIT_ACCEPT_EULA = "YES"
+      # run tests
+      - python -c "import isaacsim"
+      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --no-window
+    needs:
+      - job: publish-python-packages-windows
+        artifacts: true
+    rules:
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 
 # ==============================================================================================================
 publish-docs:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  variables:
-    # Required access tokens for publishing to S3
-    AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
-  needs: []
-  script:
-  - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/release/4.2/download?job=build-linux-x86_64-release
-  - unzip artifact.zip
-  - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
-  - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
-  - ./repo.sh docs --config release --stage publish --edition production
-  rules:
-  - if: $ALLOW_PUBLISH_DOCS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    variables:
+        # Required access tokens for publishing to S3
+        AWS_ACCESS_KEY_ID: $AWS_OMNIVERSEDOCS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY: $AWS_OMNIVERSEDOCS_SECRET_ACCESS_KEY
+    needs: []
+    script:
+      - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/release/4.2/download?job=build-linux-x86_64-release
+      - unzip artifact.zip
+      - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
+      - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
+      - ./repo.sh docs --config release --stage publish --edition production
+    rules:
+      - if: $ALLOW_PUBLISH_DOCS != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 
 # ==============================================================================================================
 publish-to-launcher:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ls _build/packages/
-  - ./repo.sh publish_launcher
-  needs:
-  - job: sign-windows-x86_64-release
-    artifacts: true
-  - job: build-linux-x86_64-release
-    artifacts: true
-  #   - job: test-windows-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  #   - job: test-linux-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  retry:
-    max: 2
-    when:
-    - always
-  rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ls _build/packages/
+      - ./repo.sh publish_launcher
+    needs:
+      - job: sign-windows-x86_64-release
+        artifacts: true
+      - job: build-linux-x86_64-release
+        artifacts: true
+      #   - job: test-windows-x86_64-startuptests
+      #     artifacts: false
+      #     optional: true
+      #   - job: test-linux-x86_64-startuptests
+      #     artifacts: false
+      #     optional: true
+    retry:
+        max: 2
+        when:
+          - always
+    rules:
+      - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 #   allow_failure: true
 
 #   extends:
@@ -1267,8 +1243,8 @@ publish-to-launcher:
 
 # ==============================================================================================================
 release-new-version:
-  rules:
-  - when: never
+    rules:
+      - when: never
 
 #   extends:
 #   - .deploy-common
@@ -1287,8 +1263,8 @@ release-new-version:
 # update Kit SDK and extensions, merge master, typically done in daily branch
 # set AUTOUPDATE_KIT=true for scheduled pipeline to run
 autoupdate-kit:
-  rules:
-  - when: never
+    rules:
+      - when: never
 #   extends:
 #   - .deploy-common
 #   - .runner-utility-linux-x86_64
@@ -1304,374 +1280,365 @@ autoupdate-kit:
 
 # ==============================================================================================================
 bump-version:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ./repo.sh bump_version
-  needs: []
-  rules:
-  - if: $RUN_BUMP_VERSION != "true"
-    when: never
-  - !reference [.rules-bump-version, rules]
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ./repo.sh bump_version
+    needs: []
+    rules:
+      - if: $RUN_BUMP_VERSION != "true"
+        when: never
+      - !reference [ .rules-bump-version, rules ]
 
 # ==============================================================================================================
 sign-windows-x86_64-release:
-  timeout: 3 hour
-  extends:
-  - .build-common
-  - .runner-build-windows-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'codesign:perform_vault_requests']
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  script:
-  - ls _build/packages/
-  - mkdir _unsignedpackages
-  - mkdir _signedpackages
-  - mv -Force _build/packages/*windows-x86_64.release.7z _unsignedpackages/
-  - ./repo.bat codesign
-  - mv -Force _signedpackages/*windows-x86_64.release.7z _build/packages/
-  - ls _build/packages/
-  needs:
-  - job: build-windows-x86_64-release
-    artifacts: true
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    timeout: 3 hour
+    extends:
+      - .build-common
+      - .runner-build-windows-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'codesign:perform_vault_requests' ]
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ls _build/packages/
+      - mkdir _unsignedpackages
+      - mkdir _signedpackages
+      - mv -Force _build/packages/*windows-x86_64.release.7z _unsignedpackages/
+      - ./repo.bat codesign
+      - mv -Force _signedpackages/*windows-x86_64.release.7z _build/packages/
+      - ls _build/packages/
+    needs:
+      - job: build-windows-x86_64-release
+        artifacts: true
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 #   allow_failure: true
 
 
 # ==============================================================================================================
 internal-build-linux-x86_64-release:
-  extends:
-  - .build-common
-  - .runner-build-linux-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - set -eu
-  - yum install -y bsdtar
-  - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.sh build -r --no-docker
-  - ./repo.sh package -m isaac-sim-internal-standalone -c release
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .build-common
+      - .runner-build-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - set -eu
+      - yum install -y bsdtar
+      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.sh build -r --no-docker
+      - ./repo.sh package -m isaac-sim-internal-standalone -c release
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: '$CI_COMMIT_BRANCH != "develop"'
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 #   allow_failure: true
 
 
 # ==============================================================================================================
 internal-build-windows-x86_64-release:
-  extends:
-  - .build-common
-  - .runner-build-windows-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.bat build -r
-  - ./repo.bat package -m isaac-sim-internal-standalone -c release
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .build-common
+      - .runner-build-windows-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.bat build -r
+      - ./repo.bat package -m isaac-sim-internal-standalone -c release
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: '$CI_COMMIT_BRANCH != "develop"'
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 #   allow_failure: true
 
 
 # ==============================================================================================================
 internal-publish-to-packman:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ls _build/packages/
-  - ./repo.sh publish_internal_packages
-  needs:
-  - job: internal-build-linux-x86_64-release
-    artifacts: true
-  - job: internal-build-windows-x86_64-release
-    artifacts: true
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ls _build/packages/
+      - ./repo.sh publish_internal_packages
+    needs:
+      - job: internal-build-linux-x86_64-release
+        artifacts: true
+      - job: internal-build-windows-x86_64-release
+        artifacts: true
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: '$CI_COMMIT_BRANCH != "develop"'
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 #   allow_failure: true
 
 
 # ==============================================================================================================
 internal-publish-container:
-  extends:
-  - .deploy-common
-  - .omni_nvks_runner_with_docker
-  variables:
-    APP_NAME: "isaac-sim-internal"
-    FAMILY_NAME: "gl"
-  before_script:
-  - docker version
-  - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-  - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
-  - docker login nvcr.io
-  script:
-  - ./tools/container/publish_container.sh
-  needs:
-  - job: internal-build-linux-x86_64-release
-    artifacts: true
-  retry:
-    max: 2
-    when:
-    - always
-  rules:
-  - if: $ALLOW_PUBLISH_CONTAINERS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .deploy-common
+      - .omni_nvks_runner_with_docker
+    variables:
+        APP_NAME: "isaac-sim-internal"
+        FAMILY_NAME: "gl"
+    before_script:
+      - docker version
+      - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
+      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
+      - docker login nvcr.io
+    script:
+      - ./tools/container/publish_container.sh
+    needs:
+      - job: internal-build-linux-x86_64-release
+        artifacts: true
+    retry:
+        max: 2
+        when:
+          - always
+    rules:
+      - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: '$CI_COMMIT_BRANCH != "develop"'
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
 #   allow_failure: true
 
 
 # ==============================================================================================================
 publish-container:
-  extends:
-  - .deploy-common
-  - .omni_nvks_runner_with_docker
-  variables:
-    APP_NAME: "isaac-sim"
-    FAMILY_NAME: "gl"
-  before_script:
-  - docker version
-  - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-  - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
-  - docker login nvcr.io
-  script:
-  - ./tools/container/publish_container.sh
-  needs:
-  - job: build-linux-x86_64-release
-    artifacts: true
-  retry:
-    max: 2
-    when:
-    - always
-  rules:
-  - if: $ALLOW_PUBLISH_CONTAINERS != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
-
+    extends:
+      - .deploy-common
+      - .omni_nvks_runner_with_docker
+    variables:
+        APP_NAME: "isaac-sim"
+        FAMILY_NAME: "gl"
+    before_script:
+      - docker version
+      - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
+      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
+      - docker login nvcr.io
+    script:
+      - ./tools/container/publish_container.sh
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
+    retry:
+        max: 2
+        when:
+          - always
+    rules:
+      - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 binaryscan-build-linux-x86_64-release:
-  extends:
-  - .build-common
-  - .runner-build-linux-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - set -eu
-  - yum install -y bsdtar
-  - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.sh build -r --no-docker
-  - ./repo.sh package -m isaac-sim-binaryscan -c release
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .build-common
+      - .runner-build-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - set -eu
+      - yum install -y bsdtar
+      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.sh build -r --no-docker
+      - ./repo.sh package -m isaac-sim-binaryscan -c release
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 binaryscan-build-windows-x86_64-release:
-  extends:
-  - .build-common
-  - .runner-build-windows-x86_64
-  - .osec:vault:v3:prod_token_job
-  before_script:
-  - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-  script:
-  - ./repo.bat build -r
-  - ./repo.bat package -m isaac-sim-binaryscan -c release
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .build-common
+      - .runner-build-windows-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+    script:
+      - ./repo.bat build -r
+      - ./repo.bat package -m isaac-sim-binaryscan -c release
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 binaryscan-publish-to-packman:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ls _build/packages/
-  - ./repo.sh publish_binaryscan_packages
-  needs:
-  - job: binaryscan-build-linux-x86_64-release
-    artifacts: true
-  - job: binaryscan-build-windows-x86_64-release
-    artifacts: true
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ls _build/packages/
+      - ./repo.sh publish_binaryscan_packages
+    needs:
+      - job: binaryscan-build-linux-x86_64-release
+        artifacts: true
+      - job: binaryscan-build-windows-x86_64-release
+        artifacts: true
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 # Run only on release branches
 isaac-sim-assets-1:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ./tools/ci/build-and-packaging/isaac-sim-assets-1/step.sh
-  - ./repo.sh publish_assets_launcher_1
-  needs: []
-  rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-    when: manual
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-1/step.sh
+      - ./repo.sh publish_assets_launcher_1
+    needs: []
+    rules:
+      - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+        when: manual
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 # Run only on release branches
 isaac-sim-assets-2:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ./tools/ci/build-and-packaging/isaac-sim-assets-2/step.sh
-  - ./repo.sh publish_assets_launcher_2
-  needs: []
-  rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-    when: manual
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-2/step.sh
+      - ./repo.sh publish_assets_launcher_2
+    needs: []
+    rules:
+      - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+        when: manual
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 # Run only on release branches
 isaac-sim-assets-3:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ./tools/ci/build-and-packaging/isaac-sim-assets-3/step.sh
-  - ./repo.sh publish_assets_launcher_3
-  needs: []
-  rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-    when: manual
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-3/step.sh
+      - ./repo.sh publish_assets_launcher_3
+    needs: []
+    rules:
+      - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+        when: manual
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 # Run only on release branches
 isaac-sim-assets-4:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ./tools/ci/build-and-packaging/isaac-sim-assets-4/step.sh
-  - ./repo.sh publish_assets_launcher_4
-  needs: []
-  rules:
-  - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
-    when: manual
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
-  allow_failure: true
-
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-4/step.sh
+      - ./repo.sh publish_assets_launcher_4
+    needs: []
+    rules:
+      - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "gitlab-ci")
+        when: manual
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+    allow_failure: true
 
 # ==============================================================================================================
 publish-to-packman:
-  extends:
-  - .deploy-common
-  - .runner-utility-linux-x86_64
-  script:
-  - ls _build/packages/
-  - ./repo.sh publish_packages
-  needs:
-  - job: sign-windows-x86_64-release
-    artifacts: true
-  - job: build-linux-x86_64-release
-    artifacts: true
-  #   - job: test-windows-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  #   - job: test-linux-x86_64-startuptests
-  #     artifacts: false
-  #     optional: true
-  retry:
-    max: 2
-    when:
-    - always
-  rules:
-  - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-    when: never
-  - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-    when: never
-  - !reference [.rules-version-changed, rules]
-  - !reference [.rules-push-manual, rules]
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+    script:
+      - ls _build/packages/
+      - ./repo.sh publish_packages
+    needs:
+      - job: sign-windows-x86_64-release
+        artifacts: true
+      - job: build-linux-x86_64-release
+        artifacts: true
+      #   - job: test-windows-x86_64-startuptests
+      #     artifacts: false
+      #     optional: true
+      #   - job: test-linux-x86_64-startuptests
+      #     artifacts: false
+      #     optional: true
+    retry:
+        max: 2
+        when:
+          - always
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - !reference [ .rules-version-changed, rules ]
+      - !reference [ .rules-push-manual, rules ]
+
 #   allow_failure: true
 
 #   extends:
