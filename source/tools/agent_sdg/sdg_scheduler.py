@@ -77,7 +77,7 @@ class AgentSDG:
 
         # Wait for data generation callback
         try:
-            await self._sim_manager.run_data_generation_async()
+            await self._sim_manager.run_data_generation_async(will_wait_until_complete=True)
         finally:
             # [Optional] Save the scene
             if self.save_usd:
