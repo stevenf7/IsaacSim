@@ -152,7 +152,7 @@ variables:
         when: never
       - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
         when: never
-      - !reference [ .rules-workflow, rules ]
+      - !reference [.rules-workflow, rules]
 
 .repo-artifacts:
     artifacts:
@@ -214,7 +214,7 @@ check-jira-ticket:
       - .omni_nvks_runner
     allow_failure: true
     rules:
-      - !reference [ .rules-mr, rules ]
+      - !reference [.rules-mr, rules]
 
 # ==============================================================================================================
 # Job to dump out the current configuration environment variables
@@ -226,7 +226,7 @@ dump-env-vars:
     allow_failure: true
     when: manual
     rules:
-      - !reference [ .rules-workflow, rules ]
+      - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 check-code-format:
@@ -276,7 +276,7 @@ check-python-packages:
         when: never
       - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
         when: never
-      - !reference [ .rules-workflow, rules ]
+      - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 build-linux-x86_64-release:
@@ -288,7 +288,7 @@ build-linux-x86_64-release:
       - set -eu
       - yum install -y bsdtar
       - yum install -y rdfind
-      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh ci build -c release
 
@@ -302,7 +302,7 @@ build-linux-x86_64-debug:
       - set -eu
       - yum install -y bsdtar
       - yum install -y rdfind
-      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh ci build -c debug
 
@@ -313,7 +313,7 @@ build-windows-x86_64-release:
       - .runner-build-windows-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.bat ci build -c release
 
@@ -324,7 +324,7 @@ build-windows-x86_64-debug:
       - .runner-build-windows-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.bat ci build -c debug
 
@@ -359,11 +359,11 @@ build-windows-x86_64-debug:
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
         when: never
-      - !reference [ .rules-workflow, rules ]
+      - !reference [.rules-workflow, rules]
 
 .test-linux-common:
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
       - ./repo.sh ci test -- --generate-report
     needs:
       - job: build-linux-x86_64-release
@@ -371,7 +371,7 @@ build-windows-x86_64-debug:
 
 .test-windows-common:
     after_script:
-      - !reference [ .datadog-test-visibility-windows-x86_64, script ]
+      - !reference [.datadog-test-visibility-windows-x86_64, script]
       - ./repo.bat ci test -- --generate-report
     needs:
       - job: build-windows-x86_64-release
@@ -528,7 +528,7 @@ test-linux-x86_64-nativepythontests-api:
     script:
       - ./repo.sh ci test -- -s nativepythontests -b api --generate-report
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-nativepythontests-replicator:
     extends:
@@ -540,7 +540,7 @@ test-linux-x86_64-nativepythontests-replicator:
     script:
       - ./repo.sh ci test -- -s nativepythontests -b replicator --generate-report
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-nativepythontests-testing:
     extends:
@@ -552,7 +552,7 @@ test-linux-x86_64-nativepythontests-testing:
     script:
       - ./repo.sh ci test -- -s nativepythontests -b testing --generate-report
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-benchmarks-1-gpu:
     extends:
@@ -565,7 +565,7 @@ test-linux-x86_64-benchmarks-1-gpu:
       - export ISAAC_TEST_MODE=1
       - ./repo.sh ci test -- -s benchmarks --generate-report
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-benchmarks-2-gpu:
     extends:
@@ -578,7 +578,7 @@ test-linux-x86_64-benchmarks-2-gpu:
       - export ISAAC_TEST_MODE=1
       - ./repo.sh ci test -- -s benchmarks --generate-report
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-benchmarks-4-gpu:
     extends:
@@ -591,7 +591,7 @@ test-linux-x86_64-benchmarks-4-gpu:
       - export ISAAC_TEST_MODE=1
       - ./repo.sh ci test -- -s benchmarks --generate-report
     after_script:
-      - !reference [ .datadog-test-visibility-linux-x86_64, script ]
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-internalpythontests-1:
     extends:
@@ -603,7 +603,7 @@ test-linux-x86_64-internalpythontests-1:
     script:
       - ./repo.sh ci test -- -s internalpythontests -b 1
     rules:
-      - !reference [ .rules-nightly-tests, rules ]
+      - !reference [.rules-nightly-tests, rules]
 
 test-windows-x86_64-startuptests:
     extends:
@@ -725,7 +725,7 @@ test-windows-x86_64-internalpythontests-1:
     script:
       - ./repo.bat ci test -- -s internalpythontests -b 1
     rules:
-      - !reference [ .rules-nightly-tests, rules ]
+      - !reference [.rules-nightly-tests, rules]
 
 test-windows-x86_64-nativepythontests-api:
     extends:
@@ -735,7 +735,7 @@ test-windows-x86_64-nativepythontests-api:
     script:
       - ./repo.bat ci test -- -s nativepythontests -b api --generate-report
     rules:
-      - !reference [ .rules-nightly-tests, rules ] #only run linux ones per MR and these nightly
+      - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
 test-windows-x86_64-nativepythontests-replicator:
     extends:
@@ -745,7 +745,7 @@ test-windows-x86_64-nativepythontests-replicator:
     script:
       - ./repo.bat ci test -- -s nativepythontests -b replicator --generate-report
     rules:
-      - !reference [ .rules-nightly-tests, rules ] #only run linux ones per MR and these nightly
+      - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
 test-windows-x86_64-nativepythontests-testing:
     extends:
@@ -755,7 +755,7 @@ test-windows-x86_64-nativepythontests-testing:
     script:
       - ./repo.bat ci test -- -s nativepythontests -b testing --generate-report
     rules:
-      - !reference [ .rules-nightly-tests, rules ] #only run linux ones per MR and these nightly
+      - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
 
 # ==============================================================================================================
 .deploy-artifacts:
@@ -779,9 +779,9 @@ test-windows-x86_64-nativepythontests-testing:
     interruptible: false
     before_script:
       - set -eu
-      - !reference [ .osec:vault:v3:linux, codesign:perform_vault_requests ]
-      - !reference [ .osec:vault:v3:linux, packman_s3:perform_vault_requests ]
-      - !reference [ .osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests ]
+      - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
+      - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+      - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
     rules:
       - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true"
         when: never
@@ -810,7 +810,7 @@ pages:
         paths:
           - public
     rules:
-      - !reference [ .rules-publish-docs, rules ]
+      - !reference [.rules-publish-docs, rules]
     needs:
       - job: build-docs
         artifacts: true
@@ -822,7 +822,7 @@ build-docs:
       - .osec:vault:v3:prod_token_job
     timeout: 3 hours
     before_script:
-      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       # - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
       # - echo "Build log is captured in the build logs. Running build..."
@@ -838,7 +838,7 @@ build-docs:
       - popd
 
     rules:
-      - !reference [ .rules-build-docs, rules ]
+      - !reference [.rules-build-docs, rules]
     artifacts:
         when: always
         expire_in: 2 weeks
@@ -871,7 +871,7 @@ build-docs:
     rules:
       - if: $RUN_EXTENSION_BENCHMARKS != "true"
         when: never
-      - !reference [ .rules-workflow, rules ]
+      - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 benchmark-linux-x86_64:
@@ -886,7 +886,7 @@ benchmark-linux-x86_64:
         MACHINE_DRIVER: "NVIDIA-Linux-x86_64-525.85.05"
     script:
       - ./repo.sh bench
-      - !reference [ .reggie_detect_ubuntu, commands ]
+      - !reference [.reggie_detect_ubuntu, commands]
     needs:
       - job: build-linux-x86_64-release
         artifacts: true
@@ -904,7 +904,7 @@ benchmark-windows-x86_64:
         MACHINE_DRIVER: "537.70-sandbag_UDA_QuadroWeb_Public-wddm2-x64-dch-AttestedDriverSigning"
     script:
       - ./repo.bat bench
-      - !reference [ .reggie_detect_windows, commands ]
+      - !reference [.reggie_detect_windows, commands]
     needs:
       - job: build-windows-x86_64-release
         artifacts: true
@@ -1010,7 +1010,7 @@ verify-publish-extensions:
         when: never
       - if: $RUN_BUMP_VERSION == "true"
         when: never
-      - !reference [ .rules-push, rules ]
+      - !reference [.rules-push, rules]
       # - !reference [.rules-version-changed, rules]
 
 
@@ -1050,8 +1050,8 @@ publish-extensions:
         when: never
       - if: '$CI_COMMIT_BRANCH != "develop"'
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
 publish-python-packages-linux:
@@ -1074,8 +1074,8 @@ publish-python-packages-linux:
         when: never
       - if: $RUN_BUMP_VERSION == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 publish-python-packages-windows:
     extends:
@@ -1083,7 +1083,7 @@ publish-python-packages-windows:
       - .runner-build-windows-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
       - ls _build/windows-x86_64/release
@@ -1100,8 +1100,8 @@ publish-python-packages-windows:
         when: never
       - if: $RUN_BUMP_VERSION == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 verify-publish-python-packages-linux:
     interruptible: true
@@ -1109,7 +1109,6 @@ verify-publish-python-packages-linux:
     extends:
       - .deploy-common
       - .runner-test-linux-x86_64-gpu
-    timeout: 5 hour
     script:
       # install Python 3.10
       - sudo apt update
@@ -1124,15 +1123,15 @@ verify-publish-python-packages-linux:
       - export OMNI_KIT_ACCEPT_EULA=YES
       # run tests
       - python -c "import isaacsim"
-      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --no-window
+      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1 --no-window
     needs:
       - job: publish-python-packages-linux
         artifacts: true
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 verify-publish-python-packages-windows:
     interruptible: true
@@ -1142,8 +1141,7 @@ verify-publish-python-packages-windows:
       - .runner-test-windows-x86_64-gpu
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
-    timeout: 5 hour
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       # install Python 3.10
       - curl -o python-3.10.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
@@ -1158,15 +1156,15 @@ verify-publish-python-packages-windows:
       - $env:OMNI_KIT_ACCEPT_EULA = "YES"
       # run tests
       - python -c "import isaacsim"
-      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --no-window
+      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1 --no-window
     needs:
       - job: publish-python-packages-windows
         artifacts: true
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
 publish-docs:
@@ -1189,8 +1187,8 @@ publish-docs:
         when: never
       - if: $RUN_BUMP_VERSION == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
 publish-to-launcher:
@@ -1220,8 +1218,8 @@ publish-to-launcher:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
 #   extends:
@@ -1289,7 +1287,7 @@ bump-version:
     rules:
       - if: $RUN_BUMP_VERSION != "true"
         when: never
-      - !reference [ .rules-bump-version, rules ]
+      - !reference [.rules-bump-version, rules]
 
 # ==============================================================================================================
 sign-windows-x86_64-release:
@@ -1299,8 +1297,8 @@ sign-windows-x86_64-release:
       - .runner-build-windows-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'codesign:perform_vault_requests' ]
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:windows:powershell', 'codesign:perform_vault_requests']
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       - ls _build/packages/
       - mkdir _unsignedpackages
@@ -1317,8 +1315,8 @@ sign-windows-x86_64-release:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
 
@@ -1331,7 +1329,7 @@ internal-build-linux-x86_64-release:
     before_script:
       - set -eu
       - yum install -y bsdtar
-      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh build -r --no-docker
       - ./repo.sh package -m isaac-sim-internal-standalone -c release
@@ -1342,8 +1340,8 @@ internal-build-linux-x86_64-release:
         when: never
       - if: '$CI_COMMIT_BRANCH != "develop"'
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
 
@@ -1354,7 +1352,7 @@ internal-build-windows-x86_64-release:
       - .runner-build-windows-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.bat build -r
       - ./repo.bat package -m isaac-sim-internal-standalone -c release
@@ -1365,8 +1363,8 @@ internal-build-windows-x86_64-release:
         when: never
       - if: '$CI_COMMIT_BRANCH != "develop"'
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
 
@@ -1390,8 +1388,8 @@ internal-publish-to-packman:
         when: never
       - if: '$CI_COMMIT_BRANCH != "develop"'
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
 
@@ -1424,8 +1422,8 @@ internal-publish-container:
         when: never
       - if: '$CI_COMMIT_BRANCH != "develop"'
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
 
@@ -1456,8 +1454,8 @@ publish-container:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1469,7 +1467,7 @@ binaryscan-build-linux-x86_64-release:
     before_script:
       - set -eu
       - yum install -y bsdtar
-      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh build -r --no-docker
       - ./repo.sh package -m isaac-sim-binaryscan -c release
@@ -1478,8 +1476,8 @@ binaryscan-build-linux-x86_64-release:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1489,7 +1487,7 @@ binaryscan-build-windows-x86_64-release:
       - .runner-build-windows-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.bat build -r
       - ./repo.bat package -m isaac-sim-binaryscan -c release
@@ -1498,8 +1496,8 @@ binaryscan-build-windows-x86_64-release:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1520,8 +1518,8 @@ binaryscan-publish-to-packman:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1532,7 +1530,7 @@ assets-publish-to-packman:
       - .runner-utility-linux-x86_64
       - .osec:vault:v3:prod_token_job
     before_script:
-      - !reference [ '.osec:vault:v3:linux', 'packman_s3:perform_vault_requests' ]
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     timeout: 6 hour
     script:
       - ./tools/ci/build-and-packaging/isaac-sim-assets/step.sh
@@ -1545,8 +1543,8 @@ assets-publish-to-packman:
         when: never
       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
         when: manual
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1577,8 +1575,8 @@ publish-to-packman:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [ .rules-version-changed, rules ]
-      - !reference [ .rules-push-manual, rules ]
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
 
 #   allow_failure: true
 
