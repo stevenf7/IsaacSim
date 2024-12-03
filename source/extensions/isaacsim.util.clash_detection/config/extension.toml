@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Sim Clash Detection"
 description = "Mesh Collision Detection Utility"
@@ -22,7 +22,7 @@ writeTarget.kit = true
 "isaacsim.core.prims" = {}
 "isaacsim.storage.native" = {}
 "omni.physx" = {}
-"omni.physx.clashdetection.bundle" = {}
+"omni.physx.clashdetection.core" = {}
 
 [[python.module]]
 name = "isaacsim.util.clash_detection"
@@ -32,5 +32,6 @@ name = "isaacsim.util.clash_detection.tests"
 
 [[test]]
 dependencies=[
+"omni.kit.test",
 "omni.kit.property.bundle",
 ]

@@ -1,4 +1,9 @@
 
+## [0.1.2] - 2024-12-03
+
+### Changed
+- Only depend on omni.physx.clashdetection.core
+
 ## [0.1.1] - 2024-11-08
 
 ### Fixed
