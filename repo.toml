@@ -460,22 +460,7 @@ strip_package_infos = true
 omniverse_flow_version_scheme = true
 ziponly = true
 
-[repo_package.packages.isaac-sim-assets-1]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-strip_package_infos = true
-
-[repo_package.packages.isaac-sim-assets-2]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-strip_package_infos = true
-
-[repo_package.packages.isaac-sim-assets-3]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-strip_package_infos = true
-
-[repo_package.packages.isaac-sim-assets-4]
+[repo_package.packages.isaac-sim-assets]
 archive_format = "zip"
 omniverse_flow_version_scheme = true
 strip_package_infos = true
@@ -487,42 +472,6 @@ strip_package_infos = true
 [repo_publish]
 enabled = true
 packages = ["isaac-sim*"]
-
-########################################################################################################################
-# Publish and deploy Isaac Sim App to Omniverse Launcher
-########################################################################################################################
-
-[publish_launcher]
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac_sim-app.git"
-# FOR DEVELOPMENT #
-template_path = "${root}/tools/repoman/launcher-pipeline-template/daily"
-# # FOR PRODUCTION #
-# template_path = "${root}/tools/repoman/launcher-pipeline-template/staging"
-branch_prefix = "integ"
-
-########################################################################################################################
-# Publish and deploy Isaac Sim Assets Content Pack to Omniverse Launcher
-########################################################################################################################
-
-[publish_assets_launcher_1]
-branch_prefix = "integ"
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-1.git"
-template_path = "${root}/tools/repoman/assets-pipeline-template-1"
-
-[publish_assets_launcher_2]
-branch_prefix = "integ"
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-2.git"
-template_path = "${root}/tools/repoman/assets-pipeline-template-2"
-
-[publish_assets_launcher_3]
-branch_prefix = "integ"
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-3.git"
-template_path = "${root}/tools/repoman/assets-pipeline-template-3"
-
-[publish_assets_launcher_4]
-branch_prefix = "integ"
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/release-pipelines/isaac-sim-assets-content-pack-4.git"
-template_path = "${root}/tools/repoman/assets-pipeline-template-4"
 
 ########################################################################################################################
 # Test Runner
