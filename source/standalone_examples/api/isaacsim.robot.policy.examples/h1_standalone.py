@@ -74,8 +74,9 @@ for i in range(0, args.num_robots):
     )
 
     robots.append(h1)
-my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
+
 my_world.reset()
+my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 
 # robot command
 base_command = np.zeros(3)

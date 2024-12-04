@@ -141,9 +141,9 @@ def main():
 
     runner = Anymal_runner(physics_dt=physics_dt, render_dt=render_dt)
     simulation_app.update()
-    runner.setup()
-    simulation_app.update()
     runner._world.reset()
+    simulation_app.update()
+    runner.setup()
     simulation_app.update()
     runner.run()
     simulation_app.close()
