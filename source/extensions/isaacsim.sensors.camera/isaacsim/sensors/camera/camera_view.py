@@ -37,8 +37,8 @@ ANNOTATOR_SPEC = {
     "normals": {"name": "normals", "channels": 4, "dtype": wp.float32},
     "motion_vectors": {"name": "motion_vectors", "channels": 4, "dtype": wp.float32},
     "semantic_segmentation": {"name": "semantic_segmentation", "channels": 1, "dtype": wp.uint32},
-    "instance_segmentation_fast": {"name": "instance_segmentation_fast", "channels": 1, "dtype": wp.int32},
-    "instance_id_segmentation_fast": {"name": "instance_id_segmentation_fast", "channels": 1, "dtype": wp.int32},
+    "instance_segmentation_fast": {"name": "instance_segmentation_fast", "channels": 1, "dtype": wp.uint32},
+    "instance_id_segmentation_fast": {"name": "instance_id_segmentation_fast", "channels": 1, "dtype": wp.uint32},
 }
 
 

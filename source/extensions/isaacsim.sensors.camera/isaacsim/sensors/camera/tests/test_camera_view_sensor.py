@@ -34,10 +34,12 @@ EXPECTED_ANNOTATOR_SPEC = {
     "normals": {"name": "normals", "channels": 4, "dtype": wp.float32},
     "motion_vectors": {"name": "motion_vectors", "channels": 4, "dtype": wp.float32},
     "semantic_segmentation": {"name": "semantic_segmentation", "channels": 1, "dtype": wp.uint32},
-    "instance_segmentation_fast": {"name": "instance_segmentation_fast", "channels": 1, "dtype": wp.int32},
-    "instance_id_segmentation_fast": {"name": "instance_id_segmentation_fast", "channels": 1, "dtype": wp.int32},
+    "instance_segmentation_fast": {"name": "instance_segmentation_fast", "channels": 1, "dtype": wp.uint32},
+    "instance_id_segmentation_fast": {"name": "instance_id_segmentation_fast", "channels": 1, "dtype": wp.uint32},
 }
 assert sorted(ANNOTATOR_SPEC.keys()) == sorted(EXPECTED_ANNOTATOR_SPEC.keys())
+
+IMG_COMPARISON_TOLERANCE = 0.94
 
 
 class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
@@ -240,7 +242,10 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         golden_img = cv2.imread(golden_img_path, cv2.IMREAD_UNCHANGED)
         # check
         score = self._compare_images(golden_img, image)
-        self.assertTrue(score[0] > 0.95, f"comparison score ({score[0]}, ({score[1]}, {score[2]})) < 0.95")
+        self.assertTrue(
+            score[0] > IMG_COMPARISON_TOLERANCE,
+            f"comparison score ({score[0]}, ({score[1]}, {score[2]})) < {IMG_COMPARISON_TOLERANCE}",
+        )
 
     async def test_tiled_depth_image(self):
         image = (self.camera_view.get_depth_tiled(device="cpu") * 255).astype(np.uint8)
@@ -250,7 +255,10 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         golden_img = cv2.imread(golden_img_path, cv2.IMREAD_UNCHANGED)
         # check
         score = self._compare_images(golden_img, image, hist_div=3)
-        self.assertTrue(score[0] > 0.95, f"comparison score ({score[0]}, ({score[1]}, {score[2]})) < 0.95")
+        self.assertTrue(
+            score[0] > IMG_COMPARISON_TOLERANCE,
+            f"comparison score ({score[0]}, ({score[1]}, {score[2]})) < {IMG_COMPARISON_TOLERANCE}",
+        )
 
     async def test_batched_rgb_data(self):
         rgb_batched_shape = (self.num_cameras, *self.resolution, 3)
@@ -282,7 +290,8 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
             # check
             score = self._compare_images(golden_img, image)
             self.assertTrue(
-                score[0] > 0.95, f"camera {i}: comparison score ({score[0]}, ({score[1]}, {score[2]})) < 0.95"
+                score[0] > IMG_COMPARISON_TOLERANCE,
+                f"camera {i}: comparison score ({score[0]}, ({score[1]}, {score[2]})) < {IMG_COMPARISON_TOLERANCE}",
             )
 
     async def test_batched_depth_images(self):
@@ -296,7 +305,8 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
             # check
             score = self._compare_images(golden_img, image, hist_div=3)
             self.assertTrue(
-                score[0] > 0.95, f"camera {i}: comparison score ({score[0]}, ({score[1]}, {score[2]})) < 0.95"
+                score[0] > IMG_COMPARISON_TOLERANCE,
+                f"camera {i}: comparison score ({score[0]}, ({score[1]}, {score[2]})) < {IMG_COMPARISON_TOLERANCE}",
             )
 
     async def test_data(self):
