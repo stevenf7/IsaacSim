@@ -308,6 +308,9 @@ class Extension(omni.ext.IExt):
 
     def _on_select_sphere_gen_link(self, model, val):
         index = model.get_item_value_model().as_int
+        if len(self._sphere_gen_link_2_mesh.keys()) == 0:
+            carb.log_error("No links could be identified for this asset. This is possibly because no meshes exist.")
+            return
         item = list(self._sphere_gen_link_2_mesh.keys())[index]
         self._selected_sphere_gen_link = item
         self._models["sphere_gen_mesh_selection_model"] = DynamicComboBoxModel(self._sphere_gen_link_2_mesh[item])
@@ -377,50 +380,73 @@ class Extension(omni.ext.IExt):
 
     def get_all_sphere_gen_meshes(self):
         stage = self._usd_context.get_stage()
-        sphere_gen_link_2_mesh = OrderedDict()
-
-        if stage and self.articulation is not None:
-            for prim in Usd.PrimRange(stage.GetPrimAtPath(self._articulation_base_path)):
-                path = str(prim.GetPath())
-                # Get prim type get_prim_object_type
-                type = get_prim_object_type(path)
-
-                if type == "xform":
-                    geom_mesh = UsdGeom.Mesh(prim)
-                    if geom_mesh.GetPointsAttr().HasValue():
-                        rel_path = path[len(self._articulation_base_path) :]
-                        div_index = rel_path.rfind("/")
-                        key = rel_path[:div_index]
-                        l = sphere_gen_link_2_mesh.get(key, [])
-                        l.append(rel_path[div_index:])
-                        sphere_gen_link_2_mesh[key] = l
-
-        # Modify paths of links to be the shortest prim path that uniqeuly identifies each link's
-        # meshes rather than paths that are the direct parents of each mesh
-        mesh_parent_paths = sphere_gen_link_2_mesh.keys()
         self._sphere_gen_link_2_mesh = OrderedDict()
 
-        # Path to parent prims of meshes
-        for p1 in mesh_parent_paths:
-            # index up to which p1 is unique
-            unique_index = 0
-            for p2 in mesh_parent_paths:
-                if p1 == p2:
-                    continue
+        if self.articulation is None:
+            return
 
-                # index of first mismatch between p1 and p2
-                mismatch_index = next((i for i, (a, b) in enumerate(zip(p1, p2)) if a != b), -1)
+        links = self.articulation._articulation_view.body_names
 
-                if mismatch_index > unique_index:
-                    unique_index = mismatch_index
+        if len(links) == 0:
+            carb.log_error(
+                "No links can be found as part of the selected Articulation.  Make sure "
+                + "that the selected articulation has at least one joint."
+            )
+            return
 
-            key_end_index = unique_index + p1[unique_index:].find("/") if "/" in p1[unique_index:] else len(p1)
-            key = p1[:key_end_index]
-            mesh_prefix = p1[key_end_index:]
+        num_art_path_components = len(self._articulation_base_path.split("/"))
+        art_path_len = len(self._articulation_base_path)
+        for prim in Usd.PrimRange(stage.GetPrimAtPath(self._articulation_base_path), Usd.TraverseInstanceProxies()):
+            path = str(prim.GetPath())
 
-            self._sphere_gen_link_2_mesh[key] = []
-            for val in sphere_gen_link_2_mesh[p1]:
-                self._sphere_gen_link_2_mesh[key].append(mesh_prefix + val)
+            type = get_prim_object_type(path)
+
+            if type == "xform":
+                geom_mesh = UsdGeom.Mesh(prim)
+                if geom_mesh.GetPointsAttr().HasValue():
+                    is_instanced = prim.IsInstanceProxy()
+
+                    # Check which link this mesh belongs to.
+                    link_subpath = None
+
+                    # Find the length of the path of the link.
+                    link_path_len = art_path_len
+                    for s in path.split("/")[num_art_path_components:]:
+                        # Accumulate the length of link path including path components and "/" that
+                        # were removed when splitting.
+                        link_path_len += 1 + len(s)
+                        if s in links:
+                            # link_path is the subpath of the link nested under the articulation
+                            # base path.
+                            link_subpath = path[art_path_len:link_path_len]
+                            break
+
+                    if link_subpath is not None and is_instanced:
+                        # Do not include instanceable meshes in the meshes under a link because these
+                        # cannot be used to generate spheres.  However, still make sure that any link
+                        # that contains an instanceable mesh shows up as a key in
+                        # self._sphere_gen_link_2_mesh so that the user can still author spheres by
+                        # hand.
+                        carb.log_warn(
+                            f"Found instanceable mesh at path {path}.  Instanceable meshes are not fully "
+                            + "compatible with the Robot Description Editor.  They cannot be used to generate spheres "
+                            + "automatically.  You may author spheres by hand or stop the timeline and "
+                            + "uncheck 'Instanceable' in the Properties panel for this path and all parent "
+                            + "paths."
+                        )
+
+                        if link_subpath not in self._sphere_gen_link_2_mesh.keys():
+                            self._sphere_gen_link_2_mesh[link_subpath] = []
+                    elif link_subpath is not None:
+                        mesh_subpath = path[link_path_len:]
+                        l = self._sphere_gen_link_2_mesh.get(link_subpath, [])
+                        l.append(mesh_subpath)
+                        self._sphere_gen_link_2_mesh[link_subpath] = l
+                    else:
+                        carb.log_warn(
+                            f"The mesh at path {path} was not determined to be a part of "
+                            + f"any link in the Articulation {self._articulation_base_path}"
+                        )
 
     def get_articulation_values(self, articulation):
         """Get and store the latest dof_properties from the articulation.
@@ -672,6 +698,9 @@ class Extension(omni.ext.IExt):
                 self._joint_frames[i].rebuild()
 
             def joint_frame_build_fn(i):
+                if i >= self.articulation.num_dof:
+                    return
+
                 lower_joint_limit = self.articulation.dof_properties["lower"][i]
                 upper_joint_limit = self.articulation.dof_properties["upper"][i]
                 with ui.VStack(style=get_style(), spacing=5, height=0):
@@ -1313,6 +1342,12 @@ class Extension(omni.ext.IExt):
 
         link = self._get_selected_link()
         mesh_index = self._models["sphere_gen_mesh_selection_model"].get_item_value_model().as_int
+        if len(self._sphere_gen_link_2_mesh[link]) == 0:
+            carb.log_warn(
+                f"Could not generate spheres for any meshes in link {link}.  This is likely "
+                + f"due to all meshes nested under {link} being instanceable"
+            )
+            return
         mesh = self._sphere_gen_link_2_mesh[link][mesh_index]
 
         num_spheres = self._models["sphere_gen_num_spheres"].get_value_as_int()
