@@ -9,13 +9,9 @@ include:
   - project: 'omniverse/sectools/vault'
     file:
       - 'templates/v3/common/token_job.gitlab-ci.yml'
-      - 'templates/v2/omni-codesign-creds.yml'
       - 'templates/v3/linux/codesign.gitlab-ci.yml'
-      - 'templates/v2/windows/repo-codesign-creds.yml'
       - 'templates/v3/windows/codesign.gitlab-ci.yml'
-      - 'templates/v2/omni-packman-s3-creds.yml'
       - 'templates/v3/linux/packman_s3.gitlab-ci.yml'
-      - 'templates/v2/windows/packman-s3-creds.gitlab-ci.yml'
       - 'templates/v3/windows/packman_s3.gitlab-ci.yml'
       - 'templates/v3/linux/nucleus/kit-extensions.ov.nvidia.com/kit-extension-svc.gitlab-ci.yml'
   - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
@@ -36,7 +32,9 @@ include:
     file: 'modules/stage-security.yml'
   - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
     file: 'modules/sanitizers.yml'
-
+  - project: "omniverse/devplat/gitlab/templates/common/compliance"
+    file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
+    ref: v1_latest
 # ==============================================================================================================
 stages:
   - check
@@ -1595,3 +1593,11 @@ publish-to-packman:
 #     when: never
 #   - !reference [.rules-push-manual, rules]
 #   allow_failure: true
+
+# overrides for compliance/osec job
+osec:sonarqube:
+  variables:
+    SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
+    LINBUILD_EMBEDDED: "1"
+  before_script:
+    - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
