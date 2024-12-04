@@ -12,6 +12,7 @@ import os
 import carb.settings
 import omni.kit.commands
 import omni.usd
+from isaacsim.core.utils.stage import open_stage
 from omni.kit.browser.core import DetailItem
 from omni.kit.browser.folder.core import FileSystemFolder, TreeFolderBrowserModel
 from pxr import Sdf, Tf, Usd
@@ -52,26 +53,36 @@ class AssetBrowserModel(TreeFolderBrowserModel):
         return FileSystemFolder(name, url, **kwargs)
 
     def execute(self, item: DetailItem) -> None:
-        # Create a Reference or payload of the Props in the stage
+        """
+        action when double clicked on an item: open the original file
+        """
         stage = omni.usd.get_context().get_stage()
         if not stage:
             return
+        open_stage(item.url)
 
-        new_prim_path = self._make_prim_path(stage, item.url)
-        as_instanceable = carb.settings.get_settings().get("/persistent/app/stage/instanceableOnCreatingReference")
+        # # Create a Reference or payload of the Props in the stage
+        # stage = omni.usd.get_context().get_stage()
+        # if not stage:
+        #     return
 
-        # Determine if we should create a payload or reference
-        create_as_payload = carb.settings.get_settings().get("/persistent/app/stage/dragDropImport") == "payload"
+        # new_prim_path = self._make_prim_path(stage, item.url)
+        # as_instanceable = carb.settings.get_settings().get("/persistent/app/stage/instanceableOnCreatingReference")
 
-        # Add asset to stage
-        cmd_name = "CreatePayloadCommand" if create_as_payload else "CreateReferenceCommand"
-        omni.kit.commands.execute(
-            cmd_name,
-            usd_context=omni.usd.get_context(),
-            path_to=new_prim_path,
-            asset_path=item.url,
-            instanceable=as_instanceable,
-        )
+        # # Determine if we should create a payload or reference
+        # create_as_payload = carb.settings.get_settings().get("/persistent/app/stage/dragDropImport") == "payload"
+
+        # print("creating something", create_as_payload)
+
+        # # Add asset to stage
+        # cmd_name = "CreatePayloadCommand" if create_as_payload else "CreateReferenceCommand"
+        # omni.kit.commands.execute(
+        #     cmd_name,
+        #     usd_context=omni.usd.get_context(),
+        #     path_to=new_prim_path,
+        #     asset_path=item.url,
+        #     instanceable=as_instanceable,
+        # )
 
     def _make_prim_path(self, stage: Usd.Stage, url: str, prim_path: Sdf.Path = None, prim_name: str = None):
         """Make a new/unique prim path for the given url"""

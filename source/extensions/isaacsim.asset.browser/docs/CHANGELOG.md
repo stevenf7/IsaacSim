@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.5] - 2024-12-03
+### Changed
+- Double click opens the file instead of loading it as payload/reference
 
 ## [1.1.4] - 2024-11-13
 ### Changed
