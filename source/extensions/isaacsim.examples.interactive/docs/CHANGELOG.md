@@ -1,4 +1,8 @@
 # Changelog
+## [4.4.0] - 2024-11-27
+### Added
+- Getting Started Tutorials
+
 ## [4.3.0] - 2024-11-25
 ### Changed
 - Base Sample Extension now only have UI Templates. Each example has its own Extension startup and shutdown.

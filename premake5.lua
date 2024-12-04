@@ -593,6 +593,9 @@ function create_tests()
         python_sample_test("tests-nativepython-testing-python_sh.import_sys", "standalone_examples/testing/python_sh/import_sys.py")
         python_sample_test("tests-nativepython-testing-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
         python_sample_test("tests-nativepython-testing-omni.replicator.agent.test_scripting", "standalone_examples/testing/omni.replicator.agent/test_scripting.py")
+        -- tutorials
+        python_sample_test("tests-nativepython-testing-tutorials-getting_started", "standalone_examples/tutorials/getting_started.py")
+        python_sample_test("tests-nativepython-testing-tutorials-getting_started_robot", "standalone_examples/tutorials/getting_started_robot.py")
         if os.target() == "linux" then
             python_sample_test("tests-nativepython-testing-isaacsim.simulation_app.test_ovd", "standalone_examples/testing/isaacsim.simulation_app/test_ovd.py", '--ovd=\"/tmp/\"')
         end
