@@ -54,8 +54,8 @@ spot = SpotFlatTerrainPolicy(
     name="Spot",
     position=np.array([0, 0, 0.8]),
 )
-my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 my_world.reset()
+my_world.add_physics_callback("physics_step", callback_fn=on_physics_step)
 
 # robot command
 base_command = np.zeros(3)
