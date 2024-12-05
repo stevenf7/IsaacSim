@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.5] - 2024-12-03
+### Changed
+- Create menu to Tools->Robotics->Omnigraphs menu
 
 ## [2.0.4] - 2024-10-28
 ### Changed

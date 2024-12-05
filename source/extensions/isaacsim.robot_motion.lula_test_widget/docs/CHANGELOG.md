@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.2] - 2024-12-03
+### Changed
+- Isaac Util menu to Tools->Robotics menu
+
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming

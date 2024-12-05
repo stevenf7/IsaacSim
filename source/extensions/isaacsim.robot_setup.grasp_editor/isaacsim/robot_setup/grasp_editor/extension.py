@@ -63,10 +63,12 @@ class Extension(omni.ext.IExt):
             self._menu_callback,
             description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
         )
-        self._menu_items = [
+        menu_entry = [
             MenuItemDescription(name=EXTENSION_TITLE, onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"))
         ]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=menu_entry)]
+
+        add_menu_items(self._menu_items, "Tools")
 
         # Filled in with User Functions
         self.ui_builder = UIBuilder()
@@ -80,7 +82,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._models = {}
-        remove_menu_items(self._menu_items, EXTENSION_TITLE)
+        remove_menu_items(self._menu_items, "Tools")
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")

@@ -1,6 +1,7 @@
 import asyncio
 import weakref
 from functools import partial
+from pathlib import Path
 
 import carb
 import omni.kit.menu.utils
@@ -96,7 +97,11 @@ class CreateMenuExtension:
             ),
         ]
 
-        robot_menu = [MenuItemDescription(name="Robots", glyph="plug.svg", sub_menu=robot_sub_menu)]
+        icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
+
+        robot_icon_path = str(Path(icon_dir).joinpath("data/robot.svg"))
+
+        robot_menu = [MenuItemDescription(name="Robots", glyph=robot_icon_path, sub_menu=robot_sub_menu)]
         add_menu_items(robot_menu, "Create")
 
         ## Environments
@@ -124,7 +129,10 @@ class CreateMenuExtension:
             ),
         ]
 
-        environment_menu = [MenuItemDescription(name="Environments", glyph="plug.svg", sub_menu=environment_sub_menu)]
+        environment_icon_path = str(Path(icon_dir).joinpath("data/environment.svg"))
+        environment_menu = [
+            MenuItemDescription(name="Environments", glyph=environment_icon_path, sub_menu=environment_sub_menu)
+        ]
         add_menu_items(environment_menu, "Create")
 
         ## Sensor
@@ -133,7 +141,8 @@ class CreateMenuExtension:
                 name="Asset Browser", onclick_action=("isaacsim.asset.browser", "open_isaac_sim_asset_browser")
             ),
         ]
-        sensor_menu = [MenuItemDescription(name="Sensors", glyph="plug.svg", sub_menu=sensor_sub_menu)]
+        sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
+        sensor_menu = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=sensor_sub_menu)]
         add_menu_items(sensor_menu, "Create")
 
         ## add apriltag selection
@@ -151,11 +160,11 @@ class CreateMenuExtension:
             description="Create a AprilTag",
             tag="Create AprilTag",
         )
-
+        apriltag_icon_path = str(Path(icon_dir).joinpath("data/apriltag.svg"))
         self._menu_items = [
             MenuItemDescription(
                 name="April Tags",
-                glyph="plug.svg",
+                glyph=apriltag_icon_path,
                 onclick_action=(ext_id, "isaac_create_apriltag"),
             )
         ]

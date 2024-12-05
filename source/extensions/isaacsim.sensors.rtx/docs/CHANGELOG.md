@@ -1,5 +1,9 @@
 # Changelog
 
+## [13.4.1] - 2024-12-04
+### Changed
+- glyph for the create menu
+
 ## [13.4.0] - 2024-11-26
 ### Added
 - New settings to toggle auxiliary data output for lidar, radar

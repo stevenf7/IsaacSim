@@ -29,7 +29,7 @@ from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu
 from omni.physx.scripts import utils
 from pxr import Usd, UsdGeom, UsdPhysics
 
-EXTENSION_NAME = "Physics Utilities"
+EXTENSION_NAME = "Physics API Editor"
 
 
 class Extension(omni.ext.IExt):
@@ -42,10 +42,12 @@ class Extension(omni.ext.IExt):
             title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
-        self._menu_items = [
+        menu_entry = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        self._menu_items = [MenuItemDescription("Physics", sub_menu=menu_entry)]
+
+        add_menu_items(self._menu_items, "Tools")
 
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -246,6 +248,6 @@ class Extension(omni.ext.IExt):
             omni.kit.commands.execute("RemovePhysicsComponentCommand", usd_prim=prim, component=component)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Tools")
         gc.collect()
         pass

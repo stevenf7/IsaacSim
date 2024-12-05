@@ -42,10 +42,12 @@ class Extension(omni.ext.IExt):
         self._window = ScrollingWindow(title=EXTENSION_NAME, width=600, height=400, visible=False)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.set_visibility_changed_fn(self._on_window)
-        self._menu_items = [
+        menu_entry = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        self._menu_items = [MenuItemDescription("Robotics", sub_menu=menu_entry)]
+
+        add_menu_items(self._menu_items, "Tools")
         self._om = _omap.acquire_omap_interface()
         self._layers = omni.kit.usd.layers.get_layers()
         self._filepicker = None
@@ -529,5 +531,5 @@ class Extension(omni.ext.IExt):
         self._stage_open_callback = None
         if self._filepicker:
             self._filepicker = None
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Tools")
         gc.collect()

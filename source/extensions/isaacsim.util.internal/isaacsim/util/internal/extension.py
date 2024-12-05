@@ -27,7 +27,7 @@ class InternalTools(omni.ext.IExt):
         self._menu_items = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        add_menu_items(self._menu_items, "Tools")
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
@@ -51,7 +51,7 @@ class InternalTools(omni.ext.IExt):
                 # ui.Button("Check Untyped", clicked_fn=self.remove_untyped)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Tools")
         self._window = None
 
     def _menu_callback(self):

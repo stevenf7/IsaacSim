@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.3] - 2024-12-03
+### Changed
+- Isaac Util menu to Tools->Robotics menu
+
 ## [2.0.2] - 2024-11-08
 ### Fixed
 - Add Texture map to merged assets

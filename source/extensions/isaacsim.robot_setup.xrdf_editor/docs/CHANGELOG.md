@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.1] - 2024-12-03
+### Changed
+- Isaac Util menu to Tools->Robotics menu
+
 ## [3.1.0] - 2024-12-03
 ### Fixed
 - Fixed functionality for discovering which links are part of the robot and their corresponding paths.

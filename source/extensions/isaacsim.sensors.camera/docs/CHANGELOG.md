@@ -1,4 +1,7 @@
 # Changelog
+## [0.2.4] - 2024-12-03
+### Changed
+- Isaac Util menu to Tools->Robotics menu
 
 ## [0.2.4] - 2024-11-26
 ### Fixed

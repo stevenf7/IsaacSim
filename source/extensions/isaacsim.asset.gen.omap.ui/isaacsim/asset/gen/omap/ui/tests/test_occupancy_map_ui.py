@@ -32,5 +32,6 @@ class TestOccupancyMapUI(omni.kit.test.AsyncTestCase):
     async def testLoading(self):
         await omni.usd.get_context().new_stage_async()
         menu_widget = ui_test.get_menubar()
-        await menu_widget.find_menu("Isaac Utils").click()
+        await menu_widget.find_menu("Tools").click()
+        await menu_widget.find_menu("Robotics").click()
         await menu_widget.find_menu("Occupancy Map").click()

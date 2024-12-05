@@ -11,6 +11,7 @@ import json
 import os
 import re
 import weakref
+from pathlib import Path
 
 import omni
 import omni.kit.commands
@@ -307,7 +308,10 @@ class IsaacSensorMenu:
                 sub_menu=rtx_lidar_sub_menu_as_list,
             )
         )
-        self._menu_items = [MenuItemDescription(name="Sensors", glyph="plug.svg", sub_menu=menu_items)]
+
+        icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
+        sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
+        self._menu_items = [MenuItemDescription(name="Sensors", glyph="sensors.svg", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Create")
 
     def _get_stage_and_path(self):

@@ -54,7 +54,7 @@ from isaacsim.gui.components.ui_utils import (
     xyz_builder,
 )
 from isaacsim.gui.components.widgets import DynamicComboBoxModel
-from omni.kit.menu.utils import add_menu_items, remove_menu_items
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_WIDTH
 from pxr import Usd, UsdGeom, UsdPhysics
 
@@ -109,11 +109,11 @@ class Extension(omni.ext.IExt):
         # UI
         self._models = {}
         self._ext_id = ext_id
-        self._menu_items = [
+        menu_entry = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        # self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=menu_entry)]
+        add_menu_items(self._menu_items, "Tools")
 
         # Selection
         self._new_window = True
@@ -163,7 +163,7 @@ class Extension(omni.ext.IExt):
         self._timeline_event_sub = None
         self._physx_subscription = None
         self._models = {}
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Tools")
         if self._window:
             self._window = None
         gc.collect()

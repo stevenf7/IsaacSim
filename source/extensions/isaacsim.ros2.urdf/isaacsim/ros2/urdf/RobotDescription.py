@@ -240,7 +240,7 @@ class Extension(omni.ext.IExt):
         action_registry.deregister_all_actions_for_extension(self.ext_id)
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "File")
         self.deregister_actions()
         self.robot_description.shutdown()
         pass
