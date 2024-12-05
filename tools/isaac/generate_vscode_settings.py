@@ -80,6 +80,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
             def append_analysis_paths(env_dict, platform_target, config):
                 env_dict["PYTHONPATH"].extend(python_analysis_extra_mapping)
+                # WAR remove python_packages so that isaacsim is not aliased incorrectly
+                # This should fix vscode python autocomplete for imports
+                for entry in env_dict["PYTHONPATH"]:
+                    if "$config/python_packages" in entry:
+                        env_dict["PYTHONPATH"].remove(entry)
+                        break
+
                 return env_dict
 
             settings.vscode_python_env_postprocess_fn = append_analysis_paths

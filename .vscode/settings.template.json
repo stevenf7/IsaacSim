@@ -129,18 +129,15 @@
 
     // This enables python language server. Seems to work slightly better than jedi:
     "python.jediEnabled": false,
+    "python.languageServer": "Pylance",
 
     // Those paths are automatically filled by build system, see `repo.toml` for configuration:
     "python.analysis.extraPaths": [
     ],
 
-    "python.languageServer": "Pylance",
     "python.defaultInterpreterPath": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
     // python.pythonPath is deprecated
     // "python.pythonPath": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
-
-    // This enables python language server. Seems to work slightly better than jedi:
-    "python.jediEnabled": false, 
 
     // We use "black" as a formatter:
     "python.formatting.provider": "black",
@@ -149,5 +146,4 @@
     // Use flake8 for linting
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
-    "python.languageServer": "Pylance"
 }
