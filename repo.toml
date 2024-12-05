@@ -460,7 +460,17 @@ strip_package_infos = true
 omniverse_flow_version_scheme = true
 ziponly = true
 
-[repo_package.packages.isaac-sim-assets]
+[repo_package.packages.isaac-sim-assets-1]
+archive_format = "zip"
+omniverse_flow_version_scheme = true
+strip_package_infos = true
+
+[repo_package.packages.isaac-sim-assets-2]
+archive_format = "zip"
+omniverse_flow_version_scheme = true
+strip_package_infos = true
+
+[repo_package.packages.isaac-sim-assets-3]
 archive_format = "zip"
 omniverse_flow_version_scheme = true
 strip_package_infos = true

@@ -5,9 +5,9 @@ ROOT_DIR="$(dirname "$(realpath $SCRIPT_DIR/../../../)")"
 "$ROOT_DIR/tools/packman/packman" install connect-samples-launcher 1112-linux-x86_64 -l $ROOT_DIR/_build/_omnicli
 OMNICLI="$ROOT_DIR/_build/_omnicli/omnicli.sh"
 SOURCE_PATH="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac"
-OUTPUT_PATH="$ROOT_DIR/_assets_temp"
+OUTPUT_PATH="$ROOT_DIR/_assets-3_temp"
 VERSION="4.5"
-NAME="isaac-sim-assets"
+NAME="isaac-sim-assets-3"
 
 
 echo Removing $OUTPUT_PATH/...
@@ -16,30 +16,32 @@ rm -rf $OUTPUT_PATH
 # echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/...']"
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac
 
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Environments/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Environments $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Environments
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/IsaacLab/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/IsaacLab $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/IsaacLab
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Materials/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Materials $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Materials
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/People/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/People $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/People
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Props/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Props $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Props
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Robots/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Robots $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Robots
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Samples/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Samples $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Samples
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Sensors/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Sensors $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Sensors
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Environments/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Environments $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Environments
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/IsaacLab/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/IsaacLab $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/IsaacLab
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Materials/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Materials $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Materials
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/People/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/People $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/People
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Props/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Props $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Props
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Robots/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Robots $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Robots
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Samples/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Samples $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Samples
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Sensors/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Sensors $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Sensors
 
 
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Commercial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Industrial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial
-echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/...']"
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Commercial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Industrial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/...']"
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential
+
+
 echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Materials/Base/...']"
 $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Materials/Base $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Materials/Base
 echo "##teamcity[progressMessage 'Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/vMaterials_2/...']"
