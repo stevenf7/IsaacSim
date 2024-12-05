@@ -99,12 +99,15 @@ public:
         if (iFabricUsd && iStageReadWriter)
         {
             omni::fabric::StageReaderWriterId stageRwId = iStageReadWriter->get(stageId);
-            auto fabricId = iStageReadWriter->getFabricId(stageRwId);
-            iFabricUsd->setEnableChangeNotifies(fabricId, flag);
-            if (flag)
+            if (stageRwId.id)
             {
-                CARB_PROFILE_ZONE(0, "EnableFabricUsdNoticeHandler::forceMinulaPopulate");
-                iFabricUsd->forceMinimalPopulate(fabricId);
+                auto fabricId = iStageReadWriter->getFabricId(stageRwId);
+                iFabricUsd->setEnableChangeNotifies(fabricId, flag);
+                if (flag)
+                {
+                    CARB_PROFILE_ZONE(0, "EnableFabricUsdNoticeHandler::forceMinulaPopulate");
+                    iFabricUsd->forceMinimalPopulate(fabricId);
+                }
             }
         }
     }
@@ -116,8 +119,15 @@ public:
         if (iFabricUsd && iStageReadWriter)
         {
             omni::fabric::StageReaderWriterId stageRwId = iStageReadWriter->get(stageId);
-            auto fabricId = iStageReadWriter->getFabricId(stageRwId);
-            return iFabricUsd->getEnableChangeNotifies(fabricId);
+            if (stageRwId.id)
+            {
+                auto fabricId = iStageReadWriter->getFabricId(stageRwId);
+                return iFabricUsd->getEnableChangeNotifies(fabricId);
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
