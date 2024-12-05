@@ -17,8 +17,8 @@ class UtilitiesMenuExtension:
                     MenuLayout.Item("Profiler", source="Window/Profiler"),
                     MenuLayout.Item("Statistics"),
                     MenuLayout.Seperator(),
+                    MenuLayout.Item("Generate Extension Templates"),
                     MenuLayout.Item("Registered Actions", source="Window/Actions"),
-                    MenuLayout.Item("Generate Extension Templates", source="Isaac Utils/Generate Extension Templates"),
                 ],
             )
         ]

@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.5] - 2024-12-03
+### Changed
+- Isaac Util menu to File
 
 ## [1.1.4] - 2024-11-18
 ### Changed

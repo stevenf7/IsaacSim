@@ -21,20 +21,6 @@ class FixmeMenuExtension:
                 "FixMe",
                 [
                     MenuLayout.SubMenu(
-                        "Isaac Utils",
-                        [
-                            # MenuLayout.Item(
-                            #     "Isaac Sim Import Wizard [alpha]", source="Isaac Utils/Isaac Sim Import Wizard [alpha]"
-                            # ),
-                            MenuLayout.Item("Workflows", source="Isaac Utils/Workflows"),
-                            # MenuLayout.Item(
-                            #     "Lula Robot Description Editor", source="Isaac Utils/Lula Robot Description Editor"
-                            # ),
-                            # MenuLayout.Item("Grasp Editor", source="Isaac Utils/Grasp Editor"),
-                            # MenuLayout.Item("Isaac Sim Robot Wizard", source="Isaac Utils/Isaac Sim Robot Wizard"),
-                        ],
-                    ),
-                    MenuLayout.SubMenu(
                         "Isaac Examples",
                         [
                             MenuLayout.Item("Carter URDF", source="Isaac Examples/Import Robots/Carter URDF"),
@@ -73,18 +59,11 @@ class FixmeMenuExtension:
                             MenuLayout.Item("Developers Manual", source="Help/Developers Manual"),
                         ],
                     ),
-                    # MenuLayout.SubMenu(
-                    #     "Physics",
-                    #     [
-                    #         MenuLayout.Item("Physics Authoring Toolbar", source="Physics Toolbar"),
-                    #     ],
-                    # ),
                     MenuLayout.SubMenu(
                         "Layout",
                         [MenuLayout.Item("Quick Save", remove=True), MenuLayout.Item("Quick Load", remove=True)],
                     ),
                     MenuLayout.Item("Isaac Sim App Selector", source="Help/Isaac Sim App Selector"),
-                    # MenuLayout.Item("Actions", source="Window/Actions"),
                 ],
             ),
         ]

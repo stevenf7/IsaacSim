@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.2] - 2024-12-03
+### Changed
+- No more Isaac Utils reference
+- Glyphs for the Create Asset menu
 
 ## [2.0.1] - 2024-11-26
 ### Changed

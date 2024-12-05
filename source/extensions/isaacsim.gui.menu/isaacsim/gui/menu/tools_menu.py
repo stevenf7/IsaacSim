@@ -9,41 +9,6 @@ class ToolsMenuExtension:
                 "Tools",
                 [
                     MenuLayout.SubMenu(
-                        "Robotics",
-                        [
-                            MenuLayout.SubMenu(
-                                "Asset Editors",
-                                [
-                                    MenuLayout.Item("Gain Tuner", source="Isaac Utils/Workflows/Gain Tuner"),
-                                    MenuLayout.Item("Mesh Merge Tool", source="Isaac Utils/Mesh Merge Tool"),
-                                    MenuLayout.Item("Robot Assembler", source="Isaac Utils/Workflows/Robot Assembler"),
-                                ],
-                            ),
-                            MenuLayout.SubMenu(
-                                "Omnigraph Controllers",
-                                [
-                                    MenuLayout.Item(name="Joint Position"),
-                                    MenuLayout.Item(name="Joint Velocity"),
-                                    MenuLayout.Item(name="Differential Controller"),
-                                    MenuLayout.Item(name="Open Loop Gripper Controller"),
-                                    MenuLayout.Item(name="Surface Gripper", source="Create/Surface Gripper"),
-                                ],
-                            ),
-                            MenuLayout.Item("ROS 2 Omnigraphs"),
-                            MenuLayout.Seperator("Navigation"),
-                            MenuLayout.Item("Block World Generator", source="Isaac Utils/Block World Generator"),
-                            MenuLayout.Item("Occupancy Map", source="Isaac Utils/Occupancy Map"),
-                            MenuLayout.Seperator("Manipulation"),
-                            MenuLayout.Item("Grasp Editor", source="Isaac Utils/Grasp Editor"),
-                            MenuLayout.Item(
-                                "Lula Robot Description Editor",
-                                source="Isaac Utils/Lula Robot Description Editor",
-                            ),
-                            MenuLayout.Seperator("Sensors"),
-                            MenuLayout.Item("Camera Inspector", source="Isaac Utils/Workflows/Camera Inspector"),
-                        ],
-                    ),
-                    MenuLayout.SubMenu(
                         "Animation",
                         [
                             MenuLayout.Item("People Simulation", source="Window/People Simulation"),
@@ -64,7 +29,7 @@ class ToolsMenuExtension:
                                 "Collision Groups Filtering Matrix",
                                 source="Window/Physics/Collision Groups Filtering Matrix",
                             ),
-                            MenuLayout.Item("Physics API Editor", source="Isaac Utils/Physics Utilities"),
+                            MenuLayout.Item("Physics API Editor"),
                             MenuLayout.Item("Physics Inspector"),
                             MenuLayout.Item("PhysX Character Controller", source="Window/Physics/Character Controller"),
                         ],
@@ -72,12 +37,12 @@ class ToolsMenuExtension:
                     MenuLayout.SubMenu(
                         "Replicator",
                         [
-                            MenuLayout.Item(
-                                name="Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"
-                            ),
                             MenuLayout.Item(name="Replicator YAML", source="Replicator/Replicator YAML"),
                             MenuLayout.Item(
                                 name="Semantics Schema Editor", source="Replicator/Semantics Schema Editor"
+                            ),
+                            MenuLayout.Item(
+                                name="Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"
                             ),
                             MenuLayout.Seperator("Orchestrator"),
                             MenuLayout.Item(name="Preview", source="Replicator/Preview"),
@@ -88,6 +53,38 @@ class ToolsMenuExtension:
                             MenuLayout.Item("Calibration Tool"),
                             MenuLayout.Item("Command Injection"),
                             MenuLayout.Item("Custom Command"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Robotics",
+                        [
+                            MenuLayout.SubMenu(
+                                "Asset Editors",
+                                [
+                                    MenuLayout.Item("Gain Tuner"),
+                                    MenuLayout.Item("Mesh Merge Tool"),
+                                    MenuLayout.Item("Robot Assembler"),
+                                ],
+                            ),
+                            MenuLayout.SubMenu(
+                                "Omnigraph Controllers",
+                                [
+                                    MenuLayout.Item(name="Differential Controller"),
+                                    MenuLayout.Item(name="Joint Position"),
+                                    MenuLayout.Item(name="Joint Velocity"),
+                                    MenuLayout.Item(name="Open Loop Gripper Controller"),
+                                    MenuLayout.Item(name="Surface Gripper"),
+                                ],
+                            ),
+                            MenuLayout.Item("ROS 2 Omnigraphs"),
+                            MenuLayout.Seperator("Navigation"),
+                            MenuLayout.Item("Block World Generator"),
+                            MenuLayout.Item("Occupancy Map"),
+                            MenuLayout.Seperator("Manipulation"),
+                            MenuLayout.Item("Grasp Editor"),
+                            MenuLayout.Item("Lula Robot Description Editor"),
+                            MenuLayout.Seperator("Sensors"),
+                            MenuLayout.Item("Camera Inspector"),
                         ],
                     ),
                     MenuLayout.SubMenu(

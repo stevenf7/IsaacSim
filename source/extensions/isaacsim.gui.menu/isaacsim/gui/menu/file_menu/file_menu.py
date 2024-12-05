@@ -114,6 +114,7 @@ class FileMenuExtension:
                     MenuLayout.Seperator(),
                     MenuLayout.Item(name="Import", source="File/Import"),
                     MenuLayout.Item(name="Import from Onshape", source="File/Import from Onshape"),
+                    MenuLayout.Item(name="Import from ROS2 URDF Node", source="File/Import from ROS2 URDF Node"),
                     MenuLayout.Item(name="Export", source="File/Export"),
                     MenuLayout.Seperator(),
                     MenuLayout.Item(name="Add Reference", source="File/Add Reference"),

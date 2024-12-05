@@ -33,10 +33,11 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
-        self._menu_items = [
+        menu_entry = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        self._menu_items = [MenuItemDescription("Robotics", sub_menu=menu_entry)]
+        add_menu_items(self._menu_items, "Tools")
         self._filepicker = None
         self._visualize_window = None
         with self._window.frame:
@@ -53,7 +54,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Tools")
         self._window = None
         self._visualize_window = None
         self._filepicker = None

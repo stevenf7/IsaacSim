@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.2] - 2024-12-04
+### Changed
+- glyph for the Create Menu
+
 ## [2.1.1] - 2024-11-25
 ### Fixed
 - a bug in shutdown code 

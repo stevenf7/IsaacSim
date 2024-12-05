@@ -48,13 +48,13 @@ class Extension(omni.ext.IExt):
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         # self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        add_menu_items(self._menu_items, "Utilities")
 
         self._template_generator = TemplateGenerator()
 
     def on_shutdown(self):
         self._models = {}
-        remove_menu_items(self._menu_items, "Isaac Utils")
+        remove_menu_items(self._menu_items, "Utilities")
         if self._window:
             self._window = None
         gc.collect()

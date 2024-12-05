@@ -63,8 +63,8 @@ class Extension(omni.ext.IExt):
         menu_items = [
             make_menu_item_description(ext_id, EXTENSION_TITLE, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Isaac Utils")
+        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=menu_items)]
+        add_menu_items(self._menu_items, "Tools")
 
         # Filled in with User Functions
         self.ui_builder = UIBuilder()
@@ -78,7 +78,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         self._models = {}
-        remove_menu_items(self._menu_items, EXTENSION_TITLE)
+        remove_menu_items(self._menu_items, "Tools")
         if self._window:
             self._window = None
         self.ui_builder.cleanup()
