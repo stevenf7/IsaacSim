@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2024-12-04
+### Fixed
+- Fixed access to invalid Fabric cache Id
+
 ## [0.3.1] - 2024-11-25
 ### Added
 - SimulationManager.enable_fabric_usd_notice_handler method to enable/disable fabric USD notice handler.
