@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.4.1] - 2024-12-04
+### Fixed
+- Missing import for follow_target_example
+
 ## [4.4.0] - 2024-11-27
 ### Added
 - Getting Started Tutorials
