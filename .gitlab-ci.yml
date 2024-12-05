@@ -1521,8 +1521,7 @@ binaryscan-publish-to-packman:
     allow_failure: true
 
 # ==============================================================================================================
-# Run only on release branches
-assets-publish-to-packman:
+assets-1-publish-to-packman:
     extends:
       - .deploy-common
       - .runner-utility-linux-x86_64
@@ -1531,8 +1530,56 @@ assets-publish-to-packman:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     timeout: 6 hour
     script:
-      - ./tools/ci/build-and-packaging/isaac-sim-assets/step.sh
-      - ./repo.sh publish_assets_package
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-1/step.sh
+      - ./repo.sh publish_assets_package_1
+    needs: []
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        when: manual
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
+    allow_failure: true
+
+# ==============================================================================================================
+assets-2-publish-to-packman:
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    timeout: 6 hour
+    script:
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-2/step.sh
+      - ./repo.sh publish_assets_package_2
+    needs: []
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        when: manual
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
+    allow_failure: true
+
+# ==============================================================================================================
+assets-3-publish-to-packman:
+    extends:
+      - .deploy-common
+      - .runner-utility-linux-x86_64
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    timeout: 6 hour
+    script:
+      - ./tools/ci/build-and-packaging/isaac-sim-assets-3/step.sh
+      - ./repo.sh publish_assets_package_3
     needs: []
     rules:
       - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
