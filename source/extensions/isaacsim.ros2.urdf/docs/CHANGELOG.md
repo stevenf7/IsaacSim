@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.6] - 2024-12-05
+### Changed
+- Updated Nova carter path
+
 ## [1.1.5] - 2024-12-03
 ### Changed
 - Isaac Util menu to File

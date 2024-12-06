@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.1] - 2024-12-05
+### Changed
+- Updated Nova carter path
+
 ## [4.0.0] - 2024-10-30
 ### Added
 - Enhanced AckermannController class by incorporating new parameters and a higher-fidelity kinematic model to minimize slip in a four-wheel-drive system.

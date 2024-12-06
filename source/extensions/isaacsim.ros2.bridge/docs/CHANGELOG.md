@@ -1,8 +1,12 @@
 # Changelog
-## [2.0.3] - 2024-12-03
+
+## [4.1.2] - 2024-12-05
+### Changed
+- Updated Nova carter path
+
+## [4.1.1] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu
-
 
 ## [4.1.0] - 2024-11-27
 ### Added
