@@ -3,9 +3,8 @@ title = "Isaac Sim Python"
 description = "A trimmed down app for use with python providing zero frame delay"
 version = "4.5.0"
 execFile = "isaac-sim.zero_delay"
+keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in UI with "experience" filter
 
-# That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "isaacsim.exp.base" = {}
@@ -16,9 +15,14 @@ app.version = "4.5.0"
 app.hydraEngine.waitIdle = true
 app.updateOrder.checkForHydraRenderComplete = 1000
 
-[settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
-
+[settings.app.exts.folders]
+'++' = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
 registries = [

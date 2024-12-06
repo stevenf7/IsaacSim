@@ -3,9 +3,8 @@ title = "Isaac Sim"
 description = "Main Omniverse Isaac Sim Application"
 version = "4.5.0"
 execFile = "isaac-sim.fabric"
+keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in UI with "experience" filter
 
-# That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "isaacsim.exp.full" = {}
@@ -25,9 +24,14 @@ omnihydra.useSceneGraphInstancing = true
 physics.updateForceSensorsToUsd = false
 physics.visualizationDisplayJoints = false
 
-[settings.app.exts]
-folders = ["${app}/../exts", "${app}/../extscache", "${app}/../extsPhysics", "${app}/../extsUser", "${app}/../extsDeprecated"]
-
+[settings.app.exts.folders]
+'++' = [
+    "${app}/../exts",
+    "${app}/../extscache",
+    "${app}/../extsPhysics",
+    "${app}/../extsUser",
+    "${app}/../extsDeprecated",
+]
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
 registries = [

@@ -3,9 +3,8 @@ description = "Headless Isaac Sim [DEPRECATED]"
 execFile = "isaac-sim.old_streaming"
 title = "Isaac Sim Full Streaming (DEPRECATED)"
 version = "4.5.0"
+keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in UI with "experience" filter
 
-# That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "isaacsim.exp.full" = {}
@@ -17,14 +16,19 @@ keywords = ["experience", "app", "usd"]
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
 
-[settings.app.exts]
-folders = [
+[settings.app.exts.folders]
+'++' = [
     "${app}/../exts",
     "${app}/../extscache",
     "${app}/../extsPhysics",
     "${app}/../extsUser",
     "${app}/../extsDeprecated",
 ]
+
+[settings.app.livestream]
+proto = "ws"
+allowResize = true
+outDirectory = "${data}"
 
 [settings.app.window]
 hideUi = false
@@ -33,7 +37,4 @@ drawMouse = false
 width = 1920
 height = 1080
 
-[settings.app.livestream]
-proto = "ws"
-allowResize = true
-outDirectory = "${data}"
+
