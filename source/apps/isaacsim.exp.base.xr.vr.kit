@@ -3,9 +3,8 @@ description = "Main Omniverse Isaac Sim Application with XR VR"
 execFile = "isaac-sim.xr.vr"
 title = "Isaac Sim XR VR"
 version = "4.5.0"
+keywords = ["experience", "app", "usd", "isaacsim", "xr"] # That makes it browsable in UI with "experience" filter
 
-# That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd"]
 
 [dependencies]
 "isaacsim.exp.base" = {}
@@ -15,8 +14,8 @@ keywords = ["experience", "app", "usd"]
 app.name = "Isaac-Sim"
 app.version = "4.5.0"
 
-[settings.app.exts]
-folders = [
+[settings.app.exts.folders]
+'++' = [
     "${app}/../exts",
     "${app}/../extscache",
     "${app}/../extsPhysics",

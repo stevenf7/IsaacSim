@@ -2,9 +2,8 @@
 description = "Base Isaac Sim App"
 title = "Isaac Sim Base"
 version = "4.5.0"
+keywords = ["experience", "app", "usd"] # That makes it browsable in UI with "experience" filter
 
-# That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd"]
 
 [dependencies]
 # Isaac Sim extensions
@@ -192,8 +191,8 @@ asyncRenderingLowLatency = false
 iconPath = "${isaacsim.simulation_app}/data/omni.isaac.sim.png"
 title = "Isaac Sim Base"
 
-[settings.app.exts]
-folders = [
+[settings.app.exts.folders]
+'++' = [
     "${app}/../exts",
     "${app}/../extscache",
     "${app}/../extsPhysics",
@@ -220,17 +219,13 @@ show.camera=false
 show.lights=false
 
 [settings.telemetry]
-# Anonymous Kit application usage telemetry
-enableAnonymousAppName = true
-enableAnonymousData = true
+enableAnonymousAppName = true # Anonymous Kit application usage telemetry
+enableAnonymousData = true # Anonymous Kit application usage telemetry
 
 [settings.persistent]
 app.primCreation.DefaultXformOpOrder = "xformOp:translate, xformOp:orient, xformOp:scale"
 app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
-app.primCreation.typedDefaults.camera.clippingRange = [
-    0.01,
-    10000000.0,
-] # Meters default
+app.primCreation.typedDefaults.camera.clippingRange = [0.01, 10000000.0] # Meters default
 app.primCreation.DefaultXformOpPrecision = "Double"
 app.primCreation.DefaultRotationOrder = "ZYX"
 app.primCreation.PrimCreationWithDefaultXformOps = true

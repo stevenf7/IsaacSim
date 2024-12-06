@@ -3,8 +3,8 @@ description = "A trimmed down app for use with python samples"
 title = "Isaac Sim Python"
 version = "4.5.0"
 
-# That makes it browsable in UI with "experience" filter
-keywords = ["experience", "app", "usd"]
+keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in UI with "experience" filter
+
 
 [dependencies]
 "isaacsim.exp.base" = {}
@@ -15,8 +15,8 @@ version = "4.5.0"
 settings.persistent = false       # settings reset on each run with this app
 window.title = "Isaac Sim Python"
 
-[settings.app.exts]
-folders = [
+[settings.app.exts.folders]
+'++' = [
     "${app}/../exts",
     "${app}/../extscache",
     "${app}/../extsPhysics",
