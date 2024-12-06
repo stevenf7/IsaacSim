@@ -1,5 +1,9 @@
 # Changelog
 
+## [13.4.2] - 2024-12-05
+### Changed
+- Updated Nova carter path
+
 ## [13.4.1] - 2024-12-04
 ### Changed
 - glyph for the create menu

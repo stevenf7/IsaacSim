@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2024-12-05
+### Changed
+- Updated Nova carter path
+
 ## [0.3.1] - 2024-11-25
 ### Fixed
 - Error when user attempts to create contact sensor without having selected valid parent prim

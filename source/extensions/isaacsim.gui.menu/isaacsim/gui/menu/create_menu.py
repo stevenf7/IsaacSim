@@ -83,7 +83,7 @@ class CreateMenuExtension:
             MenuItemDescription(
                 name="Nova Carter with Sensors",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/nova_carter_sensors.usd", "/Nova_Carter"
+                    "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd", "/Nova_Carter"
                 ),
             ),
             MenuItemDescription(

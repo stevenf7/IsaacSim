@@ -535,7 +535,7 @@ class TestRos2Subscribers(omni.kit.test.AsyncTestCase):
         from tf2_msgs.msg import TFMessage
 
         # Load our Nova Carter ROS stage
-        stage_path = "/Isaac/Robots/Carter/nova_carter_sensors.usd"
+        stage_path = "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
         await open_stage_async(self._assets_root_path + stage_path)
 
         self._stage = omni.usd.get_context().get_stage()
