@@ -154,6 +154,8 @@ class Articulation(XFormPrim):
             visibilities=visibilities,
             reset_xform_properties=reset_xform_properties,
         )
+        # reset default state here because of the difference in the articulation root transform in USD vs tensor API
+        self._default_state = XFormPrimViewState(positions=None, orientations=None)
         self._joint_residual_apis = None
         self._articulation_residual_apis = None
         self._enable_residual_reports = enable_residual_reports
@@ -5154,13 +5156,17 @@ class Articulation(XFormPrim):
             self._default_kps, self._default_kds = self.get_gains(clone=True)
             default_actions = self.get_applied_actions(clone=True)
             # TODO: implement effort part
-            default_positions, default_orientations = self.get_world_poses()
-            if self._backend == "warp":
-                self._default_state = XFormPrimViewState(
-                    positions=default_positions.data, orientations=default_orientations.data
-                )
-            else:
-                self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
+            if self._default_state.positions is None or self._default_state.orientations is None:
+                default_positions, default_orientations = self.get_world_poses()
+                if self._default_state.positions is None:
+                    self._default_state.positions = (
+                        default_positions.data if self._backend == "warp" else default_positions
+                    )
+                if self._default_state.orientations is None:
+                    self._default_state.orientations = (
+                        default_orientations.data if self._backend == "warp" else default_orientations
+                    )
+
             if self._default_joints_state is None:
                 self._default_joints_state = JointsState(positions=None, velocities=None, efforts=None)
             if self._default_joints_state.positions is None:

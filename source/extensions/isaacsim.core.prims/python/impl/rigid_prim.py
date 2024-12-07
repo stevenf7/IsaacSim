@@ -2256,26 +2256,17 @@ class RigidPrim(XFormPrim):
         )
         self._num_shapes = self._physics_view.max_shapes
         if not self._non_root_link:
-            default_positions, default_orientations = self.get_world_poses()
-            linear_velocities = self.get_linear_velocities()
-            angular_velocities = self.get_angular_velocities()
-            if self._backend == "warp":
-                self._default_state = XFormPrimViewState(
-                    positions=default_positions.data, orientations=default_orientations.data
+            self._dynamics_default_state.positions = self._default_state.positions
+            self._dynamics_default_state.orientations = self._default_state.orientations
+            if self._dynamics_default_state.linear_velocities is None:
+                linear_velocities = self.get_linear_velocities()
+                self._dynamics_default_state.linear_velocities = (
+                    linear_velocities.data if self._backend == "warp" else linear_velocities
                 )
-                self._dynamics_default_state = DynamicsViewState(
-                    self._default_state.positions,
-                    self._default_state.orientations,
-                    linear_velocities.data,
-                    angular_velocities.data,
-                )
-            else:
-                self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
-                self._dynamics_default_state = DynamicsViewState(
-                    self._default_state.positions,
-                    self._default_state.orientations,
-                    linear_velocities,
-                    angular_velocities,
+            if self._dynamics_default_state.angular_velocities is None:
+                angular_velocities = self.get_angular_velocities()
+                self._dynamics_default_state.angular_velocities = (
+                    angular_velocities.data if self._backend == "warp" else angular_velocities
                 )
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
         if self._track_contact_forces:

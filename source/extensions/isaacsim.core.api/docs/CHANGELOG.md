@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.6] - 2024-12-05
+### Fixed
+- Fixed Rigid Prim and Articulation objects default state gets overwritten after a world.reset()
+
 ## [4.2.5] - 2024-11-22
 ### Removed
 - Removed SimulationContext._physics_sim_view.
