@@ -23,7 +23,7 @@ import sys
 import numpy as np
 
 try:
-    CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/omni.agent_sdg.base.kit"
+    CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/metropolis.simulation.base.kit"
     if not os.path.exists(CUSTOM_APP_PATH):
         CUSTOM_APP_PATH = ""
         from isaacsim.simulation_app import SimulationApp
@@ -124,6 +124,7 @@ class AgentSDG:
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/max_camera_height", 3)
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/character_focus_height", 0.7)
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/frame_write_interval", 1)
+        self._settings.set("/app/omni.graph.scriptnode/enable_opt_in", False)  # To bypass action graph scriptnode check
 
     async def _setup_sim(self):
         def done_callback(e):
