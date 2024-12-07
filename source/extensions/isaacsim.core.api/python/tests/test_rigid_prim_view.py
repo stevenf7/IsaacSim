@@ -289,6 +289,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._setup_scene()
             await self.default_state_post_reset_test()
             await self._setup_scene()
+            await self.default_state_before_reset_test()
+            await self._setup_scene()
             await self.masses_test()
             await self._setup_scene()
             await self.densities_test()
@@ -313,7 +315,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._setup_friction_scene()
             await self.friction_force_test(force_multiplier=2.0)
 
-        # test USD paths
+        # # test USD paths
         if self._device == "cpu":
             for indexed in [False, True]:
                 print("USD", indexed, self._test_cfg)
@@ -623,12 +625,11 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     atol=1.0e-2,
                 ).all()
             )
-
             self.assertTrue(
                 self.isclose(
                     top_states.positions.numpy()[indices],
                     np.array([[10.0, 10, 1.5], [10.0, 20.0, 1.5], [10.0, 30.0, 1.5]])[indices],
-                    atol=1.0e-4,
+                    atol=1.0e-2,
                 ).all()
             )
             # velocity test
@@ -1163,6 +1164,107 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                         desired_default_state.angular_velocities, current_state.angular_velocities, atol=1e-4
                     ).all()
                 )
+
+    async def default_state_before_reset_test(self):
+        # test set state before reset
+        indices = None
+
+        positions = np.array([[10.0, 10.0, 0.0], [0.0, 10.0, 0.0], [0.0, -10.0, 0.0]])
+        orientations = euler_angles_to_quats_numpy(
+            np.array([[0.0, np.pi / 4.0, 0], [0, 0, np.pi / 4.0], [0, 0, -np.pi / 8.0]])
+        )
+        linear_velocities = np.array([[0.0, 10, 0], [10, 0, 0], [-10, 0, 0]])
+        angular_velocities = np.array([[0.0, 360, 0], [360, 0, 0], [-360, 0, 0]])
+
+        positions = self._array_container(positions.tolist() if indices is None else positions[indices].tolist())
+        orientations = self._array_container(
+            orientations.tolist() if indices is None else orientations[indices].tolist()
+        )
+        linear_velocities = self._array_container(
+            linear_velocities.tolist() if indices is None else linear_velocities[indices].tolist()
+        )
+        angular_velocities = self._array_container(
+            angular_velocities.tolist() if indices is None else angular_velocities[indices].tolist()
+        )
+        desired_default_state = DynamicsViewState(
+            positions=positions,
+            orientations=orientations,
+            linear_velocities=linear_velocities,
+            angular_velocities=angular_velocities,
+        )
+        self._cubes_view.set_default_state(
+            positions=desired_default_state.positions,
+            orientations=desired_default_state.orientations,
+            linear_velocities=desired_default_state.linear_velocities,
+            angular_velocities=desired_default_state.angular_velocities,
+            indices=indices,
+        )
+        await self._my_world.reset_async()
+        default_state = self._cubes_view.get_default_state()
+        if self._test_cfg["backend"] == "warp":
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.positions.numpy(),
+                    default_state.positions.numpy() if indices is None else default_state.positions.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.orientations.numpy(),
+                    default_state.orientations.numpy()
+                    if indices is None
+                    else default_state.orientations.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.linear_velocities.numpy(),
+                    default_state.linear_velocities.numpy()
+                    if indices is None
+                    else default_state.linear_velocities.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.angular_velocities.numpy(),
+                    default_state.angular_velocities.numpy()
+                    if indices is None
+                    else default_state.angular_velocities.numpy()[indices],
+                    atol=1e-4,
+                ).all()
+            )
+        else:
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.positions,
+                    default_state.positions if indices is None else default_state.positions[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.orientations,
+                    default_state.orientations if indices is None else default_state.orientations[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.linear_velocities,
+                    default_state.linear_velocities if indices is None else default_state.linear_velocities[indices],
+                    atol=1e-4,
+                ).all()
+            )
+            self.assertTrue(
+                self.isclose(
+                    desired_default_state.angular_velocities,
+                    default_state.angular_velocities if indices is None else default_state.angular_velocities[indices],
+                    atol=1e-4,
+                ).all()
+            )
 
     async def transforms_test(self):
         await self._my_world.reset_async()

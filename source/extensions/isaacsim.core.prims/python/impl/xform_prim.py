@@ -328,6 +328,10 @@ class XFormPrim(Prim):
             if self._non_root_link:
                 carb.log_warn("This view corresponds to non root links that are included in an articulation")
                 return
+
+            if self._default_state is None:
+                self._default_state = XFormPrimViewState(positions=None, orientations=None)
+
             if positions is not None:
                 if indices is None:
                     self._default_state.positions = positions
