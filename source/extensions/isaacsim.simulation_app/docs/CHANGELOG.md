@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1] - 2024-12-06
+### Fixed
+- Signal handler to exit cleanly when ctrl-c is pressed
+
 ## [2.4.0] - 2024-11-26
 ### Removed
 - Remove livesync_usd entry from SimulationApp configuration

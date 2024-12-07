@@ -214,9 +214,10 @@ class SimulationApp:
         # Register signal handler to exit when ctrl-c happens
         # This needs to happen after the app starts so that we can overide the default handler
         def signal_handler(signal, frame):
-            # disable logging warnings as we are going to terminate the process
+            # Disable logging as we are forcefully exiting
             _logging = carb.logging.acquire_logging()
-            _logging.set_level_threshold(carb.logging.LEVEL_FATAL)
+            _logging.set_log_enabled(False)
+            self._app.shutdown()
             self._framework.unload_all_plugins()
             sys.exit(0)
 
@@ -318,6 +319,7 @@ class SimulationApp:
             f'--/app/window/height={self.config["window_height"]}',
             f'--/renderer/multiGpu/enabled={self.config["multi_gpu"]}',
             f'--/app/fastShutdown={self.config["fast_shutdown"]}',
+            "--/app/installSignalHandlers=0",
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
             "--ext-folder",
@@ -609,16 +611,15 @@ class SimulationApp:
             # Disable logging before shutdown to keep the log clean
             # Warnings at this point don't matter as the python process is about to be terminated
             _logging = carb.logging.acquire_logging()
-            _logging.set_level_threshold(carb.logging.LEVEL_ERROR)
+            _logging.set_log_enabled(False)
             # Disabled to prevent crashes on shutdown, terminating carb is faster
-            # self._app.shutdown()
+            self._app.shutdown()
             self._framework.unload_all_plugins()
             # Force all omni module to unload on close
             # This prevents crash on exit
             # for m in list(sys.modules.keys()):
             #     if "omni" in m and m != "omni.kit.app":
             #         del sys.modules[m]
-            print("Simulation App Shutdown Complete")
 
     def is_running(self) -> bool:
         """
