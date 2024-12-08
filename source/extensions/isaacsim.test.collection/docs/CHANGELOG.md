@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.3] - 2024-12-07
+### Changed
+- Fix Nova Carter tests
+
 ## [2.0.2] - 2024-12-05
 ### Changed
 - Updated Nova carter path
