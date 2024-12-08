@@ -21,6 +21,7 @@ from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.rotations import quat_to_euler_angles
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
+from pxr import Gf, PhysicsSchemaTools
 
 from .robot_helpers import init_robot_sim, setup_robot_og
 
@@ -41,6 +42,9 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         # add in carter (from nucleus)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
         (result, error) = await open_stage_async(self.usd_path)
+        PhysicsSchemaTools.addGroundPlane(
+            omni.usd.get_context().get_stage(), "/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
+        )
 
         # Make sure the stage loaded
         self.assertTrue(result)
@@ -61,7 +65,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         # setup omnigraph
         self.graph_path = "/ActionGraph"
         (graph, _) = setup_robot_og(
-            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter", 0.14, 0.4132
+            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter/chassis_link", 0.14, 0.4132
         )
 
         keys = og.Controller.Keys
@@ -186,7 +190,8 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         og.Controller.attribute(self.graph_path + "/CheckGoal2D.inputs:targetChanged").set(True)
         og.Controller.attribute(self.graph_path + "/CheckGoal2D.inputs:target").set([pos[0], pos[1], rot])
 
-        await omni.kit.app.get_app().next_update_async()  # allow for check goal node to run and update outputs
+        for i in range(500):
+            await omni.kit.app.get_app().next_update_async()  # allow for check goal node to run and update outputs
 
         reached = og.Controller.get(og.Controller.attribute(self.graph_path + "/CheckGoal2D.outputs:reachedGoal"))
         self.assertTrue(

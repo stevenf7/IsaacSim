@@ -22,6 +22,7 @@ from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.prims import delete_prim
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
+from pxr import Gf, PhysicsSchemaTools
 
 from .robot_helpers import init_robot_sim, setup_robot_og
 
@@ -59,6 +60,9 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         await omni.kit.app.get_app().next_update_async()
+        PhysicsSchemaTools.addGroundPlane(
+            omni.usd.get_context().get_stage(), "/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
+        )
 
         self.my_world = World(stage_units_in_meters=1.0)
         await self.my_world.initialize_simulation_context_async()
@@ -66,7 +70,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         # setup omnigraph
         self.graph_path = "/ActionGraph"
         graph, self.odom_node = setup_robot_og(
-            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter", 0.14, 0.4132
+            self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter/chassis_link", 0.14, 0.4132
         )
 
         pass
