@@ -54,7 +54,7 @@ class Extension(omni.ext.IExt):
                 onclick_fun=lambda a=weakref.proxy(self): a._open_odometry_publisher(),
             ),
             make_menu_item_description(
-                ext_id, "JointStates", onclick_fun=lambda a=weakref.proxy(self): a._open_joint_states_pubsub()
+                ext_id, "Joint States", onclick_fun=lambda a=weakref.proxy(self): a._open_joint_states_pubsub()
             ),
             make_menu_item_description(ext_id, "Clock", onclick_fun=lambda a=weakref.proxy(self): a._open_clock()),
             make_menu_item_description(
@@ -64,7 +64,7 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="ROS 2 Omnigraphs",
+                name="ROS 2 OmniGraphs",
                 sub_menu=ros_og_menu,
             )
         ]

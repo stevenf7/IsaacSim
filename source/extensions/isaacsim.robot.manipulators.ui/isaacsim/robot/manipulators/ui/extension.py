@@ -26,7 +26,7 @@ class Extension(omni.ext.IExt):
         ]
         self._menu_controller = [
             MenuItemDescription(
-                name="Robotics", sub_menu=[MenuItemDescription(name="Omnigraph Controllers", sub_menu=controller_menu)]
+                name="Robotics", sub_menu=[MenuItemDescription(name="OmniGraph Controllers", sub_menu=controller_menu)]
             )
         ]
         add_menu_items(self._menu_controller, "Tools")

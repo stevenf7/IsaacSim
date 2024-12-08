@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.3] - 2024-12-06
+### Fixed
+- Joint state subscriber auto generated graph in ROS 2 OmniGraphs menu
+
 ## [4.1.2] - 2024-12-05
 ### Changed
 - Updated Nova carter path

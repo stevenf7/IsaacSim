@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2024-12-05
+### Changed
+- Updated OmniGraph naming
+
 ## [2.1.0] - 2024-11-01
 ### Changed
 - Menu name/location

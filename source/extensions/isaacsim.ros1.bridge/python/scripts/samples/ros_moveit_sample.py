@@ -55,7 +55,7 @@ class Extension(omni.ext.IExt):
             carb.log_error(msg)
         else:
 
-            overview = "This sample demonstrates how to use MoveIt with Isaac Sim. \n\n The Environment Loaded already contains the Omnigraphs needed to connect with MoveIt."
+            overview = "This sample demonstrates how to use MoveIt with Isaac Sim. \n\n The Environment Loaded already contains the OmniGraphs needed to connect with MoveIt."
             self._main_stack = ui.VStack(spacing=5, height=0)
             with self._main_stack:
                 setup_ui_headers(
