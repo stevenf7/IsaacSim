@@ -272,9 +272,9 @@
         "Extension":"omni.isaac.core_nodes",
         "Window": 0,
         "Summary":"Create and edit control graphs",
-        "Basic Instructions":"One way to control your robot is using the Omnigraph interface (another way is via Python APIs). While you can build these graphs from scratch, we also provide some shortcuts to the most commonly needed graphs. \n\n- To control your robot by issuing commands directly to the joints, go to `Tools -> Robotics -> Omnigraph Controllers -> Articulation Position (or Velocity) Controller.` \n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n- There are several other specialized controllers for specific types of robots, such as Differential Controller for wheeled robots and Gripper Controller for any end-effector that has a single degree of actuation for each finger. \n\n- All Omnigraphs created can be edited using a visual graph editor (Window-> Visual Scripting -> Action Graph).",
+        "Basic Instructions":"One way to control your robot is using the OmniGraph interface (another way is via Python APIs). While you can build these graphs from scratch, we also provide some shortcuts to the most commonly needed graphs. \n\n- To control your robot by issuing commands directly to the joints, go to `Tools -> Robotics -> OmniGraph Controllers -> Articulation Position (or Velocity) Controller.` \n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n- There are several other specialized controllers for specific types of robots, such as Differential Controller for wheeled robots and Gripper Controller for any end-effector that has a single degree of actuation for each finger. \n\n- All OmniGraphs created can be edited using a visual graph editor (Window-> Visual Scripting -> Action Graph).",
         "Advanced Instructions":"To access the python script of the controller graphs, click on the icon on the bottom of the popup box that appears when you generate the graph.",
-        "Menu": "Tools -> Robotics -> Omnigraph Controllers",
+        "Menu": "Tools -> Robotics -> OmniGraph Controllers",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_omnigraph_shortcuts.html"
         }
@@ -286,9 +286,9 @@
         "Extension":"isaacsim.ros2.bridge",
         "Window": 0,
         "Summary":"Create and edit ROS bridge graphs",
-        "Basic Instructions":"All ROS bridge functions are in form of Omnigraph Nodes and Graphs. \n\n For the most commonly used ROS bridges, you can find their shortcuts in `Tools -> Robotics -> Omnigraph Controllers -> ROS*`. If you don't see any ROS graphs, make sure your ROS2 bridge is enabled.  \n\n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
-        "Advanced Instructions":"The shortcuts are only available for ROS2 Humble. \n\n- All Omnigraphs created can be edited using a Visual Graph Editor (Window->Visual Scripting -> Action Graph). \n\n- Yes, you can write your own omnigraph nodes",
-        "Menu": "Tools -> Robotics -> Omnigraph Controllers (ROS2 bridge extension must be enabled for this to show up)",
+        "Basic Instructions":"All ROS bridge functions are in form of OmniGraph Nodes and Graphs. \n\n For the most commonly used ROS bridges, you can find their shortcuts in `Tools -> Robotics -> OmniGraph Controllers -> ROS*`. If you don't see any ROS graphs, make sure your ROS2 bridge is enabled.  \n\n- a popup box will appear asking for a few required parameters, as well as instructions on how to use the generated graph. \n\n Find more tips by expanding the 'Advanced Instructions' section below.",
+        "Advanced Instructions":"The shortcuts are only available for ROS2 Humble. \n\n- All OmniGraphs created can be edited using a Visual Graph Editor (Window->Visual Scripting -> Action Graph). \n\n- Yes, you can write your own OmniGraph nodes",
+        "Menu": "Tools -> Robotics -> OmniGraph Controllers (ROS2 bridge extension must be enabled for this to show up)",
         "Resources":{
             "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/ros2_tutorials/index.html"
         }

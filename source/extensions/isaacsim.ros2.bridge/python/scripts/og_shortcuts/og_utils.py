@@ -473,7 +473,7 @@ class Ros2JointStatesGraph:
                         ],
                         keys.CONNECT: [
                             (
-                                self._og_path + "/" + js_sub_node_name + ".outputs:execOut",
+                                tick_node + ".outputs:tick",
                                 self._og_path + "/" + art_node_name + ".inputs:execIn",
                             ),
                             (

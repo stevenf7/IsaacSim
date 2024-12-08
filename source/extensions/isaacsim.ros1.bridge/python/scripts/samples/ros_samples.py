@@ -81,7 +81,7 @@ class Extension(omni.ext.IExt):
             msg = "ROS1 Bridge is not enabled. Please enable the extension to use this feature."
             carb.log_error(msg)
         else:
-            overview = "This sample demonstrates how to use ROS1 Navigation packages with Isaac Sim. \n\n The Environment Loaded already contains the Omnigraphs needed to connect with ROS."
+            overview = "This sample demonstrates how to use ROS1 Navigation packages with Isaac Sim. \n\n The Environment Loaded already contains the OmniGraphs needed to connect with ROS."
             self._main_stack = ui.VStack(spacing=5, height=0)
             with self._main_stack:
                 setup_ui_headers(

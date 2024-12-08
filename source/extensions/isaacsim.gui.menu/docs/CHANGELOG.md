@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.4] - 2024-12-06
+### Changed
+- Updated OmniGraph menu naming
+
 ## [2.0.3] - 2024-12-05
 ### Changed
 - Updated Nova carter path

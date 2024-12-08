@@ -67,7 +67,7 @@ class ToolsMenuExtension:
                                 ],
                             ),
                             MenuLayout.SubMenu(
-                                "Omnigraph Controllers",
+                                "OmniGraph Controllers",
                                 [
                                     MenuLayout.Item(name="Differential Controller"),
                                     MenuLayout.Item(name="Joint Position"),
@@ -76,7 +76,7 @@ class ToolsMenuExtension:
                                     MenuLayout.Item(name="Surface Gripper"),
                                 ],
                             ),
-                            MenuLayout.Item("ROS 2 Omnigraphs"),
+                            MenuLayout.Item("ROS 2 OmniGraphs"),
                             MenuLayout.Seperator("Navigation"),
                             MenuLayout.Item("Block World Generator"),
                             MenuLayout.Item("Occupancy Map"),
