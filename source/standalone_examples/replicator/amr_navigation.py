@@ -124,7 +124,7 @@ class NavSDGDemo:
         self.clear()
 
     def _load_env(self):
-        # Fresh stage with custom physics scene for carter's navigation
+        # Fresh stage with custom physics scene for Nova Carter's navigation
         create_new_stage()
         self._stage = omni.usd.get_context().get_stage()
         self._add_physics_scene()
@@ -133,7 +133,7 @@ class NavSDGDemo:
         assets_root_path = get_assets_root_path()
         add_reference_to_stage(usd_path=assets_root_path + next(self._cycled_env_urls), prim_path="/Environment")
 
-        # Carter
+        # Nova Carter
         add_reference_to_stage(usd_path=assets_root_path + self.CARTER_URL, prim_path="/NavWorld/CarterNav")
         self._carter_nav_target = self._stage.GetPrimAtPath("/NavWorld/CarterNav/targetXform")
         self._carter_chassis = self._stage.GetPrimAtPath("/NavWorld/CarterNav/chassis_link")
@@ -271,8 +271,8 @@ class NavSDGDemo:
         for rp in self._render_products:
             rp.destroy()
         self._render_products.clear()
-        if self._stage.GetPrimAtPath("/Replicator").IsValid():
-            omni.usd.commands.DeletePrimsCommand(["/Replicator"]).do()
+        if self._stage.GetPrimAtPath("/Replicator"):
+            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Replicator"])
 
     def _enable_render_products(self):
         print(f"[NavSDGDemo] Enabling render products for SDG..")
@@ -288,7 +288,6 @@ class NavSDGDemo:
         if self._use_temp_rp:
             self._enable_render_products()
         rep.orchestrator.step(rt_subframes=16)
-        rep.orchestrator.wait_until_complete()
         if self._use_temp_rp:
             self._disable_render_products()
 
@@ -296,13 +295,12 @@ class NavSDGDemo:
         if self._use_temp_rp:
             self._enable_render_products()
         await rep.orchestrator.step_async(rt_subframes=16)
-        await rep.orchestrator.wait_until_complete_async()
         if self._use_temp_rp:
             self._disable_render_products()
 
     def _load_next_env(self):
-        if self._stage.GetPrimAtPath("/Environment").IsValid():
-            omni.usd.commands.DeletePrimsCommand(["/Environment"]).do()
+        if self._stage.GetPrimAtPath("/Environment"):
+            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Environment"])
         assets_root_path = get_assets_root_path()
         add_reference_to_stage(usd_path=assets_root_path + next(self._cycled_env_urls), prim_path="/Environment")
 
@@ -313,8 +311,17 @@ class NavSDGDemo:
         self._frame_counter += 1
         if self._frame_counter >= self._num_frames:
             print(f"[NavSDGDemo] Finished")
-            self.clear()
+            # Make sure the data has been written to disk before clearing the state
+            if self._is_running_in_script_editor():
+                import asyncio
+
+                task = asyncio.ensure_future(rep.orchestrator.wait_until_complete_async())
+                task.add_done_callback(lambda t: self.clear())
+            else:
+                rep.orchestrator.wait_until_complete()
+                self.clear()
             return
+
         self._randomize_dolly_pose()
         self._randomize_dolly_light()
         self._randomize_prop_poses()
