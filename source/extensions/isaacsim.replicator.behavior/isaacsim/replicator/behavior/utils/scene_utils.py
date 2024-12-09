@@ -586,6 +586,11 @@ def disable_simulation_reset_on_stop():
 
 def reset_simulation_and_enable_reset_on_stop():
     """Reset the simulation and enable the simulation reset on stop setting. Needed to reset the simulation state after play+stop."""
+    if carb.settings.get_settings().get(omni.physx.bindings._physx.SETTING_RESET_ON_STOP):
+        carb.log_warn(
+            "Expected 'omni.physx.bindings._physx.SETTING_RESET_ON_STOP' to be False, skipping reset_simulation"
+        )
+        return
     physx_interface = omni.physx.get_physx_interface()
     physx_interface.reset_simulation()
     carb.settings.get_settings().set(omni.physx.bindings._physx.SETTING_RESET_ON_STOP, True)

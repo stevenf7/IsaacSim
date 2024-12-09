@@ -95,6 +95,7 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
         for exposed_var in behavior_class.VARIABLES_TO_EXPOSE:
             # Check if the exposed variable is set on the prim
             attr_name = exposed_var["attr_name"]
+            print(f"\tChecking exposed variable: {attr_name}")
             attr_full_name = f"{full_ns}:{attr_name}"
             attribute = root_prim.GetAttribute(attr_full_name)
             self.assertTrue(
@@ -126,15 +127,19 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
 
         # Basic test to check if the behavior can run for a few frames
         timeline = omni.timeline.get_timeline_interface()
+        print(f"\tStarting timeline for several frames")
         timeline.play()
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
+        print(f"\tPausing timeline")
         timeline.pause()
         await omni.kit.app.get_app().next_update_async()
+        print(f"\tStopping timeline")
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
         # Remove the behavior script from the prim, this should also remove/invalidate the attributes of the exposed variables
+        print(f"\tChecking if exposed variables are removed after clearing the scripts attribute")
         scripts_attr.Set([])
 
         # NOTE, at least 3 updates are needed to ensure the script is loaded and the exposed vars are set
@@ -153,5 +158,5 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
 
     async def test_exposed_variables(self):
         for behavior_class in BEHAVIOR_CLASSES:
-            print(f"Checking exposed variables for behavior: {behavior_class.__name__}")
+            print(f"Testing behavior: {behavior_class.__name__}")
             await self.check_exposed_variables(behavior_class)

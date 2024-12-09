@@ -73,7 +73,7 @@ def check_if_exposed_variables_should_be_removed(prim: Usd.Prim, script_file_pat
     return not any(script_file_path == asset.path for asset in scripts_paths)
 
 
-def remove_exposed_variable(prim: Usd.Prim, full_attr_name: str) -> None:
+def remove_exposed_variable(prim: Usd.Prim, full_attr_name: str, remove_from_fabric: bool = True) -> None:
     """Remove the exposed variable from the prim."""
     if not prim.IsValid():
         carb.log_warn(f"Prim {prim.GetPath()} is not valid, cannot remove exposed variable {full_attr_name}")
@@ -81,6 +81,18 @@ def remove_exposed_variable(prim: Usd.Prim, full_attr_name: str) -> None:
     attr = prim.GetAttribute(full_attr_name)
     if attr:
         prim.RemoveProperty(attr.GetName())
+        # Remove the attribute from fabric as well
+        if remove_from_fabric:
+            import usdrt
+            from pxr import UsdUtils
+
+            stage = prim.GetStage()
+            stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
+            stage_rt = usdrt.Usd.Stage.Attach(stage_id)
+            prim_rt = stage_rt.GetPrimAtPath(usdrt.Sdf.Path(prim.GetPath().pathString))
+            attr_rt = prim_rt.GetAttribute(full_attr_name)
+            if attr_rt:
+                prim_rt.RemoveProperty(full_attr_name)
     else:
         carb.log_warn(f"Attribute {full_attr_name} not found on {prim.GetPath()}")
 
