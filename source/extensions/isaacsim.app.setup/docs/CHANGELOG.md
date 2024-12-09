@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.3] - 2024-12-07
+### Fixed
+- Removes some deprecation warnings by using MenuItemDescription to build Layouts and Help menus
+
 ## [1.3.2] - 2024-11-19
 ### Fixed
 - Startup test

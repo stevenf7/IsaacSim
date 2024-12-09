@@ -51,6 +51,7 @@ import omni.kit.test
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.viewports import set_camera_view
 
+enable_extension("isaacsim.ros2.bridge")
 enable_extension("isaacsim.benchmark.services")
 from isaacsim.benchmark.services import BaseIsaacBenchmark
 

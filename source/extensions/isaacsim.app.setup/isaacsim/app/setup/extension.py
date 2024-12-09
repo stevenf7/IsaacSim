@@ -23,7 +23,7 @@ import omni.kit.stage_templates as stage_templates
 import omni.kit.ui
 import omni.ui as ui
 from isaacsim.core.version import get_version
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, build_submenu_dict
 from omni.kit.window.title import get_main_window_title
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
@@ -220,80 +220,25 @@ class CreateSetupExtension(omni.ext.IExt):
         self.HELP_FORUMS_URL = "Help/Isaac Sim Online Forums"
         self.HELP_UI_DOCS = "Help/Omni UI Docs"
         self.HELP_KIT_MANUAL = "Help/Kit Programming Manual"
-        self.menus = []
+        self.UI_SELECTOR_MENU_PATH = "Help/Isaac Sim App Selector"
 
-        # separator
-        priority = 50
-
-        editor_menu = omni.kit.ui.get_editor_menu()
-
-        ref_guide_menu = editor_menu.add_item(
-            self.HELP_REFERENCE_GUIDE_MENU, lambda *_: self._open_browser(REFERENCE_GUIDE_URL), priority=-23
-        )
-        self.menus.append(ref_guide_menu)
-
-        manual_url_path = editor_menu.add_item(
-            self.HELP_SCRIPTING_MANUAL, lambda *_: self._open_browser(MANUAL_URL), priority=-21
-        )
-        self.menus.append(manual_url_path)
-
-        forums_link = editor_menu.add_item(
-            self.HELP_FORUMS_URL, lambda *_: self._open_browser(FORUMS_URL), priority=-21
-        )
-        self.menus.append(forums_link)
-
-        kit_manual = editor_menu.add_item(
-            self.HELP_KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), priority=-11
-        )
-        self.menus.append(kit_manual)
-
-        # set omnu.ui Help Menu
-        self._ui_doc_menu_item = editor_menu.add_item(self.HELP_UI_DOCS, lambda *_: self._show_ui_docs())
-        editor_menu.set_priority(self.HELP_UI_DOCS, -10)
-
-        # set Selector Menu
-        self._ui_selector_menu_path = "Help/Isaac Sim App Selector"
-        self._ui_selector_menu_item = editor_menu.add_item(
-            self._ui_selector_menu_path, lambda *_: self._show_selector()
-        )
-        editor_menu.set_priority(self._ui_selector_menu_path, 20)
-
-        editor_menu.set_priority("Help", 200)
-
-        self._layout_menu_items = []
         self._current_layout_priority = 20
 
         def add_layout_menu_entry(name, parameter, key):
             import inspect
 
-            menu_path = f"Layout/{name}"
+            menu_path = f"Layouts/{name}"
 
             if inspect.isfunction(parameter):
-                menu = editor_menu.add_item(
-                    menu_path, lambda *_: asyncio.ensure_future(parameter()), False, self._current_layout_priority
-                )
-                self._layout_menu_items.append(menu)
+                onclick_fn = lambda *_: asyncio.ensure_future(parameter())
             else:
-                menu = editor_menu.add_item(
-                    menu_path,
-                    lambda *_: asyncio.ensure_future(
-                        _load_layout(f"{DATA_PATH}/{EXT_FOLDER}/layouts/{parameter}.json")
-                    ),
-                    False,
-                    self._current_layout_priority,
+                onclick_fn = lambda *_: asyncio.ensure_future(
+                    _load_layout(f"{DATA_PATH}/{EXT_FOLDER}/layouts/{parameter}.json")
                 )
-                self._layout_menu_items.append(menu)
 
-            editor_menu.set_hotkey(menu_path, carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key)
-
-            self._current_layout_priority = self._current_layout_priority + 1
-
-        add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1)
-        # add_layout_menu_entry("Animation", "animation", carb.input.KeyboardInput.KEY_2)
-        # add_layout_menu_entry("Animation Graph", "animationGraph", carb.input.KeyboardInput.KEY_3)
-        # add_layout_menu_entry("Paint", "paint", carb.input.KeyboardInput.KEY_4)
-        # add_layout_menu_entry("Rendering", "rendering", carb.input.KeyboardInput.KEY_5)
-        add_layout_menu_entry("Visual Scripting", "visualScripting", carb.input.KeyboardInput.KEY_6)
+            return MenuItemDescription(
+                name=menu_path, onclick_fn=onclick_fn, hotkey=(carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key)
+            )
 
         # create Quick Load & Quick Save
         from omni.kit.quicklayout import QuickLayout
@@ -304,8 +249,28 @@ class CreateSetupExtension(omni.ext.IExt):
         async def quick_load():
             QuickLayout.quick_load(None, None)
 
-        add_layout_menu_entry("Quick Save", quick_save, carb.input.KeyboardInput.KEY_7)
-        add_layout_menu_entry("Quick Load", quick_load, carb.input.KeyboardInput.KEY_8)
+        menu_dict = build_submenu_dict(
+            [
+                MenuItemDescription(
+                    name=self.HELP_REFERENCE_GUIDE_MENU, onclick_fn=lambda *_: self._open_browser(REFERENCE_GUIDE_URL)
+                ),
+                MenuItemDescription(
+                    name=self.HELP_SCRIPTING_MANUAL, onclick_fn=lambda *_: self._open_browser(MANUAL_URL)
+                ),
+                MenuItemDescription(name=self.HELP_FORUMS_URL, onclick_fn=lambda *_: self._open_browser(FORUMS_URL)),
+                MenuItemDescription(
+                    name=self.HELP_KIT_MANUAL, onclick_fn=lambda *_: self._open_browser(KIT_MANUAL_URL)
+                ),
+                MenuItemDescription(name=self.HELP_UI_DOCS, onclick_fn=lambda *_: self._show_ui_docs()),
+                MenuItemDescription(name=self.UI_SELECTOR_MENU_PATH, onclick_fn=lambda *_: self._show_selector()),
+                add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1),
+                add_layout_menu_entry("Visual Scripting", "visualScripting", carb.input.KeyboardInput.KEY_6),
+                add_layout_menu_entry("Quick Save", quick_save, carb.input.KeyboardInput.KEY_7),
+                add_layout_menu_entry("Quick Load", quick_load, carb.input.KeyboardInput.KEY_8),
+            ]
+        )
+        for group in menu_dict:
+            add_menu_items(menu_dict[group], group)
 
     def __add_app_icon(self, ext_id):
 
@@ -333,10 +298,3 @@ StartupWMClass=IsaacSim"""
             await omni.kit.app.get_app().next_update_async()
             self._ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
             await omni.kit.app.get_app().next_update_async()
-
-    def on_shutdown(self):
-        omni.kit.menu.utils.remove_layout(self._menu_layout)
-        self.menus = None
-        self._menu_layout = None
-        self._layout_menu_items = None
-        self._ui_doc_menu_item = None

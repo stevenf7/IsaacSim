@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Utility"
 title = "Jupyter notebook integration"
 description = "Jupyter notebook version of Omniverse's script editor"
