@@ -163,16 +163,6 @@ folders = [
 "omni.replicator.isaac" = {}
 "omni.usd.schema.isaac" = {}
 
-[dependencies."filter:platform"."linux-x86_64"]
-"isaacsim.robot_motion.ocs2" = {}
-"isaacsim.ros1.bridge" = {}
-"omni.isaac.ocs2" = {}
-"omni.isaac.ros_bridge" = {}
-"omni.isaac.repl" = {}
-
-
-[dependencies]
-
 # Base Isaac Sim Dependencies
 "omni.warp" = { version = "1.5.0-rc.1", exact = true }
 "omni.warp.core" = { version = "1.5.0-rc.1", exact = true }
@@ -375,6 +365,13 @@ folders = [
 [dependencies."filter:platform"."windows-x86_64"]
 "omni.kit.window.modifier.titlebar" = { version = "105.2.16", exact = true }
 
+# Linux Only, includes isaac sim extensions
+[dependencies."filter:platform"."linux-x86_64"]
+"isaacsim.robot_motion.ocs2" = {}
+"isaacsim.ros1.bridge" = {}
+"omni.isaac.ocs2" = {}
+"omni.isaac.ros_bridge" = {}
+"omni.isaac.repl" = {}
 
 ########################################################################################################################
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
