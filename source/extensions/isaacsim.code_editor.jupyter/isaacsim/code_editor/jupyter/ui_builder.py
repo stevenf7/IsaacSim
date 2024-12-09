@@ -35,13 +35,17 @@ class UIBuilder:
         """Create menu item"""
         # menu item
         try:
-            import omni.kit.ui
+            from omni.kit.menu.utils import MenuItemDescription, add_menu_items, build_submenu_dict
         except ImportError:
-            self._editor_menu = None
+            pass
         else:
-            self._editor_menu = omni.kit.ui.get_editor_menu()
-            if self._editor_menu:
-                self._menu = self._editor_menu.add_item(self._menu_path, self._launch, toggle=False, value=False)
+            menu_dict = build_submenu_dict(
+                [
+                    MenuItemDescription(name=self._menu_path, onclick_fn=lambda *_: self._launch()),
+                ],
+            )
+            for group in menu_dict:
+                add_menu_items(menu_dict[group], group)
 
     def shutdown(self):
         """Clean up menu item"""

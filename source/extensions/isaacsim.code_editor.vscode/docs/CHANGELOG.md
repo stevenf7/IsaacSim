@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2024-12-07
+### Fixed
+- moved from deprecated editor_menu.add_item to omni.kit.menu.utils
+
 ## [1.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

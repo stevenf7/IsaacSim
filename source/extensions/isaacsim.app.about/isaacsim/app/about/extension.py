@@ -17,6 +17,7 @@ import omni.kit.app
 import omni.kit.ui
 from isaacsim.core.version import get_version
 from omni import ui
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, build_submenu_dict
 
 WINDOW_NAME = "About"
 DISCONNECTED = "** disconnected **"
@@ -27,10 +28,13 @@ _extension_instance = None
 
 class AboutExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        editor = omni.kit.ui.get_editor_menu()
-        if editor:
-            self.HELP_ABOUT = "Help/About"
-            self._about_menu = editor.add_item(self.HELP_ABOUT, self._on_menu_show_about, priority=200)
+        menu_dict = build_submenu_dict(
+            [
+                MenuItemDescription(name="Help/About", onclick_fn=lambda *_: self._on_menu_show_about()),
+            ],
+        )
+        for group in menu_dict:
+            add_menu_items(menu_dict[group], group)
 
         self.get_values()
 
@@ -67,7 +71,7 @@ class AboutExtension(omni.ext.IExt):
         scrolling_frame.width = ui.Pixel(window.width - 10)
         scrolling_frame.height = ui.Pixel(window.height - 235)
 
-    def _on_menu_show_about(self, menu, value):
+    def _on_menu_show_about(self):
         plugins = carb.get_framework().get_plugins()
         plugins = sorted(plugins, key=lambda x: x.impl.name)
         self.menu_show_about(plugins)
