@@ -107,6 +107,8 @@ class LookAtBehavior(BehaviorScript):
 
     def on_update(self, current_time: float, delta_time: float):
         """Called on per frame update events that occur when `playing`."""
+        if delta_time <= 0:
+            return
         if self._interval <= 0:
             self._apply_behavior()
         else:

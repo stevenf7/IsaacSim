@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4] - 2024-12-05
+### Fixed
+- Fixed volume stack behavior phyisics material assignment (not needed on parent prim)
+- Avoid delta_time=0.0 randomizations through orchestrator.step() stage updates
+- Exposed variables removed from fabric as well (avoid UI still showing them)
+- Fixed reset simulation case without any performed simulation
+
 ## [1.0.3] - 2024-11-27
 ### Fixed
 - Fixed error when removing all the scripts widget during runtime

@@ -133,7 +133,7 @@ class VolumeStackRandomizer(BehaviorScript):
         {
             "attr_name": "preserveSimulationState",
             "attr_type": Sdf.ValueTypeNames.Bool,
-            "default_value": False,
+            "default_value": True,
             "doc": (
                 "Keep the final simulation state as the initial state after a play+stop.\n"
                 "NOTE: If multiple simulation behaviors are running concurently, this should be managed externally."
@@ -149,7 +149,7 @@ class VolumeStackRandomizer(BehaviorScript):
         self._physics_material = None
         self._render_simulation = True
         self._remove_rigid_body_dynamics = True
-        self._preserve_simulation_state = False
+        self._preserve_simulation_state = False  # keep False at init to avoid physx reset without performed simulation
         self._valid_prims = []
         self._prim_collision_walls = {}
         self._prim_assets = {}
@@ -359,11 +359,6 @@ class VolumeStackRandomizer(BehaviorScript):
             self.stage, prim_path=physics_material_path, restitution=0, static_friction=0.001, dynamic_friction=0.001
         )
 
-        # Apply the physics material to the prims
-        for prim in self._valid_prims:
-            mat_binding_api = UsdShade.MaterialBindingAPI.Apply(prim)
-            mat_binding_api.Bind(self._physics_material, UsdShade.Tokens.weakerThanDescendants, "physics")
-
         # Spawn the assets
         bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
         for prim in self._valid_prims:
@@ -565,17 +560,6 @@ class VolumeStackRandomizer(BehaviorScript):
             physics_material_api.GetStaticFrictionAttr().Set(0.95)
             physics_material_api.GetDynamicFrictionAttr().Set(0.95)
 
-        # Remove the physics material from the valid prims
-        for prim in self._valid_prims:
-            mat_binding_api = UsdShade.MaterialBindingAPI(prim)
-            mat_binding_api.UnbindAllBindings()
-
-        # Remove the physics material from the assets
-        for assets in self._prim_assets.values():
-            for asset in assets:
-                mat_binding_api = UsdShade.MaterialBindingAPI(asset)
-                mat_binding_api.UnbindAllBindings()
-
         # Remove the rigid body dynamics properties
         if self._remove_rigid_body_dynamics:
             for assets in self._prim_assets.values():
@@ -584,7 +568,6 @@ class VolumeStackRandomizer(BehaviorScript):
 
         # Remove simulation environment setup (collision walls, assets, physics material, physics scenes)
         self._remove_collision_walls()
-        self._remove_physics_material()
 
         # Remove any remaining empty scopes from the behavior's scope
         scope_root_prim = self.stage.GetPrimAtPath(f"{SCOPE_NAME}/{self.BEHAVIOR_NS}")
