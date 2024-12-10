@@ -20,15 +20,6 @@ class FixmeMenuExtension:
             MenuLayout.Menu(
                 "FixMe",
                 [
-                    MenuLayout.SubMenu(
-                        "Isaac Examples",
-                        [
-                            MenuLayout.Item("Carter URDF", source="Isaac Examples/Import Robots/Carter URDF"),
-                            MenuLayout.Item("Franka URDF", source="Isaac Examples/Import Robots/Franka URDF"),
-                            MenuLayout.Item("Kaya URDF", source="Isaac Examples/Import Robots/Kaya URDF"),
-                            MenuLayout.Item("UR10 URDF", source="Isaac Examples/Import Robots/UR10 URDF"),
-                        ],
-                    ),
                     MenuLayout.Item("Replicator", source="Replicator"),
                     MenuLayout.SubMenu(
                         "Replicator",

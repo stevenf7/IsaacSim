@@ -311,7 +311,7 @@ class IsaacSensorMenu:
 
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
-        self._menu_items = [MenuItemDescription(name="Sensors", glyph="sensors.svg", sub_menu=menu_items)]
+        self._menu_items = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Create")
 
     def _get_stage_and_path(self):

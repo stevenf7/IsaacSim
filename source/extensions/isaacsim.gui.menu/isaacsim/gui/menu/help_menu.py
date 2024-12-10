@@ -9,8 +9,8 @@ class HelpMenuExtension:
                 "Help",
                 [
                     MenuLayout.Seperator("Examples"),
-                    MenuLayout.Item("Robotics Examples"),
                     MenuLayout.Item("Physics Examples"),
+                    MenuLayout.Item("Robotics Examples"),
                     MenuLayout.Item("Warp Sample Scenes"),
                     MenuLayout.Seperator("Isaac Sim Reference"),
                     MenuLayout.Item("About"),

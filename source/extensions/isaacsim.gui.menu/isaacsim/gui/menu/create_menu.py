@@ -50,10 +50,20 @@ class CreateMenuExtension:
                             MenuLayout.Seperator("Generic Sensors"),
                         ],
                     ),
-                    MenuLayout.Item("ROS 2 Assets", source="Create/ROS 2 Assets"),
+                    # MenuLayout.Item("ROS 2 Assets", source="Create/ROS 2 Assets"),
+                    MenuLayout.SubMenu(
+                        "ROS 2 Assets",
+                        [
+                            MenuLayout.Item("Asset Browser", source="Create/ROS 2 Assets/Asset Browser"),
+                            MenuLayout.Seperator("Examples"),
+                            MenuLayout.Item("Room", source="Create/ROS 2 Assets/Room"),
+                            MenuLayout.Item("Room 2", source="Create/ROS 2 Assets/Room 2"),
+                        ],
+                    ),
                 ],
             )
         ]
+
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
         ## Example Robots

@@ -1,4 +1,7 @@
 # Changelog
+## [13.4.3] - 2024-12-09
+### Fixed
+- menu icon glyph call
 
 ## [13.4.2] - 2024-12-05
 ### Changed

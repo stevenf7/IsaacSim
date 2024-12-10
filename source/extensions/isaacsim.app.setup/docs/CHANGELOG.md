@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.4] - 2024-12-09
+### Changed
+- menu entries names to reverse some hacks in the menu gui
 
 ## [1.3.3] - 2024-12-07
 ### Fixed
