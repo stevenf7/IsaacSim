@@ -27,7 +27,7 @@ class TestStartup(omni.kit.test.AsyncTestCase):
 
     # Run for 60 frames and make sure there were no errors loading
     async def test_startup(self):
-        window = omni.ui.Workspace.get_window("Physics Utilities")
+        window = omni.ui.Workspace.get_window("Physics API Editor")
         self.assertIsNotNone(window)
         window.visible = True
         for frame in range(60):

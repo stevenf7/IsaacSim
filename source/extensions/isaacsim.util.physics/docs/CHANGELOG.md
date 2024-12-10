@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.1] - 2024-12-09
+### Fixed
+- Unit tests after renaming
+
 ## [1.1.0] - 2024-12-03
 ### Changed
 - Renamed extension name to Physics API Editor, Isaac Util menu to Tools->Robotics menu, 

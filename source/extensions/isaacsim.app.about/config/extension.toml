@@ -1,5 +1,5 @@
 [package]
-version = "2.0.5"
+version = "2.0.6"
 category = "Internal"
 title = "Isaac Sim About Window"
 description="Show application/build information."
@@ -14,7 +14,7 @@ icon = "data/icon.png"
 [dependencies]
 "omni.client" = {}
 "omni.kit.uiapp" = {}
-"omni.kit.menu.utils" = {optional = true}
+"omni.kit.menu.utils" = {}
 "isaacsim.core.version" = {}
 
 [[python.module]]
@@ -22,7 +22,6 @@ name = "isaacsim.app.about"
 
 [[test]]
 dependencies = [
-    "omni.kit.menu.utils"
 ]
 
 stdoutFailPatterns.include = []

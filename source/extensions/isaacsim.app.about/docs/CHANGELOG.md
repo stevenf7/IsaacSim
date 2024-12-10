@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.6] - 2024-12-09
+### Fixed
+- startup test
+
 ## [2.0.5] - 2024-12-07
 ### Fixed
 - moved from deprecated editor_menu.add_item to omni.kit.menu.utils
