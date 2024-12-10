@@ -263,7 +263,7 @@ class CreateSetupExtension(omni.ext.IExt):
                 ),
                 MenuItemDescription(name=self.HELP_UI_DOCS, onclick_fn=lambda *_: self._show_ui_docs()),
                 MenuItemDescription(name=self.UI_SELECTOR_MENU_PATH, onclick_fn=lambda *_: self._show_selector()),
-                add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1),
+                add_layout_menu_entry("Default Layout", "default", carb.input.KeyboardInput.KEY_1),
                 add_layout_menu_entry("Visual Scripting", "visualScripting", carb.input.KeyboardInput.KEY_6),
                 add_layout_menu_entry("Quick Save", quick_save, carb.input.KeyboardInput.KEY_7),
                 add_layout_menu_entry("Quick Load", quick_load, carb.input.KeyboardInput.KEY_8),

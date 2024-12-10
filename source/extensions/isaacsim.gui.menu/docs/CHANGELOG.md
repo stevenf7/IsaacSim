@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.5] - 2024-12-09
+### Changed
+- ROS asset separator and undid some hacks
 
 ## [2.0.4] - 2024-12-06
 ### Changed
