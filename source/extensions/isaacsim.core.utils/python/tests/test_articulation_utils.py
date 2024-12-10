@@ -40,7 +40,7 @@ class TestArticulationUtils(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(len(l2) == len(l1), f"{l1}, {l2}")
 
-    async def testFindArticulationBasePaths(self):
+    async def test_find_articulation_base_paths(self):
         assets_root_path = await get_assets_root_path_async()
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
 
@@ -71,3 +71,4 @@ class TestArticulationUtils(omni.kit.test.AsyncTestCase):
         remove_articulation_root(get_prim_at_path("/World/ur3e/nested/ur10e/root_joint"))
 
         self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur3e"])
+        await update_stage_async()
