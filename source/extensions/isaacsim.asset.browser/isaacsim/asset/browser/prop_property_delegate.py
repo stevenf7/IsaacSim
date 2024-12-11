@@ -32,6 +32,7 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
         item = items[0]
 
         def get_file_size(url):
+            file_size_raw = 0
             try:
                 # local files
                 file_size_raw = os.path.getsize(url)

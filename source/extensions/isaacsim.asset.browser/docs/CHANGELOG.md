@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.6] - 2024-12-10
+### Fixed
+- Fixed the search functionality to make all assets searchable
+
 ## [1.1.5] - 2024-12-03
 ### Changed
 - Double click opens the file instead of loading it as payload/reference
