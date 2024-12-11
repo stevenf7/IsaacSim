@@ -27,6 +27,9 @@ class RangeSensorMenu:
                     make_menu_item_description(ext_id, "Generic", lambda a=weakref.proxy(self): a._add_generic()),
                 ],
             ),
+            make_menu_item_description(
+                ext_id, "LightBeam Sensor", lambda a=weakref.proxy(self): a._add_lightbeam_sensor()
+            ),
         ]
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
@@ -73,6 +76,16 @@ class RangeSensorMenu:
             draw_points=False,
             draw_lines=False,
             sampling_rate=60,
+        )
+
+    def _add_lightbeam_sensor(self, *args, **kargs):
+        result, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateLightBeamSensor",
+            path="/LightBeam_Sensor",
+            parent=self._get_stage_and_path(),
+            translation=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+            forward_axis=Gf.Vec3d(1, 0, 0),
         )
 
     def shutdown(self):

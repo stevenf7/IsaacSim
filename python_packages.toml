@@ -339,7 +339,7 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.replicator.behavior",
-    "exts/isaacsim.replicator.behavior.ui",    
+    "exts/isaacsim.replicator.behavior.ui",
     "exts/isaacsim.replicator.common",
     "exts/isaacsim.replicator.scene_blox",
     "exts/isaacsim.replicator.synthetic_recorder",
@@ -508,11 +508,14 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.sensors.camera",
+    "exts/isaacsim.sensors.camera.ui",
     "exts/isaacsim.sensors.physics",
+    "exts/isaacsim.sensors.physics.ui",
     "exts/isaacsim.sensors.physx",
     "exts/isaacsim.sensors.physx.examples",
     "exts/isaacsim.sensors.physx.ui",
     "exts/isaacsim.sensors.rtx",
+    "exts/isaacsim.sensors.rtx.ui",
     # deprecated extensions
     "extsDeprecated/omni.isaac.camera_inspector",
     "extsDeprecated/omni.isaac.proximity_sensor",
