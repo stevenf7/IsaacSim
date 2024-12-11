@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.7] - 2024-12-11
+### Changed
+- Preloaded assets browser cache data into the extension cache folder
+
 ## [1.1.6] - 2024-12-10
 ### Fixed
 - Fixed the search functionality to make all assets searchable

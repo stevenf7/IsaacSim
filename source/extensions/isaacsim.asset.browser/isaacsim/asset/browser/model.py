@@ -33,7 +33,7 @@ class AssetBrowserModel(TreeFolderBrowserModel):
             setting_folders=SETTING_FOLDER,
             show_category_subfolders=True,
             hide_file_without_thumbnails=False,
-            local_cache_file="${shared_documents}/isaacsim.asset.browser.cache.json",
+            local_cache_file="${app}/../exts/isaacsim.asset.browser/cache/isaacsim.asset.browser.cache.json",
             filter_file_suffixes=[".usd", ".usda", ".usdc"],
             show_summary_folder=True,
             timeout=settings.get("/exts/isaacsim.asset.browser/data/timeout"),
