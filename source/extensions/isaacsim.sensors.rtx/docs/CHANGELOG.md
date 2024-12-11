@@ -1,4 +1,10 @@
 # Changelog
+
+## [13.5.0] - 2024-12-10
+### Removed
+- Menu components moved to isaacsim.sensors.camera.ui, isaacsim.sensors.physics.ui, isaacsim.sensors.physx.ui,
+  isaacsim.sensors.rtx.ui
+
 ## [13.4.3] - 2024-12-09
 ### Fixed
 - menu icon glyph call

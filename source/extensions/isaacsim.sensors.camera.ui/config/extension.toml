@@ -1,0 +1,24 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Camera Simulation UI Components"
+description = "UI Components for the Isaac Sim Camera Simulation Extension"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.camera.ui"
+keywords = ["isaac", "physics", "robotics", "ui"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.gui.components" = {}
+"isaacsim.sensors.camera" = {}
+
+[[python.module]]
+name = "isaacsim.sensors.camera.ui"

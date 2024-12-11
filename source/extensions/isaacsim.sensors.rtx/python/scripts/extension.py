@@ -25,14 +25,11 @@ from isaacsim.sensors.rtx.bindings._isaacsim_sensors_rtx import release_interfac
 from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
 
-from .menu import IsaacSensorMenu
-
 EXTENSION_NAME = "Isaac Sensor"
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        self._menu = IsaacSensorMenu(ext_id)
         self.__interface = _acquire()
 
         self.registered_templates = []
@@ -71,8 +68,6 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_warn(f"Could not unregister node templates {e}")
 
-        self._menu.shutdown()
-        self._menu = None
         self._on_stage_load_sub = None
         gc.collect()
 

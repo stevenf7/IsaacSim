@@ -1,12 +1,16 @@
 # Changelog
 
+## [2.2.0] - 2024-12-10
+### Added
+- Lightbeam Sensor button moved to this extension
+
 ## [2.1.2] - 2024-12-04
 ### Changed
 - glyph for the Create Menu
 
 ## [2.1.1] - 2024-11-25
 ### Fixed
-- a bug in shutdown code 
+- a bug in shutdown code
 
 ## [2.1.0] - 2024-11-01
 ### Changed
