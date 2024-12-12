@@ -348,7 +348,7 @@ class SelectorWindow:
 
         # Application Column
         if not self._app_list_frame:
-            self._app_list_frame = ui.ScrollingFrame(width=510)
+            self._app_list_frame = ui.ScrollingFrame(width=500, scroll_y=20)
         else:
             self._app_list_frame.clear()
 
@@ -690,7 +690,7 @@ class SelectorWindow:
         import omni.ui as ui
 
         self._window = ui.Window(
-            "AppSelector", noTabBar=True, detachable=False, padding_x=-5, padding_y=-5, style={"Window": {"pading": 0}}
+            "AppSelector", noTabBar=True, detachable=False, padding_x=0, padding_y=0, style={"Window": {"pading": 0}}
         )
         self._window.frame.set_style(selector_style)
         with self._window.frame:
