@@ -22,6 +22,7 @@
 #include <isaacsim/xr/openxr/OpenXR.h>
 #include <omni/core/IWeakObject.h>
 #include <omni/ext/IExt.h>
+#include <omni/kit/xr/XRMath.h>
 #include <omni/kit/xr/system/openxr/IOpenXRComponent.h>
 #include <omni/kit/xr/system/openxr/IOpenXRExtension.h>
 #include <omni/kit/xr/tokens/XRTokens.h>
@@ -34,14 +35,18 @@ CARB_PLUGIN_IMPL_DEPS(carb::settings::ISettings,
                       carb::dictionary::IDictionary,
                       omni::kit::xr::openxr::IOpenXRExtension_v1)
 
+using omni::kit::xr::XRMatrix;
+
 namespace
 {
-constexpr XrQuaternionf operator*(const XrQuaternionf& lhs, const XrQuaternionf& rhs)
+static inline usdrt::GfMatrix4d getXRMatrixFromOxrPose(const XrPosef& pose)
 {
-    return XrQuaternionf{ lhs.w * rhs.x + rhs.w * lhs.x + lhs.y * rhs.z - rhs.y * lhs.z,
-                          lhs.w * rhs.y + rhs.w * lhs.y + lhs.z * rhs.x - rhs.z * lhs.x,
-                          lhs.w * rhs.z + rhs.w * lhs.z + lhs.x * rhs.y - rhs.x * lhs.y,
-                          lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z };
+    usdrt::GfVec3d trans(pose.position.x, pose.position.y, pose.position.z);
+    usdrt::GfQuatd quat(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+    usdrt::GfMatrix3d rot(1.0);
+    rot.SetRotate(quat);
+    usdrt::GfMatrix4d ret_mat(rot, trans);
+    return ret_mat;
 }
 }
 
@@ -151,28 +156,29 @@ public:
 
         if (stageAxis)
         {
-            if (m_lastFrameData.upAxis == omni::kit::xr::XRUpAxis::eZUp)
-            {
-                std::for_each(result.jointLocations.begin(), result.jointLocations.end(),
-                              [](auto& location)
-                              {
-                                  std::swap(location.pose.position.y, location.pose.position.z);
-                                  location.pose.position.y *= -1.0f;
-                                  location.pose.orientation =
-                                      XrQuaternionf{ 0.7071f, 0.0f, 0.0f, 0.7071f } * location.pose.orientation;
-                              });
-            }
+            const auto phy_T_world = XRMatrix::fromArray(m_lastFrameData.physicalWorldToWorldAnchor);
+            const auto world_T_virtual = XRMatrix::fromArray(m_lastFrameData.worldAnchorToVirtualWorld);
+            const usdrt::GfMatrix4d phy_T_world_usdrt = phy_T_world.template toUSDMatrix<usdrt::GfMatrix4d>();
+            const usdrt::GfMatrix4d world_T_virtual_usdrt = world_T_virtual.template toUSDMatrix<usdrt::GfMatrix4d>();
+            const usdrt::GfMatrix4d phy_T_virtual = phy_T_world_usdrt * world_T_virtual_usdrt;
 
-            if (m_lastFrameData.metersPerUnit != 1.0)
-            {
-                std::for_each(result.jointLocations.begin(), result.jointLocations.end(),
-                              [&](auto& location)
-                              {
-                                  location.pose.position.x /= static_cast<float>(m_lastFrameData.metersPerUnit);
-                                  location.pose.position.y /= static_cast<float>(m_lastFrameData.metersPerUnit);
-                                  location.pose.position.z /= static_cast<float>(m_lastFrameData.metersPerUnit);
-                              });
-            }
+            std::for_each(result.jointLocations.begin(), result.jointLocations.end(),
+                          [&](auto& location)
+                          {
+                              const usdrt::GfMatrix4d joint_mat = getXRMatrixFromOxrPose(location.pose);
+                              const usdrt::GfMatrix4d joint_in_scene = joint_mat * phy_T_virtual;
+                              const auto quat = joint_in_scene.ExtractRotation().GetNormalized();
+                              const auto quati = quat.GetImaginary();
+                              const auto quatr = quat.GetReal();
+                              const auto pos = joint_in_scene.ExtractTranslation();
+                              location.pose.position.x = static_cast<float>(pos[0]);
+                              location.pose.position.y = static_cast<float>(pos[1]);
+                              location.pose.position.z = static_cast<float>(pos[2]);
+                              location.pose.orientation.w = static_cast<float>(quatr);
+                              location.pose.orientation.x = static_cast<float>(quati[0]);
+                              location.pose.orientation.y = static_cast<float>(quati[1]);
+                              location.pose.orientation.z = static_cast<float>(quati[2]);
+                          });
         }
 
         return result;
