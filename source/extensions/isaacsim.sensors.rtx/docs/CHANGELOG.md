@@ -1,5 +1,9 @@
 # Changelog
 
+## [13.5.1] - 2024-12-12
+### Fixed
+- IsaacPrintRTXSensor now uses updated Python bindings to retrieve GMO buffer
+
 ## [13.5.0] - 2024-12-10
 ### Removed
 - Menu components moved to isaacsim.sensors.camera.ui, isaacsim.sensors.physics.ui, isaacsim.sensors.physx.ui,

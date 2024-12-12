@@ -7,8 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import ctypes
+import sys
 
 import carb
+import numpy as np
 from omni.syntheticdata._syntheticdata import acquire_syntheticdata_interface
 
 
@@ -36,15 +38,16 @@ class OgnIsaacPrintRTXSensorInfo:
             carb.log_warn("invalid data input to OgnIsaacPrintRTXSensorInfo")
             return True
 
-        import omni.sensors.nv.common.bindings._common as gmo
+        import omni.sensors.nv.common.bindings._common as common
 
-        PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
-        PyCapsule_New = ctypes.pythonapi.PyCapsule_New
-        PyCapsule_New.restype = ctypes.py_object
-        PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor)
-        gmo_data = gmo.getModelOutputFromBuffer(
-            PyCapsule_New(ctypes.cast(db.inputs.dataPtr, ctypes.c_void_p), None, PyCapsule_Destructor(0))
-        )
+        # Reach 28 bytes into the GMO data buffer using the pointer address
+        size_buffer = (ctypes.c_char * 28).from_address(db.inputs.dataPtr)
+        # Resolve bytes 16-23 as a uint64, corresponding to GMO size_in_bytes field
+        gmo_size = int(np.frombuffer((size_buffer[16:24]), np.uint64)[0])
+        # Use size_in_bytes field to get full GMO buffer
+        buffer = (ctypes.c_char * gmo_size).from_address(db.inputs.dataPtr)
+        # Retrieve GMO data from buffer as struct with well-defined fields
+        gmo_data = common.getModelOutputFromBuffer(buffer)
 
         print("-------------------- NEW FRAME ------------------------------------------")
         print("-------------------- gmo:")
@@ -52,21 +55,22 @@ class OgnIsaacPrintRTXSensorInfo:
         print(f"timestampNs: {gmo_data.timestampNs}")
         print(f"numElements: {gmo_data.numElements}")
         print(f"auxType: {gmo_data.auxType}")
-        print(f"Return 0:")
-        print(f"    timeOffsetNs: {gmo_data.timeOffSetNs[0]}")
-        print(f"    azimuth:      {gmo_data.x[0]}")
-        print(f"    elevation:    {gmo_data.y[0]}")
-        print(f"    range:        {gmo_data.z[0]}")
-        print(f"    intensity:    {gmo_data.scalar[0]}")
-        print(f"Return {gmo_data.numElements - 1}:")
-        print(f"    timeOffsetNs: {gmo_data.timeOffSetNs[gmo_data.numElements - 1]}")
-        print(f"    azimuth:      {gmo_data.x[gmo_data.numElements - 1]}")
-        print(f"    elevation:    {gmo_data.y[gmo_data.numElements - 1]}")
-        print(f"    range:        {gmo_data.z[gmo_data.numElements - 1]}")
-        print(f"    intensity:    {gmo_data.scalar[gmo_data.numElements - 1]}")
+        if gmo_data.numElements > 0:
+            print(f"Return 0:")
+            print(f"    timeOffsetNs: {gmo_data.timeOffSetNs[0]}")
+            print(f"    azimuth:      {gmo_data.x[0]}")
+            print(f"    elevation:    {gmo_data.y[0]}")
+            print(f"    range:        {gmo_data.z[0]}")
+            print(f"    intensity:    {gmo_data.scalar[0]}")
+            print(f"Return {gmo_data.numElements - 1}:")
+            print(f"    timeOffsetNs: {gmo_data.timeOffSetNs[gmo_data.numElements - 1]}")
+            print(f"    azimuth:      {gmo_data.x[gmo_data.numElements - 1]}")
+            print(f"    elevation:    {gmo_data.y[gmo_data.numElements - 1]}")
+            print(f"    range:        {gmo_data.z[gmo_data.numElements - 1]}")
+            print(f"    intensity:    {gmo_data.scalar[gmo_data.numElements - 1]}")
 
         # NOTE: Material mapping only valid for Lidar data currently
-        if gmo_data.auxType == gmo.AuxType.LIDAR:
+        if gmo_data.modality == common.Modality.LIDAR and gmo_data.aux_type == common.AuxType.FULL:
             print(f"Prim <-> Material mapping:")
             material_mapping = {}
             for i in range(gmo_data.numElements):
