@@ -85,12 +85,23 @@ public:
             if (targetPrims.size() > 0)
             {
                 state.m_targets.resize(targetPrims.size());
-                std::transform(targetPrims.begin(), targetPrims.end(), state.m_targets.begin(),
-                               [](TargetPath path) { return omni::fabric::toSdfPath(path); });
+
+                for (size_t i = 0; i < targetPrims.size(); i++)
+                {
+
+                    if (!state.m_usdStage->GetPrimAtPath(omni::fabric::toSdfPath(targetPrims[i])))
+                    {
+                        db.logError(
+                            "The prim %s is not valid. Please specify at least one valid target prim for the ROS pose tree component",
+                            targetPrims[i]);
+                        return false;
+                    }
+                    state.m_targets[i] = omni::fabric::toSdfPath(targetPrims[i]);
+                }
             }
             else
             {
-                db.logError("Please specify atleast one target prim for the ROS pose tree component");
+                db.logError("Please specify at least one valid target prim for the ROS pose tree component");
                 return false;
             }
 

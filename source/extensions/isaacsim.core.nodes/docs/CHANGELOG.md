@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2024-12-11
+### Fixed
+- Compute Odometry node to validate chassis prim input.
+
 ## [2.1.0] - 2024-10-28
 ### Added
 - Isaac Joint Name Resolver node which checks for any joint prims with isaac:nameOverride attributes that match the provided names and updates those names to their corresponding original prim names.

@@ -46,17 +46,6 @@ public:
         const GraphContextObj& context = db.abi_context();
         auto& state = db.perInstanceState<OgnROS2PublishJointState>();
 
-        const auto& prim = db.inputs.targetPrim();
-        const char* primPath;
-        if (prim.size() > 0)
-        {
-            primPath = omni::fabric::toSdfPath(prim[0]).GetText();
-        }
-        else
-        {
-            db.logError("Could not find target prim");
-            return false;
-        }
 
         // Spin once calls reset automatically if it was not successful
         const auto& nodeObj = db.abi_node();
@@ -89,6 +78,24 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
+
+            const auto& prim = db.inputs.targetPrim();
+            const char* primPath;
+            if (prim.size() > 0)
+            {
+                if (!stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0])))
+                {
+                    db.logError("The prim %s is not valid. Please specify at least one valid chassis prim", prim[0]);
+                    return false;
+                }
+                primPath = omni::fabric::toSdfPath(prim[0]).GetText();
+            }
+            else
+            {
+                db.logError("Could not find target prim");
+                return false;
+            }
+
             state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // Verify we have a valid articulation prim

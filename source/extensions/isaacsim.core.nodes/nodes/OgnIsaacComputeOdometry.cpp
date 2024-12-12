@@ -60,19 +60,7 @@ public:
         auto& state = db.perInstanceState<OgnIsaacComputeOdometry>();
         if (state.mFirstFrame)
         {
-            const auto& prim = db.inputs.chassisPrim();
-            const char* primPath;
-            if (prim.size() > 0)
-            {
-                primPath = omni::fabric::toSdfPath(prim[0]).GetText();
-            }
-            else
-            {
-                db.logError("Omnigraph Error: no chassis prim found");
-                return false;
-            }
 
-            state.mFirstFrame = false;
             // Find our stage
             long stageId = context.iContext->getStageId(context);
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -82,6 +70,25 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
+
+            const auto& prim = db.inputs.chassisPrim();
+            const char* primPath;
+            if (prim.size() > 0)
+            {
+                if (!stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0])))
+                {
+                    db.logError("The prim %s is not valid. Please specify at least one valid chassis prim", prim[0]);
+                    return false;
+                }
+                primPath = omni::fabric::toSdfPath(prim[0]).GetText();
+            }
+            else
+            {
+                db.logError("OmniGraph Error: no chassis prim found");
+                return false;
+            }
+
+
             auto type = state.mDynamicControlPtr->peekObjectType(primPath);
 
             // Checking we have a valid articulation
@@ -117,6 +124,7 @@ public:
             // get starting pose in the world frame
             state.mStartingPose = state.mDynamicControlPtr->getRigidBodyPose(state.mRigidBodyHandle);
             state.mLastTime = state.mCoreNodeFramework->getSimTime();
+            state.mFirstFrame = false;
         }
 
         state.computeOdometry(db);
