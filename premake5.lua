@@ -119,9 +119,6 @@ function setup_common_folder_links()
             -- Link app configs in target dir for easier edit
             { "source/apps", bin_dir.."/apps" },
 
-            -- Link all licenses
-            { "_build/PACKAGE-LICENSES", bin_dir.."/PACKAGE-LICENSES" },
-
             -- TODO:
             -- Link python app sources in target dir for easier edit
             -- { "source/pythonapps/target", bin_dir.."/pythonapps" },
@@ -132,6 +129,7 @@ function setup_common_folder_links()
             { "launcher.toml", bin_dir },
             -- Copy licenses
             { "tools/internal-licenses/*",  bin_dir.."/PACKAGE-LICENSES" },
+            { "_build/PACKAGE-LICENSES", bin_dir.."/PACKAGE-LICENSES" },
             { "tools/internal-licenses/omniverse-LICENSE.txt",  bin_dir.."/LICENSE.txt" },
 
         --     -- Copy python app running scripts in target dir
