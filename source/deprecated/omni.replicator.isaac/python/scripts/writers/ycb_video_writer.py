@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim.replicator.common.scripts.writers.ycb_video import *
+from isaacsim.replicator.writers import YCBVideoWriter

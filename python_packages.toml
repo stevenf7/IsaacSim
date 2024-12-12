@@ -339,10 +339,12 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.replicator.behavior",
-    "exts/isaacsim.replicator.behavior.ui",
-    "exts/isaacsim.replicator.common",
+    "exts/isaacsim.replicator.behavior.ui",    
+    "exts/isaacsim.replicator.domain_randomization",
+    "exts/isaacsim.replicator.examples",
     "exts/isaacsim.replicator.scene_blox",
     "exts/isaacsim.replicator.synthetic_recorder",
+    "exts/isaacsim.replicator.writers",
     # deprecated extensions
     "extsDeprecated/omni.isaac.scene_blox",
     "extsDeprecated/omni.isaac.synthetic_recorder",

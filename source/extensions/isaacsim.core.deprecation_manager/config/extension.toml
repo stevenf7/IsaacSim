@@ -80,5 +80,18 @@ exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.isaac.surface_gripper", new = "isaacsim.robot.surface_gripper" },
     { deprecated = "omni.isaac.wheeled_robots", new = "isaacsim.robot.wheeled_robots" },
     { deprecated = "omni.isaac.wheeled_robots.AckermannController", new = "isaacsim.robot.wheeled_robots.AckermannControllerDeprecated" },
-    { deprecated = "omni.replicator.isaac", new = "isaacsim.replicator.common" },
+    { deprecated = "omni.replicator.isaac.OgnCountIndices", new = "isaacsim.replicator.domain_randomization.OgnCountIndices" },
+    { deprecated = "omni.replicator.isaac.OgnIntervalFiltering", new = "isaacsim.replicator.domain_randomization.OgnIntervalFiltering" },
+    { deprecated = "omni.replicator.isaac.OgnOnRLFrame", new = "isaacsim.replicator.domain_randomization.OgnOnRLFrame" },
+    { deprecated = "omni.replicator.isaac.OgnRandom3f", new = "isaacsim.replicator.domain_randomization.OgnRandom3f" },
+    { deprecated = "omni.replicator.isaac.OgnWritePhysicsArticulationView", new = "isaacsim.replicator.domain_randomization.OgnWritePhysicsArticulationView" },
+    { deprecated = "omni.replicator.isaac.OgnWritePhysicsRigidPrimView", new = "isaacsim.replicator.domain_randomization.OgnWritePhysicsRigidPrimView" },
+    { deprecated = "omni.replicator.isaac.OgnWritePhysicsSimulationContext", new = "isaacsim.replicator.domain_randomization.OgnWritePhysicsSimulationContext" },
+    { deprecated = "omni.replicator.isaac.OgnSampleBetweenSpheres", new = "isaacsim.replicator.examples.OgnSampleBetweenSpheres" },
+    { deprecated = "omni.replicator.isaac.OgnSampleInSphere", new = "isaacsim.replicator.examples.OgnSampleInSphere" },
+    { deprecated = "omni.replicator.isaac.OgnSampleOnSphere", new = "isaacsim.replicator.examples.OgnSampleOnSphere" },
+    { deprecated = "omni.replicator.isaac.OgnDope", new = "isaacsim.replicator.writers.OgnDope" },
+    { deprecated = "omni.replicator.isaac.OgnPose", new = "isaacsim.replicator.writers.OgnPose" },
 ]
+
+

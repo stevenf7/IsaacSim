@@ -1,0 +1,40 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "SyntheticData"
+title = "Isaac Sim Replicator Examples"
+description="Example Snippets for Isaac Sim Replicator"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.examples"
+keywords = ["Synthetic", "Data", "Randomization", "SDG", "Examples"]
+changelog = "docs/CHANGELOG.md"
+readme  = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+# Build separate extensions for Windows and Linux so appropriate libraries are bundled
+writeTarget.platform = true
+
+
+[dependencies]
+"omni.graph.core" = {}
+"omni.replicator.core" = {}
+"isaacsim.replicator.writers" = {}
+
+[[python.module]]
+name = "isaacsim.replicator.examples"
+
+# Watch the .ogn files for hot reloading (only works for Python files)
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[[test]]
+dependencies = [
+    "omni.kit.test",
+    "isaacsim.core.api",
+    "isaacsim.storage.native"
+]
