@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.7] - 2024-12-12
+### Changed
+- Fixed combobox dropdown
+
 ## [2.8.6] - 2024-11-19
 ### Changed
 - Updated icons
