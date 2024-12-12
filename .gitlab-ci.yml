@@ -590,6 +590,8 @@ test-linux-x86_64-benchmarks-4-gpu:
       - ./repo.sh ci test -- -s benchmarks --generate-report
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
+    rules:
+      - !reference [.rules-nightly-tests, rules]
 
 test-linux-x86_64-internalpythontests-1:
     extends:
