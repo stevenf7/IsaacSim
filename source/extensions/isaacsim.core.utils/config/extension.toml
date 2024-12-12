@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.4"
+version = "2.2.5"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "Isaac Sim Utility Extensions"
@@ -34,3 +34,10 @@ name = "isaacsim.core.utils"
 
 [[python.module]]
 name = "isaacsim.core.utils.tests"
+
+
+[[test]]
+dependencies = [
+    "omni.replicator.core",
+    "isaacsim.sensors.camera",
+]
