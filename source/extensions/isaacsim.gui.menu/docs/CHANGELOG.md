@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.6] - 2024-12-12
+### Fixed
+- Added sensor UI extensions as test dependencies
+
 ## [2.0.5] - 2024-12-09
 ### Changed
 - ROS asset separator and undid some hacks
