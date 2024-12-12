@@ -931,7 +931,9 @@ python.files.exclude = [
 build_path = "${root}/_build/${platform}/release/exts"
 home_path = "${root}/source/extensions"
 ogn_exts_includes = [
-  "isaacsim.replicator.common",
+  "isaacsim.replicator.domain_randomization",
+  "isaacsim.replicator.examples",
+  "isaacsim.replicator.writers",
   "isaacsim.asset.conveyor",
   "isaacsim.ros2.bridge",
   "isaacsim.sensors.physics",

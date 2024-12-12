@@ -18,10 +18,12 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.replicator.common" = {}
+"isaacsim.replicator.domain_randomization" = {}
+"isaacsim.replicator.examples" = {}
+"isaacsim.replicator.writers" = {}
 
 [[python.module]]
 name = "omni.replicator.isaac"
 
 [deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator."
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator.domain_randomization, isaacsim.replicator.examples, isaacsim.replicator.writers."

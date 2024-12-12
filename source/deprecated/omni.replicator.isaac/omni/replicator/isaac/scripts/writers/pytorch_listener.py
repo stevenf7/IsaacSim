@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from isaacsim.replicator.common.scripts.writers.pytorch_listener import *
+from isaacsim.replicator.writers import PytorchListener
