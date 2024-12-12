@@ -59,7 +59,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.asset.gen.omap/docs/index
    source/extensions/isaacsim.replicator.domain_randomization/docs/index
    source/extensions/isaacsim.replicator.writers/docs/index
-   source/extensions/isaacsim.asset.conveyor/docs/index
+   source/extensions/isaacsim.asset.generator.conveyor/docs/index
    source/extensions/isaacsim.core.version/docs/index
    source/extensions/isaacsim.benchmark.services/docs/index
    source/extensions/isaacsim.util.clash_detection/docs/index

@@ -10,12 +10,12 @@
 import carb
 
 old_extension_name = "omni.isaac.conveyor"
-new_extension_name = "isaacsim.asset.conveyor"
+new_extension_name = "isaacsim.asset.generator.conveyor"
 
 # Provide deprecation warning to user
 carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from isaacsim.asset.conveyor.commands import *
-from isaacsim.asset.conveyor.impl import *
+from isaacsim.asset.generator.conveyor.commands import *
+from isaacsim.asset.generator.conveyor.impl import *
