@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.1.4] - 2024-12-11
+### Fixed
+- PublishJointState OG node to validate targetPrim input
+- PublishTransformTree OG node to validate targetPrims input
+
 ## [4.1.3] - 2024-12-06
 ### Fixed
 - Joint state subscriber auto generated graph in ROS 2 OmniGraphs menu
