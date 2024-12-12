@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.5] - 2024-12-11
+### Changed
+- Move unit tests from isaacsim.core.api
+
 ## [2.2.4] - 2024-12-09
 ### Fixed
 - unit test

@@ -11,7 +11,7 @@ import asyncio
 
 import carb
 import omni.kit.test
-from isaacsim.core.utils.prims import create_prim
+from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import add_reference_to_stage, clear_stage, create_new_stage_async, update_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 
@@ -31,7 +31,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
 
     async def test_clear_stage(self):
         await create_new_stage_async()
-        prim = create_prim("/Test")
+        prim = define_prim(prim_path="/Test", prim_type="Xform")
         self.assertTrue(prim.IsValid())
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:

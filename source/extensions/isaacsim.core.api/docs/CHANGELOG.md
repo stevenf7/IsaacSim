@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.2.7] - 2024-12-11
+### Changed
+- Move unit tests to isaacsim.core.utils
+- Improve unit test performance
+- fix test_scale_units_resolve
+
 ## [4.2.6] - 2024-12-05
 ### Fixed
 - Fixed Rigid Prim and Articulation objects default state gets overwritten after a world.reset()
