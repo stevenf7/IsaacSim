@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.5"
+version = "2.0.6"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -22,7 +22,7 @@ writeTarget.kit = true
 "isaacsim.core.api" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.core.utils" = {}
-"omni.kit.window.file" = {}         
+"omni.kit.window.file" = {}
 
 [[python.module]]
 name = "isaacsim.gui.menu"
@@ -36,9 +36,10 @@ timeout = 1500
 dependencies = [
     "omni.timeline",
     "isaacsim.core.utils",
-    "isaacsim.sensors.physx",
-    "isaacsim.sensors.physics",
-    "isaacsim.sensors.rtx",
+    "isaacsim.sensors.camera.ui",
+    "isaacsim.sensors.physx.ui",
+    "isaacsim.sensors.physics.ui",
+    "isaacsim.sensors.rtx.ui",
     "omni.kit.test_helpers_gfx"
 ]
 

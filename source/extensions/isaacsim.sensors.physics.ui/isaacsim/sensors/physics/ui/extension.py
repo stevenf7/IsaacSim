@@ -44,3 +44,28 @@ class Extension(omni.ext.IExt):
         else:
             curr_prim = None
         return curr_prim
+
+    def _add_contact_sensor(self, *args, **kargs):
+        result, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateContactSensor",
+            path="/Contact_Sensor",
+            parent=self._get_stage_and_path(),
+            min_threshold=0.0,
+            max_threshold=100000.0,
+            color=Gf.Vec4f(1, 0, 0, 1),
+            radius=-1,
+            sensor_period=-1,
+            translation=Gf.Vec3d(0, 0, 0),
+        )
+
+    def _add_imu_sensor(self, *args, **kargs):
+        result, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/Imu_Sensor",
+            parent=self._get_stage_and_path(),
+            sensor_period=-1,
+            translation=Gf.Vec3d(0, 0, 0),
+        )
+        if result:
+            # Make lidar invisible on stage as camera
+            set_prim_visibility(prim=prim, visible=False)
