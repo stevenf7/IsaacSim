@@ -10,7 +10,7 @@
 import carb
 
 old_extension_name = "omni.isaac.conveyor.ui"
-new_extension_name = "isaacsim.asset.conveyor.ui"
+new_extension_name = "isaacsim.asset.generator.conveyor.ui"
 
 # Provide deprecation warning to user
 carb.log_warn(

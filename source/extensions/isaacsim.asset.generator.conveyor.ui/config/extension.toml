@@ -1,0 +1,41 @@
+[package]
+version = "2.1.1"
+category = "Simulation"
+title = "Isaac Sim Conveyor belt utility UI"
+description="UI components for isaacsim.asset.generator.conveyor"
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.generator.conveyor.ui"
+
+keywords = ["kit", "example", "ui"]
+
+
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.window.preferences" = {}
+"omni.usd" = {}
+"isaacsim.asset.generator.conveyor" = {}
+"isaacsim.storage.native" = {}
+"omni.kit.widget.filebrowser" = {}
+
+# Main module for the Python interface
+[[python.module]]
+name = "isaacsim.asset.generator.conveyor.ui"
+
+[[python.module]]
+name = "isaacsim.asset.generator.conveyor.ui.tests"
+
+[[test]]
+
+dependencies = [
+    "omni.kit.ui_test",
+    "omni.kit.test"
+]
+stdoutFailPatterns.exclude = [
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+]
+    
