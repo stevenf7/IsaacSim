@@ -16,16 +16,51 @@ simulation_app = SimulationApp(
     {"headless": False}, experience=f'{os.environ["EXP_PATH"]}/isaacsim.exp.base.xr.openxr.kit'
 )
 
+# Handle start/stop teleop commands from XR device
+import carb
+from omni.kit.xr.core import XRCore
+
+TELEOP_COMMAND_EVENT_TYPE = "teleop_command"
+
+tracking_enabled = False
+
+
+def on_message(event: carb.events.IEvent):
+    """Processes the received message using key word."""
+    message_in = event.payload["message"]
+
+    global tracking_enabled
+    if "start" in message_in:
+        tracking_enabled = True
+    elif "stop" in message_in:
+        tracking_enabled = False
+    elif "reset" in message_in:
+        carb.log_info("Reset recieved")
+    else:
+        carb.log_warn(f"Unexpected message recieved {message_in}")
+
+
+message_bus = XRCore.get_singleton().get_message_bus()
+incoming_message_event = carb.events.type_from_string(TELEOP_COMMAND_EVENT_TYPE)
+subscription = message_bus.create_subscription_to_pop_by_type(incoming_message_event, on_message)
+
+
+import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.omni_pbr import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.prims import create_prim, set_prim_visibility
 from isaacsim.xr.openxr import OpenXR, OpenXRSpec
 from omni.isaac.core.prims import XFormPrim
-from pxr import Gf, Sdf, Usd, UsdGeom
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux
 
 openxr = OpenXR()
 my_world = World(stage_units_in_meters=1.0)
+
+# Add Light Source
+stage = omni.usd.get_context().get_stage()
+distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
+distantLight.CreateIntensityAttr(300)
 
 hidden_prim = create_prim("/Hidden/Prototypes", "Scope")
 base_cube_path = "/Hidden/Prototypes/BaseCube"
@@ -80,7 +115,7 @@ while simulation_app.is_running():
         joints = left_joints + right_joints
 
         for joint_idx in range(joint_count):
-            if joints[joint_idx] is not None:
+            if tracking_enabled and joints[joint_idx] is not None:
                 location_flags = joints[joint_idx].locationFlags
 
                 if (
