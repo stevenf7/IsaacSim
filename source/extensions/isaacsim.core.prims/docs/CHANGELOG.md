@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3] - 2024-12-12
+### Fixed
+- Updated the implementation of articulation inverse dynamic functions to respect the type of articulation (floating base vs fixed based)
+
 ## [0.3.2] - 2024-11-19
 ### Fixed
 - XformPrim._set_xform_properties to take in consideration scale:unitsResolve attribute if authored.
