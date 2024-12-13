@@ -3819,7 +3819,8 @@ class Articulation(XFormPrim):
 
         The mass matrix contains the generalized mass of the robot depending on the current configuration
 
-        The shape of the max matrix depends on the number of DOFs: ``(num_dof, num_dof)``
+        The shape of the max matrix depends on the number of DOFs as well as whether the articulation is fixed-base or floating-base.
+        For fixed-base articulation the shape is ``(num_dof, num_dof)`` while for floating-base articulation the shape is ``(num_dof + 6, num_dof + 6)``
 
         Returns:
             Union[np.ndarray, torch.Tensor, wp.array]: shape of mass matrix for a single articulation.
@@ -3830,13 +3831,17 @@ class Articulation(XFormPrim):
 
             >>> # for the Franka Panda:
             >>> # - num_dof: 9
-            >>> prims.get_jacobian_shape()
+            >>> prims.get_mass_matrix_shape()
             (9, 9)
+            >>> # for Ant robot:
+            >>> # - num_dof: 8
+            >>> prims.get_mass_matrix_shape()
+                (14, 14)
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return None
-        return self._physics_view.mass_matrix_shape
+        return self._physics_view.generalized_mass_matrix_shape
 
     def get_jacobians(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
@@ -3918,7 +3923,7 @@ class Articulation(XFormPrim):
 
         .. code-block:: python
 
-            >>> # get the mass matrices. Returned shape is (5, 9, 9) for the example: 5 envs, 9 DOFs
+            >>> # get the mass matrices. Returned shape is (5, 9, 9) for the example: 5 envs, 9 DOFs for a fixed-based articulation
             >>> prims.get_mass_matrices()
             [[[ 5.0900602e-01  1.1794259e-06  4.2570841e-01 -1.6387942e-06 -3.1573933e-02
                -1.9736715e-06 -3.1358242e-04 -6.0441834e-03  6.0441834e-03]
@@ -3935,7 +3940,7 @@ class Articulation(XFormPrim):
             return None
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            current_values = self._physics_view.get_mass_matrices()
+            current_values = self._physics_view.get_generalized_mass_matrices()
             if clone:
                 current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
             result = current_values[indices]
@@ -3963,7 +3968,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all prims in the view).
             joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indices to specify which joints
                                                                                  to query. Shape (K,).
-                                                                                 Where K <= num of dofs.
+                                                                                 Where K <= num of dofs for fixed-based arituclations and K <= num of dofs + 6 for floating-based articulations.
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
@@ -3978,7 +3983,7 @@ class Articulation(XFormPrim):
 
         .. code-block:: python
 
-            >>> # get all coriolis and centrifugal forces. Returned shape is (5, 9) for the example: 5 envs, 9 DOFs
+            >>> # get all coriolis and centrifugal forces. Returned shape is (5, 9) for the example: 5 envs, 9 DOFs for a fixed-based articulation
             >>> prims.get_coriolis_and_centrifugal_forces()
             [[ 1.6842524e-06 -1.8269569e-04  5.2162073e-07 -9.7677548e-05  3.0365106e-07
                6.7375149e-06  6.1105780e-08 -4.6237556e-06 -4.1627968e-06]
@@ -4008,7 +4013,7 @@ class Articulation(XFormPrim):
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            current_values = self._physics_view.get_coriolis_and_centrifugal_forces()
+            current_values = self._physics_view.get_coriolis_and_centrifugal_compensation_forces()
             if clone:
                 current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
             result = current_values[
@@ -4040,7 +4045,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all prims in the view).
             joint_indices (Optional[Union[np.ndarray, List, torch.Tensor, wp.array]], optional): joint indices to specify which joints
                                                                                  to query. Shape (K,).
-                                                                                 Where K <= num of dofs.
+                                                                                 Where K <= num of dofs for fixed-based arituclations and K <= num of dofs + 6 for floating-based articulations.
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
@@ -4088,7 +4093,7 @@ class Articulation(XFormPrim):
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            current_values = self._physics_view.get_generalized_gravity_forces()
+            current_values = self._physics_view.get_gravity_compensation_forces()
             if clone:
                 current_values = self._backend_utils.clone_tensor(current_values, device=self._device)
             result = current_values[
