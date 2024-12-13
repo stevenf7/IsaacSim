@@ -74,6 +74,8 @@ class ExampleCustomEventBehavior(BehaviorScript):
     def on_destroy(self):
         """Called when the script is unassigned from a prim."""
         # Unsubscribe from the event stream
+        self._reset()
+
         self._event_sub.unsubscribe()
         self._event_sub = None
 

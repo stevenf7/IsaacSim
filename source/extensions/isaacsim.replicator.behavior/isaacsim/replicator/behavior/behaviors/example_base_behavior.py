@@ -34,6 +34,11 @@ class ExampleBaseBehavior(BaseBehavior):
         # List of the valid prims that to apply the behavior to
         self._valid_prims = []
 
+    def on_destroy(self):
+        """Called when the script is unassigned from a prim."""
+        self._reset()
+        super().on_destroy()
+
     def on_play(self):
         """Called when `play` is pressed."""
         super().on_play()

@@ -96,6 +96,7 @@ class TextureRandomizer(BehaviorScript):
 
     def on_destroy(self):
         """Called when the script is unassigned from a prim."""
+        self._reset()
         # Exposed variables should be removed if the script is no longer assigned to the prim
         if check_if_exposed_variables_should_be_removed(self.prim, __file__):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
