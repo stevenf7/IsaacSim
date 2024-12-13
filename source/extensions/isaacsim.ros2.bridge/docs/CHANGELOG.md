@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.5] - 2024-12-13
+### Fixed
+- Extension not properly named with kit and platform tags
+
 ## [4.1.4] - 2024-12-11
 ### Fixed
 - PublishJointState OG node to validate targetPrim input

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2024-12-13
+### Fixed
+- Extension not properly named with kit and platform tags
+
 ## [2.2.1] - 2024-11-22
 ### Fixed
 - Changed OgnROS1PublishJointState to use tensor data instead of dynamic control extension
