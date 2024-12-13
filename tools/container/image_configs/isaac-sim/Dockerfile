@@ -26,10 +26,13 @@ RUN mv /etc/apt/sources.list.canonical /etc/apt/sources.list
 # USER ubuntu
 
 # ISIM-968 - libglib2.0-0
+# ISIM-1850 - libnghttp2-14
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends \
         libglib2.0-0 \
+        libnghttp2-14 \
         && rm -rf /var/lib/apt/lists/*
+
 
 # WORKDIR /home/ubuntu/
 RUN mkdir -p /root/.nvidia-omniverse/config

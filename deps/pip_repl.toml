@@ -7,7 +7,7 @@ packages = [
     "parso==0.8.3",            # SWIPAT filed under: https://nvbugs/4000938
     "prompt-toolkit==3.0.20",  # SWIPAT filed under: https://nvbugs/4000940
     "wcwidth==0.2.6",          # SWIPAT filed under: https://nvbugs/4000941
-    "pygments==2.14.0",        # SWIPAT filed under: https://nvbugs/4000944
+    "pygments==2.18.0",        # SWIPAT filed under: https://nvbugs/4000944
 ]
 target = "../_build/target-deps/isaac_repl_prebundle"
 platforms = ["*-x86_64"]
