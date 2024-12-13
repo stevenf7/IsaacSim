@@ -5,11 +5,11 @@ packages = [
     "s3transfer==0.6.1",           # SWIPAT filed under: https://nvbugs/3738087
     "azure-storage-blob==12.17.0", # SWIPAT filed under: https://nvbugs/4221315
     "azure-identity==1.13.0",      # SWIPAT filed under: https://nvbugs/4221323
-    "requests==2.31.0",            # SWIPAT filed under: https://nvbugs/3430668
+    "requests==2.32.3",            # SWIPAT filed under: https://nvbugs/3430668
     "oauthlib==3.2.2",             # SWIPAT filed under: https://nvbugs/3433846
     "requests-oauthlib==1.3.1",    # SWIPAT filed under: https://nvbugs/3433849
     "isodate==0.6.1",              # SWIPAT filed under:
-    "cryptography==42.0.7",        # SWIPAT filed under:                        Updates: ISIM-975
+    "cryptography==44.0.0",        # SWIPAT filed under:                        Updates: ISIM-975
     "typing-extensions==4.10.0",   # SWIPAT filed under: https://nvbugs/3114241
     "azure-core==1.28.0",          # SWIPAT filed under:
     "msal==1.23.0",                # SWIPAT filed under:
@@ -29,7 +29,7 @@ gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "pywin32==306"               # SWIPAT filed under:
+    "pywin32==306", # SWIPAT filed under:
 ]
 
 target = "../_build/target-deps/pip_cloud_prebundle"
