@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5] - 2024-12-12
+### Fixed
+- Cleaning up randomizers by calling reset when destroyed during play
+
 ## [1.0.4] - 2024-12-05
 ### Fixed
 - Fixed volume stack behavior phyisics material assignment (not needed on parent prim)
