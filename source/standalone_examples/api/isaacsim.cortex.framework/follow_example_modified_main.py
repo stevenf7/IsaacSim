@@ -38,6 +38,7 @@ class FollowState(DfState):
 
     def step(self):
         target_position, _ = self.follow_sphere.get_world_pose()
+        target_position[2] = max(target_position[2], 0.02)
         self.robot.arm.send_end_effector(target_position=target_position)
         return self  # Always transition back to this state.
 
