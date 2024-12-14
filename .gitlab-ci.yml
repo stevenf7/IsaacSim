@@ -141,6 +141,24 @@ variables:
         description: "Set to true to build omni docs. Only happens on schedule."
 
 # ==============================================================================================================
+# overrides for compliance/osec job
+osec:sonarqube:
+    variables:
+      SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
+      LINBUILD_EMBEDDED: "1"
+    before_script:
+      - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
+    rules:
+      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+        when: never
+      - if: ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        when: never
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        when: never
+
+# ==============================================================================================================
 .check-common:
     stage: check
     timeout: 20 minutes
@@ -214,17 +232,17 @@ check-jira-ticket:
     rules:
       - !reference [.rules-mr, rules]
 
-# ==============================================================================================================
-# Job to dump out the current configuration environment variables
-dump-env-vars:
-    extends:
-      - .check-common
-      - .dump-env-vars
-      - .omni_nvks_runner
-    allow_failure: true
-    when: manual
-    rules:
-      - !reference [.rules-workflow, rules]
+# # ==============================================================================================================
+# # Job to dump out the current configuration environment variables
+# dump-env-vars:
+#     extends:
+#       - .check-common
+#       - .dump-env-vars
+#       - .omni_nvks_runner
+#     allow_failure: true
+#     when: manual
+#     rules:
+#       - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 check-code-format:
@@ -1624,29 +1642,3 @@ publish-to-packman:
         when: never
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
-
-#   allow_failure: true
-
-#   extends:
-#   - .deploy-common
-#   - .runner-utility-linux-x86_64
-#   script:
-#   - ./repo.sh ci publish_to_launcher
-#   needs:
-#   - job: build-windows-x86_64-release
-#     artifacts: true
-#   - job: build-linux-x86_64-release
-#     artifacts: true
-#   rules:
-#   - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-#     when: never
-#   - !reference [.rules-push-manual, rules]
-#   allow_failure: true
-
-# overrides for compliance/osec job
-osec:sonarqube:
-  variables:
-    SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
-    LINBUILD_EMBEDDED: "1"
-  before_script:
-    - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
