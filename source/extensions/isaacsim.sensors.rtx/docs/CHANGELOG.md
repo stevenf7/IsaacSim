@@ -1,5 +1,9 @@
 # Changelog
 
+## [13.6.0] - 2024-12-13
+### Removed
+- Removed legacy sick lidar sensors
+
 ## [13.5.1] - 2024-12-12
 ### Fixed
 - IsaacPrintRTXSensor now uses updated Python bindings to retrieve GMO buffer
