@@ -824,7 +824,7 @@ pages:
       - 7z x _build/packages/docs@*.7z -oisaacsim
       - mkdir -p .public/py/
       - mv isaacsim .public/py/
-      - ls .public/py/isaacsim
+      - ls .public/py
       - mv .public public
     artifacts:
         paths:
