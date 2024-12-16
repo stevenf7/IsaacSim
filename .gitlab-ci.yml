@@ -821,9 +821,8 @@ pages:
       - ls .public
       - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
       - unzip artifact.zip
-      - 7z x _build/packages/docs@*.7z -oisaacsim
-      - mkdir -p .public/py/
-      - mv isaacsim .public/py/
+      - 7z x _build/packages/docs@*.7z -opy
+      - mv py .public/
       - ls .public/py
       - mv .public public
     artifacts:
