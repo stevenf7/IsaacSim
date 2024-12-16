@@ -25,7 +25,7 @@ import numpy as np
 try:
     CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/metropolis.simulation.base.kit"
     if not os.path.exists(CUSTOM_APP_PATH):
-        CUSTOM_APP_PATH = ""
+        CUSTOM_APP_PATH = "apps/isaacsim.exp.full.kit"
         from isaacsim.simulation_app import SimulationApp
     else:
         raise
@@ -99,7 +99,7 @@ class AgentSDG:
         ext_manager.set_extension_enabled_immediate("omni.anim.graph.core", True)
         ext_manager.set_extension_enabled_immediate("omni.anim.retarget.core", True)
         ext_manager.set_extension_enabled_immediate("omni.anim.navigation.core", True)
-        ext_manager.set_extension_enabled_immediate("omni.anim.navigation.recast", True)
+        ext_manager.set_extension_enabled_immediate("omni.anim.navigation.meshtools", True)
         ext_manager.set_extension_enabled_immediate("omni.anim.people", True)
         ext_manager.set_extension_enabled_immediate("isaacsim.replicator.agent.core", True)
         ext_manager.set_extension_enabled_immediate("omni.kit.mesh.raycast", True)
