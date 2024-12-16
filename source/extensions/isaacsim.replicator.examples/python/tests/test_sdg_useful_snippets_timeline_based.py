@@ -49,7 +49,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         import omni.usd
 
         # NOTE: To avoid FPS delta misses make sure the sensor framerate is divisible by the timeline framerate
-        STAGE_FPS = 60.0
+        STAGE_FPS = 100.0
         SENSOR_FPS = 10.0
         SENSOR_DT = 1.0 / SENSOR_FPS
 
@@ -59,6 +59,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
             # Disable capture on play (data will only be accessed at custom times)
             carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
+
+            # Make sure fixed time stepping is set (the timeline will be advanced with the same delta time)
+            carb.settings.get_settings().set("/app/player/useFixedTimeStepping", True)
 
             # Set the timeline parameters
             timeline = omni.timeline.get_timeline_interface()
@@ -88,12 +91,16 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             annot_depth.attach(rp)
 
             # Run the simulation for the given number of frames and access the data at the desired framerates
+            written_frames = 0
             previous_time = timeline.get_current_time()
             elapsed_time = 0.0
             for i in range(num_frames):
                 current_time = timeline.get_current_time()
-                elapsed_time += current_time - previous_time
-                print(f"[{i}] current_time={current_time:.4f}, elapsed_time={elapsed_time:.4f}/{SENSOR_DT:.4f};")
+                delta_time = current_time - previous_time
+                elapsed_time += delta_time
+                print(
+                    f"[{i}] current_time={current_time:.4f}; delta_time={delta_time:.4f}; elapsed_time={elapsed_time:.4f}/{SENSOR_DT:.4f};"
+                )
 
                 # Check if enough time has passed to trigger the sensor
                 if elapsed_time >= SENSOR_DT:
@@ -111,7 +118,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
                     # After step, the annotator data is available and in sync with the stage
                     annot_data = annot_depth.get_data()
-                    print(f"\tWriter triggered and annotator data shape={annot_data.shape};")
+
+                    # Count the number of frames written
+                    print(f"\t Writing frame {written_frames}; annotator data shape={annot_data.shape};")
+                    written_frames += 1
 
                     # Disable render products to avoid unnecessary rendering
                     rp.hydra_texture.set_updates_enabled(False)
@@ -128,10 +138,17 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             await rep.orchestrator.wait_until_complete_async()
 
         # Run the example for a given number of frames
-        await run_custom_fps_example_async(num_frames=50)
+        # NOTE: the expected number of frames written will be (num_frames - 1) * SENSOR_FPS / STAGE_FPS
+        await run_custom_fps_example_async(num_frames=61)
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=os.getcwd() + "/_out_writer_fps_rgb", expected_counts={"png": 8}))
+        num_frames = 61
+        expected_write_counts = (num_frames - 1) * SENSOR_FPS / STAGE_FPS
+        self.assertTrue(
+            validate_folder_contents(
+                path=os.getcwd() + "/_out_writer_fps_rgb", expected_counts={"png": expected_write_counts}
+            )
+        )
 
     async def test_sdg_snippet_subscribers_and_events(self):
         import asyncio

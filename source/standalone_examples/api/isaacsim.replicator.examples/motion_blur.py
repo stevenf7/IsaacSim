@@ -169,7 +169,7 @@ def run_motion_blur_example(num_frames=3, custom_delta_time=None, use_path_traci
         carb.settings.get_settings().set("/rtx/rendermode", "RaytracedLighting")
 
     # Wait until the data is fully written
-    rep.orchestrator.wait_until_complete_async()
+    rep.orchestrator.wait_until_complete()
 
 
 def run_motion_blur_examples():
