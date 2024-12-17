@@ -149,11 +149,9 @@ osec:sonarqube:
     before_script:
       - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
     rules:
-      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-        when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - if: ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+      - if: '$CI_COMMIT_BRANCH != "develop"'
         when: never
       - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
         when: never
