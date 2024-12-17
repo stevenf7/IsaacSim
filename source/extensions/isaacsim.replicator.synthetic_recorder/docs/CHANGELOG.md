@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1] - 2024-10-28
+### Fixed
+- Added orchestrator.preview call before recording to make sure all frames are written if the timeline is already running
+
+### Added
+- Added tests to check the number of frames written
+
 ## [2.2.0] - 2024-10-28
 ### Changed
 - Split the recorder functionality into a separate class (synthetic_recorder.py)

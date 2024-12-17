@@ -49,7 +49,7 @@ class TestRecorderBasic(omni.kit.test.AsyncTestCase):
     Test the basic functionality of the recorder.
     """
 
-    async def setup(self):
+    async def setUp(self):
         pass
 
     async def tearDown(self):

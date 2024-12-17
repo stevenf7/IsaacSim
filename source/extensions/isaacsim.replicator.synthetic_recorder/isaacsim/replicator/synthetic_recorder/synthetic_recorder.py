@@ -179,6 +179,9 @@ class SyntheticRecorder:
             carb.log_warn(f"Could not attach render products to writer: {e}")
             return False
 
+        if self.verbose:
+            print(f"[SDR][Recorder] Initialized.")
+
         return True
 
     def clear_recorder(self):
@@ -197,18 +200,26 @@ class SyntheticRecorder:
         """Start or stop the recording loop."""
         timeline = omni.timeline.get_timeline_interface()
         if self._state == RecorderState.STOPPED and self.init_recorder():
+            # Start recording if the state is STOPPED and init_recorder() was successful
             if self.verbose:
-                print(f"[SDR] Start;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f};")
+                print(
+                    f"[SDR][Recorder] Start;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f}."
+                )
+            # WAR ISIM-2602 - UI control needs an orchestrator.preview call if the timeline is playing to write all frames
+            await rep.orchestrator.preview_async()
             self._set_state(RecorderState.RUNNING)
             if self.control_timeline and not timeline.is_playing():
+                if self.verbose:
+                    print(f"[SDR][ControlTimeline] Start Recording; Timeline is not playing. Starting it.")
                 timeline.play()
                 timeline.commit()
             # Start the recording loop with the specified number of frames (or run indefinitely == MAX_NUM_FRAMES)
             num_frames = self.num_frames if self.num_frames > 0 else MAX_NUM_FRAMES
             await self._run_recording_loop_async(num_frames)
         else:
+            # Stop the recording if the state is RUNNING or PAUSED
             if self.verbose:
-                print(f"[SDR] Stop;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f};")
+                print(f"[SDR] Stop;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f}.")
             if self.rt_subframes > 0:
                 rep.orchestrator.stop()
             self._set_state(RecorderState.STOPPED)
@@ -219,18 +230,26 @@ class SyntheticRecorder:
         timeline = omni.timeline.get_timeline_interface()
         if self._state == RecorderState.RUNNING:
             if self.verbose:
-                print(f"[SDR] Pause;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f};")
+                print(
+                    f"[SDR][Recorder] Pause;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f}."
+                )
             if self.rt_subframes > 0:
                 rep.orchestrator.pause()
             self._set_state(RecorderState.PAUSED)
             if self.control_timeline and timeline.is_playing():
+                if self.verbose:
+                    print(f"[SDR][ControlTimeline] Pausing Recording; Timeline is playing. Pausing it.")
                 timeline.pause()
                 timeline.commit()
         elif self._state == RecorderState.PAUSED:
             if self.verbose:
-                print(f"[SDR] Resume;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f};")
+                print(
+                    f"[SDR][Recorder] Resume;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f}."
+                )
             self._set_state(RecorderState.RUNNING)
             if self.control_timeline and not timeline.is_playing():
+                if self.verbose:
+                    print(f"[SDR][ControlTimeline] Resuming Recording; Timeline is not playing. Starting it.")
                 timeline.play()
                 timeline.commit()
             # Resume the recording loop (internal frame counter will continue from the last frame)
@@ -304,18 +323,23 @@ class SyntheticRecorder:
 
     async def _run_recording_loop_async(self, num_frames):
         """Run the recording loop for the specified number of frames."""
+        timeline = omni.timeline.get_timeline_interface()
         while self._current_frame < num_frames:
+            # Stop the recording loop if the state has been changed from RUNNING to PAUSED or STOPPED
             if self._state != RecorderState.RUNNING:
                 break
-            timeline = omni.timeline.get_timeline_interface()
-            if self.verbose:
-                print(f"[SDR] \tCapture;\tFrame: {self._current_frame};\tTime: {timeline.get_current_time():.4f};")
+            # Make sure the timeline is playing if Control Timeline is enabled
             if self.control_timeline and not timeline.is_playing():
+                if self.verbose:
+                    print(f"[SDR][ControlTimeline] Recording; Timeline is not playing. Starting it.")
                 timeline.play()
                 timeline.commit()
+            if self.verbose:
+                print(f"[SDR][Capture] Frame: {self._current_frame};\tTime: {timeline.get_current_time():.4f};")
             await rep.orchestrator.step_async(rt_subframes=self.rt_subframes, delta_time=None, pause_timeline=False)
             self._current_frame += 1
 
+        # The recording loop has finished change the state to STOPPED
         if self._state == RecorderState.RUNNING:
             self._set_state(RecorderState.STOPPED)
             await self._finish_recording_async()
@@ -325,9 +349,11 @@ class SyntheticRecorder:
         timeline = omni.timeline.get_timeline_interface()
         # If the timeline should be controlled by the recorder and it is running, stop it
         if self.control_timeline and timeline.is_playing():
+            if self.verbose:
+                print(f"[SDR][ControlTimeline] Finishing Recording; Timeline is playing. Stopping it.")
             timeline.stop()
             timeline.commit()
         await rep.orchestrator.wait_until_complete_async()
         if self.verbose:
-            print(f"[SDR] Finished;\tWrote {self._current_frame} frames to: {self.out_dir};")
+            print(f"[SDR][Recorder] Finished;\tData written to: {os.path.join(self.out_working_dir, self.out_dir)}.")
         self.clear_recorder()
