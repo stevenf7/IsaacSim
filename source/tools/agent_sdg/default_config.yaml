@@ -5,7 +5,6 @@ isaacsim.replicator.agent:
     simulation_length: 1800
   sensor:
     camera_num: 4
-    lidar_num: 0
   character:
     asset_path:
     command_file: default_command.txt
