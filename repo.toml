@@ -1006,7 +1006,7 @@ deps_for_isaac = [
   "omni.extended.materials-105.0.9",
   "isaacsim.asset.importer.mjcf-2.3.2",
   "omni.importer.onshape-0.8.1",
-  "isaacsim.asset.importer.urdf-2.3.2",
+  "isaacsim.asset.importer.urdf-2.3.4",
   "omni.kit.test_helpers_gfx",
   "omni.net-0.2.0-isaac",
   "isaacsim.replicator.agent.camera_calibration-0.5.4",
