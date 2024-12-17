@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3] - 2024-12-16
+### Changed
+- Moved samples to isaacsim.sensors.physics.examples extension.
+
 ## [0.3.2] - 2024-12-05
 ### Changed
 - Updated Nova carter path

@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.0] - 2024-12-16
+### Added
+- lightbeam_sensor example
+
 ## [2.1.1] - 2024-11-25
 ### Fixed
 - lidar examples pointers and shutting down properly

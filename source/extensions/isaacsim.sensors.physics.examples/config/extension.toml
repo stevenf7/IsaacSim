@@ -1,0 +1,32 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Physics Sensor Simulation Examples"
+description = "Examples for the Physics Sensors extension"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physics.examples"
+keywords = ["isaac", "physics", "sensor", "lidar", "examples"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.examples.browser" = {}
+"isaacsim.gui.components" = {}
+"isaacsim.sensors.physics" = {}
+
+[[python.module]]
+name = "isaacsim.sensors.physics.examples"
+
+[[python.module]]
+name = "isaacsim.sensors.physics.examples.contact_sensor"
+
+[[python.module]]
+name = "isaacsim.sensors.physics.examples.imu_sensor"

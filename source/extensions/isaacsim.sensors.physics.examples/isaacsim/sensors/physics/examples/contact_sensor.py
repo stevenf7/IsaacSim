@@ -26,7 +26,7 @@ from pxr import Gf, UsdGeom
 EXTENSION_NAME = "Contact Sensor Example"
 
 
-class Contact_sensor_demo(omni.ext.IExt):
+class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         self._ext_id = ext_id

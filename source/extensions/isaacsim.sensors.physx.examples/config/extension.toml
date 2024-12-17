@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.1"
+version = "2.2.0"
 category = "Simulation"
 title = "Isaac Sim Range Sensor Examples"
 description = "Examples for the Range Sensor extension"
@@ -18,11 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"omni.kit.uiapp" = {}
-"omni.kit.menu.utils" = {}
-"isaacsim.robot.schema" = {}
 "isaacsim.gui.components" = {}
-"isaacsim.core.api" = {}
 "isaacsim.sensors.physx" = {}
 "isaacsim.examples.browser" = {}
 
@@ -34,3 +30,6 @@ name = "isaacsim.sensors.physx.examples.lidar_info"
 
 [[python.module]]
 name = "isaacsim.sensors.physx.examples.generic_info"
+
+[[python.module]]
+name = "isaacsim.sensors.physx.examples.lightbeam_sensor"
