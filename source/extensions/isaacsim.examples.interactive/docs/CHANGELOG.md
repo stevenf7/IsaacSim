@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.2] - 2024-12-16
+### Fixed
+- Error when extension was hot reloaded
+
 ## [4.4.1] - 2024-12-04
 ### Fixed
 - Missing import for follow_target_example

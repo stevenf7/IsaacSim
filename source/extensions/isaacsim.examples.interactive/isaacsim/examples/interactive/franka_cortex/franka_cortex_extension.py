@@ -47,6 +47,10 @@ class FrankaCortexExtension(omni.ext.IExt):
 
         return
 
+    def on_shutdown(self):
+        get_browser_instance().deregister_example(name=self.example_name, category=self.category)
+        return
+
 
 class FrankaCortexUI(BaseSampleUITemplate):
     def __init__(self, *args, **kwargs):

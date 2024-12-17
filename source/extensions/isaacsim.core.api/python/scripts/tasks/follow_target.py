@@ -165,6 +165,11 @@ class FollowTarget(ABC, BaseTask):
         """
         joints_state = self._robot.get_joints_state()
         target_position, target_orientation = self._target.get_local_pose()
+
+        # The target cannot be below the ground plane
+        if target_position[2] <= (0.035 / get_stage_units()):
+            target_position[2] = 0.035 / get_stage_units()
+
         return {
             self._robot.name: {
                 "joint_positions": np.array(joints_state.positions),
