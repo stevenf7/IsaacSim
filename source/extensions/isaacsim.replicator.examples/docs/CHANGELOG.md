@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2024-12-17
+### Added
+- added UR10 palletizing demo test
+
 ## [1.0.1] - 2024-12-15
 ### Fixed
 - added fixed timestepping for consistent results for custom fps capture test

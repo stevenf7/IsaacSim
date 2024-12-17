@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "1.1.0"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Examples"
 description="Example Snippets for Isaac Sim Replicator"
@@ -36,5 +36,6 @@ exclude = ["Ogn*Database.py"]
 dependencies = [
     "omni.kit.test",
     "isaacsim.core.api",
-    "isaacsim.storage.native"
+    "isaacsim.storage.native",
+    "isaacsim.examples.interactive",
 ]
