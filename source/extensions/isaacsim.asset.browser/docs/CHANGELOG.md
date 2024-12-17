@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.7] - 2024-12-16
+### Fixed
+- Fixed the disappearing asset tittles 
+
 ## [1.1.6] - 2024-12-10
 ### Fixed
 - Fixed the search functionality to make all assets searchable

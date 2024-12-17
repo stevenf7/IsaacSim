@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.4] - 2024-11-25
+### Fixed
+- Fixed the disappearing asset tittles 
+
 ## [0.1.3] - 2024-11-25
 ### Fixed
 - Refreshing browser during hotloading
