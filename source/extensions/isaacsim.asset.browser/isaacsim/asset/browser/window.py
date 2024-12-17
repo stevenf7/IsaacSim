@@ -24,6 +24,12 @@ from .prop_property_delegate import PropAssetPropertyDelegate
 from .style import PROPERTY_STYLE
 
 
+class BrowserWidget(TreeFolderBrowserWidgetEx):
+    def _on_thumbnail_size_changed(self, thumbnail_size: int) -> None:
+        self._delegate.hide_label = False  # thumbnail_size < 64
+        self._delegate.item_changed(None, None)
+
+
 class AssetBrowserWindow(ui.Window):
     """
     Represent a window to show Assets
@@ -69,11 +75,14 @@ class AssetBrowserWindow(ui.Window):
 
         with self.frame:
             with ui.VStack(spacing=15):
-                self._widget = TreeFolderBrowserWidgetEx(
+                self._widget = BrowserWidget(
                     self._browser_model,
                     detail_delegate=self._delegate,
                     options_menu=self._options_menu,
                     predownload_folder=preload_folder,
+                    min_thumbnail_size=32,
+                    max_thumbnail_size=128,
+                    detail_thumbnail_size=64,
                     style=PROPERTY_STYLE,
                     property_delegates=[EmptyPropertyDelegate(), PropAssetPropertyDelegate(), MultiPropertyDelegate()],
                 )
