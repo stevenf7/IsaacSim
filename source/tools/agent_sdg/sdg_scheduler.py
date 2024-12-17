@@ -25,7 +25,7 @@ import numpy as np
 try:
     CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/metropolis.simulation.base.kit"
     if not os.path.exists(CUSTOM_APP_PATH):
-        CUSTOM_APP_PATH = "apps/isaacsim.exp.full.kit"
+        CUSTOM_APP_PATH = "tools/agent_sdg/metrosim.exp.kit"
         from isaacsim.simulation_app import SimulationApp
     else:
         raise
@@ -82,9 +82,6 @@ class AgentSDG:
             # [Optional] Save the scene
             if self.save_usd:
                 self._save_usd()
-
-            # Close app
-            self._sim_app.close()
 
     def _enable_extensions(self):
         import omni.kit.app
@@ -271,6 +268,9 @@ def main():
     task = asyncio.ensure_future(sdg.run())
     while not task.done():
         sim_app.update()
+
+    # Close app
+    sim_app.close()
 
 
 if __name__ == "__main__":
