@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.0"
+version = "2.2.1"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensors"
 description = "Extension that provides PhysX sensor models."
@@ -17,11 +17,11 @@ preview_image = "data/preview.png"
 
 
 [dependencies]
+"isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.robot.schema" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.graph" = {}
-"isaacsim.core.api" = {}
-"isaacsim.gui.components" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.kit.uiapp" = {}
@@ -29,11 +29,9 @@ preview_image = "data/preview.png"
 "omni.physx" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # needed for simulation to start
-"isaacsim.robot.schema" = {}
 "omni.usd" = {}
 "omni.usdphysics" = {}
 "usdrt.scenegraph" = {}
-"isaacsim.examples.browser" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.physx"
@@ -41,9 +39,6 @@ name = "isaacsim.sensors.physx"
 [[python.module]]
 name = "isaacsim.sensors.physx.tests"
 public = false
-
-[[python.module]]
-name = "isaacsim.sensors.physx.scripts.samples.lightbeam_sensor"
 
 [[native.plugin]]
 path = "bin/*.plugin"

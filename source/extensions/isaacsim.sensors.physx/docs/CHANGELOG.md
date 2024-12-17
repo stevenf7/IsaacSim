@@ -1,8 +1,12 @@
 # Changelog
+
+## [2.2.1] - 2024-12-16
+### Changed
+- Moved lightbeam_sensor example to isaacsim.sensors.physx.examples
+
 ## [2.2.0] - 2024-10-29
 ### Changed
 - moved examples from menu to browser
-
 
 ## [2.1.0] - 2024-10-30
 ### Changed

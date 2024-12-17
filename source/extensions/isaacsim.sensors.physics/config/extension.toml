@@ -17,21 +17,19 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.deprecation_manager" = {}
-"omni.graph" = {}
-"isaacsim.core.nodes" = {}
 "isaacsim.core.api" = {}
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.nodes" = {}
+"isaacsim.robot.schema" = {}
 "isaacsim.storage.native" = {}
-"isaacsim.gui.components" = {}
+"omni.graph" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.physx" = {}
 "omni.replicator.core" = {}
 "omni.timeline" = {} # Needed for simulation to occur
-"isaacsim.robot.schema" = {}
 "omni.usd" = {} # needed for call to add aov
 "usdrt.scenegraph" = {}
-"isaacsim.examples.browser" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.physics"
@@ -39,12 +37,6 @@ name = "isaacsim.sensors.physics"
 [[python.module]]
 name = "isaacsim.sensors.physics.tests"
 public = false
-
-[[python.module]]
-name = "isaacsim.sensors.physics.scripts.samples.contact_sensor"
-
-[[python.module]]
-name = "isaacsim.sensors.physics.scripts.samples.imu_sensor"
 
 [[native.plugin]]
 path = "bin/*.plugin"
