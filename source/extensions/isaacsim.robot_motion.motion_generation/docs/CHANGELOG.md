@@ -1,5 +1,9 @@
 # Changelog
 
+## [8.0.3] - 2024-12-16
+### Fixed
+- Issues importing interface_config_loader
+
 ## [8.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime

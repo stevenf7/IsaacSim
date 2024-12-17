@@ -10,6 +10,7 @@
 from isaacsim.robot_motion.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from isaacsim.robot_motion.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
 from isaacsim.robot_motion.motion_generation.articulation_trajectory import ArticulationTrajectory
+from isaacsim.robot_motion.motion_generation.interface_config_loader import *
 from isaacsim.robot_motion.motion_generation.kinematics_interface import KinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinematicsSolver
 from isaacsim.robot_motion.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSmoothed
