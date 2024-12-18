@@ -1,16 +1,26 @@
 # Changelog
-## [2.0.2] - 2024-12-11
+## [2.1.1] - 2024-12-11
 ### Changed
 - Fix extension renaming
+## [2.1.0] - 2024-11-01
+### Changed
+- Menu name
 
-## [2.0.1] - 2024-10-24
+## [2.0.3] - 2024-10-28
+### Changed
+- Remove test imports from runtime
+
+## [2.0.2] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
 
+##  [2.0.1] - 2024-10-11
+### Changed
+- Removed isaacsim core dependencies
 
 ##  [2.0.0] - 2024-09-27
 ### Changed
-- Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui
+- Renamed extension to isaacsim.asset.gen.conveyor.ui
 
 ## [1.1.0] - 2024-06-13
 ### Fixed

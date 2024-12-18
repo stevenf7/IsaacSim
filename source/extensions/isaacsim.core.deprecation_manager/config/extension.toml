@@ -59,7 +59,7 @@ exts."isaacsim.core.deprecation_manager".settings = [
 ]
 # OmniGraph nodes
 exts."isaacsim.core.deprecation_manager".omnigraph = [
-    { deprecated = "omni.isaac.conveyor", new = "isaacsim.asset.generator.conveyor" },
+    { deprecated = "omni.isaac.conveyor", new = "isaacsim.asset.gen.conveyor" },
     { deprecated = "omni.isaac.core_nodes", new = "isaacsim.core.nodes" },
     { deprecated = "omni.isaac.debug_draw", new = "isaacsim.util.debug_draw" },
     { deprecated = "omni.isaac.manipulators", new = "isaacsim.robot.manipulators" },
