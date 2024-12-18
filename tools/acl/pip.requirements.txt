@@ -1,5 +1,0 @@
-hurry.filesize
-websockets==9.1
-xattr
-aiohttp
-ijson
