@@ -266,6 +266,40 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
                 == Gf.Vec3d(*target_translations[i])
             )
 
+    async def test_grid_cloner_articulation_physics_replication_envIds(self):
+        stage = omni.usd.get_context().get_stage()
+
+        # create our base environment with one cube
+        base_env_path = "/World/envs"
+
+        cloner = GridCloner(spacing=3)
+        cloner.define_base_env(base_env_path + "/env_0")
+        UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
+        prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/Ant/ant_instanceable.usd")
+
+        target_paths = cloner.generate_paths("/World/envs/env", 100)
+
+        # clone the cube at target paths
+        target_translations = cloner.clone(
+            source_prim_path="/World/envs/env_0",
+            prim_paths=target_paths,
+            replicate_physics=True,
+            base_env_path="/World/envs",
+            enable_env_ids=True,
+        )
+
+        for i in range(100):
+            self.assertTrue(stage.GetPrimAtPath(f"/World/envs/env_{i}") is not None)
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/envs/env_{i}/Ant/torso").HasAPI(UsdPhysics.ArticulationRootAPI)
+            )
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/World/envs/env_{i}").GetAttribute("xformOp:translate").Get()
+                == Gf.Vec3d(*target_translations[i])
+            )
+
     async def test_grid_cloner_copy_addition(self):
         stage = omni.usd.get_context().get_stage()
 

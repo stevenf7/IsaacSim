@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2024-12-17
+### Added
+- Added `enable_env_ids` flag to clone to enable physics replication env IDs for co-location of clones
+
 ## [1.2.0] - 2024-11-26
 ### Added
 - Ability to disable notice handling during cloning process to improve performance

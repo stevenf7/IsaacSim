@@ -131,6 +131,7 @@ class GridCloner(Cloner):
         base_env_path: str = None,
         root_path: str = None,
         copy_from_source: bool = False,
+        enable_env_ids: bool = False,
     ):
 
         """Creates clones in a grid fashion. Positions of clones are computed automatically.
@@ -147,6 +148,7 @@ class GridCloner(Cloner):
             root_path (str): Prefix path for each environment. Required if replicate_physics=True and generate_paths() not called.
             copy_from_source: (bool): Setting this to False will inherit all clones from the source prim; any changes made to the source prim will be reflected in the clones.
                          Setting this to True will make copies of the source prim when creating new clones; changes to the source prim will not be reflected in clones. Defaults to False. Note that setting this to True will take longer to execute.
+            enable_env_ids (bool): Setting this enables co-location of clones in physics with automatic filtering of collisions between clones.
         Returns:
             positions (List): Computed positions of all clones.
         """
