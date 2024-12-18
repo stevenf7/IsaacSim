@@ -63,7 +63,9 @@ class Cloner:
         self._root_path = root_path + "_"
         return [f"{root_path}_{i}" for i in range(num_paths)]
 
-    def replicate_physics(self, source_prim_path: str, prim_paths: list, base_env_path: str, root_path: str):
+    def replicate_physics(
+        self, source_prim_path: str, prim_paths: list, base_env_path: str, root_path: str, enable_env_ids: bool = False
+    ):
         """Replicates physics properties directly in omni.physics to avoid performance bottlenecks when parsing physics.
 
         Args:
@@ -71,6 +73,7 @@ class Cloner:
             prim_paths (List[str]): List of destination paths.
             base_env_path (str): Path to namespace for all environments.
             root_path (str): Prefix path for each environment.
+            useEnvIds (bool): Whether to use envIDs functionality in physics to enable co-location of clones. Clones will be filtered automatically.
         Raises:
             Exception: Raises exception if base_env_path is None or root_path is None.
 
@@ -92,7 +95,7 @@ class Cloner:
             return exclude_paths
 
         def replicationAttachEndFn(stageId):
-            get_physx_replicator_interface().replicate(stageId, source_prim_path, num_replications)
+            get_physx_replicator_interface().replicate(stageId, source_prim_path, num_replications, enable_env_ids)
 
         def hierarchyRenameFn(replicatePath, index):
             if replicate_first:
@@ -156,6 +159,7 @@ class Cloner:
         root_path: str = None,
         copy_from_source: bool = False,
         unregister_physics_replication: bool = False,
+        enable_env_ids: bool = False,
     ):
 
         """Clones a source prim at user-specified destination paths.
@@ -173,7 +177,8 @@ class Cloner:
             root_path (str): Prefix path for each environment. Required if replicate_physics=True and generate_paths() not called.
             copy_from_source: (bool): Setting this to False will inherit all clones from the source prim; any changes made to the source prim will be reflected in the clones.
                          Setting this to True will make copies of the source prim when creating new clones; changes to the source prim will not be reflected in clones. Defaults to False. Note that setting this to True will take longer to execute.
-            unregister_physics_replication: Setting this to True will unregister the physics replicator on the current stage.
+            unregister_physics_replication (bool): Setting this to True will unregister the physics replicator on the current stage.
+            enable_env_ids (bool): Setting this enables co-location of clones in physics with automatic filtering of collisions between clones.
         Raises:
             Exception: Raises exception if source prim path is not valid.
 
@@ -330,7 +335,7 @@ class Cloner:
                     op_order_spec.default = Vt.TokenArray(["xformOp:translate", "xformOp:orient", "xformOp:scale"])
 
         if replicate_physics and has_clones:
-            self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
+            self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path, enable_env_ids)
         elif unregister_physics_replication:
             get_physx_replicator_interface().unregister_replicator(
                 UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
