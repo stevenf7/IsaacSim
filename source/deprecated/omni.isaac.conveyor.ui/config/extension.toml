@@ -7,7 +7,7 @@ order = 0
 version = "2.0.2"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
-description="UI components for isaacsim.asset.generator.conveyor"
+description="UI components for omni.isaac.conveyor"
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
@@ -19,13 +19,13 @@ keywords = ["kit", "example", "ui"]
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.asset.generator.conveyor.ui" = {}
+"isaacsim.asset.gen.conveyor.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.conveyor.ui"
 
 [deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.generator.conveyor.ui."
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui."
 
 [[test]]
 dependencies = [

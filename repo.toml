@@ -934,7 +934,7 @@ ogn_exts_includes = [
   "isaacsim.replicator.domain_randomization",
   "isaacsim.replicator.examples",
   "isaacsim.replicator.writers",
-  "isaacsim.asset.generator.conveyor",
+  "isaacsim.asset.gen.conveyor",
   "isaacsim.ros2.bridge",
   "isaacsim.sensors.physics",
   "isaacsim.sensors.physx",
