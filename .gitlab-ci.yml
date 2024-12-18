@@ -144,7 +144,7 @@ variables:
 # ==============================================================================================================
 # overrides for compliance/osec job
 osec:sonarqube:
-    stage: check
+    stage: deploy
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
