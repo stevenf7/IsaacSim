@@ -59,11 +59,6 @@ public:
                 db.outputs.execOut() = kExecutionAttributeStateEnabled;
             }
         }
-        else
-        {
-            state.mFrame = 0;
-            db.outputs.execOut() = kExecutionAttributeStateEnabled;
-        }
         return true;
     }
 
