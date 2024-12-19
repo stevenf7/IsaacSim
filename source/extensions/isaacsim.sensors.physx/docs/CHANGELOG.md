@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2024-12-18
+### Fixed
+- Physx Lidar azimuth and zenith units form ReadLidarBeams node
+
 ## [2.2.1] - 2024-12-16
 ### Changed
 - Moved lightbeam_sensor example to isaacsim.sensors.physx.examples

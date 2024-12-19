@@ -201,11 +201,11 @@ public:
         auto& azimuthRangeOutput = db.outputs.azimuthRange();
         auto& zenithRangeOutput = db.outputs.zenithRange();
 
-        azimuthRangeOutput[0] = azimuthRange.x;
-        azimuthRangeOutput[1] = azimuthRange.y;
+        azimuthRangeOutput[0] = azimuthRange.x / static_cast<float>(M_PI) * 180.0f;
+        azimuthRangeOutput[1] = azimuthRange.y / static_cast<float>(M_PI) * 180.0f;
 
-        zenithRangeOutput[0] = zenithRange.x;
-        zenithRangeOutput[1] = zenithRange.y;
+        zenithRangeOutput[0] = zenithRange.x / static_cast<float>(M_PI) * 180.0f;
+        zenithRangeOutput[1] = zenithRange.y / static_cast<float>(M_PI) * 180.0f;
 
         if (mResetLaserScan)
         {
