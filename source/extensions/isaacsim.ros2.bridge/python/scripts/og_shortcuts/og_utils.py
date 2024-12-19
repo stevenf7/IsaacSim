@@ -445,7 +445,7 @@ class Ros2JointStatesGraph:
                     ],
                     keys.SET_VALUES: [
                         (js_sub_node_name + ".inputs:topicName", self._sub_topic),
-                        (self._og_path + "/" + js_pub_node_name + ".inputs:nodeNamespace", self._node_namespace),
+                        (self._og_path + "/" + js_sub_node_name + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                 },
             )

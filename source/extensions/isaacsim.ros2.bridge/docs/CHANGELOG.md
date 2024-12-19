@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.6] - 2024-12-19
+### Fixed
+- Auto generated graph in ROS 2 OmniGraphs menu to incorporate namespace field to Joint state subscriber pipeline
+
 ## [4.1.5] - 2024-12-13
 ### Fixed
 - Extension not properly named with kit and platform tags
