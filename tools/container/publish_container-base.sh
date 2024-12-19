@@ -32,21 +32,23 @@ ls tools/container/_inputs/isaac-sim
 echo !Start building container!
 cd "$SCRIPT_DIR"
 # docker pull gitlab-master.nvidia.com:5005/omniverse/containers/apps/ov-base/ov-base-ubuntu-22:2023.8.0
-env BUILD=$APP_NAME-base ./bin/docker/build.sh -f $FAMILY_NAME
+env BUILD=$APP_NAME ./bin/docker/build.sh -f $FAMILY_NAME
 # docker login nvcr.io
-docker_image_tag=`cat docker/__most_recent_image_${APP_NAME}-base`
+docker_image_tag=`cat docker/__most_recent_image_${APP_NAME}`
 echo !Built container $docker_image_tag!
 
 if [[ "${CI_COMMIT_BRANCH}" == "local" ]]; then
   exit
 fi
 
+CI_COMMIT_BRANCH = "base-${CI_COMMIT_BRANCH}"
+
 # Publish Container
-echo !Start publishing container!
+echo !Start publishing base container!
 echo $docker_image_tag
 # ./bin/docker/publish.sh --yes -r nvcr.io/nvidian/isaac-sim $docker_image_tag
 echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim!
-./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-base-$CI_COMMIT_BRANCH
+./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$CI_COMMIT_BRANCH
 # ./bin/docker/publish.sh --yes -r nvcr.io/nvidian $docker_image_tag -t latest-$CI_COMMIT_BRANCH
 # ./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$CI_COMMIT_BRANCH
 # docker pull nvcr.io/nvidian/isaac-sim/$docker_image_tag
@@ -55,9 +57,9 @@ echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim
 # docker tag nvcr.io/nvidian/isaac-sim/$docker_image_tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
 # docker push gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
-echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-base-$CI_COMMIT_BRANCH!
-docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-base-$CI_COMMIT_BRANCH
-docker push nvcr.io/nvidian/$APP_NAME:latest-base-$CI_COMMIT_BRANCH
+echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH!
+docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
+docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
 # # FOR PRODUCTION #
 # echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0!
