@@ -41,6 +41,7 @@ class AgentSDG:
         self._sim_app = sim_app
         self.config_file_path = config_file_path
         self.camera_file_path = camera_file_path
+        self.output_path = None
         self.save_usd = save_usd
         self.camera_placements_json = None
         self._sim_manager = None
@@ -66,6 +67,10 @@ class AgentSDG:
         if not can_load_config:
             return
 
+        writer_selection = self._sim_manager.get_config_file_property_group("replicator", "writer_selection")
+        params = writer_selection.content_prop.get_value()
+        self.output_path = params["output_dir"]
+
         # Set up sim
         await self._setup_sim()
 
@@ -76,12 +81,7 @@ class AgentSDG:
         self._gen_random_commands()
 
         # Wait for data generation callback
-        try:
-            await self._sim_manager.run_data_generation_async(will_wait_until_complete=True)
-        finally:
-            # [Optional] Save the scene
-            if self.save_usd:
-                self._save_usd()
+        await self._sim_manager.run_data_generation_async(will_wait_until_complete=True)
 
     def _enable_extensions(self):
         import omni.kit.app
@@ -209,23 +209,6 @@ class AgentSDG:
         ov_rot = rot_matrix.ExtractRotation().GetQuat()
         CameraUtil.set_camera(camera_prim, ov_pos, ov_rot, ov_focal_length)
 
-    # ===== Save USD =====
-
-    def _save_usd(self):
-        print("Saving USD...")
-        try:
-            import omni.client
-            import omni.usd
-
-            writer_selection = self._sim_manager.get_config_file_property_group("replicator", "writer_selection")
-            params = writer_selection.content_prop.get_value()
-            save_to_path = omni.client.combine_urls("{}/".format(params["output_dir"]), "scene.usd")
-            omni.usd.get_context().save_as_stage(save_to_path)
-            print("Save scene to: " + str(save_to_path))
-            self._sim_app.update()
-        except Exception as e:
-            print("Caught exception. Unable to save USD. " + str(e), file=sys.stderr)
-
 
 def get_args():
     parser = argparse.ArgumentParser("Agent SDG")
@@ -241,6 +224,19 @@ def get_args():
     )
     args, _ = parser.parse_known_args()
     return args
+
+
+# ===== Save USD =====
+async def _save_usd(save_as_path):
+    print("Saving USD...")
+    try:
+        import omni.usd
+
+        await omni.usd.get_context().save_as_stage_async(save_as_path)
+        print("Save scene to: " + str(save_as_path))
+        await omni.usd.get_context().close_stage_async()
+    except Exception as e:
+        print("Caught exception. Unable to save USD. " + str(e), file=sys.stderr)
 
 
 def main():
@@ -263,13 +259,24 @@ def main():
 
     # Start SimApp
     sim_app = SimulationApp(launch_config=APP_CONFIG, experience=CUSTOM_APP_PATH)
+
     # Start SDG
     sdg = AgentSDG(sim_app, config_file_path, camera_file_path, save_usd)
     task = asyncio.ensure_future(sdg.run())
     while not task.done():
         sim_app.update()
 
+    # [Optional] Save USD to
+    if save_usd:
+        import omni.client
+
+        save_as_path = omni.client.combine_urls("{}/".format(sdg.output_path), "scene.usd")
+        save_usd_task = asyncio.ensure_future(_save_usd(save_as_path))
+        while not save_usd_task.done():
+            sim_app.update()
+
     # Close app
+    sim_app.update()
     sim_app.close()
 
 
