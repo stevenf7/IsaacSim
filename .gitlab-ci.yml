@@ -1485,7 +1485,7 @@ publish-container-base:
       - .omni_nvks_runner_with_docker
     variables:
         APP_NAME: "isaac-sim"
-        FAMILY_NAME: "gl"
+        FAMILY_NAME: "base"
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005

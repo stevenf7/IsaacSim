@@ -13,7 +13,7 @@ if [[ -z "${CI_COMMIT_BRANCH}" ]]; then
 fi
 
 if [[ -z "${FAMILY_NAME}" ]]; then
-  FAMILY_NAME="local"
+  FAMILY_NAME="base"
 fi
 
 
@@ -41,30 +41,22 @@ if [[ "${CI_COMMIT_BRANCH}" == "local" ]]; then
   exit
 fi
 
-CI_COMMIT_BRANCH = "base-${CI_COMMIT_BRANCH}"
-
 # Publish Container
 echo !Start publishing base container!
 echo $docker_image_tag
-# ./bin/docker/publish.sh --yes -r nvcr.io/nvidian/isaac-sim $docker_image_tag
 echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim!
-./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$CI_COMMIT_BRANCH
-# ./bin/docker/publish.sh --yes -r nvcr.io/nvidian $docker_image_tag -t latest-$CI_COMMIT_BRANCH
-# ./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$CI_COMMIT_BRANCH
-# docker pull nvcr.io/nvidian/isaac-sim/$docker_image_tag
+./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$FAMILY_NAME-$CI_COMMIT_BRANCH
 
-# echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim!
-# docker tag nvcr.io/nvidian/isaac-sim/$docker_image_tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
-# docker push gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
+echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$FAMILY_NAME-$CI_COMMIT_BRANCH!
+docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$FAMILY_NAME-$CI_COMMIT_BRANCH
+docker push nvcr.io/nvidian/$APP_NAME:latest-$FAMILY_NAME-$CI_COMMIT_BRANCH
 
-echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH!
-docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
-docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
-
-# # FOR PRODUCTION #
-# echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0!
-# docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0
-# docker push nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0
+# FOR PRODUCTION #
+if [[ "${CI_COMMIT_BRANCH}" =~ /^release\/.*/ ]]; then
+    echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0-$FAMILY_NAME!
+    docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0-$FAMILY_NAME
+    docker push nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0-$FAMILY_NAME
+fi
 
 docker images
 docker rmi -f $(docker images --filter=reference="$docker_image_tag" -q)
