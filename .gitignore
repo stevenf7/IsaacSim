@@ -114,9 +114,12 @@ PACKAGE-DEPS.yaml
 conf.py
 
 
-# ignore omnigraph docs file
+# ignore docs file
 ogn.rst
 source/extensions/**/docs/ogn/
+source/extensions/**/docs/index.rst
+source/deprecated/**/docs/ogn/
+source/deprecated/**/docs/index.rst
 
 output
 

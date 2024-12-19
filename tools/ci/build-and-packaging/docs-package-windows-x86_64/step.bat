@@ -5,7 +5,7 @@ call "%~dp0..\..\..\..\build.bat" --release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: build docs
-call "%~dp0..\..\..\..\repo.bat" omnigraph_docs
+call "%~dp0..\..\..\..\repo.bat" extension_docs
 @REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: build docs

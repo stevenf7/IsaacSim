@@ -229,55 +229,23 @@ version_selector_enabled = false
 # Add all extensions to docs sys.path
 
 library_paths = [
-  "$root/_build/$platform/$config",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
   "$root/_build/$platform/$config/kit",
-  "$root/_build/$platform/$config/kit/kernel/plugins",
-  "$root/_build/$platform/$config/kit/libs/iray",
-  "$root/_build/$platform/$config/kit/plugins",
-  "$root/_build/$platform/$config/kit/plugins/bindings-python",
-  "$root/_build/$platform/$config/kit/plugins/carb_gfx",
-  "$root/_build/$platform/$config/kit/plugins/rtx",
-  "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
   "$root/_build/$platform/$config/extscache/omni.usd*/bin",
-  "$root/_build/$platform/$config/extscache/omni.ui*/bin",
-  "$root/_build/$platform/$config/extscache/omni.ui.scene*/bin",
-  "$root/_build/$platform/$config/extscache/omni.kit.renderer.imgui*/bin",
-  # "$root/_build/$platform/$config/extscache/omni.usd*/bin",
-  "$root/_build/$platform/$config/kit/extscore/*/bin",
-  "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
-  "$root/_build/$platform/$config/extsPhysics/*/bin",
+  "$root/_build/$platform/$config/extscache/omni.usd.schema*/lib",
+  "$root/_build/$platform/$config/extsPhysics/omni.usd.schema*/bin"
 ]
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
-  # "${root}/_build/${platform}/${config}/kit/exts/*",
-  "${root}/_build/${platform}/${config}/kit/extscore/*",
-  "${root}/_build/${platform}/${config}/kit/kernel/py",
-  # "${root}/_build/${platform}/${config}/kit/plugins/bindings-python/",
-  "${root}/_build/${platform}/${config}/python_packages",
-  "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.ocs2/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
+  "${root}/_build/${platform}/${config}/extsDeprecated/*",
+  # archives
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema**",
-  "${root}/_build/${platform}/${config}/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema**",
-  # "${root}/_build/${platform}/${config}/extscache/*",
-  "${root}/_build/${platform}/${config}/extsPhysics/**",
-  "${root}/_build/${platform}/${config}/extscache/omni.usd**",
-  "${root}/_build/${platform}/${config}/extscache/omni.physx*",
-  "${root}/_build/${platform}/${config}/extscache/omni.physx.clashdetection*",
-  "${root}/_build/${platform}/${config}/extscache/omni.kit**",
-  "${root}/_build/${platform}/${config}/extscache/omni.hydra**",
-  "${root}/_build/${platform}/${config}/extscache/omni.appwindow**",
-  "${root}/_build/${platform}/${config}/extscache/omni.timeline**",
-  "${root}/_build/${platform}/${config}/extscache/omni.syntheticdata**",
-  "${root}/_build/${platform}/${config}/extscache/omni.warp**",
+  "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
-  # "${root}/_build/${platform}/${config}/extscache/omni.replicator**",
 ]
+
 sphinx_conf_py_extra = """
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
@@ -285,10 +253,37 @@ sphinx_conf_py_extra = """
     html_static_path += [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    autodoc_mock_imports = ["omni.physx.clashdetection", "torch", "omni.ui", "omni.ui_scene", "usdrt",  "omni.kit.window", "omni.kit.helper", "omni.kit.ui", "omni.graph", "omni.replicator.core", "omni.activity", "omni.kit.app", "omni.stats"]
-    # import sys
-    # if sys.platform == "win32":
-    #    autodoc_mock_imports.extend(["omni.isaac.IsaacSensorSchema", "omni.isaac.RangeSensorSchema", "osqp", "isaacsim.ros1.bridge"])
+    autodoc_mock_imports = [
+        "carb",
+        "omni.appwindow",
+        "omni.client",
+        "omni.ext",
+        "omni.graph",
+        "omni.isaac.IsaacSensorSchema",
+        "omni.isaac.RangeSensorSchema",
+        # don't mock 'omni.kit' (needed for 'omni.kit.loop-isaac'),
+        "omni.kit.app",
+        "omni.kit.commands",
+        "omni.kit.menu",
+        "omni.kit.property",
+        "omni.kit.test",
+        "omni.kit.usd",
+        "omni.kit.utils",
+        "omni.kit.window",
+        "omni.physics",
+        "omni.physx",
+        "omni.physxclashdetectioncore",
+        "omni.replicator",
+        "omni.stats",
+        "omni.syntheticdata",
+        "omni.timeline",
+        "omni.ui",
+        "omni.usd",
+        "pxr",
+        "Semantics",
+        "usdrt",
+        "warp",
+    ]
 
     rst_prolog = '''
     .. |br| raw:: html
@@ -298,28 +293,19 @@ sphinx_conf_py_extra = """
     .. |physx_docs| replace:: `PhysX docs <https://nvidia-omniverse.github.io/PhysX/physx>`__
 
     '''
-
 """
 
 sphinx_exclude_patterns = [
   "**/omni.isaac.app",
-  "**/isaacsim.app.selector",
   "**/omni.isaac.assets_check",
-  "**/isaacsim.util.internal",
-  "**/isaacsim.asset.browser",
   "**/omni.isaac.core_archive",
   "**/omni.isaac.ml_archive",
   "**/omni.pip.compute",
   "**/omni.pip.cloud",
-  "**/isaacsim.examples.interactive", #TODO?
   "**/omni.isaac.repl",
   "**/omni.isaac.tests",
-  "**/isaacsim.core.utils_manager",
-  "**/isaacsim.gui.property",
-  "**/isaacsim.test.collection",
   "**/omni.usd.schema.isaac",         #TODO?
   "**/omni.isaac.window.about",
-  "**/isaacsim.app.about",
   "**/omni.isaac.unit_converter",
   "include",
   "tools",
@@ -920,6 +906,42 @@ python.files.exclude = [
   "tools/packman/*",
   "schemas/*",
   "tools/container/**",
+]
+
+########################################################################################################################
+# Extension documentation building (see: repo extension_docs --help)
+########################################################################################################################
+
+[repo_extension_docs]
+build_extension_paths = [
+  "${root}/_build/${platform}/${config}/exts",
+  "${root}/_build/${platform}/${config}/extsDeprecated",
+]
+source_extension_paths = [
+  "${root}/source/extensions",
+  "${root}/source/deprecated",
+]
+
+sections = [
+  "reference",
+  "title",
+  "deprecation",
+  "version",
+  "description",
+  "preview",
+  "enable-extension",
+  { "usage" = "usage.rst" },
+  { "api" = "api.rst" },
+  "ogn",
+  "settings",
+]
+
+excluded_extensions = [
+    # archives
+    "omni.isaac.core_archive",
+    "omni.isaac.ml_archive",
+    "omni.pip.cloud",
+    "omni.pip.compute",
 ]
 
 ########################################################################################################################

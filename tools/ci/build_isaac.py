@@ -52,7 +52,7 @@ def main(args: argparse.Namespace):
 
     # Docs
     if repo_docs_enabled:
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "omnigraph_docs"])
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_docs"])
         # Temporarily ignore warnings in docs build
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config, "--warn-as-error=0"])
         # omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config])
