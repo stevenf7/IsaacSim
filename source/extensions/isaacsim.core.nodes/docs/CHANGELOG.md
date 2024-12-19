@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.2] - 2024-12-13
+### Fixed
+- Updated simulation gate to not execute if the input step is 0.
+
 ## [2.1.1] - 2024-12-11
 ### Fixed
 - Compute Odometry node to validate chassis prim input.
