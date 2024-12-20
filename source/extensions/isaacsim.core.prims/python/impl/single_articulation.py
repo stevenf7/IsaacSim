@@ -128,7 +128,10 @@ class SingleArticulation(_SinglePrimWrapper):
             >>> prim.handles_initialized
             True
         """
-        return self._articulation_view.is_physics_handle_valid()
+        return (
+            self._articulation_view.is_physics_handle_valid()
+            and self._articulation_controller._articulation_view is not None
+        )
 
     @property
     def num_dof(self) -> int:
