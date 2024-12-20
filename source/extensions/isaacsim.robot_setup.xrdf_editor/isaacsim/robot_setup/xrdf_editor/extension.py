@@ -1538,13 +1538,9 @@ class Extension(omni.ext.IExt):
         self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
         self._jerk_limits = np.full(MAX_DOF_NUM, DEFAULT_JERK_LIMIT)
 
-        file_acceleration_limits = None
-        if "acceleration_limits" in parsed_file:
-            file_acceleration_limits = parsed_file["acceleration_limits"]
+        file_acceleration_limits = parsed_file.get("acceleration_limits", None)
 
-        file_jerk_limits = None
-        if "jerk_limits" in parsed_file:
-            file_jerk_limits = parsed_file["jerk_limits"]
+        file_jerk_limits = parsed_file.get("jerk_limits", None)
 
         in_mask = np.in1d(cspace, dof_names)
         if not np.all(in_mask):
@@ -1564,7 +1560,7 @@ class Extension(omni.ext.IExt):
             if file_jerk_limits is not None:
                 self._jerk_limits[ind] = file_jerk_limits[i]
 
-        fixed_joints = parsed_file["cspace_to_urdf_rules"]
+        fixed_joints = parsed_file.get("cspace_to_urdf_rules", None)
 
         if fixed_joints is not None:
             for item in fixed_joints:

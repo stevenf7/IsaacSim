@@ -468,7 +468,7 @@ class CollisionSphereEditor:
             except yaml.YAMLError as exc:
                 print(exc)
 
-        sphere_list = parsed_file["collision_spheres"]
+        sphere_list = parsed_file.get("collision_spheres", None)
 
         if sphere_list is None:
             return
