@@ -261,7 +261,7 @@ def main():
     sim_app = SimulationApp(launch_config=APP_CONFIG, experience=CUSTOM_APP_PATH)
 
     # Start SDG
-    sdg = AgentSDG(sim_app, config_file_path, camera_file_path, save_usd)
+    sdg = AgentSDG(sim_app, os.path.abspath(config_file_path), camera_file_path, save_usd)
     task = asyncio.ensure_future(sdg.run())
     while not task.done():
         sim_app.update()
