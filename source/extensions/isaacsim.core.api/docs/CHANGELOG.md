@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.9] - 2024-12-19
+### Fixed
+- rename articulation_handle to articulation_view
+
 ## [4.2.8] - 2024-12-16
 ### Fixed
 - Prevent follow target from going below the ground plane

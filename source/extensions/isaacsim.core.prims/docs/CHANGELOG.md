@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2024-12-18
+### Fixed
+- handles_initialized returning the wrong value for a single articulation when articulation controller not initialized
+
 ## [0.3.3] - 2024-12-12
 ### Fixed
 - Updated the implementation of articulation inverse dynamic functions to respect the type of articulation (floating base vs fixed based)

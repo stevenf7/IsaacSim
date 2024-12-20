@@ -21,7 +21,7 @@ class ArticulationController(object):
 
     def __init__(self) -> None:
         self._dof_controllers = list()
-        self._articulation_handle = None
+        self._articulation_view = None
         self._default_kps = None
         self._default_kds = None
         return
