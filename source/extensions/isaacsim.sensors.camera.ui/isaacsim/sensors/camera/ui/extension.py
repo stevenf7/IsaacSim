@@ -163,12 +163,12 @@ class Extension(omni.ext.IExt):
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-G2A-H30SA",
+                                "Sensing SG8-AR0820C-5300-G2A-H30YA",
                                 lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H30SA", None),
+                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H30YA", None),
                                     prim_type="Xform",
                                     usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG8/H30SA/SG8S-AR0820C-5300-G2A-H30YA.usd",
+                                    + "/Isaac/Sensors/Sensing/SG8/H30YA/SG8S-AR0820C-5300-G2A-H30YA.usd",
                                 ),
                             ),
                             make_menu_item_description(
