@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.2] - 2024-12-20
+### Fixed
+- Fixed error parsing robot description files with unspecified values under 'cspace_to_urdf_rules'
+
 ## [3.1.1] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu
