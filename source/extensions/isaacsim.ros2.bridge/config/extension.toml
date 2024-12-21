@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.1.6"
+version = "4.1.7"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -87,12 +87,13 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /ActionGraph/ReadLidarPCL: [/ActionGraph] no prim path found for the lidar*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishJointState: [/TestGraph] Could not find target prim*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishImage: [/TestGraph] Width 0 or height 0 is not valid*",
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishTransformTree: [/TestGraph] Please specify atleast one target prim for the ROS pose tree component*",
     "*[Error] [omni.physx.plugin] Setting rigidBodyEnabled to false is not supported if the rigid body is part of an articulation*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_*: [/TestGraph] Unable to create ROS2 node, please check that namespace is valid*",
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
     "*[Error] [isaacsim.sensors.physics.plugin] *** error, No valid parent for /Hawk/Imu_Sensor with a rigid body api was found, sensor will not be created*",
     "*[Error] [isaacsim.sensors.physics.plugin] Failed to create imu sensor, parent prim is not found or invalid*",
-    "*[Error] [omni.graph.core.plugin] Failed to create ComputeGraph \"/Graph/ROS_Nav2_Waypoint_Follower\". A graph already exists at this path.*"
+    "*[Error] [omni.graph.core.plugin] Failed to create ComputeGraph \"/Graph/ROS_Nav2_Waypoint_Follower\". A graph already exists at this path*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishTransformTree: [/TestGraph] Please specify at least one valid target prim for the ROS pose tree component*",
+    "*[Error] [omni.physx.tensors.plugin] Failed to create simulation view: no active physics scene found*"
 ]
 

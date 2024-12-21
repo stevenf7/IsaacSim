@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.7] - 2024-12-19
+### Fixed
+- Failing waypoint follower test due to missing symbol
+
 ## [4.1.6] - 2024-12-19
 ### Fixed
 - Auto generated graph in ROS 2 OmniGraphs menu to incorporate namespace field to Joint state subscriber pipeline

@@ -118,13 +118,13 @@ class WaypointFollower(BaseResetNode):
 
             if result == TaskResult.SUCCEEDED:
                 post_notification("Goal succeeded", status=NotificationStatus.INFO)
-                self._navigator.get_logger().info("Goal succeeded")
+                print("Goal succeeded")
             elif result == TaskResult.CANCELED:
                 post_notification("Goal canceled", status=NotificationStatus.WARNING)
-                self._navigator.get_logger().info("Goal canceled")
+                print("Goal canceled")
             elif result == TaskResult.FAILED:
                 post_notification("Goal failed!", status=NotificationStatus.WARNING)
-                self._navigator.get_logger().info("Goal canceled")
+                print("Goal canceled")
         except:
             pass
 
@@ -177,7 +177,7 @@ def test_waypoint_script(db: og.Database):
     while time.time() < end_time:
         try:
             publisher.publish(msg)
-            node.get_logger().info(f"published: {msg.data}")
+            print(f"published: {msg.data}")
             time.sleep(0.5)
         except:
             print("Context was destroyed")
@@ -329,11 +329,11 @@ class Patrolling(BaseResetNode):
             try:
                 if result == TaskResult.SUCCEEDED:
                     post_notification(f'Round {self._counter} is completed', status=NotificationStatus.INFO)
-                    self._navigator.get_logger().info(f'Round {self._counter} is completed')
+                    print(f'Round {self._counter} is completed')
                     self._counter = self._counter + 1
                 else:
                     post_notification(f'Round {self._counter} is either Failed or Cancelled!', status=NotificationStatus.WARNING)
-                    self._navigator.get_logger().info(f'Round {self._counter} is completed')
+                    print(f'Round {self._counter} is completed')
                     break
             except:
                 pass
@@ -384,7 +384,7 @@ def test_patrolling_script(db: og.Database):
     while time.time() < end_time:
         try:
             publisher.publish(msg)
-            node.get_logger().info(f"published: {msg.data}")
+            print(f"published: {msg.data}")
             time.sleep(0.5)
         except:
             print("Context was destroyed")
@@ -724,7 +724,7 @@ class TestRos2Nav2WaypointFollower(ogts.OmniGraphTestCase):
         # Create a node named 'waypoint_subscriber'
         self.__node = rclpy.create_node("waypoint_subscriber")
 
-        self.__node.get_logger().info(f"Expected Result: {self.__expected_result}")
+        print(f"Expected Result: {self.__expected_result}")
 
         # Create a single waypoint in the scene
         self._create_waypoints(self._waypoints[0], f"{self._goal_parent_prim}/waypoint_{0}")
@@ -732,7 +732,7 @@ class TestRos2Nav2WaypointFollower(ogts.OmniGraphTestCase):
 
         # Define a callback function that will be called when a message is received
         def listener_callback(msg):
-            self.__node.get_logger().info(f"Received: {msg.data}")
+            print(f"Received: {msg.data}")
             self.__result = msg.data == self.__expected_result
 
         # Create a subscription to the 'topic' topic, listening for String messages
@@ -769,7 +769,7 @@ class TestRos2Nav2WaypointFollower(ogts.OmniGraphTestCase):
         # Create a node named 'patrolling_subscriber'
         self.__node = rclpy.create_node("patrolling_subscriber")
 
-        self.__node.get_logger().info(f"Expected Result: {self.__expected_result}")
+        print(f"Expected Result: {self.__expected_result}")
 
         # Create multiple waypoints in the scene
         for _xform in range(self._number_of_waypoints):
@@ -778,7 +778,7 @@ class TestRos2Nav2WaypointFollower(ogts.OmniGraphTestCase):
 
         # Define a callback function that will be called when a message is received
         def listener_callback(msg):
-            self.__node.get_logger().info(f"Received: {msg.data}")
+            print(f"Received: {msg.data}")
             self.__result = msg.data == self.__expected_result
 
         # Create a subscription to the 'topic' topic, listening for String messages

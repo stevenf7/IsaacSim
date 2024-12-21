@@ -561,7 +561,7 @@ class TestRos2Subscribers(omni.kit.test.AsyncTestCase):
                             "SubscribeTransformTree.inputs:frameNamesMap",
                             ["/nova_carter/chassis_link", "base_link", "/nova_carter", "odom"],
                         ),
-                        ("SubscribeTransformTree.inputs:articulationRoots", ["/nova_carter"]),
+                        ("SubscribeTransformTree.inputs:articulationRoots", ["/nova_carter/chassis_link"]),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "SubscribeTransformTree.inputs:execIn"),
