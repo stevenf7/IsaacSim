@@ -1025,7 +1025,7 @@ deps_for_isaac = [
   "omni.cuopt.examples-1.2.0",
   "omni.cuopt.service-1.2.0",
   "omni.cuopt.visualization-1.2.0",
-  "omni.extended.materials-105.0.9",
+  "omni.extended.materials-107.2.0",
   "isaacsim.asset.importer.mjcf-2.3.2",
   "omni.importer.onshape-0.8.1",
   "isaacsim.asset.importer.urdf-2.3.7",
