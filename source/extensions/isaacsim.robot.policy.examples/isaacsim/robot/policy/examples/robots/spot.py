@@ -24,6 +24,7 @@ class SpotFlatTerrainPolicy(PolicyController):
     def __init__(
         self,
         prim_path: str,
+        root_path: Optional[str] = None,
         name: str = "spot",
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
@@ -33,18 +34,19 @@ class SpotFlatTerrainPolicy(PolicyController):
         Initialize robot and load RL policy.
 
         Args:
-            prim_path {str} -- prim path of the robot on the stage
-            name {str} -- name of the quadruped
-            usd_path {str} -- robot usd filepath in the directory
-            position {np.ndarray} -- position of the robot
-            orientation {np.ndarray} -- orientation of the robot
+            prim_path (str) -- prim path of the robot on the stage
+            root_path (Optional[str]): The path to the articulation root of the robot
+            name (str) -- name of the quadruped
+            usd_path (str) -- robot usd filepath in the directory
+            position (np.ndarray) -- position of the robot
+            orientation (np.ndarray) -- orientation of the robot
 
         """
         assets_root_path = get_assets_root_path()
         if usd_path == None:
             usd_path = assets_root_path + "/Isaac/Robots/BostonDynamics/spot/spot.usd"
 
-        super().__init__(name, prim_path, usd_path, position, orientation)
+        super().__init__(name, prim_path, root_path, usd_path, position, orientation)
 
         self.load_policy(
             assets_root_path + "/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt",
@@ -59,7 +61,7 @@ class SpotFlatTerrainPolicy(PolicyController):
         Compute the observation vector for the policy
 
         Argument:
-        command {np.ndarray} -- the robot command (v_x, v_y, w_z)
+        command (np.ndarray) -- the robot command (v_x, v_y, w_z)
 
         Returns:
         np.ndarray -- The observation vector.
@@ -99,8 +101,8 @@ class SpotFlatTerrainPolicy(PolicyController):
         Compute the desired torques and apply them to the articulation
 
         Argument:
-        dt {float} -- Timestep update in the world.
-        command {np.ndarray} -- the robot command (v_x, v_y, w_z)
+        dt (float) -- Timestep update in the world.
+        command (np.ndarray) -- the robot command (v_x, v_y, w_z)
 
         """
         if self._policy_counter % self._decimation == 0:

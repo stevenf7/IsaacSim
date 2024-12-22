@@ -1,7 +1,7 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "4.0.0"
+version = "4.0.1"
 category = "Simulation"
 title = "Reinforcement Learning Inference Example for Robots in Isaac Sim"
 description = "Simulation for legged robots"
