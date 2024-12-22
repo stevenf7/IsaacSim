@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2024-12-20
+### Fixed
+- Quaternion precision mismatch issue
+
 ## [1.3.0] - 2024-12-17
 ### Added
 - Added `enable_env_ids` flag to clone to enable physics replication env IDs for co-location of clones
