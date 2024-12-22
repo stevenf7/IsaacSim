@@ -9,6 +9,7 @@
 from typing import List, Union
 
 import carb
+import carb.settings
 import numpy as np
 import omni.usd
 import torch
@@ -259,6 +260,10 @@ class Cloner:
             xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
         else:
             xform_op_rot = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:orient"))
+        if xform_op_rot.GetPrecision() == UsdGeom.XformOp.PrecisionFloat:
+            current_orientation = Gf.Quatf(current_orientation)
+        else:
+            current_orientation = Gf.Quatd(current_orientation)
         xform_op_rot.Set(current_orientation)
 
         if "xformOp:scale" not in properties:
@@ -318,9 +323,20 @@ class Cloner:
                     translate_spec.default = translation
 
                     orient_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:orient")
+                    default_precision = carb.settings.get_settings().get_as_string(
+                        "app/primCreation/DefaultXformOpPrecision"
+                    )
                     if orient_spec is None:
-                        orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
-                    orient_spec.default = orientation
+                        if len(default_precision) > 0 and default_precision == "Float":
+                            orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatf)
+                            orient_spec.default = Gf.Quatf(orientation)
+                        else:
+                            orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
+                            orient_spec.default = Gf.Quatd(orientation)
+                    elif orient_spec.default is not None and type(orient_spec.default) == Gf.Quatf:
+                        orient_spec.default = Gf.Quatf(orientation)
+                    else:
+                        orient_spec.default = Gf.Quatd(orientation)
 
                     scale_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:scale")
                     if scale_spec is None:

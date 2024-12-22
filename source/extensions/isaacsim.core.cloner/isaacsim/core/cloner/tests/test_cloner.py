@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import unittest
+import os
 
 import numpy as np
 import omni.kit
@@ -52,6 +52,66 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
             self.assertTrue(stage.GetPrimAtPath(f"/World/Cube_{i}").GetTypeName() == "Cube")
             self.assertTrue(
                 stage.GetPrimAtPath(f"/World/Cube_{i}").GetAttribute("xformOp:translate").Get()
+                == target_translations[i]
+            )
+
+    async def test_quatf_cloner(self):
+        await omni.usd.get_context().open_stage_async(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/quatf_d.usda")
+        )
+
+        stage = omni.usd.get_context().get_stage()
+        # create a Cloner instance
+        cloner = Cloner()
+
+        # generate 4 paths that begin with "/Clones/Xform" - path will be appended with _{index}
+        target_paths = cloner.generate_paths("/Clones/Xform", 4)
+
+        cube_positions = np.array([[0, 0, 0], [3, 0, 0], [6, 0, 0], [9, 0, 0]])
+        target_translations = []
+        for pos in cube_positions:
+            target_translations.append(Gf.Vec3d(*pos.tolist()))
+
+        # clone the Xform at target paths at specified positions
+        cloner.clone(
+            source_prim_path="/quatf", prim_paths=target_paths, positions=cube_positions, replicate_physics=False
+        )
+
+        for i in range(4):
+            self.assertTrue(stage.GetPrimAtPath(f"/Clones/Xform_{i}") is not None)
+            self.assertTrue(stage.GetPrimAtPath(f"/Clones/Xform_{i}").GetTypeName() == "Xform")
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/Clones/Xform_{i}").GetAttribute("xformOp:translate").Get()
+                == target_translations[i]
+            )
+
+    async def test_quatd_cloner(self):
+        await omni.usd.get_context().open_stage_async(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/quatf_d.usda")
+        )
+
+        stage = omni.usd.get_context().get_stage()
+        # create a Cloner instance
+        cloner = Cloner()
+
+        # generate 4 paths that begin with "/Clones/Xform" - path will be appended with _{index}
+        target_paths = cloner.generate_paths("/Clones/Xform", 4)
+
+        cube_positions = np.array([[0, 0, 0], [3, 0, 0], [6, 0, 0], [9, 0, 0]])
+        target_translations = []
+        for pos in cube_positions:
+            target_translations.append(Gf.Vec3d(*pos.tolist()))
+
+        # clone the Xform at target paths at specified positions
+        cloner.clone(
+            source_prim_path="/quatd", prim_paths=target_paths, positions=cube_positions, replicate_physics=False
+        )
+
+        for i in range(4):
+            self.assertTrue(stage.GetPrimAtPath(f"/Clones/Xform_{i}") is not None)
+            self.assertTrue(stage.GetPrimAtPath(f"/Clones/Xform_{i}").GetTypeName() == "Xform")
+            self.assertTrue(
+                stage.GetPrimAtPath(f"/Clones/Xform_{i}").GetAttribute("xformOp:translate").Get()
                 == target_translations[i]
             )
 
