@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.1] - 2024-12-22
+### Added
+- Rootpath input for when the articulation root is not the same as the root prim path
+
 ## [4.0.0] - 2024-11-01
 ### Removed
 - Unitree quadruped optimized controller class

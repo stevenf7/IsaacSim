@@ -24,6 +24,7 @@ class H1FlatTerrainPolicy(PolicyController):
     def __init__(
         self,
         prim_path: str,
+        root_path: Optional[str] = None,
         name: str = "h1",
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
@@ -33,17 +34,18 @@ class H1FlatTerrainPolicy(PolicyController):
         Initialize H1 robot and import flat terrain policy.
 
         Args:
-            prim_path {str} -- prim path of the robot on the stage
-            name {str} -- name of the quadruped
-            usd_path {str} -- robot usd filepath in the directory
-            position {np.ndarray} -- position of the robot
-            orientation {np.ndarray} -- orientation of the robot
+            prim_path (str) -- prim path of the robot on the stage
+            root_path (Optional[str]): The path to the articulation root of the robot
+            name (str) -- name of the quadruped
+            usd_path (str) -- robot usd filepath in the directory
+            position (np.ndarray) -- position of the robot
+            orientation (np.ndarray) -- orientation of the robot
 
         """
         assets_root_path = get_assets_root_path()
         if usd_path == None:
             usd_path = assets_root_path + "/Isaac/Robots/Unitree/H1/h1.usd"
-        super().__init__(name, prim_path, usd_path, position, orientation)
+        super().__init__(name, prim_path, root_path, usd_path, position, orientation)
         self.load_policy(
             assets_root_path + "/Isaac/Samples/Policies/H1_Policies/h1_policy.pt",
             assets_root_path + "/Isaac/Samples/Policies/H1_Policies/h1_env.yaml",
@@ -57,7 +59,7 @@ class H1FlatTerrainPolicy(PolicyController):
         Compute the observation vector for the policy.
 
         Argument:
-        command {np.ndarray} -- the robot command (v_x, v_y, w_z)
+        command (np.ndarray) -- the robot command (v_x, v_y, w_z)
 
         Returns:
         np.ndarray -- The observation vector.
@@ -96,8 +98,8 @@ class H1FlatTerrainPolicy(PolicyController):
         Compute the desired articulation action and apply them to the robot articulation.
 
         Argument:
-        dt {float} -- Timestep update in the world.
-        command {np.ndarray} -- the robot command (v_x, v_y, w_z)
+        dt (float) -- Timestep update in the world.
+        command (np.ndarray) -- the robot command (v_x, v_y, w_z)
 
         """
         if self._policy_counter % self._decimation == 0:
