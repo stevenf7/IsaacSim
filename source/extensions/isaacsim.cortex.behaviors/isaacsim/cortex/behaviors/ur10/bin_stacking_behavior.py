@@ -382,7 +382,7 @@ class ReachToPlace(MoveWithNavObs):
 
         target_pose = PosePq(self.target_p, math_util.matrix_to_quat(self.target_R))
 
-        approach_params = ApproachParams(direction=0.15 * np.array([0.0, 0.0, -1.0]), std_dev=0.005)
+        approach_params = ApproachParams(direction=0.35 * np.array([0.0, 0.0, -1.0]), std_dev=0.005)
         posture_config = self.context.robot.default_config
         self.update_command(
             MotionCommand(target_pose=target_pose, approach_params=approach_params, posture_config=posture_config)
