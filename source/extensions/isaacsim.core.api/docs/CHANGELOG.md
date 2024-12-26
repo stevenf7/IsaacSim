@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.2.10] - 2024-12-23
+### Fixed
+- Remove extra test dependencies
+- Disable tests that were not compatible with GPU pipeline
+
 ## [4.2.9] - 2024-12-19
 ### Fixed
 - rename articulation_handle to articulation_view

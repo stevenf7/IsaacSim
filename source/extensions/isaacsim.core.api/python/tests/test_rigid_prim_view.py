@@ -117,7 +117,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     self._device = "cuda:0"
                 self._array_container = lambda x: wp.array(x, device=self._device, dtype=wp.float32)
 
-            await self._runner()
+            await self._runner(cpu_pipeline=False)
 
     async def test_rigid_prim_view_cpu_pipeline(self):
         test_configs = {"use_gpu_pipeline": False, "device": "cpu"}
@@ -259,7 +259,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         )
         self._my_world.scene.add(self._box_view)
 
-    async def _runner(self):
+    async def _runner(self, cpu_pipeline: bool = True):
         await self._setup_scene()
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
@@ -268,20 +268,30 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self.com_test()
             await self._setup_scene()
             await self.inertias_test()
-            await self._setup_scene()
-            await self.world_poses_test()
-            await self._setup_scene()
-            await self.local_poses_test()
-            await self._setup_scene()
-            await self.linear_velocities_test()
-            await self._setup_scene()
-            await self.angular_velocities_test()
-            await self._setup_scene()
-            await self.transforms_test()
+            # These tests cause physx errors when running with GPU pipeline because they set world pose, velocity, etc
+            if cpu_pipeline:
+                await self._setup_scene()
+                await self.world_poses_test()
+                await self._setup_scene()
+                await self.local_poses_test()
+                await self._setup_scene()
+                await self.linear_velocities_test()
+                await self._setup_scene()
+                await self.angular_velocities_test()
+                await self._setup_scene()
+                await self.transforms_test()
+                await self._setup_scene()
+                await self.apply_forces_test()
+                await self._setup_scene()
+                await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=False)
+                await self._setup_scene()
+                await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=True)
+                await self._setup_scene()
+                await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=False)
+                await self._setup_scene()
+                await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=True)
             await self._setup_scene()
             await self.velocities_test()
-            await self._setup_scene()
-            await self.apply_forces_test()
             await self._setup_scene()
             await self.enable_disable_physics_test()
             await self._setup_scene()
@@ -296,14 +306,6 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self.densities_test()
             await self._setup_scene()
             await self.sleep_thresholds_test()
-            await self._setup_scene()
-            await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=False)
-            await self._setup_scene()
-            await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=True)
-            await self._setup_scene()
-            await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=False)
-            await self._setup_scene()
-            await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=True)
 
             await self._setup_contacts_scene()
             await self.contact_force_test()

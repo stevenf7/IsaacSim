@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.5"
+version = "2.2.6"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "Isaac Sim Utility Extensions"
@@ -21,8 +21,6 @@ writeTarget.platform = true
 "omni.physx" = {}
 "omni.usdphysics" = {}
 "omni.isaac.dynamic_control" = {}
-"omni.client" = {}
-"omni.kit.menu.utils" = {}
 "isaacsim.storage.native" = {}
 "isaacsim.core.deprecation_manager" = {}
 "omni.usd.schema.semantics" = {}
@@ -39,5 +37,6 @@ name = "isaacsim.core.utils.tests"
 [[test]]
 dependencies = [
     "omni.replicator.core",
+    "isaacsim.core.api",
     "isaacsim.sensors.camera",
 ]

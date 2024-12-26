@@ -13,7 +13,6 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import Semantics
-import torch
 from isaacsim.core.utils.prims import get_prim_at_path
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
