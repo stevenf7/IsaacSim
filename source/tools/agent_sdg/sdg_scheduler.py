@@ -100,7 +100,6 @@ class AgentSDG:
         ext_manager.set_extension_enabled_immediate("omni.anim.people", True)
         ext_manager.set_extension_enabled_immediate("isaacsim.replicator.agent.core", True)
         ext_manager.set_extension_enabled_immediate("omni.kit.mesh.raycast", True)
-        ext_manager.set_extension_enabled_immediate("omni.extended.materials", True)
 
     def _set_simulation_settings(self):
         import carb
@@ -122,6 +121,7 @@ class AgentSDG:
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/character_focus_height", 0.7)
         self._settings.set("/persistent/exts/isaacsim.replicator.agent/frame_write_interval", 1)
         self._settings.set("/app/omni.graph.scriptnode/enable_opt_in", False)  # To bypass action graph scriptnode check
+        self._settings.set("/rtx/raytracing/fractionalCutoutOpacity", True)  # Needed for the DH characters
 
     async def _setup_sim(self):
         def done_callback(e):
