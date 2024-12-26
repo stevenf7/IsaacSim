@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.6] - 2024-12-23
+### Fixed
+- Removed extra dependencies and imports
+
 ## [2.2.5] - 2024-12-11
 ### Changed
 - Move unit tests from isaacsim.core.api
