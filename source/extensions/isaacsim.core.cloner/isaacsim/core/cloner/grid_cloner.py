@@ -166,6 +166,7 @@ class GridCloner(Cloner):
             base_env_path=base_env_path,
             root_path=root_path,
             copy_from_source=copy_from_source,
+            enable_env_ids=enable_env_ids,
         )
 
         return positions
