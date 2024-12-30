@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.5] - 2024-12-30
+### Fixed
+- Fixed cleanup for Prim class if it was not initialized correctly
+
 ## [0.3.4] - 2024-12-18
 ### Fixed
 - handles_initialized returning the wrong value for a single articulation when articulation controller not initialized

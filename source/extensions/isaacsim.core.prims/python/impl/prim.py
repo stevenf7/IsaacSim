@@ -24,6 +24,7 @@ class Prim(object):
         if not isinstance(prim_paths_expr, list):
             prim_paths_expr = [prim_paths_expr]
         self._prim_paths = []
+        self._callbacks = []
         for prim_path_expression in prim_paths_expr:
             self._prim_paths = self._prim_paths + find_matching_prim_paths(prim_path_expression)
         self._is_valid = True
@@ -42,7 +43,6 @@ class Prim(object):
         self._backend = SimulationManager.get_backend()
         self._device = SimulationManager.get_physics_sim_device()
         self._backend_utils = SimulationManager._get_backend_utils()
-        self._callbacks = []
         self._callbacks.append(
             SimulationManager.register_callback(self._on_physics_ready, event=IsaacEvents.PHYSICS_READY)
         )
