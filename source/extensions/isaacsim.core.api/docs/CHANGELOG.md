@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.2.11] - 2024-12-30
+### Fixed
+- Reduced contact tests runtime 
+- Enabled GPU pipeline tests
+
 ## [4.2.10] - 2024-12-23
 ### Fixed
 - Remove extra test dependencies
