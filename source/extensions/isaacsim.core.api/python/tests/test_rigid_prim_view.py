@@ -117,7 +117,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     self._device = "cuda:0"
                 self._array_container = lambda x: wp.array(x, device=self._device, dtype=wp.float32)
 
-            await self._runner(cpu_pipeline=False)
+            await self._runner()
 
     async def test_rigid_prim_view_cpu_pipeline(self):
         test_configs = {"use_gpu_pipeline": False, "device": "cpu"}
@@ -172,8 +172,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add(self._cubes_view)
 
     async def _setup_contacts_scene(self):
-        self.cube_height = 0.51
-        self.top_cube_height = self.cube_height + 1.1
+        self.cube_height = 0.502
+        self.top_cube_height = self.cube_height + 1.02
         World.clear_instance()
         await create_new_stage_async()
         self.g = -10.0
@@ -219,8 +219,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add(self._top_box_view)
 
     async def _setup_friction_scene(self):
-        self.cube_height = 0.51
-        self.top_cube_height = self.cube_height + 1.1
+        self.cube_height = 0.502
+        self.top_cube_height = self.cube_height + 1.02
         World.clear_instance()
         await create_new_stage_async()
         self.g = -10.0
@@ -259,7 +259,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         )
         self._my_world.scene.add(self._box_view)
 
-    async def _runner(self, cpu_pipeline: bool = True):
+    async def _runner(self):
         await self._setup_scene()
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
@@ -268,28 +268,24 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self.com_test()
             await self._setup_scene()
             await self.inertias_test()
-            # These tests cause physx errors when running with GPU pipeline because they set world pose, velocity, etc
-            if cpu_pipeline:
-                await self._setup_scene()
-                await self.world_poses_test()
-                await self._setup_scene()
-                await self.local_poses_test()
-                await self._setup_scene()
-                await self.linear_velocities_test()
-                await self._setup_scene()
-                await self.angular_velocities_test()
-                await self._setup_scene()
-                await self.transforms_test()
-                await self._setup_scene()
-                await self.apply_forces_test()
-                await self._setup_scene()
-                await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=False)
-                await self._setup_scene()
-                await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=True)
-                await self._setup_scene()
-                await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=False)
-                await self._setup_scene()
-                await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=True)
+            await self._setup_scene()
+            await self.world_poses_test()
+            await self._setup_scene()
+            await self.linear_velocities_test()
+            await self._setup_scene()
+            await self.angular_velocities_test()
+            await self._setup_scene()
+            await self.transforms_test()
+            await self._setup_scene()
+            await self.apply_forces_test()
+            await self._setup_scene()
+            await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=False)
+            await self._setup_scene()
+            await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=True)
+            await self._setup_scene()
+            await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=False)
+            await self._setup_scene()
+            await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=True)
             await self._setup_scene()
             await self.velocities_test()
             await self._setup_scene()
@@ -317,11 +313,13 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._setup_friction_scene()
             await self.friction_force_test(force_multiplier=2.0)
 
-        # # test USD paths
+        # test USD paths
         if self._device == "cpu":
             for indexed in [False, True]:
                 print("USD", indexed, self._test_cfg)
                 self._test_cfg["indexed"] = indexed
+                await self._setup_scene()
+                await self.local_poses_test()  # this is a cpu only test since it uses XFormPrim which doesn't use physics tensors with gpu pipeline
                 await self._setup_scene()
                 await self.world_poses_test(usd=True)
                 await self._setup_scene()
@@ -452,7 +450,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         view_size = 2 if self._test_cfg["indexed"] else 3
-        for i in range(60):
+        for i in range(5):
             self._my_world.step_async()
             await update_stage_async()
 
@@ -561,7 +559,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         view_size = 2 if self._test_cfg["indexed"] else 3
-        for i in range(60):
+        for i in range(5):
             self._my_world.step_async()
             await update_stage_async()
 
