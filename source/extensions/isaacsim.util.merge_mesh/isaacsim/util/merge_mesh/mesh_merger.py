@@ -211,6 +211,8 @@ class MeshMerger(object):
                 mesh["vertex_indices"] = usdMesh.GetFaceVertexIndicesAttr().Get()
                 mesh["name"] = prim.GetName()
                 mesh["st"] = usdMesh.GetPrim().GetAttribute("primvars:st").Get()
+                if not mesh["st"]:
+                    mesh["st"] = []
                 mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
                 if mat and rel:
                     mat_path = str(mat.GetPath())
