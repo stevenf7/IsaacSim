@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.2] - 2024-12-29
+### Fixed
+- Missing argument in grid_cloner
+
 ## [1.3.1] - 2024-12-20
 ### Fixed
 - Quaternion precision mismatch issue
