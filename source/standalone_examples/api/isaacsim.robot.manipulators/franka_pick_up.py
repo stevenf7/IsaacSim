@@ -44,8 +44,8 @@ gripper = ParallelGripper(
     end_effector_prim_path="/World/Franka/panda_rightfinger",
     joint_prim_names=["panda_finger_joint1", "panda_finger_joint2"],
     joint_opened_positions=np.array([0.05, 0.05]),
-    joint_closed_positions=np.array([0.0, 0.0]),
-    action_deltas=np.array([0.05, 0.05]),
+    joint_closed_positions=np.array([0.02, 0.02]),
+    action_deltas=np.array([0.01, 0.01]),
 )
 my_franka = my_world.scene.add(
     SingleManipulator(
