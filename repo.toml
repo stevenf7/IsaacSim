@@ -1034,7 +1034,7 @@ deps_for_isaac = [
   "isaacsim.replicator.agent.core-0.5.11",
   "isaacsim.replicator.agent.ui-0.5.11",
   "isaacsim.replicator.metropolis.utils-0.0.5",
-  "omni.replicator.core-1.11.32",
+  "omni.replicator.core-1.11.34",
   "isaacsim.replicator.object-0.3.20",
   "omni.replicator.replicator_yaml-2.0.10",
   "omni.rtx.shadercache.vulkan",
