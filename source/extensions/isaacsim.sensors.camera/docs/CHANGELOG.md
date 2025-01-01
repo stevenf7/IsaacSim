@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.5] - 2024-12-31
+### Fixed
+- Camera sensor tests no longer needs OMPE-28827 WAR
+
 ## [0.2.4] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu

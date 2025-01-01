@@ -510,11 +510,3 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(pointcloud_data["data"].shape == (65536, 3))
         self.assertTrue(isinstance(pointcloud_data["data"], np.ndarray))
         self.assertTrue(pointcloud_data["data"].dtype == np.float32)
-
-        # WAR: OMPE-28827
-        self.camera.remove_bounding_box_2d_tight_from_frame()
-        self.camera.add_bounding_box_2d_tight_to_frame(init_params={"semanticTypes": ["class"]})
-        self.camera.remove_bounding_box_2d_loose_from_frame()
-        self.camera.add_bounding_box_2d_loose_to_frame(init_params={"semanticTypes": ["class"]})
-        self.camera.remove_bounding_box_3d_from_frame()
-        self.camera.add_bounding_box_3d_to_frame(init_params={"semanticTypes": ["class"]})
