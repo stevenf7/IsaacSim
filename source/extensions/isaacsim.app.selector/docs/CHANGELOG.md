@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.8] - 2024-12-30
+### Fixed
+- Errors due to missing icons when using this extension with app template
+
 ## [2.8.7] - 2024-12-12
 ### Changed
 - Fixed combobox dropdown
