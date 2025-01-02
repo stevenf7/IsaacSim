@@ -74,15 +74,13 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items_2, "Tools")
 
         self.__interface = _acquire()
-        theme = "NvidiaDark"
         self.ext_id = ext_id
-        ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
-        self.ext_path = ext_path + "/omni/isaac/conveyor"
-        self.mdl_file = ext_path + "/data/GhostVolumetric.mdl"
-        self._style = UI_STYLES[theme]
-        for i in [a for a in self._style.keys() if "{}" in self._style[a].get("image_url", "")]:
-            self._style[i]["image_url"] = self._style[i]["image_url"].format(self.ext_path)
-
+        self._window = ui.Window(
+            "Conveyor Builder", open=True, width=305, height=425, dock=ui.DockPreference.LEFT_BOTTOM
+        )
+        self._window.visible = False
+        self._window.set_visibility_changed_fn(self.on_visibility_changed)
+        self.mdl_file = None
         self._hooks = []
 
         manager = omni.kit.app.get_app().get_extension_manager()
@@ -105,10 +103,20 @@ class Extension(omni.ext.IExt):
             self._conveyor_preferences = None
 
     def create_ui(self):
-        self._window = ui.Window("Conveyor Builder", open=True, dock=ui.DockPreference.LEFT_BOTTOM)
-        self._window.set_visibility_changed_fn(self.on_visibility_changed)
+        ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(self.ext_id)
+
+        self.ext_path = ext_path + "/omni/isaac/conveyor"
+        if not self.mdl_file:
+            self.mdl_file = ext_path + "/data/GhostVolumetric.mdl"
+            theme = "NvidiaDark"
+
+            self._style = UI_STYLES[theme]
+            for i in [a for a in self._style.keys() if "{}" in self._style[a].get("image_url", "")]:
+                self._style[i]["image_url"] = self._style[i]["image_url"].format(self.ext_path)
+
         with self._window.frame:
             self.widget = ConveyorBuilderWidget(mdl_file=self.mdl_file, style=self._style)
+            self._window.visible = True
 
     def on_visibility_changed(self, value):
         if not value:
