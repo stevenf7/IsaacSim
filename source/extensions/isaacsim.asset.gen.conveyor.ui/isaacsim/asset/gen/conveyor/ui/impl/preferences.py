@@ -65,12 +65,6 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
         super().__init__("Conveyor Builder")
         self._settings = carb.settings.get_settings()
 
-        if self._settings.get(ASSETS_LOCATION) is None:
-            self.reset_assets_default()
-
-        if self._settings.get(CONFIG_LOCATION) is None:
-            self.reset_config_default()
-
     def reset_config_default(self):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.gen.conveyor.ui")
@@ -181,9 +175,14 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
 
     @property
     def assets_location(self):
+        if self._settings.get(ASSETS_LOCATION) is None:
+            self.reset_assets_default()
+
         return self._settings.get(ASSETS_LOCATION)
 
     @property
     def config_file(self):
+        if self._settings.get(CONFIG_LOCATION) is None:
+            self.reset_config_default()
 
         return self._settings.get(CONFIG_LOCATION)
