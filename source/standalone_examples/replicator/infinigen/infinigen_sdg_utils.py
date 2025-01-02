@@ -193,9 +193,10 @@ def get_usd_paths_from_folder(
             continue
         _, ext = os.path.splitext(entry.relative_path)
         if ext in [".usd", ".usda", ".usdc"]:
-            usd_paths.append(os.path.join(folder_path, entry.relative_path))
+            path_posix = os.path.join(folder_path, entry.relative_path).replace("\\", "/")
+            usd_paths.append(path_posix)
         elif recursive and entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN:
-            sub_folder = os.path.join(folder_path, entry.relative_path)
+            sub_folder = os.path.join(folder_path, entry.relative_path).replace("\\", "/")
             get_usd_paths_from_folder(sub_folder, recursive=recursive, usd_paths=usd_paths, skip_keywords=skip_keywords)
 
     return usd_paths
