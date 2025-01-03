@@ -64,7 +64,6 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             artifact_prefix=prefix,
             kit_version=version,
             phase="benchmark",
-            sync_mode=self._get_sync_mode(),
         )
 
         self.frametime_recorder = IsaacFrameTimeRecorder(self.context)
@@ -136,30 +135,6 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         """
         version, _, _ = utils.get_kit_version_branch()
         return f"{test_phase}_{version}"
-
-    def _get_sync_mode(self) -> utils.SyncMode:
-        """Checks if we are in sync mode."""
-        async_rendering = self.settings.get("/app/asyncRendering")
-        usd_sync_loads = self.settings.get("/omni.kit.plugin/syncUsdLoads")
-
-        # On Viewport 2.0 the `rtx` settings are now under `rtx-defaults`.
-        materialdb_sync_loads = self.settings.get("/rtx/materialDb/syncLoads")
-        if materialdb_sync_loads is None:
-            materialdb_sync_loads = self.settings.get("/rtx-defaults/materialDb/syncLoads")
-
-        hydra_material_sync_loads = self.settings.get("/rtx/hydra/materialSyncLoads")
-        if hydra_material_sync_loads is None:
-            hydra_material_sync_loads = self.settings.get("/rtx-defaults/hydra/materialSyncLoads")
-
-        if not async_rendering and materialdb_sync_loads and usd_sync_loads and hydra_material_sync_loads:
-            return utils.SyncMode.SYNC
-        elif async_rendering and not materialdb_sync_loads and not usd_sync_loads and not hydra_material_sync_loads:
-            return utils.SyncMode.ASYNC
-
-        logger.info(
-            f"ambiguous combination of async/sync flags {async_rendering} {materialdb_sync_loads} {usd_sync_loads} {hydra_material_sync_loads}"
-        )
-        return utils.SyncMode.AMBIGUOUS
 
     def set_phase(
         self, phase: str, start_recording_frametime: bool = True, start_recording_runtime: bool = True

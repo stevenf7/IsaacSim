@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Tuple, Type, Union
 
 from ..metrics.measurements import Measurement, MetadataBase
-from ..utils import SampledScope, SyncMode
 
 if TYPE_CHECKING:
     from ..settings import BenchmarkSettings
@@ -37,8 +36,6 @@ class InputContext:
     artifact_prefix: str = ""
     kit_version: str = ""
     phase: str = ""
-    sync_mode: SyncMode = SyncMode.ASYNC
-    scope: Optional[SampledScope] = None
 
 
 class MeasurementDataRecorder:
