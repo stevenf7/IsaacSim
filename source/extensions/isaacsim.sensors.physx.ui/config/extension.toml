@@ -5,8 +5,8 @@ order = 0
 [package]
 version = "2.2.0"
 category = "Simulation"
-title = "Isaac Sim Range Sensor UI components"
-description = "UI components for the Range Sensor extension"
+title = "Isaac Sim PhysX Sensor UI components"
+description = "Provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physx.ui"
 keywords = ["isaac", "physics", "sensor", "lidar", "ui"]

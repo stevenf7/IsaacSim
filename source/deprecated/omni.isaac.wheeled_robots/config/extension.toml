@@ -20,7 +20,9 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.robot.wheeled_robots" = {}
 
-
 [[python.module]]
 name = "omni.isaac.wheeled_robots"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.wheeled_robots, isaacsim.robot.wheeled_robots.examples."
 
