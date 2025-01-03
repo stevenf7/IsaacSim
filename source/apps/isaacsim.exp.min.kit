@@ -180,6 +180,22 @@ fabricUpdateJointStates = false
     "${app}/../extsDeprecated",
 ]
 
+# FOR DEVELOPMENT - START #
+[settings]
+persistent.isaac.asset_root.default = "omniverse://isaac-dev.ov.nvidia.com"
+
+exts."isaacsim.asset.browser".folders = [
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/IsaacLab",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Materials",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/People",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
+]
+# FOR DEVELOPMENT - END #
+
 [settings.exts."omni.kit.registry.nucleus"]
 # FOR DEVELOPMENT #
 postToSlack = false
