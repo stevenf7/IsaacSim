@@ -16,9 +16,6 @@ icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
 
-
-keywords = ["kit", "example"]
-
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.cortex.framework" = {}

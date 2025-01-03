@@ -39,9 +39,12 @@ writeTarget.kit = true
 "isaacsim.examples.browser" = {}
 
 [settings]
-exts."isaacsim.ros2.bridge".ros_distro = "humble" # This setting specified which ros distro to fallback onto if none were sourced.
-exts."isaacsim.ros2.bridge".publish_without_verification = false # This setting specifies if ROS2 publishers are enabled regardless of whether there are active subscriptions to their topics.
-exts."isaacsim.ros2.bridge".publish_multithreading_disabled = false # This setting specifies if multithreading should be disabled for the ROS2 image publisher node
+# ROS 2 distributions to fallback onto if none were sourced.
+exts."isaacsim.ros2.bridge".ros_distro = "humble"
+# Whether ROS 2 publishers are allowed to publish even if there is no active subscription for their topics.
+exts."isaacsim.ros2.bridge".publish_without_verification = false
+# Whether to disable multithreading use in the *ROS2PublishImage* OmniGraph node.
+exts."isaacsim.ros2.bridge".publish_multithreading_disabled = false
 
 [[python.module]]
 name = "isaacsim.ros2.bridge"

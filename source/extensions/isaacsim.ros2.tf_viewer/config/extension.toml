@@ -26,7 +26,11 @@ icon = "data/icon.png"
 name = "isaacsim.ros2.tf_viewer"
 
 [settings]
+# Whether to use the C++ implementation to listen to the tf and process the incoming data.
+# If false, the Python implementation will be used (may degrade performance considerably).
 exts."isaacsim.ros2.tf_viewer".cpp = true
+# Whether to include the pose of the root frame when drawing the TF in the viewport if not listed.
+# Root frame's pose is defined with position ``(0,0,0)`` and orientation ``(0,0,0,1)``, as *xyzw* quaternion.
 exts."isaacsim.ros2.tf_viewer".include_root_frame = true
 
 [[test]]
