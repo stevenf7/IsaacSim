@@ -68,6 +68,7 @@ include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
 
 [settings]
+# Name of the ROS node created by the extension.
 exts."isaacsim.ros1.bridge".nodeName = "OmniIsaacRosBridge"
 
 [[test]]

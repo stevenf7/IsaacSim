@@ -20,9 +20,6 @@ toggleable = false
 "isaacsim.core.api" = {}
 "isaacsim.asset.browser" = {}
 
-[deprecation]
-warning = "omni.isaac.asset_check is deprecated in Isaac Sim 4.2.0 and will be removed in the future"
-
 [[python.module]]
 name = "omni.isaac.assets_check"
 

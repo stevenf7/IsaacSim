@@ -35,6 +35,7 @@ feature = true
 name = "isaacsim.asset.browser"
 
 [settings]
+# Root folder URLs to list and monitor.
 exts."isaacsim.asset.browser".folders = [
     "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments",
     "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/IsaacLab",
@@ -45,9 +46,11 @@ exts."isaacsim.asset.browser".folders = [
     "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples",
     "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
 ]
-
+# List of asset categories that can be dragged from the browser to the viewport window.
 exts."isaacsim.asset.browser".instanceable = []
+# Number of seconds to wait for the folder to be listed/read from.
 exts."isaacsim.asset.browser".data.timeout = 10
+# Whether the browser window is visible when the extension starts up.
 exts."isaacsim.asset.browser".visible_after_startup = true
 
 [[trigger]]
