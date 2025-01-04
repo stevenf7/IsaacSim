@@ -238,6 +238,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/extsDeprecated/*",
+  "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
   # archives
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
@@ -248,6 +249,7 @@ python_paths = [
 ]
 
 sphinx_conf_py_extra = """
+    autodoc_member_order = 'bysource' 
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
     html_favicon = "docs/media/favicon.ico"
