@@ -2,7 +2,7 @@
 version = "1.0.3"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility"
-description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
+description="The Conveyor Belt Utility Extension provides an utility to turn Rigid bodies into conveyors in Omniverse Isaac Sim. It provides an Omnigraph Node that support configuring a mesh asset into a conveyor belt Rigid Body in simulation, and commands to create the conveyor belt Omnigraph programatically."
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
