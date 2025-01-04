@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0] - 2024-10-15
+
+### Fixed
+
+- Fix incorrect URDF export when the USD prims have scaling values
+
+### Update
+
+- Export .mtl files with the .obj files based on USD material prims
+- Include inertia values from USD in URDF
+- Use Isaac name override for frame name if it exists
+- Add option to use ROS URI file prefix in the exported URDF
+
 ## [1.0.2] - 2024-10-28
 ### Changed
 - Remove test imports from runtime
