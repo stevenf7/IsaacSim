@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.8] - 2025-01-03
+### Fixed
+- Robotics Example menu items not updated with correct names
+
 ## [4.1.7] - 2024-12-19
 ### Fixed
 - Failing waypoint follower test due to missing symbol

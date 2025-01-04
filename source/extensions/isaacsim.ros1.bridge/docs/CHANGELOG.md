@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.3] - 2025-01-03
+### Fixed
+- Robotics Example menu items not updated with correct names 
+
 ## [2.2.2] - 2024-12-13
 ### Fixed
 - Extension not properly named with kit and platform tags
