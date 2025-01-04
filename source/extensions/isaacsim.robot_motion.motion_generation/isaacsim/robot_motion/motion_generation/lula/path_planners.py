@@ -308,16 +308,16 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         `task_space_planning_params/task_space_exploitation_fraction` (float)
             - Fraction of iterations for which tree is extended towards target position in task space.
             - Must be in range [0, 1]. Additionally, the sum of `task_space_exploitation_fraction` and
-                `task_space_exploration_fraction` must be <= 1.
+              `task_space_exploration_fraction` must be <= 1.
             - A default value of 0.4 is recommended as a starting value for initial testing with a given
-                system.
+              system.
 
         `task_space_planning_params/task_space_exploration_fraction` (float)
             - Fraction of iterations for which tree is extended towards random position in task space.
             - Must be in range [0, 1]. Additionally, the sum of `task_space_exploitation_fraction` and
-                `task_space_exploration_fraction` must be <= 1.
+              `task_space_exploration_fraction` must be <= 1.
             - A default value of 0.1 is recommended as a starting value for initial testing with a given
-                system.
+              system.
 
             The remaining fraction beyond `task_space_exploitation_fraction` and
             `task_space_exploration_fraction` is a `c_space_exploration_fraction` that is
@@ -352,7 +352,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
               (i.e., L2 norm) between the end effector and target position is less than
               `extension_substep_target_region_scale_factor` * `x_zone_target_tolerance`.
             - Must be greater than or equal to 1.0; a value of 1.0 effectively disables the
-             `max_extension_substeps_near_target` parameter.
+              `max_extension_substeps_near_target` parameter.
             - A default value of 2.0 is recommended as a starting value for initial testing with a given
               system.
 
@@ -362,7 +362,6 @@ class RRT(LulaInterfaceHelper, PathPlanner):
 
         Returns:
             bool: True if the parameter was set successfully
-
         """
         if param_name == "seed":
             self.set_random_seed(value)

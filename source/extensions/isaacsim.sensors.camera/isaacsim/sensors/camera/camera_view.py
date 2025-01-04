@@ -407,7 +407,6 @@ class CameraView(XFormPrim):
     ]:
         """Get prim poses in the view with respect to the local frame (the prim's parent frame)
 
-
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                  to query. Shape (M,).
@@ -629,6 +628,7 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[float]:
         """Get the focal length for all cameras
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -653,6 +653,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the focal length for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -678,6 +679,7 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[float]:
         """Get the focus distances for cameras specific in indices. If indices is None, get for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -702,6 +704,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the focus distance for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -727,6 +730,7 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[float]:
         """Get the lens apertures for cameras specific in indices. If indices is None, get for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -751,8 +755,9 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the lens apertures for cameras specific in indices. If indices is None, set for all cameras.
-        Controls Distance Blurring. Lower Numbers decrease focus range, larger
-            numbers increase it.
+
+        Controls Distance Blurring. Lower Numbers decrease focus range, larger numbers increase it.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -778,7 +783,9 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[float]:
         """Get the horizontal apertures for cameras specific in indices. If indices is None, get for all cameras.
+
         Emulates sensor/film width on a camera.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -803,6 +810,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the horizontal apertures for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -828,7 +836,9 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[float]:
         """Get the vertical apertures for cameras specific in indices. If indices is None, get for all cameras.
+
         Emulates sensor/film height on a camera.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -853,7 +863,9 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the vertical apertures for cameras specific in indices. If indices is None, set for all cameras.
+
         Emulates sensor/film height on a camera.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -879,6 +891,7 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[str]:
         """Get the projection types for cameras specific in indices. If indices is None, get for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -906,6 +919,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the projection types for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -931,6 +945,7 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[str]:
         """Get the projection modes for cameras specific in indices. If indices is None, get for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -955,6 +970,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the projection modes for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -978,6 +994,7 @@ class CameraView(XFormPrim):
 
     def get_stereo_roles(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> List[str]:
         """Get the stereo roles for cameras specific in indices. If indices is None, get for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -1002,6 +1019,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the stereo roles for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).
@@ -1027,6 +1045,7 @@ class CameraView(XFormPrim):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[Tuple[float, float]]:
         """Get the (delay_open, delay_close) of shutter for cameras specific in indices. If indices is None, get for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to query. Shape (M,).
@@ -1053,6 +1072,7 @@ class CameraView(XFormPrim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
         """Set the (delay_open, delay_close) of shutter for cameras specific in indices. If indices is None, set for all cameras.
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor, wp.array]], optional): indices to specify which prims
                                                                                     to set. Shape (M,).

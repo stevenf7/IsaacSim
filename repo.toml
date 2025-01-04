@@ -244,6 +244,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
+  "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",  # PIL
 ]
 
 sphinx_conf_py_extra = """

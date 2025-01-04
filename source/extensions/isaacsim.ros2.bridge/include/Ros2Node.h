@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -188,8 +188,8 @@ public:
      * attribute, it will continue prepending the each namespace value. It will insert the separator character (`/`)
      * between each namespace value.
      *
-     * @param prefix Prefix to add to the topic.
-     * @param topicName Name of the topic.
+     * @param namespaceInput Node Namespace. If not empty, it will be returned as it is and no search will be performed.
+     * @param startPrim USD Prim to start the reverse search.
      * @param tfNode Set to true if collecting namespace for a TF ROS 2 node
      * @returns Name of the topic prefixed with the specified prefix.
      */

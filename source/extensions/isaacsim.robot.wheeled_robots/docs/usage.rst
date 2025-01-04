@@ -4,7 +4,7 @@ Basic Usage
 
 The classes and controllers provided by isaacsim.robot.wheeled_robots are designed to be run within the **world**
 simulation context provided by ``isaacsim.core.api``. Like many other classes provided by core,
- **wheeled_robots** are created by wrapping prims already present on the stage in an interface class. This API is expected
+**wheeled_robots** are created by wrapping prims already present on the stage in an interface class. This API is expected
 by **world** to do things like initialize and reset data structures, apply drive commands, retrieve joint states, etc.
 
 Creating this interface means specifying the articulation being managed, the name that **world** will

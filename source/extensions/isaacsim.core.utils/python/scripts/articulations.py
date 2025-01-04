@@ -57,9 +57,8 @@ def find_all_articulation_base_paths() -> typing.List:
     by this function would be "/World/ur10".
 
     An Articulation base path:
-        - Contains exactly one Articulation Root in the subtree of prim paths that stem from a base
-        path.
-        - Is a parent of every link in an Articulation.
+      - Contains exactly one Articulation Root in the subtree of prim paths that stem from a base path.
+      - Is a parent of every link in an Articulation.
 
     On a stage with nested articulation roots, only the inner-most root will be listed.
 
