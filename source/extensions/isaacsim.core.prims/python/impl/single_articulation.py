@@ -393,12 +393,14 @@ class SingleArticulation(_SinglePrimWrapper):
 
     def get_position_residual(self, report_max: Optional[bool] = True) -> float:
         """Get physics solver position residuals for articulations. This is the residual across all joints that are part of articulations.
-            The solver residuals are computed according to impulse variation normalized by the effective mass.
+
+        The solver residuals are computed according to impulse variation normalized by the effective mass.
+
         Args:
             report_max (Optional[bool]): whether to report max or RMS residual. Defaults to True, i.e. max criteria
+
         Returns:
             float: solver position/velocity max/rms residual.
-
         """
         result = self._articulation_view.get_position_residuals(report_max=report_max)
         if result is not None:
@@ -407,9 +409,12 @@ class SingleArticulation(_SinglePrimWrapper):
 
     def get_velocity_residual(self, report_max: Optional[bool] = True) -> float:
         """Get physics solver velocity residuals for articulations. This is the residual across all joints that are part of articulations.
-            The solver residuals are computed according to impulse variation normalized by the effective mass.
+
+        The solver residuals are computed according to impulse variation normalized by the effective mass.
+
         Args:
             report_max (Optional[bool]): whether to report max or RMS residual. Defaults to True, i.e. max criteria
+
         Returns:
             float: solver velocity max/rms residual.
         """

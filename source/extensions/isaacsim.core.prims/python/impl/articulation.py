@@ -535,7 +535,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -613,7 +613,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
@@ -697,7 +697,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -771,7 +771,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
@@ -877,7 +877,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -947,7 +947,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -1018,7 +1018,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -1088,7 +1088,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -1160,7 +1160,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         .. hint::
 
@@ -1230,7 +1230,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1296,7 +1296,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1378,7 +1378,7 @@ class Articulation(XFormPrim):
                                                                                     Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1477,7 +1477,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1549,7 +1549,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -2587,7 +2587,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Returns:
             List: Returns a List of size (M, K) indicating the effort modes: ``acceleration`` or ``force``
@@ -2657,7 +2657,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -2718,7 +2718,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -2798,7 +2798,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
@@ -2890,7 +2890,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
@@ -2932,7 +2932,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
             clone (Optional[bool]): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
@@ -2986,7 +2986,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             save_to_usd (bool, optional): True to save the gains in the usd. otherwise False.
 
         Example:
@@ -3122,7 +3122,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
             clone (bool, optional): True to return clones of the internal buffers. Otherwise False. Defaults to True.
 
@@ -3263,7 +3263,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
         Example:
 
@@ -3972,7 +3972,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -4049,7 +4049,7 @@ class Articulation(XFormPrim):
                                                                                  Defaults to None (i.e: all dofs).
             joint_names (Optional[List[str]]): joint names to specify which joints to manipulate
                                               (can't be sppecified together with joint_indices). Shape (K,).
-                                                Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
 
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 

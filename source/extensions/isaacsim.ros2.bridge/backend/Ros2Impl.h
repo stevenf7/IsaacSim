@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -192,9 +192,9 @@ public:
     virtual void writeData(const double& timeStamp,
                            omni::physics::tensors::IArticulationView* articulation,
                            pxr::UsdStageWeakPtr stage,
-                           std::vector<float>& jointPosition,
-                           std::vector<float>& jointVelocity,
-                           std::vector<float>& jointEffort,
+                           std::vector<float>& jointPositions,
+                           std::vector<float>& jointVelocities,
+                           std::vector<float>& jointEfforts,
                            std::vector<uint8_t>& dofTypes,
                            const double& stageUnits);
 
