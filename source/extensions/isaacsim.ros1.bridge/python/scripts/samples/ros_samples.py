@@ -25,50 +25,52 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._ext_id = ext_id
 
-        name = "Carter"
+        carter_name = "Carter"
         get_browser_instance().register_example(
-            name=name,
+            name=carter_name,
             execute_entrypoint=self.build_window,
             ui_hook=lambda a=weakref.proxy(self): a.build_ui(
-                name, "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+                carter_name, "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
             ),
             category="ROS/Navigation",
         )
 
-        name = "April Tag"
+        april_tag_name = "April Tag"
         get_browser_instance().register_example(
-            name=name,
-            execute_entrypoint=self.build_window,
-            ui_hook=lambda a=weakref.proxy(self): a.build_ui(name, "/Isaac/Samples/ROS/Scenario/april_tag.usd"),
-            category="ROS",
-        )
-
-        name = "Teleport"
-        get_browser_instance().register_example(
-            name=name,
-            execute_entrypoint=self.build_window,
-            ui_hook=lambda a=weakref.proxy(self): a.build_ui(name, "/Isaac/Samples/ROS/Scenario/teleport.usd"),
-            category="ROS",
-        )
-
-        name = "Hospital Scene"
-        get_browser_instance().register_example(
-            name=name,
+            name=april_tag_name,
             execute_entrypoint=self.build_window,
             ui_hook=lambda a=weakref.proxy(self): a.build_ui(
-                name, "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
+                april_tag_name, "/Isaac/Samples/ROS/Scenario/april_tag.usd"
+            ),
+            category="ROS",
+        )
+
+        teleport_name = "Teleport"
+        get_browser_instance().register_example(
+            name=teleport_name,
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(teleport_name, "/Isaac/Samples/ROS/Scenario/teleport.usd"),
+            category="ROS",
+        )
+
+        hospital_scene_name = "Hospital Scene"
+        get_browser_instance().register_example(
+            name=hospital_scene_name,
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(
+                hospital_scene_name, "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
             ),
             category="ROS/Navigation/Multiple Robots",
         )
 
-        name = "Office Scene"
+        office_scene_name = "Office Scene"
         get_browser_instance().register_example(
-            name=name,
+            name=office_scene_name,
             execute_entrypoint=self.build_window,
             ui_hook=lambda a=weakref.proxy(self): a.build_ui(
-                name, "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
+                office_scene_name, "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
             ),
-            category="ROS/Multiple Robots",
+            category="ROS/Navigation/Multiple Robots",
         )
 
     def build_window(self):
@@ -108,8 +110,8 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(load_stage(scenario_path))
 
     def on_shutdown(self):
-        get_browser_instance().deregister_example(name="Carter Navigation", category="ROS")
+        get_browser_instance().deregister_example(name="Carter", category="ROS")
         get_browser_instance().deregister_example(name="Teleport", category="ROS")
-        get_browser_instance().deregister_example(name="April Tag", category="Isaac ROS")
-        get_browser_instance().deregister_example(name="Hospital Scene (Multiple Robot Navigation)", category="ROS")
-        get_browser_instance().deregister_example(name="Office Scene (Multiple Robot Navigation)", category="ROS")
+        get_browser_instance().deregister_example(name="April Tag", category="ROS")
+        get_browser_instance().deregister_example(name="Hospital Scene", category="ROS")
+        get_browser_instance().deregister_example(name="Office Scene", category="ROS")
