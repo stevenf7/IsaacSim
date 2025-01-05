@@ -4,9 +4,9 @@ order = 0
 
 [package]
 version = "1.0.5"
-category = "Simulation"
-title = "Replicator Behavior Scripts"
-description = "Synthetic data generation workflow using behavior scripts"
+category = "SyntheticData"
+title = "Isaac Sim Replicator Behavior Scripts"
+description = "The extension provides various randomization and event scripts for Synthetic Data Generation (SDG) workflows. The scripts can be attached to prims providing modular, persitent, and shareable behaviors. The scripts use exposed variables as custom USD properties which can be modified throught the UI or programmatically."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.behavior"
 keywords = ["isaac", "behavior scripts", "replicator", "sdg", "randomization"]

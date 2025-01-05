@@ -4,9 +4,9 @@ order = 0
 
 [package]
 version = "1.0.0"
-category = "Simulation"
-title = "Replicator Behavior Scripts UI"
-description = "UI for the isaac sim replicator behavior scripts"
+category = "SyntheticData"
+title = "Isaac Sim Replicator Behavior Scripts UI"
+description = "UI components for the Replicator Behavior Scripts exntension. It provides the UI Widget for the Property Panel for configuring the exposed variables of the scripts."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.behavior.ui"
 keywords = ["isaac", "behavior scripts", "replicator", "ui"]

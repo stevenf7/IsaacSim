@@ -4,13 +4,13 @@ order = 0
 
 [package]
 version = "2.2.1"
-title = "Isaac Sim Synthetic Data Recorder"
-description = "Tool to record synthetic data"
+category = "SyntheticData"
+title = "Isaac Sim Replicator Synthetic Data Recorder"
+description = "The extension provides a UI to record synthetic data using Replicator writers. By default the UI uses the Replicator BasicWriter, it however also supports custom writers with custom parameters loaded through config files as key-value pairs."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.synthetic_recorder"
 keywords = ["isaac", "synthetic", "recorder", "sdg"]
 changelog = "docs/CHANGELOG.md"
-category = "Simulation"
 readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"

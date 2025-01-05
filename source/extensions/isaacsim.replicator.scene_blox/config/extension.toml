@@ -4,9 +4,9 @@ order = 0
 
 [package]
 version = "1.0.1"
-title = "Scene Blox"
-category = "Simulation"
-description = "A package to buid scenes for Omniverse"
+category = "SyntheticData"
+title = "Isaac Sim Replicator Scene Blox"
+description = "The extension implements SceneBlox, a rule-based randomized scene generation workflow using the wave function collapse algorithm."
 authors = ["Isaac Sim Team"]
 keywords = ["isaac", "omniverse", "scene blox"]
 changelog = "docs/CHANGELOG.md"
