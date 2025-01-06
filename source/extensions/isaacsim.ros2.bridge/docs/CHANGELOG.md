@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.9] - 2025-01-06
+### Fixed
+- RTX Lidar & Camera OG Tools correctly handle adding camera prims to existing graphs
+
 ## [4.1.8] - 2025-01-03
 ### Fixed
 - Robotics Example menu items not updated with correct names
