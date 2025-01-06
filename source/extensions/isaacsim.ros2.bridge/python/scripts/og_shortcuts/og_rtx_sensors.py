@@ -10,6 +10,7 @@
 
 from pathlib import Path
 
+import carb
 import omni.graph.core as og
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.viewport.utility
@@ -103,10 +104,15 @@ class Ros2CameraGraph:
                 render_node_path = node_path
                 render_node = node
 
+        if not tick_node or not context_node:
+            carb.log_warn(
+                f"ActionGraph {self._og_path} missing node(s) necessary to build ROS2 graph. Skipping graph generation. Consider building new graph using tool."
+            )
+            return
+
         # if the existing graph doesn't already have a render node, or if the existing node does not use the same camera, then create a new render node and connect it to the new camera
         # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
         if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._camera_prim:
-            print("creating a new rendering node")
             render_node = get_next_free_path(
                 self._og_path + "/RenderProduct", ""
             )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
@@ -527,12 +533,12 @@ class Ros2CameraGraph:
 
         # check if the camera prim is valid
         camera_prim = stage.GetPrimAtPath(self._camera_prim)
-        if not camera_prim.IsValid() or not camera_prim.IsA(UsdGeom.Camera):
-            msg = self._camera_prim + " is not a valid camera prim, check the camera prim"
-            post_notification(msg, status=NotificationStatus.WARNING)
-            return False
+        if camera_prim.IsValid() and camera_prim.IsA(UsdGeom.Camera):
+            return True
 
-        return True
+        msg = self._camera_prim + " is not a valid camera prim, check the camera prim"
+        post_notification(msg, status=NotificationStatus.WARNING)
+        return False
 
     def _on_cancel(self):
         self._window.visible = False
@@ -617,10 +623,41 @@ class Ros2RtxLidarGraph:
                 tick_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2Context":
                 context_node = node_path
-            elif node_type == "isaacsim.core.nodes.IsaacReadSimulationTime":
-                sim_time_node = node_path
+            elif node_type == "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame":
+                run_once_node = node_path
             elif node_type == "isaacsim.core.nodes.IsaacCreateRenderProduct":
-                render_node = node_path
+                render_node_path = node_path
+                render_node = node
+
+        if not tick_node or not context_node or not run_once_node:
+            carb.log_warn(
+                f"ActionGraph {self._og_path} missing node(s) necessary to build ROS2 graph. Skipping graph generation. Consider building new graph using tool."
+            )
+            return
+
+        # if the existing graph doesn't already have a render node, or if the existing node does not use the same camera, then create a new render node and connect it to the new camera
+        # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
+        if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._lidar_prim:
+            render_node = get_next_free_path(
+                self._og_path + "/RenderProduct", ""
+            )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
+            render_node_name = Path(render_node).name
+            og.Controller.edit(
+                graph_handle,
+                {
+                    keys.CREATE_NODES: [
+                        (render_node_name, "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ],
+                    keys.SET_VALUES: [
+                        (render_node_name + ".inputs:cameraPrim", self._lidar_prim),
+                    ],
+                    keys.CONNECT: [
+                        (run_once_node + ".outputs:step", render_node_name + ".inputs:execIn"),
+                    ],
+                },
+            )
+        else:
+            render_node = render_node_path  # once again set render_node to the actual path, as oppose to the node_prim, just for consistency
 
         if self._laser_scan_pub:
             laser_scan_node = get_next_free_path(self._og_path + "/LaserScanPublish", "")
@@ -782,12 +819,16 @@ class Ros2RtxLidarGraph:
 
         # check if the lidar prim is valid
         lidar_prim = stage.GetPrimAtPath(self._lidar_prim)
-        if not lidar_prim.IsA(UsdGeom.Camera) or not lidar_prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI):
-            msg = self._lidar_prim + " is not a valid RTX lidar prim, check the lidar prim"
-            post_notification(msg, status=NotificationStatus.WARNING)
-            return False
+        if (
+            lidar_prim.IsValid()
+            and lidar_prim.IsA(UsdGeom.Camera)
+            and lidar_prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI)
+        ):
+            return True
 
-        return True
+        msg = self._lidar_prim + " is not a valid RTX lidar prim, check the lidar prim"
+        post_notification(msg, status=NotificationStatus.WARNING)
+        return False
 
     def _on_use_existing_graph(self, check_state):
         self._add_to_existing_graph = check_state
