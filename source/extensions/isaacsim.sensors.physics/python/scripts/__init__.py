@@ -9,5 +9,6 @@
 
 from .commands import *
 from .contact_sensor import ContactSensor
+from .effort_sensor import EffortSensor, EsSensorReading
 from .extension import *
 from .imu_sensor import IMUSensor
