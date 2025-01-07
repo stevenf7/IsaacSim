@@ -5,11 +5,11 @@ order = 0
 [package]
 version = "2.0.6"
 category = "Simulation"
-title = "Block Worlds"
-description = "Generate 3D block worlds from 2D occupancy maps"
+title = "Isaac Sim Occupancy Map"
+description = "The Isaac Sim Occupancy Map extension provides tools to generate occupancy maps for a Scene"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.block_world"
-keywords = ["isaac", "block world"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.gen.omap"
+keywords = ["isaac", "occupancy map"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"

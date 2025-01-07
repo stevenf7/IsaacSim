@@ -5,8 +5,8 @@ order = 0
 [package]
 version = "2.0.2"
 category = "Simulation"
-title = "Block world extension for Isaac Sim Occupancy Map"
-description = "2D Occupancy Map Generation"
+title = "Height Map extension for Isaac Sim Occupancy Map"
+description = "The Height Map extension provides tools for 2D Occupancy Map generation"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.importer.heightmap"
 keywords = ["isaac", "occupancy map"]

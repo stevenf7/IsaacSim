@@ -5,8 +5,8 @@ order = 0
 [package]
 version = "0.3.2"
 category = "Simulation"
-title = "Isaac Sim Isaac Sensor Simulation"
-description = "Provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
+title = "Isaac Sim Physics Sensor Simulation"
+description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physics"
 keywords = ["isaac", "physics", "robotics"]
