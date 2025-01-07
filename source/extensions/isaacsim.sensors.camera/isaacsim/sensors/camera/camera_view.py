@@ -550,7 +550,7 @@ class CameraView(XFormPrim):
                     num_tiles_x,
                     0,  # offset is always 0 since we sliced the data
                 ],
-                device="cuda",
+                device=tiled_data.device,
             )
         return out, info
 
