@@ -32,7 +32,7 @@ class ExampleBrowserWindow(ui.Window):
     Represent a window to show Assets
     """
 
-    WINDOW_TITLE = "Isaac Examples"
+    WINDOW_TITLE = "Isaac Sim Examples"
 
     def __init__(self, model: ExampleBrowserModel, visible=True):
         super().__init__(self.WINDOW_TITLE, visible=visible)
