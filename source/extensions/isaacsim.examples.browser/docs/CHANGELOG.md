@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.5] - 2025-01-07
+### Changed
+- "Isaac Examples" to "Isaac Sim Examples" for consistency
+
 ## [0.1.4] - 2024-11-25
 ### Fixed
 - Fixed the disappearing asset tittles 
