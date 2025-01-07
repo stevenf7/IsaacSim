@@ -10,7 +10,7 @@
 from isaacsim import SimulationApp
 
 # URDF import, configuration and simulation sample
-kit = SimulationApp({"renderer": "RaytracedLighting", "headless": True})
+kit = SimulationApp({"renderer": "RaytracedLighting", "headless": False})
 import omni.kit.commands
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
@@ -22,7 +22,7 @@ import_config.merge_fixed_joints = False
 import_config.convex_decomp = False
 import_config.import_inertia_tensor = True
 import_config.fix_base = False
-import_config.distance_scale = 100
+import_config.distance_scale = 1.0
 
 # Get path to extension data:
 extension_path = get_extension_path_from_name("isaacsim.asset.importer.urdf")
@@ -57,7 +57,7 @@ omni.kit.commands.execute(
     planePath="/groundPlane",
     axis="Z",
     size=1500.0,
-    position=Gf.Vec3f(0, 0, -50),
+    position=Gf.Vec3f(0, 0, -0.50),
     color=Gf.Vec3f(0.5),
 )
 
@@ -95,7 +95,7 @@ else:
     print(f"Got articulation ({prim_path})")
 
 # perform simulation
-for frame in range(100):
+for frame in range(1000):
     kit.update()
 
 # Shutdown and exit
