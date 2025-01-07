@@ -1,4 +1,8 @@
 # Changelog
+## [2.6.0] - 2025-01-06
+### Changed
+- Conditionally enable async benchmark if not running as standalone workflow
+
 ## [2.5.0] - 2025-01-02
 ### Removed
 - Remove utils.SyncMode, utils.SampledScope
