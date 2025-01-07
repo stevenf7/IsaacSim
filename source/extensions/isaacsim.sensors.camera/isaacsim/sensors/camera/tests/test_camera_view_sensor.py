@@ -114,12 +114,12 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
             image_path = os.path.join(self.test_dir, filename)
             print(f" - saving image (test): {image_path}")
             os.makedirs(self.test_dir, exist_ok=True)
-            cv2.imwrite(image_path)
+            cv2.imwrite(image_path, image)
         if SAVE_IMAGE_AS_GOLDEN:
             image_path = os.path.join(self.golden_dir, filename)
             print(f" - saving image (golden): {image_path}")
             os.makedirs(self.golden_dir, exist_ok=True)
-            cv2.imwrite(image_path)
+            cv2.imwrite(image_path, image)
 
     def _compare_images(self, src1, src2, ksize=5, thresh=30, hist_div=1):
         def compare_histograms(src1, src2):
@@ -262,8 +262,11 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
 
     async def test_batched_rgb_data(self):
         rgb_batched_shape = (self.num_cameras, *self.resolution, 3)
-        rgb_batched_out = torch.zeros(rgb_batched_shape, device="cuda", dtype=torch.uint8)
-        rgb_batched_out = self.camera_view.get_rgb(out=rgb_batched_out)
+        # Make sure the pre-allocated output tensor is on the appropriate cuda device
+        cuda_device = str(wp.get_cuda_device())
+        print(f"Pre-allocating output tensor of shape {rgb_batched_shape} on cuda device {cuda_device}")
+        rgb_batched_out = torch.zeros(rgb_batched_shape, device=cuda_device, dtype=torch.uint8)
+        self.camera_view.get_rgb(out=rgb_batched_out)
         rgb_batched = self.camera_view.get_rgb()
         self.assertEqual(rgb_batched.dtype, rgb_batched_out.dtype)
         self.assertEqual(rgb_batched.shape, rgb_batched_out.shape)
@@ -271,7 +274,10 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
 
     async def test_batched_depth_data(self):
         depth_batched_shape = (self.num_cameras, *self.resolution, 1)
-        depth_batched_out = torch.zeros(depth_batched_shape, device="cuda", dtype=torch.float32)
+        # Make sure the pre-allocated output tensor is on the appropriate cuda device
+        cuda_device = str(wp.get_cuda_device())
+        print(f"Pre-allocating output tensor of shape {depth_batched_shape} on cuda device {cuda_device}")
+        depth_batched_out = torch.zeros(depth_batched_shape, device=cuda_device, dtype=torch.float32)
         self.camera_view.get_depth(out=depth_batched_out)
         depth_batched = self.camera_view.get_depth()
         self.assertEqual(depth_batched.dtype, depth_batched_out.dtype)

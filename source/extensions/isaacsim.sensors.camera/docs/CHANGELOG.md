@@ -1,4 +1,10 @@
 # Changelog
+
+## [0.2.6] - 2025-01-06
+### Fixed
+- use indexed cuda:{idx} input for warp kernels in camera view class
+- use indexed cuda device to pre-allocate out buffers
+  
 ## [0.2.5] - 2024-12-31
 ### Fixed
 - Camera sensor tests no longer needs OMPE-28827 WAR
