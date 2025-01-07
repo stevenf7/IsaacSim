@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2025-01-07
+### Fixed
+- Dual Name Override Menu entries
+
 ## [1.0.2] - 2024-11-19
 ### Fixed
 - Startup test
