@@ -12,6 +12,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import isaacsim.core.utils.numpy.rotations as rot_utils
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from isaacsim.core.api import World
@@ -69,7 +70,9 @@ while simulation_app.is_running():
         print(points_2d)
         print(points_3d)
         imgplot = plt.imshow(camera.get_rgba()[:, :, :3])
-        plt.show()
+        if matplotlib.get_backend() in ["TkAgg", "nbAgg"]:
+            plt.draw()
+            plt.pause(0.01)
         print(camera.get_current_frame()["motion_vectors"])
     if my_world.is_stopped() and not reset_needed:
         reset_needed = True
