@@ -153,7 +153,7 @@ class Extension(omni.ext.IExt):
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-G2A-H120YA",
+                                "Sensing SG8S-AR0820C-5300-G2A-H120YA",
                                 lambda a=weakref.proxy(self): create_prim(
                                     prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H120YA", None),
                                     prim_type="Xform",
@@ -163,7 +163,7 @@ class Extension(omni.ext.IExt):
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-G2A-H30YA",
+                                "Sensing SG8S-AR0820C-5300-G2A-H30YA",
                                 lambda a=weakref.proxy(self): create_prim(
                                     prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H30YA", None),
                                     prim_type="Xform",
@@ -173,7 +173,7 @@ class Extension(omni.ext.IExt):
                             ),
                             make_menu_item_description(
                                 ext_id,
-                                "Sensing SG8-AR0820C-5300-G2A-H60SA",
+                                "Sensing SG8S-AR0820C-5300-G2A-H60SA",
                                 lambda a=weakref.proxy(self): create_prim(
                                     prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H60SA", None),
                                     prim_type="Xform",
