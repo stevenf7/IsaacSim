@@ -55,7 +55,7 @@ class HelpMenuExtension:
         add_menu_items(demo_items, "Help")
 
         # physics menu item
-        url = "http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni_physics/106.2/index.html"
+        url = "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest/index.html"
 
         physics_menu_item = MenuItemDescription(
             name="Physics Programming Manual", onclick_fn=lambda: self.open_ref_url(url)

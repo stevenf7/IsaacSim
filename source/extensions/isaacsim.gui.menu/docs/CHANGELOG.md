@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.7] - 2025-01-08
+### Fixed
+- updated physics reference link
+
 ## [2.0.6] - 2024-12-12
 ### Fixed
 - Added sensor UI extensions as test dependencies
