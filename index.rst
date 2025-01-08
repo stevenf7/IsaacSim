@@ -100,7 +100,6 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.robot_motion.lula/docs/index
    source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index
    source/extensions/isaacsim.robot_motion.motion_generation/docs/index
-   source/extensions/isaacsim.robot_motion.ocs2/docs/index
    source/extensions/isaacsim.robot_setup.assembler/docs/index
    source/extensions/isaacsim.robot_setup.gain_tuner/docs/index
    source/extensions/isaacsim.robot_setup.grasp_editor/docs/index
