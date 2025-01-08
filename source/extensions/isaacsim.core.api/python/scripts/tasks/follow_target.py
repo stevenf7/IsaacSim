@@ -233,7 +233,7 @@ class FollowTarget(ABC, BaseTask):
         if position is None:
             position = np.array([0.1, 0.1, 1.0]) / get_stage_units()
         cube = self.scene.add(
-            DynamicCuboid(
+            VisualCuboid(
                 name=cube_name,
                 position=position + self._offset,
                 prim_path=cube_prim_path,
