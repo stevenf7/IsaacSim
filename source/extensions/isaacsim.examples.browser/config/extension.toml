@@ -3,7 +3,7 @@ reloadable = true
 order = 0
  
 [package]
-version = "0.1.5"
+version = "0.1.6"
 category = "GUI"
 title = "Isaac Sim Example Browser"
 description = "A browser for Isaac Sim assets"

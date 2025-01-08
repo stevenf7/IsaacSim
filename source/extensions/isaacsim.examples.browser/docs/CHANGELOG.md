@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.6] - 2025-01-08
+### Changed
+- Switched from "error" to "warning" when adding examples with existing names
+- deleting empty categories
+
 ## [0.1.5] - 2025-01-07
 ### Changed
 - "Isaac Examples" to "Isaac Sim Examples" for consistency
