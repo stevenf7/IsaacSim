@@ -94,7 +94,6 @@ files_strip = [
 
 files_strip_exclude = [
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
-    ["exts/isaacsim.robot_motion.ocs2/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
     ["exts/omni.isaac.repl/pip_prebundle/**"],
@@ -159,7 +158,6 @@ files_exclude = [
     ["extsbuild/**"],
     ["extsPhysics/**"],
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
-    ["exts/isaacsim.robot_motion.ocs2/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
     ["exts/omni.isaac.repl/pip_prebundle/**"],
@@ -177,7 +175,6 @@ files_strip = [
 
 files_strip_exclude = [
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
-    ["exts/isaacsim.robot_motion.ocs2/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
     ["exts/omni.isaac.repl/pip_prebundle/**"],

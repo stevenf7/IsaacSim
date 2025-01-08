@@ -343,10 +343,8 @@ function include_extensions()
     include ("source/extensions/isaacsim.robot.schema")
     -- Linux Only
     if os.target() == "linux" then
-        include ("source/deprecated/omni.isaac.ocs2")
         include ("source/deprecated/omni.isaac.repl")
         include ("source/deprecated/omni.isaac.ros_bridge")
-        include ("source/extensions/isaacsim.robot_motion.ocs2")
         include ("source/extensions/isaacsim.ros1.bridge")
     end
 end
