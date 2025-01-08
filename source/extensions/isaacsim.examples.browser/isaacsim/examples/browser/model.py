@@ -85,10 +85,9 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
 
         # check if there are already an example with the same name
         if example.name in [e.name for e in self._examples[example.category]]:
-            carb.log_error(f"Example with name {example.name} already exists in category {example.category}")
-        else:
-            self._examples[example.category].append(ExampleDetailItem(example))
-            self.refresh_browser()
+            carb.log_warn(f"Example with name {example.name} already exists in category {example.category}.")
+        self._examples[example.category].append(ExampleDetailItem(example))
+        self.refresh_browser()
         return
 
     def get_category_items(self, item: CollectionItem) -> List[CategoryItem]:
@@ -148,6 +147,8 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
     def deregister_example(self, name: str, category: str):
         if category in self._examples:
             self._examples[category] = [e for e in self._examples[category] if e.name != name]
+            if len(self._examples[category]) == 0:
+                del self._examples[category]
         self.refresh_browser()
 
     def refresh_browser(self):
