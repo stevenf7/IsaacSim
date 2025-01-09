@@ -1,8 +1,8 @@
 # Omniverse Isaac Sim
 This is where the Omniverse Isaac Sim application is developed.
 
-* [Internal Documentation](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim)
-* [Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
+* [Internal Documentation](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs)
+* [Public Documentation](https://docs.isaacsim.omniverse.nvidia.com)
 * Slack: [#omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
 * [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
@@ -12,7 +12,7 @@ This is where the Omniverse Isaac Sim application is developed.
 
 # Getting Started
 
-See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/installation/requirements.html) for general hardware and driver requirements
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/installation/requirements.html) for general hardware and driver requirements
 
 There are multiple ways to use isaac sim based on your workflow:
 
@@ -78,7 +78,7 @@ See the [wiki section](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isa
 
 # Running headless and connecting via a remote client
 
-See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_container.html) for more information on how to use the container.
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/installation/install_container.html) for more information on how to use the container.
 
 # List of internal Nucleus servers:
 * isaac-dev.ov.nvidia.com : http://isaac-dev.ov.nvidia.com/
@@ -94,7 +94,7 @@ You can also clear your local cache from here and see used disk space
 
 ## Deleting previous installs
 
-* Download and run the [launcher cleanup tool](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
+* Download and run the [launcher cleanup tool](https://docs.omniverse.nvidia.com/utilities/latest/cleanup-tool.html)
     * Run ``./launcher-cleanup``
     * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data.
     * Run with ``sudo`` if you have trouble installing cache from the launcher.
@@ -192,7 +192,7 @@ To run isaac sim with a debugger attached:
 
 To attach a debugger to a running application:
 
-- See [Here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/isaacsim/latest/install_python.html)
+- See [Here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/installation/install_python.html)
 
 To debug a native python (normally run from `python.sh`) application:
 
