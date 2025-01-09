@@ -1,12 +1,18 @@
 # Changelog
 
+## [1.1.9] - 2025-01-08
+### Changed
+- Preloaded assets browser cache data into the extension cache folder
+### Added
+- Added additional texture files to search filter
+
 ## [1.1.8] - 2024-12-30
 ### Fixed
 - Broken icon path when using with non isaac sim apps
 
 ## [1.1.7] - 2024-12-16
 ### Fixed
-- Fixed the disappearing asset titles 
+- Fixed the disappearing asset titles
 
 ## [1.1.6] - 2024-12-10
 ### Fixed
@@ -31,11 +37,10 @@
 ## [1.1.1] - 2024-11-01
 ### Changed
 - Rename browser
--
+
 ## [1.1.0] - 2024-10-23
 ### Changed
 - Switch to UI backend that supports Option Panel. Variant selection available for assets that have it.
-
 
 ## [1.0.2] - 2024-10-28
 ### Changed

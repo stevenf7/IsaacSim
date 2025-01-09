@@ -28,13 +28,17 @@ class AssetBrowserModel(TreeFolderBrowserModel):
     def __init__(self, *args, **kwargs):
         settings = carb.settings.get_settings()
         self.__default_folders = settings.get(SETTING_FOLDER)
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.browser")
+        extension_path = ext_manager.get_extension_path(ext_id)
+        cache_path = os.path.abspath(os.path.join(f"{extension_path}", "cache/isaacsim.asset.browser.cache.json"))
         super().__init__(
             *args,
             setting_folders=SETTING_FOLDER,
             show_category_subfolders=True,
             hide_file_without_thumbnails=False,
-            local_cache_file="${shared_documents}/isaacsim.asset.browser.cache.json",
-            filter_file_suffixes=[".usd", ".usda", ".usdc"],
+            local_cache_file=cache_path,
+            filter_file_suffixes=[".usd", ".usda", ".usdc", ".png", ".jpg"],
             show_summary_folder=True,
             timeout=settings.get("/exts/isaacsim.asset.browser/data/timeout"),
             **kwargs,
