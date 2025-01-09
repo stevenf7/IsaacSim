@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.3] - 2025-01-08
+### Changed
+- Fix extension renaming
+
 ## [2.0.2] - 2024-12-11
 ### Changed
 - Fix extension renaming
