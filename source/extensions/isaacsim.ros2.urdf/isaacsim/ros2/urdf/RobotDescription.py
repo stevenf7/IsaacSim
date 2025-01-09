@@ -15,23 +15,19 @@ from functools import partial
 import carb
 import omni
 import omni.ui as ui
-
-# import rclpy
-# import rclpy.node
-# from ament_index_python.packages import get_package_share_directory
 from isaacsim.asset.importer.urdf import UrdfImporter
 from isaacsim.asset.importer.urdf.scripts.ui import cb_builder, get_option_style, str_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
-# from rcl_interfaces.srv import GetParameters
-# from rclpy.node import Node
-# from sensor_msgs.msg import JointState
 # from std_msgs.msg import String
 
 EXTENSION_NAME = "Import from ROS2 URDF Node"
 
 
 def package_path_to_system_path(package_name, relative_path=""):
+
+    from ament_index_python.packages import get_package_share_directory
+
     package_share_path = get_package_share_directory(package_name)
     return package_share_path
 
@@ -78,6 +74,8 @@ class RobotDefinitionReader:
         self.urdf_abs = ""
 
     def __del__(self):
+        import rclpy
+
         if self.node:
             self.node.destroy_node()
         rclpy.try_shutdown()
@@ -87,6 +85,8 @@ class RobotDefinitionReader:
             self.description_received_fn(self.urdf_abs)
 
     def service_call(self, node):
+        import rclpy
+        from rcl_interfaces.srv import GetParameters
 
         client = node.create_client(GetParameters, f"/{self.node_name}/get_parameters")
         if client.wait_for_service(timeout_sec=1.0):
@@ -123,6 +123,8 @@ class RobotDefinitionReader:
         rclpy.try_shutdown()
 
     def start_get_robot_description(self, node_name):
+        import rclpy
+
         # Create a client for the service
         if self.future:
             self.future.cancel()

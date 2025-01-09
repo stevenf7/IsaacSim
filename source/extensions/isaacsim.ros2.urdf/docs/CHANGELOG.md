@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.7] - 2024-01-08
+### Changed
+- Fix Missing dependencies
+
 ## [1.1.6] - 2024-12-05
 ### Changed
 - Updated Nova carter path
