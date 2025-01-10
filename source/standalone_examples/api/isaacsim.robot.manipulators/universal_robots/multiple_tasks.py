@@ -131,6 +131,7 @@ while simulation_app.is_running():
             controllers[1].reset()
             kaya_controller.reset()
             jetbot_controller.reset()
+            i = 0
             reset_needed = False
         observations = my_world.get_observations()
         actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, 0]))
@@ -141,11 +142,9 @@ while simulation_app.is_running():
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0.2, 0.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))
         elif i >= 500 and i < 1000:
-            # TODO: change with new USD
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 0.2, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.0, np.pi / 10]))
         elif i >= 1000 and i < 1500:
-            # TODO: change with new USD
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 0.0, 0.6]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))
         i += 1
