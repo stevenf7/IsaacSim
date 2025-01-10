@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2025-01-09
+### Changed
+- removed default filter for files, so that the browser displays all file types
+### Added
+- Download option for file types
+
 ## [1.1.9] - 2025-01-08
 ### Changed
 - Preloaded assets browser cache data into the extension cache folder

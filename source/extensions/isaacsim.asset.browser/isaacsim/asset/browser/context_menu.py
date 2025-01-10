@@ -13,7 +13,10 @@ from urllib.parse import unquote
 import carb
 import carb.settings
 import omni.ui as ui
+import requests
 import toml
+from omni.kit.browser.folder.core import FileDetailItem
+from omni.kit.notification_manager import post_notification
 
 from .style import CONTEXT_MENU_STYLE
 
@@ -69,6 +72,12 @@ class ContextMenu(ui.Menu):
                     f"{omni.kit.ui.get_custom_glyph_code('${glyphs}/plus.svg')}   Replace Current Selection",
                     triggered_fn=self.__replace_current_selection,
                 )
+                ui.Separator()
+                ui.MenuItem(
+                    f"{omni.kit.ui.get_custom_glyph_code('${glyphs}/cloud_download.svg')}  Download",
+                    triggered_fn=lambda: self.__download_item(self.url),
+                )
+
         except ImportError:
             carb.log_warn("Plese enable omni.kit.menu.stage first to use add or replace at current selection.")
 
@@ -137,3 +146,20 @@ class ContextMenu(ui.Menu):
         import omni.kit.clipboard
 
         omni.kit.clipboard.copy(self.url)
+
+    def __download_item(self, url):
+        filename = os.path.basename(url)
+
+        # download file to users Download folder
+        download_folder = os.path.expanduser("~") + "/Downloads/"
+        download_path = download_folder + filename
+
+        try:
+            with requests.get(url, stream=True) as r:
+                r.raise_for_status()
+                with open(download_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+            post_notification(f"Downloaded {filename} to {download_path}")
+        except requests.exceptions.RequestException as e:
+            post_notification(f"Failed to download {filename}: {e}")
