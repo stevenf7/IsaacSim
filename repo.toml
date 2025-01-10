@@ -1111,7 +1111,7 @@ deps_for_isaac = [
   "isaacsim.replicator.agent.ui-0.5.12",
   "isaacsim.replicator.metropolis.utils-0.0.6",
   "omni.replicator.core-1.11.34",
-  "isaacsim.replicator.object-0.3.20",
+  "isaacsim.replicator.object-0.3.21",
   "omni.replicator.replicator_yaml-2.0.10",
   "omni.rtx.shadercache.vulkan",
   "omni.sensors.nv.camera-0.20.1-coreapi",
