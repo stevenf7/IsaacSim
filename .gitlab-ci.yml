@@ -610,7 +610,7 @@ test-linux-x86_64-benchmarks-4-gpu:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
     rules:
-      - if: $RUN_BUMP_VERSION == "true"
+      - if: $CI_COMMIT_TITLE =~ /^Bumped version/
         when: never
       - !reference [.rules-nightly-tests, rules]
 
