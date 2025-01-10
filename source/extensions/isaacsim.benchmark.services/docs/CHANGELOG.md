@@ -1,4 +1,8 @@
 # Changelog
+## [2.6.1] - 2025-01-10
+### Fixed
+- Division-by-zero error when benchmarked script does not run app update
+
 ## [2.6.0] - 2025-01-06
 ### Changed
 - Conditionally enable async benchmark if not running as standalone workflow
