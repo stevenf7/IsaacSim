@@ -38,7 +38,6 @@ class AssetBrowserModel(TreeFolderBrowserModel):
             show_category_subfolders=True,
             hide_file_without_thumbnails=False,
             local_cache_file=cache_path,
-            filter_file_suffixes=[".usd", ".usda", ".usdc", ".png", ".jpg"],
             show_summary_folder=True,
             timeout=settings.get("/exts/isaacsim.asset.browser/data/timeout"),
             **kwargs,
