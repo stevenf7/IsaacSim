@@ -18,7 +18,7 @@ import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationActions
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
 from isaacsim.sensors.physics import IMUSensor
 from isaacsim.storage.native import get_assets_root_path
@@ -63,25 +63,30 @@ while simulation_app.is_running():
             my_controller.reset()
             reset_needed = False
         print(imu_sensor.get_current_frame())
-        actions = ArticulationAction()
+        actions = ArticulationActions()
         if i >= 0 and i < 1000:
             # forward
-            actions = my_controller.forward(command=[0.05, 0])
+            # convert from ArticulationAction to ArticulationActions
+            actions.joint_velocities = np.expand_dims(my_controller.forward(command=[0.05, 0]).joint_velocities, axis=0)
 
         elif i >= 1000 and i < 1265:
             # rotate
-            actions = my_controller.forward(command=[0.0, np.pi / 12])
+            # convert from ArticulationAction to ArticulationActions
+            actions.joint_velocities = np.expand_dims(
+                my_controller.forward(command=[0.0, np.pi / 12]).joint_velocities, axis=0
+            )
         elif i >= 1265 and i < 2000:
             # forward
-            actions = my_controller.forward(command=[0.05, 0])
+            # convert from ArticulationAction to ArticulationActions
+            actions.joint_velocities = np.expand_dims(my_controller.forward(command=[0.05, 0]).joint_velocities, axis=0)
         elif i == 2000:
             i = 0
         i += 1
-        joint_actions = ArticulationAction()
-        joint_actions.joint_velocities = np.zeros(my_carter.num_dof)
+        joint_actions = ArticulationActions()
+        joint_actions.joint_velocities = np.zeros([1, my_carter.num_dof])
         if actions.joint_velocities is not None:
             for j in range(len(wheel_dof_indices)):
-                joint_actions.joint_velocities[wheel_dof_indices[j]] = actions.joint_velocities[j]
+                joint_actions.joint_velocities[0, wheel_dof_indices[j]] = actions.joint_velocities[0, j]
 
         my_carter.apply_action(joint_actions)
 
