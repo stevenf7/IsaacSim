@@ -4,7 +4,7 @@ order = -1000
 reloadable = false
 
 [package]
-version = "1.4.2"
+version = "1.4.3"
 category = "Internal"
 title = "Compute package Pip Archive"
 description = "General packages for compute"
@@ -15,7 +15,7 @@ changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
-
+writeTarget.kit = true
 writeTarget.platform = true # pip prebundle makes this extension os specific
 writeTarget.python = true
 
