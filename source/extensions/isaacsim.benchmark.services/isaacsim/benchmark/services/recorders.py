@@ -157,11 +157,14 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
             measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
         )
 
-        measurements_out.append(
-            measurements.SingleMeasurement(
-                name=f"Mean FPS", value=round(1000 / (frametime_stats.app_stats["mean"]), 3), unit="FPS"
+        if frametime_stats.app_stats["mean"]:
+            # Scripts which don't trigger app update will have empty app stats, so app_stars["mean"] will never
+            # be populated, and this will trigger a divison-by-zero error.
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Mean FPS", value=round(1000 / (frametime_stats.app_stats["mean"]), 3), unit="FPS"
+                )
             )
-        )
 
         measurements_out.append(
             measurements.SingleMeasurement(
