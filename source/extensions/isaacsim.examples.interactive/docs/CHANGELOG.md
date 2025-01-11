@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.3] - 2025-01-10
+### Added
+- Added a few more lines of instructions inside the "Information" tab for multi-robot examples
+
 ## [4.4.2] - 2024-12-16
 ### Fixed
 - Error when extension was hot reloaded

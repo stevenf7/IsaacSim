@@ -31,7 +31,7 @@ class FrankaCortexExtension(omni.ext.IExt):
             "file_path": os.path.abspath(__file__),
             "title": "Franka Cortex Examples",
             "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/cortex_tutorials/tutorial_cortex_4_franka_block_stacking.html#isaac-sim-app-tutorial-cortex-4-franka-block-stacking",
-            "overview": "This Example shows how to Use Cortex for multiple behaviors robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+            "overview": "This Example shows how to Use Cortex for multiple behaviors robot and Cortex behaviors in Isaac Sim.\\Open 'Link to Docs' to see more detailed instructions on how to run this example. \n\nPress the 'Open in IDE' button to view the source code.",
         }
 
         ui_handle = FrankaCortexUI(**ui_kwargs)
