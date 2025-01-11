@@ -28,7 +28,7 @@ class RoboFactoryExtension(omni.ext.IExt):
             "file_path": os.path.abspath(__file__),
             "title": "RoboFactory",
             "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_core_adding_multiple_robots.html",
-            "overview": "This Example shows how to run multiple tasks in the same scene.\n\nPress the 'Open in IDE' button to view the source code.",
+            "overview": "This Example shows how to run multiple tasks in the same scene.\n\nPress 'LOAD' to load the scene, \npress 'START STACKING' to start stacking.\n\nPress the 'Open in IDE' button to view the source code.",
             "sample": RoboFactory(),
         }
 
