@@ -11,7 +11,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-import importlib
+import inspect
 import os
 
 import carb.settings
@@ -28,6 +28,7 @@ from isaacsim.replicator.behavior.behaviors import (
     TextureRandomizer,
 )
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS
+from isaacsim.replicator.behavior.utils.behavior_utils import add_behavior_script
 from pxr import Sdf
 
 SCRIPTS_ATTR = "omni:scripting:scripts"
@@ -55,31 +56,23 @@ def setup_stage():
 
 
 # Add scripting to the root prim with a behavior script and the custom exposed variables values
-def add_behavior_script(prim_path, behavior_class, exposed_variables={}):
+def add_behavior_script_with_parameters(prim_path, behavior_class, exposed_variables={}):
     stage = omni.usd.get_context().get_stage()
     prim = stage.GetPrimAtPath(prim_path)
     if not prim:
         raise RuntimeError(f"No prim found at path: {prim_path}")
 
-    # Add scripting API to the prim
-    omni.kit.commands.execute("ApplyScriptingAPICommand", paths=[prim_path])
-    scripts_attr = prim.GetAttribute(SCRIPTS_ATTR)
-    if not scripts_attr:
-        raise RuntimeError(f"No scripts attribute found on prim: {prim_path}")
+    # Get the script path from the behavior class
+    script_path = inspect.getfile(behavior_class)
 
-    # Get the script path from the behavior class's module
-    module = importlib.import_module(behavior_class.__module__)
-    script_path = module.__file__
-
-    # Sdf.AssetPathArray is immutable, convert to list to append the new script path
-    scripts_list = list(scripts_attr.Get() or Sdf.AssetPathArray())
-    scripts_list.append(Sdf.AssetPath(script_path))
-    scripts_attr.Set(Sdf.AssetPathArray(scripts_list))
+    # Add the behavior script to the prim
+    add_behavior_script(prim, script_path)
 
     # NOTE: 2-3 updates are needed to ensure the script is loaded and the exposed variables are set
     for _ in range(3):
         simulation_app.update()
 
+    # Append the exposed variables with the corresponding namespace and set them as properties on the prim
     variable_ns = f"{EXPOSED_ATTR_NS}:{behavior_class.BEHAVIOR_NS}"
     for var_name, var_value in exposed_variables.items():
         full_var_name = f"{variable_ns}:{var_name}"
@@ -129,43 +122,49 @@ setup_stage()
 # Create a light with behavior scripts
 light_path = "/Single/Light"
 create_prims_single(light_path, "SphereLight")
-add_behavior_script(light_path, LightRandomizer)
-add_behavior_script(light_path, LocationRandomizer)
-add_behavior_script(light_path, RotationRandomizer)
+add_behavior_script_with_parameters(light_path, LightRandomizer)
+add_behavior_script_with_parameters(light_path, LocationRandomizer)
+add_behavior_script_with_parameters(light_path, RotationRandomizer)
 
 # Create a cube with behavior scripts
 cube_path = "/Single/Cube"
 create_prims_single(cube_path, "Cube")
-add_behavior_script(cube_path, LocationRandomizer)
-add_behavior_script(cube_path, RotationRandomizer)
-add_behavior_script(cube_path, TextureRandomizer)
+add_behavior_script_with_parameters(cube_path, LocationRandomizer)
+add_behavior_script_with_parameters(cube_path, RotationRandomizer)
+add_behavior_script_with_parameters(cube_path, TextureRandomizer)
 
 # Create a camera with behavior scripts
 camera_path = "/Single/Camera"
 create_prims_single(camera_path, "Camera")
-add_behavior_script(camera_path, LookAtBehavior)
-add_behavior_script(camera_path, LocationRandomizer)
+add_behavior_script_with_parameters(camera_path, LookAtBehavior)
+add_behavior_script_with_parameters(camera_path, LocationRandomizer)
 
 
 # Create lights nested under a root prim and add behavior scripts to the root prim with includeChildren flag
 nested_lights_path = "/Nested/Lights"
 create_prims_multi(root_path=nested_lights_path, num_prims=3, prim_type="SphereLight", prim_name="light")
-add_behavior_script(nested_lights_path, LightRandomizer, exposed_variables={f"includeChildren": True})
-add_behavior_script(nested_lights_path, LocationRandomizer, exposed_variables={f"includeChildren": True})
-add_behavior_script(nested_lights_path, RotationRandomizer, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(nested_lights_path, LightRandomizer, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(
+    nested_lights_path, LocationRandomizer, exposed_variables={f"includeChildren": True}
+)
+add_behavior_script_with_parameters(
+    nested_lights_path, RotationRandomizer, exposed_variables={f"includeChildren": True}
+)
 
 # Create cubes nested under a root prim and add behavior scripts to the root prim with includeChildren flag
 nested_cubes_path = "/Nested/Cubes"
 create_prims_multi(root_path=nested_cubes_path, num_prims=3, prim_type="Cube", prim_name="cube")
-add_behavior_script(nested_cubes_path, LocationRandomizer, exposed_variables={f"includeChildren": True})
-add_behavior_script(nested_cubes_path, RotationRandomizer, exposed_variables={f"includeChildren": True})
-add_behavior_script(nested_cubes_path, TextureRandomizer, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(nested_cubes_path, LocationRandomizer, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(nested_cubes_path, RotationRandomizer, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(nested_cubes_path, TextureRandomizer, exposed_variables={f"includeChildren": True})
 
 # Create cameras nested under a root prim and add behavior scripts to the root prim with includeChildren flag
 nested_cameras_path = "/Nested/Cameras"
 create_prims_multi(root_path=nested_cameras_path, num_prims=3, prim_type="Camera", prim_name="camera")
-add_behavior_script(nested_cameras_path, LookAtBehavior, exposed_variables={f"includeChildren": True})
-add_behavior_script(nested_cameras_path, LocationRandomizer, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(nested_cameras_path, LookAtBehavior, exposed_variables={f"includeChildren": True})
+add_behavior_script_with_parameters(
+    nested_cameras_path, LocationRandomizer, exposed_variables={f"includeChildren": True}
+)
 
 
 # Run the randomization scripts through the timeline
