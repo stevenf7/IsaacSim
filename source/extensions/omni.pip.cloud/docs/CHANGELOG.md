@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.6] - 2025-01-11
+### Changed
+- Make this extension kit version specific
+
 ## [1.1.5] - 2024-12-01
 ### Changed
 - Make this extension python version specific
