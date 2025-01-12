@@ -8,3 +8,4 @@
 #
 
 from .test_behaviors_basic import *
+from .test_behaviors_sdg_scenario import *

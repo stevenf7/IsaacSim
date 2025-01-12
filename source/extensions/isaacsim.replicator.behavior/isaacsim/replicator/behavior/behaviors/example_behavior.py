@@ -65,6 +65,9 @@ class ExampleBehavior(BehaviorScript):
     def on_play(self):
         print(f"[ExampleBehavior][{self.prim_path}] on_play()")
         self._setup()
+        # Make sure the initial behavior is applied if the interval is larger than 0
+        if self._interval > 0:
+            self._apply_behavior()
 
     def on_stop(self):
         print(f"[ExampleBehavior][{self.prim_path}] on_stop()")

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.6] - 2025-01-09
+### Fixed
+- Initial behavior not applied if interval is greater than 0
+
+### Added
+- Util functions for adding scripts and triggering and waiting for behavior events
+- SDG scenario test with golden images
+
 ## [1.0.5] - 2024-12-12
 ### Fixed
 - Cleaning up randomizers by calling reset when destroyed during play
