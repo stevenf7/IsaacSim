@@ -22,3 +22,6 @@ export CARB_APP_PATH=$SCRIPT_DIR/kit
 export EXP_PATH=$MY_DIR/apps
 export ISAAC_PATH=$MY_DIR
 . ${MY_DIR}/setup_python_env.sh
+
+# remove Kit Python from PYTHONPATH to avoid conflicts with conda
+export PYTHONPATH=$(echo "$PYTHONPATH" | tr ':' '\n' | grep -v "$SCRIPT_DIR/kit/python/lib/python3.10" | tr '\n' ':' | sed 's/:$//')
