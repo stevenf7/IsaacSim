@@ -46,7 +46,7 @@ from isaacsim.core.api import PhysicsContext, World
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.stage import open_stage_async, update_stage_async
-from isaacsim.core.utils.types import ArticulationAction
+from isaacsim.core.utils.types import ArticulationActions
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("isaacsim.benchmark.services")
@@ -130,7 +130,7 @@ def on_physics_step(articulation_view, position_commands, velocity_commands, ste
     commanded_positions.append(position_command)
     commanded_velocities.append(velocity_command)
 
-    action = ArticulationAction(position_command, velocity_command, joint_indices=joint_indices)
+    action = ArticulationActions(position_command, velocity_command, joint_indices=joint_indices)
     articulation_view.apply_action(action)
 
 
