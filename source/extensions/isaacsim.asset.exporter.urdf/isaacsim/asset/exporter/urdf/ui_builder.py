@@ -273,7 +273,7 @@ class UIBuilder:
         if urdf_output_path == "" or urdf_output_path is None:
             if input_path is None:
                 raise ValueError("Must specify an URDF output path.")
-            urdf_output_path = Path(input_path).parent
+            urdf_output_path = pathlib.Path(input_path).parent
 
         mesh_dir = self._data_params["mesh_dir"]
         if mesh_dir == "":

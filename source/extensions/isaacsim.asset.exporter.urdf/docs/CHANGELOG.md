@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1] - 2025-01-13
+
+### Fixed
+
+- Add missing `pathlib` to `exporter/urdf/ui_builder.py`
+
 ## [1.1.0] - 2024-10-15
 
 ### Fixed
