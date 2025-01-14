@@ -116,9 +116,18 @@ class Extension(omni.ext.IExt):
                         default_val=[False, ""],
                     )
                     self.override_looks_directory[1].add_value_changed_fn(
-                        lambda a: setattr(self.mesh_merger, "materials_destination", a.get_value_as_string())
+                        lambda a: self.on_mat_dest_changed(a.get_value_as_string())
                     )
+                    self.mesh_merger.on_materials_changed_fn = self.on_mat_changed
                     btn_builder(label="Merge Selected Prim", text="Merge", on_clicked_fn=self._merge_mesh)
+
+    def on_mat_changed(self, value):
+        if type(value) == str:
+            self.override_looks_directory[1].set_value(value)
+
+    def on_mat_dest_changed(self, value):
+        if self.mesh_merger.materials_destination != value:
+            self.mesh_merger.materials_destination = value
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
