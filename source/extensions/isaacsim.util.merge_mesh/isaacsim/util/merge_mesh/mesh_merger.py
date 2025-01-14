@@ -29,6 +29,8 @@ class MeshMerger(object):
         self._meshes_to_merge = []
         self._created_materials = []
 
+        self.on_materials_changed_fn = None
+
     @property
     def total_meshes(self):
         return self._total_meshes
@@ -79,7 +81,10 @@ class MeshMerger(object):
 
     @materials_destination.setter
     def materials_destination(self, value):
+        changed = value != self._materials_destination
         self._materials_destination = value
+        if changed and self.on_materials_changed_fn:
+            self.on_materials_changed_fn(value)
 
     @property
     def output_mesh(self):
@@ -177,6 +182,9 @@ class MeshMerger(object):
         meshes = []
         curr_prim = self._stage.GetPrimAtPath(self.selected_objects[0])
         prim_transform = omni.usd.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
+
+        if not self.materials_destination:
+            self.materials_destination = str(self._stage.GetDefaultPrim().GetPath().AppendChild("Looks"))
 
         if self.combine_materials and not self._stage.GetPrimAtPath(self.materials_destination):
             self._stage.DefinePrim(self.materials_destination, "Scope")

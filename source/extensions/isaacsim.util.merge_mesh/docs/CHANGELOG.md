@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.5] - 2025-01-13
+### Changed
+- Fixed UI consistency when no prim path is selected for Looks destination
+
 ## [2.0.4] - 2024-12-23
 ### Changed
 - Fixed error when UV maps are missing
