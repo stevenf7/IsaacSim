@@ -6,6 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import sys
+
+if __name__ == "__main__":
+    print(
+        "This file is not meant to be executed. Please check the files at the root of `isaacsim.cortex.framework` for the main entry points."
+    )
+    sys.exit(0)
+
 from isaacsim.cortex.behaviors.franka import (
     block_stacking_behavior,
     peck_decider_network,
