@@ -248,7 +248,7 @@ python_paths = [
 ]
 
 sphinx_conf_py_extra = """
-    autodoc_member_order = 'bysource' 
+    autodoc_member_order = 'bysource'
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
     html_favicon = "docs/media/favicon.ico"
@@ -592,7 +592,7 @@ path = "${test_root}"
 tests_per_process = 1
 
 [[repo_test.suites.warmuptests.group]]
-include = ["omni.isaac.sim.warmup${shell_ext}"]
+include = ["warmup${shell_ext}"]
 timeout = 1500
 
 [repo_test.suites.pythontests]

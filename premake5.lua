@@ -125,8 +125,6 @@ function setup_common_folder_links()
         }
 
         repo_build.prebuild_copy {
-            -- Copy launcher file
-            { "launcher.toml", bin_dir },
             -- Copy licenses
             { "tools/internal-licenses/*",  bin_dir.."/PACKAGE-LICENSES" },
             { "_build/PACKAGE-LICENSES", bin_dir.."/PACKAGE-LICENSES" },
@@ -168,9 +166,10 @@ function setup_common_folder_links()
             {"source/scripts/run_all_benchmarks${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/omni.isaac.sim.post.install${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/omni.isaac.sim.post.install.run${shell_ext}",  "_build/%{platform}/%{config}"},
-            {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
+            {"source/scripts/warmup${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/clear_caches*${shell_ext}",  "_build/%{platform}/%{config}"},
+            {"source/scripts/post_install*${shell_ext}",  "_build/%{platform}/%{config}"},
             {"source/scripts/vscode/%{platform}",  "_build/%{platform}/%{config}/.vscode"},
             {"source/scripts/telemetry/*",  "_build/%{platform}/%{config}/config"},
         }

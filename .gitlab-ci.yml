@@ -1505,7 +1505,7 @@ publish-container-base:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
-      - !reference [.rules-version-changed, rules]
+    #   - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
     allow_failure: true
 
