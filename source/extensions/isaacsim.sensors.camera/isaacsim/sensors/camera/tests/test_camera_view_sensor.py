@@ -195,7 +195,8 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         rgb_tiled_torch_out = torch.zeros((*self.camera_view.tiled_resolution, 3), device="cuda", dtype=torch.uint8)
         self.camera_view.get_rgb_tiled(out=rgb_tiled_torch_out, device="cuda")
         rgb_tiled_torch = self.camera_view.get_rgb_tiled(device="cuda")
-
+        # copy output to the same device so we can compare it
+        rgb_tiled_torch = rgb_tiled_torch.to(rgb_tiled_torch_out.device)
         self.assertEqual(rgb_tiled_torch_out.dtype, rgb_tiled_torch.dtype)
         self.assertEqual(rgb_tiled_torch_out.shape, rgb_tiled_torch.shape)
         self.assertTrue(torch.allclose(rgb_tiled_torch_out, rgb_tiled_torch, atol=1e-5))
@@ -221,7 +222,8 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         depth_tiled_torch_out = torch.zeros((*self.camera_view.tiled_resolution, 1), device="cuda", dtype=torch.float32)
         self.camera_view.get_depth_tiled(out=depth_tiled_torch_out, device="cuda")
         depth_tiled_torch = self.camera_view.get_depth_tiled(device="cuda")
-
+        # copy output to the same device so we can compare it
+        depth_tiled_torch = depth_tiled_torch.to(depth_tiled_torch_out.device)
         self.assertEqual(depth_tiled_torch_out.dtype, depth_tiled_torch.dtype)
         self.assertEqual(depth_tiled_torch_out.shape, depth_tiled_torch.shape)
         self.assertTrue(torch.allclose(depth_tiled_torch_out, depth_tiled_torch, atol=1e-5))
@@ -270,6 +272,8 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         rgb_batched = self.camera_view.get_rgb()
         self.assertEqual(rgb_batched.dtype, rgb_batched_out.dtype)
         self.assertEqual(rgb_batched.shape, rgb_batched_out.shape)
+        # copy output to the same device so we can compare it
+        rgb_batched = rgb_batched.to(cuda_device)
         self.assertTrue(torch.allclose(rgb_batched.to(torch.float32), rgb_batched_out.to(torch.float32), atol=1e-5))
 
     async def test_batched_depth_data(self):
@@ -280,6 +284,8 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         depth_batched_out = torch.zeros(depth_batched_shape, device=cuda_device, dtype=torch.float32)
         self.camera_view.get_depth(out=depth_batched_out)
         depth_batched = self.camera_view.get_depth()
+        # copy output to the same device so we can compare it
+        depth_batched = depth_batched.to(cuda_device)
         self.assertEqual(depth_batched.dtype, depth_batched_out.dtype)
         self.assertEqual(depth_batched.shape, depth_batched_out.shape)
         self.assertTrue(torch.allclose(depth_batched, depth_batched_out, atol=1e-5))
