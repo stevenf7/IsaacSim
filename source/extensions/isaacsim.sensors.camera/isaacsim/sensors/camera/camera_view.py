@@ -509,8 +509,10 @@ class CameraView(XFormPrim):
             raise ValueError(
                 f"The specified annotator type ({annotator_type}) was not configured. Enable it when instantiating the object"
             )
+        # request data on the same device as output if specified
+        output_device = str(out.device) if out is not None else "cuda"
         # get the linear sensor data from the tiled annotator and (if needed) slice it to get only the RGB data
-        data = self._annotators[spec["name"]].get_data(device="cuda")
+        data = self._annotators[spec["name"]].get_data(device=output_device)
         # check whether returned data is a dict (used for segmentation)
         if isinstance(data, dict):
             tiled_data: wp.array = data["data"]
@@ -535,6 +537,10 @@ class CameraView(XFormPrim):
             if out is None:
                 shape = (len(self.prims), height, width, output_channels)
                 out = wp.zeros(shape, dtype=spec["dtype"], device=tiled_data.device)
+            else:
+                # copy the data to the correct device if the devices do not match
+                if out.device != tiled_data.device:
+                    tiled_data = wp.clone(tiled_data, out.device)
             # use a warp kernel to convert the linear sensor data to a batch of images
             num_tiles_x = self.tiled_resolution[0] // width
             wp.launch(

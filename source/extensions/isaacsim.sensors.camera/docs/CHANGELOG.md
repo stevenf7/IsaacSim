@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.7] - 2025-01-14
+### Fixed
+- Issues when output device did not match the device annotated data was acquired on
+
 ## [0.2.6] - 2025-01-06
 ### Fixed
 - use indexed cuda:{idx} input for warp kernels in camera view class
