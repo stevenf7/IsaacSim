@@ -7,7 +7,7 @@ TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
 
 set +e # Workaround post-install script failure
 # Warm up shader cache for Python app
-"$SCRIPT_DIR/python.sh" "$SCRIPT_DIR/standalone_examples/api/omni.isaac.kit/hello_world.py"
+"$SCRIPT_DIR/python.sh" "$SCRIPT_DIR/standalone_examples/api/isaacsim.simulation_app/hello_world.py"
 echo "Python app shader cache is warmed up."
 
 # Warm up shader cache

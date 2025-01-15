@@ -25,7 +25,7 @@ call "%~dp0kit\kit.exe"  "%%~dp0apps/isaacsim.exp.base.kit" ^
     %*
 if %ERRORLEVEL% neq 0 (echo "Error warming up shader cache.") else (echo "Shader cache is warmed up.")
 
-call "%~dp0python.bat" "%~dp0standalone_examples\api\omni.isaac.kit\hello_world.py"
+call "%~dp0python.bat" "%~dp0standalone_examples\api\isaacsim.simulation_app\hello_world.py"
 if %ERRORLEVEL% neq 0 (echo "Error warming up python app shader cache.") else (echo "Python app shader cache is warmed up.")
 
 :: Always succeed in case kit crashed or hanged

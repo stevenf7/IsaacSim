@@ -47,7 +47,7 @@ files_exclude = [
     ["**/*.exp"],
     ["**/*.a"], # static libs
     ["kit/data/**"], # This can contain portable files we don't want to package
-    ["extsbuild"],
+    ["extsbuild/**"],
     ["exts/isaacsim.util.internal"],
     ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
@@ -71,7 +71,7 @@ files_exclude = [
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
-    ["extsbuild"],
+    ["extsbuild/**"],
     ["exts/isaacsim.util.internal"],
     ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
@@ -82,6 +82,11 @@ files_exclude = [
     ["tests/tests-omni.importer.onshape*"],
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020
+    ["dev/**"],
+    ["omni.isaac.sim*"],
+    ["pull_kit_sdk*"],
+    ["run_all_*"],
+    ["compile_commands.json"],
 ]
 
 [isaac-sim-standalone.linux-x86_64]
@@ -135,7 +140,7 @@ files_exclude = [
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
-    ["extsbuild"],
+    ["extsbuild/**"],
     ["exts/isaacsim.util.internal"],
     ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],

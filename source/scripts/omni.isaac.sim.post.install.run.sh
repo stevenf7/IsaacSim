@@ -10,7 +10,7 @@ echo "Isaac Sim Post-Installation Script"
 if [[ -z "${ISAACSIM_SKIP_WARMUP}" ]]; then
     echo Warming up cache for main app...
     echo Close this window to skip.
-    ${SCRIPT_DIR}/omni.isaac.sim.warmup.sh &>> ${SCRIPT_DIR}/omni.isaac.sim.post.install.log
+    ${SCRIPT_DIR}/warmup.sh &>> ${SCRIPT_DIR}/omni.isaac.sim.post.install.log
 fi
 
 echo Isaac Sim Post-Installation Script completed! |& tee -a ${SCRIPT_DIR}/omni.isaac.sim.post.install.log

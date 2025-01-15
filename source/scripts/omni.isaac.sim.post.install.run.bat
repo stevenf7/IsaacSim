@@ -7,7 +7,7 @@ echo "Isaac Sim Post-Installation Script"
 if not defined ISAACSIM_SKIP_WARMUP (
     echo Warming up shader cache... Please wait...
     echo Close this window to skip.
-    call "%~dp0omni.isaac.sim.warmup.bat" >>%~dp0omni.isaac.sim.post.install.log 2>&1
+    call "%~dp0warmup.bat" >>%~dp0omni.isaac.sim.post.install.log 2>&1
 )
 
 echo Isaac Sim Post-Installation Script completed!
