@@ -28,11 +28,11 @@ function include_physx()
 
     filter { "system:linux", "platforms:x86_64","configurations:debug" }
         libdirs {
-            "%{root}/_build/target-deps/physx/bin/linux.clang/debug",
+            "%{root}/_build/target-deps/physx/bin/linux.x86_64/debug",
         }
     filter { "system:linux", "platforms:x86_64","configurations:release" }
         libdirs {
-            "%{root}/_build/target-deps/physx/bin/linux.clang/checked",
+            "%{root}/_build/target-deps/physx/bin/linux.x86_64/checked",
         }
     filter {}
 
