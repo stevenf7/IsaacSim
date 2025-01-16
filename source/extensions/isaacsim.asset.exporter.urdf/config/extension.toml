@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.1"
+version = "1.1.2"
 category = "Simulation"
 title = "Isaac Sim USD to URDF exporter"
 description = "Extension that exports USD files to URDF"
@@ -21,6 +21,7 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 "isaacsim.core.deprecation_manager" = {}
 "omni.kit.pip_archive" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.core.utils" = {}
 
 [[python.module]]
 path = "pip_prebundle"

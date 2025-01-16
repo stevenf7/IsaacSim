@@ -46,6 +46,7 @@ def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_f
             width=BUTTON_WIDTH,
             clicked_fn=on_clicked_fn,
             style=get_style(),
+            tooltip=format_tt(tooltip),
             alignment=ui.Alignment.LEFT_CENTER,
         )
         ui.Spacer(width=5)

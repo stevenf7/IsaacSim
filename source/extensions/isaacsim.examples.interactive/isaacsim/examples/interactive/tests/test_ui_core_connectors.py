@@ -24,7 +24,7 @@ from isaacsim.core.utils.stage import (
     create_new_stage_async,
     update_stage_async,
 )
-from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
+from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
 from isaacsim.storage.native import get_assets_root_path
 
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [8.0.4] - 2025-01-14
+### Fixed
+- carryover dependency
+
 ## [8.0.3] - 2024-12-16
 ### Fixed
 - Issues importing interface_config_loader

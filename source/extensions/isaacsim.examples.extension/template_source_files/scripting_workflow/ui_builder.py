@@ -12,8 +12,8 @@ import omni.ui as ui
 from isaacsim.core.api.world import World
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.stage import create_new_stage, get_current_stage
+from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
-from isaacsim.gui.components.element_wrappers.core_connectors import LoadButton, ResetButton
 from isaacsim.gui.components.ui_utils import get_style
 from omni.usd import StageEventType
 from pxr import Sdf, UsdLux

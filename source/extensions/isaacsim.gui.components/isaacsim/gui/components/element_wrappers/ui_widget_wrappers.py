@@ -7,15 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import sys
+import typing
 from cmath import inf
 from collections.abc import Iterable
 from typing import Callable, List, Optional, Tuple, Union
 
 import carb
 import numpy as np
+import omni
 import omni.physx as _physx
 import omni.ui as ui
-from isaacsim.core.utils.prims import get_prim_object_type
 from isaacsim.gui.components.ui_utils import (
     BUTTON_WIDTH,
     LABEL_HEIGHT,
@@ -30,9 +31,34 @@ from isaacsim.gui.components.widgets import DynamicComboBoxModel
 from omni.kit.window.filepicker import FilePickerDialog
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 from omni.usd import get_context
-from pxr import Usd
+from pxr import Usd, UsdGeom, UsdPhysics
 
 from .base_ui_element_wrappers import UIWidgetWrapper
+
+
+def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
+    """Get the dynamic control object type of the USD Prim at the given path.
+
+    Copied over from isaacsim.core.utils.prims, to avoid a heavy dependency on UI elements.
+
+    Example:
+    """
+    prim = omni.usd.get_context().get_stage().GetPrimAtPath(prim_path)
+    if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+        return "articulation"
+    elif prim.HasAPI(UsdPhysics.RigidBodyAPI):
+        return "rigid_body"
+    elif (
+        prim.IsA(UsdPhysics.PrismaticJoint) or prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.SphericalJoint)
+    ):
+        return "joint"
+    elif prim.IsA(UsdPhysics.Joint):
+        return "d6joint"
+    elif prim.IsA(UsdGeom.Xformable):
+        return "xform"
+    else:
+        return None
+
 
 ##########################################################################################
 #                                 UI Frame Wrappers
@@ -1331,7 +1357,7 @@ class DropDown(UIWidgetWrapper):
 
         Args:
             object_type (str): A string name of the type of USD object matching the output of
-                isaacsim.core.utils.prims.get_prim_object_type(prim_path)
+                get_prim_object_type(prim_path)
             repopulate (bool, optional): Repopulate the DropDown immediately. Defaults to True.
         """
         self.set_populate_fn(lambda: self._find_all_usd_objects_of_type(object_type), repopulate=repopulate)
@@ -1365,8 +1391,8 @@ class DropDown(UIWidgetWrapper):
             for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
                 path = str(prim.GetPath())
                 # Get prim type get_prim_object_type
-                type = get_prim_object_type(path)
-                if type == obj_type:
+                _type = get_prim_object_type(path)
+                if _type == obj_type:
                     items.append(path)
 
         return items

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.4] - 2025-01-13
+### Changed
+- fixed button tooltips
+
 ## [1.0.3] - 2024-10-29
 ### Changed
 - added an info_collapsed argument for setup_ui_headers

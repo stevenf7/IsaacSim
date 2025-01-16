@@ -13,8 +13,7 @@ import carb
 import omni.ui as ui
 from isaacsim.core.api.world import World
 from isaacsim.core.utils.stage import update_stage_async
-
-from ..ui_widget_wrappers import *
+from isaacsim.gui.components.element_wrappers.ui_widget_wrappers import *
 
 
 class LoadButton(UIWidgetWrapper):

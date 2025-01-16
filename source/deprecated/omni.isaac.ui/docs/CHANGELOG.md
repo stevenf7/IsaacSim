@@ -1,8 +1,12 @@
 # Changelog
+
+## [1.0.2] - 2025-01-13
+### Changed
+- Updated Import source for refactored classes
+
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [1.0.0] - 2024-10-02
 ### Deprecated

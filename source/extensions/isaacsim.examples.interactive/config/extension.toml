@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.4.3"
+version = "4.4.4"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -21,11 +21,13 @@ writeTarget.kit = true
 "isaacsim.core.prims" = {}
 "isaacsim.cortex.behaviors" = {}
 "isaacsim.cortex.framework" = {}
+"isaacsim.examples.browser" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.robot.policy.examples" = {}
+"isaacsim.examples.extension" = {}
 "omni.graph.action" = {}
 "omni.graph.nodes" = {}
 "omni.graph.core" = {}
@@ -34,7 +36,6 @@ writeTarget.kit = true
 "isaacsim.robot.wheeled_robots" = {}
 "omni.kit.uiapp" = {}
 "omni.physx" = {}
-"isaacsim.examples.browser" = {}
 
 
 [[python.module]]

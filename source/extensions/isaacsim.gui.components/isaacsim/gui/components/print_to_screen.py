@@ -8,9 +8,9 @@
 #
 
 import numpy as np
+import omni
 import omni.graph.core as og
-from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
-from isaacsim.core.utils.string import find_unique_string_name
+from omni.usd.commands import DeletePrimsCommand
 
 
 class ScreenPrinter:
@@ -35,7 +35,9 @@ class ScreenPrinter:
         self._keys = og.Controller.Keys
         self._controller = og.Controller()
 
-        self._graph_path = find_unique_string_name("/World/PrintActionGraph", lambda x: not is_prim_path_valid(x))
+        self._graph_path = omni.usd.get_stage_next_free_path(
+            omni.usd.get_context().get_stage(), "/World/PrintActionGraph", False
+        )
 
         (self.graph, self.nodes, _, _) = self._controller.edit(
             {"graph_path": self._graph_path, "evaluator_name": "push"},
@@ -106,4 +108,4 @@ class ScreenPrinter:
 
     def exit(self) -> None:
         """Delete OmniGraph used by this ScreenPrinter.  After calling exit(), all subsequent function calls will fail."""
-        delete_prim(self._graph_path)
+        DeletePrimsCommand([self._graph_path]).do()
