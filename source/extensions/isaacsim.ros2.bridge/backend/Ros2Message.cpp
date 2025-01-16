@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -568,8 +568,8 @@ void Ros2BoundingBox3DMessageImpl::writeBboxData(const void* bboxArray, size_t n
         detectionMsg->detections.data[i].bbox.center.orientation.w = rot.GetReal();
 
         detectionMsg->detections.data[i].bbox.size.x = (box.x_max - box.x_min) * scale[0];
-        detectionMsg->detections.data[i].bbox.size.y = (box.x_max - box.x_min) * scale[1];
-        detectionMsg->detections.data[i].bbox.size.z = (box.x_max - box.x_min) * scale[2];
+        detectionMsg->detections.data[i].bbox.size.y = (box.y_max - box.y_min) * scale[1];
+        detectionMsg->detections.data[i].bbox.size.z = (box.z_max - box.z_min) * scale[2];
 
 
         m_generatorLibrary->callSymbolWithArg<void>(
