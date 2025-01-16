@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.10] - 2025-01-15
+### Fixed
+- BoundingBox3D writeBboxData was using 'x' for all 3 size dimensions
+
 ## [4.1.9] - 2025-01-06
 ### Fixed
 - RTX Lidar & Camera OG Tools correctly handle adding camera prims to existing graphs
