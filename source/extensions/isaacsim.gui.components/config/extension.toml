@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -27,8 +27,8 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.graph.action" = {}
 "omni.graph.visualization.nodes" = {}
-"isaacsim.core.api" = {}
 "omni.kit.property.usd" = {}
+"omni.physx" = {}
 
 [[python.module]]
 name = "isaacsim.gui.components"
@@ -42,5 +42,7 @@ dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
-    "isaacsim.storage.native"
+    "isaacsim.storage.native",
+    "isaacsim.core.api",
+    "isaacsim.core.utils"
 ]

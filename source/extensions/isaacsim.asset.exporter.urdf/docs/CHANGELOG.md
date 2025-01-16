@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2] - 2025-01-14
+
+### Added
+
+- Missing dependency
+
 ## [1.1.1] - 2025-01-13
 
 ### Fixed

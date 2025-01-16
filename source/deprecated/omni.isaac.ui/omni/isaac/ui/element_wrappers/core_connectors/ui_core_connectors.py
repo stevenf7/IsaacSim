@@ -13,4 +13,4 @@ carb.log_warn(
 )
 
 
-from isaacsim.gui.components.element_wrappers.core_connectors.ui_core_connectors import *
+from isaacsim.examples.extension.core_connectors.ui_core_connectors import *

@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.3] - 2025-01-13
+### Changed
+- Move Core connector buttons to Examples
+
 ## [2.0.2] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu

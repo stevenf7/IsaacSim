@@ -18,6 +18,7 @@ icon = "data/icon.png"
 [dependencies]
 "isaacsim.robot_motion.lula" = {}
 "isaacsim.core.api" = {}
+"isaacsim.gui.components" = {}
 
 [[python.module]]
 name = "isaacsim.robot_motion.motion_generation"

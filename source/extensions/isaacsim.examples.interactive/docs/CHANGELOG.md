@@ -1,4 +1,7 @@
 # Changelog
+## [4.4.4] - 2025-01-14
+### Added
+- refactor LoadButtons UI
 
 ## [4.4.3] - 2025-01-10
 ### Added
