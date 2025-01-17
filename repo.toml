@@ -848,7 +848,7 @@ publish_root = "${root}/_build/$platform/$config"
 ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
-exts.exclude = ["isaacsim.util.internal"]
+exts.exclude = ["isaacsim.util.internal", "omni.kit.widget.cache_indicator"]
 exts.include = [
   "omni.isaac.*",
   "omni.exporter.urdf",

@@ -1,0 +1,72 @@
+[package]
+version = "3.0.0"
+title = "Cache Status Indicator"
+category = "Internal"
+changelog = "docs/CHANGELOG.md"
+keywords = ["hub", "cache", "indicator", "manager", "install", "update"]
+authors = ["Roggie Zhang <rozhang@nvidia.com>", "Sean Kelly <skelly@nvidia.com>", "Pedro Luz <pluz@nvidia.com>"]
+repository = "https://gitlab-master.nvidia.com/omniverse/kit"
+support_level = "Sample"
+description = "Kit extension to manage installation and updates of Hub."
+
+[dependencies]
+"omni.client" = {}
+"omni.ui" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.pip_archive" = {}
+"omni.kit.notification_manager" = { optional = true }
+"omni.kit.widget.live" = {optional = true } # To ensure the cache indicator to be right of live indicator.
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
+
+# Icon is shown in Extension manager. It is recommended to be square, of size 256x256.
+icon = "data/icon.png"
+
+# Preview image and icon. Folder named "data" automatically goes in git lfs (see .gitattributes file).
+# Preview image is shown in "Overview" of Extensions window. Screenshot of an extension might be a good preview image.
+preview_image = "data/preview.png"
+
+[python.pipapi]
+requirements = ["requests", "toml"]
+
+[[python.module]]
+name = "omni.kit.widget.cache_indicator"
+
+[[test]]
+args = [
+    "--/app/file/ignoreUnsavedOnExit=true",
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+    "--/persistent/app/omniverse/filepicker/options_menu/show_details=false",
+]
+
+dependencies = [
+    "omni.kit.commands",
+    "omni.kit.selection",
+    "omni.kit.mainwindow",
+    "omni.kit.ui_test",
+    "omni.kit.test",
+    "omni.kit.notification_manager",
+    "omni.kit.test_suite.helpers",
+    "omni.kit.widget.prompt",
+]
+
+stdoutFailPatterns.include = []
+stdoutFailPatterns.exclude = []
+
+[settings]
+# NGC Organization that contains hub_workstation_cache 
+exts."omni.kit.widget.cache_indicator".ngc_org = "nvidia"
+# NGC Team that contains hub_workstation_cache 
+exts."omni.kit.widget.cache_indicator".ngc_team = "omniverse"
+# NGC Resource that contains hub_workstation_cache 
+exts."omni.kit.widget.cache_indicator".ngc_resource = "hub_workstation_cache"
+# NGC API key to get hub_workstation_cache
+exts."omni.kit.widget.cache_indicator".ngc_api_key = ""
+# NGC API endpoint to get hub_workstation_cache
+exts."omni.kit.widget.cache_indicator".ngc_api = "https://api.ngc.nvidia.com/v2"
+# Check for updates to hub_workstation_cache
+exts."omni.kit.widget.cache_indicator".check_updates = true
+# Package install path for hub_workstation_cache
+exts."omni.kit.widget.cache_indicator".pck_install_path = ""

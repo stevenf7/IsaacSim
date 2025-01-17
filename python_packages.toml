@@ -91,6 +91,7 @@ inventory.include = [
     # large in size cache (from isaacsim-extscache-kit)
     "extscache/omni.sensors*",
     "extscache/omni.kit.converter*",
+    "exts/omni.kit.widget.cache_indicator"
 ]
 
 [isaacsim-extscache-physics]

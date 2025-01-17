@@ -340,6 +340,7 @@ function include_extensions()
     include ("source/extensions/omni.pip.cloud")
     include ("source/extensions/omni.pip.compute")
     include ("source/extensions/isaacsim.robot.schema")
+    include ("source/extensions/omni.kit.widget.cache_indicator")
     -- Linux Only
     if os.target() == "linux" then
         include ("source/deprecated/omni.isaac.repl")
