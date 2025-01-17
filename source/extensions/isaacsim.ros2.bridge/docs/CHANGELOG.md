@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.11] - 2025-01-16
+### Changed
+- OgnROS2SubscribeAckermann resets all command outputs to zero on simulation stop.  
+
 ## [4.1.10] - 2025-01-15
 ### Fixed
 - BoundingBox3D writeBboxData was using 'x' for all 3 size dimensions
