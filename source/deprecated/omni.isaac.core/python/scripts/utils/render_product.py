@@ -9,8 +9,8 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.core.utils.render_products has been deprecated in favor of isaacsim.core.utils.render_products. Please update your code accordingly."
+    "omni.isaac.core.utils.render_product has been deprecated in favor of isaacsim.core.utils.render_product. Please update your code accordingly."
 )
 
 
-from isaacsim.core.utils.render_products import *
+from isaacsim.core.utils.render_product import *

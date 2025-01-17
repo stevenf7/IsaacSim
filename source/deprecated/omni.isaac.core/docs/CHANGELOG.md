@@ -1,8 +1,12 @@
 # Changelog
+
+## [4.0.2] - 2024-01-16
+### Fixed
+- Updated core.render_product extension name 
+
 ## [4.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [4.0.0] - 2024-09-25
 ### Deprecated
