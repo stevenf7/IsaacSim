@@ -10,12 +10,12 @@ order = 0
 [package]
 version = "0.3.2"
 category = "Simulation"
-title = "isaacsim core simulation_manager"
+title = "Isaac Sim Core Simulation Manager"
+description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
-description = "Isaac Sim Core Simulation Manager to control simulation states and callbacks"
 
 
 [dependencies]
