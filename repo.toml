@@ -1107,7 +1107,7 @@ deps_for_isaac = [
   "omni.kit.test_helpers_gfx",
   "omni.net-0.2.0-isaac",
   "isaacsim.replicator.agent.camera_calibration-0.5.8",
-  "isaacsim.replicator.agent.core-0.5.13",
+  "isaacsim.replicator.agent.core-0.5.14",
   "isaacsim.replicator.agent.ui-0.5.13",
   "isaacsim.replicator.metropolis.utils-0.0.6",
   "omni.replicator.core-1.11.35",
