@@ -46,7 +46,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
-timeout = 12000
+timeout = 900
 dependencies = [
     "isaacsim.core.cloner",
     "isaacsim.storage.native",

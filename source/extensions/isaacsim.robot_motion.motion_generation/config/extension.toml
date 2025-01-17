@@ -27,7 +27,7 @@ name = "isaacsim.robot_motion.motion_generation"
 name = "isaacsim.robot_motion.motion_generation.tests"
 
 [[test]]
-
+timeout = 900
 dependencies = [
     "isaacsim.storage.native" # test only
 ]

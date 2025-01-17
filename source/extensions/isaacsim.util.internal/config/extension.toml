@@ -33,4 +33,4 @@ name = "isaacsim.util.internal.tests"
 dependencies = [
     "isaacsim.storage.native" # test only
 ]
-timeout = 3600
+timeout = 900

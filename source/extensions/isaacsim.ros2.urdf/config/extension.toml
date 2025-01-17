@@ -20,8 +20,6 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.asset.importer.urdf" = {}
 "omni.kit.pip_archive" = {} # import the base kit python archive
-"omni.kit.viewport.utility"= {}
-"omni.kit.viewport.window"= {}
 "isaacsim.ros2.bridge" = {}
 "omni.ui" = {}
 

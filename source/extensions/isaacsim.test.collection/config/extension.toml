@@ -45,11 +45,10 @@ name = "isaacsim.test.collection" # so we can find the path to the extension
 name = "isaacsim.test.collection.tests"
 
 [[test]]
-timeout = 1500
+timeout = 900
 dependencies = [
    "omni.kit.window.toolbar",
    "isaacsim.ros2.bridge",
-   "isaacsim.core.api",
 ]
 
 stdoutFailPatterns.exclude = [

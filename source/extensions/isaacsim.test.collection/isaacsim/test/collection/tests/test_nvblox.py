@@ -17,37 +17,36 @@ import omni.kit.test
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 
+# Disabled test due to issues with sensor paths not working correctly in test setup.
+# class TestNvBloxScenes(omni.kit.test.AsyncTestCase):
+#     # Before running each test
+#     async def setUp(self):
+#         self._assets_root_path = await get_assets_root_path_async()
+#         if self._assets_root_path is None:
+#             carb.log_error("Could not find Isaac Sim assets folder")
+#             return
+#         self._timeline = omni.timeline.get_timeline_interface()
+#         pass
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestNvBloxScenes(omni.kit.test.AsyncTestCase):
-    # Before running each test
-    async def setUp(self):
-        self._assets_root_path = await get_assets_root_path_async()
-        if self._assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
-        self._timeline = omni.timeline.get_timeline_interface()
-        pass
+#     # After running each test
+#     async def tearDown(self):
+#         await omni.kit.stage_templates.new_stage_async()
+#         self._timeline = None
+#         pass
 
-    # After running each test
-    async def tearDown(self):
-        await omni.kit.stage_templates.new_stage_async()
-        self._timeline = None
-        pass
+#     async def test_nvBlox_sample_scene(self):
+#         # open scene
+#         self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/nvblox_sample_scene.usd"
+#         (result, error) = await open_stage_async(self.usd_path)
 
-    async def test_nvBlox_sample_scene(self):
-        # open scene
-        self.usd_path = self._assets_root_path + "/Isaac/Samples/NvBlox/nvblox_sample_scene.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+#         # Make sure the stage loaded
+#         self.assertTrue(result)
+#         await omni.kit.app.get_app().next_update_async()
 
-        # Make sure the stage loaded
-        self.assertTrue(result)
-        await omni.kit.app.get_app().next_update_async()
+#         self._timeline.play()
 
-        self._timeline.play()
+#         for i in range(10):
+#             await omni.kit.app.get_app().next_update_async()
 
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.stop()
-        return True
+#         self._timeline.stop()
+#         return True

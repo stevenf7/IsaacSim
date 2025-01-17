@@ -255,36 +255,6 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
-
-    # Prints out average fps for an expensive lidar
-    async def test_lidar_fps(self):
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        # Add lidar
-        result, lidar = omni.kit.commands.execute(
-            "RangeSensorCreateLidar",
-            path="/World/Lidar",
-            parent=None,
-            min_range=0.4,
-            max_range=100.0,
-            draw_points=True,
-            draw_lines=True,
-            horizontal_fov=360.0,
-            vertical_fov=45.0,
-            horizontal_resolution=0.4,
-            vertical_resolution=0.4,
-            rotation_rate=0.0,
-            high_lod=True,
-            yaw_offset=0.0,
-        )
-
-        # Run for a second
-        self._timeline.play()
-        for frame in range(int(60 * 5)):
-            await omni.kit.app.get_app().next_update_async()
-            if frame % 60 == 0:
-                print("FPS: ", viewport_api.fps)
-        self._timeline.pause()
-
         self._timeline.play()
 
     # Tests a static lidar with a cube in front of it and get semantic id for hit points

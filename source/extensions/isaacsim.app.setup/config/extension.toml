@@ -36,7 +36,7 @@ isaac.startup.ros_bridge_extension = ""
 
 [[test]]
 dependencies = [
-   "omni.rtx.settings.core", "omni.pip.cloud", "omni.replicator.core"
+   "omni.rtx.settings.core", "omni.pip.cloud"
 ]
 
 stdoutFailPatterns.exclude = [

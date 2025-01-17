@@ -49,7 +49,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        self._my_world.clear_instance()
+        World.clear_instance()
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
         await update_stage_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -65,7 +65,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add_default_ground_plane()
         self._my_world._physics_context.set_gravity(0)
         self._my_world._physics_context.enable_residual_reporting(report_residuals)
-        await update_stage_async()
 
     async def add_frankas(self, backend):
         asset_path = self._assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -356,12 +355,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             )
 
     async def test_world_poses_torch(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cpu"] if usd else ["cpu", "cuda:0"]:
+        for usd in USD_PATH:
+            for device in ["cpu"] if usd else ["cpu", "cuda:0"]:
+                await self.setUpWorld(backend="torch", device=device)
+                await self.add_frankas(backend="torch")
+                for indexed in INDEXED:
+
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="torch", device=device)
-                    await self.add_frankas(backend="torch")
+
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
@@ -393,13 +394,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                             ),
                         ).all()
                     )
-                    self._my_world.clear_instance()
 
     async def test_world_poses_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
-                await self.setUpWorld(backend="numpy")
-                await self.add_frankas(backend="numpy")
                 if usd:
                     await self._my_world.stop_async()
                 if indexed:
@@ -423,15 +423,16 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         np.isclose(new_orientations, -gt_orientations, atol=1e-05).all(axis=1),
                     ).all()
                 )
-                self._my_world.clear_instance()
 
     async def test_world_poses_warp(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cuda:0", "cpu"]:
+        for device in ["cuda:0", "cpu"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+                for usd in USD_PATH:
+
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="warp", device=device)
-                    await self.add_frankas(backend="warp")
+
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
@@ -462,14 +463,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                             np.isclose(new_orientations.numpy(), -gt_orientations.numpy(), atol=1e-05).all(axis=1),
                         ).all()
                     )
-                    self._my_world.clear_instance()
 
     async def test_velocities_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_humanoids(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_humanoids(backend="torch")
                 if indexed:
                     gt_v1 = torch.tensor([[0.0, 0.0, 0.1, 0.0, 0.0, 0.0]], device=device)
                     self._humanoids_view.set_velocities(gt_v1, indices=[1])
@@ -483,12 +484,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     await self._step()
                     new_v1 = self._humanoids_view.get_velocities()
                 self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
-                self._my_world.clear_instance()
 
     async def test_velocities_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_humanoids(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_humanoids(backend="numpy")
             if indexed:
                 gt_v1 = np.array([[1.0, 2.0, 3.0, 0, 0, 0]])
                 self._humanoids_view.set_velocities(gt_v1, indices=[1])
@@ -498,14 +498,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._humanoids_view.set_velocities(gt_v1)
                 new_v1 = self._humanoids_view.get_velocities()
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_velocities_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_humanoids(backend="warp")
+            for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_humanoids(backend="warp")
+
                 if indexed:
                     gt_v1 = wp.array([[1.0, 2.0, 3.0, 0, 0, 0]], device=device, dtype=wp.float32)
                     self._humanoids_view.set_velocities(gt_v1, indices=[1])
@@ -519,12 +519,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     await self._step()
                     new_v1 = self._humanoids_view.get_velocities()
                 self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all(), f"{new_v1}, {gt_v1}")
-                self._my_world.clear_instance()
 
     async def test_velocities_torch(self):
+        await self.setUpWorld(backend="torch")
+        await self.add_humanoids(backend="torch")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="torch")
-            await self.add_humanoids(backend="torch")
             if indexed:
                 gt_v1 = torch.tensor([[1.0, 2.0, 3.0, 0, 0, 0]])
                 self._humanoids_view.set_velocities(gt_v1, indices=[1])
@@ -534,12 +533,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._humanoids_view.set_velocities(gt_v1)
                 new_v1 = self._humanoids_view.get_velocities()
             self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_linear_velocities_torch(self):
+        await self.setUpWorld(backend="torch")
+        await self.add_frankas(backend="torch")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="torch")
-            await self.add_frankas(backend="torch")
             if indexed:
                 gt_v1 = torch.tensor([[1.0, 2.0, 3.0]])
                 self._frankas_view.set_linear_velocities(gt_v1, indices=[1])
@@ -549,12 +547,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_linear_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_linear_velocities()
             self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_linear_velocities_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
             if indexed:
                 gt_v1 = np.array([[1.0, 2.0, 3.0]])
                 self._frankas_view.set_linear_velocities(gt_v1, indices=[1])
@@ -564,12 +561,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_linear_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_linear_velocities()
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_linear_velocities_warp(self):
+        await self.setUpWorld(backend="warp")
+        await self.add_frankas(backend="warp")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="warp")
-            await self.add_frankas(backend="warp")
             if indexed:
                 gt_v1 = wp.array([[1.0, 2.0, 3.0]], device="cpu", dtype=wp.float32)
                 self._frankas_view.set_linear_velocities(gt_v1, indices=[1])
@@ -579,12 +575,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_linear_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_linear_velocities()
             self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_angular_velocities_torch(self):
+        await self.setUpWorld(backend="torch")
+        await self.add_frankas(backend="torch")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="torch")
-            await self.add_frankas(backend="torch")
             if indexed:
                 gt_v1 = torch.tensor([[1.0, 2.0, 3.0]])
                 self._frankas_view.set_angular_velocities(gt_v1, indices=[1])
@@ -594,12 +589,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_angular_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_angular_velocities()
             self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_angular_velocities_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
             if indexed:
                 gt_v1 = np.array([[1.0, 2.0, 3.0]])
                 self._frankas_view.set_angular_velocities(gt_v1, indices=[1])
@@ -609,12 +603,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_angular_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_angular_velocities()
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_angular_velocities_warp(self):
+        await self.setUpWorld(backend="warp")
+        await self.add_frankas(backend="warp")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="warp")
-            await self.add_frankas(backend="warp")
             if indexed:
                 gt_v1 = wp.array([[1.0, 2.0, 3.0]], device="cpu", dtype=wp.float32)
                 self._frankas_view.set_angular_velocities(gt_v1, indices=[1])
@@ -624,15 +617,16 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_angular_velocities(gt_v1)
                 new_v1 = self._frankas_view.get_angular_velocities()
             self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
-            self._my_world.clear_instance()
 
     async def test_friction_coefficients_torch(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+                for usd in USD_PATH:
+
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="torch", device=device)
-                    await self.add_frankas(backend="torch")
+
                     if usd:
                         await self._my_world.stop_async()
                     cur_friction = self._frankas_view.get_friction_coefficients()
@@ -648,13 +642,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     friction = self._frankas_view.get_friction_coefficients()
                     self.assertTrue(np.isclose(new_friction.cpu().numpy(), friction.cpu().numpy(), atol=1e-05).all())
 
-                    self._my_world.clear_instance()
-
     async def test_friction_coefficients_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
-                await self.setUpWorld(backend="numpy", device="cpu")
-                await self.add_frankas(backend="numpy")
                 if usd:
                     await self._my_world.stop_async()
                 cur_friction = self._frankas_view.get_friction_coefficients()
@@ -671,12 +663,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.isclose(new_friction, friction, atol=1e-05).all())
 
     async def test_friction_coefficients_warp(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cuda:0", "cpu"]:
+        for device in ["cuda:0", "cpu"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+                for usd in USD_PATH:
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="warp", device=device)
-                    await self.add_frankas(backend="warp")
+
                     if usd:
                         await self._my_world.stop_async()
                     cur_value = self._frankas_view.get_friction_coefficients()
@@ -693,15 +686,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         self._frankas_view.set_friction_coefficients(new_value)
                     value = self._frankas_view.get_friction_coefficients()
                     self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
-                    self._my_world.clear_instance()
 
     async def test_armatures_torch(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+                for usd in USD_PATH:
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="torch", device=device)
-                    await self.add_frankas(backend="torch")
+
                     if usd:
                         await self._my_world.stop_async()
                     cur_value = self._frankas_view.get_armatures()
@@ -716,13 +709,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         self._frankas_view.set_armatures(new_value)
                     value = self._frankas_view.get_armatures()
                     self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
-                    self._my_world.clear_instance()
 
     async def test_armatures_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
-                await self.setUpWorld(backend="numpy", device="cpu")
-                await self.add_frankas(backend="numpy")
                 if usd:
                     await self._my_world.stop_async()
                 cur_value = self._frankas_view.get_armatures()
@@ -737,12 +729,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     async def test_armatures_warp(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+                for usd in USD_PATH:
+
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="warp", device=device)
-                    await self.add_frankas(backend="warp")
+
                     if usd:
                         await self._my_world.stop_async()
                     cur_value = self._frankas_view.get_armatures()
@@ -759,15 +753,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         self._frankas_view.set_armatures(new_value)
                     value = self._frankas_view.get_armatures()
                     self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
-                    self._my_world.clear_instance()
 
     async def test_physics_callback(self):
         for backend in BACKEND:
-            for indexed in INDEXED:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
+
                     print("index:", indexed, "device:", device)
-                    await self.setUpWorld(backend=backend, device=device)
-                    await self.add_frankas(backend=backend)
 
                     def step_callback_1(step_size):
                         a = self._frankas_view.get_joint_positions()
@@ -779,15 +773,16 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     await update_stage_async()
                     await self._my_world.reset_async()
                     physx_subs = None
-                    self._my_world.clear_instance()
 
     async def test_local_pose_torch(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cpu"] if usd else ["cpu", "cuda:0"]:
+        for usd in USD_PATH:
+            for device in ["cpu"] if usd else ["cpu", "cuda:0"]:
+                await self.setUpWorld(backend="torch", device=device)
+                await self.add_frankas(backend="torch")
+                for indexed in INDEXED:
+
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="torch", device=device)
-                    await self.add_frankas(backend="torch")
+
                     if usd:
                         await self._my_world.stop_async()
                     cur_trans, cur_ori = self._frankas_view.get_local_poses()
@@ -808,13 +803,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         trans, rot = self._frankas_view.get_local_poses()
                     self.assertTrue(np.isclose(new_trans.cpu().numpy(), trans.cpu().numpy(), atol=1e-05).all())
                     self.assertTrue(np.isclose(new_ori.cpu().numpy(), rot.cpu().numpy(), atol=1e-05).all())
-                    self._my_world.clear_instance()
 
     async def test_local_pose_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in [False]:
-                await self.setUpWorld(backend="numpy", device="cpu")
-                await self.add_frankas(backend="numpy")
+
                 if usd:
                     await self._my_world.stop_async()
                 cur_trans, cur_ori = self._frankas_view.get_local_poses()
@@ -830,15 +825,16 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     trans, rot = self._frankas_view.get_local_poses()
                 self.assertTrue(np.isclose(new_trans, trans, atol=1e-05).all())
                 self.assertTrue(np.isclose(new_ori, rot, atol=1e-05).all())
-                self._my_world.clear_instance()
 
     async def test_local_pose_warp(self):
-        for indexed in INDEXED:
-            for usd in USD_PATH:
-                for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+                for usd in USD_PATH:
+
                     print("index:", indexed, "usd:", usd, "device:", device)
-                    await self.setUpWorld(backend="warp", device=device)
-                    await self.add_frankas(backend="warp")
+
                     if usd:
                         await self._my_world.stop_async()
                     cur_trans, cur_ori = self._frankas_view.get_local_poses()
@@ -862,12 +858,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self.assertTrue(np.isclose(new_ori.numpy(), rot.numpy(), atol=1e-05).all())
 
     async def test_effort_modes(self):
-        for indexed in INDEXED:
-            for backend in BACKEND:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
+
                     print("index:", indexed, "device:", device, "backend:", backend)
-                    await self.setUpWorld(backend=backend, device=device)
-                    await self.add_frankas(backend=backend)
+
                     values = self._frankas_view.get_effort_modes()
                     if indexed:
                         self._frankas_view.set_effort_modes("force", indices=[1], joint_indices=[1, 3, 5])
@@ -879,12 +877,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self.assertTrue(values == new_values)
 
     async def test_gains_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
                 for usd in USD_PATH:
                     print("index:", indexed, "device:", device, "usd:", usd)
-                    await self.setUpWorld(backend="torch", device=device)
-                    await self.add_frankas(backend="torch")
+
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
@@ -907,11 +906,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self.assertTrue(np.isclose(old_kds.cpu().numpy(), kds.cpu().numpy(), atol=1e-05).all())
 
     async def test_gains_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
                 print("index:", indexed, "usd:", usd)
-                await self.setUpWorld(backend="numpy")
-                await self.add_frankas(backend="numpy")
+
                 if usd:
                     await self._my_world.stop_async()
                 if indexed:
@@ -933,12 +933,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.isclose(old_kds, kds, atol=1e-05).all())
 
     async def test_gains_warp(self):
-        for indexed in INDEXED:
-            for device in ["cuda:0", "cpu"]:
+        for device in ["cuda:0", "cpu"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
                 for usd in USD_PATH:
                     print("index:", indexed, "device:", device, "usd:", usd)
-                    await self.setUpWorld(backend="warp", device=device)
-                    await self.add_frankas(backend="warp")
+
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
@@ -981,12 +982,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         self.assertTrue(np.any(kds.numpy()))
 
     async def test_switch_dof_control_mode(self):
-        for indexed in INDEXED:
-            for backend in BACKEND:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
+
                     print("index:", indexed, "device:", device, "backend:", backend)
-                    await self.setUpWorld(backend=backend, device=device)
-                    await self.add_frankas(backend=backend)
+
                     if indexed:
                         self._frankas_view.switch_dof_control_mode(mode="velocity", dof_index=1, indices=[1])
                         kps, kds = self._frankas_view.get_gains(joint_indices=[1], indices=[1])
@@ -1004,12 +1007,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         self.assertTrue(np.any(kds.numpy()))
 
     async def test_max_efforts_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
                 for usd in USD_PATH:
                     print("index:", indexed, "device:", device, "usd:", usd)
-                    await self.setUpWorld(backend="torch", device=device)
-                    await self.add_frankas(backend="torch")
+
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
@@ -1037,11 +1041,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self.assertTrue(np.isclose(new_efforts.cpu().numpy(), efforts.cpu().numpy(), atol=1e-05).all())
 
     async def test_max_efforts_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
                 print("index:", indexed, "usd:", usd)
-                await self.setUpWorld(backend="numpy")
-                await self.add_frankas(backend="numpy")
+
                 if usd:
                     await self._my_world.stop_async()
                 if indexed:
@@ -1062,12 +1067,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.isclose(new_efforts, efforts, atol=1e-05).all())
 
     async def test_max_efforts_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
                 for usd in USD_PATH:
                     print("index:", indexed, "device:", device, "usd:", usd)
-                    await self.setUpWorld(backend="warp", device=device)
-                    await self.add_frankas(backend="warp")
+
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
@@ -1215,11 +1221,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(robots.get_joint_positions() is not None)
 
     async def test_position_targets_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 cur_value = self._frankas_view.get_applied_actions().joint_positions
                 if indexed:
                     new_value = cur_value
@@ -1232,12 +1240,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 value = self._frankas_view.get_applied_actions().joint_positions
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
 
-                self._my_world.clear_instance()
-
     async def test_position_targets_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy", device="cpu")
-            await self.add_frankas(backend="numpy")
+
             cur_value = self._frankas_view.get_applied_actions().joint_positions
             if indexed:
                 new_value = cur_value
@@ -1251,11 +1258,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     async def test_position_targets_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 cur_value = self._frankas_view.get_applied_actions().joint_positions
                 if indexed:
                     new_np = cur_value.numpy()
@@ -1271,14 +1280,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 await self._step()
                 value = self._frankas_view.get_applied_actions().joint_positions
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
-                self._my_world.clear_instance()
 
     async def test_velocity_targets_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 cur_value = self._frankas_view.get_applied_actions().joint_velocities
                 if indexed:
                     new_value = cur_value
@@ -1290,12 +1300,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 await self._step()
                 value = self._frankas_view.get_applied_actions().joint_velocities
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
-                self._my_world.clear_instance()
 
     async def test_velocity_targets_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy", device="cpu")
-            await self.add_frankas(backend="numpy")
+
             cur_value = self._frankas_view.get_applied_actions().joint_velocities
             if indexed:
                 new_value = cur_value
@@ -1308,11 +1318,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     async def test_velocity_targets_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 cur_value = self._frankas_view.get_applied_actions().joint_velocities
                 if indexed:
                     new_np = cur_value.numpy()
@@ -1328,14 +1340,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 await self._step()
                 value = self._frankas_view.get_applied_actions().joint_velocities
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
-                self._my_world.clear_instance()
 
     async def test_joint_velocities_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_cartpoles(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_cartpoles(backend="torch")
+
                 cur_value = self._cartpoles_view.get_joint_velocities()
                 await self._step()
                 if indexed:
@@ -1350,12 +1363,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     value = self._cartpoles_view.get_joint_velocities()
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-03).all())
 
-                self._my_world.clear_instance()
-
     async def test_joint_velocities_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_cartpoles(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy", device="cpu")
-            await self.add_cartpoles(backend="numpy")
             cur_value = self._cartpoles_view.get_joint_velocities()
             await self._step()
             if indexed:
@@ -1371,11 +1382,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-03).all())
 
     async def test_joint_velocities_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_cartpoles(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_cartpoles(backend="warp")
+
                 cur_value = self._cartpoles_view.get_joint_velocities()
                 await self._step()
                 if indexed:
@@ -1390,14 +1403,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     value = self._cartpoles_view.get_joint_velocities()
 
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-03).all())
-                self._my_world.clear_instance()
 
     async def test_joint_positions_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 cur_value = self._frankas_view.get_joint_positions()
                 if indexed:
                     new_value = torch.tensor([[0.02, 0.02]], device=device)
@@ -1417,12 +1431,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     value = self._frankas_view.get_joint_positions()
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
 
-                self._my_world.clear_instance()
-
     async def test_joint_positions_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy", device="cpu")
-            await self.add_frankas(backend="numpy")
+
             cur_value = self._frankas_view.get_joint_positions()
             if indexed:
                 new_value = np.array([[0.02, 0.02]])
@@ -1440,11 +1453,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     async def test_joint_positions_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 cur_value = self._frankas_view.get_joint_positions()
                 if indexed:
                     new_value = wp.array([[0.02, 0.02]], device=device, dtype=wp.float32)
@@ -1464,29 +1479,30 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     await self._step()
                     value = self._frankas_view.get_joint_positions()
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
-                self._my_world.clear_instance()
 
     async def test_joint_efforts_torch(self):
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
         for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
-                print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
-                cur_value = torch.zeros((self._frankas_view.count, self._frankas_view._num_dof), device=device)
-                if indexed:
-                    new_value = cur_value.clone()
-                    new_value[1, 2] = cur_value[1, 2] + 0.5
-                    self._frankas_view.set_joint_efforts(new_value[1, 2], indices=[1], joint_indices=[2])
-                else:
-                    new_value = cur_value + 0.5
-                    self._frankas_view.set_joint_efforts(new_value)
-                await update_stage_async()
-                self._my_world.clear_instance()
+
+            print("index:", indexed, "device:", device)
+
+            cur_value = torch.zeros((self._frankas_view.count, self._frankas_view._num_dof), device=device)
+            if indexed:
+                new_value = cur_value.clone()
+                new_value[1, 2] = cur_value[1, 2] + 0.5
+                self._frankas_view.set_joint_efforts(new_value[1, 2], indices=[1], joint_indices=[2])
+            else:
+                new_value = cur_value + 0.5
+                self._frankas_view.set_joint_efforts(new_value)
+            await update_stage_async()
 
     async def test_joint_efforts_numpy(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy", device="cpu")
-            await self.add_frankas(backend="numpy")
+
             cur_value = np.zeros((self._frankas_view.count, self._frankas_view._num_dof))
             if indexed:
                 new_value = cur_value.copy()
@@ -1497,11 +1513,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_joint_efforts(new_value)
 
     async def test_joint_efforts_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 cur_value = wp.zeros(
                     (self._frankas_view.count, self._frankas_view._num_dof), dtype=wp.float32, device=device
                 )
@@ -1516,7 +1534,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     new_value = wp.from_numpy(new_np, dtype=wp.float32, device=device)
                     self._frankas_view.set_joint_efforts(new_value)
                 await update_stage_async()
-                self._my_world.clear_instance()
 
     async def test_body_indices(self):
         await self.setUpWorld(backend="numpy", device="cpu")
@@ -1540,7 +1557,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(np.isclose(current_forces, new_forces).all())
         self.assertTrue(np.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
-        self._my_world.clear_instance()
 
         await self.setUpWorld(backend="torch", device="cuda:0")
         await self.add_frankas(backend="torch")
@@ -1553,7 +1569,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(torch.isclose(current_forces, new_forces).all())
         self.assertTrue(torch.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
-        self._my_world.clear_instance()
 
         await self.setUpWorld(backend="warp", device="cuda:0")
         await self.add_frankas(backend="warp")
@@ -1570,12 +1585,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         )
 
     async def test_jacobians(self):
-        for indexed in INDEXED:
-            for backend in BACKEND:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
-                    await self.setUpWorld(backend=backend, device=device)
-                    await self.add_frankas(backend=backend)
+
                     await self._my_world.reset_async()
                     jacobian_shape = self._frankas_view.get_jacobian_shape()
                     if indexed:
@@ -1591,16 +1608,16 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     is_nan = np.where(np.isnan(jacobians))
                     for i in is_nan:
                         self.assertTrue(len(i) == 0)
-                    self._my_world.clear_instance()
 
     async def test_mass_matrices(self):
-        for indexed in INDEXED:
-            for backend in BACKEND:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
-                    await self.setUpWorld(backend=backend, device=device)
-                    await self.add_frankas(backend=backend)
-                    await self._my_world.reset_async()
+
                     mass_matrix_shape = self._frankas_view.get_mass_matrix_shape()
                     if indexed:
                         mass_matrices = self._frankas_view.get_mass_matrices(indices=[1])
@@ -1617,13 +1634,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         self.assertTrue(len(i) == 0)
 
     async def test_coriolis_centrifugal(self):
-        for indexed in INDEXED:
-            for backend in BACKEND:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
-                    await self.setUpWorld(backend=backend, device=device)
-                    await self.add_frankas(backend=backend)
-                    await self._my_world.reset_async()
+
                     if indexed:
                         forces = self._frankas_view.get_coriolis_and_centrifugal_forces(
                             indices=[1], joint_indices=[1, 2]
@@ -1632,17 +1650,17 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     else:
                         forces = self._frankas_view.get_coriolis_and_centrifugal_forces()
                         self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
-                    self._my_world.clear_instance()
 
     async def test_generalized_gravity(self):
-        for indexed in INDEXED:
-            for backend in BACKEND:
-                for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                self._my_world.get_physics_context().set_gravity(0.0)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
-                    await self.setUpWorld(backend=backend, device=device)
-                    self._my_world.get_physics_context().set_gravity(0.0)
-                    await self.add_frankas(backend=backend)
-                    await self._my_world.reset_async()
+
                     if indexed:
                         forces = self._frankas_view.get_generalized_gravity_forces(indices=[1], joint_indices=[1, 2])
                         self.assertTrue(forces.shape == (1, 2))
@@ -1655,12 +1673,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     elif backend == "warp":
                         forces = forces.numpy()
                     self.assertTrue(np.count_nonzero(forces) == 0)
+        for backend in BACKEND:
+            for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
+                await self.setUpWorld(backend=backend, device=device)
+                self._my_world.get_physics_context().set_gravity(-9.81)
+                await self.add_frankas(backend=backend)
+                for indexed in INDEXED:
+                    print("index:", indexed, "backend:", backend, "device:", device)
 
-                    self._my_world.clear_instance()
-                    await self.setUpWorld(backend=backend, device=device)
-                    self._my_world.get_physics_context().set_gravity(-9.81)
-                    await self.add_frankas(backend=backend)
-                    await self._my_world.reset_async()
                     if indexed:
                         forces = self._frankas_view.get_generalized_gravity_forces(indices=[1], joint_indices=[1, 2])
                         self.assertTrue(forces.shape == (1, 2))
@@ -1680,14 +1700,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                             np.count_nonzero(forces) == self._frankas_view.count * self._frankas_view.num_dof
                         )
 
-                    self._my_world.clear_instance()
-
     async def test_masses_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     new_values = torch.tensor([100.0, 200.0, 300.0], device=device)
                     self._frankas_view.set_body_masses(new_values, indices=[1], body_indices=[1, 3, 5])
@@ -1707,9 +1727,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     async def test_masses_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
+
             if indexed:
                 new_values = np.array([100.0, 200.0, 300.0])
                 self._frankas_view.set_body_masses(new_values, indices=[1], body_indices=[1, 3, 5])
@@ -1727,11 +1748,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     async def test_masses_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     new_values = wp.array([[100.0, 200.0, 300.0]], device=device, dtype=wp.float32)
                     self._frankas_view.set_body_masses(new_values, indices=[1], body_indices=[1, 3, 5])
@@ -1751,9 +1774,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.numpy().squeeze(), new_values.numpy().squeeze(), atol=1e-05))
 
     async def test_com_torch(self):
+        await self.setUpWorld(backend="torch")
+        await self.add_frankas(backend="torch")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="torch")
-            await self.add_frankas(backend="torch")
             if indexed:
                 cur_pos, cur_ori = self._frankas_view.get_body_coms(indices=[1], body_indices=[1, 3, 5])
                 new_pos = cur_pos + 0.1
@@ -1769,9 +1792,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(cur_ori.cpu().numpy(), ori.cpu().numpy(), atol=1e-05))
 
     async def test_com_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
             if indexed:
                 cur_pos, cur_ori = self._frankas_view.get_body_coms(indices=[1], body_indices=[1, 3, 5])
                 new_pos = cur_pos + 0.1
@@ -1786,9 +1809,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(cur_ori, ori, atol=1e-05))
 
     async def test_com_warp(self):
+        await self.setUpWorld(backend="warp")
+        await self.add_frankas(backend="warp")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="warp")
-            await self.add_frankas(backend="warp")
             if indexed:
                 cur_pos, cur_ori = self._frankas_view.get_body_coms(indices=[1], body_indices=[1, 3, 5])
                 new_ori = wp.from_numpy(cur_ori.numpy(), device="cpu", dtype=wp.float32)
@@ -1805,11 +1828,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(cur_ori.numpy(), ori.numpy(), atol=1e-05))
 
     async def test_inertia_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     cur_value = self._frankas_view.get_body_inertias(indices=[1], body_indices=[1, 3, 5])
                     offset = torch.zeros_like(cur_value)
@@ -1831,9 +1856,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05))
 
     async def test_inertia_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
             if indexed:
                 cur_value = self._frankas_view.get_body_inertias(indices=[1], body_indices=[1, 3, 5])
                 offset = np.zeros_like(cur_value)
@@ -1857,11 +1882,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(new_value, value, atol=1e-05))
 
     async def test_inertia_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     cur_value = self._frankas_view.get_body_inertias(indices=[1], body_indices=[1, 3, 5])
                     offset = np.zeros((1, 3, 9))
@@ -1888,11 +1915,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(new_value.numpy(), value.numpy(), atol=1e-05))
 
     async def test_fixed_tendon_properties_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_shadow_hands(backend="torch", device=device)
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_shadow_hands(backend="torch", device=device)
 
                 if indexed:
                     new_stiffness = torch.tensor([0.1, 0.2, 0.3, 0.4], device=device)
@@ -2024,10 +2052,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         )
 
     async def test_fixed_tendon_properties_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_shadow_hands(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_shadow_hands(backend="numpy")
-
             if indexed:
                 new_stiffness = np.array([0.1, 0.2, 0.3, 0.4])
                 new_dampings = np.array([0.1, 0.2, 0.3, 0.4])
@@ -2102,11 +2129,12 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(self._hands_view.get_fixed_tendon_offsets(), new_offsets, atol=1e-05))
 
     async def test_fixed_tendon_properties_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_shadow_hands(backend="warp", device=device)
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_shadow_hands(backend="warp", device=device)
 
                 if indexed:
                     new_stiffness = wp.array([[0.1, 0.2, 0.3, 0.4]], device=device, dtype=wp.float32)
@@ -2245,11 +2273,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         )
 
     async def test_position_iteration_count_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     new_values = torch.tensor([4], device=device)
                     self._frankas_view.set_solver_position_iteration_counts(new_values, indices=[1])
@@ -2261,9 +2291,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     async def test_position_iteration_count_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
+
             if indexed:
                 new_values = np.array([4])
                 self._frankas_view.set_solver_position_iteration_counts(new_values, indices=[1])
@@ -2275,11 +2306,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     async def test_position_iteration_count_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     new_values = wp.array([4], device=device, dtype=wp.int32)
                     self._frankas_view.set_solver_position_iteration_counts(new_values, indices=[1])
@@ -2291,11 +2324,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     async def test_velocity_iteration_count_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     new_values = torch.tensor([4], device=device)
                     self._frankas_view.set_solver_velocity_iteration_counts(new_values, indices=[1])
@@ -2307,9 +2342,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     async def test_velocity_iteration_count_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
+
             if indexed:
                 new_values = np.array([4])
                 self._frankas_view.set_solver_velocity_iteration_counts(new_values, indices=[1])
@@ -2321,11 +2357,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     async def test_velocity_iteration_count_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     new_values = wp.array([4], device=device, dtype=wp.int32)
                     self._frankas_view.set_solver_velocity_iteration_counts(new_values, indices=[1])
@@ -2337,11 +2375,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     async def test_stabilization_thresholds_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     new_values = torch.tensor([0.01], device=device)
                     self._frankas_view.set_stabilization_thresholds(new_values, indices=[1])
@@ -2353,9 +2393,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     async def test_stabilization_thresholds_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
+
             if indexed:
                 new_values = np.array([0.01])
                 self._frankas_view.set_stabilization_thresholds(new_values, indices=[1])
@@ -2367,11 +2408,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     async def test_stabilization_thresholds_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     new_values = wp.array([0.01], device=device, dtype=wp.float32)
                     self._frankas_view.set_stabilization_thresholds(new_values, indices=[1])
@@ -2383,11 +2426,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     async def test_sleep_thresholds_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     new_values = torch.tensor([0.01], device=device)
                     self._frankas_view.set_sleep_thresholds(new_values, indices=[1])
@@ -2399,9 +2444,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     async def test_sleep_thresholds_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
+
             if indexed:
                 new_values = np.array([0.01])
                 self._frankas_view.set_sleep_thresholds(new_values, indices=[1])
@@ -2413,11 +2459,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     async def test_sleep_thresholds_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     new_values = wp.array([0.01], device=device, dtype=wp.float32)
                     self._frankas_view.set_sleep_thresholds(new_values, indices=[1])
@@ -2429,11 +2477,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     async def test_enabled_self_collisions_torch(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="torch", device=device)
+            await self.add_frankas(backend="torch")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="torch", device=device)
-                await self.add_frankas(backend="torch")
+
                 if indexed:
                     new_values = torch.tensor([True], device=device)
                     self._frankas_view.set_enabled_self_collisions(new_values, indices=[1])
@@ -2445,9 +2495,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     async def test_enabled_self_collisions_numpy(self):
+        await self.setUpWorld(backend="numpy")
+        await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
-            await self.setUpWorld(backend="numpy")
-            await self.add_frankas(backend="numpy")
+
             if indexed:
                 new_values = np.array([True])
                 self._frankas_view.set_enabled_self_collisions(new_values, indices=[1])
@@ -2459,11 +2510,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     async def test_enabled_self_collisions_warp(self):
-        for indexed in INDEXED:
-            for device in ["cpu", "cuda:0"]:
+        for device in ["cpu", "cuda:0"]:
+            await self.setUpWorld(backend="warp", device=device)
+            await self.add_frankas(backend="warp")
+            for indexed in INDEXED:
+
                 print("index:", indexed, "device:", device)
-                await self.setUpWorld(backend="warp", device=device)
-                await self.add_frankas(backend="warp")
+
                 if indexed:
                     new_values = wp.array([True], device=device, dtype=wp.uint8)
                     self._frankas_view.set_enabled_self_collisions(new_values, indices=[1])
@@ -2493,7 +2546,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         await self.setUpWorld(backend=backend, device=device)
                         await self.add_frankas(backend=backend)
                         cur_value = self._frankas_view.get_measured_joint_efforts(clone=clone)
-                        self._my_world.clear_instance()
 
     async def test_get_measured_joint_forces(self):
         for backend in BACKEND:
@@ -2504,7 +2556,6 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                         await self.setUpWorld(backend=backend, device=device)
                         await self.add_frankas(backend=backend)
                         cur_value = self._frankas_view.get_measured_joint_forces(clone=clone)
-                        self._my_world.clear_instance()
 
     async def test_pause_resume_motion(self):
         await self.setUpWorld(backend="numpy", device="cpu")

@@ -45,7 +45,7 @@ recursive = false
 [settings]
 
 [[test]]
-timeout=1200
+timeout = 900
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",

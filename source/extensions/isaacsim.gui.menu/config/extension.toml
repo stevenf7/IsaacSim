@@ -32,7 +32,7 @@ name = "isaacsim.gui.menu.tests"
 
 
 [[test]]
-timeout = 1500
+timeout = 900
 dependencies = [
     "omni.timeline",
     "isaacsim.core.utils",

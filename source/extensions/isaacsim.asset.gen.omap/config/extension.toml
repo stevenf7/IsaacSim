@@ -17,13 +17,9 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.util.debug_draw" = {}
-"isaacsim.gui.components" = {}
-"omni.kit.pip_archive" = {} # pulls in pillow
-"omni.kit.uiapp" = {}
-"omni.kit.viewport.window" = {}
+"omni.kit.pip_archive" = {}
 "omni.physx" = {}
 
 [[python.module]]
@@ -38,6 +34,8 @@ recursive = false
 
 [[test]]
 dependencies = [
-    "isaacsim.storage.native" # test only
+    "isaacsim.storage.native",
+    "isaacsim.core.utils"
 ]
-timeout = 960
+
+timeout = 900

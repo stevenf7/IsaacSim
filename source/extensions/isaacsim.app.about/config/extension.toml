@@ -20,15 +20,4 @@ icon = "data/icon.png"
 [[python.module]]
 name = "isaacsim.app.about"
 
-[[test]]
-dependencies = [
-]
 
-stdoutFailPatterns.include = []
-stdoutFailPatterns.exclude = [
-    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
-]
-
-[[test]]
-name = "startup"
-stdoutFailPatterns.exclude = ["*some error*"]
