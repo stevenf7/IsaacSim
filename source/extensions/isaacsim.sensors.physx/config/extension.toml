@@ -25,7 +25,6 @@ preview_image = "data/preview.png"
 "omni.kit.menu.utils" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.kit.uiapp" = {}
-"omni.kit.viewport.window" = {}
 "omni.physx" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # needed for simulation to start
@@ -53,5 +52,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 dependencies = [
-    "isaacsim.storage.native" # test only
+    "isaacsim.storage.native", # test only
+    "omni.kit.hydra_texture"
 ]

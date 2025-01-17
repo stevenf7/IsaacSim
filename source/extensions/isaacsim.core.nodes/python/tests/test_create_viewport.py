@@ -14,13 +14,12 @@ import omni.graph.core.tests as ogts
 import omni.kit.test
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.stage import open_stage_async
-from isaacsim.core.utils.viewports import get_viewport_names
+from isaacsim.core.utils.viewports import destroy_all_viewports, get_viewport_names
 from isaacsim.storage.native import get_assets_root_path_async
 
 
 class TestCreateViewport(ogts.OmniGraphTestCase):
     async def setUp(self):
-        """Set up  test environment, to be torn down when done"""
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         # add franka robot for test
@@ -32,7 +31,10 @@ class TestCreateViewport(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        """Get rid of temporary data used by the test"""
+        # cleanup extra viewports created in test
+        destroy_all_viewports(destroy_main_viewport=False)
+        await omni.kit.app.get_app().next_update_async()
+        # Clean up test
         await omni.kit.stage_templates.new_stage_async()
 
     # ----------------------------------------------------------------------

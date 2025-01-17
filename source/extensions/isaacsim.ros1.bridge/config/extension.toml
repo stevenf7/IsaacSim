@@ -71,8 +71,12 @@ exclude = ["Ogn*Database.py"]
 # Name of the ROS node created by the extension.
 exts."isaacsim.ros1.bridge".nodeName = "OmniIsaacRosBridge"
 
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.0.0"
+
+
 [[test]]
-timeout = 1200
+timeout = 900
 dependencies = [
     "omni.graph.ui",
     "isaacsim.robot.wheeled_robots",
@@ -90,6 +94,3 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros1_bridge_ROS1PublishImage: [/TestGraph] Width 0 or height 0 is not valid*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros1_bridge_ROS1PublishLaserScan: [/TestGraph] Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting*",
 ]
-
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.0.0"

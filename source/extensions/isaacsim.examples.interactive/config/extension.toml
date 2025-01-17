@@ -94,7 +94,7 @@ name = "isaacsim.examples.interactive.humanoid"
 name = "isaacsim.examples.interactive.getting_started"
 
 [[test]]
-timeout = 1200
+timeout = 900
 
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows

@@ -39,4 +39,4 @@ public = false
 [settings]
 
 [[test]]
-timeout=1200
+timeout = 900

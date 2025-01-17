@@ -44,8 +44,14 @@ dependencies = [
     "isaacsim.storage.native" # test only
 ]
 
-timeout=12000
-args = ["--no-window", "--allow-root", "--/app/fastShutdown=1", "--vulkan"] # we can use fast shutdown because metrics are not uploaded
+timeout = 900
+args = [
+"--no-window", 
+"--allow-root", 
+"--/app/fastShutdown=1", 
+"--vulkan",
+] # we can use fast shutdown because metrics are not uploaded
+
 stdoutFailPatterns.exclude = [
     "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet
     "*Failed to evaluate DLSS feature*", # Ada multi gpu doesn't support this yet

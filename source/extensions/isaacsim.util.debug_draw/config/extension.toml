@@ -23,7 +23,6 @@ writeTarget.kit = true
 "omni.graph.tools" = {}
 # needed to access drawing interfaces:
 "omni.kit.renderer.core" = {}
-"omni.kit.viewport.window" = {}
 "omni.hydra.rtx" = {}
 # The generated tests will make use of these modules
 "omni.usd" = {}

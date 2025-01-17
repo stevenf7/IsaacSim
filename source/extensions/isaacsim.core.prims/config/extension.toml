@@ -35,7 +35,8 @@ name = "isaacsim.core.prims"
 name = "isaacsim.core.prims.tests"
 
 [[test]]
-enabled = true
+timeout = 900
 dependencies = [
     "omni.kit.test",
+    "isaacsim.core.api",
 ]

@@ -34,4 +34,4 @@ name = "isaacsim.storage.native.tests"
 dependencies = [
     "omni.kit.test"
 ]
-timeout = 3600
+timeout = 900

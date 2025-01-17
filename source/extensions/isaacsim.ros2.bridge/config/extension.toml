@@ -75,7 +75,7 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 
-timeout=900
+timeout = 900
 dependencies = [
     "omni.graph.ui",
     "isaacsim.robot.wheeled_robots",
