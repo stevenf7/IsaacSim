@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.3"
+version = "2.2.4"
 category = "Simulation"
 title = "ROS Bridge"
 description = "The ROS Bridge extension enables communication between the Isaac Sim and ROS 1 systems. It allows for the publishing and subscribing of ROS topics and services via OmniGraph nodes and Action graphs. ROS publishers, subscribers and services are only active when play is pressed. A lightweight set of ROS libraries included with Isaac Sim are automatically loaded when enabling this extension."

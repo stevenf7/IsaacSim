@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.4] - 2025-01-16
+### Changed
+- OgnROS1SubscribeAckermann resets all command outputs to zero on simulation stop.  
+
 ## [2.2.3] - 2025-01-03
 ### Fixed
 - Robotics Example menu items not updated with correct names 
