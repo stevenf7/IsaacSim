@@ -9,6 +9,7 @@
 
 import asyncio
 import os
+from urllib.parse import urlparse, urlunparse
 
 import omni
 from omni.client import Result
@@ -195,3 +196,38 @@ def has_missing_reference(prim):
             return True
 
     return False
+
+
+def relpath(path, start):
+    """URL friendly version of os.path.relpath"""
+
+    # No trailing slash
+    start = start.rstrip("/\\")
+
+    # Determine if both are URLs
+    parsed_path = urlparse(path)
+    parsed_start = urlparse(start)
+
+    if parsed_path.scheme and parsed_path.netloc:
+        # Ensure same scheme and netloc
+        if parsed_path.scheme != parsed_start.scheme or parsed_path.netloc != parsed_start.netloc:
+            raise ValueError("URL scheme or domain mismatch.")
+
+        return os.path.relpath(parsed_path.path, parsed_start.path)
+
+    else:
+        # Local file paths (Windows, Linux)
+        return os.path.relpath(os.path.normpath(path), os.path.normpath(start))
+
+
+def dirname(path):
+    """URL friendly version of os.path.dirname"""
+    parsed = urlparse(path)
+    # URL
+    if parsed.scheme and parsed.netloc:
+        dir_path = os.path.dirname(parsed.path)
+        if not dir_path.endswith("/"):
+            dir_path += "/"
+        return urlunparse((parsed.scheme, parsed.netloc, dir_path, "", "", ""))
+    else:
+        return os.path.dirname(os.path.normpath(path)) + os.sep

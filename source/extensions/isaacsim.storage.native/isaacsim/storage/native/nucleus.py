@@ -558,6 +558,21 @@ async def is_dir_async(path: str) -> bool:
     return True if len(folder) > 0 else False
 
 
+def is_dir(path: str) -> bool:
+    """Check if path is a folder
+
+    Args:
+        path (str): Path to folder
+
+    Returns:
+        bool: True if path is a folder
+    """
+    result, folder = omni.client.list(path)
+    if result != omni.client.Result.OK:
+        raise Exception(f"Failed to determine if {path} is a folder: {result}")
+    return True if len(folder) > 0 else False
+
+
 async def is_file_async(path: str) -> bool:
     """Check if path is a file
 
