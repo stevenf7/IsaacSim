@@ -35,7 +35,7 @@ class AssetBrowserWindow(ui.Window):
     Represent a window to show Assets
     """
 
-    WINDOW_TITLE = "Isaac Sim Assets"
+    WINDOW_TITLE = "Isaac Sim Assets [Beta]"
 
     def __init__(self, visible=True):
         super().__init__(self.WINDOW_TITLE, visible=visible)

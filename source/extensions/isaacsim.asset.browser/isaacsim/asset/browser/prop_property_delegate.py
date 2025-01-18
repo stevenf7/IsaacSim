@@ -55,54 +55,29 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
 
         self._container = ui.VStack(height=0, spacing=5)
         with self._container:
-            ## temporary fix for dealing with different file types
-            # if file is a usd file, we can open it
-            usd_filetypes = [".usd", ".usda", ".usdc"]
-            direct_download_filetypes = [".yaml", ".pt", ".txt", ".json"]
-            image_filetypes = [".png", ".jpg", ".jpeg", ".bmp", ".mdl"]
+            with ui.VStack(margin=5):
+                self._build_thumbnail(item)
 
-            if any(url.endswith(file_type) for file_type in usd_filetypes):
-                with ui.VStack(margin=5):
+                with ui.VStack():
+                    # File information
                     ui.Spacer(height=12)
                     self._name_label = ui.Label("File name: " + item.name, height=0)
                     ui.Label("File size: " + str(self.file_size) + " KB", height=0)
+                    folder_path = "/".join(item.url.split("/")[7:])
+                    folder_label = ui.Label("File Path: " + folder_path, height=0)
+                    folder_label.elided_text = True
+                    folder_label.tooltip = folder_path
                     ui.Spacer(height=24)
-                    with ui.HStack():
-                        ref_load_btn = ui.Button("Load as Reference", height=36)
-                        ref_load_btn.set_clicked_fn(lambda: self.load_as_reference(item))
-                        ui.Spacer(width=12)
-                        open_asset_btn = ui.Button("Open File", height=36)
-                        open_asset_btn.set_clicked_fn(lambda: self.open_asset(item))
+
+                # buttons
+                with ui.HStack():
+                    ref_load_btn = ui.Button("Load as Reference", height=36)
+                    ref_load_btn.set_clicked_fn(lambda: self.load_as_reference(item))
+                    ui.Spacer(width=12)
+                    open_asset_btn = ui.Button("Open File", height=36)
+                    open_asset_btn.set_clicked_fn(lambda: self.open_asset(item))
 
                 self._build_variant_options(item)
-
-            elif any(url.endswith(file_type) for file_type in direct_download_filetypes):
-                with ui.VStack(margin=5):
-                    ui.Spacer(height=12)
-                    self._name_label = ui.Label("File name: " + item.name, height=0)
-                    ui.Label("File size: " + str(self.file_size) + " KB", height=0)
-                    ui.Spacer(height=24)
-                    download_btn = ui.Button("Download", height=36)
-                    download_btn.set_clicked_fn(lambda: self.download_file(item))
-
-            elif any(url.endswith(file_type) for file_type in image_filetypes):
-                self._build_thumbnail(item)
-                with ui.VStack(margin=5):
-                    ui.Spacer(height=12)
-                    self._name_label = ui.Label("File name: " + item.name, height=0)
-                    ui.Label("File size: " + str(self.file_size) + " KB", height=0)
-                    ui.Spacer(height=24)
-                    download_btn = ui.Button("Download", height=36)
-                    download_btn.set_clicked_fn(lambda: self.download_file(item))
-
-            else:
-                with ui.VStack(margin=5):
-                    ui.Spacer(height=12)
-                    self._name_label = ui.Label("File name: " + item.name, height=0)
-                    ui.Label("File size: " + str(self.file_size) + " KB", height=0)
-                    # ui.Spacer(height=24)
-                    # download_btn = ui.Button("Download", height=36)
-                    # download_btn.set_clicked_fn(lambda: self.download_file(item))
 
     def _build_thumbnail(self, item: FileDetailItem):
         if item.thumbnail is None:
@@ -126,7 +101,7 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
         # Dynamic change thumbnail size to be half of frame width
         async def __change_thumbnail_size_async():
             await omni.kit.app.get_app().next_update_async()
-            image_size = self._thumbnail_frame.computed_width / 2
+            image_size = self._thumbnail_frame.computed_width / 4
             self._thumbnail_img.height = ui.Pixel(image_size)
 
         asyncio.ensure_future(__change_thumbnail_size_async())

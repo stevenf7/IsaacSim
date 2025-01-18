@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.0] - 2025-01-17
+### Changed
+- Put default filter for files, set it as an app setting
 
 ## [1.2.0] - 2025-01-09
 ### Changed
