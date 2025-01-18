@@ -1,4 +1,7 @@
 # Changelog
+## [1.0.5] - 2025-01-17
+### Changed
+- Temporarily changed docs link to gitlab pages
 
 ## [1.0.4] - 2025-01-13
 ### Changed

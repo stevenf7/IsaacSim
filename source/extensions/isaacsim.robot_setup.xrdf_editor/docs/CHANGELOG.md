@@ -1,4 +1,9 @@
 # Changelog
+## [3.1.3] - 2025-01-17
+### Changed
+- Temporarily changed docs link to gitlab pages
+
+
 ## [3.1.2] - 2024-12-20
 ### Fixed
 - Fixed error parsing robot description files with unspecified values under 'cspace_to_urdf_rules'

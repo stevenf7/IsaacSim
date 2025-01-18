@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.3] - 2025-01-17
+### Changed
+- Temporarily changed docs link to gitlab pages
+
 ## [1.0.2] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu

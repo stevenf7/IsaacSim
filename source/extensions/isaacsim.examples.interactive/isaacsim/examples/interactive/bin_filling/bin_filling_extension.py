@@ -27,7 +27,7 @@ class BinFillingExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Bin Filling",
-            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_core_adding_manipulator.html",
+            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/core_api_tutorials/tutorial_core_adding_manipulator.html",
             "overview": "This Example shows how to do bin filling using UR10 robot in Isaac Sim.\n It showcases a realistic surface gripper that breaks with heavy bin load.\nPress the 'Open in IDE' button to view the source code.",
             "sample": BinFilling(),
         }

@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.2] - 2025-01-17
+### Changed
+- Temporarily changed docs link to gitlab pages
+
 ## [2.1.1] - 2024-12-05
 ### Changed
 - Updated OmniGraph naming

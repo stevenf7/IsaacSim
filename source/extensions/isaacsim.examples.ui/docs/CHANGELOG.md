@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2025-01-17
+### Changed
+- Temporarily changed docs links to gitlab pages
+
 ## [1.1.0] - 2024-10-29
 ### Changed
 - moved menu entry from "Isaac Examples" to "Window->Examples"

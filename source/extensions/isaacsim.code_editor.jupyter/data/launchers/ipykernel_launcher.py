@@ -68,7 +68,10 @@ class EmbeddedKernel(Kernel):
     }
     banner = "Embedded Omniverse (Python 3)"
     help_links = [
-        {"text": "Omniverse™ Isaac Sim", "url": "https://docs.omniverse.nvidia.com/isaacsim/latest/index.html"}
+        {
+            "text": "Omniverse™ Isaac Sim",
+            "url": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/index.html",
+        }
     ]
 
     async def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):

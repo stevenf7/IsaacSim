@@ -4,5 +4,5 @@ To enable this extension, go to the Extension Manager menu and enable isaacsim.r
 
 Online documentation at: 
 
-* https://docs.omniverse.nvidia.com/isaacsim/latest/replicator_tutorials/tutorial_replicator_recorder.html
+* https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/replicator_tutorials/tutorial_replicator_recorder.html
 

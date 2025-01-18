@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5] - 2025-01-17
+### Changed
+- temporarily direction docs to gitlab pages
+
 ## [1.0.4] - 2024-12-07
 ### Fixed
 - moved from deprecated editor_menu.add_item to omni.kit.menu.utils

@@ -29,7 +29,7 @@ class BinStackingExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "UR10 Palletizing",
-            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking.html",
+            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking.html",
             "overview": "This Example shows how to do Palletizing using UR10 robot and Cortex behaviors in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
         }
 

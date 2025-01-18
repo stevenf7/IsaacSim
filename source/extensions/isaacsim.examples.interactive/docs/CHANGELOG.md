@@ -1,4 +1,8 @@
 # Changelog
+## [4.4.5] - 2025-01-17
+### Changed
+- Temporarily changed docs links to gitlab pages
+
 ## [4.4.4] - 2025-01-14
 ### Added
 - refactor LoadButtons UI
