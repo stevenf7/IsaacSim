@@ -9,7 +9,7 @@
         "Advanced Instructions":"- if you `Jump to` a tool that's not in your customized pipeline, you will effectively abandon the pipeline and go through rest of the tools in order that they are listed in the dropdown box, starting with the one that you jumped to. \n\n- If you have multiple robots that you wish to combine (e.g. mobile base + arm, or arm + gripper, make sure the individual parts are all sim-ready first, save each as a usd file, then use the 'Robot Assembler' to combine them. \n \n- You can customize a sequence by writing your own pipeline Json file. Append to the file /data/custom_pipeline.json, or use that as a template to write your own. Check the `use Custom Pipeline` box to load your custom file. The pipeline will be executed in the order that it is listed. Use only tools that are listed with the checkboxes above, and use the same names that are displayed. \n\n- For tools that are not listed in this Wizard, please go to our document for more information",
         "Menu": "Window -> Isaac Sim Import Wizard",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/import_wizard.html",
             "API Link":"https://forums.developer.nvidia.com/c/omniverse/simulation/69"
         }
     },
@@ -24,8 +24,8 @@
         "Advanced Instructions":"- If the source URDF file seeks meshes that are located in different packages than itself, make sure those folders are also inside the ROS python paths.\n\n- After importing, play the simulation and let the robot sit for a bit. If the robot flies off without any input, make sure to uncheck self-collision. \n\n- Go to `Window -> Examples -> Robotics Examples,  Import Robots, select any of the URDF robot, a popup box will appear. From there, you can  `Open Source Code` on the upper right hand corner to see how to use the URDF importer python API in a script",
         "Menu": "File -> Import",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_urdf.html#isaac-sim-urdf-importer",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_urdf.html#tutorials-examples",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/ext_isaacsim_asset_importer_urdf.html",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/import_urdf.html",
             "Script Folder": "isaacsim.asset.importer.urdf"
         }
     },
@@ -40,8 +40,8 @@
         "Advanced Instructions":"- After importing, play the simulation and let the robot sit for a bit. If the robot flies off without any input, make sure to uncheck self-collision.",
         "Menu": "File -> Import",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_mjcf.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_import_mjcf.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/ext_isaacsim_asset_importer_mjcf.html",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/import_mjcf.html",
             "Script Folder": "isaacsim.asset.importer.mjcf"
         }                      
     },
@@ -71,8 +71,8 @@
         "Advanced Instructions":"- For position drives, set joint stiffness >> damping; for velocity drives, set stiffness = 0 \n\n- Use the Articulation and Physics Inspector to check joint behaviors",
         "Menu": "Tools -> Physics -> Joint Inspector",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_gui_simple_robot.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_rigging_robot.html"
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/gui/tutorial_intro_simple_objects.html",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/rig_mobile_robot.html"
         }
     },
 
@@ -86,7 +86,7 @@
         "Advanced Instructions": "",
         "Menu": "Tools -> Robotics -> Asset Editors -> Mesh Merge Tool",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/environment_setup/ext_omni_isaac_merge_mesh.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/ext_isaacsim_util_merge_mesh.html",
             "Script Folder": "isaacsim.util.merge_mesh"
         }
     },
@@ -144,8 +144,8 @@
         "Advanced Instructions":"",
         "Menu": "Window -> Robotics -> Asset Editors -> Gain Tuner",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_gain_tuner.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/robots_simulation/ext_omni_isaac_gain_tuner.html#tutorials-examples",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/ext_isaacsim_robot_setup_gain_tuner.html",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/ext_isaacsim_robot_setup_gain_tuner.html",
             "Script Folder": "isaacsim.robot_setup.gain_tuner"
         }
     },
@@ -160,9 +160,9 @@
         "Advanced Instructions":"",
         "Menu": "Tools -> Robotics -> Asset Editors -> Robot Assembler",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_assembling_robots.html?highlight=robot%20assembler#assembling-robots-and-rigid-bodies",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/assemble_robots.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.robot_assembler/docs/index.html",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_assembling_robots.html?highlight=robot%20assembler#assembling-robots",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/robot_setup/assemble_robots.html",
             "Script Folder": "isaacsim.robot_setup.assembler"
         }
     },
@@ -177,7 +177,7 @@
         "Advanced Instructions":"",
         "Menu": "Tools -> Robotics -> Asset Editors -> Lula Robot Description Editor",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_motion_generation_robot_description_editor.html#isaac-sim-app-tutorial-motion-generation-robot-description-editor",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/manipulators/manipulators_robot_description_editor.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.motion_generation/docs/index.html",
             "Script Folder": "isaacsim.robot_setup.xrdf_editor"
         }
@@ -193,7 +193,7 @@
         "Advanced Instructions":"",
         "Menu": "Tools -> Robotics -> Camera Inspector",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_gui_camera_sensors.html?highlight=camera%20inspector#camera-inspector-extension",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/gui/tutorial_gui_camera_sensors.html#camera-inspector-extension",
             "Script Folder": "isaacsim.util.camera_inspector"
         }
     },
@@ -208,9 +208,9 @@
         "Advanced Instructions":"",
         "Menu": "Create -> Isaac -> Sensors -> IMU Sensor",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physics_imu.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#imu-sensor-interface",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_imu.html#isaac-example",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physics_imu.html#imu-example",
             "Script Folder": "isaacsim.sensors.physics"
         }
     },
@@ -225,9 +225,9 @@
         "Advanced Instructions":"- If you need to input a custom scanning pattern, use a Generic Lidar in a standalone python script.",
         "Menu": "Create -> Isaac -> Sensors -> physX Lidar",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_range_sensor_lidar.html#isaac-sim-app-tutorial-advanced-range-sensor-lidar",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physx_lidar.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.lidar_physX",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/ext_omni_isaac_range_sensor.html#lidar-example",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physx_lidar.html",
             "Script Folder": "isaacsim.sensors.physx"
         }
     },   
@@ -242,9 +242,9 @@
         "Advanced Instructions":"",
         "Menu": "Create -> Isaac -> Sensors -> RTX Lidar",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_rtx_based_lidar.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_rtx_lidar.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.lidar_rtx",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_rtx_based_lidar/node_overview.html",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_rtx_lidar.html",
             "Script Folder": "isaacsim.sensors.rtx"
         }
     },
@@ -259,9 +259,9 @@
         "Advanced Instructions":"",
         "Menu": "Create -> Isaac -> Sensors -> Contact Sensor",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensors_simulation/isaac_sim_sensors_physics_based_contact.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physics_contact.html",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/omni.isaac.sensor/docs/index.html#module-omni.isaac.sensor.scripts.contact_sensor",
-            "Examples Link": "https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_isaac_contact_sensor.html#isaac-sim-app-tutorial-advanced-isaac-contact-sensor",
+            "Examples Link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physics_contact.html",
             "Script Folder": "isaacsim.sensors.physics"
         }
     },
@@ -276,7 +276,7 @@
         "Advanced Instructions":"To access the python script of the controller graphs, click on the icon on the bottom of the popup box that appears when you generate the graph.",
         "Menu": "Tools -> Robotics -> OmniGraph Controllers",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/advanced_tutorials/tutorial_advanced_omnigraph_shortcuts.html"
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/omnigraph/omnigraph_shortcuts.html"
         }
     },
 
@@ -290,7 +290,7 @@
         "Advanced Instructions":"The shortcuts are only available for ROS2 Humble. \n\n- All OmniGraphs created can be edited using a Visual Graph Editor (Window->Visual Scripting -> Action Graph). \n\n- Yes, you can write your own OmniGraph nodes",
         "Menu": "Tools -> Robotics -> OmniGraph Controllers (ROS2 bridge extension must be enabled for this to show up)",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/ros2_tutorials/index.html"
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/index.html#isaac-ros2-tutorials-page"
         }
     },
 
@@ -304,7 +304,7 @@
         "Advanced Instructions":"",
         "Menu": "Create -> April Tags",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/ros_tutorials/tutorial_ros_apriltag.html"
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros_tutorials/tutorial_ros_apriltag.html"
         }
     },
 
@@ -318,7 +318,7 @@
         "Advanced Instructions":"You have the option to enable or disable the use of PhysX Collision Geometry when generating the map. \n\nIf this setting is enabled, collision approximations that are set within the scene will be used. If the setting is disabled, the original USD meshes are used when generating the map.",
         "Menu": "Tools -> Robotics -> Occupancy Map",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/features/mapping/ext_omni_isaac_occupancy_map.html",
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/digital_twin/ext_isaacsim_asset_generator_occupancy_map.html#occupancy-map-generator",
             "API Link":"https://docs.omniverse.nvidia.com/py/isaacsim/source/extensions/isaacsim.asset.gen.omap/docs/index.html",
             "Script Folder": "isaacsim.asset.gen.omap"
         }
@@ -362,7 +362,7 @@
         "Advanced Instructions":"",
         "Menu": "N/A",
         "Resources":{
-            "Documentation Link":"https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html"
+            "Documentation Link":"https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/index.html"
         }
     }
 

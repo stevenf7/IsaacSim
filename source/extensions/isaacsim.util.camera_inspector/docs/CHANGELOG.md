@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.2] - 2025-01-17
+### Changed
+- Temporarily changed docs link to gitlab pages
+
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming

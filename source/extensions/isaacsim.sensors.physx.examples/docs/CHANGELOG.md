@@ -1,4 +1,9 @@
 # Changelog
+## [2.2.1] - 2025-01-17
+### Changed
+- Temporarily changed docs link to gitlab pages
+
+
 ## [2.2.0] - 2024-12-16
 ### Added
 - lightbeam_sensor example

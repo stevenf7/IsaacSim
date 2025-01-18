@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.7] - 2025-01-17
+### Changed
+- tab to be "Robotics Examples" to match menu
+
 ## [0.1.6] - 2025-01-08
 ### Changed
 - Switched from "error" to "warning" when adding examples with existing names

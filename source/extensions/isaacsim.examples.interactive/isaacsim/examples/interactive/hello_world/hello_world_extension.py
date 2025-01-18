@@ -24,7 +24,7 @@ class HelloWorldExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Hello World Example",
-            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/core_api_tutorials/tutorial_core_hello_world.html",
+            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/core_api_tutorials/tutorial_core_hello_world.html",
             "overview": "This Example introduces the user on how to do cool stuff with Isaac Sim through scripting in asynchronous mode.",
             "sample": HelloWorld(),
         }

@@ -30,8 +30,8 @@ class GettingStartedExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Getting Started",
-            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest.html",
-            "overview": " Select the tutorial in the Example Browser again to restart the tutorial.\n\n This Example follows the 'Getting Started' tutorials from the documentation\n\n Press the 'Open in IDE' button to view the source code.",
+            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/introduction/quickstart_isaacsim.html",
+            "overview": " Select the tutorial in the Example Browser again to restart the tutorial.\n\n 'Reset' Button is disabled. to Restart, click on the thumbnail in the browser instead. \n\n This Example follows the 'Getting Started' tutorials from the documentation\n\n Press the 'Open in IDE' button to view the source code.",
             "sample": GettingStarted(),
         }
 
@@ -59,7 +59,6 @@ class GettingStartedUI(BaseSampleUITemplate):
         return
 
     def build_extra_frames(self):
-
         extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
         with extra_stacks:

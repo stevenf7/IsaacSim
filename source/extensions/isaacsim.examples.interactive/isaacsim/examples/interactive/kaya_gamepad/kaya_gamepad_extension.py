@@ -28,7 +28,7 @@ class KayaGamepadExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "NVIDIA Kaya Gamepad Example",
-            "doc_link": "https://docs.omniverse.nvidia.com/isaacsim/latest/gui_tutorials/tutorial_advanced_input_devices.html",
+            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/introduction/examples.html",
             "overview": overview,
             "sample": KayaGamepad(),
         }

@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.4] - 2025-01-17
+### Changed
+- Temporarily changed docs links to gitlab pages
+
 ## [2.0.3] - 2025-01-13
 ### Changed
 - Move Core connector buttons to Examples
