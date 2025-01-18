@@ -7,7 +7,7 @@ pyproject.dependencies = [
 ]
 pyproject.optional-dependencies = [
     { "rl" = ["isaacsim-rl==${version}", "isaacsim-replicator==${version}", "isaacsim-app==${version}"] },
-    { "ros" = ["isaacsim-ros==${version}"] },
+    { "ros" = ["isaacsim-ros1==${version}"] },
     { "ros2" = ["isaacsim-ros2==${version}"] },
     { "extscache" = [
         "isaacsim-extscache-kit==${version}",
