@@ -75,6 +75,11 @@ class CacheStateDelegate(ui.MenuDelegate):
         self.pck_install_path = config["pck_install_path"]
         self.ngc_resource = config["ngc_resource"]
 
+    def ngc_path_prefix(self, org, team, resource) -> str:
+        if self.ngc_api_key:
+            return f"{self.ngc_api}/org/{org}/team/{team}/resources/{resource}"
+        return f"{self.ngc_api}/resources/{org}/{team}/{resource}"
+
     def get_current_local_version(self) -> str:
         """
         Try to find the last installed version. By default, there should be only one, but...
@@ -145,9 +150,8 @@ class CacheStateDelegate(ui.MenuDelegate):
         """
 
         carb.log_info(f"Lets check if there is a new version on resource: {self.ngc_resource}")
-
-        uri = f"{self.ngc_api}/org/{self.ngc_org}/team/{self.ngc_team}/resources/{self.ngc_resource}/versions?page-size=3&page-number=0&sort-order=CREATED_DATE_DESC"
-        carb.log_info(f"URI: {uri}")
+        uri = f"{self.ngc_path_prefix(self.ngc_org, self.ngc_team, self.ngc_resource)}/versions?page-size=3&page-number=0&sort-order=CREATED_DATE_DESC"
+        carb.log_info(f"get_latest_version URI: {uri}")
 
         try:
             self.ngc_token = get_token(self.ngc_api_key, self.ngc_org, self.ngc_team)
@@ -211,13 +215,17 @@ class CacheStateDelegate(ui.MenuDelegate):
 
     def create_session_with_headers(self, token: str):
         # Define custom headers
-        headers = {"Content-Type": "application/json", "Accept": "application/json", "Authorization": f"Bearer {token}"}
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
 
         return aiohttp.ClientSession(headers=headers)
 
     async def download_file(self, resource: str, version: str, filename: str, download_to: str) -> None:
-        uri = f"{self.ngc_api}/org/{self.ngc_org}/team/{self.ngc_team}/resources/{resource}/versions/{version}/files/{filename}"
-
+        uri = f"{self.ngc_path_prefix(self.ngc_org, self.ngc_team, resource)}/versions/{version}/files/{filename}"
         carb.log_info(f"download_file URI: {uri}")
 
         try:
@@ -235,9 +243,8 @@ class CacheStateDelegate(ui.MenuDelegate):
     async def check_latest_hub_version(self, resource: str) -> str:
         carb.log_info(f"check_latest_hub_version {resource}")
 
-        uri = f"{self.ngc_api}/org/{self.ngc_org}/team/{self.ngc_team}/resources/{resource}/versions?page-size=100&page-number=0&sort-order=CREATED_DATE_DESC"
-
-        carb.log_info(f"check_latest_hub_version: {uri}")
+        uri = f"{self.ngc_path_prefix(self.ngc_org, self.ngc_team, resource)}/versions?page-size=100&page-number=0&sort-order=CREATED_DATE_DESC"
+        carb.log_info(f"check_latest_hub_version URI: {uri}")
 
         try:
             json_data = None
@@ -269,7 +276,8 @@ class CacheStateDelegate(ui.MenuDelegate):
             carb.log_info(f"Error moving folder: {e}")
 
     async def get_correct_file(self, ngc_resource: str, hub_version: str) -> str:
-        uri = f"{self.ngc_api}/org/{self.ngc_org}/team/{self.ngc_team}/resources/{ngc_resource}/versions/{hub_version}/files"
+        uri = f"{self.ngc_path_prefix(self.ngc_org, self.ngc_team, ngc_resource)}/versions/{hub_version}/files"
+        carb.log_info(f"get_correct_file URI: {uri}")
 
         # {
         #     "sizeInBytes": 72942649,

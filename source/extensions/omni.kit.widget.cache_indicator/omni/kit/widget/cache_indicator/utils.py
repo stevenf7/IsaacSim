@@ -139,6 +139,12 @@ def get_token(api_key: str, org: str, team: str) -> str:
     """
     Returns the NGC auth token
     """
+
+    # an empty api_key indicates that the user is pulling from
+    # the public repository and so no auth is needed
+    if not api_key:
+        return ""
+
     # convert user:api_key to base64
     user_pass = f"$oauthtoken:{api_key}"
     string_bytes = user_pass.encode("utf-8")
