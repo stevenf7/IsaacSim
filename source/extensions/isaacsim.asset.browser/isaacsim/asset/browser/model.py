@@ -32,13 +32,15 @@ class AssetBrowserModel(TreeFolderBrowserModel):
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.browser")
         extension_path = ext_manager.get_extension_path(ext_id)
         cache_path = os.path.abspath(os.path.join(f"{extension_path}", "cache/isaacsim.asset.browser.cache.json"))
+
         super().__init__(
             *args,
             setting_folders=SETTING_FOLDER,
             show_category_subfolders=True,
-            hide_file_without_thumbnails=False,
+            hide_file_without_thumbnails=settings.get("/exts/isaacsim.asset.browser/data/hide_file_without_thumbnails"),
             local_cache_file=cache_path,
             show_summary_folder=True,
+            filter_file_suffixes=settings.get("/exts/isaacsim.asset.browser/data/filter_file_suffixes"),
             timeout=settings.get("/exts/isaacsim.asset.browser/data/timeout"),
             **kwargs,
         )
