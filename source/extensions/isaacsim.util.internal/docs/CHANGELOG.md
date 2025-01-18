@@ -1,4 +1,9 @@
 # Changelog
+## [2.1.0] - 2024-12-20
+### Added
+- Added render_assets.py, used to automate creation of thumbnails and images for docs
+- Added URL friendly versions of relpath and dirname
+
 ## [2.0.5] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu
