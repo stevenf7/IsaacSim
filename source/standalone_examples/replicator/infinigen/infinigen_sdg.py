@@ -178,7 +178,9 @@ from isaacsim.core.utils.viewports import set_camera_view
 def run_sdg(config):
     # Load the config parameters
     env_config = config.get("environments", {})
-    env_urls = infinigen_utils.get_usd_paths(files=env_config.get("files", []), folders=env_config.get("folders", []))
+    env_urls = infinigen_utils.get_usd_paths(
+        files=env_config.get("files", []), folders=env_config.get("folders", []), skip_folder_keywords=[".thumbs"]
+    )
     capture_config = config.get("capture", {})
     writers_config = config.get("writers", {})
     labeled_assets_config = config.get("labeled_assets", {})
