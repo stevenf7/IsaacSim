@@ -304,7 +304,10 @@ def setup_env(root_path: str | None = None, approximation_type: str = "none", hi
     table_prim = find_matching_prims(
         match_strings=["TableDining"], root_path=root_path, prim_type="Xform", first_match_only=True
     )
-    add_colliders(table_prim, approximation_type="boundingCube")
+    if table_prim is not None:
+        add_colliders(table_prim, approximation_type="boundingCube")
+    else:
+        print("[SDG-Infinigen] Could not find dining table prim in the environment.")
 
 
 def create_shape_distractors(
@@ -362,7 +365,9 @@ def load_mesh_distractors(mesh_distractors_config: dict) -> tuple[list[Usd.Prim]
     mesh_gravity_disabled_chance = mesh_distractors_config.get("gravity_disabled_chance", 0.0)
     mesh_folders = mesh_distractors_config.get("folders", [])
     mesh_files = mesh_distractors_config.get("files", [])
-    mesh_urls = get_usd_paths(files=mesh_files, folders=mesh_folders, skip_folder_keywords=["material", "texture"])
+    mesh_urls = get_usd_paths(
+        files=mesh_files, folders=mesh_folders, skip_folder_keywords=["material", "texture", ".thumbs"]
+    )
     floating_meshes, falling_meshes = create_mesh_distractors(
         num_meshes, mesh_urls, "/Distractors", mesh_gravity_disabled_chance
     )
@@ -410,7 +415,7 @@ def load_auto_labeled_assets(auto_label_config: dict) -> tuple[list[Usd.Prim], l
     assets_files = auto_label_config.get("files", [])
     assets_folders = auto_label_config.get("folders", [])
     assets_urls = get_usd_paths(
-        files=assets_files, folders=assets_folders, skip_folder_keywords=["material", "texture"]
+        files=assets_files, folders=assets_folders, skip_folder_keywords=["material", "texture", ".thumbs"]
     )
     regex_replace_pattern = auto_label_config.get("regex_replace_pattern", "")
     regex_replace_repl = auto_label_config.get("regex_replace_repl", "")
