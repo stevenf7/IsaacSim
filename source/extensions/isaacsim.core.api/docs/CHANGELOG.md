@@ -1,6 +1,10 @@
 # Changelog
 
-## [4.2.12] - 2024-01-06
+## [4.2.13] - 2025-01-13
+### Fixed
+- Move visual cube down for follow target examples so its visible in default camera angle
+
+## [4.2.12] - 2025-01-06
 ### Fixed
 - Use visual cuboid in follow target obstacle so it can be removed and added dynamically
 
