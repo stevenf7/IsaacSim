@@ -91,12 +91,13 @@ class CacheStateDelegate(ui.MenuDelegate):
         carb.log_info(f"Local install path found: {path} - {self.pck_install_path}")
 
         existing_versions = []
-        for entry in os.listdir(path):
-            entry_path = os.path.join(path, entry)
+        if os.path.exists(path):
+            for entry in os.listdir(path):
+                entry_path = os.path.join(path, entry)
 
-            # Check if it's a directory and its name starts with "hub-"
-            if os.path.isdir(entry_path) and entry.startswith("hub-"):
-                existing_versions.append(entry)
+                # Check if it's a directory and its name starts with "hub-"
+                if os.path.isdir(entry_path) and entry.startswith("hub-"):
+                    existing_versions.append(entry)
 
         if len(existing_versions) == 0:
             return empty_version
@@ -426,8 +427,6 @@ class CacheStateDelegate(ui.MenuDelegate):
     def get_hub_settings_url(self):
         home = str(Path.home())
 
-        # TODO this can be refactored to use either internal KIT method to return this config
-        # or using client library
         omniverse_config = f"{home}/.nvidia-omniverse/config/omniverse.toml"
 
         try:
@@ -443,14 +442,17 @@ class CacheStateDelegate(ui.MenuDelegate):
                 url = f"http://localhost:{port}/index.html"
                 return url
             except KeyError as error:
-                raise ValueError(f"No [[paths.cache_root]] entry in {omniverse_config.name}") from error
+                raise ValueError(f"No [[paths.cache_root]] entry in {omniverse_config}") from error
             except IndexError as error:
                 raise ValueError(
-                    f"[[paths.cache_root]] in {omniverse_config.name} is empty but requires a module name"
+                    f"[[paths.cache_root]] in {omniverse_config} is empty but requires a module name"
                 ) from error
 
         except toml.TomlDecodeError as error:
-            raise ValueError(f"Could not read {omniverse_config.name}") from error
+            raise ValueError(f"Could not read {omniverse_config}") from error
+        except FileNotFoundError as error:
+            carb.log_info(f"Could not read {omniverse_config}")
+            return "http://127.0.0.1:14090"
 
     def toggle_ui_state(self, state: UIState):
         try:

@@ -131,7 +131,7 @@ def get_pck_install_folder(cfg_default_install_path: str, omniverse_config: str)
         except toml.TomlDecodeError as error:
             raise ValueError(f"Could not read {omniverse_config.name}") from error
     else:
-        carb.log_warn("omniverse.toml config file does not exists")
+        carb.log_info("omniverse.toml config file does not exist")
         return os_pck_default_path()
 
 
