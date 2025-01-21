@@ -1,141 +1,216 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.robot_motion.motion_generation
+
+.. rubric:: *World Interface*
+.. autosummary::
+    :nosignatures:
+
+    WorldInterface
+
+.. rubric:: *Motion Policy Interface*
+.. autosummary::
+    :nosignatures:
+
+    MotionPolicy
+    ~lula.motion_policies.RmpFlow
+
+.. rubric:: *Articulation Motion Policy*
+.. autosummary::
+    :nosignatures:
+
+    ArticulationMotionPolicy
+
+.. rubric:: *Kinematics Solver*
+.. autosummary::
+    :nosignatures:
+
+    KinematicsSolver
+    LulaKinematicsSolver
+
+.. rubric:: *Articulation Kinematics Solver*
+.. autosummary::
+    :nosignatures:
+
+    ArticulationKinematicsSolver
+
+.. rubric:: *Path Planning Interface*
+.. autosummary::
+    :nosignatures:
+
+    PathPlanner
+    ~lula.RRT
+
+.. rubric:: *Trajectory*
+.. autosummary::
+    :nosignatures:
+
+    Trajectory
+    ~lula.LulaTrajectory
+
+.. rubric:: *Lula Trajectory Generators*
+.. autosummary::
+    :nosignatures:
+
+    ~lula.LulaCSpaceTrajectoryGenerator
+    ~lula.LulaTaskSpaceTrajectoryGenerator
+
+.. rubric:: *Articulation Trajectory*
+.. autosummary::
+    :nosignatures:
+
+    ArticulationTrajectory
+
+.. rubric:: *Motion Policy Base Controller*
+.. autosummary::
+    :nosignatures:
+
+    MotionPolicyController
+
+|
+
+.. API
+
 World Interface
----------------
+^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.WorldInterface
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Motion Policy Interface
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.MotionPolicy
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.lula.motion_policies.RmpFlow
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Articulation Motion Policy
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.ArticulationMotionPolicy
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Kinematics Solver
------------------
+^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.KinematicsSolver
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.LulaKinematicsSolver
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Articulation Kinematics Solver
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.ArticulationKinematicsSolver
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Path Planning Interface
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.PathPlanner
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.lula.RRT
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Trajectory
-----------
+^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.Trajectory
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.lula.LulaTrajectory
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Lula Trajectory Generators
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.lula.LulaCSpaceTrajectoryGenerator
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.lula.LulaTaskSpaceTrajectoryGenerator
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Articulation Trajectory
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.motion_generation.ArticulationTrajectory
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Motion Policy Base Controller
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: isaacsim.robot_motion.motion_generation.motion_policy_controller
-    :no-index:
-    :inherited-members:
+.. autoclass:: isaacsim.robot_motion.motion_generation.MotionPolicyController
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

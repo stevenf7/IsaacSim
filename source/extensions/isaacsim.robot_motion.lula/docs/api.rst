@@ -1,291 +1,390 @@
 API
 ===
 
-Overview
---------
+Python API
+----------
+
+.. Summary
 
 .. automodule:: lula
     :no-index:
 
+.. currentmodule:: lula
+
+.. rubric:: *Logging*
+.. autosummary::
+    :nosignatures:
+
+    LogLevel
+
+.. rubric:: *Rotations and Poses*
+.. autosummary::
+    :nosignatures:
+
+    Rotation3
+    Pose3
+
+.. rubric:: *Robot Specification*
+.. autosummary::
+    :nosignatures:
+
+    RobotDescription
+    load_robot
+    load_robot_from_memory
+
+.. rubric:: *World Specification*
+.. autosummary::
+    :nosignatures:
+
+    Obstacle
+    create_obstacle
+    World
+    create_world
+    WorldView
+
+.. rubric:: *Kinematics*
+.. autosummary::
+    :nosignatures:
+
+    CyclicCoordDescentIkConfig
+    CyclicCoordDescentIkResults
+    compute_ik_ccd
+
+.. rubric:: *Path Specification*
+.. autosummary::
+    :nosignatures:
+
+    CSpacePathSpec
+    create_c_space_path_spec
+    TaskSpacePathSpec
+    create_task_space_path_spec
+    CompositePathSpec
+    create_composite_path_spec
+    load_c_space_path_spec_from_file
+    load_c_space_path_spec_from_memory
+    export_c_space_path_spec_to_memory
+    load_task_space_path_spec_from_file
+    load_task_space_path_spec_from_memory
+    export_task_space_path_spec_to_memory
+    load_composite_path_spec_from_file
+    load_composite_path_spec_from_memory
+    export_composite_path_spec_to_memory
+
+.. rubric:: *Path Generation*
+.. autosummary::
+    :nosignatures:
+
+    CSpacePath
+    LinearCSpacePath
+    create_linear_c_space_path
+    TaskSpacePath
+    TaskSpacePathConversionConfig
+    convert_composite_path_spec_to_c_space
+    convert_task_space_path_spec_to_c_space
+
+.. rubric:: *Trajectory Generation*
+.. autosummary::
+    :nosignatures:
+
+    Trajectory
+    CSpaceTrajectoryGenerator
+    create_c_space_trajectory_generator
+
+.. rubric:: *Collision Sphere Generation*
+.. autosummary::
+    :nosignatures:
+
+    CollisionSphereGenerator
+    create_collision_sphere_generator
+
+.. rubric:: *Motion Planning*
+.. autosummary::
+    :nosignatures:
+
+    MotionPlanner
+    create_motion_planner
+
+.. rubric:: *RmpFlow*
+.. autosummary::
+    :nosignatures:
+
+    RmpFlowConfig
+    create_rmpflow_config
+    create_rmpflow_config_from_memory
+    RmpFlow
+    create_rmpflow
+
 |
 
+.. API
+
 Logging
--------
+^^^^^^^
+
 ..
   autodoc does not provide a mechanism for controlling the ordering of class members derived
   from bound C++ (as opposed to python source).  Default ordering is alphabetical, so we have
   to document the log levels manually to ensure that they appear in the correct order.
 
 .. autoclass:: lula.LogLevel
-    :no-index:
 
     .. py:data:: FATAL
-        :no-index:
 
         Logging level for nonrecoverable errors (minimum level, so always enabled).
 
     .. py:data:: ERROR
-        :no-index:
 
         Logging level for recoverable errors.
 
     .. py:data:: WARNING
-        :no-index:
 
         Logging level for warnings, indicating possible cause for concern.
 
     .. py:data:: INFO
-        :no-index:
 
         Logging level for informational messages.
 
     .. py:data:: VERBOSE
-        :no-index:
 
         Logging level for highly verbose informational messages.
 
 .. autofunction:: lula.set_log_level
-    :no-index:
 
 |
 
 Rotations and Poses
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.Rotation3
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: lula.Pose3
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Robot Specification
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.RobotDescription
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.load_robot
-    :no-index:
 
 .. autofunction:: lula.load_robot_from_memory
-    :no-index:
 
 |
 
 World Specification
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.Obstacle
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_obstacle
-    :no-index:
 
 .. autoclass:: lula.World
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_world
-    :no-index:
 
 .. autoclass:: lula.WorldView
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Kinematics
-----------
+^^^^^^^^^^
 
 .. autoclass:: lula.Kinematics
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Inverse Kinematics
-------------------
+^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.CyclicCoordDescentIkConfig
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: lula.CyclicCoordDescentIkResults
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.compute_ik_ccd
-    :no-index:
 
 |
 
 Path Specification
-------------------
+^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.CSpacePathSpec
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_c_space_path_spec
-    :no-index:
 
 .. autoclass:: lula.TaskSpacePathSpec
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_task_space_path_spec
-    :no-index:
 
 .. autoclass:: lula.CompositePathSpec
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_composite_path_spec
-    :no-index:
 
 .. autofunction:: lula.load_c_space_path_spec_from_file
-    :no-index:
 
 .. autofunction:: lula.load_c_space_path_spec_from_memory
-    :no-index:
 
 .. autofunction:: lula.export_c_space_path_spec_to_memory
-    :no-index:
 
 .. autofunction:: lula.load_task_space_path_spec_from_file
-    :no-index:
 
 .. autofunction:: lula.load_task_space_path_spec_from_memory
-    :no-index:
 
 .. autofunction:: lula.export_task_space_path_spec_to_memory
-    :no-index:
 
 .. autofunction:: lula.load_composite_path_spec_from_file
-    :no-index:
 
 .. autofunction:: lula.load_composite_path_spec_from_memory
-    :no-index:
 
 .. autofunction:: lula.export_composite_path_spec_to_memory
-    :no-index:
 
 |
 
 Path Generation
----------------
+^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.CSpacePath
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: lula.LinearCSpacePath
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_linear_c_space_path
-    :no-index:
 
 .. autoclass:: lula.TaskSpacePath
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: lula.TaskSpacePathConversionConfig
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.convert_composite_path_spec_to_c_space
-    :no-index:
 
 .. autofunction:: lula.convert_task_space_path_spec_to_c_space
-    :no-index:
 
 |
 
 Trajectory Generation
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.Trajectory
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: lula.CSpaceTrajectoryGenerator
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_c_space_trajectory_generator
-    :no-index:
 
 |
 
 Collision Sphere Generation
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.CollisionSphereGenerator
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_collision_sphere_generator
-    :no-index:
 
 |
 
 Motion Planning
----------------
+^^^^^^^^^^^^^^^
 
 .. autoclass:: lula.MotionPlanner
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_motion_planner
-    :no-index:
 
 |
 
 RmpFlow
--------
+^^^^^^^
 
 .. autoclass:: lula.RmpFlowConfig
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_rmpflow_config
-    :no-index:
 
 .. autofunction:: lula.create_rmpflow_config_from_memory
-    :no-index:
 
 .. autoclass:: lula.RmpFlow
-    :no-index:
     :members:
     :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autofunction:: lula.create_rmpflow
-    :no-index:

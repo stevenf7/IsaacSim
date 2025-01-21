@@ -1,16 +1,31 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.core.simulation_manager
+
+.. autosummary::
+    :nosignatures:
+
+    SimulationManager
+    IsaacEvents
+
+|
+
+.. API
+
 .. autoclass:: isaacsim.core.simulation_manager.SimulationManager
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.simulation_manager.IsaacEvents
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

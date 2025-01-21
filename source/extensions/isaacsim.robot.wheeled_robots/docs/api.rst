@@ -1,107 +1,92 @@
 API
 ===
 
-Controllers
------------
+Python API
+----------
 
-Differential Controller
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. Summary
+
+.. currentmodule:: isaacsim.robot.wheeled_robots
+
+.. rubric:: controllers
+.. autosummary::
+    :nosignatures:
+
+    ~controllers.DifferentialController
+    ~controllers.HolonomicController
+    ~controllers.WheelBasePoseController
+
+.. rubric:: robots
+.. autosummary::
+    :nosignatures:
+
+    ~robots.WheeledRobot
+    ~robots.HolonomicRobotUsdSetup
+
+.. rubric:: *utilities* (controllers)
+.. autosummary::
+    :nosignatures:
+
+    ~controllers.QuinticPolynomial
+    ~controllers.quintic_polynomials_planner
+    ~controllers.stanley_control
+    ~controllers.pid_control
+
+|
+
+.. API
+
+Controllers
+^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot.wheeled_robots.controllers.DifferentialController
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
-
-Holonomic Controller
-^^^^^^^^^^^^^^^^^^^^
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot.wheeled_robots.controllers.HolonomicController
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
-
-Wheel Base Pose Controller
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot.wheeled_robots.controllers.WheelBasePoseController
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Robots
-------
-
-Wheeled Robot
-^^^^^^^^^^^^^
+^^^^^^
 
 .. autoclass:: isaacsim.robot.wheeled_robots.robots.WheeledRobot
-    :no-index:
-        :inherited-members:
-        :members:
-        :undoc-members:
-        :exclude-members:
-
-    |
-
-Holonomic Robot USD Setup
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: isaacsim.robot.wheeled_robots.robots.HolonomicRobotUsdSetup
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.robot.wheeled_robots.robots.HolonomicRobotUsdSetup
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 |
 
-Utilities
----------
-
-Quintic Polynomial
-^^^^^^^^^^^^^^^^^^
+Utilities (controllers)
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot.wheeled_robots.controllers.QuinticPolynomial
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
-
-Quintic Polynomials Planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: isaacsim.robot.wheeled_robots.controllers.quintic_polynomials_planner
-    :no-index:
     :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
-Stanly Control
-^^^^^^^^^^^^^^
+.. autofunction:: isaacsim.robot.wheeled_robots.controllers.quintic_polynomials_planner
 
-.. autoclass:: isaacsim.robot.wheeled_robots.controllers.stanley_control
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+.. autofunction:: isaacsim.robot.wheeled_robots.controllers.stanley_control
 
-PID Control
-^^^^^^^^^^^
-
-.. autoclass:: isaacsim.robot.wheeled_robots.controllers.pid_control
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
+.. autofunction:: isaacsim.robot.wheeled_robots.controllers.pid_control

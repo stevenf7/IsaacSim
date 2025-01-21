@@ -1,38 +1,53 @@
 API
 ===
 
-.. automethod:: isaacsim.replicator.domain_randomization.trigger.on_rl_frame    
-    :no-index:
-  
-.. automethod:: isaacsim.replicator.domain_randomization.gate.on_env_reset     
-    :no-index:
- 
-.. automethod:: isaacsim.replicator.domain_randomization.gate.on_interval      
-    :no-index:
+Python API
+----------
 
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.register_simulation_context 
-    :no-index:
-     
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.register_rigid_prim_view
-    :no-index:
+.. Summary
 
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.register_articulation_view
-    :no-index:
+.. currentmodule:: isaacsim.replicator.domain_randomization
 
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.randomize_simulation_context
-    :no-index:
+.. autosummary::
+    :nosignatures:
 
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.randomize_rigid_prim_view
-    :no-index:
+    scripts.trigger
+    scripts.gate
+    scripts.physics_view
+    scripts.utils
 
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.randomize_articulation_view
-    :no-index:
+|
 
-.. automethod:: isaacsim.replicator.domain_randomization.physics_view.step_randomization
-    :no-index:
+.. API
 
-.. automethod:: isaacsim.replicator.domain_randomization.utils.set_distribution_params
-    :no-index:
+trigger
+^^^^^^^
 
-.. automethod:: isaacsim.replicator.domain_randomization.utils.get_distribution_params
-    :no-index:
+.. automodule:: isaacsim.replicator.domain_randomization.scripts.trigger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+gate
+^^^^
+
+.. automodule:: isaacsim.replicator.domain_randomization.scripts.gate
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+physics_view
+^^^^^^^^^^^^
+
+.. automodule:: isaacsim.replicator.domain_randomization.scripts.physics_view
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+utils
+^^^^^
+
+.. automodule:: isaacsim.replicator.domain_randomization.scripts.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:

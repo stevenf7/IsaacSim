@@ -1,11 +1,27 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.robot_setup.grasp_editor
+
+.. autosummary::
+    :nosignatures:
+
+    import_grasps_from_file
+    GraspSpec
+
+|
+
+.. API
+
 .. autofunction:: isaacsim.robot_setup.grasp_editor.import_grasps_from_file
-    :no-index:
 
 .. autoclass:: isaacsim.robot_setup.grasp_editor.GraspSpec
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
