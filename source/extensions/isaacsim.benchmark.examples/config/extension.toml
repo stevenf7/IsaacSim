@@ -50,10 +50,19 @@ args = [
 "--allow-root", 
 "--/app/fastShutdown=1", 
 "--vulkan",
+'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ] # we can use fast shutdown because metrics are not uploaded
 
 stdoutFailPatterns.exclude = [
     "*NGX EvaluateFeature failed*", # Ada multi gpu doesn't support this yet
     "*Failed to evaluate DLSS feature*", # Ada multi gpu doesn't support this yet
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
+]
+
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

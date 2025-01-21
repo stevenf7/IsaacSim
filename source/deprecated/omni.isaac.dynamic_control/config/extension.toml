@@ -45,8 +45,16 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
-
+timeout = 900
 dependencies = [
     "isaacsim.storage.native",
-    "omni.kit.test"
+    "omni.kit.test",
+    "omni.physx.ui",
+]
+
+args = [
+    "--/app/file/ignoreUnsavedOnExit=1",
+    '--/persistent/simulation/defaultMetersPerUnit = 1.0',
+    '--/persistent/app/stage/upAxis = "Z"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]

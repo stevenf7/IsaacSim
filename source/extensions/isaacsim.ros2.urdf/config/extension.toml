@@ -28,7 +28,16 @@ writeTarget.kit = true
 name = "isaacsim.ros2.urdf"
 
 [[test]]
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
 
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

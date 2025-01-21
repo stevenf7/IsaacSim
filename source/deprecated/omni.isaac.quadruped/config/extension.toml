@@ -22,3 +22,14 @@ name = "omni.isaac.quadruped"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. The built in optimization controller will be removed. The RL based controller will be replaced by isaacsim.robot.policy.examples"
+
+[[test]]
+args = [
+'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

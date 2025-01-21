@@ -52,17 +52,17 @@ recursive = false
 
 [settings]
 app.sensors.nv.lidar.profileBaseFolder=[
-    "${app}/../extsbuild/omni.sensors.nv.common/data/lidar/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/HESAI/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/NVIDIA/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/Ouster/OS0/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/Ouster/OS1/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/Ouster/OS2/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/SICK/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/SLAMTEC/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/Velodyne/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/ZVISION/",
-    "${app}/../exts/isaacsim.sensors.rtx/data/lidar_configs/"]
+    "${omni.sensors.nv.common}/data/lidar/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/HESAI/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/NVIDIA/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Ouster/OS0/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Ouster/OS1/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Ouster/OS2/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/SICK/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/SLAMTEC/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Velodyne/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/ZVISION/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/"]
 
 # app.sensors.nv.lidar.outputBufferOnGPU = true
 app.sensors.nv.lidar.auxDataOutput = "EXTRA"
@@ -78,10 +78,54 @@ renderer.raytracingMotion.enabled=true
 timeout = 900
 dependencies = [
     "omni.hydra.rtx",
+    "omni.rtx.shadercache.vulkan"
 ]
-
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
+]
+
+args = [
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    "--/app/asyncRendering=0",
+    "--/app/asyncRenderingLowLatency=0",
+    "--/app/fastShutdown=1",
+    "--/app/file/ignoreUnsavedOnExit=1",
+    "--/app/hydraEngine/waitIdle=0",
+    "--/app/renderer/skipWhileMinimized=0",
+    "--/app/renderer/sleepMsOnFocus=0",
+    "--/app/renderer/sleepMsOutOfFocus=0",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+    "--/app/settings/persistent=0",
+    "--/app/viewport/createCameraModelRep=0",
+    "--/crashreporter/skipOldDumpUpload=1",
+    "--/omni/kit/plugin/syncUsdLoads=1",
+    "--/omni/replicator/asyncRendering=0",
+    '--/persistent/app/stage/upAxis="Z"',
+    "--/persistent/app/viewport/defaults/tickRate=120",
+    "--/persistent/app/viewport/displayOptions=31951",
+    "--/persistent/omni/replicator/captureOnPlay=1",
+    "--/persistent/omnigraph/updateToUsd=0",
+    "--/persistent/physics/visualizationDisplayJoints=0",
+    "--/persistent/renderer/startupMessageDisplayed=1",
+    "--/persistent/simulation/defaultMetersPerUnit=1.0",
+    "--/persistent/simulation/minFrameRate=15",
+    "--/renderer/multiGpu/autoEnable=0",
+    "--/renderer/multiGpu/enabled=0",
+    "--/rtx-transient/dlssg/enabled=0",
+    "--/'rtx-transient'/resourcemanager/enableTextureStreaming=1",
+    "--/rtx/descriptorSets=360000",
+    "--/rtx/hydra/enableSemanticSchema=1",
+    "--/rtx/hydra/materialSyncLoads=1",
+    "--/rtx/materialDb/syncLoads=1",
+    "--/rtx/newDenoiser/enabled=1",
+    "--/rtx/reservedDescriptors=900000",
+    '--/exts/omni.usd/locking/onClose=0',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

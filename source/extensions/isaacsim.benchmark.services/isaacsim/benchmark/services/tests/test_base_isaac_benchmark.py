@@ -19,6 +19,9 @@ from isaacsim.core.api import SimulationContext
 
 class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
     async def setUp(self):
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         await super().setUp(backend_type="LocalLogMetrics")
         pass
 
