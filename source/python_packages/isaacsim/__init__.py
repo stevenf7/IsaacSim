@@ -8,6 +8,7 @@
 #
 
 import ctypes
+import glob
 import os
 import sys
 
@@ -92,9 +93,11 @@ def expose_api():
         try:
             # get isaacsim/simulation_app folder path
             isaacsim_path = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-            path = os.path.join(
-                os.environ.get("ISAAC_PATH", isaacsim_path), "exts", "isaacsim.simulation_app", "isaacsim"
-            )
+            path = glob.glob(
+                os.path.join(
+                    os.environ.get("ISAAC_PATH", isaacsim_path), "exts*", "isaacsim.simulation_app*", "isaacsim"
+                )
+            )[0]
             if os.path.exists(path):
                 # register path
                 sys.path.insert(0, path)
