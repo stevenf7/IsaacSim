@@ -88,6 +88,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         self._ground_truth_gripper_orientation = np.array([0.0, 7.07106781e-01, 0.0, 7.07106781e-01])
 
         self._grasp_spec = import_grasps_from_file(self._grasp_file)
+        await update_stage_async()
 
     def assertAlmostEqual(self, a, b, msg="", tol=1e-6):
         # overriding method because it doesn't support iterables

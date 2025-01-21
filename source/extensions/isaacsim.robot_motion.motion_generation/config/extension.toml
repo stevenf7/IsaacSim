@@ -31,3 +31,14 @@ timeout = 900
 dependencies = [
     "isaacsim.storage.native" # test only
 ]
+
+args = [
+'--/persistent/simulation/defaultMetersPerUnit = 1.0',
+'--/persistent/app/stage/upAxis = "Z"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+]
+
+[[test]]
+name = "startup"
+args = [
+]

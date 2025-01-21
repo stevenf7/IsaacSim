@@ -71,5 +71,5 @@ while simulation_app.is_running():
     if args.test is True:
         break
 
-
+my_world.stop()
 simulation_app.close()

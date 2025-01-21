@@ -199,6 +199,7 @@ class TestMenuAssets(OmniUiTest):
             clear_stage()
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
+            print(test_path)
             await menu_click(test_path, human_delay_speed=10)
             for i in range(5):
                 await omni.kit.app.get_app().next_update_async()

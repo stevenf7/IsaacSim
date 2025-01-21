@@ -31,3 +31,14 @@ timeout = 900
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
+
+args = [
+'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

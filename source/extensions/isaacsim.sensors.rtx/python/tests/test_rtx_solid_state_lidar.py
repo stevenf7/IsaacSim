@@ -44,15 +44,16 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
         self._settings.set_bool("/app/runLoops/main/rateLimitEnabled", True)
         self._settings.set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         self._settings.set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        await update_stage_async()
 
         pass
 
     async def tearDown(self):
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         self._settings = None
 
@@ -100,6 +101,7 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
             orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
             config_file_name="Example_Solid_State",
         )
+        await update_stage_async()
         sensor.initialize()
         sensor.add_range_data_to_frame()
         sensor.add_elevation_data_to_frame()
@@ -108,7 +110,7 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
 
         omni.timeline.get_timeline_interface().play()
         for _ in range(6):
-            await omni.kit.app.get_app().next_update_async()
+            await update_stage_async()
 
             frame = sensor.get_current_frame()
             num_points = len(frame["range"])
@@ -153,7 +155,7 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
 
         omni.timeline.get_timeline_interface().play()
         for i in range(7):
-            await omni.kit.app.get_app().next_update_async()
+            await update_stage_async()
 
         frame = sensor.get_current_frame()
         linear_depth_data = frame["linear_depth_data"]

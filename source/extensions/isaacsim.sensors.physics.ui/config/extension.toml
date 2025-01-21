@@ -22,3 +22,14 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.sensors.physics.ui"
+
+[[test]]
+args = [
+'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

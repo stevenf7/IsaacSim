@@ -180,7 +180,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
         # check where the joints are after evaluate
         robot = Robot(prim_path="/panda", name="franka")
         self._timeline.play()
-        await simulate_async(8)
+        await simulate_async(1)
         robot.initialize()
         print(robot.get_joint_positions())
 

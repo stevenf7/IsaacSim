@@ -23,3 +23,16 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.cortex.behaviors"
+
+
+[[test]]
+
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

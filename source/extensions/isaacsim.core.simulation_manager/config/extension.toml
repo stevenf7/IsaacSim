@@ -40,4 +40,5 @@ recursive = false
 enabled = true
 dependencies = [
     "omni.kit.test",
+    "omni.physx.ui",
 ]

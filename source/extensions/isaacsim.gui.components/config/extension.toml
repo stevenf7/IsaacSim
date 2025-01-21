@@ -46,3 +46,6 @@ dependencies = [
     "isaacsim.core.api",
     "isaacsim.core.utils"
 ]
+args = [
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+]

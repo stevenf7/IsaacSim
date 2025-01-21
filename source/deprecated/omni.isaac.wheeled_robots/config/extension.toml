@@ -26,3 +26,13 @@ name = "omni.isaac.wheeled_robots"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.wheeled_robots, isaacsim.robot.wheeled_robots.examples."
 
+[[test]]
+args = [
+'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

@@ -28,3 +28,14 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robo
 
 [[python.module]]
 name = "omni.isaac.manipulators"
+
+[[test]]
+args = [
+'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]

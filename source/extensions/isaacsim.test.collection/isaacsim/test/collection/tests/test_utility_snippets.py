@@ -319,16 +319,17 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         ###
         pass
 
-    async def test_save_to_file(self):
-        import carb
-        import omni
-        from isaacsim.storage.native import get_assets_root_path_async
+    # Test will not run with S3 assets
+    # async def test_save_to_file(self):
+    #     import carb
+    #     import omni
+    #     from isaacsim.storage.native import get_assets_root_path_async
 
-        assets_root = await get_assets_root_path_async()
-        # Create a prim
-        result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
-        # Change the path as needed
-        omni.usd.get_context().save_as_stage(assets_root + "/Users/test/saved.usd", None)
+    #     assets_root = await get_assets_root_path_async()
+    #     # Create a prim
+    #     result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
+    #     # Change the path as needed
+    #     omni.usd.get_context().save_as_stage(assets_root + "/Users/test/saved.usd", None)
 
     async def test_async_task(self):
         ###
