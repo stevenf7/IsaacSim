@@ -231,7 +231,7 @@ class FollowTarget(ABC, BaseTask):
         )
         cube_name = find_unique_string_name(initial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x))
         if position is None:
-            position = np.array([0.1, 0.1, 1.0]) / get_stage_units()
+            position = np.array([0.1, 0.1, 0.7]) / get_stage_units()
         cube = self.scene.add(
             VisualCuboid(
                 name=cube_name,
