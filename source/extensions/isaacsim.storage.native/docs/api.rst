@@ -1,10 +1,21 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.storage.native
+
+.. autosummary::
+    :nosignatures:
+
+.. |
+
+.. API
+
 .. automodule:: isaacsim.storage.native.nucleus
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
-    :member-order: bysource
+    :show-inheritance:

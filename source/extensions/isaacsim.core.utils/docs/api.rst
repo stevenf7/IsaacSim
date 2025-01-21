@@ -1,8 +1,11 @@
 API
 ===
 
+Python API
+----------
+
 Articulation Utils
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Utils for programmatically interacting with Articulations on the Stage.
 
@@ -12,15 +15,14 @@ The utils can be used to:
 * Determine the base paths of every Articulation on the Stage.
 
 .. automodule:: isaacsim.core.utils.articulations
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Bounds Utils
-------------
+^^^^^^^^^^^^
 
 Utils for computing the Axis-Aligned Bounding Box (AABB) and the Oriented Bounding Box (OBB) of a prim.
 
@@ -29,15 +31,14 @@ Utils for computing the Axis-Aligned Bounding Box (AABB) and the Oriented Boundi
 * Unlike the AABB, which is aligned with the coordinate axes, the OBB can be oriented at any angle in 3D space.
 
 .. automodule:: isaacsim.core.utils.bounds
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Carb Utils
-----------
+^^^^^^^^^^
 
 Carb settings is a generalized subsystem designed to provide a simple to use interface to Kit's various subsystems,
 which can be automated, enumerated, serialized and so on.
@@ -50,30 +51,26 @@ The most common types of settings are:
 * Extension: ``"/exts/<extension>/<setting>"`` (e.g., ``"/exts/omni.kit.debug.python/host"``)
 
 .. automodule:: isaacsim.core.utils.carb
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Collisions Utils
-----------------
+^^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.collisions
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Commands
---------
+^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.commands
-    :no-index:
-    :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
     :show-inheritance:
@@ -83,42 +80,39 @@ Commands
 |
 
 Constants Utils
----------------
+^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.constants
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Distance Metrics Utils
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.distance_metrics
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Extensions Utils
-----------------
+^^^^^^^^^^^^^^^^
 
 Utilities for enabling and disabling extensions from the Extension Manager and knowing their locations
 
 .. automodule:: isaacsim.core.utils.extensions
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Interoperability Utils
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 Utilities for interoperability between different (ML) frameworks.
 |br| Supported frameworks are:
@@ -130,293 +124,261 @@ Utilities for interoperability between different (ML) frameworks.
 * `NumPy <https://numpy.org>`_
 
 .. automodule:: isaacsim.core.utils.interops
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Math Utils
-----------
+^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.math
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 .. automodule:: isaacsim.core.utils._isaac_utils.math
-    :no-index:
-    :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: 
 
 .. automodule:: isaacsim.core.utils._isaac_utils.transforms
-    :no-index:
-    :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: 
 
 |
 
 Mesh Utils
-----------
+^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.mesh
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Physics Utils
--------------
+^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.physics
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Prims Utils
------------
+^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.prims
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Random Utils
-------------
+^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.random
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Render Product Utils
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.render_product
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Rotations Utils
----------------
+^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.rotations
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Semantics Utils
----------------
+^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.semantics
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Stage Utils
------------
+^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.stage
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 String Utils
-------------
+^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.string
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Transformations Utils
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.transformations
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Types Utils
------------
+^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.types
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 Viewports Utils
----------------
+^^^^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.viewports
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 XForms Utils
-------------
+^^^^^^^^^^^^
 
 .. automodule:: isaacsim.core.utils.xforms
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :show-inheritance:
 
 |
 
 NumPy Utils
------------
+^^^^^^^^^^^
 
 Rotations
-^^^^^^^^^
+"""""""""
 
 .. automodule:: isaacsim.core.utils.numpy.rotations
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Maths
-^^^^^
+"""""
 
 .. automodule:: isaacsim.core.utils.numpy.maths
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Tensor
-^^^^^^
+""""""
 
 .. automodule:: isaacsim.core.utils.numpy.tensor
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Transformations
-^^^^^^^^^^^^^^^
+"""""""""""""""
 
 .. automodule:: isaacsim.core.utils.numpy.transformations
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 |
 
 Torch Utils
---------------
+^^^^^^^^^^^
 
 Rotations
-^^^^^^^^^
+"""""""""
 
 .. automodule:: isaacsim.core.utils.torch.rotations
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Maths
-^^^^^
+"""""
 
 .. automodule:: isaacsim.core.utils.torch.maths
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Tensor
-^^^^^^
+""""""
 
 .. automodule:: isaacsim.core.utils.torch.tensor
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Transformations
-^^^^^^^^^^^^^^^
+"""""""""""""""
 
 .. automodule:: isaacsim.core.utils.torch.transformations
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 |
 
 Warp Utils
---------------
+^^^^^^^^^^
 
 Rotations
-^^^^^^^^^
+"""""""""
 
 .. automodule:: isaacsim.core.utils.torch.rotations
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Tensor
-^^^^^^
+""""""
 
 .. automodule:: isaacsim.core.utils.torch.tensor
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:
 
 Transformations
-^^^^^^^^^^^^^^^
+"""""""""""""""
 
 .. automodule:: isaacsim.core.utils.torch.transformations
     :members:
     :undoc-members:
-    :exclude-members:
-    :no-index:
+    :show-inheritance:

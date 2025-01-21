@@ -1,36 +1,62 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.sensors.rtx
+
+.. rubric:: *Commands*
+.. autosummary::
+    :nosignatures:
+
+    IsaacSensorCreateRtxLidar
+    IsaacSensorCreateRtxIDS
+    IsaacSensorCreateRtxRadar
+
+.. rubric:: *Sensors*
+.. autosummary::
+    :nosignatures:
+
+    LidarRtx
+
+|
+
+.. API
+
 Commands
---------
+^^^^^^^^
 
 .. autoclass:: isaacsim.sensors.rtx.IsaacSensorCreateRtxLidar
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
 .. autoclass:: isaacsim.sensors.rtx.IsaacSensorCreateRtxIDS
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
 .. autoclass:: isaacsim.sensors.rtx.IsaacSensorCreateRtxRadar
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
-Lidar RTX
----------
+|
+
+Sensors
+^^^^^^^
 
 .. autoclass:: isaacsim.sensors.rtx.LidarRtx
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

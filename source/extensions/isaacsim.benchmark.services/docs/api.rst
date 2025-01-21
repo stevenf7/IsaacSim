@@ -1,22 +1,31 @@
 API
 ===
 
-Async Benchmarks
-----------------
+Python API
+----------
 
-.. autoclass:: isaacsim.benchmark.services.BaseIsaacBenchmarkAsync
-    :no-index:
-    :inherited-members:
+.. Summary
+
+.. currentmodule:: isaacsim.benchmark.services
+
+.. autosummary::
+    :nosignatures:
+
+    ~base_isaac_benchmark_async.BaseIsaacBenchmarkAsync
+    ~base_isaac_benchmark.BaseIsaacBenchmark
+
+|
+
+.. API
+
+.. autoclass:: isaacsim.benchmark.services.base_isaac_benchmark_async.BaseIsaacBenchmarkAsync
     :members:
     :undoc-members:
-    :exclude-members:
-
-Standalone Python Benchmarks
-----------------------------
-
-.. autoclass:: isaacsim.benchmark.services.BaseIsaacBenchmark
-    :no-index:
     :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.benchmark.services.base_isaac_benchmark.BaseIsaacBenchmark
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

@@ -1,20 +1,38 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.robot_setup.assembler
+
+.. autosummary::
+    :nosignatures:
+
+    RobotAssembler
+    AssembledRobot
+    AssembledBodies
+
+|
+
+.. API
+
 .. autoclass:: isaacsim.robot_setup.assembler.RobotAssembler
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_setup.assembler.AssembledRobot
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.robot_setup.assembler.AssembledBodies
-    :no-index:
     :members:
     :undoc-members:
-    :member-order: bysource
+    :inherited-members:
+    :show-inheritance:

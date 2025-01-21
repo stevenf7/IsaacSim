@@ -1,57 +1,77 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.sensors.physx
+
+.. rubric:: *Commands*
+.. autosummary::
+    :nosignatures:
+
+    RangeSensorCreatePrim
+    RangeSensorCreateLidar
+    RangeSensorCreateGeneric
+    IsaacSensorCreateLightBeamSensor
+
+.. rubric:: *Sensors*
+.. autosummary::
+    :nosignatures:
+
+    ProximitySensor
+    RotatingLidarPhysX
+
+|
+
+.. API
+
 Commands
---------
+^^^^^^^^
 
 .. autoclass:: isaacsim.sensors.physx.RangeSensorCreatePrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
 .. autoclass:: isaacsim.sensors.physx.RangeSensorCreateLidar
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
 .. autoclass:: isaacsim.sensors.physx.RangeSensorCreateGeneric
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
 .. autoclass:: isaacsim.sensors.physx.IsaacSensorCreateLightBeamSensor
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
 
 |
 
-Proximity Sensor
-----------------
+Sensors
+^^^^^^^
 
 .. autoclass:: isaacsim.sensors.physx.ProximitySensor
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
-
-|
-
-Lidar PhysX
------------
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.sensors.physx.RotatingLidarPhysX
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

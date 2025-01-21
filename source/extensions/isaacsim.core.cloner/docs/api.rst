@@ -1,22 +1,31 @@
 API
 ===
 
-Base Cloner
------------
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.core.cloner
+
+.. autosummary::
+    :nosignatures:
+
+    Cloner
+    GridCloner
+
+|
+
+.. API
 
 .. autoclass:: isaacsim.core.cloner.Cloner
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
-
-Grid Cloner
------------
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.cloner.GridCloner
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

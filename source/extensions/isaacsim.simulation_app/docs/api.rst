@@ -1,14 +1,31 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.simulation_app
+
+.. autosummary::
+    :nosignatures:
+
+    SimulationApp
+    AppFramework
+
+|
+
+.. API
+
 .. autoclass:: isaacsim.simulation_app.SimulationApp
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.simulation_app.AppFramework
-    :no-index:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

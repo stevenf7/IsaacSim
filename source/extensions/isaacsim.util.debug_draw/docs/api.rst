@@ -1,11 +1,24 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.util.debug_draw
+
+.. autosummary::
+    :nosignatures:
+
+    ~_debug_draw.DebugDraw
+
+|
+
+.. API
+
 .. automodule:: isaacsim.util.debug_draw._debug_draw
-    :no-index:
-    :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members:

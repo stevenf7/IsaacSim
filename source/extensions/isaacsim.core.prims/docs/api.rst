@@ -1,119 +1,147 @@
 API
 ===
 
+Python API
+----------
+
+.. warning::
+
+    The use of *Single Prim* classes (a particular case of the *Prims* classes for a single prim) is discouraged as
+    they will be removed in future versions. Use *Prims* classes (formerly *Prim Views*) instead.
+
+.. Summary
+
+.. currentmodule:: isaacsim.core.prims
+
+.. rubric:: *Prims*
+.. autosummary::
+    :nosignatures:
+
+    Articulation
+    ClothPrim
+    DeformablePrim
+    GeometryPrim
+    ParticleSystem
+    RigidPrim
+    SdfShapePrim
+    XFormPrim
+
+.. rubric:: *Single Prims*
+
+.. autosummary::
+    :nosignatures:
+
+    SingleArticulation
+    SingleClothPrim
+    SingleDeformablePrim
+    SingleGeometryPrim
+    SingleParticleSystem
+    SingleRigidPrim
+    SingleXFormPrim
+
+|
+
+.. API
+
 Prims
------
+^^^^^
 
 .. autoclass:: isaacsim.core.prims.Articulation
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.ClothPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.DeformablePrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.GeometryPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.ParticleSystem
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.RigidPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SdfShapePrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.XFormPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 |
 
 Single Prims
-------------
+^^^^^^^^^^^^
 
 .. warning::
 
-    The use of single-prim classes is discouraged and would be marked as deprecated in future releases.
+    The use of *Single Prim* classes (a particular case of the *Prims* classes for a single prim) is discouraged as
+    they will be removed in future versions. Use *Prims* classes (formerly *Prim Views*) instead.
 
 .. autoclass:: isaacsim.core.prims.SingleArticulation
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SingleClothPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SingleDeformablePrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SingleGeometryPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SingleParticleSystem
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SingleRigidPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.core.prims.SingleXFormPrim
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:

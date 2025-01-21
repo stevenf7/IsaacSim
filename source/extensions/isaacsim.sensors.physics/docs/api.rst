@@ -1,69 +1,83 @@
 API
 ===
 
-Commands
---------
-
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreatePrim
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreateContactSensor
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreateImuSensor
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Contact sensor
---------------
-
-.. autoclass:: isaacsim.sensors.physics.ContactSensor
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-Effort sensor
--------------
-
-.. autoclass:: isaacsim.sensors.physics.EsSensorReading
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-.. autoclass:: isaacsim.sensors.physics.EffortSensor
-    :no-index:
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-|
-
-IMU sensor
+Python API
 ----------
 
-.. autoclass:: isaacsim.sensors.physics.IMUSensor
-    :no-index:
-    :inherited-members:
+.. Summary
+
+.. currentmodule:: isaacsim.sensors.physics
+
+.. rubric:: *Commands*
+.. autosummary::
+    :nosignatures:
+
+    IsaacSensorCreatePrim
+    IsaacSensorCreateContactSensor
+    IsaacSensorCreateImuSensor
+
+.. rubric:: *Sensors*
+.. autosummary::
+    :nosignatures:
+
+    ContactSensor
+    EsSensorReading
+    EffortSensor
+    IMUSensor
+
+|
+
+.. API
+
+Commands
+^^^^^^^^
+
+.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreatePrim
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
+
+.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreateContactSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
+
+.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreateImuSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
+
+|
+
+Sensors
+^^^^^^^
+
+.. autoclass:: isaacsim.sensors.physics.ContactSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.physics.EsSensorReading
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.physics.EffortSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.physics.IMUSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:

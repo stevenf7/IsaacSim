@@ -1,16 +1,31 @@
 API
 ===
 
+Python API
+----------
+
+.. Summary
+
+.. currentmodule:: isaacsim.sensors.camera
+
+.. autosummary::
+    :nosignatures:
+
+    Camera
+    CameraView
+
+|
+
+.. API
+
 .. autoclass:: isaacsim.sensors.camera.Camera
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
 
 .. autoclass:: isaacsim.sensors.camera.CameraView
-    :no-index:
-    :inherited-members:
     :members:
     :undoc-members:
-    :exclude-members:
+    :inherited-members:
+    :show-inheritance:
