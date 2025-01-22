@@ -9,8 +9,15 @@
 
 import carb
 
+old_extension_name = "omni.isaac.wheeled_robots"
+new_extension_name = "isaacsim.robot.wheeled_robots"
+
+# Provide deprecation warning to user
+
 carb.log_warn(
-    "omni.isaac.manipulators has been deprecated in favor of isaacsim.robot.manipulators. Please update your code accordingly."
+    f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from isaacsim.robot.manipulators.gripper.gripper import *
+from .controllers import *
+from .impl import *
+from .robots import *

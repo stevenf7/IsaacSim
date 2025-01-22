@@ -16,3 +16,5 @@ new_extension_name = "isaacsim.util.merge_mesh"
 carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
+
+from omni.isaac.merge_mesh.mesh_merger import *

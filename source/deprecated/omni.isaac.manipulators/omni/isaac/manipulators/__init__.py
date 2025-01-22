@@ -13,5 +13,6 @@ carb.log_warn(
     "omni.isaac.manipulators has been deprecated in favor of isaacsim.robot.manipulators. Please update your code accordingly."
 )
 
-from .impl import *
-from .manipulators.single_manipulator import *
+from .controllers import *
+from .grippers import *
+from .manipulators import *

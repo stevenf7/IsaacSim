@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.3] - 2025-01-21
+### Fixed
+- Fix import issue after deprecation
+
 ## [1.0.2] - 2024-11-07
 ### Changed
 - Fix minor typo

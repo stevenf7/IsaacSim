@@ -10,7 +10,7 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.examples has been deprecated in favor of isaacsim.examples. Please update your code accordingly."
+    "omni.isaac.examples has been deprecated in favor of isaacsim.examples.interactive. Please update your code accordingly."
 )
 
-from isaacsim.examples.quadruped.quadruped_example import *
+from isaacsim.examples.interactive.quadruped.quadruped_example import *

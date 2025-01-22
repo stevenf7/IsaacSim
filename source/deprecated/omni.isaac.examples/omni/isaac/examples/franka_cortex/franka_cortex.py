@@ -21,4 +21,4 @@ carb.log_warn(
 )
 
 
-from isaacsim.examples.franka_cortex.franka_cortex import *
+from isaacsim.examples.interactive.franka_cortex.franka_cortex import *
