@@ -1,9 +1,12 @@
 # Changelog
 
+## [13.6.2] - 2025-01-22
+### Fixed
+- Test error by forcing test to run with vulkan
+
 ## [13.6.1] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [13.6.0] - 2024-12-13
 ### Removed
