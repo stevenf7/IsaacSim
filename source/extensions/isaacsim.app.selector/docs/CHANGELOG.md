@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.8.9] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.8.8] - 2024-12-30
 ### Fixed
 - Errors due to missing icons when using this extension with app template

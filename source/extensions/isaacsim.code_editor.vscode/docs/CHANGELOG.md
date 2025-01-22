@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.4] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.0.3] - 2024-12-07
 ### Fixed
 - moved from deprecated editor_menu.add_item to omni.kit.menu.utils

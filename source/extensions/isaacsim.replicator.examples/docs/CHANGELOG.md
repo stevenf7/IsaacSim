@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.1.0] - 2024-12-17
 ### Added
 - added UR10 palletizing demo test

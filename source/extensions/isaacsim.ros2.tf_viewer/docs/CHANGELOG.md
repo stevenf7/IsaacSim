@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.0.1] - 2024-11-19
 ### Fixed
 - Startup test

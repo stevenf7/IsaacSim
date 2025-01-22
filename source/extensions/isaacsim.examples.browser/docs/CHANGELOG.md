@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.8] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.1.7] - 2025-01-17
 ### Changed
 - tab to be "Robotics Examples" to match menu

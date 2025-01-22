@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.4] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.1.3] - 2024-12-01
 ### Changed
 - Make extension python version specific

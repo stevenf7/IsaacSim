@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.4.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.4.1] - 2024-12-06
 ### Fixed
 - Signal handler to exit cleanly when ctrl-c is pressed
@@ -34,7 +39,7 @@
 - Rename RayTracedLighting to RaytracedLighting
 
 ## [2.0.1] - 2024-10-02
-### Changes
+### Changed
 - Update dependency omni.isaac.version to isaacsim.core.version
 
 ## [2.0.0] - 2024-09-24

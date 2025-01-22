@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.1.2] - 2025-01-14
 
 ### Added
@@ -12,14 +17,12 @@
 
 - Add missing `pathlib` to `exporter/urdf/ui_builder.py`
 
-## [1.1.0] - 2024-10-15
+## [1.1.0] - 2024-10-29
 
 ### Fixed
-
 - Fix incorrect URDF export when the USD prims have scaling values
 
-### Update
-
+### Changed
 - Export .mtl files with the .obj files based on USD material prims
 - Include inertia values from USD in URDF
 - Use Isaac name override for frame name if it exists

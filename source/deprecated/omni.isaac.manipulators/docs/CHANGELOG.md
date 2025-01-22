@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [3.0.2] - 2025-01-21
 ### Fixed
 - Corrected module import.

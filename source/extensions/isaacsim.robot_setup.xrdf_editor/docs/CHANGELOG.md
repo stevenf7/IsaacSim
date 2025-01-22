@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.1.4] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [3.1.3] - 2025-01-17
 ### Changed
 - Temporarily changed docs link to gitlab pages
@@ -15,8 +20,7 @@
 ## [3.1.0] - 2024-12-03
 ### Fixed
 - Fixed functionality for discovering which links are part of the robot and their corresponding paths.
-- Fixed error handling for instanceable assets to still allow authoring spheres by hand and to give
-  verbose warnings.
+- Fixed error handling for instanceable assets to still allow authoring spheres by hand and to give verbose warnings.
 
 ## [3.0.2] - 2024-10-31
 ### Changed

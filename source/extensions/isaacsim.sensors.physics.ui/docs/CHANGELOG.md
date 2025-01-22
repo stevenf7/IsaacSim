@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.1.1] - 2024-12-12
 ### Fixed
 - Restores missing methods to add IMU and Contact sensors to scene

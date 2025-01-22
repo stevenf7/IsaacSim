@@ -1,5 +1,5 @@
 [package]
-version = "3.0.0"
+version = "3.0.1"
 title = "Cache Status Indicator"
 category = "Internal"
 changelog = "docs/CHANGELOG.md"

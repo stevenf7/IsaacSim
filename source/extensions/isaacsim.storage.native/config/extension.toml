@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.4"
+version = "1.0.5"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -22,6 +22,9 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.storage.native"
+
+[[python.module]]
+name = "isaacsim.storage.native.tests"
 
 [settings]
 persistent.isaac.asset_root.default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.1"
+version = "1.0.2"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Scene Blox"
 description = "The extension implements SceneBlox, a rule-based randomized scene generation workflow using the wave function collapse algorithm."

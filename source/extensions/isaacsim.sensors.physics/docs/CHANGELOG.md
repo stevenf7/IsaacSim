@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.4] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.3.3] - 2024-12-16
 ### Changed
 - Moved samples to isaacsim.sensors.physics.examples extension.

@@ -1,8 +1,13 @@
 # Changelog
 
+## [0.2.5] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.2.4] - 2024-12-11
 ### Fixed
- - Take the xr anchor offset into account in the hand joint transforms
+- Take the xr anchor offset into account in the hand joint transforms
 
 ## [0.2.3] - 2024-11-19
 ### Fixed

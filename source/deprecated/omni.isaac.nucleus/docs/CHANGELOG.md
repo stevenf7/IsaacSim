@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [1.0.2] - 2024-11-01
 ### Changed
 - Updated extension warning

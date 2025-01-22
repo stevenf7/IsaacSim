@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.4] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [1.0.3] - 2025-01-17
 ### Changed
 - Temporarily changed docs link to gitlab pages

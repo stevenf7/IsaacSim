@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.1] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [1.3.0] - 2025-01-17
 ### Changed
 - Put default filter for files, set it as an app setting
@@ -47,7 +52,7 @@
 ### Changed
 - Rename browser
 
-## [1.1.0] - 2024-10-23
+## [1.1.0] - 2024-10-29
 ### Changed
 - Switch to UI backend that supports Option Panel. Variant selection available for assets that have it.
 

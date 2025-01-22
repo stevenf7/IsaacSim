@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.2.0] - 2024-01-08
 ### Changed
 - Moved header files to extension

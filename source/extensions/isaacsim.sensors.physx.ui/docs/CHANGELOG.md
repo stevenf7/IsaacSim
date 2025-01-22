@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.1] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.2.0] - 2024-12-10
 ### Added
 - Lightbeam Sensor button moved to this extension

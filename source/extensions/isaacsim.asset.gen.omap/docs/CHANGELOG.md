@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.7] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.0.6] - 2024-11-06
 ### Changed
 - nucleus import update

@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.7] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.2.6] - 2024-12-23
 ### Fixed
 - Removed extra dependencies and imports
@@ -16,7 +21,7 @@
 ### Changed
 - omni.client._omniclient to omni.client
 
-## [2.2.2] - 2024-11-06
+## [2.2.2] - 2024-11-09
 ### Fixed
 - Fix unit test
 

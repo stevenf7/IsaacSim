@@ -1,5 +1,10 @@
 # Changelog
 
+## [8.0.5] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [8.0.4] - 2025-01-14
 ### Fixed
 - carryover dependency

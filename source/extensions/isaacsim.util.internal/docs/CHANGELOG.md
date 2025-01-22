@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.1] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [2.1.0] - 2024-12-20
 ### Added
 - Added render_assets.py, used to automate creation of thumbnails and images for docs

@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [4.0.1] - 2024-12-05
 ### Changed
 - Updated Nova carter path

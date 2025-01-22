@@ -1,10 +1,15 @@
 # Changelog
 
-## [0.2.1] - 2024-10-23
+## [0.2.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
+## [0.2.1] - 2024-10-25
 ### Fixed
 - Fix referenced USD asset paths listing order and use absolute paths
 
-## [0.2.0] - 2024-10-23
+## [0.2.0] - 2024-10-24
 ### Added
 - List referenced USD asset paths containing deprecated OmniGraph nodes in the opened stage
 

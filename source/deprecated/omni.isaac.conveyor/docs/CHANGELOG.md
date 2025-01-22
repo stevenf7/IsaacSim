@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.5] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.0.4] - 2025-01-08
 ### Changed
 - Fix extension renaming

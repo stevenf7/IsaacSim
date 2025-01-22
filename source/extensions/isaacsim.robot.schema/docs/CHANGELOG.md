@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.1.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [3.1.1] - 2024-11-12
 ### Changed
 - minor update to Robot Schema
