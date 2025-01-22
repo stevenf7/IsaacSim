@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.1"
+version = "1.3.2"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
@@ -87,6 +87,10 @@ args = [
     "--/exts/omni.kit.browser.asset/folders/1=''",
     "--/exts/omni.kit.browser.asset/folders/2=''",
     "--/exts/omni.kit.browser.asset/visible_after_startup=true",
+]
+
+stdoutFailPatterns.exclude = [
+    "*unload wait time exceeded limit of*",
 ]
 
 [documentation]

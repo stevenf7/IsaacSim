@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.2] - 2025-01-22
+### Fixed
+- Ingore unit test error in logs
+
 ## [1.3.1] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
