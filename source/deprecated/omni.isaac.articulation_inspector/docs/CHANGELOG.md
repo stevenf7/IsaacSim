@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.12] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.1.11] - 2024-11-22
 ### Fixed
 - menu location

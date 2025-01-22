@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.9] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.3.8] - 2024-11-12
 ### Changed
 - Moved extension

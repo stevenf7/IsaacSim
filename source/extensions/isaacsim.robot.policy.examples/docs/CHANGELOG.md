@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [4.0.1] - 2024-12-22
 ### Added
 - Rootpath input for when the articulation root is not the same as the root prim path

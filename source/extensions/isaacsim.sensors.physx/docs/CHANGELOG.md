@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.2.2] - 2024-12-18
 ### Fixed
 - Physx Lidar azimuth and zenith units form ReadLidarBeams node
@@ -8,7 +13,7 @@
 ### Changed
 - Moved lightbeam_sensor example to isaacsim.sensors.physx.examples
 
-## [2.2.0] - 2024-10-29
+## [2.2.0] - 2024-10-30
 ### Changed
 - moved examples from menu to browser
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## [13.0.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [13.0.2] - 2024-11-22
 ### Fixed
 - Remove import alias of new sample from deprecated sample to prevent sample duplication

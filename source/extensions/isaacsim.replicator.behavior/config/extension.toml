@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.6"
+version = "1.0.7"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Behavior Scripts"
 description = "The extension provides various randomization and event scripts for Synthetic Data Generation (SDG) workflows. The scripts can be attached to prims providing modular, persitent, and shareable behaviors. The scripts use exposed variables as custom USD properties which can be modified throught the UI or programmatically."

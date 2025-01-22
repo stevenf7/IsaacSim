@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Simulation"
 title = "Isaac Sim Range Sensor Examples"
 description = "Examples for the Range Sensor extension"

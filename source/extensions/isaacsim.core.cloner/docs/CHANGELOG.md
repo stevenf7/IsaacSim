@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.3.2] - 2024-12-29
 ### Fixed
 - Missing argument in grid_cloner

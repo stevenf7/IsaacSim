@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.2.1] - 2024-10-28
 ### Fixed
 - Added orchestrator.preview call before recording to make sure all frames are written if the timeline is already running

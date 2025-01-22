@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.6] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [2.0.5] - 2024-12-03
 ### Changed
 - Create menu to Tools->Robotics->Omnigraphs menu

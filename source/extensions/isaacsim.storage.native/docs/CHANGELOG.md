@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.5] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.0.4] - 2024-12-20
 ### Added
 - Added synchronous version of is_dir() function

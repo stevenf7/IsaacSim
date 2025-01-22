@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.6] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.3.5] - 2024-12-30
 ### Fixed
 - Fixed cleanup for Prim class if it was not initialized correctly

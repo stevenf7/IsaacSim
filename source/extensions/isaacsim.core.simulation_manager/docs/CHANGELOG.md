@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.3.2] - 2024-12-04
 ### Fixed
 - Fixed access to invalid Fabric cache Id

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.7] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.0.6] - 2025-01-09
 ### Fixed
 - Initial behavior not applied if interval is greater than 0

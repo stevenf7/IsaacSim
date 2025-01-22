@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.0.2] - 2025-01-13
 ### Changed
 - Updated Import source for refactored classes

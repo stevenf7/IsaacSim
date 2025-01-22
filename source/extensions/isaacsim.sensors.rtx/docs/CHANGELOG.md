@@ -1,5 +1,10 @@
 # Changelog
 
+## [13.6.1] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [13.6.0] - 2024-12-13
 ### Removed
 - Removed legacy sick lidar sensors
@@ -10,8 +15,7 @@
 
 ## [13.5.0] - 2024-12-10
 ### Removed
-- Menu components moved to isaacsim.sensors.camera.ui, isaacsim.sensors.physics.ui, isaacsim.sensors.physx.ui,
-  isaacsim.sensors.rtx.ui
+- Menu components moved to isaacsim.sensors.camera.ui, isaacsim.sensors.physics.ui, isaacsim.sensors.physx.ui, isaacsim.sensors.rtx.ui
 
 ## [13.4.3] - 2024-12-09
 ### Fixed

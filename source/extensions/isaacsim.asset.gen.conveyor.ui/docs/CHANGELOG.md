@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [2.1.2] - 2025-01-02
 ### Changed
 - performing any UI logic only once window is built
@@ -18,11 +23,11 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-##  [2.0.1] - 2024-10-11
+## [2.0.1] - 2024-10-11
 ### Changed
 - Removed isaacsim core dependencies
 
-##  [2.0.0] - 2024-09-27
+## [2.0.0] - 2024-09-27
 ### Changed
 - Renamed extension to isaacsim.asset.gen.conveyor.ui
 

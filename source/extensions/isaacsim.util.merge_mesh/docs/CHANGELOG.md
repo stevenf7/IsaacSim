@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.6] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [2.0.5] - 2025-01-13
 ### Changed
 - Fixed UI consistency when no prim path is selected for Looks destination

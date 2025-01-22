@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.7] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [1.1.6] - 2025-01-11
 ### Changed
 - Make this extension kit version specific

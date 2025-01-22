@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.3] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [2.1.2] - 2024-12-13
 ### Fixed
 - Updated simulation gate to not execute if the input step is 0.

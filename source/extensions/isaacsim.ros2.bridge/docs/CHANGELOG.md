@@ -1,4 +1,10 @@
 # Changelog
+
+## [4.1.13] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [4.1.12] - 2025-01-17
 ### Changed
 - Temporarily changed docs link to gitlab pages
@@ -60,7 +66,7 @@
 ### Removed
 - Removed ROS Foxy distro support from ROS 2 bridge
 
-## [3.4.1] - 2024-11-01
+## [3.4.1] - 2024-11-05
 ### Changed
 - updated menu location for examples and OG shortcuts
 

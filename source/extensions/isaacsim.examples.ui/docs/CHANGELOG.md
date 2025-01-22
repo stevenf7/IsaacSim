@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [1.1.1] - 2025-01-17
 ### Changed
 - Temporarily changed docs links to gitlab pages
@@ -11,11 +16,11 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-## [1.0.0] - 2023-10-02
+## [1.0.0] - 2023-10-14
 ### Changed
 - Extension renamed to isaacsim.examples.ui.
 
-## [0.1.4] - 2023-11-13
+## [0.1.4] - 2023-10-13
 ### Fixed
 - Updated documentation link
 

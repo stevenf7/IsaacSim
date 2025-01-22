@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.6.2] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [2.6.1] - 2025-01-10
 ### Fixed
 - Division-by-zero error when benchmarked script does not run app update

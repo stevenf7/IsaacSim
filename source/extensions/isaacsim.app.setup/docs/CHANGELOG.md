@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.5] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
 ## [1.3.4] - 2024-12-09
 ### Changed
 - menu entries names to reverse some hacks in the menu gui

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.11] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
+
+
 ## [0.1.10] - 2024-11-18
 ### Changed
 - omni.client._omniclient to omni.client

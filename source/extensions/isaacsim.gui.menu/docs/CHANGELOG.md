@@ -1,6 +1,8 @@
 # Changelog
 
 ## [2.0.8] - 2025-01-21
+### Changed
+- Update extension description and add extension specific test settings
 ### Fixed
 - security fix to change os.umask(0) to os.umask(0o777)
 
@@ -33,7 +35,7 @@
 ### Changed
 - Replicator new menu layout restructure
 
-## [2.0.0] - 2024-10-16
+## [2.0.0] - 2024-10-25
 ### Removed
 - New menu layout
 
