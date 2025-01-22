@@ -27,11 +27,11 @@ include:
     #   file: 'modules/stage-build.yml'
     # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
     #   file: 'modules/etm.yml'
-    file: 'modules/stage-deploy.yml'
-  - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    file: 'modules/stage-security.yml'
-  - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    file: 'modules/sanitizers.yml'
+    file: 
+      - 'modules/stage-deploy.yml'
+      - 'modules/stage-security.yml'
+      - 'modules/sanitizers.yml'
+    ref: 1.18.0
   - project: "omniverse/devplat/gitlab/templates/common/compliance"
     file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
     ref: v1_latest
