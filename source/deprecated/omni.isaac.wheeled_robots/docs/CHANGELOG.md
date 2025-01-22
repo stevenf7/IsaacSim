@@ -1,8 +1,12 @@
 # Changelog
+
+## [3.0.2] - 2025-01-21
+### Fixed
+- Missing module issue.
+
 ## [3.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [3.0.0] - 2024-09-25
 
@@ -106,8 +110,8 @@
 ## [0.9.0] - 2023-11-28
 ### Changed
 - OgnAckermannSteering node receives inputs in SI units.
-- OgnAckermannSteering node now accepts speed and acceleration as desired forward motion inputs. 
-- OgnAckermannSteering node uses front axel steering angle as input rather than curvature 
+- OgnAckermannSteering node now accepts speed and acceleration as desired forward motion inputs.
+- OgnAckermannSteering node uses front axel steering angle as input rather than curvature
 
 ## [0.8.1] - 2023-11-27
 ### Fixed
@@ -137,7 +141,7 @@
 ## [0.6.4] - 2023-06-13
 
 ### Fixed
-- Kit 105.1 update 
+- Kit 105.1 update
 - use omni.usd instead of omni.usd.utils for get_world_transform_matrix
 
 ## [0.6.3] - 2023-03-10
@@ -177,7 +181,7 @@
 ## [0.5.7] - 2022-07-22
 
 ### Changed
-- pulled out the internal state classes for both holonomic and differential controller 
+- pulled out the internal state classes for both holonomic and differential controller
 
 ## [0.5.6] - 2022-07-19
 
@@ -217,7 +221,7 @@
 ### Added
 - OgnHolonomicController Node
 - holonomic_robot_usd_setup.py to pull robot attributes from Usd
-- OgnHolonomicRobotUsdSetup Node 
+- OgnHolonomicRobotUsdSetup Node
 
 ## [0.4.1] - 2022-05-10
 

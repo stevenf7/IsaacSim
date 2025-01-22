@@ -8,7 +8,5 @@ project_ext(ext)
 repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
-    { "python/controllers", ext.target_dir.."/omni/isaac/manipulators/controllers" },
-    { "python/manipulators", ext.target_dir.."/omni/isaac/manipulators/manipulators" },
-    { "python/grippers", ext.target_dir.."/omni/isaac/manipulators/grippers" },
+    { "omni", ext.target_dir.."/omni" },
 }

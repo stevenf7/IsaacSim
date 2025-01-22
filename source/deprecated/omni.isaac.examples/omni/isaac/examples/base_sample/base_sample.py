@@ -9,7 +9,7 @@
 import carb
 
 carb.log_warn(
-    "omni.isaac.examples has been deprecated in favor of isaacsim.examples. Please update your code accordingly."
+    "omni.isaac.examples has been deprecated in favor of isaacsim.examples.interactive. Please update your code accordingly."
 )
 
-from isaacsim.examples.base_sample.base_sample import *
+from isaacsim.examples.interactive.base_sample.base_sample import *

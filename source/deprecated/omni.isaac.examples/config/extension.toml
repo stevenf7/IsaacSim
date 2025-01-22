@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.1"
+version = "4.0.2"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -16,9 +16,11 @@ icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
 
+[[python.module]]
+name = "omni.isaac.examples"
+
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.examples.interactive"
-
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}

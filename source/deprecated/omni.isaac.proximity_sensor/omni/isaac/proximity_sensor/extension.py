@@ -17,4 +17,6 @@ carb.log_warn(
     f"{old_extension_name}.extension has been deprecated in favor of {new_extension_name}.proximity_sensor. Please update your code accordingly."
 )
 
-from isaacsim.sensors.physx import ProximitySensor, ProximitySensorManager, clear_sensors, register_sensor
+from isaacsim.sensors.physx import ProximitySensor as Sensor
+from isaacsim.sensors.physx import ProximitySensorManager as SensorManager
+from isaacsim.sensors.physx import clear_sensors, register_sensor
