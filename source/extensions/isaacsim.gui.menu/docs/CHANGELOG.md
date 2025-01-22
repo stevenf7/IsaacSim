@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.8] - 2025-01-21
+### Fixed
+- security fix to change os.umask(0) to os.umask(0o777)
+
 ## [2.0.7] - 2025-01-08
 ### Fixed
 - updated physics reference link

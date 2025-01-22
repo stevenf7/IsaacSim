@@ -33,7 +33,7 @@ class ScreenshotPreferences(PreferenceBuilder):
             self._settings.set_default_string(ansel_super_resolution_size_path, "2x")
 
         # create captureFrame directory
-        original_umask = os.umask(0)
+        original_umask = os.umask(0o777)
         if not os.path.isdir(template_path):
             try:
                 os.makedirs(template_path)
