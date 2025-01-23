@@ -1,17 +1,20 @@
 # Changelog
 
+## [1.0.7] - 2025-01-22
+### Changed
+- Add `requests` and `h11` to extension's Python dependencies
+
 ## [1.0.6] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [1.0.5] - 2025-01-17
 ### Changed
-- temporarily direction docs to gitlab pages
+- Temporarily direction docs to gitlab pages
 
 ## [1.0.4] - 2024-12-07
 ### Fixed
-- moved from deprecated editor_menu.add_item to omni.kit.menu.utils
+- Moved from deprecated editor_menu.add_item to omni.kit.menu.utils
 
 ## [1.0.3] - 2024-11-19
 ### Fixed
