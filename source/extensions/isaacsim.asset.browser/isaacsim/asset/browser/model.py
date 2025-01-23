@@ -61,10 +61,15 @@ class AssetBrowserModel(TreeFolderBrowserModel):
         """
         action when double clicked on an item: open the original file
         """
-        stage = omni.usd.get_context().get_stage()
-        if not stage:
-            return
-        open_stage(item.url)
+
+        usd_filetypes = [".usd", ".usda", ".usdc", ".usdz"]
+        if item.name.endswith(tuple(usd_filetypes)):
+            stage = omni.usd.get_context().get_stage()
+            if not stage:
+                return
+            open_stage(item.url)
+        else:
+            pass
 
         # # Create a Reference or payload of the Props in the stage
         # stage = omni.usd.get_context().get_stage()

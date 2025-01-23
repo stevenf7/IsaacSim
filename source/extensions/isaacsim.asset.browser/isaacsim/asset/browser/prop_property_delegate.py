@@ -52,6 +52,7 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
 
         url = item.url
         self.file_size = get_file_size(url)
+        usd_filetypes = [".usd", ".usda", ".usdc", ".usdz"]
 
         self._container = ui.VStack(height=0, spacing=5)
         with self._container:
@@ -69,15 +70,22 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
                     folder_label.tooltip = folder_path
                     ui.Spacer(height=24)
 
-                # buttons
-                with ui.HStack():
-                    ref_load_btn = ui.Button("Load as Reference", height=36)
-                    ref_load_btn.set_clicked_fn(lambda: self.load_as_reference(item))
-                    ui.Spacer(width=12)
-                    open_asset_btn = ui.Button("Open File", height=36)
-                    open_asset_btn.set_clicked_fn(lambda: self.open_asset(item))
+                if item.name.endswith(tuple(usd_filetypes)):
+                    # buttons
+                    with ui.HStack():
+                        ref_load_btn = ui.Button("Load as Reference", height=36)
+                        ref_load_btn.set_clicked_fn(lambda: self.load_as_reference(item))
+                        ui.Spacer(width=12)
+                        open_asset_btn = ui.Button("Open File", height=36)
+                        open_asset_btn.set_clicked_fn(lambda: self.open_asset(item))
 
-                self._build_variant_options(item)
+                    self._build_variant_options(item)
+
+                else:
+                    # buttons
+                    with ui.HStack():
+                        download_btn = ui.Button("Download File", height=36)
+                        download_btn.set_clicked_fn(lambda: self.download_file(item))
 
     def _build_thumbnail(self, item: FileDetailItem):
         if item.thumbnail is None:
