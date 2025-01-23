@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.6"
+version = "1.0.7"
 category = "Utility"
 title = "Jupyter notebook integration"
 description = "Jupyter notebook version of Omniverse's script editor"
@@ -24,7 +24,7 @@ icon = "data/icon.png"
 name = "isaacsim.code_editor.jupyter"
 
 [python.pipapi]
-requirements = ["jupyterlab", "notebook", "nbclassic", "chardet", "python-language-server", "jedi"]
+requirements = ["jupyterlab", "notebook", "nbclassic", "chardet", "python-language-server", "jedi", "requests", "h11"]
 use_online_index = true
 ignore_import_check = true
 
