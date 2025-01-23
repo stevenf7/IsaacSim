@@ -199,7 +199,7 @@ files = [
 ]
 files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
-    ["standalone_examples/api/isaacsim.ros1.bridge**"] # ROS1 not shipped on windows
+    ["standalone_examples/api/isaacsim.ros1.bridge**"], # ROS1 not shipped on windows
     ["exts/isaacsim.asset.exporter.urdf/pip_prebundle/bin/**"], # ISIM-2584 remove because of malware
 ]
 
