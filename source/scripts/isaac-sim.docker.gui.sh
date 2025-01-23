@@ -62,7 +62,6 @@ docker run --name isaac-sim --entrypoint bash --runtime=nvidia --gpus all -e "AC
 	-v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
 	-v ~/docker/isaac-sim/cache/asset_browser:/isaac-sim/exts/isaacsim.asset.browser/cache:rw \
 	-v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
-	-v ~/docker/isaac-sim/config:/root/.nvidia-omniverse/config:rw \
 	-v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
 	-v ~/docker/isaac-sim/pkg:/root/.local/share/ov/pkg:rw \
 	-v ~/docker/isaac-sim/documents:/root/Documents:rw \
