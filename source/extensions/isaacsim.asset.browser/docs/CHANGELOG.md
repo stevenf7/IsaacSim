@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.3] - 2025-01-23
+### Fixed
+- option for non-usd files to be downloaded instead of open on stage
+
 ## [1.3.2] - 2025-01-22
 ### Fixed
 - Ingore unit test error in logs
