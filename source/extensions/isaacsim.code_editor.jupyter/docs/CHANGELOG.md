@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.8] - 2025-01-23
+### Fixed
+- Remove menu items created when shutting down the extension
+- Run socket server closing coroutine thread-safe
+
 ## [1.0.7] - 2025-01-22
 ### Changed
 - Add `requests` and `h11` to extension's Python dependencies

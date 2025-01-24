@@ -9,6 +9,7 @@
 import os
 import subprocess
 import sys
+import weakref
 
 import carb
 
@@ -16,13 +17,13 @@ import carb
 class UIBuilder:
     """Manage extension UI"""
 
-    def __init__(self, menu_path, host, port):
-        self._menu = None
-        self._editor_menu = None
+    def __init__(self, menu_name, menu_item_name, host, port):
+        self._menu_items = []
 
         self._host = host
         self._port = port
-        self._menu_path = menu_path
+        self._menu_name = menu_name
+        self._menu_item_name = menu_item_name
 
         # get application folder
         self._app_folder = carb.settings.get_settings().get_as_string("/app/folder")
@@ -32,29 +33,28 @@ class UIBuilder:
 
     def startup(self):
         """Create menu item"""
-        # menu item
         try:
-            from omni.kit.menu.utils import MenuItemDescription, add_menu_items, build_submenu_dict
+            from omni.kit.menu.utils import MenuItemDescription, add_menu_items
+
+            self._menu_items = [
+                MenuItemDescription(
+                    name=self._menu_item_name,
+                    onclick_fn=lambda p=weakref.proxy(self): p._launch(),
+                )
+            ]
+            add_menu_items(self._menu_items, self._menu_name)
         except ImportError:
             pass
-        else:
-            menu_dict = build_submenu_dict(
-                [
-                    MenuItemDescription(name=self._menu_path, onclick_fn=lambda *_: self._launch()),
-                ],
-            )
-            for group in menu_dict:
-                add_menu_items(menu_dict[group], group)
 
     def shutdown(self):
         """Clean up menu item"""
-        if self._menu is not None:
-            try:
-                self._editor_menu.remove_item(self._menu)
-            except:
-                self._editor_menu.remove_item(self._menu_path)
-        self._menu = None
-        self._editor_menu = None
+        try:
+            from omni.kit.menu.utils import remove_menu_items
+
+            remove_menu_items(self._menu_items, "Window")
+        except ImportError:
+            pass
+        self._menu_items = []
 
     def _launch(self, *args, **kwargs):
         """Launch a new VS Code window on the application path"""
