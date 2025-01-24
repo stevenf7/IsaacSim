@@ -1,9 +1,12 @@
 # Changelog
 
+## [1.4.5] - 2025-01-24
+### Changed
+- switch to opencv-python-headless==4.9.0.80
+
 ## [1.4.4] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [1.4.3] - 2025-01-11
 ### Changed
