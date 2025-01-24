@@ -39,7 +39,7 @@ class Extension(omni.ext.IExt):
         self._publish_carb_logs = settings.get("/exts/isaacsim.code_editor.vscode/carb_logs")
 
         # ui components
-        self._ui_builder = ui_builder.UIBuilder("Window/VS Code", self._socket_host, self._socket_port)
+        self._ui_builder = ui_builder.UIBuilder("Window", "VS Code", self._socket_host, self._socket_port)
         self._ui_builder.startup()
 
         # carb logs
@@ -68,9 +68,10 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._ui_builder.shutdown()
         # close socket
-        if self._server:
+        if self._server is not None:
             self._server.close()
-            _get_event_loop().run_until_complete(self._server.wait_closed())
+            asyncio.run_coroutine_threadsafe(self._server.wait_closed(), _get_event_loop())
+            self._server = None
         # carb logs
         if self._publish_carb_logs:
             self._logging.remove_logger(self._logger_handle)

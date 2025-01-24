@@ -105,7 +105,7 @@ class Extension(omni.ext.IExt):
 
         # ui components
         self._ui_builder = ui_builder.UIBuilder(
-            "Window/Jupyter Notebook", self._notebook_ip, self._notebook_port, self._get_display_url
+            "Window", "Jupyter Notebook", self._notebook_ip, self._notebook_port, self._get_display_url
         )
         self._ui_builder.startup()
 
@@ -157,7 +157,7 @@ class Extension(omni.ext.IExt):
         # close socket
         if self._server is not None:
             self._server.close()
-            _get_event_loop().run_until_complete(self._server.wait_closed())
+            asyncio.run_coroutine_threadsafe(self._server.wait_closed(), _get_event_loop())
             self._server = None
         # end jupyter notebook (external process)
         if self._process is not None:
