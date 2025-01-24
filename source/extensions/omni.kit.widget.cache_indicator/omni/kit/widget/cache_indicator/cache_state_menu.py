@@ -410,7 +410,7 @@ class CacheStateDelegate(ui.MenuDelegate):
             pass
 
     async def _on_settings_open(self):
-        url = self.get_hub_settings_url()
+        url = await self.get_hub_settings_url()
 
         try_post_notification("open cache settings", duration=4)
 
@@ -424,35 +424,11 @@ class CacheStateDelegate(ui.MenuDelegate):
         except Exception as e:
             carb.log_error(f"Could not open Hub settings on {url}, {e}")
 
-    def get_hub_settings_url(self):
-        home = str(Path.home())
-
-        omniverse_config = f"{home}/.nvidia-omniverse/config/omniverse.toml"
-
-        try:
-            toml_contents = toml.load(omniverse_config)
-            port = 0
-
-            try:
-                cache_path = toml_contents["paths"]["cache_root"]
-                hub_cache_port_file = f"{cache_path}/hub/hub.port"
-
-                with open(hub_cache_port_file) as f:
-                    port = f.readline().strip()
-                url = f"http://localhost:{port}/index.html"
-                return url
-            except KeyError as error:
-                raise ValueError(f"No [[paths.cache_root]] entry in {omniverse_config}") from error
-            except IndexError as error:
-                raise ValueError(
-                    f"[[paths.cache_root]] in {omniverse_config} is empty but requires a module name"
-                ) from error
-
-        except toml.TomlDecodeError as error:
-            raise ValueError(f"Could not read {omniverse_config}") from error
-        except FileNotFoundError as error:
-            carb.log_info(f"Could not read {omniverse_config}")
-            return "http://127.0.0.1:14090"
+    async def get_hub_settings_url(self):
+        [result, uri] = await omni.client.get_hub_http_uri_async()
+        if result == omni.client.Result.OK and uri:
+            return uri
+        return "http://127.0.0.1:14090"
 
     def toggle_ui_state(self, state: UIState):
         try:
