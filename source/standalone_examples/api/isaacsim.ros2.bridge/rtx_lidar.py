@@ -65,7 +65,7 @@ simulation_app.update()
 
 # Create Point cloud publisher pipeline in the post process graph
 writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-writer.initialize(topicName="point_cloud", frameId="sim_lidar")
+writer.initialize(topicName="point_cloud", frameId="base_scan")
 writer.attach([hydra_texture])
 
 # Create the debug draw pipeline in the post process graph
@@ -75,7 +75,7 @@ writer.attach([hydra_texture])
 
 # Create LaserScan publisher pipeline in the post process graph
 writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
-writer.initialize(topicName="scan", frameId="sim_lidar")
+writer.initialize(topicName="scan", frameId="base_scan")
 writer.attach([hydra_texture])
 
 simulation_app.update()
