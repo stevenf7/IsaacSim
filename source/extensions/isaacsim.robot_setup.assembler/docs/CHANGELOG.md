@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.5] - 2025-01-27
+### Changed
+- Updated docs link
+
 ## [2.1.4] - 2025-01-26
 ### Changed
 - Update test settings
@@ -10,7 +14,7 @@
 
 ## [2.1.2] - 2025-01-17
 ### Changed
-- Temporarily changed docs link to gitlab pages
+- Temporarily changed docs link
 
 
 ## [2.1.1] - 2024-12-03

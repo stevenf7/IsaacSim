@@ -53,7 +53,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
         with ui.VStack(spacing=5, height=0):
 
             title = "LightBeam Sensor Example"
-            doc_link = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physx_lightbeam.html"
+            doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/sensors/isaacsim_sensors_physx_lightbeam.html"
 
             overview = "This Example shows the output of the LightBeam sensor."
             overview += "The LightBeam sensor constantly scans for any hits to its beams and outputs linear depth and hit position."

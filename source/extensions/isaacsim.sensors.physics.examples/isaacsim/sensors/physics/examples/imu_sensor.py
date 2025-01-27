@@ -53,7 +53,7 @@ class Extension(omni.ext.IExt):
         with ui.VStack(spacing=5, height=0):
 
             title = "IMU Sensor Example"
-            doc_link = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physics_imu.html"
+            doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/sensors/isaacsim_sensors_physics_imu.html"
 
             overview = "This Example shows the output of the IMU sensor. "
             overview += "The IMU sensor reads motion of the body of the robot and output simulated accelerometer and gyroscope readings"

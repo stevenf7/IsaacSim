@@ -1,13 +1,16 @@
 # Changelog
 
+## [3.1.5] - 2025-01-27
+### Changed
+- Updated docs link
+
 ## [3.1.4] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
 
 ## [3.1.3] - 2025-01-17
 ### Changed
-- Temporarily changed docs link to gitlab pages
-
+- Temporarily changed docs link
 
 ## [3.1.2] - 2024-12-20
 ### Fixed
@@ -91,7 +94,7 @@
 ### Changed
 
 - Rebranded extension as "Robot Description Editor"
-- Can now load from / export to entire Lula Robot Description files. 
+- Can now load from / export to entire Lula Robot Description files.
 
 ## [1.1.0] - 2022-11-15
 

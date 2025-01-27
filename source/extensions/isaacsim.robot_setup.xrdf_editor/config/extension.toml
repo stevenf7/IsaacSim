@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.1.4"
+version = "3.1.5"
 category = "Simulation"
 title = "Robot Description Editor"
 description = "Generates and edit Lula robot_description YAML files"

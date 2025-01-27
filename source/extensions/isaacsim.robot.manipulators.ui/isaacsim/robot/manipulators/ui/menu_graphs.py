@@ -22,7 +22,7 @@ from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import Usd, UsdPhysics
 
-OG_DOCS_LINK = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/omnigraph/omnigraph_shortcuts.html"
+OG_DOCS_LINK = "https://docs.isaacsim.omniverse.nvidia.com/latest/omnigraph/omnigraph_shortcuts.html"
 
 
 class ArticulationPositionGraph:

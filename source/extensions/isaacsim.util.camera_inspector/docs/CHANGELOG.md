@@ -1,12 +1,16 @@
 # Changelog
 
+## [1.0.4] - 2025-01-27
+### Changed
+- Updated docs link
+
 ## [1.0.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
 
 ## [1.0.2] - 2025-01-17
 ### Changed
-- Temporarily changed docs link to gitlab pages
+- Temporarily changed docs link
 
 ## [1.0.1] - 2024-10-24
 ### Changed
@@ -28,16 +32,16 @@
 ## [0.2.0] - 2023-08-22
 
 ### Changed
-- Resized widgets to fit in screen 
-### Removed 
+- Resized widgets to fit in screen
+### Removed
 - gui_utils.py
-- All functions moved into extension.py 
+- All functions moved into extension.py
 
 ## [0.1.2] - 2023-08-15
 
 ### Added
-- Check for valid prim path during each call to update camera stats 
-- Fixes error when selected camera has its prim path modified 
+- Check for valid prim path during each call to update camera stats
+- Fixes error when selected camera has its prim path modified
 
 ## [0.1.1] - 2023-08-12
 

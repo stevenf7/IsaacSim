@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.8] - 2025-01-27
+### Changed
+- Updated docs link
+
 ## [4.4.7] - 2025-01-26
 ### Changed
 - Update test settings
@@ -10,7 +14,7 @@
 
 ## [4.4.5] - 2025-01-17
 ### Changed
-- Temporarily changed docs links to gitlab pages
+- Temporarily changed docs links
 
 ## [4.4.4] - 2025-01-14
 ### Added

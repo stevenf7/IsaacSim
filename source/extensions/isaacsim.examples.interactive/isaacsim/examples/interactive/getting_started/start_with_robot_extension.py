@@ -29,7 +29,7 @@ class GettingStartedRobotExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Getting Started with a Robot",
-            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/introduction/quickstart_isaacsim_robot.html",
+            "doc_link": "https://docs.isaacsim.omniverse.nvidia.com/latest/introduction/quickstart_isaacsim_robot.html",
             "overview": "This Example follows the 'Getting Started' tutorials from the documentation\n\n 'Reset' Button is disabled. to Restart, click on the thumbnail in the browser instead.\n\n Press the 'Open in IDE' button to view the source code.",
             "sample": GettingStartedRobot(),
         }

@@ -1262,7 +1262,7 @@ for details on how to install and run Isaac Sim in a (virtual) Python environmen
 pyproject.requires-python = "==3.10.*"
 pyproject.urls = [
   {"Home page" = "https://developer.nvidia.com/isaac-sim"},
-  {"Documentation" = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs"},
+  {"Documentation" = "https://docs.isaacsim.omniverse.nvidia.com"},
   {"Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"},
 ]
 pyproject.version = "${build_string}"

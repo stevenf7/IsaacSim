@@ -28,7 +28,7 @@ class ReplayFollowTargetExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Replay Follow Target Task",
-            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/core_api_tutorials/tutorial_advanced_data_logging.html",
+            "doc_link": "https://docs.isaacsim.omniverse.nvidia.com/latest/core_api_tutorials/tutorial_advanced_data_logging.html",
             "overview": "This Example shows how to use data logging to replay data collected\n\n from the follow target extension example.\n\n Press the 'Open in IDE' button to view the source code.",
             "sample": ReplayFollowTarget(),
         }

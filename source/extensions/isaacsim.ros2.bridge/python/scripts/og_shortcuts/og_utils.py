@@ -87,7 +87,7 @@ class Ros2ClockGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_clock.html#graph-shortcut"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_clock.html#graph-shortcut"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
@@ -302,7 +302,7 @@ class Ros2GenericPubGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_generic_publisher_subscriber.html"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_generic_publisher_subscriber.html"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
@@ -561,7 +561,7 @@ class Ros2JointStatesGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_manipulation.html#graph-shortcut"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_manipulation.html#graph-shortcut"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
@@ -766,7 +766,7 @@ class Ros2TfPubGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_tf.html"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_tf.html"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
@@ -1061,7 +1061,7 @@ class Ros2OdometryGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_tf.html#setting-up-odometry"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_tf.html#setting-up-odometry"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
