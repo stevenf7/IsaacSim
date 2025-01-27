@@ -407,10 +407,11 @@ function generate_version_header()
     commitDate = get_git_info("show -s --format=\"%ad\"", "ISAACSIM_BUILD_DATE")
     branch = get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
     version = get_git_info("show HEAD:VERSION", "ISAACSIM_BUILD_VERSION")
-    print("Generating version header file: "..branch.." "..shortSha.." "..version.." "..commitDate)
+    repo = get_git_info("config --get remote.origin.url", "ISAACSIM_BUILD_REPO")
+    print("Generating version header file: "..branch.." "..shortSha.." "..version.." "..commitDate.." "..repo)
 
     os.mkdir("_build/generated/include/isaacSim")
-    local new_text = "#pragma once\n#define ISAACSIM_BUILD_SHA \""..shortSha.."\"\n#define ISAACSIM_BUILD_DATE \""..commitDate.."\"\n#define ISAACSIM_BUILD_BRANCH \""..branch.."\"\n#define ISAACSIM_BUILD_VERSION \""..version.."\"\n"
+    local new_text = "#pragma once\n#define ISAACSIM_BUILD_SHA \""..shortSha.."\"\n#define ISAACSIM_BUILD_DATE \""..commitDate.."\"\n#define ISAACSIM_BUILD_BRANCH \""..branch.."\"\n#define ISAACSIM_BUILD_VERSION \""..version.."\"\n#define ISAACSIM_BUILD_REPO \""..repo.."\"\n"
 
     local file = io.open("_build/generated/include/isaacSim/Version.h", "r")
     local old_text = ""
