@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -29,8 +29,7 @@ CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::core::api::coreExt)
 void addCrashreporterMetadata()
 {
     carb::crashreporter::addCrashMetadata("lib_isaacSim_buildVersion", ISAACSIM_BUILD_VERSION);
-    carb::crashreporter::addCrashMetadata(
-        "lib_isaacSim_buildRepo", "gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim");
+    carb::crashreporter::addCrashMetadata("lib_isaacSim_buildRepo", ISAACSIM_BUILD_REPO);
     carb::crashreporter::addCrashMetadata("lib_isaacSim_buildHash", ISAACSIM_BUILD_SHA);
     carb::crashreporter::addCrashMetadata("lib_isaacSim_buildBranch", ISAACSIM_BUILD_BRANCH);
     carb::crashreporter::addCrashMetadata("lib_isaacSim_buildDate", ISAACSIM_BUILD_DATE);
