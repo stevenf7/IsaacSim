@@ -1,9 +1,12 @@
 # Changelog
 
+## [8.0.6] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [8.0.5] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [8.0.4] - 2025-01-14
 ### Fixed
@@ -296,7 +299,7 @@
 
 ### Changed
 
-- Updated all hard coded USD object values to meters in motion_generation tests 
+- Updated all hard coded USD object values to meters in motion_generation tests
 
 ### Fixed
 
@@ -383,8 +386,8 @@
 
 ### Changed
 
-- Restructured MotionGeneration extension to place emphasis on MotionPolicy over MotionGeneration.  The user is now expected to interact directly with a MotionPolicy for adding/editing obstacles, and setting targets.  MotionGeneration is a light utility class for interfacing the simulated USD robot to the MotionPolicy (get USD robot state and appropriately map the joint indeces).  
-- RmpFlowController -> MotionPolicyController: 
+- Restructured MotionGeneration extension to place emphasis on MotionPolicy over MotionGeneration.  The user is now expected to interact directly with a MotionPolicy for adding/editing obstacles, and setting targets.  MotionGeneration is a light utility class for interfacing the simulated USD robot to the MotionPolicy (get USD robot state and appropriately map the joint indeces).
+- RmpFlowController -> MotionPolicyController:
     - The RmpFlowController wrapper that was used to interface Core examples with RmpFlow has been expanded to wrap any MotionPolicy
 - omni.isaac.motion_generation/policy_configs -> omni.isaac.motion_generation/motion_policy_configs: changed folder containing config files for MotionPolicies to be named "motion_policy_configs" to leave room for future interfaces to have config directories
 - Path to RmpFlow: omni.isaac.motion_generation.LulaMotionPolicies.RmpFlow -> omni.isaac.motion_generation.lula.motion_policies.RmpFlow
@@ -407,7 +410,7 @@
 
 ### Fixed
 
-- Undefined joint in dofbot USD referenced by RMPflow config 
+- Undefined joint in dofbot USD referenced by RMPflow config
 
 ## [0.1.4] - 2022-01-20
 

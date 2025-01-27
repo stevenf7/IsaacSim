@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.0.3"
+version = "3.0.4"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
 description = "Manipulators"
@@ -41,7 +41,7 @@ stdoutFailPatterns.exclude = [
 
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]

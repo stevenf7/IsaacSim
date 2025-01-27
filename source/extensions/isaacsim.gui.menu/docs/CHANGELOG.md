@@ -1,8 +1,13 @@
 # Changelog
 
+## [2.0.9] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.0.8] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
+
 ### Fixed
 - security fix to change os.umask(0) to os.umask(0o777)
 

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation UI Components"
 description = "Provides UI components for Isaac Sim RTX-based sensor simulation, eg. menu options."
@@ -26,12 +26,12 @@ name = "isaacsim.sensors.rtx.ui"
 [[test]]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]
 name = "startup"
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]

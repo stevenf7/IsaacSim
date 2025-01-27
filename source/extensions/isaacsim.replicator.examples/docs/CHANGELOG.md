@@ -1,9 +1,12 @@
 # Changelog
 
+## [1.1.2] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [1.1.1] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [1.1.0] - 2024-12-17
 ### Added
@@ -16,4 +19,3 @@
 ## [1.0.0] - 2024-12-09
 ### Added
 - created extension with example parts from omni.replicator.isaac
-

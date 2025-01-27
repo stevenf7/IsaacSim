@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.4"
+version = "0.3.5"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -60,7 +60,7 @@ stdoutFailPatterns.exclude = [
 
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]

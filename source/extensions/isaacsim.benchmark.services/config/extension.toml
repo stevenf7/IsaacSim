@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.6.2"
+version = "2.6.3"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -43,6 +43,6 @@ dependencies = [
     "omni.physx.ui",
 ]
 args = [
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 "--/app/file/ignoreUnsavedOnExit=1",
 ]

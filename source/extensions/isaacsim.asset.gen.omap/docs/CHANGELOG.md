@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.8] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.0.7] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -56,7 +60,7 @@
 ## [0.4.2] - 2024-02-07
 ### Fixed
 - Issues with instanceable assets when using non physx collision mesh option
-- Cell size not updating based on the current stage units. On stage load the cell size is set to 5cm or 0.05m depending on the units. 
+- Cell size not updating based on the current stage units. On stage load the cell size is set to 5cm or 0.05m depending on the units.
 
 ## [0.4.1] - 2024-01-18
 ### Changed
@@ -76,7 +80,7 @@
 
 ## [0.3.0] - 2023-07-14
 ### Added
-- Checkbox to use USD triangle geometry instead of physx approx for occupancy map generation. Useful for generating occupancy maps for PhysX vs RTX lidar. 
+- Checkbox to use USD triangle geometry instead of physx approx for occupancy map generation. Useful for generating occupancy maps for PhysX vs RTX lidar.
 
 ## [0.2.8] - 2023-06-12
 ### Changed

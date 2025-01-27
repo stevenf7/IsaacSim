@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "13.6.2"
+version = "13.6.3"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -86,7 +86,7 @@ stdoutFailPatterns.exclude = [
 ]
 
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

@@ -1,9 +1,12 @@
 # Changelog
 
+## [4.0.3] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [4.0.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [4.0.1] - 2024-12-22
 ### Added
@@ -45,7 +48,7 @@
 
 ## [1.4.4] - 2024-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [1.4.3] - 2024-02-12
 ### Changed
@@ -107,7 +110,7 @@
 ## [1.1.1] - 2022-05-15
 
 ### Fixed
-- DC joint order change related fixes. 
+- DC joint order change related fixes.
 
 ## [1.1.0] - 2022-05-05
 

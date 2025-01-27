@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.3] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.2.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -7,7 +11,6 @@
 ## [2.2.1] - 2025-01-17
 ### Changed
 - Temporarily changed docs link to gitlab pages
-
 
 ## [2.2.0] - 2024-12-16
 ### Added
@@ -25,7 +28,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [2.0.0] - 2024-10-04
 ### Removed
 - Ultrasonic sensor example.
@@ -35,6 +37,5 @@
 - Disables "Load Lidar" button in Lidar example while stage is clearing
 
 ## [1.0.0] - 2024-03-12
-
 ### Added
 - Initial version of Isaac Sim Range sensor extension examples

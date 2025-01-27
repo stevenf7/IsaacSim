@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.15] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [4.2.14] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -15,7 +19,7 @@
 
 ## [4.2.11] - 2024-12-30
 ### Fixed
-- Reduced contact tests runtime 
+- Reduced contact tests runtime
 - Enabled GPU pipeline tests
 
 ## [4.2.10] - 2024-12-23

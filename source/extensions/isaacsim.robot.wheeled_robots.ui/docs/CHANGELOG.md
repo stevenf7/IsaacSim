@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.4] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.1.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -39,7 +43,7 @@
 
 ## [1.0.3] - 2024-04-19
 ### Added
-- Reverted the name of "Differential Robots" menu option to "Differential Controller" 
+- Reverted the name of "Differential Robots" menu option to "Differential Controller"
 
 ## [1.0.2] - 2024-04-14
 ### Added

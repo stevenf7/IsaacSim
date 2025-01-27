@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.2"
+version = "0.1.3"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation Examples"
 description = "Isaac Sim Physics Sensor Simulation Examples extension provides example usage and snippets for Isaac Sim physics-based sensors."
@@ -34,7 +34,7 @@ name = "isaacsim.sensors.physics.examples.imu_sensor"
 [[test]]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]

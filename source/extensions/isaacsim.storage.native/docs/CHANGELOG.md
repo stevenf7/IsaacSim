@@ -1,9 +1,12 @@
 # Changelog
 
+## [1.0.6] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [1.0.5] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [1.0.4] - 2024-12-20
 ### Added
@@ -21,7 +24,6 @@
 ## [1.0.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [1.0.0] - 2024-10-16
 ### Changed

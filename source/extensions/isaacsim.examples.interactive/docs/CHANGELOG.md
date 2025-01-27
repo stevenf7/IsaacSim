@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.7] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [4.4.6] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -104,7 +108,7 @@
 
 ## [1.7.15] - 2024-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [1.7.14] - 2024-02-02
 ### Changed
@@ -126,7 +130,7 @@
 ## [1.7.10] - 2023-12-03
 ### Fixed
 - Fixed issue with screwing in nut and bolt demo
-- Improved accuracy of placement and rotation and increased rotation speed  
+- Improved accuracy of placement and rotation and increased rotation speed
 
 ## [1.7.9] - 2023-11-13
 ### Fixed
@@ -227,7 +231,7 @@
 ## [1.3.0] - 2022-08-29
 
 ### Removed
-- Deprecated joint control and read articulation Dynamic control examples. articulation and articulation view provide similar functionality in core and are already documented. 
+- Deprecated joint control and read articulation Dynamic control examples. articulation and articulation view provide similar functionality in core and are already documented.
 
 ## [1.2.0] - 2022-06-17
 

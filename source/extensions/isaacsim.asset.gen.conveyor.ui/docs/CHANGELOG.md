@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.4] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.1.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -38,7 +42,7 @@
 ### Changed
 - Moved the assets source to a configurable setting
 - Moved the config path to a configurable setting
-- Moved the Conveyor Track Builder to UI. 
+- Moved the Conveyor Track Builder to UI.
 
 ## [1.0.1] - 2024-05-06
 ### Changed

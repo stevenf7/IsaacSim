@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "SyntheticData"
 title = "Replicator Isaac"
 description="Omni Replicator Isaac Sim Extension"
@@ -32,7 +32,7 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.repl
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/omni/replicator/captureOnPlay = true',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]

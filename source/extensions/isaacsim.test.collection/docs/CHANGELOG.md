@@ -1,9 +1,12 @@
 # Changelog
 
+## [2.0.5] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.0.4] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [2.0.3] - 2024-12-07
 ### Changed
@@ -53,7 +56,7 @@
 
 ## [1.16.2] - 2024-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [1.16.1] - 2024-02-02
 ### Changed
@@ -93,11 +96,11 @@
 
 ## [1.14.2] 2023-11-27
 ### Fixed
-- updated tests to renamed nova carter asset 
+- updated tests to renamed nova carter asset
 
 ## [1.14.1] 2023-11-21
 ### Added
-- Added writers to the 'test_randomizer_snippets.py' isaac replicator randomizers 
+- Added writers to the 'test_randomizer_snippets.py' isaac replicator randomizers
 
 ## [1.14.0] 2023-11-20
 ### Added
@@ -122,7 +125,7 @@
 
 ## [1.11.0] 2023-08-24
 ### Added
-- test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs 
+- test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs
 - Missing utility snippet from the docs
 
 ## [1.10.4] - 2023-08-21
@@ -180,7 +183,7 @@
 ### Added
 - Added Test Cases that cause segfaults in the current build of Isaac Sim
 
-## [1.2.0] - 2022-10-05 
+## [1.2.0] - 2022-10-05
 ### Added
 - Added Test Case to check if Sim will freeze when opening a USD stage 100 times
 

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -46,12 +46,12 @@ dependencies = [
 
 timeout = 900
 args = [
-"--no-window", 
-"--allow-root", 
-"--/app/fastShutdown=1", 
+"--no-window",
+"--allow-root",
+"--/app/fastShutdown=1",
 "--vulkan",
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ] # we can use fast shutdown because metrics are not uploaded
 
 stdoutFailPatterns.exclude = [

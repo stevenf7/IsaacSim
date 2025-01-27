@@ -1,13 +1,16 @@
 # Changelog
 
+## [0.1.4] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [0.1.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [0.1.2] - 2025-01-06
 ### Changed
-- Updated menu name of SG8-AR0820C-5300-G2A-H120YA, SG8-AR0820C-5300-G2A-H30YA, SG8-AR0820C-5300-G2A-H60SA to SG8S-AR0820C-5300-G2A-H120YA, SG8S-AR0820C-5300-G2A-H30YA, SG8S-AR0820C-5300-G2A-H60SA 
+- Updated menu name of SG8-AR0820C-5300-G2A-H120YA, SG8-AR0820C-5300-G2A-H30YA, SG8-AR0820C-5300-G2A-H60SA to SG8S-AR0820C-5300-G2A-H120YA, SG8S-AR0820C-5300-G2A-H30YA, SG8S-AR0820C-5300-G2A-H60SA
 
 ## [0.1.1] - 2024-12-20
 ### Changed

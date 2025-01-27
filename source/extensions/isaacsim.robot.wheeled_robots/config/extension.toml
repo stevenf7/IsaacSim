@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.2"
+version = "4.0.3"
 category = "Simulation"
 title = "Wheeled Robots"
 description = "This extension provides wheeled robot utilities"
@@ -54,7 +54,7 @@ dependencies = [
 
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]
