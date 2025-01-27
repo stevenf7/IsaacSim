@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.7"
+version = "2.2.8"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
@@ -43,7 +43,7 @@ dependencies = [
 
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
     '--/persistent/simulation/defaultMetersPerUnit = 1.0',
     '--/persistent/app/stage/upAxis = "Z"'
 ]

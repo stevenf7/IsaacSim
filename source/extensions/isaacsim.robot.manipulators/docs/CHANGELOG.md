@@ -1,9 +1,12 @@
 # Changelog
 
+## [3.0.4] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [3.0.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [3.0.2] - 2024-10-28
 ### Changed
@@ -15,7 +18,7 @@
 
 ## [3.0.0] - 2024-09-30
 ### Changed
-- extension renamed to isaacsim.robot.manipulators (from omni.isaac.manipulators) 
+- extension renamed to isaacsim.robot.manipulators (from omni.isaac.manipulators)
 
 ## [2.1.0] - 2024-05-24
 ### Added
@@ -35,7 +38,7 @@
 
 ### Added
 - Gripper Controller Node
-- automatically populated omnigraph for gripper controller 
+- automatically populated omnigraph for gripper controller
 - pointer to open up the python script that generates the omnigraph for the menu shortcut graphs
 
 ## [1.2.0] - 2024-02-07
@@ -48,7 +51,7 @@
 ### Added
 - Add functionality to run only first x phases of the pick and place controller (instead of full 10)
 - Change parameter name in controller initialization
-- Add documentation 
+- Add documentation
 
 ## [1.0.2] - 2022-11-22
 

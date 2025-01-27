@@ -1,5 +1,9 @@
 # Changelog
 
+## [13.6.3] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [13.6.2] - 2025-01-22
 ### Fixed
 - Test error by forcing test to run with vulkan

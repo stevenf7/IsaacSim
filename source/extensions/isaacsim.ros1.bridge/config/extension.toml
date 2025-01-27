@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.5"
+version = "2.2.6"
 category = "Simulation"
 title = "ROS Bridge"
 description = "The ROS Bridge extension enables communication between the Isaac Sim and ROS 1 systems. It allows for the publishing and subscribing of ROS topics and services via OmniGraph nodes and Action graphs. ROS publishers, subscribers and services are only active when play is pressed. A lightweight set of ROS libraries included with Isaac Sim are automatically loaded when enabling this extension."
@@ -128,7 +128,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     '--/exts/omni.usd/locking/onClose=0',
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]

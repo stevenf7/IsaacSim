@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.3"
+version = "1.3.4"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "The Cloner extension provides a set of APIs to clone prims and environments in an efficient way as well as filtering the collisions across the clones if needed."
@@ -34,7 +34,7 @@ dependencies = [
     "omni.physx.ui",
 ]
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

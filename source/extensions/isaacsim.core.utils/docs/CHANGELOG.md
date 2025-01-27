@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.8] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.2.7] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -61,7 +65,7 @@
 
 ## [1.0.1] - 2024-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [1.0.0] - 2024-02-09
 ### Changed

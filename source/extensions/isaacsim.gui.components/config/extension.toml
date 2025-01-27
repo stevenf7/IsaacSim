@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.6"
+version = "1.0.7"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -47,5 +47,5 @@ dependencies = [
     "isaacsim.core.utils"
 ]
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]

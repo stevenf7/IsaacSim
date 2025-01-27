@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.7] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [0.3.6] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -27,7 +31,7 @@
 
 ## [0.3.0] - 2024-11-05
 ### Added
-- Added joint_names argument to all the joint related methods for ease of specifying which joints to manipulate/ query. 
+- Added joint_names argument to all the joint related methods for ease of specifying which joints to manipulate/ query.
 
 ## [0.2.0] - 2024-10-31
 ### Changed

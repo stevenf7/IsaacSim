@@ -5,7 +5,7 @@ order = 0
 
 # https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html#package-section
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "example"
 title = "Manipulators Examples"
 description = "examples of manipulators and grippers"
@@ -35,7 +35,7 @@ name = "isaacsim.robot.manipulators.examples"
 [[test]]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
 ]
 
 [[test]]

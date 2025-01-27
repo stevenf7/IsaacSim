@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.8"
+version = "2.0.9"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -43,7 +43,7 @@ dependencies = [
     "omni.kit.test_helpers_gfx"
 ]
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

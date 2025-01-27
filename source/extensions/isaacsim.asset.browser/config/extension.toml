@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.3"
+version = "1.3.4"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
@@ -54,9 +54,9 @@ exts."isaacsim.asset.browser".data.timeout = 10
 exts."isaacsim.asset.browser".visible_after_startup = true
 # Filter for USD Types only
 exts."isaacsim.asset.browser".data.filter_file_suffixes = [
-    ".usd", 
-    ".usda", 
-    ".usdc", 
+    ".usd",
+    ".usda",
+    ".usdc",
     ".usdz",
     ]
 # Use only assets with thumbnail

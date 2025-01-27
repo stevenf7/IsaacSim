@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.3] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.0.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -14,30 +18,30 @@
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator.
 
 ## [1.15.2] - 2024-08-08
-### Fixed 
+### Fixed
 - PoseWriter render product names changes fix
 
 ## [1.15.1] - 2024-07-31
-### Fixed 
+### Fixed
 - DOPE writer numpy deprecation fix: np.float --> np.float64
 - PoseWriter dope format output fix to match DOPE writer (label --> class, projected cuboid order fix)
 
 ## [1.15.0] - 2024-04-24
-### Added 
+### Added
 - Custom replicator randomization nodes
 
 ## [1.14.2] - 2024-04-03
-### Added 
+### Added
 - Telemetry for writers and annotators
 
 ## [1.14.1] - 2024-03-15
 ### Changed
-- re-enable s3 writing functionality for PoseWriter 
+- re-enable s3 writing functionality for PoseWriter
 
 ## [1.14.0] - 2024-03-14
-### Added 
-- Function to approximate truncation of object based on comparing 3D bounding box with visible portion on screen 
-- DOPE and CenterPose now output truncation value in addition to visibility 
+### Added
+- Function to approximate truncation of object based on comparing 3D bounding box with visible portion on screen
+- DOPE and CenterPose now output truncation value in addition to visibility
 
 ## [1.13.4] - 2024-03-12
 ### Fixed
@@ -45,7 +49,7 @@
 
 ## [1.13.3] - 2024-03-11
 ### Changed
-- Include more information for DOPE output annotations 
+- Include more information for DOPE output annotations
 
 ## [1.13.2] - 2024-03-04
 ### Changed
@@ -54,11 +58,11 @@
 
 ## [1.13.1] - 2024-02-23
 ### Added
-- Add support for CenterPose and Dope to generic PoseWriter class 
+- Add support for CenterPose and Dope to generic PoseWriter class
 
 ## [1.13.0] - 2024-02-21
 ### Added
-- Added a generic pose writer 
+- Added a generic pose writer
 
 ## [1.12.2] - 2024-02-02
 ### Changed
@@ -74,7 +78,7 @@
 
 ## [1.11.3] - 2023-12-10
 ### Fixed
-- Change initialization of s3 BackendDispatch for DOPE writer 
+- Change initialization of s3 BackendDispatch for DOPE writer
 
 ## [1.11.2] - 2023-12-07
 ### Fixed
@@ -85,34 +89,34 @@
 - DataVisualizationWriter parameters if None and writer metadata export
 
 ## [1.11.0] - 2023-12-01
-### Added 
+### Added
 - DataVisualizationWriter writing annotattions as overlays on top of image data
 
 ## [1.10.2] - 2023-11-16
-### Added 
+### Added
 - DOPE and YCBWriter will write to disk only if there is valid data (target(s) is not fully occluded in view)
 
 ## [1.10.1] - 2023-09-26
-### Fixed 
+### Fixed
 - Fix error when AOVs return data on different devices
 
 ## [1.10.0] - 2023-09-12
-### Changed 
+### Changed
 - Improved pytorch writer performance
 
 
 ## [1.9.1] - 2023-08-08
 
-### Fixed 
+### Fixed
 - test_pytorch_writer adding the num_frames to run_until_complete_async due to possible off-by-one frame issue
 
 ## [1.9.0] - 2023-07-12
 
-### Added 
-- register_pose_annotator() to DOPEWriter and YCBVideoWriter 
-- setup_writer() to DOPEWriter and YCBVideoWriter 
+### Added
+- register_pose_annotator() to DOPEWriter and YCBVideoWriter
+- setup_writer() to DOPEWriter and YCBVideoWriter
 - Functions were originally in standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py
-- Moved into dope_writer.py and ycb_video_writer.py 
+- Moved into dope_writer.py and ycb_video_writer.py
 
 ## [1.8.1] - 2023-06-14
 
@@ -128,7 +132,7 @@
 
 ## [1.7.4] - 2023-01-10
 ### Fixed
-- Fix OgnDope node to return proper value for occlusion 
+- Fix OgnDope node to return proper value for occlusion
 
 ## [1.7.3] - 2022-12-14
 ### Fixed
@@ -156,7 +160,7 @@
 
 ## [1.5.2] - 2022-10-25
 ### Fixed
-- Fixed OgnPose.py node to read height and width from imageWidth and imageHeight 
+- Fixed OgnPose.py node to read height and width from imageWidth and imageHeight
 
 ## [1.5.1] - 2022-10-20
 ### Fixed
@@ -164,7 +168,7 @@
 
 ## [1.5.0] - 2022-10-19
 ### Changed
-- Change DOPE writer to use BackendDispatch from omni.replicator.core for s3 writes 
+- Change DOPE writer to use BackendDispatch from omni.replicator.core for s3 writes
 
 ## [1.4.0] - 2022-10-14
 ### Added
@@ -197,7 +201,7 @@
 
 ## [1.3.0] - 2022-08-11
 ### Added
-- Custom annotator node for YCBVideo writer 
+- Custom annotator node for YCBVideo writer
 - Custom annotator node for DOPE writer
 
 ## [1.2.5] - 2022-08-11
@@ -238,7 +242,7 @@
 
 ## [1.1.1] - 2022-07-25
 ### Fixed
-- Fixed the tests by moving away from using omnigraph bundles and just doing static type resolution on the output of the distribution nodes 
+- Fixed the tests by moving away from using omnigraph bundles and just doing static type resolution on the output of the distribution nodes
 
 ## [1.1.0] - 2022-07-22
 ### Added

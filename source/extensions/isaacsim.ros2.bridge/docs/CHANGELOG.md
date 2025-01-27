@@ -1,9 +1,12 @@
 # Changelog
 
+## [4.1.14] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [4.1.13] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [4.1.12] - 2025-01-17
 ### Changed
@@ -11,7 +14,7 @@
 
 ## [4.1.11] - 2025-01-16
 ### Changed
-- OgnROS2SubscribeAckermann resets all command outputs to zero on simulation stop.  
+- OgnROS2SubscribeAckermann resets all command outputs to zero on simulation stop.
 
 ## [4.1.10] - 2025-01-15
 ### Fixed

@@ -1,17 +1,20 @@
 # Changelog
 
+## [2.2.6] - 2025-01-26
+### Changed
+- Update test settings
+
 ## [2.2.5] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [2.2.4] - 2025-01-16
 ### Changed
-- OgnROS1SubscribeAckermann resets all command outputs to zero on simulation stop.  
+- OgnROS1SubscribeAckermann resets all command outputs to zero on simulation stop.
 
 ## [2.2.3] - 2025-01-03
 ### Fixed
-- Robotics Example menu items not updated with correct names 
+- Robotics Example menu items not updated with correct names
 
 ## [2.2.2] - 2024-12-13
 ### Fixed

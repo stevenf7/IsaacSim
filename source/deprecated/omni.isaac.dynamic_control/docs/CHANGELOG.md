@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.15] - 2025-01-26
+### Change
+- Update test settings
+
 ## [1.3.14] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -68,9 +72,9 @@
 
 ## [1.2.5] - 2023-08-04
 ### Fixed
-- Fixed joints on the root of an articulation are treated as a special type of internal articulation to support fixed base. 
+- Fixed joints on the root of an articulation are treated as a special type of internal articulation to support fixed base.
 - Getting the type for the first fixed joint on the root link of an articulation will return none now
-- Use USD apis to interact with the first fixed joint on the root of an articulation. 
+- Use USD apis to interact with the first fixed joint on the root of an articulation.
 
 ## [1.2.4] - 2023-06-12
 ### Changed
@@ -102,12 +106,12 @@
 
 ## [1.1.0] - 2022-08-12
 
-### Added 
+### Added
 - cMassLocalPose to DcRigidBodyProperties
 
 ## [1.0.1] - 2022-08-09
 
-### Changed 
+### Changed
 - Removed simple_articulation.usd, test_articulation_simple uses Nucleus asset
 
 ## [1.0.0] - 2022-05-11
@@ -201,7 +205,7 @@
 ## [0.1.4] - 2021-07-14
 
 ### Added
-- now works when running without editor/timeline and only physx events. 
+- now works when running without editor/timeline and only physx events.
 - fixed crash with setting dof properties
 
 ## [0.1.3] - 2021-05-24

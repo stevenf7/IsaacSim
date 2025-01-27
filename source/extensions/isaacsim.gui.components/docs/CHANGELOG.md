@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.0.6] - 2025-01-21
+## [1.0.7] - 2025-01-26
 ### Changed
-- Update extension description and add extension specific test settings
+- Update test settings
 
 ## [1.0.5] - 2025-01-17
 ### Changed
@@ -51,7 +51,7 @@
 
 ## [0.14.0] - 2024-02-02
 ### Added
-- SelectPrimWidget and ParamWidget to simplify populating a popup dialog for collecting paramaters. 
+- SelectPrimWidget and ParamWidget to simplify populating a popup dialog for collecting paramaters.
 
 ## [0.13.7] - 2024-02-02
 ### Changed
