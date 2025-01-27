@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.9] - 2025-01-27
+### Removed
+- Remove comments
+
 ## [1.0.8] - 2025-01-27
 ### Changed
 - Updated docs link

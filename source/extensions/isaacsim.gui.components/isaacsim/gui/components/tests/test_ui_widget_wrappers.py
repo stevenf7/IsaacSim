@@ -35,19 +35,6 @@ from isaacsim.gui.components.element_wrappers import (
 )
 from isaacsim.storage.native import get_assets_root_path
 
-"""
-To Anyone Looking at these test cases to see how to make UI events happen via omni.kit.ui_test:
-Reference https://gitlab-master.nvidia.com/omniverse/kit/-/blob/master/kit/source/extensions/omni.kit.ui_test/python/omni/kit/ui_test/input.py
-
-The paths passed into ui_test.find(long_nonsense_path) can be found by using the omni.kit.window.inspector extension
-To create these tests, before finishing a test case, I'd leave the last line before window.destroy() as asyncio.sleep(15)
-so that I had time to find the window in the Inspector and could visually inspect that my UI looked right.
-Make sure to use the refresh button in the inspector
-
-There are annoying name-clashing errors when using the Inspector.  So I had to give the window in each test case a different name,
-and while developing tests, I incremented names to be unique whenever these errors occured.
-Good luck! This was a bit of a pain.
-"""
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestUI(omni.kit.test.AsyncTestCase):
