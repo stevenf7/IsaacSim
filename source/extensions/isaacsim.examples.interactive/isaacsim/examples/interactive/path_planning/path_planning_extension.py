@@ -29,7 +29,7 @@ class PathPlanningExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Path Planning Task",
-            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/manipulators/manipulators_lula_rrt.html#isaac-sim-app-tutorial-motion-generation-rrt",
+            "doc_link": "https://docs.isaacsim.omniverse.nvidia.com/latest/manipulators/manipulators_lula_rrt.html#isaac-sim-app-tutorial-motion-generation-rrt",
             "overview": "This Example shows how to plan a path through a complicated static environment with the Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
             "sample": PathPlanning(),
         }

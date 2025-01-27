@@ -490,7 +490,7 @@ class Ros2CameraGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_camera.html#graph-shortcut"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_camera.html#graph-shortcut"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
@@ -779,7 +779,7 @@ class Ros2RtxLidarGraph:
                                 width=24,
                                 height=24,
                                 clicked_fn=lambda: on_docs_link_clicked(
-                                    "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/ros2_tutorials/tutorial_ros2_rtx_lidar.html#graph-shortcut"
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_rtx_lidar.html#graph-shortcut"
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )

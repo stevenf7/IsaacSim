@@ -594,7 +594,9 @@ class Extension(omni.ext.IExt):
 
     def _build_info_ui(self):
         title = EXTENSION_NAME
-        doc_link = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/manipulators/manipulators_robot_description_editor.html"
+        doc_link = (
+            "https://docs.isaacsim.omniverse.nvidia.com/latest/manipulators/manipulators_robot_description_editor.html"
+        )
 
         overview = "This utility is used to help generate a Lula Robot Description YAML file required to use Lula-based algorithms like RmpFlow, RRT, and Lula Kinematics, or to generate an XRDF file for use with Isaac cuMotion or future releases of Lula. "
         overview += "Both file types contain a collision sphere representation of the robot that is used for collision avoidance, and information that is required to interpret the robot URDF.\n\n"

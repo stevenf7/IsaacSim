@@ -70,7 +70,7 @@ class EmbeddedKernel(Kernel):
     help_links = [
         {
             "text": "Omniverse™ Isaac Sim",
-            "url": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/index.html",
+            "url": "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html",
         }
     ]
 

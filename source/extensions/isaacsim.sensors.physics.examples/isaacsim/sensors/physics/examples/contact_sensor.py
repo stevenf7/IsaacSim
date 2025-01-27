@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
         with ui.VStack(spacing=5, height=0):
 
             title = "Contact Sensor Example"
-            doc_link = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physics_contact.html"
+            doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/sensors/isaacsim_sensors_physics_contact.html"
 
             overview = "This Example shows how to Surface load sensors applied to a body. "
             overview += "It works by summing all forces applied on a given trigger shperical region intersected with the given body surface."

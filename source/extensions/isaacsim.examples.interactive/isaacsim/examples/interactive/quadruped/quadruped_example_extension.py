@@ -35,7 +35,7 @@ class QuadrupedExampleExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Quadruped: Boston Dynamics Spot",
-            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/isaac_lab_tutorials/tutorial_policy_deployment.html",
+            "doc_link": "https://docs.isaacsim.omniverse.nvidia.com/latest/isaac_lab_tutorials/tutorial_policy_deployment.html",
             "overview": overview,
             "sample": QuadrupedExample(),
         }

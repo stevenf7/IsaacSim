@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
         self._load_lidar_scene_button = None
         with ui.VStack(spacing=5, height=10):
             title = "Read a LIDAR Data Stream"
-            doc_link = "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/sensors/isaacsim_sensors_physx_lidar.html"
+            doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/sensors/isaacsim_sensors_physx_lidar.html"
 
             overview = "This example shows how to create a LIDAR, set its properties, and read data streaming from it. "
             overview += "First press the 'Load LIDAR' button and then press PLAY to simulate."

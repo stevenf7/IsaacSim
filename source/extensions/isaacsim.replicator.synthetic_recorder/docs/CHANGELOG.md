@@ -1,9 +1,12 @@
 # Changelog
 
+## [2.2.3] - 2025-01-27
+### Changed
+- Updated docs link
+
 ## [2.2.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [2.2.1] - 2024-10-28
 ### Fixed
@@ -66,7 +69,7 @@
 - removed overwrite/increment/timestamp options from recorder, it is now handled by the backend which is not exposed
 
 ### Fixed
-- fixed bug if a non valid json file is provided to the custom writer  
+- fixed bug if a non valid json file is provided to the custom writer
 
 ## [1.6.0] - 2023-08-10
 ### Added
@@ -83,7 +86,7 @@
 
 ## [1.5.1] - 2023-07-13
 ### Fixed
-- load_config checks for empty json files 
+- load_config checks for empty json files
 
 ## [1.5.0] - 2023-03-13
 ### Added
@@ -136,7 +139,7 @@
 ### Added
 - Support for loading custom writers
 
-### Changed 
+### Changed
 - renamed extension.py to synthetic_recorder_extension.py
 - renamed extension class from Extension to SyntheticRecorderExtension
 

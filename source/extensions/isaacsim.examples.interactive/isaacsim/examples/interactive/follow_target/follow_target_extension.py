@@ -27,7 +27,7 @@ class FollowTargetExtension(omni.ext.IExt):
             "ext_id": ext_id,
             "file_path": os.path.abspath(__file__),
             "title": "Follow Target Task",
-            "doc_link": "https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/introduction/examples.html",
+            "doc_link": "https://docs.isaacsim.omniverse.nvidia.com/latest/introduction/examples.html",
             "overview": "This Example shows how to follow a target using Franka robot in Isaac Sim.Click 'Load' to load the scene, and 'Start' to start the following. \n\n To move the target, select 'Target Cube' on the Stage tree, then drag it around on stage. \n\nYou can add multiple obstacles. 'Removing' them will remove the obstacles in reverse order of when its added.",
             "sample": FollowTarget(),
         }
