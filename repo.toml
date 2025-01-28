@@ -876,8 +876,8 @@ exts.include = [
 #     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
 # ]
 
-# disable signing as it's not common practice for extension publishing atm
-signing.enabled = false
+# Signing must be enabled for us to publish to external registry as part of app template release process
+signing.enabled = true
 
 # verify before publishing
 publish_verification = true
