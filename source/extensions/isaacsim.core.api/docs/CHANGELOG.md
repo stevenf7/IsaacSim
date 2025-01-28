@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.17] - 2025-01-28
+### Fixed
+- Windows signing issue
+
 ## [4.2.16] - 2025-01-27
 ### Changed
 - Changed build repo from constant str to a var for the crash reporter

@@ -1,5 +1,9 @@
 # Changelog
 
+## [13.6.4] - 2025-01-28
+### Fixed
+- Windows signing issue
+
 ## [13.6.3] - 2025-01-26
 ### Changed
 - Update test settings

@@ -1,9 +1,12 @@
 # Changelog
 
+## [0.3.4] - 2025-01-28
+### Fixed
+- Windows signing issue
+
 ## [0.3.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [0.3.2] - 2024-12-04
 ### Fixed
