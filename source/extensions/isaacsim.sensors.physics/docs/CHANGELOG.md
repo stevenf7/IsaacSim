@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.6] - 2025-01-28
+### Fixed
+- Windows signing issue
+
 ## [0.3.5] - 2025-01-26
 ### Changed
 - Update test settings

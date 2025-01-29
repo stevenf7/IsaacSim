@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.3] - 2025-01-28
+### Fixed
+- Windows signing issue
+
 ## [3.1.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings

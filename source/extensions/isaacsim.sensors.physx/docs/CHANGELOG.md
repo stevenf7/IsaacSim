@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.5] - 2025-01-28
+### Fixed
+- Windows signing issue
+
 ## [2.2.4] - 2025-01-26
 ### Changed
 - Update test settings
