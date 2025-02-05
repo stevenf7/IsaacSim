@@ -1,2 +1,2 @@
 @echo off
-call "%~dp0repo" format --verify %*
+call "%~dp0repo" format %*
