@@ -80,6 +80,7 @@ class SimulationApp:
         "profiler_backend": [],
         "create_new_stage": True,
         "extra_args": [],
+        "enable_crashreporter": True,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -110,6 +111,7 @@ class SimulationApp:
         profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
         create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True
         extra_args: (list): List of extra command line arguments to pass down to the kit process
+        enable_crashreporter (bool): Enable crash reporter. Defaults to True
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -203,8 +205,12 @@ class SimulationApp:
 
         # Load omniverse application plugins
         self._framework = carb.get_framework()
+        wildcards = ["omni.kit.app.plugin"]
+        if self.config["enable_crashreporter"]:
+            wildcards.append("carb.crashreporter-*")
+
         self._framework.load_plugins(
-            loaded_file_wildcards=["omni.kit.app.plugin"],
+            loaded_file_wildcards=wildcards,
             search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/kernel/plugins')],
         )
         # Get Omniverse application
