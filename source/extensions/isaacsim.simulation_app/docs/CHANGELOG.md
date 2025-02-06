@@ -1,9 +1,12 @@
 # Changelog
 
+## [2.5.0] - 2025-02-05
+### Changed
+- Added enable_crashreporter argument that if true will provide crash dumps if the application crashes, default true. Previously when a crash occurred only the outer python process provided crash information. 
+
 ## [2.4.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [2.4.1] - 2024-12-06
 ### Fixed
