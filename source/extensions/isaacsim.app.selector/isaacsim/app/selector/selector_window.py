@@ -518,7 +518,6 @@ class SelectorWindow:
                     self._ros_bridge_selection = ui.ComboBox(
                         self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
                         "",
-                        "isaacsim.ros1.bridge (deprecated)",
                         "isaacsim.ros2.bridge",
                         tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
                     ).model

@@ -44,29 +44,6 @@ def add_physx_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec
     lidar_prim.GetAttribute("xformOp:orient").Set(orientation)
 
 
-def add_ros1_camera(render_product_path, graph_path, camera_topic, sim_camera_id, type="rgb"):
-    (ros_camera_graph, _, _, _) = og.Controller.edit(
-        {"graph_path": graph_path, "evaluator_name": "execution"},
-        {
-            og.Controller.Keys.CREATE_NODES: [
-                ("OnTick", "omni.graph.action.OnTick"),
-                ("cameraHelperRgb", "isaacsim.ros1.bridge.ROS1CameraHelper"),
-            ],
-            og.Controller.Keys.CONNECT: [
-                ("OnTick.outputs:tick", "cameraHelperRgb.inputs:execIn"),
-            ],
-            og.Controller.Keys.SET_VALUES: [
-                ("cameraHelperRgb.inputs:renderProductPath", render_product_path),
-                ("cameraHelperRgb.inputs:frameId", sim_camera_id),
-                ("cameraHelperRgb.inputs:topicName", camera_topic),
-                ("cameraHelperRgb.inputs:type", type),
-            ],
-        },
-    )
-
-    return ros_camera_graph
-
-
 def add_ros2_camera(render_product_path, graph_path, camera_topic, sim_camera_id, type="rgb"):
     (ros_camera_graph, _, _, _) = og.Controller.edit(
         {"graph_path": graph_path, "evaluator_name": "execution"},

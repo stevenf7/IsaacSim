@@ -653,7 +653,6 @@ include = ["tests-isaacsim.replicator*${shell_ext}"]
 name = "replicator"
 [[repo_test.suites.pythontests.bucket]]
 include = [
-  "tests-isaacsim.ros1*${shell_ext}",
   "tests-isaacsim.ros2*${shell_ext}",
 ]
 name = "ros"
@@ -899,7 +898,6 @@ etm_emails = ["hmazhar@nvidia.com"]
 [repo_format]
 
 cpp.files.exclude = [
-  "source/extensions/isaacsim.ros1.bridge/isaac_ros_messages/**",
   "source/extensions/isaacsim.ros2.bridge/isaac_ros2_messages/**",
   "tools/container/**",
 ]
@@ -1005,7 +1003,6 @@ excluded_extensions = [
     "omni.isaac.robot_description_editor",
     "omni.isaac.ros2_bridge",
     "omni.isaac.ros2_bridge.robot_description",
-    "omni.isaac.ros_bridge",
     "omni.isaac.scene_blox",
     "omni.isaac.sensor",
     "omni.isaac.surface_gripper",
@@ -1049,7 +1046,6 @@ ogn_exts_includes = [
   "isaacsim.core.nodes",
   "isaacsim.util.debug_draw",
   "isaacsim.examples.interactive_nodes",
-  "isaacsim.ros1.bridge",
   "isaacsim.robot.wheeled_robots",
 ]
 

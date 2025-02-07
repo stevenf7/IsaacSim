@@ -36,12 +36,6 @@ class ROS2BridgeExtension(omni.ext.IExt):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
 
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        for b in ["isaacsim.ros1.bridge", "isaacsim.ros2.bridge"]:
-            if b != BRIDGE_NAME and ext_manager.is_extension_enabled(b):
-                carb.log_error(f"{BRIDGE_PREFIX} bridge extension cannot be enabled if {b} is enabled")
-                ext_manager.set_extension_enabled(BRIDGE_NAME, False)
-
-                return
 
         backup_ros_distro = carb.settings.get_settings().get_as_string("/exts/isaacsim.ros2.bridge/ros_distro")
         ros_distro = os.environ.get("ROS_DISTRO")

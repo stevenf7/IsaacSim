@@ -21,9 +21,6 @@ EXTRA_ARGS_SETTING = "/persistent/ext/isaacsim.app.selector/extra_args"
 ECO_MODE_SETTING = "/persistent/rtx/ecoMode/enabled"
 
 PERSISTENT_ROS_BRIDGE_SETTING = "/persistent/ext/isaacsim.app.selector/ros_bridge_extension"
-if platform.system().lower() == "windows":
-    ROS_BRIDGE_EXTENSIONS = ["", "isaacsim.ros2.bridge"]
-else:
-    ROS_BRIDGE_EXTENSIONS = ["", "isaacsim.ros1.bridge", "isaacsim.ros2.bridge"]
+ROS_BRIDGE_EXTENSIONS = ["", "isaacsim.ros2.bridge"]
 
 PERSISTENT_ROS_INTERNAL_LIBS_SETTING = "/persistent/ext/isaacsim.app.selector/ros_internal_libs"
