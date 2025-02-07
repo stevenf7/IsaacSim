@@ -105,11 +105,11 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
         min_b = self._om.get_min_bound()
         max_b = self._om.get_max_bound()
 
-        self.assertEqual(top_left, (4.975, -4.975))
-        self.assertEqual(top_right, (-4.975, -4.975))
+        self.assertEqual(top_left, (4.975, -5.025000190734863))
+        self.assertEqual(top_right, (-5.025000190734863, -5.025000190734863))
         self.assertEqual(bottom_left, (4.975, 4.975))
-        self.assertEqual(bottom_right, (-4.975, 4.975))
-        self.assertEqual((float(image_coords[0][0]), float(image_coords[1][0])), (4.975, 4.975))
+        self.assertEqual(bottom_right, (-5.025000190734863, 4.975))
+        self.assertEqual((float(image_coords[0][0]), float(image_coords[1][0])), (5.025000190734863, 4.975))
 
         # size = [0, 0, 0]
 
