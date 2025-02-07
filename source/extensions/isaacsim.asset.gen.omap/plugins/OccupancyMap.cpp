@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -121,15 +121,64 @@ void CARB_ABI SetCellSize(float cellSize)
     inputCellSize = cellSize;
 }
 
+// Helper function to draw bounding box
+void drawBoundingBox(const std::vector<carb::Float3>& corners, const carb::ColorRgba& color, float lineWidth)
+{
+    // Bottom face
+    for (int i = 0; i < 4; i++)
+    {
+        gLineDrawing->addVertex(corners[i], color, lineWidth);
+        gLineDrawing->addVertex(corners[(i + 1) % 4], color, lineWidth);
+    }
+
+    // Top face
+    for (int i = 4; i < 8; i++)
+    {
+        gLineDrawing->addVertex(corners[i], color, lineWidth);
+        gLineDrawing->addVertex(corners[(i + 1) % 4 + 4], color, lineWidth);
+    }
+
+    // Vertical edges
+    for (int i = 0; i < 4; i++)
+    {
+        gLineDrawing->addVertex(corners[i], color, lineWidth);
+        gLineDrawing->addVertex(corners[i + 4], color, lineWidth);
+    }
+}
+
+// Helper function to draw grid
+void drawGrid(float lineWidth)
+{
+    carb::ColorRgba gridColor = { 0.5f, 0.5f, 0.5f, 0.5f };
+
+    // Draw vertical grid lines
+    for (float ix = inputMinPoint.x; ix <= inputMaxPoint.x; ix += inputCellSize)
+    {
+        carb::Float3 p0{ inputOrigin.x + ix, inputOrigin.y + inputMinPoint.y, inputOrigin.z };
+        carb::Float3 p1{ inputOrigin.x + ix, inputOrigin.y + inputMaxPoint.y, inputOrigin.z };
+
+        gLineDrawing->addVertex(p0, gridColor, lineWidth);
+        gLineDrawing->addVertex(p1, gridColor, lineWidth);
+    }
+
+    // Draw horizontal grid lines
+    for (float iy = inputMinPoint.y; iy <= inputMaxPoint.y; iy += inputCellSize)
+    {
+        carb::Float3 p0{ inputOrigin.x + inputMinPoint.x, inputOrigin.y + iy, inputOrigin.z };
+        carb::Float3 p1{ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + iy, inputOrigin.z };
+
+        gLineDrawing->addVertex(p0, gridColor, lineWidth);
+        gLineDrawing->addVertex(p1, gridColor, lineWidth);
+    }
+}
+
 void CARB_ABI Update()
 {
     gLineDrawing->clear();
-    gCellDrawing->clear(); // clear this so that we don't leave any cells floating.
-    float w = 2.0f;
+    gCellDrawing->clear();
+    float lineWidth = 2.0f;
 
-    carb::ColorRgba color = { 1, 1, 1, 1 };
-
-
+    // Calculate corners
     std::vector<carb::Float3> corners(8);
     corners[0] = carb::Float3(
         { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMinPoint.y, inputOrigin.z + inputMinPoint.z });
@@ -147,88 +196,62 @@ void CARB_ABI Update()
         { inputOrigin.x + inputMaxPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z + inputMaxPoint.z });
     corners[7] = carb::Float3(
         { inputOrigin.x + inputMinPoint.x, inputOrigin.y + inputMaxPoint.y, inputOrigin.z + inputMaxPoint.z });
-    // bottom
-    gLineDrawing->addVertex(corners[0], color, w);
-    gLineDrawing->addVertex(corners[1], color, w);
 
-    gLineDrawing->addVertex(corners[1], color, w);
-    gLineDrawing->addVertex(corners[2], color, w);
+    // Draw bounding box
+    drawBoundingBox(corners, { 1, 1, 1, 1 }, lineWidth);
 
-    gLineDrawing->addVertex(corners[2], color, w);
-    gLineDrawing->addVertex(corners[3], color, w);
+    // Draw grid
+    drawGrid(lineWidth);
 
-    gLineDrawing->addVertex(corners[3], color, w);
-    gLineDrawing->addVertex(corners[0], color, w);
-
-    // top
-    gLineDrawing->addVertex(corners[4], color, w);
-    gLineDrawing->addVertex(corners[5], color, w);
-
-    gLineDrawing->addVertex(corners[5], color, w);
-    gLineDrawing->addVertex(corners[6], color, w);
-
-    gLineDrawing->addVertex(corners[6], color, w);
-    gLineDrawing->addVertex(corners[7], color, w);
-
-    gLineDrawing->addVertex(corners[7], color, w);
-    gLineDrawing->addVertex(corners[4], color, w);
-
-    // connect bottom to top
-    gLineDrawing->addVertex(corners[0], color, w);
-    gLineDrawing->addVertex(corners[4], color, w);
-
-    gLineDrawing->addVertex(corners[1], color, w);
-    gLineDrawing->addVertex(corners[5], color, w);
-
-    gLineDrawing->addVertex(corners[2], color, w);
-    gLineDrawing->addVertex(corners[6], color, w);
-
-    gLineDrawing->addVertex(corners[3], color, w);
-    gLineDrawing->addVertex(corners[7], color, w);
-
-
-    for (float ix = inputMinPoint.x; ix <= inputMaxPoint.x; ix += inputCellSize)
-    {
-        carb::Float3 p0{ inputOrigin.x + ix, inputOrigin.y + inputMinPoint.y, inputOrigin.z };
-        carb::Float3 p1{ inputOrigin.x + ix, inputOrigin.y + inputMaxPoint.y, inputOrigin.z };
-
-        gLineDrawing->addVertex(p0, { 0.5, 0.5, 0.5, 0.5 }, w);
-        gLineDrawing->addVertex(p1, { 0.5, 0.5, 0.5, 0.5 }, w);
-    }
-    for (float iy = inputMinPoint.y; iy <= inputMaxPoint.y; iy += inputCellSize)
-    {
-        carb::Float3 p0{ inputOrigin.x + inputMinPoint.x, inputOrigin.y + iy, inputOrigin.z };
-        carb::Float3 p1{ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + iy, inputOrigin.z };
-
-        gLineDrawing->addVertex(p0, { 0.5, 0.5, 0.5, 0.5 }, w);
-        gLineDrawing->addVertex(p1, { 0.5, 0.5, 0.5, 0.5 }, w);
-    }
+    // Draw coordinate axes
     carb::Float3 scaleMin = inputMinPoint;
     carb::Float3 scaleMax = inputMaxPoint;
-    scaleMin.x = (scaleMax.x - scaleMin.x) < 0.1f / gMetersPerUnit ? scaleMin.x - 0.1f / gMetersPerUnit : scaleMin.x;
-    scaleMin.y = (scaleMax.y - scaleMin.y) < 0.1f / gMetersPerUnit ? scaleMin.y - 0.1f / gMetersPerUnit : scaleMin.y;
-    scaleMin.z = (scaleMax.z - scaleMin.z) < 0.1f / gMetersPerUnit ? scaleMin.z - 0.1f / gMetersPerUnit : scaleMin.z;
 
-    scaleMax.x = (scaleMax.x - scaleMin.x) < 0.1f / gMetersPerUnit ? scaleMax.x + 0.1f / gMetersPerUnit : scaleMax.x;
-    scaleMax.y = (scaleMax.y - scaleMin.y) < 0.1f / gMetersPerUnit ? scaleMax.y + 0.1f / gMetersPerUnit : scaleMax.y;
-    scaleMax.z = (scaleMax.z - scaleMin.z) < 0.1f / gMetersPerUnit ? scaleMax.z + 0.1f / gMetersPerUnit : scaleMax.z;
+    // Ensure minimum axis size
+    float minSize = 0.1f / gMetersPerUnit;
 
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + scaleMin.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w * 2);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x + scaleMax.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w * 2);
+    // Check and adjust X dimension
+    if (scaleMax.x - scaleMin.x < minSize)
+    {
+        scaleMin.x -= minSize;
+        scaleMax.x += minSize;
+    }
 
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x, inputOrigin.y + scaleMin.y, inputOrigin.z }), { 0, 1, 0, 1 }, w * 2);
-    gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x, inputOrigin.y + scaleMax.y, inputOrigin.z }), { 0, 1, 0, 1 }, w * 2);
+    // Check and adjust Y dimension
+    if (scaleMax.y - scaleMin.y < minSize)
+    {
+        scaleMin.y -= minSize;
+        scaleMax.y += minSize;
+    }
 
+    // Check and adjust Z dimension
+    if (scaleMax.z - scaleMin.z < minSize)
+    {
+        scaleMin.z -= minSize;
+        scaleMax.z += minSize;
+    }
+
+    // Draw X axis (red)
     gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMin.z }), { 0, 0, 1, 1 }, w * 2);
+        carb::Float3({ inputOrigin.x + scaleMin.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, lineWidth * 2);
     gLineDrawing->addVertex(
-        carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMax.z }), { 0, 0, 1, 1 }, w * 2);
+        carb::Float3({ inputOrigin.x + scaleMax.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, lineWidth * 2);
+
+    // Draw Y axis (green)
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y + scaleMin.y, inputOrigin.z }), { 0, 1, 0, 1 }, lineWidth * 2);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y + scaleMax.y, inputOrigin.z }), { 0, 1, 0, 1 }, lineWidth * 2);
+
+    // Draw Z axis (blue)
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMin.z }), { 0, 0, 1, 1 }, lineWidth * 2);
+    gLineDrawing->addVertex(
+        carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMax.z }), { 0, 0, 1, 1 }, lineWidth * 2);
+
     gLineDrawing->draw();
 }
+
 std::vector<carb::Float3> GetOccupiedPositions()
 {
     std::vector<carb::Float3> pos;
@@ -238,6 +261,7 @@ std::vector<carb::Float3> GetOccupiedPositions()
     }
     return pos;
 }
+
 std::vector<carb::Float3> GetFreePositions()
 {
     std::vector<carb::Float3> pos;
@@ -247,6 +271,7 @@ std::vector<carb::Float3> GetFreePositions()
     }
     return pos;
 }
+
 carb::Float3 GetMinBound()
 {
     carb::Float3 bounds = { 0, 0, 0 };
@@ -256,6 +281,7 @@ carb::Float3 GetMinBound()
     }
     return bounds;
 }
+
 carb::Float3 GetMaxBound()
 {
     carb::Float3 bounds = { 0, 0, 0 };
@@ -284,6 +310,7 @@ std::vector<float> GetBuffer()
     }
     return std::vector<float>();
 }
+
 std::vector<char> GetColoredByteBuffer(const carb::Int4& occupied, const carb::Int4& unoccupied, const carb::Int4& unknown)
 {
     if (gGenerator)
@@ -292,6 +319,7 @@ std::vector<char> GetColoredByteBuffer(const carb::Int4& occupied, const carb::I
     }
     return std::vector<char>();
 }
+
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     // try and find USD stage from Id

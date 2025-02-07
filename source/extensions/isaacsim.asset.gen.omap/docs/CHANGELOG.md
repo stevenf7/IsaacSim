@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.10] - 2025-02-05
+### Fixed
+- In certain cases the generated image appeared skewed, this was due to the bounds not being rounded to the nearest cell size. This has now been fixed.
+
 ## [2.0.9] - 2025-01-28
 ### Fixed
 - Windows signing issue
