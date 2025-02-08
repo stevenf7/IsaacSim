@@ -124,7 +124,6 @@ Isaac Sim: Extensions API
    :maxdepth: 1
    :caption: Extensions (ROS 1 & 2)
 
-   source/extensions/isaacsim.ros1.bridge/docs/index
    source/extensions/isaacsim.ros2.bridge/docs/index
    source/extensions/isaacsim.ros2.tf_viewer/docs/index
    source/extensions/isaacsim.ros2.urdf/docs/index
