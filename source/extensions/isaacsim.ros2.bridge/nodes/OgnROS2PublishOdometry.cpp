@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -63,18 +63,21 @@ public:
             auto& robotFrontVector = db.inputs.robotFront();
             state.m_robotFront =
                 pxr::GfVec3f(static_cast<float>(robotFrontVector[0]), static_cast<float>(robotFrontVector[1]),
-                             static_cast<float>(robotFrontVector[2]));
+                             0.0); // Z-component of zero will always be assumed
 
             state.m_robotFront = pxr::GfGetNormalized(state.m_robotFront, 1.0f);
 
             if (state.m_zUp)
             {
-                state.m_robotSide = pxr::GfCross(pxr::GfVec3f(0.0, 0.0, 1.0), state.m_robotFront);
+                state.m_robotUp = pxr::GfVec3f(0.0, 0.0, 1.0);
+                state.m_robotSide = pxr::GfCross(state.m_robotUp, state.m_robotFront);
             }
             else
             {
-                state.m_robotSide = pxr::GfCross(pxr::GfVec3f(0.0, 1.0, 0.0), state.m_robotFront);
+                state.m_robotUp = pxr::GfVec3f(0.0, 1.0, 0.0);
+                state.m_robotSide = pxr::GfCross(state.m_robotUp, state.m_robotFront);
             }
+
 
             // Setup ROS odom publisher
             const std::string& topicName = db.inputs.topicName();
@@ -128,9 +131,11 @@ public:
         auto& position = db.inputs.position();
         auto& orientation = db.inputs.orientation();
 
+        bool publishRawVelocities = db.inputs.publishRawVelocities();
+
         state.m_message->writeHeader(db.inputs.timeStamp(), state.m_odometryFrameId);
         state.m_message->writeData(state.m_chassisFrameId, linearVelocity, angularVelocity, m_robotFront, m_robotSide,
-                                   m_unitScale, m_zUp, position, orientation);
+                                   m_robotUp, m_unitScale, position, orientation, publishRawVelocities);
 
         state.m_publisher.get()->publish(state.m_message->getPtr());
     }
@@ -157,6 +162,7 @@ private:
     // The front of the robot
     pxr::GfVec3f m_robotFront = pxr::GfVec3f(1.0, 0.0, 0.0);
     pxr::GfVec3f m_robotSide = pxr::GfVec3f(0.0, 1.0, 0.0);
+    pxr::GfVec3f m_robotUp = pxr::GfVec3f(0.0, 0.0, 1.0);
 
     std::string m_odometryFrameId = "odom";
     std::string m_chassisFrameId = "base_link";

@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.0] - 2025-02-10
+### Added
+- Added support for publishing 3D odometry 
+
 ## [4.1.15] - 2025-01-27
 ### Changed
 - Updated docs link
