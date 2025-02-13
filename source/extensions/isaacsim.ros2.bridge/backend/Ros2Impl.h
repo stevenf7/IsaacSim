@@ -154,10 +154,11 @@ public:
                            const pxr::GfVec3d& angularVelocity,
                            const pxr::GfVec3f& robotFront,
                            const pxr::GfVec3f& robotSide,
+                           const pxr::GfVec3f& robotUp,
                            double unitScale,
-                           bool zUp,
                            const pxr::GfVec3d& position,
-                           const pxr::GfQuatd& orientation);
+                           const pxr::GfQuatd& orientation,
+                           bool publishRawVelocities);
 };
 
 class Ros2RawTfTreeMessageImpl : public Ros2RawTfTreeMessage, Ros2MessageInterfaceImpl

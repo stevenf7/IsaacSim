@@ -45,6 +45,11 @@
                 "description": "QoS profile config",
                 "default": ""
             },
+            "publishRawVelocities": {
+                "type":"bool",
+                "description":"When enabled, linear and angular velocities are published as provided, without transformation. When disabled, the given world velocities are projected into the robot's frame before publishing.",
+                "default": false
+            },
             "queueSize": {
                 "type": "uint64",
                 "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent. Only honored if 'history' QoS policy was set to 'keep last'. This setting can be overwritten by qosProfile input.",
@@ -78,7 +83,7 @@
             },
             "robotFront": {
                 "type": "vectord[3]",
-                "description": "The front of the robot",
+                "description": "The front of the robot. The robotFront vector utilizes x and y, and drops the z component. We assume a robotUp vector of [0.0, 0.0, 1.0] to project given world linear and angular velocities into the robot's local frame.",
                 "default": [1.0, 0.0, 0.0]
             }
         }

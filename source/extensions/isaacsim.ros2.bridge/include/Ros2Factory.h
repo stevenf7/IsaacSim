@@ -991,20 +991,23 @@ public:
      * @param angularVelocity Angular velocity.
      * @param robotFront Front normalized vector.
      * @param robotSide Side normalized vector.
+     * @param robotUp Up normalized vector.
      * @param unitScale Unit scale of the stage.
-     * @param zUp Whether the stage is z-axis up.
      * @param position Position.
      * @param orientation Orientation.
+     * @param publishRawVelocities If enabled, raw velocities are published. Otherwise velocities are projected in the
+     * robot frame before being published.
      */
     virtual void writeData(std::string& childFrame,
                            const pxr::GfVec3d& linearVelocity,
                            const pxr::GfVec3d& angularVelocity,
                            const pxr::GfVec3f& robotFront,
                            const pxr::GfVec3f& robotSide,
+                           const pxr::GfVec3f& robotUp,
                            double unitScale,
-                           bool zUp,
                            const pxr::GfVec3d& position,
-                           const pxr::GfQuatd& orientation) = 0;
+                           const pxr::GfQuatd& orientation,
+                           bool publishRawVelocities) = 0;
 };
 
 /**

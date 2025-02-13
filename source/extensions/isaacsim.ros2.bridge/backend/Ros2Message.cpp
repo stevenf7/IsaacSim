@@ -616,10 +616,11 @@ void Ros2OdometryMessageImpl::writeData(std::string& childFrame,
                                         const pxr::GfVec3d& angularVelocity,
                                         const pxr::GfVec3f& robotFront,
                                         const pxr::GfVec3f& robotSide,
+                                        const pxr::GfVec3f& robotUp,
                                         double unitScale,
-                                        bool zUp,
                                         const pxr::GfVec3d& position,
-                                        const pxr::GfQuatd& orientation)
+                                        const pxr::GfQuatd& orientation,
+                                        bool publishRawVelocities)
 {
     if (!m_msg)
     {
@@ -628,24 +629,42 @@ void Ros2OdometryMessageImpl::writeData(std::string& childFrame,
     nav_msgs__msg__Odometry* odometryMsg = static_cast<nav_msgs__msg__Odometry*>(m_msg);
     Ros2MessageInterfaceImpl::writeRosString(childFrame, odometryMsg->child_frame_id);
 
-    float measuredSpeedFront = static_cast<float>(
-        pxr::GfDot(pxr::GfVec3d(linearVelocity[0], linearVelocity[1], linearVelocity[2]), robotFront) * unitScale);
-
-    float measuredSpeedSide = static_cast<float>(
-        pxr::GfDot(pxr::GfVec3d(linearVelocity[0], linearVelocity[1], linearVelocity[2]), robotSide) * unitScale);
-
-    odometryMsg->twist.twist.linear.x = measuredSpeedFront;
-    odometryMsg->twist.twist.linear.y = measuredSpeedSide;
-
-    if (zUp)
+    if (publishRawVelocities)
     {
-        odometryMsg->twist.twist.angular.z = angularVelocity[2]; // Get Z component of angular velocity
+        // Directly set the velocities without projection
+        odometryMsg->twist.twist.linear.x = static_cast<float>(linearVelocity[0] * unitScale);
+        odometryMsg->twist.twist.linear.y = static_cast<float>(linearVelocity[1] * unitScale);
+        odometryMsg->twist.twist.linear.z = static_cast<float>(linearVelocity[2] * unitScale);
+
+        odometryMsg->twist.twist.angular.x = static_cast<float>(angularVelocity[0]);
+        odometryMsg->twist.twist.angular.y = static_cast<float>(angularVelocity[1]);
+        odometryMsg->twist.twist.angular.z = static_cast<float>(angularVelocity[2]);
     }
+
     else
     {
-        odometryMsg->twist.twist.angular.y = angularVelocity[1]; // Get Y component of angular velocity
-    }
 
+        // Project robot velocities into robot frame using dot-products
+        float measuredSpeedFront = static_cast<float>(pxr::GfDot(linearVelocity, robotFront) * unitScale);
+
+        float measuredSpeedSide = static_cast<float>(pxr::GfDot(linearVelocity, robotSide) * unitScale);
+
+        float measureSpeedUp = static_cast<float>(pxr::GfDot(linearVelocity, robotUp) * unitScale);
+
+        float measureAngularFront = static_cast<float>(pxr::GfDot(angularVelocity, robotFront));
+
+        float measureAngularSide = static_cast<float>(pxr::GfDot(angularVelocity, robotSide));
+
+        float measureAngularUp = static_cast<float>(pxr::GfDot(angularVelocity, robotUp));
+
+        odometryMsg->twist.twist.linear.x = measuredSpeedFront;
+        odometryMsg->twist.twist.linear.y = measuredSpeedSide;
+        odometryMsg->twist.twist.linear.z = measureSpeedUp;
+
+        odometryMsg->twist.twist.angular.x = measureAngularFront;
+        odometryMsg->twist.twist.angular.y = measureAngularSide;
+        odometryMsg->twist.twist.angular.z = measureAngularUp;
+    }
     odometryMsg->pose.pose.position.x = position[0];
     odometryMsg->pose.pose.position.y = position[1];
     odometryMsg->pose.pose.position.z = position[2];
