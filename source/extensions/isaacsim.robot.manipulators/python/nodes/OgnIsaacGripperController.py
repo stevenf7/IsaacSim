@@ -225,19 +225,19 @@ class OgnIsaacGripperController:
 
             # set the state of the gripper
             if db.inputs.open:
-                print("opening gripper")
+                # print("opening gripper")
                 if state.sign_flip == 1:
                     state.gripper_state = state.DECREASING
                 else:  # default is set to opening is increasing in joint position
                     state.gripper_state = state.INCREASING
             if db.inputs.close:
-                print("closing gripper")
+                # print("closing gripper")
                 if state.sign_flip == 1:
                     state.gripper_state = state.INCREASING
                 else:
                     state.gripper_state = state.DECREASING
             if db.inputs.stop:
-                print("stopping gripper")
+                # print("stopping gripper")
                 state.gripper_state = state.STOPPING
 
             # if the gripper is already moving, keep moving until it reaches goal

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.4"
+version = "2.1.5"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
 description = "Manipulators"
@@ -19,17 +19,27 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.robot.manipulators" = {}
+"omni.kit.menu.utils" = {}
 
 [[python.module]]
 name = "isaacsim.robot.manipulators.ui"
 
-[[test]]
-args = [
-'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-]
 
 [[test]]
 name = "startup"
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+]
+
+[[test]]
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+    '--/persistent/app/stage/upAxis="Z"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    "--/persistent/app/viewport/defaults/tickRate=120",
+    "--/persistent/simulation/defaultMetersPerUnit=1.0",
+    "--/persistent/simulation/minFrameRate=15",
+]
+dependencies = [
+    "omni.kit.ui_test",
 ]

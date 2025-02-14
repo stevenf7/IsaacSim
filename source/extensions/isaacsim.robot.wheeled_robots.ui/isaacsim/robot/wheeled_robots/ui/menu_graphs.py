@@ -18,6 +18,7 @@ from isaacsim.core.utils.stage import get_next_free_path
 from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.widgets import ParamWidget, SelectPrimWidget
+from omni.kit.menu.utils import MenuHelperWindow
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import UsdPhysics
@@ -25,9 +26,12 @@ from pxr import UsdPhysics
 OG_DOCS_LINK = "https://docs.isaacsim.omniverse.nvidia.com/latest/omnigraph/omnigraph_shortcuts.html"
 
 
-class DifferentialRobotGraph:
+class DifferentialControllerWindow(MenuHelperWindow):
+    """Window for creating differential controller graphs"""
+
     def __init__(self):
-        # have a place to save variables so there's default when creating new graphs in the same session
+        super().__init__("Differential Controller", width=400, height=500)
+        # Initialize parameters
         self._og_path = "/Graphs/differential_controller"
         self._art_root_path = ""
         self._robot_prim_path = ""
@@ -39,6 +43,102 @@ class DifferentialRobotGraph:
         self._left_joint_index = 0
         self._right_joint_index = 0
         self._use_keyboard = False
+
+        # Build UI
+        self._build_ui()
+
+    def _build_ui(self):
+        """Build the window UI"""
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path", label="graph path", type=ui.StringField, default=self._og_path
+        )
+        wheel_radius_def = ParamWidget.FieldDef(
+            name="wheel_radius",
+            label="wheel radius",
+            type=ui.FloatField,
+            default=self._wheel_radius,
+            tooltip="in meters",
+        )
+        wheel_distance_def = ParamWidget.FieldDef(
+            name="wheel_distance",
+            label="distance between wheels",
+            type=ui.FloatField,
+            default=self._wheel_distance,
+            tooltip="in meters",
+        )
+        left_joint_name_def = ParamWidget.FieldDef(
+            name="left_joint_name", label="Left Joint Name", type=ui.StringField, default=self._left_joint_name
+        )
+        right_joint_name_def = ParamWidget.FieldDef(
+            name="right_joint_name", label="Right Joint Name", type=ui.StringField, default=self._right_joint_name
+        )
+        left_joint_index_def = ParamWidget.FieldDef(
+            name="left_joint_index", label="Left Joint Index", type=ui.IntField, default=self._left_joint_index
+        )
+        right_joint_index_def = ParamWidget.FieldDef(
+            name="right_joint_index", label="Right Joint Index", type=ui.IntField, default=self._right_joint_index
+        )
+
+        ## populate the popup window
+        with self.frame:
+            with ui.VStack(spacing=4):
+                with ui.HStack(height=40):
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+                self.og_path_input = ParamWidget(field_def=og_path_def)
+                self.robot_prim_input = SelectPrimWidget(label="Robot Prim", default=self._art_root_path)
+                self.wheel_radius_input = ParamWidget(field_def=wheel_radius_def)
+                self.wheel_distance_input = ParamWidget(field_def=wheel_distance_def)
+                ui.Spacer(height=2)
+
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                ui.Label(
+                    "If robot has more than two controllable joints:",
+                    height=30,
+                    style_type_name_override="Label.Label",
+                    style={"font_size": 18, "color": 0xFFA8A8A8},
+                )
+                with ui.VStack(spacing=4):
+                    self.right_joint_name_input = ParamWidget(field_def=right_joint_name_def)
+                    self.left_joint_name_input = ParamWidget(field_def=left_joint_name_def)
+                ui.Label("    OR", height=0)
+                with ui.VStack(spacing=4):
+                    self.right_joint_index_input = ParamWidget(field_def=right_joint_index_def)
+                    self.left_joint_index_input = ParamWidget(field_def=left_joint_index_def)
+                ui.Spacer(height=5)
+                with ui.HStack():
+                    ui.Label("Use Keyboard Control (WASD)", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._use_keyboard)
+                    SimpleCheckBox(self._use_keyboard, self._on_use_keyboard, model=cb)
+                with ui.HStack():
+                    ui.Spacer(width=ui.Percent(10))
+                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
+                    ui.Spacer(width=ui.Percent(20))
+                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
+                    ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+
+        return
 
     def make_graph(self):
         # stop the simulation before adding nodes
@@ -208,99 +308,6 @@ class DifferentialRobotGraph:
                 og.Controller.attribute(self._og_path + "/" + diff_node_name + ".inputs:angularVelocity"),
             )
 
-    def create_differential_robot_graph(self):
-        og_path_def = ParamWidget.FieldDef(
-            name="og_path", label="graph path", type=ui.StringField, default=self._og_path
-        )
-        wheel_radius_def = ParamWidget.FieldDef(
-            name="wheel_radius",
-            label="wheel radius",
-            type=ui.FloatField,
-            default=self._wheel_radius,
-            tooltip="in meters",
-        )
-        wheel_distance_def = ParamWidget.FieldDef(
-            name="wheel_distance",
-            label="distance between wheels",
-            type=ui.FloatField,
-            default=self._wheel_distance,
-            tooltip="in meters",
-        )
-        left_joint_name_def = ParamWidget.FieldDef(
-            name="left_joint_name", label="Left Joint Name", type=ui.StringField, default=self._left_joint_name
-        )
-        right_joint_name_def = ParamWidget.FieldDef(
-            name="right_joint_name", label="Right Joint Name", type=ui.StringField, default=self._right_joint_name
-        )
-        left_joint_index_def = ParamWidget.FieldDef(
-            name="left_joint_index", label="Left Joint Index", type=ui.IntField, default=self._left_joint_index
-        )
-        right_joint_index_def = ParamWidget.FieldDef(
-            name="right_joint_index", label="Right Joint Index", type=ui.IntField, default=self._right_joint_index
-        )
-
-        ## populate the popup window
-        self._window = ui.Window("Differential Controller Inputs", width=400, height=500)
-        with self._window.frame:
-            with ui.VStack(spacing=4):
-                with ui.HStack(height=40):
-                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
-                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
-                self.og_path_input = ParamWidget(field_def=og_path_def)
-                self.robot_prim_input = SelectPrimWidget(label="Robot Prim", default=self._art_root_path)
-                self.wheel_radius_input = ParamWidget(field_def=wheel_radius_def)
-                self.wheel_distance_input = ParamWidget(field_def=wheel_distance_def)
-                ui.Spacer(height=2)
-
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                ui.Label(
-                    "If robot has more than two controllable joints:",
-                    height=30,
-                    style_type_name_override="Label.Label",
-                    style={"font_size": 18, "color": 0xFFA8A8A8},
-                )
-                with ui.VStack(spacing=4):
-                    self.right_joint_name_input = ParamWidget(field_def=right_joint_name_def)
-                    self.left_joint_name_input = ParamWidget(field_def=left_joint_name_def)
-                ui.Label("    OR", height=0)
-                with ui.VStack(spacing=4):
-                    self.right_joint_index_input = ParamWidget(field_def=right_joint_index_def)
-                    self.left_joint_index_input = ParamWidget(field_def=left_joint_index_def)
-                ui.Spacer(height=5)
-                with ui.HStack():
-                    ui.Label("Use Keyboard Control (WASD)", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._use_keyboard)
-                    SimpleCheckBox(self._use_keyboard, self._on_use_keyboard, model=cb)
-                with ui.HStack():
-                    ui.Spacer(width=ui.Percent(10))
-                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
-                    ui.Spacer(width=ui.Percent(20))
-                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
-                    ui.Spacer(width=ui.Percent(10))
-                with ui.Frame(height=30):
-                    with ui.VStack():
-                        with ui.HStack():
-                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                                style=get_style()["IconButton.Image::OpenConfig"],
-                            )
-                        with ui.HStack():
-                            ui.Label("Documentations", width=0, word_wrap=True)
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
-                                style=get_style()["IconButton.Image::OpenLink"],
-                            )
-
-        return self._window
-
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._robot_prim_path = self.robot_prim_input.get_value()
@@ -314,12 +321,12 @@ class DifferentialRobotGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()

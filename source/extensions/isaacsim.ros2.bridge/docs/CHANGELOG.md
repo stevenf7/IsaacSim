@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.1] - 2025-02-13
+### Changed
+- Updated ROS2 OmniGraph shortcut menus to use new MenuHelperExtensionFull
+
 ## [4.2.0] - 2025-02-10
 ### Added
 - Added support for publishing 3D odometry 

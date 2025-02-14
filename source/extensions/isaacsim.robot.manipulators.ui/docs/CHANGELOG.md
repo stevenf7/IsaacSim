@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.5] - 2025-02-11
+### Added
+- Added tests for omnigraph shortcuts
+
 ## [2.1.4] - 2025-01-27
 ### Changed
 - Updated docs link

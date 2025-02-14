@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.5"
+version = "2.1.6"
 category = "Simulation"
 title = "Wheeled Robots UI"
 description = "This extension provides the UI elements for the wheeled_robots extension"
@@ -23,6 +23,7 @@ writeTarget.kit = true
 "omni.graph.tools" = {}
 "isaacsim.robot.wheeled_robots" = {}
 "isaacsim.core.deprecation_manager" = {}
+"omni.kit.menu.utils" = {}
 
 
 [[python.module]]
@@ -30,10 +31,18 @@ name = "isaacsim.robot.wheeled_robots.ui"
 
 
 [[test]]
-args = [
-'--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+dependencies = [
+    "omni.kit.ui_test",
 ]
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
+    '--/persistent/app/stage/upAxis="Z"',
+    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    "--/persistent/app/viewport/defaults/tickRate=120",
+    "--/persistent/simulation/defaultMetersPerUnit=1.0",
+    "--/persistent/simulation/minFrameRate=15",
+]
+
 
 [[test]]
 name = "startup"

@@ -20,13 +20,16 @@ from isaacsim.core.utils.stage import get_next_free_path
 from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.widgets import ParamWidget, SelectPrimWidget
+from omni.kit.menu.utils import MenuHelperWindow
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import UsdGeom
 
 
-class Ros2CameraGraph:
+class Ros2CameraGraph(MenuHelperWindow):
     def __init__(self):
+        super().__init__("ROS2 Camera Graph", width=400, height=300)
+        # Initialize parameters
         self._og_path = "/Graph/ROS_Camera"
         self._camera_prim = "/OmniverseKit_Persp"  # default camera prim is the perspective camera
         self._add_to_existing_graph = False
@@ -49,6 +52,8 @@ class Ros2CameraGraph:
         self._bbox2d_loose_topic = "/bbox_2d_loose"
         self._bbox3d_pub = False
         self._bbox3d_topic = "/bbox_3d"
+        # Build the UI automatically from here
+        self._build_ui()
 
     def make_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -370,7 +375,7 @@ class Ros2CameraGraph:
                     og.Controller.attribute(bbox3d_node + ".inputs:context"),
                 )
 
-    def create_camera_graph(self):
+    def _build_ui(self):
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
         )
@@ -405,8 +410,7 @@ class Ros2CameraGraph:
             name="bbox3d topic", label="Bbox3d Topic", type=ui.StringField, default=self._bbox3d_topic
         )
 
-        self._window = ui.Window("ROS2 Camera Parameters", width=400, height=650)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
@@ -495,7 +499,7 @@ class Ros2CameraGraph:
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
 
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -514,7 +518,7 @@ class Ros2CameraGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
@@ -541,7 +545,7 @@ class Ros2CameraGraph:
         return False
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _on_use_existing_graph(self, check_state):
         self._add_to_existing_graph = check_state
@@ -571,8 +575,9 @@ class Ros2CameraGraph:
         self._bbox3d_pub = check_state
 
 
-class Ros2RtxLidarGraph:
+class Ros2RtxLidarGraph(MenuHelperWindow):
     def __init__(self):
+        super().__init__("ROS2 RTX Lidar Graph", width=400, height=300)
         self._og_path = "/Graph/ROS_LidarRTX"
         self._frame_id = "sim_lidar"
         self._node_namespace = ""
@@ -582,6 +587,9 @@ class Ros2RtxLidarGraph:
         self._laser_scan_topic = "/laser_scan"
         self._point_cloud_pub = False
         self._point_cloud_topic = "/point_cloud"
+
+        # build UI
+        self._build_ui()
 
     def make_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -713,7 +721,7 @@ class Ros2RtxLidarGraph:
                     og.Controller.attribute(point_cloud_node + ".inputs:context"),
                 )
 
-    def create_lidar_graph(self):
+    def _build_ui(self):
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
         )
@@ -730,8 +738,7 @@ class Ros2RtxLidarGraph:
             name="point_cloud_topic", label="Point Cloud Topic", type=ui.StringField, default=self._point_cloud_topic
         )
 
-        self._window = ui.Window("ROS2 RTX Lidar Parameters", width=400, height=350)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
@@ -784,7 +791,7 @@ class Ros2RtxLidarGraph:
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
 
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -797,12 +804,12 @@ class Ros2RtxLidarGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()

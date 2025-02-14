@@ -19,14 +19,19 @@ from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.ui_utils import dropdown_builder
 from isaacsim.gui.components.widgets import ParamWidget, SelectPrimWidget
+from omni.kit.menu.utils import MenuHelperWindow
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import Sdf
 
 
-class Ros2ClockGraph:
+class Ros2ClockGraph(MenuHelperWindow):
     def __init__(self):
+        super().__init__("ROS2 Clock Graph", width=300, height=150)
         self._og_path = "/Graph/ROS_Clock"
+
+        # build UI
+        self._build_ui()
 
     def make_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -53,14 +58,13 @@ class Ros2ClockGraph:
             },
         )
 
-    def create_clock_graph(self):
+    def _build_ui(self):
         default_og_path = "/Graph/ROS_Clock"
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=default_og_path
         )
 
-        self._window = ui.Window("ROS2 Clock Parameters", width=300, height=150)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 self.og_path_input = ParamWidget(field_def=og_path_def)
                 with ui.HStack():
@@ -92,7 +96,7 @@ class Ros2ClockGraph:
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
 
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -100,12 +104,12 @@ class Ros2ClockGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()
@@ -120,9 +124,10 @@ class Ros2ClockGraph:
         return True
 
 
-class Ros2GenericPubGraph:
+class Ros2GenericPubGraph(MenuHelperWindow):
     def __init__(self):
-        self._og_path = "/Graph/ROS_RTF"
+        super().__init__("ROS2 Generic Publisher Graph", width=350, height=180)
+        self._og_path = "/Graph/ROS_GenericPub"
         self._dropdown_model = None
         self._dropdown_operations_list = [
             ("Publish RTF as Float32", self.make_rtf_graph),
@@ -130,6 +135,9 @@ class Ros2GenericPubGraph:
             ("Publish Int64", self.make_int64_graph),
             ("Publish String", self.make_string_graph),
         ]
+
+        # build UI
+        self._build_ui()
 
     def make_rtf_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -262,14 +270,13 @@ class Ros2GenericPubGraph:
             og.Controller.attribute(self._og_path + "/GenericPublisher.inputs:data"),
         )
 
-    def create_generic_pub_graph(self):
+    def _build_ui(self):
         default_og_path = "/Graph/ROS_GenericPub"
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=default_og_path
         )
 
-        self._window = ui.Window("ROS2 Generic Publisher Parameters", width=350, height=180)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 self.og_path_input = ParamWidget(field_def=og_path_def)
 
@@ -306,7 +313,7 @@ class Ros2GenericPubGraph:
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -315,12 +322,12 @@ class Ros2GenericPubGraph:
         if param_check:
             # self.make_graph()
             self._dropdown_operations_list[self._dropdown_model.get_item_value_model().as_int][1]()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()
@@ -335,8 +342,9 @@ class Ros2GenericPubGraph:
         return True
 
 
-class Ros2JointStatesGraph:
+class Ros2JointStatesGraph(MenuHelperWindow):
     def __init__(self):
+        super().__init__("ROS2 Joint States Graph", width=450, height=350)
         self._og_path = "/Graph/ROS_JointStates"
         self._node_namespace = ""
         self._art_root_path = ""
@@ -346,6 +354,9 @@ class Ros2JointStatesGraph:
         self._publisher = False
         self._subscriber = False
         self._sub_move_robot = True  # does subscriber feeds into an articulation node to move the robot
+
+        # build UI
+        self._build_ui()
 
     def make_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -496,7 +507,7 @@ class Ros2JointStatesGraph:
                     },
                 )
 
-    def create_jointstates_graph(self):
+    def _build_ui(self):
 
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
@@ -510,8 +521,7 @@ class Ros2JointStatesGraph:
         sub_topic_def = ParamWidget.FieldDef(
             name="sub topic", label="Subscriber Topic", type=ui.StringField, default=self._sub_topic
         )
-        self._window = ui.Window("ROS2 JointState Parameters", width=450, height=350)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
@@ -565,7 +575,7 @@ class Ros2JointStatesGraph:
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -577,12 +587,12 @@ class Ros2JointStatesGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()
@@ -612,8 +622,9 @@ class Ros2JointStatesGraph:
         self._sub_move_robot = check_state
 
 
-class Ros2TfPubGraph:
+class Ros2TfPubGraph(MenuHelperWindow):
     def __init__(self):
+        super().__init__("ROS2 TF Publisher Graph", width=450, height=450)
         self._og_path = "/Graph/ROS_TF"
         self._node_namespace = ""
         self._existing_node_path = ""
@@ -623,6 +634,9 @@ class Ros2TfPubGraph:
         self._add_to_existing_graph = False
         self._add_to_existing_node = False
         self._has_existing_node = False
+
+        # build UI
+        self._build_ui()
 
     def make_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -706,7 +720,7 @@ class Ros2TfPubGraph:
                 },
             )
 
-    def create_tf_pub_graph(self):
+    def _build_ui(self):
 
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
@@ -718,8 +732,7 @@ class Ros2TfPubGraph:
             name="pub topic", label="Publisher Topic", type=ui.StringField, default=self._pub_topic
         )
 
-        self._window = ui.Window("ROS2 TF Publisher Parameters", width=450, height=450)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
@@ -770,7 +783,7 @@ class Ros2TfPubGraph:
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -783,12 +796,12 @@ class Ros2TfPubGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()
@@ -827,8 +840,9 @@ class Ros2TfPubGraph:
         self._add_to_existing_node = check_state
 
 
-class Ros2OdometryGraph:
+class Ros2OdometryGraph(MenuHelperWindow):
     def __init__(self):
+        super().__init__("ROS2 Odometry Graph", width=450, height=350)
         self._og_path = "/Graph/ROS_Odometry"
         self._node_namespace = ""
         self._art_root_prim = ""
@@ -838,6 +852,9 @@ class Ros2OdometryGraph:
         self._tf_robot_pub = True  # also publish TF tree of the robot
         self._chassis_prim = ""
         self._chassis_link_name = "base_link"
+
+        # build UI
+        self._build_ui()
 
     def make_graph(self):
         self._timeline = omni.timeline.get_timeline_interface()
@@ -1010,7 +1027,7 @@ class Ros2OdometryGraph:
                     og.Controller.attribute(self._og_path + "/" + tf_robot_name + ".inputs:timeStamp"),
                 )
 
-    def create_odometry_graph(self):
+    def _build_ui(self):
 
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
@@ -1019,8 +1036,7 @@ class Ros2OdometryGraph:
             name="node_namespace", label="Node Namespace", type=ui.StringField, default=self._node_namespace
         )
 
-        self._window = ui.Window("ROS2 Odometry Publisher Parameters", width=450, height=350)
-        with self._window.frame:
+        with self.frame:
             with ui.VStack(spacing=4):
                 with ui.HStack():
                     ui.Label("Add to an existing graph?", width=ui.Percent(30))
@@ -1065,7 +1081,7 @@ class Ros2OdometryGraph:
                                 ),
                                 style=get_style()["IconButton.Image::OpenLink"],
                             )
-        return self._window
+        return
 
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
@@ -1077,12 +1093,12 @@ class Ros2OdometryGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _check_params(self):
         stage = omni.usd.get_context().get_stage()
