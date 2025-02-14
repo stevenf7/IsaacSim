@@ -1,5 +1,8 @@
 # Changelog
 
+## [2.1.6] - 2025-02-10
+### Added
+- Added test for differential robot graph shortcut
 ## [2.1.5] - 2025-01-27
 ### Changed
 - Updated docs link

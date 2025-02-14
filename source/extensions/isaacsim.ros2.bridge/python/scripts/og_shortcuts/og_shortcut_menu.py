@@ -14,7 +14,6 @@ import carb
 import omni.ext
 import omni.usd
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.ros2.bridge.scripts.og_shortcuts.og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
 from isaacsim.ros2.bridge.scripts.og_shortcuts.og_utils import (
     Ros2ClockGraph,
@@ -24,53 +23,57 @@ from isaacsim.ros2.bridge.scripts.og_shortcuts.og_utils import (
     Ros2TfPubGraph,
 )
 from isaacsim.storage.native.nucleus import get_assets_root_path
-from omni.kit.menu.utils import (
-    MenuItemDescription,
-    MenuLayout,
-    add_layout,
-    add_menu_items,
-    get_menu_layout,
-    remove_layout,
-    remove_menu_items,
-)
+from omni.kit.menu.utils import MenuHelperExtensionFull, MenuItemDescription, add_menu_items, remove_menu_items
 
 
-class Extension(omni.ext.IExt):
+class Extension(omni.ext.IExt, MenuHelperExtensionFull):
     def on_startup(self, ext_id: str):
-        self.window_handle = None
-        ros_og_menu = [
-            make_menu_item_description(
-                ext_id, "Camera", onclick_fun=lambda a=weakref.proxy(self): a._open_camera_sensor()
-            ),
-            make_menu_item_description(
-                ext_id, "RTX Lidar", onclick_fun=lambda a=weakref.proxy(self): a._open_rtx_lidar_sensor()
-            ),
-            make_menu_item_description(
-                ext_id, "TF Publisher", onclick_fun=lambda a=weakref.proxy(self): a._open_pub_tf()
-            ),
-            make_menu_item_description(
-                ext_id,
-                "Odometry Publisher",
-                onclick_fun=lambda a=weakref.proxy(self): a._open_odometry_publisher(),
-            ),
-            make_menu_item_description(
-                ext_id, "Joint States", onclick_fun=lambda a=weakref.proxy(self): a._open_joint_states_pubsub()
-            ),
-            make_menu_item_description(ext_id, "Clock", onclick_fun=lambda a=weakref.proxy(self): a._open_clock()),
-            make_menu_item_description(
-                ext_id, "Generic Publisher", onclick_fun=lambda a=weakref.proxy(self): a._open_rtf()
-            ),
-        ]
 
-        self._menu_items = [
-            MenuItemDescription(
-                name="ROS 2 OmniGraphs",
-                sub_menu=ros_og_menu,
-            )
-        ]
+        # Create menu using MenuHelperExtensionFull
+        self.menu_startup(
+            lambda: Ros2CameraGraph(),
+            "ROS 2 Camera",
+            "Camera",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2RtxLidarGraph(),
+            "ROS 2 RTX Lidar",
+            "RTX Lidar",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2TfPubGraph(),
+            "ROS 2 TF Publisher",
+            "TF Publisher",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2OdometryGraph(),
+            "ROS 2 Odometry Publisher",
+            "Odometry Publisher",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2JointStatesGraph(),
+            "ROS 2 Joint States",
+            "Joint States",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2ClockGraph(),
+            "ROS 2 Clock",
+            "Clock",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2GenericPubGraph(),
+            "ROS 2 Generic Publisher",
+            "Generic Publisher",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
 
-        add_menu_items(self._menu_items, "Tools/Robotics")
-
+        # ROS 2 Assets
         ros_assets_sub_menu = [
             MenuItemDescription(
                 name="Asset Browser", onclick_action=("isaacsim.asset.browser", "open_isaac_sim_asset_browser")
@@ -142,51 +145,51 @@ class Extension(omni.ext.IExt):
         pass
 
     def on_shutdown(self):
-        remove_menu_items(self._menu_items, "Tools/Robotics")
+        self.menu_shutdown()
         remove_menu_items(self._ros_assets_menu, "Create")
         # remove_layout(self.__ros_menu_layout)
 
-        if self.window_handle:
-            self.window_handle.visible = False
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
 
-    def _open_clock(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        clock_graph = Ros2ClockGraph()
-        self.window_handle = clock_graph.create_clock_graph()
+    # def _open_clock(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     clock_graph = Ros2ClockGraph()
+    #     self.window_handle = clock_graph.create_clock_graph()
 
-    def _open_rtf(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        clock_graph = Ros2GenericPubGraph()
-        self.window_handle = clock_graph.create_generic_pub_graph()
+    # def _open_rtf(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     clock_graph = Ros2GenericPubGraph()
+    #     self.window_handle = clock_graph.create_generic_pub_graph()
 
-    def _open_camera_sensor(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        camera_graph = Ros2CameraGraph()
-        self.window_handle = camera_graph.create_camera_graph()
+    # def _open_camera_sensor(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     camera_graph = Ros2CameraGraph()
+    #     self.window_handle = camera_graph.create_camera_graph()
 
-    def _open_rtx_lidar_sensor(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        lidar_graph = Ros2RtxLidarGraph()
-        self.window_handle = lidar_graph.create_lidar_graph()
+    # def _open_rtx_lidar_sensor(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     lidar_graph = Ros2RtxLidarGraph()
+    #     self.window_handle = lidar_graph.create_lidar_graph()
 
-    def _open_joint_states_pubsub(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        js_graph = Ros2JointStatesGraph()
-        self.window_handle = js_graph.create_jointstates_graph()
+    # def _open_joint_states_pubsub(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     js_graph = Ros2JointStatesGraph()
+    #     self.window_handle = js_graph.create_jointstates_graph()
 
-    def _open_pub_tf(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        tf_pub_graph = Ros2TfPubGraph()
-        self.window_handle = tf_pub_graph.create_tf_pub_graph()
+    # def _open_pub_tf(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     tf_pub_graph = Ros2TfPubGraph()
+    #     self.window_handle = tf_pub_graph.create_tf_pub_graph()
 
-    def _open_odometry_publisher(self):
-        if self.window_handle:
-            self.window_handle.visible = False
-        odom_pub_graph = Ros2OdometryGraph()
-        self.window_handle = odom_pub_graph.create_odometry_graph()
+    # def _open_odometry_publisher(self):
+    #     if self.window_handle:
+    #         self.window_handle.visible = False
+    #     odom_pub_graph = Ros2OdometryGraph()
+    #     self.window_handle = odom_pub_graph.create_odometry_graph()

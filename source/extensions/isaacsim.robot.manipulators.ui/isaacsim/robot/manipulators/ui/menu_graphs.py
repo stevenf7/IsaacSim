@@ -18,6 +18,7 @@ from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.widgets import ParamWidget, SelectPrimWidget
 from numpy import pi as PI
+from omni.kit.menu.utils import MenuHelperWindow
 from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.extensions import SimpleCheckBox
 from pxr import Usd, UsdPhysics
@@ -25,8 +26,11 @@ from pxr import Usd, UsdPhysics
 OG_DOCS_LINK = "https://docs.isaacsim.omniverse.nvidia.com/latest/omnigraph/omnigraph_shortcuts.html"
 
 
-class ArticulationPositionGraph:
+class ArticulationPositionWindow(MenuHelperWindow):
     def __init__(self):
+        super().__init__("Articulation Position Controller", width=400, height=500)
+
+        # Initialize parameters
         self._og_path = "/Graphs/Position_Controller"
         self._art_root_path = ""
         self._robot_prim_path = ""
@@ -34,7 +38,92 @@ class ArticulationPositionGraph:
         self._num_dofs = None
         self._joint_names = []
         self._default_pos = []
-        self._window = None
+
+        # build UI
+        self._build_ui()
+
+    def _build_ui(self):
+        self._og_path = get_next_free_path(self._og_path, "")
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path",
+            label="Graph Path",
+            type=ui.StringField,
+            tooltip="Path to the graph on stage",
+            default=self._og_path,
+        )
+
+        instructions = "Add Robot Prim. Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_position_controller{_n}/JointCommandArray. \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties\n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
+
+        ## populate the popup window
+        with self.frame:
+            with ui.VStack(spacing=4):
+                with ui.HStack(height=40):
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+
+                self.robot_prim_input = SelectPrimWidget(
+                    label="Robot Prim",
+                    default=self._robot_prim_path,
+                    tooltip="the parent prim of the robot",
+                )
+
+                self.og_path_input = ParamWidget(field_def=og_path_def)
+                ui.Spacer(height=2)
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                with ui.HStack():
+                    ui.Label(
+                        "Instructions:",
+                        style_type_name_override="Label::label",
+                        word_wrap=True,
+                        width=ui.Percent(20),
+                        alignment=ui.Alignment.LEFT_TOP,
+                    )
+                    with ui.ScrollingFrame(
+                        height=180,
+                        style_type_name_override="ScrollingFrame",
+                        alignment=ui.Alignment.LEFT_TOP,
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    ):
+                        with ui.ZStack(style={"ZStack": {"margin": 10}}):
+                            ui.Rectangle()
+                            ui.Label(
+                                instructions,
+                                style_type_name_override="Label::label",
+                                word_wrap=True,
+                                alignment=ui.Alignment.LEFT_TOP,
+                            )
+
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                ui.Spacer(height=2)
+                with ui.HStack():
+                    ui.Spacer(width=ui.Percent(10))
+                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
+                    ui.Spacer(width=ui.Percent(20))
+                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
+                    ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+        return
 
     def make_graph(self):
         # stop simulation before adding the graph
@@ -122,89 +211,6 @@ class ArticulationPositionGraph:
             og.Controller.attribute(joint_command_array_node + ".inputs:input" + str(i)).set(self._default_pos[i])
             og.Controller.attribute(joint_names_array_node + ".inputs:input" + str(i)).set(self._joint_names[i])
 
-    def create_articulation_controller_graph(self):
-        self._og_path = get_next_free_path(self._og_path, "")
-        og_path_def = ParamWidget.FieldDef(
-            name="og_path",
-            label="Graph Path",
-            type=ui.StringField,
-            tooltip="Path to the graph on stage",
-            default=self._og_path,
-        )
-
-        instructions = "Add Robot Prim. Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_position_controller{_n}/JointCommandArray. \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties\n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
-        ## populate the popup window
-        self._window = ui.Window("Articulation Position Controller Inputs", width=500, height=470)
-        with self._window.frame:
-            with ui.VStack(spacing=4):
-                with ui.HStack(height=40):
-                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
-                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
-
-                self.robot_prim_input = SelectPrimWidget(
-                    label="Robot Prim",
-                    default=self._robot_prim_path,
-                    tooltip="the parent prim of the robot",
-                )
-
-                self.og_path_input = ParamWidget(field_def=og_path_def)
-                ui.Spacer(height=2)
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                with ui.HStack():
-                    ui.Label(
-                        "Instructions:",
-                        style_type_name_override="Label::label",
-                        word_wrap=True,
-                        width=ui.Percent(20),
-                        alignment=ui.Alignment.LEFT_TOP,
-                    )
-                    with ui.ScrollingFrame(
-                        height=180,
-                        style_type_name_override="ScrollingFrame",
-                        alignment=ui.Alignment.LEFT_TOP,
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    ):
-                        with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                            ui.Rectangle()
-                            ui.Label(
-                                instructions,
-                                style_type_name_override="Label::label",
-                                word_wrap=True,
-                                alignment=ui.Alignment.LEFT_TOP,
-                            )
-
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                ui.Spacer(height=2)
-                with ui.HStack():
-                    ui.Spacer(width=ui.Percent(10))
-                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
-                    ui.Spacer(width=ui.Percent(20))
-                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
-                    ui.Spacer(width=ui.Percent(10))
-                with ui.Frame(height=30):
-                    with ui.VStack():
-                        with ui.HStack():
-                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                                style=get_style()["IconButton.Image::OpenConfig"],
-                            )
-                        with ui.HStack():
-                            ui.Label("Documentations", width=0, word_wrap=True)
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
-                                style=get_style()["IconButton.Image::OpenLink"],
-                            )
-        return self._window
-
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._robot_prim_path = self.robot_prim_input.get_value()
@@ -212,7 +218,7 @@ class ArticulationPositionGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
@@ -279,14 +285,17 @@ class ArticulationPositionGraph:
         return True
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _on_use_existing_graph(self, check_state):
         self._add_to_existing_graph = check_state
 
 
-class ArticulationVelocityGraph:
+class ArticulationVelocityWindow(MenuHelperWindow):
     def __init__(self):
+        super().__init__("Articulation Velocity Controller", width=500, height=470)
+
+        # Initialize parameters
         self._og_path = "/Graphs/Velocity_Controller"
         self._art_root_path = ""
         self._robot_prim_path = ""
@@ -294,7 +303,91 @@ class ArticulationVelocityGraph:
         self._num_dofs = None
         self._joint_names = []
         self._default_vel = []
-        self._window = None
+
+        # build UI
+        self._build_ui()
+
+    def _build_ui(self):
+        self._og_path = get_next_free_path(self._og_path, "")
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path",
+            label="Graph Path",
+            type=ui.StringField,
+            default=self._og_path,
+            tooltip="Path to the graph on stage",
+        )
+
+        instructions = "Add Robot Prim.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_velocity_controller{_n}/JointCommandArray, \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties. \n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
+        ## populate the popup window
+        with self.frame:
+            with ui.VStack(spacing=4):
+                with ui.HStack(height=40):
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+
+                self.robot_prim_input = SelectPrimWidget(
+                    label="Robot Prim",
+                    default=self._robot_prim_path,
+                    tooltip="the outer most prim of the robot",
+                )
+                self.og_path_input = ParamWidget(field_def=og_path_def)
+                ui.Spacer(height=2)
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                with ui.HStack():
+                    ui.Label(
+                        "Instructions:",
+                        style_type_name_override="Label::label",
+                        word_wrap=True,
+                        width=ui.Percent(20),
+                        alignment=ui.Alignment.LEFT_TOP,
+                    )
+                    with ui.ScrollingFrame(
+                        height=180,
+                        style_type_name_override="ScrollingFrame",
+                        alignment=ui.Alignment.LEFT_TOP,
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    ):
+                        with ui.ZStack(style={"ZStack": {"margin": 10}}):
+                            ui.Rectangle()
+                            ui.Label(
+                                instructions,
+                                style_type_name_override="Label::label",
+                                word_wrap=True,
+                                alignment=ui.Alignment.LEFT_TOP,
+                            )
+
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                ui.Spacer(height=2)
+                with ui.HStack():
+                    ui.Spacer(width=ui.Percent(10))
+                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
+                    ui.Spacer(width=ui.Percent(20))
+                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
+                    ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+
+        return
 
     def make_graph(self):
         # stop simulation before adding the graph
@@ -383,89 +476,6 @@ class ArticulationVelocityGraph:
             og.Controller.attribute(joint_command_array_node + ".inputs:input" + str(j)).set(self._default_vel[j])
             og.Controller.attribute(joint_names_array_node + ".inputs:input" + str(j)).set(self._joint_names[j])
 
-    def create_articulation_controller_graph(self):
-        self._og_path = get_next_free_path(self._og_path, "")
-        og_path_def = ParamWidget.FieldDef(
-            name="og_path",
-            label="Graph Path",
-            type=ui.StringField,
-            default=self._og_path,
-            tooltip="Path to the graph on stage",
-        )
-
-        instructions = "Add Robot Prim.Press 'OK' to create graph. \n\n To move the joints, on the stage tree, highlight /World/Graphs/articulation_velocity_controller{_n}/JointCommandArray, \n\n Start simulation by pressing 'play', then change the joint angles in the Property Manager Tab -> Raw USD Properties. \n\n NOTE: the articulation controller uses RADIANS, the usd properties (under the propert tabs) are in DEGREES"
-        ## populate the popup window
-        self._window = ui.Window("Articulation Velocity Controller Input", width=500, height=470)
-        with self._window.frame:
-            with ui.VStack(spacing=4):
-                with ui.HStack(height=40):
-                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
-                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
-
-                self.robot_prim_input = SelectPrimWidget(
-                    label="Robot Prim",
-                    default=self._robot_prim_path,
-                    tooltip="the outer most prim of the robot",
-                )
-                self.og_path_input = ParamWidget(field_def=og_path_def)
-                ui.Spacer(height=2)
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                with ui.HStack():
-                    ui.Label(
-                        "Instructions:",
-                        style_type_name_override="Label::label",
-                        word_wrap=True,
-                        width=ui.Percent(20),
-                        alignment=ui.Alignment.LEFT_TOP,
-                    )
-                    with ui.ScrollingFrame(
-                        height=180,
-                        style_type_name_override="ScrollingFrame",
-                        alignment=ui.Alignment.LEFT_TOP,
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    ):
-                        with ui.ZStack(style={"ZStack": {"margin": 10}}):
-                            ui.Rectangle()
-                            ui.Label(
-                                instructions,
-                                style_type_name_override="Label::label",
-                                word_wrap=True,
-                                alignment=ui.Alignment.LEFT_TOP,
-                            )
-
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                ui.Spacer(height=2)
-                with ui.HStack():
-                    ui.Spacer(width=ui.Percent(10))
-                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
-                    ui.Spacer(width=ui.Percent(20))
-                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
-                    ui.Spacer(width=ui.Percent(10))
-                with ui.Frame(height=30):
-                    with ui.VStack():
-                        with ui.HStack():
-                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                                style=get_style()["IconButton.Image::OpenConfig"],
-                            )
-                        with ui.HStack():
-                            ui.Label("Documentations", width=0, word_wrap=True)
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
-                                style=get_style()["IconButton.Image::OpenLink"],
-                            )
-
-        return self._window
-
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._robot_prim_path = self.robot_prim_input.get_value()
@@ -473,7 +483,7 @@ class ArticulationVelocityGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
@@ -531,14 +541,15 @@ class ArticulationVelocityGraph:
         return True
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _on_use_existing_graph(self, check_state):
         self._add_to_existing_graph = check_state
 
 
-class GripperGraph:
+class GripperWindow(MenuHelperWindow):
     def __init__(self):
+        super().__init__("Gripper Controller", width=400, height=550)
 
         self._og_path = "/Graphs/Gripper_Controller"
         self._art_root_path = ""
@@ -551,6 +562,134 @@ class GripperGraph:
         self._open_position = None
         self._close_position = None
         self._speed = None
+
+        # build UI
+        self._build_ui()
+
+    def _build_ui(self):
+
+        self._og_path = get_next_free_path(self._og_path, "")
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path",
+            label="Graph Path",
+            type=ui.StringField,
+            default=self._og_path,
+            tooltip="Path to the graph on stage",
+        )
+        speed_def = ParamWidget.FieldDef(
+            name="gripper_speed",
+            label="Gripper Speed",
+            type=ui.FloatField,
+            default=self._speed,
+            tooltip="Distance per frame in meters",
+        )
+        joint_names_def = ParamWidget.FieldDef(
+            name="joint_names",
+            label="Gripper Joint Names",
+            type=ui.StringField,
+            default=self._joint_names,
+            tooltip="Names of the joints that are included in the gripper, REQUIRED if not all joints inside the articulation are gripper joints",
+        )
+        open_position_def = ParamWidget.FieldDef(
+            name="open_position",
+            label="Open Position Limit",
+            type=ui.FloatField,
+            default=self._open_position,
+            tooltip="the joint position that indicates open. Unit: meter or radian",
+        )
+        close_position_def = ParamWidget.FieldDef(
+            name="close_position",
+            label="Close Position Limit",
+            type=ui.FloatField,
+            default=self._close_position,
+            tooltip="the joint position that indicates close. unit: meter or radian)",
+        )
+
+        ## populate the popup window
+        with self.frame:
+            with ui.VStack(spacing=4):
+                with ui.HStack(height=40):
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+
+                self.parent_robot_input = SelectPrimWidget(
+                    label="Parent Robot",
+                    default=self._art_root_path,
+                    tooltip="the parent robot prim. one and only one articulation root prim should be on this prim, or is a child of this prim",
+                )
+                self.gripper_root_input = SelectPrimWidget(
+                    label="Gripper Root Prim",
+                    default=self._gripper_root_path,
+                    tooltip="the prim that contains the gripper joints",
+                )
+                self.og_path_input = ParamWidget(field_def=og_path_def)
+                self.speed_input = ParamWidget(field_def=speed_def)
+                ui.Spacer(height=2)
+                ui.Label(
+                    "If not all actuated joints are gripper joints, list all gripper joint names separated by a comma",
+                    height=30,
+                    width=ui.Percent(80),
+                    style_type_name_override="Label.Label",
+                    style={"font_size": 12, "color": 0xFFA8A8A8},
+                    word_wrap=True,
+                )
+                self.joint_names_input = ParamWidget(field_def=joint_names_def)
+                ui.Spacer(height=2)
+
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                ui.Label(
+                    "OPTIONAL (Default to joint limits if not given)",
+                    height=30,
+                    style_type_name_override="Label.Label",
+                    style={"font_size": 18, "color": 0xFFA8A8A8},
+                )
+                ui.Label(
+                    "Only uniform joint limit (and speed) are supported in this popup, update the generated omnigraph if need finger-specific joint limits/speed",
+                    height=30,
+                    width=ui.Percent(80),
+                    style_type_name_override="Label.Label",
+                    style={"font_size": 12, "color": 0xFFA8A8A8},
+                    word_wrap=True,
+                )
+                self.open_position_input = ParamWidget(field_def=open_position_def)
+                self.close_position_input = ParamWidget(field_def=close_position_def)
+                ui.Spacer(height=5)
+                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
+                with ui.HStack():
+                    ui.Label(
+                        "Use Keyboard Control", width=ui.Percent(30), word_wrap=False, tooltip="O-open, C-close, N-stop"
+                    )
+                    cb = ui.SimpleBoolModel(default_value=self._use_keyboard)
+                    SimpleCheckBox(self._use_keyboard, self._on_checked_box, model=cb)
+                with ui.HStack():
+                    ui.Spacer(width=ui.Percent(10))
+                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
+                    ui.Spacer(width=ui.Percent(20))
+                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
+                    ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=0)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+
+        return
 
     def make_graph(self):
 
@@ -684,132 +823,6 @@ class GripperGraph:
                 og.Controller.attribute(self._og_path + "/GripperController.inputs:stop"),
             )
 
-    def create_gripper_controller_graph(self):
-
-        self._og_path = get_next_free_path(self._og_path, "")
-        og_path_def = ParamWidget.FieldDef(
-            name="og_path",
-            label="Graph Path",
-            type=ui.StringField,
-            default=self._og_path,
-            tooltip="Path to the graph on stage",
-        )
-        speed_def = ParamWidget.FieldDef(
-            name="gripper_speed",
-            label="Gripper Speed",
-            type=ui.FloatField,
-            default=self._speed,
-            tooltip="Distance per frame in meters",
-        )
-        joint_names_def = ParamWidget.FieldDef(
-            name="joint_names",
-            label="Gripper Joint Names",
-            type=ui.StringField,
-            default=self._joint_names,
-            tooltip="Names of the joints that are included in the gripper, REQUIRED if not all joints inside the articulation are gripper joints",
-        )
-        open_position_def = ParamWidget.FieldDef(
-            name="open_position",
-            label="Open Position Limit",
-            type=ui.FloatField,
-            default=self._open_position,
-            tooltip="the joint position that indicates open. Unit: meter or radian",
-        )
-        close_position_def = ParamWidget.FieldDef(
-            name="close_position",
-            label="Close Position Limit",
-            type=ui.FloatField,
-            default=self._close_position,
-            tooltip="the joint position that indicates close. unit: meter or radian)",
-        )
-
-        ## populate the popup window
-        self._window = ui.Window("Gripper Controller Inputs", width=400, height=550)
-        with self._window.frame:
-            with ui.VStack(spacing=4):
-                with ui.HStack(height=40):
-                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
-                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
-                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
-
-                self.parent_robot_input = SelectPrimWidget(
-                    label="Parent Robot",
-                    default=self._art_root_path,
-                    tooltip="the parent robot prim. one and only one articulation root prim should be on this prim, or is a child of this prim",
-                )
-                self.gripper_root_input = SelectPrimWidget(
-                    label="Gripper Root Prim",
-                    default=self._gripper_root_path,
-                    tooltip="the prim that contains the gripper joints",
-                )
-                self.og_path_input = ParamWidget(field_def=og_path_def)
-                self.speed_input = ParamWidget(field_def=speed_def)
-                ui.Spacer(height=2)
-                ui.Label(
-                    "If not all actuated joints are gripper joints, list all gripper joint names separated by a comma",
-                    height=30,
-                    width=ui.Percent(80),
-                    style_type_name_override="Label.Label",
-                    style={"font_size": 12, "color": 0xFFA8A8A8},
-                    word_wrap=True,
-                )
-                self.joint_names_input = ParamWidget(field_def=joint_names_def)
-                ui.Spacer(height=2)
-
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                ui.Label(
-                    "OPTIONAL (Default to joint limits if not given)",
-                    height=30,
-                    style_type_name_override="Label.Label",
-                    style={"font_size": 18, "color": 0xFFA8A8A8},
-                )
-                ui.Label(
-                    "Only uniform joint limit (and speed) are supported in this popup, update the generated omnigraph if need finger-specific joint limits/speed",
-                    height=30,
-                    width=ui.Percent(80),
-                    style_type_name_override="Label.Label",
-                    style={"font_size": 12, "color": 0xFFA8A8A8},
-                    word_wrap=True,
-                )
-                self.open_position_input = ParamWidget(field_def=open_position_def)
-                self.close_position_input = ParamWidget(field_def=close_position_def)
-                ui.Spacer(height=5)
-                ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), height=2)
-                with ui.HStack():
-                    ui.Label(
-                        "Use Keyboard Control", width=ui.Percent(30), word_wrap=False, tooltip="O-open, C-close, N-stop"
-                    )
-                    cb = ui.SimpleBoolModel(default_value=self._use_keyboard)
-                    SimpleCheckBox(self._use_keyboard, self._on_checked_box, model=cb)
-                with ui.HStack():
-                    ui.Spacer(width=ui.Percent(10))
-                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
-                    ui.Spacer(width=ui.Percent(20))
-                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
-                    ui.Spacer(width=ui.Percent(10))
-                with ui.Frame(height=30):
-                    with ui.VStack():
-                        with ui.HStack():
-                            ui.Label("Python Script for Graph Generation", width=0)
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
-                                style=get_style()["IconButton.Image::OpenConfig"],
-                            )
-                        with ui.HStack():
-                            ui.Label("Documentations", width=0, word_wrap=True)
-                            ui.Button(
-                                name="IconButton",
-                                width=24,
-                                height=24,
-                                clicked_fn=lambda: on_docs_link_clicked(OG_DOCS_LINK),
-                                style=get_style()["IconButton.Image::OpenLink"],
-                            )
-
-        return self._window
-
     def _on_ok(self):
         self._og_path = self.og_path_input.get_value()
         self._parent_robot_path = self.parent_robot_input.get_value()
@@ -823,7 +836,7 @@ class GripperGraph:
         param_check = self._check_params()
         if param_check:
             self.make_graph()
-            self._window.visible = False
+            self.visible = False
         else:
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
@@ -868,7 +881,7 @@ class GripperGraph:
         return True
 
     def _on_cancel(self):
-        self._window.visible = False
+        self.visible = False
 
     def _on_checked_box(self, check_state):
         self._use_keyboard = check_state
