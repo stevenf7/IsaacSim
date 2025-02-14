@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2025-02-13
+### Changed
+- Add setting to set the number of app updates for the test exts."isaacsim.benchmark.examples".num_app_updates 
+
 ## [1.0.4] - 2025-01-26
 ### Changed
 - Update test settings
@@ -7,7 +11,6 @@
 ## [1.0.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [1.0.2] - 2024-10-28
 ### Changed

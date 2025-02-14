@@ -7,6 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+
+import carb
 import numpy as np
 import omni.kit.test
 from isaacsim.benchmark.services import BaseIsaacBenchmarkAsync
@@ -21,9 +24,17 @@ TEST_NUM_APP_UPDATES = 60 * 10
 class TestBenchmarkCamera(BaseIsaacBenchmarkAsync):
     async def setUp(self):
         await super().setUp()
+        self._num_app_updates = carb.settings.get_settings().get_as_int(
+            "/exts/isaacsim.benchmark.examples/num_app_updates"
+        )
         pass
 
     async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
         await super().tearDown()
         pass
 
@@ -67,7 +78,7 @@ class TestBenchmarkCamera(BaseIsaacBenchmarkAsync):
         # perform benchmark
         self.set_phase("benchmark")
 
-        for _ in range(1 if self.test_mode else TEST_NUM_APP_UPDATES):
+        for _ in range(self._num_app_updates):
             await omni.kit.app.get_app().next_update_async()
 
         await self.store_measurements()
