@@ -1,3 +1,4 @@
+import omni.kit.app
 import omni.kit.menu.utils
 from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout, add_menu_items
 
@@ -55,8 +56,7 @@ class HelpMenuExtension:
         add_menu_items(demo_items, "Help")
 
         # physics menu item
-        url = "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest/index.html"
-
+        url = resolve_physics_ref_url()
         physics_menu_item = MenuItemDescription(
             name="Physics Programming Manual", onclick_fn=lambda: self.open_ref_url(url)
         )
@@ -70,3 +70,24 @@ class HelpMenuExtension:
         import webbrowser
 
         webbrowser.open(url)
+
+
+def resolve_physics_ref_url():
+    # get URL by physx extensions version
+    try:
+        manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = manager.get_extension_id_by_module("omni.physx")
+        ext_version = manager.get_extension_dict(ext_id)["package"]["version"]
+        version = ".".join(ext_version.split(".")[:2])
+        url = f"https://docs.omniverse.nvidia.com/kit/docs/omni_physics/{version}/index.html"
+
+        # check if website exists
+        import requests
+
+        response = requests.head(url, timeout=5)
+        if response.status_code > 400:
+            raise Exception()
+    except:
+        url = "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest/index.html"
+
+    return url

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.10] - 2025-02-03
+### Fixed
+- updated physics reference link to be based on version automatically and added test
+
 ## [2.0.9] - 2025-01-26
 ### Changed
 - Update test settings
