@@ -182,7 +182,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        art = self._dc.get_articulation("/ur10")
+        art = self._dc.get_articulation("/ur10/base_link")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
 
         dof_ptr = self._dc.find_articulation_dof(art, "wrist_1_joint")
