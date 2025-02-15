@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.9"
+version = "2.0.10"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -36,6 +36,8 @@ timeout = 900
 dependencies = [
     "omni.timeline",
     "isaacsim.core.utils",
+    "omni.kit.menu.utils",
+    "omni.kit.ui_test",
     "isaacsim.sensors.camera.ui",
     "isaacsim.sensors.physx.ui",
     "isaacsim.sensors.physics.ui",
@@ -92,4 +94,10 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] *** error: /Cube/Contact_Sensor parent prim is missing contact report API, automatically adding contact report API, stop and play the simulation for this change to take effect*',
     '*[Error] [isaacsim.sensors.physx.plugin] isLightBeamSensor: Light Beam Sensor does not exist*',
     '*[Error] [omni.hydra] Unsupported data type 0 on primvar *doNotCastShadows*'
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]
