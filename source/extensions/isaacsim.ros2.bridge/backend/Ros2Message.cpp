@@ -209,10 +209,10 @@ void Ros2CameraInfoMessageImpl::writeDistortionParameters(std::vector<double>& a
     sensor_msgs__msg__CameraInfo* cameraInfoMsg = static_cast<sensor_msgs__msg__CameraInfo*>(m_msg);
     if (array.size() > 0)
     {
-        cameraInfoMsg->d.data = (double*)malloc(array.size() * sizeof(double));
-        cameraInfoMsg->d.size = array.size();
-        cameraInfoMsg->d.capacity = array.size();
-        memcpy(cameraInfoMsg->d.data, array.data(), array.size() * sizeof(double));
+        m_distortionBuffer = array; // Copy the data to our member vector
+        cameraInfoMsg->d.data = m_distortionBuffer.data();
+        cameraInfoMsg->d.size = m_distortionBuffer.size();
+        cameraInfoMsg->d.capacity = m_distortionBuffer.size();
     }
     Ros2MessageInterfaceImpl::writeRosString(distortionModel, cameraInfoMsg->distortion_model);
 }
@@ -243,7 +243,14 @@ Ros2CameraInfoMessageImpl::~Ros2CameraInfoMessageImpl()
     {
         return;
     }
-    sensor_msgs__msg__CameraInfo__destroy(static_cast<sensor_msgs__msg__CameraInfo*>(m_msg));
+    sensor_msgs__msg__CameraInfo* cameraInfoMsg = static_cast<sensor_msgs__msg__CameraInfo*>(m_msg);
+
+    // Clear the pointer but don't free - memory is managed by m_distortionBuffer
+    cameraInfoMsg->d.data = nullptr;
+    cameraInfoMsg->d.size = 0;
+    cameraInfoMsg->d.capacity = 0;
+
+    sensor_msgs__msg__CameraInfo__destroy(cameraInfoMsg);
 }
 
 // Image message

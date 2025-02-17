@@ -715,6 +715,9 @@ public:
      * @param distortionModel Distortion model.
      */
     virtual void writeDistortionParameters(std::vector<double>& array, const std::string& distortionModel) = 0;
+
+protected:
+    std::vector<double> m_distortionBuffer; //!< Distortion Buffer (matrix data).
 };
 
 /**
