@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -99,6 +99,8 @@ public:
             state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // Verify we have a valid articulation prim
+            if (state.m_articulation)
+                state.m_articulation->release();
             state.m_articulation = state.m_simView->createArticulationView(std::vector<std::string>{ primPath });
             if (!state.m_articulation)
             {
@@ -168,6 +170,11 @@ public:
 
     virtual void reset()
     {
+        if (m_articulation)
+        {
+            m_articulation->release();
+            m_articulation = nullptr;
+        }
         if (m_simView)
         {
             m_simView->release(true);
