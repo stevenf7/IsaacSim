@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.3] - 2025-02-17
+### Changed
+- Fixed memory leak in ROS2 publish joint state
+
 ## [4.2.2] - 2025-02-14
 ### Changed
 - Fixed memory leak in ROS2 CameraInfo publisher
