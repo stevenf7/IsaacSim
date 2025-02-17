@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.2] - 2025-02-14
+### Changed
+- Fixed memory leak in ROS2 CameraInfo publisher
+
 ## [4.2.1] - 2025-02-13
 ### Changed
 - Updated ROS2 OmniGraph shortcut menus to use new MenuHelperExtensionFull
