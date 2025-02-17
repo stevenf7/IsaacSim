@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.17] - 2025-02-14
+### Fixed
+- UR10 unit test
+
 ## [1.3.16] - 2025-01-28
 ### Fixed
 - Windows signing issue

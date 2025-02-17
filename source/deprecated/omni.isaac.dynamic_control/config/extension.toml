@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.16"
+version = "1.3.17"
 category = "Simulation"
 title = "Isaac Sim Dynamic Control"
 description = "The Dynamic Control extension provides a set of utilities to control physics objects. It provides opaque handles for different physics objects that remain valid between PhysX scene resets, which occur whenever play or stop is pressed."
