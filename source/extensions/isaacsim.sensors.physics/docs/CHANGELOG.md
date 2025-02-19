@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.7] - 2025-02-18
+### Fixed
+- Make sure prims are valid before using
+
 ## [0.3.6] - 2025-01-28
 ### Fixed
 - Windows signing issue
