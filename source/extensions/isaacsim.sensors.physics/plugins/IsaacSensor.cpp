@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -226,20 +226,22 @@ void onPlay()
         const omni::fabric::PathC pathC(usdrtPath);
         const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
         pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
-
-        // Add the root prim
-        g_isaacSensorManager->onComponentAdd(prim);
-        isaacsim::sensors::physics::ImuSensor* imuSensor = dynamic_cast<isaacsim::sensors::physics::ImuSensor*>(
-            g_isaacSensorManager->getComponent(prim.GetPath().GetString()));
-
-        //  if the imu has no valid parent, return
-        if (imuSensor != nullptr)
+        if (prim)
         {
-            std::string parentPath = imuSensor->getParentPrim().GetPath().GetString();
+            // Add the root prim
+            g_isaacSensorManager->onComponentAdd(prim);
+            isaacsim::sensors::physics::ImuSensor* imuSensor = dynamic_cast<isaacsim::sensors::physics::ImuSensor*>(
+                g_isaacSensorManager->getComponent(prim.GetPath().GetString()));
 
-            if (std::find(g_rigidBodyPaths.begin(), g_rigidBodyPaths.end(), parentPath) == g_rigidBodyPaths.end())
+            //  if the imu has no valid parent, return
+            if (imuSensor != nullptr)
             {
-                g_rigidBodyPaths.push_back(parentPath);
+                std::string parentPath = imuSensor->getParentPrim().GetPath().GetString();
+
+                if (std::find(g_rigidBodyPaths.begin(), g_rigidBodyPaths.end(), parentPath) == g_rigidBodyPaths.end())
+                {
+                    g_rigidBodyPaths.push_back(parentPath);
+                }
             }
         }
     }
@@ -255,8 +257,11 @@ void onPlay()
             const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
             pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
 
-            // Add the root prim
-            g_isaacSensorManager->onComponentAdd(prim);
+            if (prim)
+            {
+                // Add the root prim
+                g_isaacSensorManager->onComponentAdd(prim);
+            }
         }
     }
 
