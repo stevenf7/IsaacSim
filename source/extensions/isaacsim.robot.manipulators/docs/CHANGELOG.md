@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.5] - 2025-02-18
+### Fixed
+- Post reset gripper issue
+
 ## [3.0.4] - 2025-01-26
 ### Changed
 - Update test settings

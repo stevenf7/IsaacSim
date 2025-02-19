@@ -124,5 +124,6 @@ class SingleManipulator(SingleArticulation):
         """Resets the manipulator, the end effector and the gripper to its default state."""
         SingleArticulation.post_reset(self)
         self._end_effector.post_reset()
-        self._gripper.post_reset()
+        if self._gripper != None:
+            self._gripper.post_reset()
         return
