@@ -148,6 +148,8 @@ exts."omni.kit.viewport.window".windowMenu.entryCount = 2 # Allow user to create
 exts."omni.kit.viewport.window".windowMenu.label = "" # Put Viewport menuitem under Window menu
 exts."omni.rtx.window.settings".window_menu = "Window" # Where to put the render settings menuitem
 exts."omni.usd".locking.onClose = false # reduce time it takes to close/create stage
+exts."omni.ui".raster.default_rasterpolicy_enabled = true # Improve UI rendering performance
+exts."omni.kit.widget.graph".raster_nodes = true # Improve UI rendering performance
 renderer.asyncInit = true # Don't block while renderer inits
 renderer.gpuEnumeration.glInterop.enabled = false # Improves startup speed.
 rtx-transient.dlssg.enabled = false # DLSSG frame generation is not compatible with synthetic data generation
@@ -292,3 +294,4 @@ registries = [
 # 	{ name = "kit/sdk", url = "https://ovextensionsprod.blob.core.windows.net/exts/kit/prod/sdk/${kit_version_short}/${kit_git_hash}" },
 # 	{ name = "kit/community", url = "https://dw290v42wisod.cloudfront.net/exts/kit/community" },
 # ]
+
