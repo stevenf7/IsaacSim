@@ -21,6 +21,34 @@ from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import Camera
 from omni.kit.viewport.utility import get_active_viewport
 
+GOLDEN_POINTCLOUD_WORLD_FRAME = np.array(
+    [
+        [3.4925, 3.4925, 0.0],
+        [3.4925, 0.0, -0.0],
+        [3.4925, -3.4925, 0.0],
+        [0.0, 3.4925, -0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, -3.4925, -0.0],
+        [-3.4925, 3.4925, 0.0],
+        [-3.4925, 0.0, -0.0],
+        [-3.4925, -3.4925, 0.0],
+    ]
+)
+
+GOLDEN_POINTCLOUD_CAMERA_FRAME = np.array(
+    [
+        [-3.4925, -3.4925, 25.0],
+        [0.0, -3.4925, 25.0],
+        [3.4925, -3.4925, 25.0],
+        [-3.4925, 0.0, 25.0],
+        [0.0, 0.0, 25.0],
+        [3.4925, 0.0, 25.0],
+        [-3.4925, 3.4925, 25.0],
+        [0.0, 3.4925, 25.0],
+        [3.4925, 3.4925, 25.0],
+    ]
+)
+
 
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
@@ -409,8 +437,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
         pointcloud_data = current_frame.get("pointcloud")
         self.assertIsNotNone(pointcloud_data)
-        # NOTE: 130 instead of 256*256 because only semantically labelled points are included
-        self.assertTrue(pointcloud_data["data"].shape == (130, 3))
+        self.assertTrue(pointcloud_data["data"].shape == (65536, 3))
         self.assertTrue(isinstance(pointcloud_data["data"], np.ndarray))
         self.assertTrue(pointcloud_data["data"].dtype == np.float32)
 
@@ -422,7 +449,6 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.camera.add_semantic_segmentation_to_frame(init_params={"colorize": True})
         self.camera.add_instance_id_segmentation_to_frame(init_params={"colorize": True})
         self.camera.add_instance_segmentation_to_frame(init_params={"colorize": True})
-        self.camera.add_pointcloud_to_frame(init_params={"includeUnlabelled": True})
 
         # Get the current frame
         await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
@@ -505,8 +531,48 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(isinstance(instance_segmentation_data["data"], np.ndarray))
         self.assertTrue(instance_segmentation_data["data"].dtype == np.uint8)
 
-        pointcloud_data = current_frame.get("pointcloud")
+    async def test_pointcloud_data(self):
+        self.camera.set_resolution((3, 3))
+        self.camera.add_pointcloud_to_frame()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+
+        pointcloud_data_world_frame = self.camera.get_pointcloud()
+        self.assertTrue(
+            np.allclose(pointcloud_data_world_frame.flatten(), GOLDEN_POINTCLOUD_WORLD_FRAME.flatten(), atol=1e-5)
+        )
+
+        pointcloud_data_camera_frame = self.camera.get_pointcloud(world_frame=False)
+        self.assertTrue(
+            np.allclose(pointcloud_data_camera_frame.flatten(), GOLDEN_POINTCLOUD_CAMERA_FRAME.flatten(), atol=1e-5)
+        )
+
+    async def test_pointcloud_data_with_depth_fallback(self):
+        self.camera.set_resolution((3, 3))
+        self.camera.add_distance_to_image_plane_to_frame()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+
+        pointcloud_data_world_frame = self.camera.get_pointcloud()
+        self.assertTrue(
+            np.allclose(pointcloud_data_world_frame.flatten(), GOLDEN_POINTCLOUD_WORLD_FRAME.flatten(), atol=1e-5)
+        )
+
+        pointcloud_data_camera_frame = self.camera.get_pointcloud(world_frame=False)
+        self.assertTrue(
+            np.allclose(pointcloud_data_camera_frame.flatten(), GOLDEN_POINTCLOUD_CAMERA_FRAME.flatten(), atol=1e-5)
+        )
+
+    async def test_pointcloud_data_only_labelled(self):
+        self.camera.add_pointcloud_to_frame(include_unlabelled=False)
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+        pointcloud_data = self.camera.get_pointcloud()
         self.assertIsNotNone(pointcloud_data)
-        self.assertTrue(pointcloud_data["data"].shape == (65536, 3))
-        self.assertTrue(isinstance(pointcloud_data["data"], np.ndarray))
-        self.assertTrue(pointcloud_data["data"].dtype == np.float32)
+        # NOTE: 130 instead of 256*256 because only semantically labelled points are included
+        self.assertTrue(pointcloud_data.shape == (130, 3))
+        self.assertFalse(np.isnan(pointcloud_data).any())
+        self.assertFalse(np.isinf(pointcloud_data).any())
+
+        pointcloud_data_camera_frame = self.camera.get_pointcloud(world_frame=False)
+        # NOTE: 130 instead of 256*256 because only semantically labelled points are included
+        self.assertTrue(pointcloud_data_camera_frame.shape == (130, 3))
+        self.assertFalse(np.isnan(pointcloud_data_camera_frame).any())
+        self.assertFalse(np.isinf(pointcloud_data_camera_frame).any())

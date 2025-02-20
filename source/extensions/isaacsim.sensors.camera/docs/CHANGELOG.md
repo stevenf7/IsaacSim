@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.10] - 2025-02-17
+### Changed
+- Camera get_pointcloud method uses the 'pointcloud' annotator if set, otherwise it falls back to a depth-based calculation
+
+### Fixed
+- centered the pointcloud points by adding a half-pixel offset for the depth-based calculation
+
+### Added
+- Camera sensor pointcloud specific tests
+- Camera sensor 'get_pointcloud()' can return the data in world of camera frame
+
 ## [0.2.9] - 2025-01-26
 ### Changed
 - Update test settings
