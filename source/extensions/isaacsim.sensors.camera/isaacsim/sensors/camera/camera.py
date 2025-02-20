@@ -145,7 +145,7 @@ class Camera(BaseSensor):
                                 Defaults to "camera".
         frequency (Optional[int], optional): Frequency of the sensor (i.e: how often is the data frame updated).
                                              Defaults to None.
-        dt (Optional[str], optional): dt of the sensor (i.e: period at which a the data frame updated). Defaults to None.
+        dt (Optional[float], optional): dt of the sensor (i.e: period at which a the data frame updated). Defaults to None.
         resolution (Optional[Tuple[int, int]], optional): resolution of the camera (width, height). Defaults to None.
         position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
@@ -168,21 +168,20 @@ class Camera(BaseSensor):
         prim_path: str,
         name: str = "camera",
         frequency: Optional[int] = None,
-        dt: Optional[str] = None,
+        dt: Optional[float] = None,
         resolution: Optional[Tuple[int, int]] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         render_product_path: str = None,
     ) -> None:
-        frequency = frequency
-        dt = dt
-        self._frequency = -1  # default to processing all frames
+        self._frequency = -1
         self._render_product = None
         if frequency is not None and dt is not None:
             raise Exception("Frequency and dt can't be both specified.")
         if dt is not None:
-            frequency = int(1 / dt)
+            # Calculate frequency properly without truncating
+            frequency = round(1.0 / dt)
 
         if frequency is not None:
             self.set_frequency(frequency)
@@ -346,7 +345,7 @@ class Camera(BaseSensor):
             self._frequency = -1
         else:
             if value % (1.0 / current_rendering_frequency) != 0:
-                raise Exception("dt of the contact sensor needs to be a multiple of the physics frequency.")
+                raise Exception("dt of the camera sensor needs to be a multiple of the rendering frequency.")
             self._frequency = 1.0 / value
         return
 
@@ -971,7 +970,7 @@ class Camera(BaseSensor):
             self._custom_annotators["instance_segmentation"] = None
         self._current_frame.pop("instance_segmentation", None)
 
-    def add_pointcloud_to_frame(self, include_unlabelled: bool = False, init_params: dict = None) -> None:
+    def add_pointcloud_to_frame(self, include_unlabelled: bool = True, init_params: dict = None) -> None:
         """Attach the pointcloud annotator to this camera.
         Args:
             include_unlabelled: Optional parameter to include unlabelled points in the pointcloud
@@ -985,9 +984,8 @@ class Camera(BaseSensor):
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#point-cloud
         """
         if self._custom_annotators["pointcloud"] is None:
-            if init_params is None:
-                init_params = {"includeUnlabelled": include_unlabelled}
-            else:
+            init_params = init_params or {}
+            if "includeUnlabelled" not in init_params:
                 init_params["includeUnlabelled"] = include_unlabelled
             self._custom_annotators["pointcloud"] = rep.AnnotatorRegistry.get_annotator(
                 "pointcloud", init_params=init_params
@@ -1039,33 +1037,56 @@ class Camera(BaseSensor):
             return None
         return depth
 
-    def get_pointcloud(self) -> np.ndarray:
-        """
+    def get_pointcloud(self, world_frame: bool = True) -> np.ndarray:
+        """Get a 3D pointcloud from the camera sensor.
+        Args:
+            world_frame (bool, optional): If True, returns points in world frame.
+                                          If False, returns points in camera frame.
         Returns:
-            pointcloud (np.ndarray):  (N x 3) 3d points (X, Y, Z) in camera frame. Shape is (N x 3) where N is the number of points.
+            np.ndarray: A (N x 3) array of 3D points (X, Y, Z) in either world or camera frame,
+                       where N is the number of points.
         Note:
-            This currently uses the depth annotator to generate the pointcloud. In the future, this will be switched to use
-            the pointcloud annotator.
+            The fallback method uses the depth (distance_to_camera_plane) annotator and
+            performs a perspective projection using the camera's intrinsic parameters to generate the pointcloud.
         """
+        # Check if pointcloud annotator data is available
+        if "pointcloud" in self._current_frame:
+            pointcloud_data = self._current_frame["pointcloud"]["data"]
+            if world_frame:
+                return pointcloud_data
+            else:
+                # Transform points from world frame to camera frame using the view matrix
+                homogeneous_points = self._backend_utils.pad(pointcloud_data, ((0, 0), (0, 1)), value=1.0)
+                view_matrix = self.get_view_matrix_ros()
+                points_camera_frame = self._backend_utils.matmul(
+                    view_matrix, self._backend_utils.transpose_2d(homogeneous_points)
+                )
+                return self._backend_utils.transpose_2d(points_camera_frame[:3, :])
 
+        # Pointcloud annotator not available, try depth-based fallback
+        carb.log_warn(
+            f"[get_pointcloud][{self.prim_path}] WARNING: 'pointcloud' annotator not available, falling back to depth-based calculation"
+        )
         depth = self.get_depth()
         if depth is None:
-            carb.log_warn(f"[get_pointcloud][{self.prim_path}] WARNING: Unable to get depth. Returning None")
+            carb.log_warn(
+                f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator not available to get depth data, Returning None"
+            )
             return None
 
-        # First, generate a grid of the mesh.
+        # Create pixel coordinate grid centered around the image center
         im_height, im_width = depth.shape[0], depth.shape[1]
+        ww = np.linspace(0.5, im_width - 0.5, im_width)  # x-coordinates with half-pixel offset
+        hh = np.linspace(0.5, im_height - 0.5, im_height)  # y-coordinates with half-pixel offset
+        xmap, ymap = np.meshgrid(ww, hh)  # 2D coordinate grid
 
-        ww = np.linspace(0, im_width - 1, im_width)
-        hh = np.linspace(0, im_height - 1, im_height)
-        xmap, ymap = np.meshgrid(ww, hh)
-
+        # Reshape the pixel coordinates into (N x 2) array of (x,y) points
         points_2d = np.column_stack((xmap.ravel(), ymap.ravel()))
-
-        # Directly use this function from the camera class to do this.
-        pointcloud = self.get_world_points_from_image_coords(points_2d, depth.flatten())
-
-        return pointcloud
+        # Project 2D pixel coordinates to 3D world points using depth values
+        if world_frame:
+            return self.get_world_points_from_image_coords(points_2d, depth.flatten())
+        else:
+            return self.get_camera_points_from_image_coords(points_2d, depth.flatten())
 
     def get_focal_length(self) -> float:
         """
@@ -1298,11 +1319,10 @@ class Camera(BaseSensor):
         fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
         camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
 
-        # Fit the fTheta model for the points on the diagonals.
-        X = np.concatenate([np.linspace(0, nominal_width, nominal_width), np.linspace(0, nominal_width, nominal_width)])
-        Y = np.concatenate(
-            [np.linspace(0, nominal_height, nominal_width), np.linspace(nominal_height, 0, nominal_width)]
-        )
+        # Convert nominal width to integer for sample count
+        num_samples = int(nominal_width)
+        X = np.concatenate([np.linspace(0, nominal_width, num_samples), np.linspace(0, nominal_width, num_samples)])
+        Y = np.concatenate([np.linspace(0, nominal_height, num_samples), np.linspace(nominal_height, 0, num_samples)])
         theta = point_to_theta(camera_matrix, X, Y)
         r = np.linalg.norm(distortion_fn(camera_matrix, distortion_model, X, Y) - np.array([[cx], [cy]]), axis=0)
         fthetaPoly = np.polyfit(r, theta, deg=4)
@@ -1488,6 +1508,31 @@ class Camera(BaseSensor):
         points = self._backend_utils.matmul(projection_matrix, self._backend_utils.transpose_2d(homogenous))
         points[:2, :] /= points[2, :]  # normalize
         return self._backend_utils.transpose_2d(points[:2, :])
+
+    def get_camera_points_from_image_coords(self, points_2d: np.ndarray, depth: np.ndarray):
+        """Using pinhole perspective projection, this method does the inverse projection given the depth of the
+           pixels to get 3D points in camera frame.
+
+        Args:
+            points_2d (np.ndarray): 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
+            depth (np.ndarray): depth corresponds to each of the pixel coords. shape is (n,)
+
+        Returns:
+            np.ndarray: (n, 3) 3d points (X, Y, Z) in camera frame. shape is (n, 3) where n is the number of points.
+                       +Z points forward (optical axis), +X right, +Y down
+        """
+        if "pinhole" not in self.get_projection_type():
+            raise Exception(
+                "pinhole projection type is not set to be able to use get_camera_points_from_image_coords method which use pinhole perspective projection."
+            )
+        # Convert image coordinates to homogeneous coordinates
+        homogenous = self._backend_utils.pad(points_2d, ((0, 0), (0, 1)), value=1.0)
+        # Back-project to camera frame using inverse of intrinsics matrix and depth
+        points_in_camera_axes = self._backend_utils.matmul(
+            self._backend_utils.inverse(self.get_intrinsics_matrix()),
+            self._backend_utils.transpose_2d(homogenous) * self._backend_utils.expand_dims(depth, 0),
+        )
+        return self._backend_utils.transpose_2d(points_in_camera_axes)
 
     def get_world_points_from_image_coords(self, points_2d: np.ndarray, depth: np.ndarray):
         """Using pinhole perspective projection, this method does the inverse projection given the depth of the
