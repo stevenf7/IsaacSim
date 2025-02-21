@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.9] - 2025-02-20
+### Changed
+- Added additional test settings to extension.toml
+
 ## [4.4.8] - 2025-01-27
 ### Changed
 - Updated docs link
