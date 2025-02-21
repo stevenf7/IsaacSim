@@ -4,7 +4,7 @@
         "version": 1,
         "description": "Conveyor Belt",
         "categories":{
-            "isaacSim": "Conveyor belt controller inside Isaac Sim"
+            "isaacConveyor": "Conveyor belt controller inside Isaac Sim"
         },
         "scheduling": "compute-on-request",
         "metadata": {

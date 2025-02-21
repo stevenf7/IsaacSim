@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2019-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -23,70 +23,83 @@
 #include <pxr/pxr.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
-namespace omni
+namespace isaacsim
 {
-namespace isaac
+namespace asset
+{
+namespace gen
 {
 namespace conveyor
 {
 
-// minimal compute node example that reads one float and writes one float
-// e.g. out value = 3.0f * in value
+/**
+ * @brief Class that implements the conveyor belt node functionality
+ */
 class OgnIsaacConveyor
 {
 public:
+    /**
+     * @brief Initializes a new instance of the conveyor node
+     * @param nodeObj Node object reference
+     * @param instanceId Graph instance identifier
+     */
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& _state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
-        _state.m_EventSubscription = carb::events::createSubscriptionToPop(
+        auto& state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
+        state.m_eventSubscription = carb::events::createSubscriptionToPop(
             omni::usd::UsdContext::getContext()->getStageEventStream().get(),
-            [nodeObj, instanceId](carb::events::IEvent* e)
+            [nodeObj, instanceId](carb::events::IEvent* event)
             {
                 auto& state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
-                state.mOnEnd =
-                    static_cast<omni::usd::StageEventType>(e->type) == omni::usd::StageEventType::eAnimationStopPlay;
-                state.mOnStart =
-                    static_cast<omni::usd::StageEventType>(e->type) == omni::usd::StageEventType::eAnimationStartPlay;
-                if (nodeObj.iNode->isValid(nodeObj) && (state.mOnEnd || state.mOnStart))
+                state.m_onEnd = static_cast<omni::usd::StageEventType>(event->type) ==
+                                omni::usd::StageEventType::eAnimationStopPlay;
+                state.m_onStart = static_cast<omni::usd::StageEventType>(event->type) ==
+                                  omni::usd::StageEventType::eAnimationStartPlay;
+                if (nodeObj.iNode->isValid(nodeObj) && (state.m_onEnd || state.m_onStart))
                 {
                     nodeObj.iNode->requestCompute(nodeObj);
                 }
             });
     }
 
+    /**
+     * @brief Computes the conveyor belt physics and animation state
+     * @param db Database containing node state and parameters
+     * @return True if computation succeeded, false otherwise
+     */
     static bool compute(OgnIsaacConveyorDatabase& db)
     {
         if (db.inputs.enabled())
         {
             pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
-            const auto& prim = db.inputs.conveyorPrim();
-            UsdPrim conveyor;
-            if (prim.size() > 0)
+            const auto& primPath = db.inputs.conveyorPrim();
+            UsdPrim conveyorPrim;
+            if (primPath.size() > 0)
             {
-                conveyor = stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0]));
+                conveyorPrim = stage->GetPrimAtPath(omni::fabric::toSdfPath(primPath[0]));
             }
             else
             {
-                db.logError("no prim path found for the conveyor");
+                db.logError("No prim path found for the conveyor");
                 return false;
             }
-            // const GraphContextObj& context = db.abi_context();
-            // pxr::SdfChangeBlock changeBlock(true);
+
             auto& state = db.perInstanceState<OgnIsaacConveyor>();
-            pxr::UsdPhysicsRigidBodyAPI physics_conveyor(conveyor);
-            pxr::GfVec3f velocity;
-            auto new_velocity = db.inputs.direction() * db.inputs.velocity();
-            if (physics_conveyor)
+            pxr::UsdPhysicsRigidBodyAPI physicsConveyor(conveyorPrim);
+            pxr::GfVec3f currentVelocity;
+            auto targetVelocity = db.inputs.direction() * db.inputs.velocity();
+
+            if (physicsConveyor)
             {
-                auto surfaceVelocity = pxr::PhysxSchemaPhysxSurfaceVelocityAPI::Apply(conveyor);
+                auto surfaceVelocity = pxr::PhysxSchemaPhysxSurfaceVelocityAPI::Apply(conveyorPrim);
 
                 if (db.inputs.curved())
                 {
-                    surfaceVelocity.GetSurfaceAngularVelocityAttr().Get(&velocity);
+                    surfaceVelocity.GetSurfaceAngularVelocityAttr().Get(&currentVelocity);
                 }
                 else
                 {
-                    surfaceVelocity.GetSurfaceVelocityAttr().Get(&velocity);
+                    surfaceVelocity.GetSurfaceVelocityAttr().Get(&currentVelocity);
                 }
             }
             else
@@ -94,85 +107,89 @@ public:
                 db.logError("Selected Prim is not a Rigid Body");
                 return false;
             }
-            bool velocity_changed = (velocity - new_velocity).GetLengthSq() > 1e-6f;
-            if (state.mOnStart || velocity_changed)
-            {
-                state.mVelocity = db.inputs.velocity();
 
-                auto surfaceVelocity = pxr::PhysxSchemaPhysxSurfaceVelocityAPI::Apply(conveyor);
+            bool hasVelocityChanged = (currentVelocity - targetVelocity).GetLengthSq() > 1e-6f;
+            if (state.m_onStart || hasVelocityChanged)
+            {
+                state.m_velocity = db.inputs.velocity();
+
+                auto surfaceVelocity = pxr::PhysxSchemaPhysxSurfaceVelocityAPI::Apply(conveyorPrim);
                 // Cycle the enabled attr to hardwire it to work on first sim
                 surfaceVelocity.GetSurfaceVelocityEnabledAttr().Set(false);
                 surfaceVelocity.GetSurfaceVelocityEnabledAttr().Set(true);
+
                 if (db.inputs.curved())
                 {
-                    surfaceVelocity.GetSurfaceAngularVelocityAttr().Set(new_velocity);
+                    surfaceVelocity.GetSurfaceAngularVelocityAttr().Set(targetVelocity);
                 }
                 else
                 {
-                    surfaceVelocity.GetSurfaceVelocityAttr().Set(new_velocity);
+                    surfaceVelocity.GetSurfaceVelocityAttr().Set(targetVelocity);
                 }
 
-
-                if (state.mOnStart)
+                if (state.m_onStart)
                 {
-                    state.mOnStart = false;
-                    state.mShaders.clear();
-                    state.mShadersStart.clear();
-                    for (auto m : pxr::UsdPrimRange(conveyor))
+                    state.m_onStart = false;
+                    state.m_shaderAttributes.clear();
+                    state.m_initialShaderStates.clear();
+
+                    for (auto meshPrim : pxr::UsdPrimRange(conveyorPrim))
                     {
-                        if (pxr::UsdGeomImageable(m))
+                        if (pxr::UsdGeomImageable(meshPrim))
                         {
-                            auto mat = pxr::UsdShadeMaterialBindingAPI(m).ComputeBoundMaterial();
-                            for (auto shader : pxr::UsdPrimRange(mat.GetPrim()))
+                            auto material = pxr::UsdShadeMaterialBindingAPI(meshPrim).ComputeBoundMaterial();
+                            for (auto shader : pxr::UsdPrimRange(material.GetPrim()))
                             {
-                                auto prim = stage->OverridePrim(shader.GetPrim().GetPath());
-                                auto attr = prim.GetAttribute(pxr::TfToken("inputs:texture_translate"));
-                                if (!attr)
+                                auto shaderPrim = stage->OverridePrim(shader.GetPrim().GetPath());
+                                auto textureAttribute = shaderPrim.GetAttribute(pxr::TfToken("inputs:texture_translate"));
+                                if (!textureAttribute)
                                 {
                                     pxr::UsdEditContext context(stage, stage->GetRootLayer());
-                                    attr = prim.CreateAttribute(pxr::TfToken("inputs:texture_translate"),
-                                                                pxr::SdfValueTypeNames->Float2, false);
-                                    attr.Set(pxr::GfVec2f(0.00000f, 0.0f));
+                                    textureAttribute = shaderPrim.CreateAttribute(
+                                        pxr::TfToken("inputs:texture_translate"), pxr::SdfValueTypeNames->Float2, false);
+                                    textureAttribute.Set(pxr::GfVec2f(0.00000f, 0.0f));
                                 }
-                                // attr = prim.GetAttribute(pxr::TfToken("inputs:texture_translate"));
-                                if (attr)
+
+                                if (textureAttribute)
                                 {
                                     pxr::UsdEditContext context(stage, stage->GetRootLayer());
-                                    state.mShaders.push_back(attr);
-                                    pxr::GfVec2f tx;
-                                    attr.Get(&tx);
-                                    state.mShadersStart.push_back(tx);
-                                    tx[0] += 0.0000f;
-                                    attr.Set(tx);
+                                    state.m_shaderAttributes.push_back(textureAttribute);
+                                    pxr::GfVec2f textureTranslation;
+                                    textureAttribute.Get(&textureTranslation);
+                                    state.m_initialShaderStates.push_back(textureTranslation);
+                                    textureTranslation[0] += 0.0000f;
+                                    textureAttribute.Set(textureTranslation);
                                 }
                             }
                         }
                     }
                 }
 
-                if (state.mOnEnd)
+                if (state.m_onEnd)
                 {
                     pxr::SdfChangeBlock changeBlock;
-                    for (size_t i = 0; i < state.mShaders.size(); i++)
+                    for (size_t i = 0; i < state.m_shaderAttributes.size(); i++)
                     {
-                        state.mShaders[i].Set(state.mShadersStart[i]);
+                        state.m_shaderAttributes[i].Set(state.m_initialShaderStates[i]);
                     }
                 }
             }
+
             if (db.inputs.animateTexture())
             {
-                if (state.mVelocity != 0 && db.inputs.onStep())
+                if (state.m_velocity != 0 && db.inputs.onStep())
                 {
                     pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
                     pxr::UsdEditContext context(stage, stage->GetRootLayer());
                     pxr::SdfChangeBlock changeBlock;
-                    for (auto& attr : state.mShaders)
+
+                    for (auto& attribute : state.m_shaderAttributes)
                     {
-                        pxr::GfVec2f tx;
-                        attr.Get(&tx);
-                        tx += pxr::GfVec2f(db.inputs.delta() * db.inputs.animateDirection() * state.mVelocity *
-                                           db.inputs.animateScale());
-                        attr.Set(tx);
+                        pxr::GfVec2f textureTranslation;
+                        attribute.Get(&textureTranslation);
+                        textureTranslation += pxr::GfVec2f(db.inputs.delta() * db.inputs.animateDirection() *
+                                                           state.m_velocity * db.inputs.animateScale());
+                        attribute.Set(textureTranslation);
                     }
                 }
             }
@@ -181,19 +198,20 @@ public:
     }
 
 private:
-    std::vector<pxr::UsdAttribute> mShaders;
-    std::vector<pxr::GfVec2f> mShadersStart;
-    float mVelocity;
-    pxr::GfVec3f mDirection;
-    bool mOnStart;
-    bool mOnEnd;
-    bool mOnsStep;
-    bool mDt;
-    carb::events::ISubscriptionPtr m_EventSubscription;
+    std::vector<pxr::UsdAttribute> m_shaderAttributes;
+    std::vector<pxr::GfVec2f> m_initialShaderStates;
+    float m_velocity;
+    pxr::GfVec3f m_direction;
+    bool m_onStart;
+    bool m_onEnd;
+    bool m_onStep;
+    bool m_deltaTime;
+    carb::events::ISubscriptionPtr m_eventSubscription;
 };
 
 REGISTER_OGN_NODE()
 
-}
-}
-}
+} // namespace conveyor
+} // namespace gen
+} // namespace asset
+} // namespace isaacsim

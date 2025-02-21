@@ -4,7 +4,7 @@
         "description": "NOTE: DEPRECATED Ackermann Controller. Please you replace with the AckermannController OmniGraph node instead.",
         "language": "Python",
         "categories": {
-            "isaacSim": "Ackermann controller for wheels in Isaac Sim"
+            "isaacWheeledRobots": "Ackermann controller for wheels in Isaac Sim"
         },
         "metadata": {
             "uiName": "Ackermann Controller Deprecated",

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.11] - 2025-02-17
+### Changed
+- Refactored code to isaac sim style guidelines
+
 ## [2.0.10] - 2025-02-05
 ### Fixed
 - In certain cases the generated image appeared skewed, this was due to the bounds not being rounded to the nearest cell size. This has now been fixed.

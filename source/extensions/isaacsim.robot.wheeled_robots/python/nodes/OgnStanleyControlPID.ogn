@@ -4,7 +4,7 @@
         "description": "Drive to Target Steering",
         "language": "Python",
         "categories": {
-            "isaacSim": "robot path planning inside Isaac Sim"
+            "isaacWheeledRobots": "robot path planning inside Isaac Sim"
         },
         "metadata": {
             "uiName": "Stanley Control PID"

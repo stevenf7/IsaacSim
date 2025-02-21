@@ -7,7 +7,7 @@
         ],
         "language": "Python",
         "categories": {
-            "isaacSim": "Ackermann steering for robots in Isaac Sim"
+            "isaacWheeledRobots": "Ackermann steering for robots in Isaac Sim"
         },
         "metadata": {
             "uiName": "Ackermann Steering",

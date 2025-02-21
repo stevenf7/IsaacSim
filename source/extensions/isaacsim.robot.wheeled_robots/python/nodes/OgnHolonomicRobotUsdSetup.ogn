@@ -4,7 +4,7 @@
         "description": "setup any robot to be ready to be used by the holonomic controller by extract attributes from USD",
         "language": "Python",
         "categories": {
-            "isaacSim": "robot controller prep inside Isaac Sim"
+            "isaacWheeledRobots": "robot controller prep inside Isaac Sim"
         },       
         "metadata": {
             "uiName": "Usd Setup Holonomic Robot"
