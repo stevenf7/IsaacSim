@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.6] - 2025-02-21
+### Changed
+- Temporarily using the old UR10e.usd asset for testing.
+
 ## [2.1.5] - 2025-01-27
 ### Changed
 - Updated docs link
