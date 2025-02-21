@@ -29,6 +29,7 @@ from .utils import (
     get_token,
     log_http_error,
     try_post_notification,
+    try_post_warning,
 )
 
 VERSION_IS_HIGHER = 1  # semver value that represents when a version is higher
@@ -223,7 +224,7 @@ class CacheStateDelegate(ui.MenuDelegate):
         if token:
             headers["Authorization"] = f"Bearer {token}"
 
-        return aiohttp.ClientSession(headers=headers)
+        return aiohttp.ClientSession(headers=headers, trust_env=True)
 
     async def download_file(self, resource: str, version: str, filename: str, download_to: str) -> None:
         uri = f"{self.ngc_path_prefix(self.ngc_org, self.ngc_team, resource)}/versions/{version}/files/{filename}"
@@ -267,14 +268,6 @@ class CacheStateDelegate(ui.MenuDelegate):
         except Exception as e:
             carb.log_error(f"Error while downloading hub: ${e}")
         return ""
-
-    def move_folder(self, source_folder, destination_folder) -> None:
-        try:
-            # Move the entire folder (including its contents) to the destination
-            shutil.move(source_folder, destination_folder)
-            carb.log_info(f"Folder '{source_folder}' moved to '{destination_folder}'")
-        except Exception as e:
-            carb.log_info(f"Error moving folder: {e}")
 
     async def get_correct_file(self, ngc_resource: str, hub_version: str) -> str:
         uri = f"{self.ngc_path_prefix(self.ngc_org, self.ngc_team, ngc_resource)}/versions/{hub_version}/files"
@@ -344,10 +337,10 @@ class CacheStateDelegate(ui.MenuDelegate):
                 return
 
             carb.log_info(f"Hub version found {hub_version}")
-
             file = await self.get_correct_file(self.ngc_resource, hub_version)
-            temp_path = os.path.join(tempfile.gettempdir(), file)
 
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = os.path.join(temp_dir, file)
             carb.log_info(f"Downloading hub {file} from: NGC, to: {temp_path}")
 
             await self.download_file(self.ngc_resource, hub_version, file, temp_path)
@@ -371,7 +364,17 @@ class CacheStateDelegate(ui.MenuDelegate):
             if not os.path.exists(library_root):
                 os.makedirs(library_root)
 
-            self.move_folder(final, library_root)
+                source_folder = final
+                destination_folder = library_root
+                try:
+                    # Move the entire folder (including its contents) to the destination
+                    shutil.move(source_folder, destination_folder)
+                    carb.log_info(f"Folder '{source_folder}' moved to '{destination_folder}'")
+                except Exception as e:
+                    carb.log_error(f"Error moving '{source_folder}' to '{destination_folder}': {e}")
+                    try_post_warning("The Hub install location already exists.", duration=4)
+                    self.toggle_ui_state(UIState.HUB_UPDATE_DETECTED)
+                    return
 
             # create the .installed path
             installed_path = os.path.join(library_root, f"hub-{hub_version}", ".installed")
