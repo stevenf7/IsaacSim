@@ -821,7 +821,7 @@ class Camera(BaseSensor):
 
         if self._custom_annotators["bounding_box_2d_tight"] is None:
             self._custom_annotators["bounding_box_2d_tight"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_2d_tight", init_params=init_params
+                "bounding_box_2d_tight_fast", init_params=init_params
             )
             self._custom_annotators["bounding_box_2d_tight"].attach([self._render_product_path])
         self._current_frame["bounding_box_2d_tight"] = None
@@ -857,7 +857,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["bounding_box_2d_loose"] is None:
             self._custom_annotators["bounding_box_2d_loose"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_2d_loose", init_params=init_params
+                "bounding_box_2d_loose_fast", init_params=init_params
             )
             self._custom_annotators["bounding_box_2d_loose"].attach([self._render_product_path])
         self._current_frame["bounding_box_2d_loose"] = None
@@ -878,7 +878,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["bounding_box_3d"] is None:
             self._custom_annotators["bounding_box_3d"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_3d", init_params=init_params
+                "bounding_box_3d_fast", init_params=init_params
             )
             self._custom_annotators["bounding_box_3d"].attach([self._render_product_path])
         self._current_frame["bounding_box_3d"] = None
@@ -931,7 +931,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["instance_id_segmentation"] is None:
             self._custom_annotators["instance_id_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_id_segmentation", init_params=init_params
+                "instance_id_segmentation_fast", init_params=init_params
             )
             self._custom_annotators["instance_id_segmentation"].attach([self._render_product_path])
         self._current_frame["instance_id_segmentation"] = None
@@ -958,7 +958,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["instance_segmentation"] is None:
             self._custom_annotators["instance_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_segmentation", init_params=init_params
+                "instance_segmentation_fast", init_params=init_params
             )
             self._custom_annotators["instance_segmentation"].attach([self._render_product_path])
         self._current_frame["instance_segmentation"] = None

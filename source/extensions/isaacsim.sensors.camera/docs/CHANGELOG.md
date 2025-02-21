@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.11] - 2025-02-21
+### Changed
+- Updated annotators in camera sensor to use the `_fast` version where available
+
 ## [0.2.10] - 2025-02-17
 ### Changed
 - Camera get_pointcloud method uses the 'pointcloud' annotator if set, otherwise it falls back to a depth-based calculation
