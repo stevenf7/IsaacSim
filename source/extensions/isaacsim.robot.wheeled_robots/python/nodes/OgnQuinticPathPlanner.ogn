@@ -4,7 +4,7 @@
         "description": "Quintic Path Planner For Wheeled robots",
         "language": "Python",
         "categories": {
-            "isaacSim": "robot path planning inside Isaac Sim"
+            "isaacWheeledRobots": "robot path planning inside Isaac Sim"
         },
         "metadata": {
             "uiName": "Quintic Path Planner"

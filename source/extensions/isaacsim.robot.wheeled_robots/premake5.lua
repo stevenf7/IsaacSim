@@ -7,7 +7,6 @@ project_ext(ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.robot.wheeled_robots.plugin")
     add_files("impl", "plugins")
-    add_files("iface","%{root}/source/extensions/isaacsim.robot.wheeled_robots/bindings/**")
     add_files("ogn", ogn.nodes_path)
 
     filter { "system:linux", "platforms:x86_64" }
@@ -56,7 +55,7 @@ project_ext_bindings {
     src = ogn.bindings_path,
     target_subdir = ogn.bindings_target_path
 }
-    add_files("bindings", "bindings")
+    add_files("bindings", "bindings/*.*")
     add_files("python", "python/*.py")
     add_files("python/controllers", "python/controllers/*.py")
     add_files("python/nodes", "python/nodes/*.py")

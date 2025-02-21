@@ -4,7 +4,7 @@
         "description": "Check if wheeled robot has reached goal",
         "language": "Python",
         "categories": {
-            "isaacSim": "robot path planning inside Isaac Sim"
+            "isaacWheeledRobots": "robot path planning inside Isaac Sim"
         },
         "metadata": {
             "uiName": "Check Goal 2D"

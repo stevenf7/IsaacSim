@@ -4,7 +4,7 @@
         "description": "Holonomic Controller",
         "language": "Python",
         "categories": {
-            "isaacSim": "robot controller inside Isaac Sim"
+            "isaacWheeledRobots": "robot controller inside Isaac Sim"
         },
         "metadata": {
             "uiName": "Holonomic Controller"

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,14 +13,13 @@
 
 #include <carb/BindingsPythonUtils.h>
 
+#include <isaacsim/asset/gen/omap/MapGenerator.h>
+#include <isaacsim/asset/gen/omap/OccupancyMap.h>
 #include <omni/physx/IPhysx.h>
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <MapGenerator.h>
-#include <OccupancyMap.h>
 
 
 CARB_BINDINGS("isaacsim.asset.gen.omap.python")
@@ -48,7 +47,7 @@ PYBIND11_MODULE(_omap, m)
     using namespace carb;
     using namespace isaacsim::asset::gen::omap;
     // We use carb data types, must import bindings for them
-    auto carb_module = py::module::import("carb");
+    auto carbModule = py::module::import("carb");
 
     m.doc() = "Isaac Sim Occupany map generator bindings";
 

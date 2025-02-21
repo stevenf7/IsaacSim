@@ -14,11 +14,11 @@
 #include "isaacsim/core/utils/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
+#include <isaacsim/asset/gen/omap/MapGenerator.h>
 #include <octomap/octomap.h>
 #include <omni/physx/IPhysx.h>
 #include <pxr/usd/usdPhysics/scene.h>
 
-#include <MapGenerator.h>
 #include <PxActor.h>
 #include <PxArticulationJointReducedCoordinate.h>
 #include <PxArticulationLink.h>
@@ -37,6 +37,8 @@ namespace gen
 namespace omap
 {
 
+namespace
+{
 
 /**
  * Finds the PhysX scene associated with the given USD stage
@@ -44,10 +46,10 @@ namespace omap
  * @param stagePtr Pointer to the USD stage
  * @return Pointer to the PhysX scene, or nullptr if not found
  */
-::physx::PxScene* findScene(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr)
+::physx::PxScene* findPhysxScene(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr)
 {
     pxr::UsdPrimRange range = stagePtr->Traverse();
-    ::physx::PxScene* physxScenePtr = nullptr;
+    ::physx::PxScene* physxScene = nullptr;
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
     {
         pxr::UsdPrim prim = *iter;
@@ -55,17 +57,19 @@ namespace omap
         if (prim.IsA<pxr::UsdPhysicsScene>())
         {
 
-            physxScenePtr = static_cast<::physx::PxScene*>(
+            physxScene = static_cast<::physx::PxScene*>(
                 physXPtr->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
 
-            if (physxScenePtr)
+            if (physxScene)
             {
-                return physxScenePtr;
+                return physxScene;
             }
         }
     }
     return nullptr;
 }
+
+} // anonymous namespace
 
 /**
  * Constructor for MapGenerator
@@ -75,23 +79,23 @@ namespace omap
  */
 MapGenerator::MapGenerator(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr)
 {
-    mPhysx = physXPtr;
-    mStage = stagePtr;
-    mTree = new octomap::OcTree(mCellSize);
-    mPhysxScenePtr = findScene(mPhysx, mStage);
-    if (!mPhysxScenePtr)
+    m_physx = physXPtr;
+    m_stage = stagePtr;
+    m_tree = new octomap::OcTree(m_cellSize);
+    m_physxScenePtr = findPhysxScene(m_physx, m_stage);
+    if (!m_physxScenePtr)
     {
-        printf("No Physics Scene Present\n");
+        CARB_LOG_ERROR("Physics scene not found in stage");
         return;
     }
 
-    mTree->setOccupancyThres(0.5);
-    mTree->setProbHit(0.7);
-    mTree->setClampingThresMin(0.1);
+    m_tree->setOccupancyThres(0.5);
+    m_tree->setProbHit(0.7);
+    m_tree->setClampingThresMin(0.1);
 }
 MapGenerator::~MapGenerator()
 {
-    delete mTree;
+    delete m_tree;
 }
 
 /**
@@ -106,11 +110,11 @@ void MapGenerator::updateSettings(const float cellSize,
                                   const float unoccupiedValue,
                                   const float unknownValue)
 {
-    mCellSize = cellSize;
-    mOccupiedValue = occupiedValue;
-    mUnoccupiedValue = unoccupiedValue;
-    mUnknownValue = unknownValue;
-    mTree->setResolution(mCellSize);
+    m_cellSize = cellSize;
+    m_occupiedValue = occupiedValue;
+    m_unoccupiedValue = unoccupiedValue;
+    m_unknownValue = unknownValue;
+    m_tree->setResolution(m_cellSize);
 }
 
 /**
@@ -122,20 +126,20 @@ void MapGenerator::updateSettings(const float cellSize,
 void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinPoint, carb::Float3 inputMaxPoint)
 {
     carb::Float3 roundedMin = {
-        std::floor(inputMinPoint.x / mCellSize) * mCellSize,
-        std::floor(inputMinPoint.y / mCellSize) * mCellSize,
-        std::floor(inputMinPoint.z / mCellSize) * mCellSize,
+        std::floor(inputMinPoint.x / m_cellSize) * m_cellSize,
+        std::floor(inputMinPoint.y / m_cellSize) * m_cellSize,
+        std::floor(inputMinPoint.z / m_cellSize) * m_cellSize,
     };
 
     carb::Float3 roundedMax = {
-        std::ceil(inputMaxPoint.x / mCellSize) * mCellSize,
-        std::ceil(inputMaxPoint.y / mCellSize) * mCellSize,
-        std::ceil(inputMaxPoint.z / mCellSize) * mCellSize,
+        std::ceil(inputMaxPoint.x / m_cellSize) * m_cellSize,
+        std::ceil(inputMaxPoint.y / m_cellSize) * m_cellSize,
+        std::ceil(inputMaxPoint.z / m_cellSize) * m_cellSize,
     };
 
-    mInputOrigin = inputOrigin;
-    mInputMinPoint = roundedMin;
-    mInputMaxPoint = roundedMax;
+    m_inputOrigin = inputOrigin;
+    m_inputMinPoint = roundedMin;
+    m_inputMaxPoint = roundedMax;
 }
 
 /**
@@ -146,69 +150,71 @@ void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinP
  */
 void MapGenerator::generate2d()
 {
-    if (!mPhysxScenePtr)
+    if (!m_physxScenePtr)
     {
-        printf("No Physics Scene Present\n");
+        CARB_LOG_ERROR("Physics scene not initialized");
         return;
     }
 
-    if (!mTree)
+    if (!m_tree)
     {
-        printf("Tree not valid\n");
+        CARB_LOG_ERROR("Octree not initialized");
         return;
     }
 
     // Clear existing octree data
-    mTree->clear();
+    m_tree->clear();
 
     // Create overlap test geometry
     // Use a tall box that extends in Z direction to detect obstacles at any height
-    float geomHeight = ::physx::PxAbs(mInputMaxPoint.z - mInputMinPoint.z) / 2.0f + mCellSize / 2.0f;
-    ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(mCellSize / 2.0f, mCellSize / 2.0f, geomHeight));
+    float geomHeight = ::physx::PxAbs(m_inputMaxPoint.z - m_inputMinPoint.z) / 2.0f + m_cellSize / 2.0f;
+    ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(m_cellSize / 2.0f, m_cellSize / 2.0f, geomHeight));
 
     // Sets to store occupied and unoccupied cell keys
-    octomap::KeySet occupied_cells, unoccupied_cells;
+    octomap::KeySet occupiedCells;
+    octomap::KeySet unoccupiedCells;
     ::physx::PxOverlapHit hit;
 
     // Iterate through XY grid
-    for (float ix = mInputMinPoint.x + mCellSize / 2.0f; ix <= mInputMaxPoint.x - mCellSize / 2.0f; ix += mCellSize)
+    for (float ix = m_inputMinPoint.x + m_cellSize / 2.0f; ix <= m_inputMaxPoint.x - m_cellSize / 2.0f; ix += m_cellSize)
     {
-        for (float iy = mInputMinPoint.y + mCellSize / 2.0f; iy <= mInputMaxPoint.y - mCellSize / 2.0f; iy += mCellSize)
+        for (float iy = m_inputMinPoint.y + m_cellSize / 2.0f; iy <= m_inputMaxPoint.y - m_cellSize / 2.0f;
+             iy += m_cellSize)
         {
             // Convert world coordinates to octree key
             octomap::OcTreeKey key =
-                mTree->coordToKey(octomap::point3d(ix + mInputOrigin.x, iy + mInputOrigin.y, mInputOrigin.z));
+                m_tree->coordToKey(octomap::point3d(ix + m_inputOrigin.x, iy + m_inputOrigin.y, m_inputOrigin.z));
 
             // Position the overlap test box
-            float height = mInputOrigin.z + mInputMinPoint.z + (mInputMaxPoint.z - mInputMinPoint.z) / 2.0f;
-            ::physx::PxTransform pose(::physx::PxVec3(ix + mInputOrigin.x, iy + mInputOrigin.y, height));
+            float height = m_inputOrigin.z + m_inputMinPoint.z + (m_inputMaxPoint.z - m_inputMinPoint.z) / 2.0f;
+            ::physx::PxTransform pose(::physx::PxVec3(ix + m_inputOrigin.x, iy + m_inputOrigin.y, height));
 
             // Perform overlap test and store result
-            if (::physx::PxSceneQueryExt::overlapAny(*mPhysxScenePtr, cellGeom, pose, hit))
+            if (::physx::PxSceneQueryExt::overlapAny(*m_physxScenePtr, cellGeom, pose, hit))
             {
-                occupied_cells.insert(key);
+                occupiedCells.insert(key);
             }
             else
             {
-                unoccupied_cells.insert(key);
+                unoccupiedCells.insert(key);
             }
         }
     }
 
     // Update octree with unoccupied cells
-    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != unoccupied_cells.end(); ++it)
+    for (const auto& key : unoccupiedCells)
     {
-        mTree->updateNode(*it, false, true);
+        m_tree->updateNode(key, false, true);
     }
 
     // Update octree with occupied cells
-    for (octomap::KeySet::iterator it = occupied_cells.begin(); it != occupied_cells.end(); ++it)
+    for (const auto& key : occupiedCells)
     {
-        mTree->updateNode(*it, true, true);
+        m_tree->updateNode(key, true, true);
     }
 
     // Update internal nodes of the octree
-    mTree->updateInnerOccupancy();
+    m_tree->updateInnerOccupancy();
 }
 
 /**
@@ -219,71 +225,73 @@ void MapGenerator::generate2d()
  */
 void MapGenerator::generate3d()
 {
-    if (!mPhysxScenePtr)
+    if (!m_physxScenePtr)
     {
         printf("No Physics Scene Present\n");
         return;
     }
 
-    if (!mTree)
+    if (!m_tree)
     {
         printf("Tree not valid\n");
         return;
     }
 
     // Clear existing octree data
-    mTree->clear();
+    m_tree->clear();
 
     // Create overlap test geometry
     // Use a cube with half extents equal to half the cell size
-    ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(mCellSize / 2.0f, mCellSize / 2.0f, mCellSize / 2.0f));
+    ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(m_cellSize / 2.0f, m_cellSize / 2.0f, m_cellSize / 2.0f));
 
     // Sets to store occupied and unoccupied cell keys
-    octomap::KeySet occupied_cells, unoccupied_cells;
+    octomap::KeySet occupiedCells, unoccupiedCells;
     ::physx::PxOverlapHit hit;
 
     // Iterate through XYZ grid
-    for (float ix = mInputMinPoint.x + mCellSize / 2.0f; ix <= mInputMaxPoint.x - mCellSize / 2.0f; ix += mCellSize)
+    for (float ix = m_inputMinPoint.x + m_cellSize / 2.0f; ix <= m_inputMaxPoint.x - m_cellSize / 2.0f; ix += m_cellSize)
     {
-        for (float iy = mInputMinPoint.y + mCellSize / 2.0f; iy <= mInputMaxPoint.y - mCellSize / 2.0f; iy += mCellSize)
+        for (float iy = m_inputMinPoint.y + m_cellSize / 2.0f; iy <= m_inputMaxPoint.y - m_cellSize / 2.0f;
+             iy += m_cellSize)
         {
-            for (float iz = mInputMinPoint.z + mCellSize / 2.0f; iz <= mInputMaxPoint.z - mCellSize / 2.0f;
-                 iz += mCellSize)
+            for (float iz = m_inputMinPoint.z + m_cellSize / 2.0f; iz <= m_inputMaxPoint.z - m_cellSize / 2.0f;
+                 iz += m_cellSize)
             {
                 // Convert world coordinates to octree key
-                octomap::OcTreeKey key =
-                    mTree->coordToKey(octomap::point3d(ix + mInputOrigin.x, iy + mInputOrigin.y, iz + mInputOrigin.z));
+                octomap::OcTreeKey key = m_tree->coordToKey(
+                    octomap::point3d(ix + m_inputOrigin.x, iy + m_inputOrigin.y, iz + m_inputOrigin.z));
 
                 // Position the overlap test cube
-                ::physx::PxTransform pose(::physx::PxVec3(ix + mInputOrigin.x, iy + mInputOrigin.y, iz + mInputOrigin.z));
+                ::physx::PxTransform pose(
+                    ::physx::PxVec3(ix + m_inputOrigin.x, iy + m_inputOrigin.y, iz + m_inputOrigin.z));
 
                 // Perform overlap test and store result
-                if (::physx::PxSceneQueryExt::overlapAny(*mPhysxScenePtr, cellGeom, pose, hit))
+                if (::physx::PxSceneQueryExt::overlapAny(*m_physxScenePtr, cellGeom, pose, hit))
                 {
-                    occupied_cells.insert(key);
+                    occupiedCells.insert(key);
                 }
                 else
                 {
-                    unoccupied_cells.insert(key);
+                    unoccupiedCells.insert(key);
                 }
             }
         }
     }
 
     // Update octree with unoccupied cells
-    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != unoccupied_cells.end(); ++it)
+    for (octomap::KeySet::iterator iter = unoccupiedCells.begin(); iter != unoccupiedCells.end(); ++iter)
     {
-        mTree->updateNode(*it, false, true);
+        m_tree->updateNode(*iter, false, true);
     }
 
     // Update octree with occupied cells
-    for (octomap::KeySet::iterator it = occupied_cells.begin(); it != occupied_cells.end(); ++it)
+    for (octomap::KeySet::iterator iter = occupiedCells.begin(); iter != occupiedCells.end(); ++iter)
     {
-        mTree->updateNode(*it, true, true);
+        m_tree->updateNode(*iter, true, true);
     }
 
     // Update internal nodes of the octree
-    mTree->updateInnerOccupancy();
+    m_tree->updateInnerOccupancy();
 }
 
 /**
@@ -293,13 +301,13 @@ void MapGenerator::generate3d()
 std::vector<carb::Float3> MapGenerator::getOccupiedPositions()
 {
     std::vector<carb::Float3> pos;
-    if (mTree)
+    if (m_tree)
     {
-        auto beginLeafIter = mTree->begin_leafs();
-        auto endLeafIter = mTree->end_leafs();
+        auto beginLeafIter = m_tree->begin_leafs();
+        auto endLeafIter = m_tree->end_leafs();
         for (octomap::OcTree::leaf_iterator it = beginLeafIter, end = endLeafIter; it != end; ++it)
         {
-            if (mTree->isNodeOccupied(&(*it)))
+            if (m_tree->isNodeOccupied(&(*it)))
             {
                 pos.push_back(carb::Float3({ it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z() }));
             }
@@ -315,11 +323,11 @@ std::vector<carb::Float3> MapGenerator::getOccupiedPositions()
 std::vector<carb::Float3> MapGenerator::getFreePositions()
 {
     std::vector<carb::Float3> pos;
-    auto beginLeafIter = mTree->begin_leafs();
-    auto endLeafIter = mTree->end_leafs();
+    auto beginLeafIter = m_tree->begin_leafs();
+    auto endLeafIter = m_tree->end_leafs();
     for (octomap::OcTree::leaf_iterator it = beginLeafIter, end = endLeafIter; it != end; ++it)
     {
-        if (!mTree->isNodeOccupied(&(*it)))
+        if (!m_tree->isNodeOccupied(&(*it)))
         {
             pos.push_back(carb::Float3({ it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z() }));
         }
@@ -334,9 +342,9 @@ std::vector<carb::Float3> MapGenerator::getFreePositions()
 carb::Float3 MapGenerator::getMinBound()
 {
     double x = 0, y = 0, z = 0;
-    if (mTree)
+    if (m_tree)
     {
-        mTree->getMetricMin(x, y, z);
+        m_tree->getMetricMin(x, y, z);
     }
     return carb::Float3({ static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) });
 }
@@ -349,9 +357,9 @@ carb::Float3 MapGenerator::getMaxBound()
 {
 
     double x = 0, y = 0, z = 0;
-    if (mTree)
+    if (m_tree)
     {
-        mTree->getMetricMax(x, y, z);
+        m_tree->getMetricMax(x, y, z);
     }
     return carb::Float3({ static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) });
 }
@@ -364,7 +372,7 @@ carb::Int3 MapGenerator::getDimensions()
 {
     carb::Int3 num_cells = { 0, 0, 0 };
 
-    if (mTree)
+    if (m_tree)
     {
         // min and max in meters
         carb::Float3 min = getMinBound();
@@ -372,8 +380,8 @@ carb::Int3 MapGenerator::getDimensions()
         carb::Float3 size = { max.x - min.x, max.y - min.y, max.z - min.z };
         // scale by the grid resolution to get the number of pixels
         // num_cells = meters / (meters/cell)
-        num_cells = { static_cast<int>(size.x / mCellSize), static_cast<int>(size.y / mCellSize),
-                      static_cast<int>(size.z / mCellSize) };
+        num_cells = { static_cast<int>(size.x / m_cellSize), static_cast<int>(size.y / m_cellSize),
+                      static_cast<int>(size.z / m_cellSize) };
     }
     return num_cells;
 }
@@ -391,13 +399,13 @@ int col[] = { 0, 1, 0, -1 };
  * @param target Value we're looking to match
  * @return true if position is valid and matches target value
  */
-bool isSafe(float* buffer, carb::Int2 num_cells, int x, int y, float target)
+bool isSafe(float* buffer, carb::Int2 numCells, int x, int y, float target)
 {
-    if (x < 0 || x >= num_cells.x || y < 0 || y >= num_cells.y)
+    if (x < 0 || x >= numCells.x || y < 0 || y >= numCells.y)
     {
         return false;
     }
-    size_t index = y * num_cells.x + x;
+    size_t index = y * numCells.x + x;
     return buffer[index] == target;
 }
 
@@ -412,10 +420,10 @@ bool isSafe(float* buffer, carb::Int2 num_cells, int x, int y, float target)
  * @param sy Starting Y coordinate
  * @param replacement Value to fill connected regions with
  */
-void floodfill(float* buffer, carb::Int2 num_cells, int sx, int sy, float replacement)
+void floodfill(float* buffer, carb::Int2 numCells, int sx, int sy, float replacement)
 {
     // Get the target value we're replacing at the start position
-    size_t start_index = sy * num_cells.x + sx;
+    size_t start_index = sy * numCells.x + sx;
     float target = buffer[start_index];
 
     // Stack for DFS - stores coordinates as (x,y) pairs
@@ -430,7 +438,7 @@ void floodfill(float* buffer, carb::Int2 num_cells, int sx, int sy, float replac
         stack.pop();
 
         // Fill current cell
-        size_t index = y * num_cells.x + x;
+        size_t index = y * numCells.x + x;
         buffer[index] = replacement;
 
         // Check all 4 neighboring cells
@@ -440,7 +448,7 @@ void floodfill(float* buffer, carb::Int2 num_cells, int sx, int sy, float replac
             int new_y = y + row[k];
 
             // If neighbor is valid and matches target, add to stack
-            if (isSafe(buffer, num_cells, new_x, new_y, target))
+            if (isSafe(buffer, numCells, new_x, new_y, target))
             {
                 stack.push({ new_x, new_y });
             }
@@ -451,16 +459,16 @@ void floodfill(float* buffer, carb::Int2 num_cells, int sx, int sy, float replac
 /**
  * Generates a 2D grid representation of the octree map
  * The grid is represented as a 1D vector where each cell contains one of three values:
- * - mOccupiedValue: Cell contains an obstacle
- * - mUnoccupiedValue: Cell is known to be free space
- * - mUnknownValue: Cell state is unknown
+ * - m_occupiedValue: Cell contains an obstacle
+ * - m_unoccupiedValue: Cell is known to be free space
+ * - m_unknownValue: Cell state is unknown
  *
  * @return Vector containing the grid representation. Empty if tree is invalid.
  */
 std::vector<float> MapGenerator::getBuffer()
 {
     std::vector<float> buffer;
-    if (!mTree)
+    if (!m_tree)
     {
         return buffer;
     }
@@ -478,27 +486,28 @@ std::vector<float> MapGenerator::getBuffer()
 
     // Initialize buffer with unknown values
     buffer.resize(num_cells.x * num_cells.y);
-    std::fill(buffer.begin(), buffer.end(), mUnknownValue);
+    std::fill(buffer.begin(), buffer.end(), m_unknownValue);
 
     // Mark occupied cells in the buffer
-    for (auto it = mTree->begin_leafs(); it != mTree->end_leafs(); ++it)
+    for (auto it = m_tree->begin_leafs(); it != m_tree->end_leafs(); ++it)
     {
-        if (mTree->isNodeOccupied(&(*it)))
+        if (m_tree->isNodeOccupied(&(*it)))
         {
             // Convert 3D world coordinates to 2D grid coordinates
-            size_t index = static_cast<size_t>(it.getCoordinate().y() / mCellSize - min.y / mCellSize) * num_cells.x +
-                           static_cast<size_t>((-it.getCoordinate().x() + min.x + max.x) / mCellSize - min.x / mCellSize);
+            size_t index =
+                static_cast<size_t>(it.getCoordinate().y() / m_cellSize - min.y / m_cellSize) * num_cells.x +
+                static_cast<size_t>((-it.getCoordinate().x() + min.x + max.x) / m_cellSize - min.x / m_cellSize);
 
-            buffer[index] = mOccupiedValue;
+            buffer[index] = m_occupiedValue;
         }
     }
 
     // Calculate starting point for flood fill (robot's position)
-    carb::Int2 start_pos = { static_cast<int>(-mInputOrigin.x / mCellSize + max.x / mCellSize),
-                             static_cast<int>(mInputOrigin.y / mCellSize - min.y / mCellSize) };
+    carb::Int2 startPos = { static_cast<int>(-m_inputOrigin.x / m_cellSize + max.x / m_cellSize),
+                            static_cast<int>(m_inputOrigin.y / m_cellSize - min.y / m_cellSize) };
 
     // Fill known free space from robot's position
-    floodfill(buffer.data(), { num_cells.x, num_cells.y }, start_pos.x, start_pos.y, mUnoccupiedValue);
+    floodfill(buffer.data(), { num_cells.x, num_cells.y }, startPos.x, startPos.y, m_unoccupiedValue);
 
     return buffer;
 }
@@ -517,7 +526,7 @@ std::vector<char> MapGenerator::getColoredByteBuffer(const carb::Int4& occupied,
                                                      const carb::Int4& unknown)
 {
     std::vector<char> colorBuffer;
-    if (!mTree)
+    if (!m_tree)
     {
         return colorBuffer;
     }
@@ -532,28 +541,28 @@ std::vector<char> MapGenerator::getColoredByteBuffer(const carb::Int4& occupied,
     for (size_t i = 0; i < buffer.size(); i++)
     {
         // Calculate base index for RGBA values
-        size_t rgba_index = i * 4;
+        size_t rgbaIndex = i * 4;
 
         // Select color based on cell state
         const carb::Int4* color;
-        if (buffer[i] == mUnknownValue)
+        if (buffer[i] == m_unknownValue)
         {
             color = &unknown;
         }
-        else if (buffer[i] == mUnoccupiedValue)
+        else if (buffer[i] == m_unoccupiedValue)
         {
             color = &unoccupied;
         }
-        else // mOccupiedValue
+        else // m_occupiedValue
         {
             color = &occupied;
         }
 
         // Copy RGBA values to buffer
-        colorBuffer[rgba_index + 0] = color->x;
-        colorBuffer[rgba_index + 1] = color->y;
-        colorBuffer[rgba_index + 2] = color->z;
-        colorBuffer[rgba_index + 3] = color->w;
+        colorBuffer[rgbaIndex + 0] = color->x;
+        colorBuffer[rgbaIndex + 1] = color->y;
+        colorBuffer[rgbaIndex + 2] = color->z;
+        colorBuffer[rgbaIndex + 3] = color->w;
     }
 
     return colorBuffer;

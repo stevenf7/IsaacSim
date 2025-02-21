@@ -4,7 +4,7 @@
         "description": "Ackermann Controller",
         "language": "Python",
         "categories": {
-            "isaacSim": "Ackermann controller for wheels in Isaac Sim"
+            "isaacWheeledRobots": "Ackermann controller for wheels in Isaac Sim"
         },
         "metadata": {
             "uiName": "Ackermann Controller"

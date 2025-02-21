@@ -4,7 +4,7 @@
         "icon": "icons/isaac-sim.svg",
         "description": "Differential Controller",
         "categories": {
-            "isaacSim": "robot controller inside Isaac Sim"
+            "isaacWheeledRobots": "robot controller inside Isaac Sim"
         },
         "metadata": {
             "uiName": "Differential Controller"

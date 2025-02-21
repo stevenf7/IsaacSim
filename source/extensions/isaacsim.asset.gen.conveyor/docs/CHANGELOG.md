@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.6] - 2025-02-17
+### Changed
+- Refactored code to isaac sim style guidelines
+
 ## [1.0.5] - 2025-01-28
 ### Fixed
 - Windows signing issue

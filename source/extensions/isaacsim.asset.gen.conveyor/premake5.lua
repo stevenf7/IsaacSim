@@ -15,6 +15,7 @@ project_ext_plugin(ext, "isaacsim.asset.gen.conveyor.plugin")
     include_physx()
     includedirs {
         "%{root}/source/extensions/isaacsim.core.includes/include",
+        "%{root}/source/extensions/isaacsim.asset.gen.conveyor/include",
         target_deps.."/rtx_plugins/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include",
         target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
@@ -57,7 +58,9 @@ project_ext_bindings {
     add_files("python", "python/*.py")
     add_files("python/impl", "python/impl/**.py")
     add_files("python/tests", "python/tests/**.py")
-
+    includedirs {
+        "%{root}/source/extensions/isaacsim.asset.gen.conveyor/include",
+    }
 
     add_ogn_dependencies(ogn)
 
