@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.7] - 2025-02-17
+### Changed
+- Updated docstrings, and code to match new isaac sim style guide
+
 ## [2.0.6] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
