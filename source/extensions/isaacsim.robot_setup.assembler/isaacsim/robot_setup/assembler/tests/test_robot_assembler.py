@@ -194,7 +194,9 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/World/allegro_hand")
         SingleXFormPrim("/World/allegro_hand").set_world_pose(np.array([1.0, 0.0, 0.0]))
 
-        add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
+        ## TODO: Temporarily using the old UR10e.usd asset. Revert to the one inside /UniversalRobots folder once the assembler is updated.
+        # add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
+        add_reference_to_stage(assets_root_path + "/Isaac/Robots/UR10/ur10e.usd", "/World/ur10e")
         SingleXFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
 
         # Move the Articulation root to different places in order to test that each location is handled correctly
