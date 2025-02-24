@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2025-02-21
+### Added
+- Added globalLinearVelocity and globalLinearAcceleration inputs to IsaacComputeOdometry
+
 ## [2.1.5] - 2025-01-28
 ### Fixed
 - Windows signing issue

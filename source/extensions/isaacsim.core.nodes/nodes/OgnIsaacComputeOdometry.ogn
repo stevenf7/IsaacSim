@@ -52,6 +52,16 @@
                 "type": "vectord[3]",
                 "description": "Angular acceleration vector in rad/s^2",
                 "default": [0.0, 0.0, 0.0]
+            },
+            "globalLinearVelocity": {
+                "type": "vectord[3]",
+                "description": "Global linear velocity vector in m/s",
+                "default": [0.0, 0.0, 0.0]
+            },
+            "globalLinearAcceleration": {
+                "type": "vectord[3]",
+                "description": "Global linear acceleration vector in m/s^2",
+                "default": [0.0, 0.0, 0.0]
             }
         }
     }
