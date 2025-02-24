@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -138,24 +138,31 @@ public:
         auto bodyPose = mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle);
 
         auto bodyLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mRigidBodyHandle);
+        auto bodyGlobalLinVel = mDynamicControlPtr->getRigidBodyLinearVelocity(mRigidBodyHandle);
         auto bodyAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mRigidBodyHandle);
-
 
         if (mCoreNodeFramework->getSimTime() != mLastTime)
         {
             double dt = mCoreNodeFramework->getSimTime() - mLastTime;
+            // Local accelerations
             mLinearAcceleration.x = static_cast<float>((bodyLocalLinVel.x - mPrevLinearVelocity.x) / dt);
             mLinearAcceleration.y = static_cast<float>((bodyLocalLinVel.y - mPrevLinearVelocity.y) / dt);
             mLinearAcceleration.z = static_cast<float>((bodyLocalLinVel.z - mPrevLinearVelocity.z) / dt);
+
+            // Global accelerations
+            mGlobalLinearAcceleration.x = static_cast<float>((bodyGlobalLinVel.x - mPrevGlobalLinearVelocity.x) / dt);
+            mGlobalLinearAcceleration.y = static_cast<float>((bodyGlobalLinVel.y - mPrevGlobalLinearVelocity.y) / dt);
+            mGlobalLinearAcceleration.z = static_cast<float>((bodyGlobalLinVel.z - mPrevGlobalLinearVelocity.z) / dt);
 
             mAngularAcceleration.x = static_cast<float>((bodyAngVel.x - mPrevAngularVelocity.x) / dt);
             mAngularAcceleration.y = static_cast<float>((bodyAngVel.y - mPrevAngularVelocity.y) / dt);
             mAngularAcceleration.z = static_cast<float>((bodyAngVel.z - mPrevAngularVelocity.z) / dt);
 
             db.outputs.linearAcceleration().Set(mLinearAcceleration.x, mLinearAcceleration.y, mLinearAcceleration.z);
+            db.outputs.globalLinearAcceleration().Set(
+                mGlobalLinearAcceleration.x, mGlobalLinearAcceleration.y, mGlobalLinearAcceleration.z);
             db.outputs.angularAcceleration().Set(mAngularAcceleration.x, mAngularAcceleration.y, mAngularAcceleration.z);
         }
-
 
         // calculate odom reading from starting position
         pxr::GfVec3d globalTranslation = pxr::GfVec3d(
@@ -166,11 +173,11 @@ public:
         db.outputs.orientation() = (asGfRotation(bodyPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
 
         db.outputs.linearVelocity().Set(bodyLocalLinVel.x, bodyLocalLinVel.y, bodyLocalLinVel.z);
-
+        db.outputs.globalLinearVelocity().Set(bodyGlobalLinVel.x, bodyGlobalLinVel.y, bodyGlobalLinVel.z);
         db.outputs.angularVelocity().Set(bodyAngVel.x, bodyAngVel.y, bodyAngVel.z);
 
-
         mPrevLinearVelocity = bodyLocalLinVel;
+        mPrevGlobalLinearVelocity = bodyGlobalLinVel;
         mPrevAngularVelocity = bodyAngVel;
         mLastTime = mCoreNodeFramework->getSimTime();
     }
@@ -201,6 +208,9 @@ private:
 
     carb::Float3 mPrevLinearVelocity = { 0, 0, 0 };
     carb::Float3 mPrevAngularVelocity = { 0, 0, 0 };
+
+    carb::Float3 mGlobalLinearAcceleration = { 0, 0, 0 };
+    carb::Float3 mPrevGlobalLinearVelocity = { 0, 0, 0 };
 
     isaacsim::core::nodes::CoreNodes* mCoreNodeFramework;
 };
