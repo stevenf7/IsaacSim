@@ -1,66 +1,91 @@
 local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "isaacsim/sensors/physx")
-project_ext (ext)
+project_ext(ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.sensors.physx.plugin")
-    dependson {"isaacsim.util.debug_draw.primitive_drawing"}
-    add_files("impl", "plugins")
-    add_files("ogn", ogn.nodes_path)
+dependson { "isaacsim.util.debug_draw.primitive_drawing" }
+add_files("impl", "plugins")
+add_files("ogn", ogn.nodes_path)
 
-    add_ogn_dependencies(ogn)
+add_ogn_dependencies(ogn)
 
-    include_physx()
-    includedirs {
-        "%{root}/source/extensions/isaacsim.core.includes/include",
-        "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/gsl/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/%{config}/include",
-        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
-        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
-        "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
-        extsbuild_dir.."/omni.syntheticdata/include",
-        extsbuild_dir.."/usdrt.scenegraph/include",
-        "%{kit_sdk_bin_dir}/dev/fabric/include/",
-        "%{root}/_build/target-deps/omni_client_library/include",
-        "%{root}/_build/target-deps/python/include",
-        "%{root}/source/extensions/isaacsim.sensors.physx/include",
-        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-        "%{root}/source/extensions/isaacsim.util.debug_draw/include",
-     }
-     libdirs {
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
-        "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
-        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        extsbuild_dir.."/omni.usd.core/bin",
-    }
+include_physx()
+includedirs {
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/_build/target-deps/rtx_plugins/include",
+    "%{root}/_build/target-deps/gsl/include",
+    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/omni_physics/%{config}/include",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
+    "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
+    extsbuild_dir .. "/omni.syntheticdata/include",
+    extsbuild_dir .. "/usdrt.scenegraph/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
+    "%{root}/_build/target-deps/omni_client_library/include",
+    "%{root}/_build/target-deps/python/include",
+    "%{root}/source/extensions/isaacsim.sensors.physx/include",
+    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+    "%{root}/source/extensions/isaacsim.util.debug_draw/include",
+}
+libdirs {
+    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
+    "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
+    extsbuild_dir .. "/omni.usd.core/bin",
+}
 
-    links {
-        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "isaacSensorSchema", "rangeSensorSchema", "omni.usd", "usdPhysics",  "isaacsim.util.debug_draw.primitive_drawing"
-    }
+links {
+    "ar",
+    "arch",
+    "gf",
+    "js",
+    "kind",
+    "pcp",
+    "plug",
+    "sdf",
+    "tf",
+    "trace",
+    "usd",
+    "usdGeom",
+    "usdShade",
+    "vt",
+    "work",
+    "pxOsd",
+    "hdx",
+    "hd",
+    "usdImaging",
+    "hdSt",
+    "usdLux",
+    "usdUtils",
+    "isaacSensorSchema",
+    "rangeSensorSchema",
+    "omni.usd",
+    "usdPhysics",
+    "isaacsim.util.debug_draw.primitive_drawing",
+}
 
-    filter { "system:linux" }
-        includedirs {
-            "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.10"
-        }
-    filter { "system:windows" }
-        libdirs {
-            "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
-        }
-    filter {}
+filter { "system:linux" }
+includedirs {
+    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.10",
+}
+filter { "system:windows" }
+libdirs {
+    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
+}
+filter {}
 
-    filter { "configurations:debug" }
-        defines { "_DEBUG" }
-    filter { "configurations:release" }
-        defines { "NDEBUG" }
-    filter {}
+filter { "configurations:debug" }
+defines { "_DEBUG" }
+filter { "configurations:release" }
+defines { "NDEBUG" }
+filter {}
 
-project_ext_ogn( ext, ogn )
+project_ext_ogn(ext, ogn)
 
 -- Python Bindings for Carbonite Plugin
 project_ext_bindings {
@@ -68,7 +93,7 @@ project_ext_bindings {
     project_name = "isaacsim.sensors.physx.python",
     module = "_range_sensor",
     src = "bindings",
-    target_subdir = "isaacsim/sensors/physx"
+    target_subdir = "isaacsim/sensors/physx",
 }
 
 includedirs {
@@ -77,13 +102,13 @@ includedirs {
 }
 
 repo_build.prebuild_link {
-    { "docs", ext.target_dir.."/docs" },
-    { "data", ext.target_dir.."/data" },
-    { "include", ext.target_dir.."/include" },
-    { "python/tests", ext.target_dir.."/isaacsim/sensors/physx/tests" },
-    { "python/scripts", ext.target_dir.."/isaacsim/sensors/physx/scripts" },
+    { "docs", ext.target_dir .. "/docs" },
+    { "data", ext.target_dir .. "/data" },
+    { "include", ext.target_dir .. "/include" },
+    { "python/tests", ext.target_dir .. "/isaacsim/sensors/physx/tests" },
+    { "python/scripts", ext.target_dir .. "/isaacsim/sensors/physx/scripts" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/isaacsim/sensors/physx" },
+    { "python/*.py", ext.target_dir .. "/isaacsim/sensors/physx" },
 }

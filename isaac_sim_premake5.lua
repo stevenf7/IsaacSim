@@ -1,88 +1,92 @@
-
 function include_physx()
-
-    defines {  "PX_PHYSX_STATIC_LIB"}
+    defines { "PX_PHYSX_STATIC_LIB" }
 
     filter { "system:windows" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
+    libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
     filter {}
     filter { "system:linux" }
-        libdirs { "%{root}/_build/target-deps/nvtx/lib64" }
+    libdirs { "%{root}/_build/target-deps/nvtx/lib64" }
     filter {}
 
     filter { "configurations:debug" }
-        defines { "_DEBUG" }
+    defines { "_DEBUG" }
     filter { "configurations:release" }
-        defines { "NDEBUG" }
+    defines { "NDEBUG" }
     filter {}
 
     filter { "system:windows", "platforms:x86_64", "configurations:debug" }
-        libdirs {
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc142.md/debug",
-        }
+    libdirs {
+        "%{root}/_build/target-deps/physx/bin/win.x86_64.vc142.md/debug",
+    }
     filter { "system:windows", "platforms:x86_64", "configurations:release" }
-        libdirs {
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc142.md/checked",
-        }
+    libdirs {
+        "%{root}/_build/target-deps/physx/bin/win.x86_64.vc142.md/checked",
+    }
     filter {}
 
-    filter { "system:linux", "platforms:x86_64","configurations:debug" }
-        libdirs {
-            "%{root}/_build/target-deps/physx/bin/linux.x86_64/debug",
-        }
-    filter { "system:linux", "platforms:x86_64","configurations:release" }
-        libdirs {
-            "%{root}/_build/target-deps/physx/bin/linux.x86_64/checked",
-        }
+    filter { "system:linux", "platforms:x86_64", "configurations:debug" }
+    libdirs {
+        "%{root}/_build/target-deps/physx/bin/linux.x86_64/debug",
+    }
+    filter { "system:linux", "platforms:x86_64", "configurations:release" }
+    libdirs {
+        "%{root}/_build/target-deps/physx/bin/linux.x86_64/checked",
+    }
     filter {}
 
-    links { "PhysXExtensions_static_64", "PhysX_static_64", "PhysXPvdSDK_static_64","PhysXCooking_static_64","PhysXCommon_static_64", "PhysXFoundation_static_64", "PhysXVehicle_static_64"}
+    links {
+        "PhysXExtensions_static_64",
+        "PhysX_static_64",
+        "PhysXPvdSDK_static_64",
+        "PhysXCooking_static_64",
+        "PhysXCommon_static_64",
+        "PhysXFoundation_static_64",
+        "PhysXVehicle_static_64",
+    }
 
     includedirs {
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     }
-
 end
 
 function get_include_string(includes)
-    cmdString =" ";
+    cmdString = " "
     for k, v in ipairs(includes) do
-        cmdString = cmdString.." -I "..tostring(v);
+        cmdString = cmdString .. " -I " .. tostring(v)
     end
     return cmdString
 end
 
 function commaficate(options)
-    local result = "";
-    local sep = "";
+    local result = ""
+    local sep = ""
     for option in string.gmatch(options, "-%w+") do
-        result = result..sep..tostring(option);
+        result = result .. sep .. tostring(option)
         sep = ","
     end
-    return result;
+    return result
 end
 
 -- This function binds the runtime and settings to be compatiable with kit. This means
 -- that even though our debug builds
 function setRuntimeToBeKitCompatible()
     if kit_sdk_config == "debug" then
-        runtime "Debug"
-        defines{ "_DEBUG"}
+        runtime("Debug")
+        defines { "_DEBUG" }
     elseif kit_sdk_config == "release" then
-        runtime "Release"
-        defines{ "NDEBUG"}
+        runtime("Release")
+        defines { "NDEBUG" }
     else
         filter { "configurations:debug" }
-            runtime "Debug"
-            defines{ "_DEBUG"}
-        filter  { "configurations:release" }
-            runtime "Release"
-            defines{ "NDEBUG"}
+        runtime("Debug")
+        defines { "_DEBUG" }
+        filter { "configurations:release" }
+        runtime("Release")
+        defines { "NDEBUG" }
         filter {}
     end
 end
-
 
 -- Helper function to implement a build step that preprocesses .cu files (CUDA code) for compilation
 function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags, dependencies, isPtx)
@@ -106,33 +110,50 @@ function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, 
     -- end
     if os.target() == "windows" then
         ext = ".obj"
-        if isPtx then
-            ext = ".ptx"
-        end
-        local compilerBindir = " --compiler-bindir "..nvccHostCompilerVS
-        local buildString =  "\""..nvccPath.."\" -std=c++17 "..nvccFlags..compilerBindir
-            .." -Xcompiler="..iif(not nvccXcompilerFlags or #nvccXcompilerFlags==0, "", nvccXcompilerFlags..",").."%{iif(not cfg.staticruntime or cfg.staticruntime ~= \"On\", \"/MD\", \"/MT\")..iif(not cfg.runtime or cfg.runtime == \"Debug\", \"d\", \"\")}"
-            .." -c -I "..carbSDKInclude.." -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
-        buildmessage (buildString)
+        if isPtx then ext = ".ptx" end
+        local compilerBindir = " --compiler-bindir " .. nvccHostCompilerVS
+        local buildString = '"'
+            .. nvccPath
+            .. '" -std=c++17 '
+            .. nvccFlags
+            .. compilerBindir
+            .. " -Xcompiler="
+            .. iif(not nvccXcompilerFlags or #nvccXcompilerFlags == 0, "", nvccXcompilerFlags .. ",")
+            .. '%{iif(not cfg.staticruntime or cfg.staticruntime ~= "On", "/MD", "/MT")..iif(not cfg.runtime or cfg.runtime == "Debug", "d", "")}'
+            .. " -c -I "
+            .. carbSDKInclude
+            .. " -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"
+            .. ext
+        buildmessage(buildString)
         buildcommands { buildString }
-        buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
+        buildoutputs { "%{cfg.objdir}/%{file.basename}" .. ext }
         buildinputs { dependencies }
     end
     if os.target() == "linux" then
         ext = ".o"
-        if isPtx then
-            ext = ".ptx"
-        end
-        local buildString =  "\""..nvccPath.."\" -std=c++17 "..nvccFlags.." -Xcompiler="..commaficate(nvccXcompilerFlags).." -c -I "..carbSDKInclude.." -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
+        if isPtx then ext = ".ptx" end
+        local buildString = '"'
+            .. nvccPath
+            .. '" -std=c++17 '
+            .. nvccFlags
+            .. " -Xcompiler="
+            .. commaficate(nvccXcompilerFlags)
+            .. " -c -I "
+            .. carbSDKInclude
+            .. " -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"
+            .. ext
         buildcommands { "{MKDIR} %{cfg.objdir} ", buildString }
-        buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
+        buildoutputs { "%{cfg.objdir}/%{file.basename}" .. ext }
         buildinputs { dependencies }
     end
 end
 
 function make_ptx_header(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags, dependencies)
     make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags, dependencies, true)
-    buildcommands { "{MKDIR} %{cfg.objdir} ", bin2cPath.." -st -c -p 0 ".."%{cfg.objdir}/%{file.basename}.ptx > %{cfg.objdir}/%{file.basename}.ptx.h"}
+    buildcommands {
+        "{MKDIR} %{cfg.objdir} ",
+        bin2cPath .. " -st -c -p 0 " .. "%{cfg.objdir}/%{file.basename}.ptx > %{cfg.objdir}/%{file.basename}.ptx.h",
+    }
 end
 
 -- Helper function to call in your project definition when you have .cu files to process.
@@ -142,13 +163,13 @@ function add_cuda_dependencies()
     setRuntimeToBeKitCompatible()
 
     filter { "files:**.cu", "system:windows", "configurations:debug" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G")
     filter { "files:**.cu", "system:windows", "configurations:release" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "")
     filter { "files:**.cu", "system:linux", "configurations:debug" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g -G")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g -G")
     filter { "files:**.cu", "system:linux", "configurations:release" }
-        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
     filter {}
 
     -- link against CUDA runtime static library.
@@ -156,21 +177,21 @@ function add_cuda_dependencies()
 
     -- Add in the library directories
     filter { "system:linux" }
-        -- lib dir stubs in case you link against 'cuda'.
-        libdirs { target_deps.."/cuda/lib64/stubs" }
-        -- lib dir in case you link against 'cudart_static'.
-        libdirs { target_deps.."/cuda/lib64/" }
+    -- lib dir stubs in case you link against 'cuda'.
+    libdirs { target_deps .. "/cuda/lib64/stubs" }
+    -- lib dir in case you link against 'cudart_static'.
+    libdirs { target_deps .. "/cuda/lib64/" }
 
-        -- linking to cudart_static requires libpthread, libdl, and librt
-        -- https://gitlab.kitware.com/cmake/cmake/-/issues/20249
-        buildoptions { "-pthread" }
-        links { "dl", "pthread", "rt" }
+    -- linking to cudart_static requires libpthread, libdl, and librt
+    -- https://gitlab.kitware.com/cmake/cmake/-/issues/20249
+    buildoptions { "-pthread" }
+    links { "dl", "pthread", "rt" }
     filter { "system:windows" }
-        libdirs { target_deps.."/cuda/lib/x64" }
+    libdirs { target_deps .. "/cuda/lib/x64" }
     filter {}
 
     -- CUDA-specific include directory
-    includedirs { target_deps.."/cuda/include" }
+    includedirs { target_deps .. "/cuda/include" }
 end
 
 -- Define experience to test one particular extension.
@@ -185,20 +206,20 @@ function define_ext_test_experience(ext_name, args)
         "--empty", -- Start empty kit
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
         "--/exts/omni.kit.test/testExtEnableProfiler=0",
-        "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
-        "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
+        '--/exts/omni.kit.test/testExtArgs/0="--no-window"',
+        '--/exts/omni.kit.test/testExtArgs/1="--allow-root"',
         "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
-        "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
-        "--ext-folder \""..script_dir_token.."/../exts\" ",
-        "--ext-folder \""..script_dir_token.."/../extscache\" ",
-        "--ext-folder \""..script_dir_token.."/../extsPhysics\" ",
-        "--ext-folder \""..script_dir_token.."/../extsDeprecated\" ",
-        "--ext-folder \""..script_dir_token.."/../apps\" ",
-        "--/app/enableStdoutOutput=0",  -- this app just runs the test command, hide its output
+        "--/exts/omni.kit.test/testExts/0='" .. python_module .. "'", -- Only include tests from the python module
+        '--ext-folder "' .. script_dir_token .. '/../exts" ',
+        '--ext-folder "' .. script_dir_token .. '/../extscache" ',
+        '--ext-folder "' .. script_dir_token .. '/../extsPhysics" ',
+        '--ext-folder "' .. script_dir_token .. '/../extsDeprecated" ',
+        '--ext-folder "' .. script_dir_token .. '/../apps" ',
+        "--/app/enableStdoutOutput=0", -- this app just runs the test command, hide its output
         "--no-window",
         "--allow-root",
         "--/telemetry/mode=test",
-        "--/crashreporter/data/testName=\"ext-test-"..python_module.."\"", 
+        '--/crashreporter/data/testName="ext-test-' .. python_module .. '"',
     }
 
     -- Allow passing additional args
@@ -210,32 +231,29 @@ function define_ext_test_experience(ext_name, args)
     local exp_args = {
         config_path = "",
         extra_args = table.concat(test_args, " "),
-        define_project = false
+        define_project = false,
     }
     exp_args = merge_tables(exp_args, args)
 
-    local test_name = suite and string.format("tests-%s-%s", suite, ext_name) or ("tests-"..ext_name)
+    local test_name = suite and string.format("tests-%s-%s", suite, ext_name) or ("tests-" .. ext_name)
     define_test_experience(test_name, exp_args)
 end
-
 
 -- Define Kit experience. Different ways to run kit with particular config
 function define_test_experience(name, args)
     local args = args or {}
-    local experience = args.experience or name..".json"
-    local config_path = get_value_or_default(args, "config_path", "experiences/"..experience)
+    local experience = args.experience or name .. ".json"
+    local config_path = get_value_or_default(args, "config_path", "experiences/" .. experience)
     local extra_args = args.extra_args or ""
     -- Write bat and sh files as another way to run them:
     for _, config in ipairs(ALL_CONFIGS) do
         local kit_sdk_config = get_value_or_default(args, "kit_sdk_config", kit_sdk_config)
-        if kit_sdk_config == "%{config}" then
-            kit_sdk_config = config
-        end
+        if kit_sdk_config == "%{config}" then kit_sdk_config = config end
         create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
     end
 end
 ROS2_EXTRA = {
-    ["windows"] =[[
+    ["windows"] = [[
 set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 set ROS_DOMAIN_ID=93
 pushd %~dp0\..\exts
@@ -243,36 +261,55 @@ set basedir=%cd%\isaacsim.ros2.bridge\humble\lib
 popd
 set PATH=%PATH%;%basedir%
 ]],
-["linux"] =[[
+    ["linux"] = [[
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=$((($RANDOM % 18) + 80))
 INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/isaacsim.ros2.bridge/humble/lib)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
-]]
+]],
 }
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
 function create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args, executable)
     local os_target = os.target()
-    if string.find(name, "ros2") or string.find(name, "omni.isaac.benchmarks") or string.find(name, "tf_viewer") or string.find(name, "isaacsim.app.setup") or string.find(name, "isaacsim.test.collection") then
+    if
+        string.find(name, "ros2")
+        or string.find(name, "omni.isaac.benchmarks")
+        or string.find(name, "tf_viewer")
+        or string.find(name, "isaacsim.app.setup")
+        or string.find(name, "isaacsim.test.collection")
+    then
         extra = ROS2_EXTRA[os_target]
     else
         extra = ""
     end
     if os_target == "windows" then
         local executable = executable or "kit.exe"
-        local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
-        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        local bat_file_dir = root .. "/_build/windows-x86_64/" .. config .. "/tests"
+        local bat_file_path = bat_file_dir .. "/" .. name .. ".bat"
         local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
-            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="windows-x86_64"
+            root = root,
+            config = config,
+            kit_sdk = kit_sdk,
+            kit_sdk_config = kit_sdk_config,
+            platform = "windows-x86_64",
         })
         local kit_bin_relative = path.normalize(path.getrelative(bat_file_dir, kit_bin_abs)):gsub("/", "\\")
-        local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
-        local f = io.open(bat_file_path, 'w')
-        f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], extra, kit_bin_relative, executable, config_path, extra_args))
+        local config_path = (is_string_empty(config_path) and "") or '"%%~dp0' .. config_path .. '"'
+        local f = io.open(bat_file_path, "w")
+        f:write(
+            string.format(
+                KIT_TEST_SHELL_TEMPLATE[os_target],
+                extra,
+                kit_bin_relative,
+                executable,
+                config_path,
+                extra_args
+            )
+        )
         f:close()
     else
         local executable = executable or "kit"
-        local arch = io.popen('arch','r'):read('*l')
+        local arch = io.popen("arch", "r"):read("*l")
         local platform_name = "linux"
 
         if os_target == "macosx" then
@@ -280,15 +317,28 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
             platform_name = "macos"
         end
 
-        local sh_file_dir = root.."/_build/"..platform_name.."-"..arch.."/"..config.."/tests"
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local sh_file_dir = root .. "/_build/" .. platform_name .. "-" .. arch .. "/" .. config .. "/tests"
+        local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
         local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
-            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform=platform_name.."-"..arch
+            root = root,
+            config = config,
+            kit_sdk = kit_sdk,
+            kit_sdk_config = kit_sdk_config,
+            platform = platform_name .. "-" .. arch,
         })
         local kit_bin_relative = path.normalize(path.getrelative(sh_file_dir, kit_bin_abs))
-        local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
-        local f = io.open(sh_file_path, 'w')
-        f:write(string.format(KIT_TEST_SHELL_TEMPLATE[os_target], extra, kit_bin_relative, executable, config_path, extra_args))
+        local config_path = (is_string_empty(config_path) and "") or '"$SCRIPT_DIR/' .. config_path .. '"'
+        local f = io.open(sh_file_path, "w")
+        f:write(
+            string.format(
+                KIT_TEST_SHELL_TEMPLATE[os_target],
+                extra,
+                kit_bin_relative,
+                executable,
+                config_path,
+                extra_args
+            )
+        )
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -308,11 +358,12 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         extra = ""
     end
     if os.target() == "linux" then
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
-        local f = io.open(sh_file_path, 'w')
+        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
+        local f = io.open(sh_file_path, "w")
         print(sh_file_path)
-        f:write(string.format([[
+        f:write(string.format(
+            [[
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
@@ -320,22 +371,31 @@ SAMPLE_DIR=$SCRIPT_DIR/../
 %s
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
 "$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@ --no-window
-        ]], extra, sample_path, extra_args))
+        ]],
+            extra,
+            sample_path,
+            extra_args
+        ))
         f:close()
         os.chmod(sh_file_path, 755)
     else
-        local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
-        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        local bat_file_dir = root .. "/_build/windows-x86_64/" .. config .. "/tests"
+        local bat_file_path = bat_file_dir .. "/" .. name .. ".bat"
 
-        local f = io.open(bat_file_path, 'w')
+        local f = io.open(bat_file_path, "w")
         print(bat_file_path)
-        f:write(string.format([[
+        f:write(string.format(
+            [[
 @echo off
 setlocal
 %s
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
 call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
-        ]], extra, sample_path, extra_args))
+        ]],
+            extra,
+            sample_path,
+            extra_args
+        ))
         f:close()
     end
 end
@@ -348,17 +408,21 @@ function jupyter_sample_test(name, sample_path, args)
 end
 function jupyter_sample_runner(name, sample_path, config, extra_args)
     if os.target() == "linux" then
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
-        local f = io.open(sh_file_path, 'w')
+        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
+        local f = io.open(sh_file_path, "w")
         print(sh_file_path)
-        f:write(string.format([[
+        f:write(string.format(
+            [[
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
-        ]], sample_path, extra_args))
+        ]],
+            sample_path,
+            extra_args
+        ))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -418,34 +482,39 @@ function python_script_test(name, script)
 end
 function create_python_script_runner(name, script, config)
     if os.target() == "linux" then
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
-        local f = io.open(sh_file_path, 'w')
+        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
+        local f = io.open(sh_file_path, "w")
         print(sh_file_path)
-        f:write(string.format([[
+        f:write(string.format(
+            [[
 #!/bin/bash
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../python.sh"  %s
-        ]], script))
+        ]],
+            script
+        ))
         f:close()
         os.chmod(sh_file_path, 755)
     else
-        local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
-        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        local bat_file_dir = root .. "/_build/windows-x86_64/" .. config .. "/tests"
+        local bat_file_path = bat_file_dir .. "/" .. name .. ".bat"
 
-        local f = io.open(bat_file_path, 'w')
+        local f = io.open(bat_file_path, "w")
         print(bat_file_path)
-        f:write(string.format([[
+        f:write(string.format(
+            [[
 @echo off
 setlocal
 "%%~dp0..\python.bat" %s
-        ]], script))
+        ]],
+            script
+        ))
         f:close()
     end
 end
-
 
 function docker_test(name, script, args)
     local extra_args = args or ""
@@ -455,11 +524,12 @@ function docker_test(name, script, args)
 end
 function docker_test_runner(name, script, config, extra_args)
     if os.target() == "linux" then
-        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
-        local sh_file_path = sh_file_dir.."/"..name..".sh"
-        local f = io.open(sh_file_path, 'w')
+        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
+        local f = io.open(sh_file_path, "w")
         print(sh_file_path)
-        f:write(string.format([[
+        f:write(string.format(
+            [[
 #!/bin/bash
 
 set -e
@@ -472,7 +542,12 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm
 -e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=dockeruser" \
 gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop \
 -c "%s %s"
-        ]], name, name, script, extra_args))
+        ]],
+            name,
+            name,
+            script,
+            extra_args
+        ))
         f:close()
         os.chmod(sh_file_path, 755)
     end
