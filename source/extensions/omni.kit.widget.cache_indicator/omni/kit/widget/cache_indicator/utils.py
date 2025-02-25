@@ -36,6 +36,18 @@ def try_post_notification(message, duration=3):
     return False
 
 
+def try_post_warning(message, duration=3):
+    try:
+        from omni.kit.notification_manager import NotificationStatus, post_notification
+
+        post_notification(message, duration=duration, status=NotificationStatus.WARNING)
+        return True
+    except:
+        carb.log_info("notification_manager not loaded.")
+        pass
+    return False
+
+
 # @lru_cache()
 def is_windows():
     return platform.system().lower() == "windows"
