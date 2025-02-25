@@ -20,7 +20,6 @@
 ### Changed
 - Isaac Util menu to Tools->Robotics menu, Isaac Examples -> Examples browser
 
-
 ## [1.0.1] - 2024-11-09
 ### Changed
 - Updated dependencies and imports after renaming

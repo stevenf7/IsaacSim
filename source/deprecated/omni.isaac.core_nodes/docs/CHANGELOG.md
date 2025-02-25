@@ -199,7 +199,7 @@
 
 ## [1.3.1] - 2023-08-09
 ### Fixed
-- Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels asumption in place. (DepthToPointCloud and IsaacReadCameraInfo nodes)
+- Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels assumption in place. (DepthToPointCloud and IsaacReadCameraInfo nodes)
 
 ## [1.3.0] - 2023-08-03
 ### Changed

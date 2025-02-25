@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [4.0.3] - 2024-12-01
 ### Changed
 - Make extension python version specific
@@ -21,7 +20,6 @@
 ### Changed
 - Extension renamed to isaacsim.robot_motion.lula
 
-
 ## [3.0.1] - 2024-04-25
 ### Changed
 - Upgraded Lula from release 0.10.0 to 0.10.1.  This fixes a bug in the global planner interface introduced in 0.10.0 that caused a fatal error to be logged when a path couldn't be found.
@@ -31,7 +29,6 @@
 - Upgraded Lula from release 0.9.1 to 0.10.0.  This new version includes a much-improved collision sphere generator and enhancements to the task-space global planner (JT-RRT), including support for full-pose targets and improved performance.  The global planner enhancements entail some parameter changes that break backward compatibility, as does a generalization of the kinematics API to support cases where only a subset of c-space coordinates have acceleration and/or jerk limits.
 
 ## [2.1.0] - 2023-08-22
-
 ### Changed
 - Upgraded Lula from release 0.9.0 to release 0.9.1.  This adds support for prefixing Lula log messages with a user-provided string and also improves behavior of the IK solver for revolute joints that have a large span between their upper and lower joint limits (i.e., larger than 2 pi).
 - Added "[Lula]" prefix to all Lula log messages.

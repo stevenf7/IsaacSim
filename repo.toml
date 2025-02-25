@@ -1312,6 +1312,22 @@ search_folder = "${root}/_build/packages/python"
 root_folder = "${root}/_build/${platform}/${config}"
 
 ########################################################################################################################
+# Validate changelogs
+########################################################################################################################
+
+[repo_validate_changelogs]
+# Default configuration for changelog validation
+check_version = true
+check_unreleased = false
+check_references = false
+check_spelling = false
+check_all = false
+format = true
+verbose = false
+# Path to extensions directory (relative to repo root)
+extensions_dir = "source/extensions"
+
+########################################################################################################################
 # Lua formatting
 ########################################################################################################################
 

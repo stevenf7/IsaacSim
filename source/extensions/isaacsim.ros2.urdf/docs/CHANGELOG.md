@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [1.1.7] - 2025-01-08
 ### Changed
 - Fix Missing dependencies
@@ -36,6 +35,7 @@
 ## [1.1.0] - 2024-10-15
 ### Changed
 - Moved ros2 node import workflow UI to File->Menu to align with URDF Importer UI
+
 ### Added
 - Create `URDFImportFromROS2Node` command
 

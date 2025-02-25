@@ -12,7 +12,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-09-30
 ### Changed
 - extension renamed to isaacsim.robot.manipulators.examples (from omni.isaac.manipulators.examples)

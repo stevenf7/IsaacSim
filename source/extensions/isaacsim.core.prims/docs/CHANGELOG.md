@@ -8,7 +8,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [0.3.5] - 2024-12-30
 ### Fixed
 - Fixed cleanup for Prim class if it was not initialized correctly
@@ -41,7 +40,6 @@
 ## [0.1.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [0.1.0] - 2024-10-18
 ### Added

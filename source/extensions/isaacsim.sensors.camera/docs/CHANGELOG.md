@@ -40,7 +40,6 @@
 ### Changed
 - Isaac Util menu to Tools->Robotics menu
 
-## [0.2.4] - 2024-11-26
 ### Fixed
 - camera view sensor test warp.types.int32 -> warp.types.uint32
 - decreased image comparison threshold with 0.95->0.94

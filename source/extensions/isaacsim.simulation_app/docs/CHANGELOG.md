@@ -2,7 +2,7 @@
 
 ## [2.5.0] - 2025-02-05
 ### Changed
-- Added enable_crashreporter argument that if true will provide crash dumps if the application crashes, default true. Previously when a crash occurred only the outer python process provided crash information. 
+- Added enable_crashreporter argument that if true will provide crash dumps if the application crashes, default true. Previously when a crash occurred only the outer python process provided crash information.
 
 ## [2.4.2] - 2025-01-21
 ### Changed
@@ -18,7 +18,7 @@
 
 ## [2.3.1] - 2024-11-14
 ### Changed
-- Updated default experience list 
+- Updated default experience list
 
 ## [2.3.0] - 2024-11-13
 ### Changed
@@ -35,7 +35,6 @@
 ## [2.0.3] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [2.0.2] - 2024-10-15
 ### Fixed
@@ -76,6 +75,7 @@
 ## [1.9.0] - 2024-05-13
 ### Added
 - hide_ui to Simulation App to force ui visibility
+
 ### Changed
 - when headless is set to true, the UI is hidden for performance, hide_ui can be set to false to re-enable the gui
 
@@ -86,6 +86,7 @@
 ## [1.8.0] - 2024-04-29
 ### Added
 - max_gpu_count config argument
+
 ### Fixed
 - benchmark services include
 
@@ -96,8 +97,10 @@
 ## [1.6.3] - 2024-02-29
 ### Added
 - Benchmark metadata
+
 ### Changed
 - Updated benchmark set_phase() call to correctly record startup time after removing deprecated API
+
 ### Removed
 - Deprecated benchmark stop_runtime() call
 
@@ -145,6 +148,7 @@
 ### Fixed
 - Missing comma in sync load options
 - various linter issues
+
 ### Added
 - Faulthandler enabled to print callstack on crash
 
@@ -173,11 +177,9 @@
 ### Fixed
 - Error when viewport extension was not loaded
 
-
 ## [1.2.1] - 2022-12-11
 ### Fixed
 - Error message when closing stage before closing simulation app
-
 
 ## [1.2.0] - 2022-10-25
 ### Changed
@@ -186,6 +188,7 @@
 ## [1.1.0] - 2022-10-14
 ### Added
 - fast shutdown config option
+
 ### Fixed
 - issue where fast shutdown caused jupyter notebooks to crash
 
@@ -194,48 +197,39 @@
 - Fixes for kit 104.0
 
 ## [1.0.1] - 2022-10-02
-
 ### Fixed
 - Crash when closing
 
 ## [1.0.0] - 2022-09-12
-
 ### Removed
 - memory_report config flag
 
 ## [0.2.1] - 2022-07-25
-
 ### Added
 - Increase hang detection timeout (OM-55578)
 
 ## [0.2.0] - 2022-06-22
-
 ### Deprecated
 
 - deprecated memory report in favor of using statistics logging utility
 
 ## [0.1.10] - 2022-06-13
-
 ### Added
 - added physics device parameter for setting CUDA device for GPU physics simulation
 
 ## [0.1.9] - 2022-04-27
-
 ### Changed
 - a .kit experience file can now reference other .kit files from the apps folder
 
 ## [0.1.8] - 2022-04-13
-
 ### Fixed
 - Comment in simulation_app.py
 
 ## [0.1.7] - 2022-03-31
-
 ### Fixed
 - Dlss is now loaded properly on startup
 
 ## [0.1.6] - 2022-03-24
-
 ### Added
 - Multi gpu flag to config
 
@@ -243,34 +237,28 @@
 - Make startup/close logs timestamped
 
 ## [0.1.5] - 2022-02-22
-
 ### Added
 - Windows support
 
 ## [0.1.4] - 2022-01-27
-
 ### Added
 - memory_report to launch config. The delta memory usage is printed when the app closes.
 - automatically add allow-root if running as root user
 
 ## [0.1.3] - 2021-12-21
-
 ### Changed
 - Simulation App starts in cm instead of m to be consistent with the rest of isaac sim.
 
 ## [0.1.2] - 2021-12-07
-
 ### Added
 - reset_render_settings API to reset render settings after loading a stage.
 - fix docstring for antialiasing
 
 ## [0.1.1] - 2021-11-30
-
 ### Changed
 - Remove isaacsim.core.api and omni.physx dependency
 - Changed shutdown print statements to make them consistent with startup
 
 ## [0.1.0] - 2021-11-30
-
 ### Changed
 - Tagged Initial version of SimulationApp

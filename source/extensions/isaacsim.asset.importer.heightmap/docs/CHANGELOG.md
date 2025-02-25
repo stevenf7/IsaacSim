@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [2.0.2] - 2024-10-27
 ### Added
 - Test image

@@ -20,7 +20,6 @@
 ### Changed
 - Temporarily changed docs link
 
-
 ## [2.1.1] - 2024-12-03
 ### Changed
 - Isaac Util menu to Tools->Robotics menu
@@ -57,8 +56,10 @@
 - Fixed bug with computing fixed joint transforms to non-root robot links.
 - Fixed bug where collision masking fails when base Articulation has an Articulation root nested under the top-level path.
 - Fixed bug where JointStateAPIs were being overwritten when nesting prims on STOP and then assembling on the first frame of PLAY.  The fix is to simply set the values back to zero at the right moment.
+
 ### Added
 - Added test cases for different placements of Articulation Roots.  This creates a matrix of possible configurations to support between two robots being attached.
+
 ### Changed
 - Robot Assembler moves the Articulation Root of the attach robot to the top-level prim in the hierarchy while it is attached, and reverses this on detach.
 - Stabilized result of set_fixed_joint_transform() by teleporting the robot to where physics will think it should go.
@@ -101,6 +102,5 @@
 - Added Test Cases for Robot Assembler python API
 
 ## [1.0.0] - 2023-07-06
-
 ### Added
 - Initial version of Robot Assembler Extension

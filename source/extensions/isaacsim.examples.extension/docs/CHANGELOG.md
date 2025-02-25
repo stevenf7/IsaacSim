@@ -24,7 +24,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [2.0.0] - 2024-10-02
 ### Changed
 - Extension renamed to isaacsim.examples.extension.
@@ -118,7 +117,6 @@
 - onclick_fn warning when creating UI
 
 ## [0.1.0] - 12-09-2022
-
 ### Added
 
 - Initial version of Extension Template Generator
