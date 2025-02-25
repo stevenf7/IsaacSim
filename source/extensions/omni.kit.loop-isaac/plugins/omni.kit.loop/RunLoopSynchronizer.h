@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,6 +8,14 @@
 //
 #pragma once
 
+#include <carb/dictionary/IDictionary.h>
+#include <carb/events/EventsUtils.h>
+#include <carb/tasking/TaskingUtils.h>
+
+#include <chrono>
+#include <cstddef>
+#include <memory>
+
 namespace omni
 {
 namespace kit
@@ -16,6 +24,12 @@ namespace kit
 class IRendererRunLoopGate;
 class SlidingMaximum;
 
+/**
+ * @brief Class for synchronizing multiple run loops
+ * @details Provides functionality to synchronize multiple threads or run loops
+ *          to a common timing source, typically the present/render thread.
+ *          Supports frame rate control and timing adjustments.
+ */
 class RunLoopSynchronizer
 {
 public:
@@ -62,14 +76,29 @@ public:
               size_t slidingMaximumOutlierCount,
               float slidingMaximumToleranceFactor);
 
+    /**
+     * @brief Sets the target frames per second
+     * @param[in] fps Desired frame rate in frames per second
+     */
     void setTargetFPS(double fps);
 
+    /**
+     * @brief Checks if the synchronizer is active
+     * @return True if synchronization is active, false otherwise
+     */
     bool isActive() const;
+
+    /**
+     * @brief Enables or disables synchronization
+     * @param[in] active True to enable synchronization, false to disable
+     */
     void setActive(bool active);
 
 private:
     /**
-     * @brief Create or delete present thread subscription
+     * @brief Sets up or tears down the present thread subscription
+     * @details Creates or deletes subscriptions for present thread notifications
+     *          based on current synchronization state
      */
     void _setupPresentThread();
 

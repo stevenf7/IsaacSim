@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,7 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#include <isaacsim/core/simulation_manager/UsdNoticeListner.h>
+#include <isaacsim/core/simulation_manager/UsdNoticeListener.h>
 #include <physxSchema/physxSceneAPI.h>
 ///
 #include <omni/usd/UsdContext.h>
@@ -56,7 +56,9 @@ void UsdNoticeListener::handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
                 std::transform(this->m_deletionCallbacks.begin(), this->m_deletionCallbacks.end(),
                                std::back_inserter(deletionKeys), [](auto& p) { return p.first; });
                 for (auto const& key : deletionKeys)
+                {
                     this->m_deletionCallbacks[key](primPath.GetString());
+                }
             }
             else
             {

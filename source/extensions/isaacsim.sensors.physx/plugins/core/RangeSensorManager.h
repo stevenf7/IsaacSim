@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -45,13 +45,23 @@ namespace sensors
 namespace physx
 {
 
+/**
+ * @class RangeSensorManager
+ * @brief Manager class for handling multiple range sensor components in the simulation
+ * @details This class manages the lifecycle and updates of various range sensor types including
+ *          Lidar sensors, generic range sensors, and light beam sensors. It handles sensor
+ *          initialization, updates, and cleanup while providing thread-safe access to sensor data.
+ *          The manager supports parallel processing of multiple sensors and ensures proper
+ *          synchronization with the physics simulation timeline.
+ */
 class RangeSensorManager : public isaacsim::core::utils::BridgeApplicationBase<RangeSensorComponent>
 {
 public:
     /**
-     * @brief Construct a new Sensor Manager object
-     *
-     * @param physxPtr
+     * @brief Constructs a new Sensor Manager object
+     * @param[in] physxPtr Pointer to the PhysX interface for physics simulation
+     * @param[in] syntheticDataPtr Pointer to the synthetic data interface for additional sensor data
+     * @param[in] taskingPtr Pointer to the tasking interface for parallel processing
      */
     RangeSensorManager(omni::physx::IPhysx* physxPtr,
                        omni::syntheticdata::SyntheticData* syntheticDataPtr,
@@ -63,16 +73,19 @@ public:
     }
 
     /**
-     * @brief Destroy the Sensor Manager object
-     *
+     * @brief Virtual destructor for proper cleanup
      */
-    ~RangeSensorManager()
-    {
-    }
+    ~RangeSensorManager() = default;
 
+    /**
+     * @brief Updates all sensor components after each physics simulation step
+     * @details Processes each enabled sensor component, updating their timestamps and
+     *          triggering their physics step handlers. Also manages the initialization
+     *          of components that haven't started yet.
+     * @param[in] dt The time step duration in seconds
+     */
     void onPhysicsStep(const double& dt)
     {
-
         for (auto& component : mComponents)
         {
             if (component.second->mDoStart == true)
@@ -97,17 +110,18 @@ public:
         // update timestep
     }
 
-
     /**
-     * @brief Tick the application and all components
-     *
-     * @param dt
+     * @brief Updates all sensor components during the simulation tick
+     * @details Processes each enabled sensor component in parallel if multiple sensors exist.
+     *          Handles component initialization, pre-tick operations, main tick updates,
+     *          and visualization drawing.
+     * @param[in] dt The time step duration in seconds
      */
     void tick(double dt)
     {
         std::unique_lock<std::mutex> lck(mComponentMtx);
         CARB_PROFILE_ZONE(0, "Isaac Range Sensor Tick");
-        if (mComponents.size() == 0)
+        if (mComponents.empty())
         {
             return;
         }
@@ -170,9 +184,10 @@ public:
         this->mTimeSeconds += dt;
         this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
     }
+
     /**
-     * @brief Run once the scene is stopped
-     *
+     * @brief Handles cleanup when the simulation scene is stopped
+     * @details Resets all components to ensure proper reinitialization on next start
      */
     void onStop()
     {
@@ -183,10 +198,12 @@ public:
             component.second->onStop();
         }
     }
+
     /**
-     * @brief Create a supported component in this manager
-     *
-     * @param prim
+     * @brief Creates a new sensor component based on the USD prim type
+     * @param[in] prim The USD prim representing the sensor to create
+     * @details Instantiates the appropriate sensor type (Lidar, Generic, or LightBeam)
+     *          based on the prim type and initializes it with the provided parameters
      */
     void onComponentAdd(const pxr::UsdPrim& prim)
     {
@@ -214,11 +231,20 @@ public:
         }
     }
 
+    /**
+     * @brief Gets the list of supported sensor component types
+     * @return Vector of strings containing the supported sensor type names
+     */
     virtual std::vector<std::string> getComponentIsAVector() const
     {
         return { "RangeSensorLidar", "RangeSensorGeneric", "IsaacSensorIsaacLightBeamSensor" };
     }
 
+    /**
+     * @brief Handles property changes for a sensor component
+     * @param[in] prim The USD prim whose properties have changed
+     * @details Updates the corresponding sensor component with the new property values
+     */
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
         isaacsim::core::utils::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
@@ -229,6 +255,11 @@ public:
         }
     }
 
+    /**
+     * @brief Retrieves a Lidar sensor component associated with the given USD prim
+     * @param[in] prim The USD prim associated with the desired Lidar sensor
+     * @return Pointer to the LidarSensor component if found, nullptr otherwise
+     */
     LidarSensor* getLidarSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
@@ -241,6 +272,11 @@ public:
         return nullptr;
     }
 
+    /**
+     * @brief Retrieves a generic range sensor component associated with the given USD prim
+     * @param[in] prim The USD prim associated with the desired generic sensor
+     * @return Pointer to the GenericSensor component if found, nullptr otherwise
+     */
     GenericSensor* getGenericSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
@@ -253,6 +289,11 @@ public:
         return nullptr;
     }
 
+    /**
+     * @brief Retrieves a light beam sensor component associated with the given USD prim
+     * @param[in] prim The USD prim associated with the desired light beam sensor
+     * @return Pointer to the LightBeamSensor component if found, nullptr otherwise
+     */
     LightBeamSensor* getLightBeamSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
@@ -265,11 +306,20 @@ public:
         return nullptr;
     }
 
-
 private:
+    /**
+     * @brief Pointer to the PhysX interface for physics simulation
+     */
     omni::physx::IPhysx* mPhysxPtr = nullptr;
+
+    /**
+     * @brief Pointer to the synthetic data interface for additional sensor data
+     */
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
 
+    /**
+     * @brief Pointer to the tasking interface for parallel processing
+     */
     carb::tasking::ITasking* mTasking = nullptr;
 };
 }

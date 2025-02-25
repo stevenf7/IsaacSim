@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -133,7 +133,9 @@ public:
     {
         const INode* const iNode = nodeObj.iNode;
         if (!iNode)
+        {
             return;
+        }
         auto graphObj = gINode->getGraph(nodeObj);
         auto graphData = gGraphsWithPhysxStepNode.find(graphObj.graphHandle);
 

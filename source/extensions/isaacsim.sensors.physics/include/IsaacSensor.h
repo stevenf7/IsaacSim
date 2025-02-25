@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -19,6 +19,13 @@ namespace sensors
 namespace physics
 {
 
+/**
+ * @class ContactSensorInterface
+ * @brief Interface for contact sensor functionality.
+ * @details
+ * Provides methods for accessing contact sensor data and raw physics engine data
+ * related to contact events between rigid bodies.
+ */
 struct ContactSensorInterface
 {
     CARB_PLUGIN_INTERFACE("isaacsim::sensors::physics::ContactSensorInterface", 0, 1);
@@ -40,8 +47,18 @@ struct ContactSensorInterface
      */
     CsReading(CARB_ABI* getSensorReading)(const char* primPath, const bool& getLatestValue);
 
+    /**
+     * @brief Checks if a prim is a contact sensor.
+     * @param[in] primPath Path of the prim to check.
+     * @return True if the prim is a contact sensor, false otherwise.
+     */
     bool(CARB_ABI* isContactSensor)(const char* primPath);
 
+    /**
+     * @brief Decodes a rigid body identifier into a human-readable name.
+     * @param[in] body Unique identifier of the rigid body.
+     * @return Human-readable name of the rigid body.
+     */
     const char*(CARB_ABI* decodeBodyName)(uint64_t body);
 
     //! Gets contact raw data of a rigid body with contact report API from physics engine
@@ -54,17 +71,23 @@ struct ContactSensorInterface
 };
 
 
+/**
+ * @class ImuSensorInterface
+ * @brief Interface for IMU (Inertial Measurement Unit) sensor functionality.
+ * @details
+ * Provides methods for accessing IMU sensor data including acceleration,
+ * angular velocity, and orientation measurements.
+ */
 struct ImuSensorInterface
 {
     CARB_PLUGIN_INTERFACE("isaacsim::sensors::physics::ImuSensorInterface", 0, 1);
 
     //! Gets Sensor last reading
     /*! Gets the sensor last reading on its latest sensor period
-
      * \param usdPath sensor prim path
      * \param interpolationFunction interpolation functional pointer
      * \param getLatestValue flag for getting the latest sim value or the last sensor measured value
-
+     * \param readGravity flag indicating whether to include gravity in the measurements
      * \return time-stamped sensor values.
      */
     IsReading(CARB_ABI* getSensorReading)(

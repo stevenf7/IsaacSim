@@ -66,17 +66,61 @@ struct SurfaceGripperProperties
 class SurfaceGripper
 {
 public:
+    /**
+     * @brief Default constructor
+     */
     SurfaceGripper();
+
+    /**
+     * @brief Destructor
+     */
     ~SurfaceGripper();
 
+    /**
+     * @brief Initializes the surface gripper with the provided properties
+     * @param[in] props Configuration properties for the gripper
+     * @return True if initialization was successful, false otherwise
+     */
     bool initialize(const SurfaceGripperProperties& props);
+
+    /**
+     * @brief Checks if the gripper is currently closed
+     * @return True if the gripper is closed, false otherwise
+     */
     bool isClosed() const;
+
+    /**
+     * @brief Checks if the gripper is currently attempting to close
+     * @return True if the gripper is attempting to close, false otherwise
+     */
     bool isAttemptingClose() const;
+
+    /**
+     * @brief Updates the gripper state
+     * @details Should be called every simulation step to update the gripper's internal state
+     */
     void update();
+
+    /**
+     * @brief Closes the gripper
+     * @details Attempts to grip an object within the grip threshold distance
+     * @return True if the close operation was initiated successfully, false otherwise
+     */
     bool close();
+
+    /**
+     * @brief Opens the gripper
+     * @details Releases any currently gripped object
+     * @return True if the open operation was successful, false otherwise
+     */
     bool open();
 
 private:
+    /**
+     * @brief Attempts to close the gripper with an additional offset
+     * @param[in] additionalOffset Additional distance offset for the grip attempt
+     * @return True if the gripper successfully gripped an object, false otherwise
+     */
     bool attemptClose(float additionalOffset = 0.0f);
 
     DynamicControl* m_dc = nullptr;

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2025-02-25
+### Changed
+- Update style format and naming conventions in c++ code, add doxygen docstrings
+
 ## [2.2.0] - 2025-02-21
 ### Added
 - Added globalLinearVelocity and globalLinearAcceleration inputs to IsaacComputeOdometry

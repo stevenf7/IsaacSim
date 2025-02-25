@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -82,10 +82,10 @@ PYBIND11_MODULE(_openxr, m)
                     &vector.x, sizeof(float), py::format_descriptor<float>::format(), 3, { 3 }, { sizeof(float) });
             });
 
-    m.attr("XR_SPACE_LOCATION_ORIENTATION_VALID_BIT") = (uint64_t)0x00000001;
-    m.attr("XR_SPACE_LOCATION_POSITION_VALID_BIT") = (uint64_t)0x00000002;
-    m.attr("XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT") = (uint64_t)0x00000004;
-    m.attr("XR_SPACE_LOCATION_POSITION_TRACKED_BIT") = (uint64_t)0x00000008;
+    m.attr("XR_SPACE_LOCATION_ORIENTATION_VALID_BIT") = static_cast<uint64_t>(0x00000001);
+    m.attr("XR_SPACE_LOCATION_POSITION_VALID_BIT") = static_cast<uint64_t>(0x00000002);
+    m.attr("XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT") = static_cast<uint64_t>(0x00000004);
+    m.attr("XR_SPACE_LOCATION_POSITION_TRACKED_BIT") = static_cast<uint64_t>(0x00000008);
 
     py::class_<XrPosef>(m, "XrPosef")
         .def_readwrite("position", &XrPosef::position)

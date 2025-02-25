@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -214,7 +214,9 @@ public:
     ~RunLoopThread()
     {
         if (m_thread.joinable())
+        {
             m_thread.join();
+        }
     }
 
     void updateLoop()
@@ -230,7 +232,9 @@ public:
     void run()
     {
         if (!mainThread && loop)
+        {
             m_thread = std::thread(&RunLoopThread::updateLoop, this);
+        }
     }
 
     void update()
@@ -355,7 +359,9 @@ public:
     {
         auto settings = getCachedInterface<settings::ISettings>();
         if (!settings)
+        {
             return;
+        }
 
         if (!m_minLoopTimeString.length())
         {
@@ -515,7 +521,9 @@ public:
         }
 
         for (auto& kv : m_runLoops)
+        {
             kv.second.run();
+        }
 
         m_started = true;
     }
@@ -535,7 +543,9 @@ public:
         }
 
         if (m_started)
+        {
             t->run();
+        }
     }
 
     virtual void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
@@ -608,7 +618,9 @@ public:
         for (auto& loop : m_runLoops)
         {
             if (!loop.second.mainThread)
+            {
                 loop.second.quit = true;
+            }
         }
 
         // Wait up to 100 ms for all threads to "exit". We cannot join these threads because the thread calling
@@ -624,11 +636,15 @@ public:
             for (auto& loop : m_runLoops)
             {
                 if (loop.second.running && !loop.second.mainThread)
+                {
                     allDone = false;
+                }
             }
 
             if (allDone)
+            {
                 break;
+            }
 
             lock.unlock();
             std::this_thread::yield();
@@ -649,7 +665,9 @@ private:
 
         auto it = m_runLoops.find(name);
         if (it == m_runLoops.end())
+        {
             it = m_runLoops.emplace(std::piecewise_construct, std::forward_as_tuple(name), std::forward_as_tuple(name)).first;
+        }
         return std::addressof(it->second);
     }
 
@@ -667,7 +685,9 @@ static void SetManualStepSize(double dt, std::string name = "")
         if (name.compare("") != 0)
         {
             if (l.first.compare(name) == 0)
+            {
                 l.second.setManualStepSize(dt);
+            }
         }
         else
         {
@@ -682,7 +702,9 @@ static void SetManualMode(bool enabled, std::string name = "")
         if (name.compare("") != 0)
         {
             if (l.first.compare(name) == 0)
+            {
                 l.second.setManualMode(enabled);
+            }
         }
         else
         {

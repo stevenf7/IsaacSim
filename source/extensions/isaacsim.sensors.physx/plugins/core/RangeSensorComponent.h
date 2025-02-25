@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -43,7 +43,12 @@ namespace physx
 {
 
 /**
+ * @class RangeSensorComponentBase
  * @brief Base class which simulates a range sensor
+ * @details This template class provides the core functionality for range-based sensors,
+ *          including initialization, lifecycle management, and data processing. It handles
+ *          sensor transforms, visualization, and interaction with the physics simulation.
+ * @tparam PrimType The USD prim type associated with this sensor component
  */
 template <class PrimType>
 class RangeSensorComponentBase : public isaacsim::core::utils::ComponentBase<PrimType>
@@ -51,7 +56,9 @@ class RangeSensorComponentBase : public isaacsim::core::utils::ComponentBase<Pri
 
 public:
     /**
-     * @brief Construct a new Isaac Component
+     * @brief Constructs a new Isaac Component
+     * @param[in] physxPtr Pointer to the PhysX interface for physics simulation
+     * @details Initializes the component with necessary interfaces and creates visualization helpers
      */
     RangeSensorComponentBase(omni::physx::IPhysx* physxPtr)
     {
@@ -68,35 +75,35 @@ public:
             omni::usd::UsdContext::getContext(),
             isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     }
+
     /**
-     * @brief Destroy the Range Sensor Component Base object
-     *
+     * @brief Destroys the Range Sensor Component Base object
+     * @details Cleans up visualization resources
      */
     ~RangeSensorComponentBase()
     {
         mLineDrawing.reset();
         mPointDrawing.reset();
     }
-    /**
-     * @brief Initialize various pointers and handles in the component
-     * Must be called after creation, can be overridden to initialize subcomponents
-     *
 
-     * @param prim
-     * @param stage
+    /**
+     * @brief Initializes various pointers and handles in the component
+     * @details Must be called after creation, can be overridden to initialize subcomponents
+     * @param[in] prim The USD prim representing this sensor
+     * @param[in] stage The USD stage containing the sensor prim
      */
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         isaacsim::core::utils::ComponentBase<PrimType>::initialize(prim, stage);
         this->mRangeSensorPrim = pxr::RangeSensorRangeSensor(this->mPrim);
     }
+
     /**
      * @brief Function that runs after start is pressed
-     *
+     * @details Initializes the component and locates the PhysX scene for sensor operations
      */
     virtual void onStart()
     {
-
         onComponentChange();
 
         pxr::UsdPrimRange range = this->mStage->Traverse();
@@ -109,7 +116,6 @@ public:
 
             if (prim.IsA<pxr::UsdPhysicsScene>())
             {
-
                 mPxScene = static_cast<::physx::PxScene*>(
                     mPhysx->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
 
@@ -120,35 +126,40 @@ public:
             }
         }
     }
+
     /**
      * @brief Called before tick, sequential, used to get sensor transforms
-     *
+     * @details Empty base implementation that can be overridden by derived classes
      */
     virtual void preTick(){};
 
     /**
      * @brief Called every frame in parallel
-     *
+     * @details Pure virtual function that must be implemented by derived classes to
+     *          perform the main sensor update during each simulation frame
      */
     virtual void tick() = 0;
 
-    // check
+    /**
+     * @brief Called after each physics step to update sensor data
+     * @details This function is called after each physics simulation step to process and update
+     *          the range sensor data based on the latest physics state
+     */
     virtual void onPhysicsStep(){};
 
     /**
-     * @brief Called after all sensors have simulated to perform any drawing related tasks.
-     *
+     * @brief Called after all sensors have simulated to perform any drawing related tasks
+     * @details Renders the debug visualization for both points and lines if enabled
      */
     virtual void draw()
     {
-
         mLineDrawing->draw();
         mPointDrawing->draw();
     }
 
     /**
      * @brief Run when stop is pressed
-     *
+     * @details Clears all visualization data and ensures it's properly rendered
      */
     virtual void onStop()
     {
@@ -157,9 +168,11 @@ public:
         mLineDrawing->draw();
         mPointDrawing->draw();
     };
+
     /**
      * @brief Called every time the Prim is changed
-     *
+     * @details Updates component properties from the USD prim attributes and
+     *          refreshes transform-related data
      */
     virtual void onComponentChange()
     {
@@ -169,9 +182,7 @@ public:
         isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawPointsAttr(), mDrawPoints);
         isaacsim::core::utils::safeGetAttribute(this->mRangeSensorPrim.GetDrawLinesAttr(), mDrawLines);
 
-
         mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
-        // printf("PARENT: %s\n", mParentPrim.GetPath().GetString().c_str());
         mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
 
         if (mParentPrim.IsA<pxr::UsdGeomXformable>())
@@ -185,11 +196,10 @@ public:
     }
 
     /**
-     * @brief Update timestamps for component
-     *
-     * @param timeSeconds
-     * @param dt
-     * @param timeNano
+     * @brief Updates timestamps for component
+     * @param[in] timeSeconds Current simulation time in seconds
+     * @param[in] dt Time step duration in seconds
+     * @param[in] timeNano Current simulation time in nanoseconds
      */
     void updateTimestamp(double timeSeconds, double dt, int64_t timeNano)
     {
@@ -203,10 +213,8 @@ public:
     }
 
     /**
-     * @brief Get the Draw Points object
-     *
-     * @return true
-     * @return false
+     * @brief Gets the draw points visualization state
+     * @return True if point visualization is enabled, false otherwise
      */
     bool getDrawPoints()
     {
@@ -214,51 +222,75 @@ public:
     }
 
     /**
-     * @brief Get the Draw Lines object
-     *
-     * @return true
-     * @return false
+     * @brief Gets the draw lines visualization state
+     * @return True if line visualization is enabled, false otherwise
      */
     bool getDrawLines()
     {
         return mDrawLines;
     }
 
+    /**
+     * @brief Gets the latest point cloud data from the range sensor
+     * @details Returns a reference to the vector containing the most recent hit positions
+     *          detected by the range sensor. Each point represents a detected surface in 3D space.
+     * @return Reference to vector of 3D points representing the latest point cloud data
+     */
     std::vector<carb::Float3>& getPointCloud()
     {
         return mLastHitPos;
     }
 
-
 protected:
+    /** @brief Flag to enable/disable point visualization */
     bool mDrawPoints = false;
+    /** @brief Flag to enable/disable line visualization */
     bool mDrawLines = false;
+    /** @brief Vector storing the most recent hit positions from the sensor */
     std::vector<carb::Float3> mLastHitPos;
 
+    /** @brief Minimum range of the sensor in meters */
     float mMinRange = 0.4f;
+    /** @brief Maximum range of the sensor in meters */
     float mMaxRange = 100.0f;
 
+    /** @brief Conversion factor from scene units to meters */
     float mMetersPerUnit = 1.0;
 
-
+    /** @brief Reference to the parent USD prim containing this sensor */
     pxr::UsdPrim mParentPrim;
 
+    /** @brief Pointer to the PhysX interface */
     omni::physx::IPhysx* mPhysx = nullptr;
+    /** @brief Pointer to the PhysX scene */
     ::physx::PxScene* mPxScene = nullptr;
+    /** @brief Pointer to the timeline interface */
     omni::timeline::ITimeline* mTimeline = nullptr;
+    /** @brief Pointer to the fabric token interface */
     omni::fabric::IToken* mToken = nullptr;
+    /** @brief Pointer to the tasking interface */
     carb::tasking::ITasking* mTasking = nullptr;
+    /** @brief Helper for drawing debug lines */
     std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
+    /** @brief Helper for drawing debug points */
     std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
 
+    /** @brief Reference to the range sensor USD prim */
     pxr::RangeSensorRangeSensor mRangeSensorPrim;
 
+    /** @brief Time code for the parent prim's current state */
     pxr::UsdTimeCode mParentPrimTimeCode;
+    /** @brief Flag indicating if the parent prim has time-sampled transforms */
     bool mIsParentPrimTimeSampled = false;
 
+    /** @brief Flag indicating if this is the first frame */
     bool mFirstFrame = true;
 };
 
+/**
+ * @typedef RangeSensorComponent
+ * @brief Convenience typedef for a range sensor component using the RangeSensorRangeSensor prim type
+ */
 typedef RangeSensorComponentBase<pxr::RangeSensorRangeSensor> RangeSensorComponent;
 
 }

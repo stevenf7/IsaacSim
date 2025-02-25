@@ -8,8 +8,11 @@
 //
 
 /** @file
- * @brief Factory that contains the class definitions and methods for creating ROS 2 entities according to the sourced
- * ROS 2 distribution.
+ * @brief Factory that contains the class definitions and methods for creating ROS 2 entities
+ * @details
+ * This header file defines the factory class and related types for creating and managing ROS 2
+ * entities according to the sourced ROS 2 distribution. It provides comprehensive support for
+ * dynamic message handling, transformations, and various ROS 2 message types.
  */
 #pragma once
 
@@ -37,41 +40,50 @@ namespace bridge
 {
 
 /**
- * Enumerations of ROS 2 message types
+ * @enum BackendMessageType
+ * @brief Enumerations of ROS 2 message types
+ * @details
+ * Defines the various types of messages that can be handled by the ROS 2 bridge,
+ * including topics, services, and actions with their respective components.
  */
 enum class BackendMessageType : uint8_t
 {
-    eMessage = 0, //!< Topic message.
-    eRequest, //!< Service request (`_Request`).
-    eResponse, //!< Service response (`_Response`).
-    eGoal, //!< Action goal (`_Goal`).
-    eResult, //!< Action result (`_Result`).
-    eFeedback, //!< Action feedback (`_Feedback`).
-    eSendGoalRequest, //!< Action goal request (`_SendGoal_Request`).
-    eSendGoalResponse, //!< Action goal response (`_SendGoal_Response`).
-    eFeedbackMessage, //!< Action feedback (`_FeedbackMessage`).
-    eGetResultRequest, //!< Action result request (`_GetResult_Request`).
-    eGetResultResponse, //!< Action result response (`_GetResult_Response`).
+    eMessage = 0, /**< Topic message */
+    eRequest, /**< Service request (`_Request`) */
+    eResponse, /**< Service response (`_Response`) */
+    eGoal, /**< Action goal (`_Goal`) */
+    eResult, /**< Action result (`_Result`) */
+    eFeedback, /**< Action feedback (`_Feedback`) */
+    eSendGoalRequest, /**< Action goal request (`_SendGoal_Request`) */
+    eSendGoalResponse, /**< Action goal response (`_SendGoal_Response`) */
+    eFeedbackMessage, /**< Action feedback (`_FeedbackMessage`) */
+    eGetResultRequest, /**< Action result request (`_GetResult_Request`) */
+    eGetResultResponse, /**< Action result response (`_GetResult_Response`) */
 };
 
 /**
- * Struct that encapsulates a dynamic message field
+ * @struct DynamicMessageField
+ * @brief Structure that encapsulates a dynamic message field
+ * @details
+ * Provides a flexible container for ROS 2 message fields with support for
+ * both ROS and OmniGraph data types, including hierarchical field names.
  */
 struct DynamicMessageField
 {
-    std::string name; //!< Field name. Hierarchical names (e.g.: MESSAGE fields are unrolled and concatenated by `:`).
-    uint8_t rosType; //!< ROS data type.
-                     // https://github.com/ros2/rosidl/blob/humble/rosidl_typesupport_introspection_c/include/rosidl_typesupport_introspection_c/field_types.h
-    bool isArray; //!< Whether the field is an array.
-    std::string ognType; //!< OmniGraph data type name.
-                         // https://docs.omniverse.nvidia.com/kit/docs/omni.graph.docs/latest/dev/ogn/attribute_types.html
-    omni::fabric::BaseDataType dataType; //!< Fabric data type.
+    std::string name; /**< Field name. Hierarchical names (e.g.: MESSAGE fields are unrolled and concatenated by `:`) */
+    uint8_t rosType; /**< ROS data type from rosidl_typesupport_introspection_c/field_types.h */
+    bool isArray; /**< Whether the field is an array */
+    std::string ognType; /**< OmniGraph data type name from omni.graph.docs */
+    omni::fabric::BaseDataType dataType; /**< Fabric data type */
 
     /**
-     * Generate a list of field names in hierarchical manner.
+     * @brief Splits the field name into hierarchical components
+     * @details
+     * Generates a list of field names by splitting the hierarchical name using
+     * the specified delimiter.
      *
-     * @param delimiter Delimiter used to split the name.
-     * @returns List of field names in hierarchical manner.
+     * @param[in] delimiter Character used to split the name
+     * @return std::vector<std::string> List of field names in hierarchical order
      */
     std::vector<std::string> names(char delimiter = ':')
     {
@@ -79,42 +91,55 @@ struct DynamicMessageField
         std::stringstream stringStream(name);
         std::string segment;
         while (std::getline(stringStream, segment, delimiter))
+        {
             fieldNames.push_back(segment);
+        }
         return fieldNames;
     }
 };
 
 /**
- * Struct that encapsulates `geometry_msgs/msg/TransformStamped` data for tf
+ * @struct TfTransformStamped
+ * @brief Structure that encapsulates geometry_msgs/msg/TransformStamped data
+ * @details
+ * Provides a container for transform data between coordinate frames,
+ * including timestamp, frame IDs, translation, and rotation components.
  */
 struct TfTransformStamped
 {
-    double timeStamp; //!< Time (seconds).
-    std::string parentFrame; //!< Transform frame with which this data is associated.
-    std::string childFrame; //!< Frame ID of the child frame to which this transform points.
+    double timeStamp; /**< Time in seconds */
+    std::string parentFrame; /**< Transform frame with which this data is associated */
+    std::string childFrame; /**< Frame ID of the child frame to which this transform points */
 
-    // translation components
-    double translation_x; //!< Translation of child frame from parent frame (x-axis).
-    double translation_y; //!< Translation of child frame from parent frame (y-axis).
-    double translation_z; //!< Translation of child frame from parent frame (z-axis).
+    // Translation components
+    double translation_x; /**< Translation of child frame from parent frame (x-axis) */
+    double translation_y; /**< Translation of child frame from parent frame (y-axis) */
+    double translation_z; /**< Translation of child frame from parent frame (z-axis) */
 
-    // quaternion components
-    double rotation_x; //!< Rotation of child frame from parent frame (quaternion x-component).
-    double rotation_y; //!< Rotation of child frame from parent frame (quaternion y-component).
-    double rotation_z; //!< Rotation of child frame from parent frame (quaternion z-component).
-    double rotation_w; //!< Rotation of child frame from parent frame (quaternion w-component).
+    // Quaternion components
+    double rotation_x; /**< Rotation of child frame from parent frame (quaternion x-component) */
+    double rotation_y; /**< Rotation of child frame from parent frame (quaternion y-component) */
+    double rotation_z; /**< Rotation of child frame from parent frame (quaternion z-component) */
+    double rotation_w; /**< Rotation of child frame from parent frame (quaternion w-component) */
 };
 
 /**
- * Base class for all ROS 2 message encapsulations.
+ * @class Ros2Message
+ * @brief Base class for all ROS 2 message encapsulations
+ * @details
+ * Provides the foundation for ROS 2 message handling with basic functionality
+ * for message pointer management and type support.
  */
 class Ros2Message
 {
 public:
     /**
-     * Get the message pointer.
+     * @brief Retrieves the message pointer
+     * @details
+     * Returns the pointer to the underlying ROS 2 message if it has been
+     * properly created and initialized.
      *
-     * @returns The pointer to the message if it has been created and initialized properly, otherwise `nullptr`.
+     * @return void* Pointer to the message or nullptr if not initialized
      */
     void* getPtr()
     {
@@ -122,38 +147,38 @@ public:
     }
 
     /**
-     * Get the pointer to the struct that contains the ROS IDL message type support data.
+     * @brief Gets the type support handle for the message
+     * @details
+     * Returns a pointer to the ROS IDL message type support data structure.
+     * The actual type depends on the message category:
+     * - Topic: rosidl_message_type_support_t
+     * - Service: rosidl_service_type_support_t
+     * - Action: rosidl_action_type_support_t
      *
-     * The pointer points to a ROS IDL struct if the message if founded.
-     *
-     * Message type | ROS IDL struct
-     * --- | ---
-     * Topic (Message) | `rosidl_message_type_support_t`
-     * Service | `rosidl_service_type_support_t`
-     * Action | `rosidl_action_type_support_t`
-     *
-     * @returns The pointer to the struct, otherwise `nullptr`.
+     * @return const void* Pointer to the type support structure or nullptr
      */
     virtual const void* getTypeSupportHandle() = 0;
 
 protected:
-    void* m_msg = nullptr; //!< Message pointer.
+    void* m_msg = nullptr; /**< Message pointer */
 };
 
 /**
- * Class implementing dynamic ROS 2 messages
+ * @class Ros2DynamicMessage
+ * @brief Class implementing dynamic ROS 2 messages
+ * @details
+ * Provides runtime definition and manipulation of ROS 2 message types.
+ * Supports both JSON and vector-based message processing.
  *
- * This class allows to define and use ROS 2 message types at runtime, rather than at compile time.
- *
- * \warning Processing the message as JSON has a significative computation overhead compared to processing it as a
- * vector.
+ * @warning JSON processing has significant computational overhead compared to vector processing
  */
 class Ros2DynamicMessage : public Ros2Message
 {
 public:
     /**
-     * Generate a human-readable summary of the dynamic message structure and print it (configurable)
-     *
+     * @brief Generates a human-readable message structure summary
+     * @details
+     * Creates a formatted table showing the message structure including:
      * \code{.unparsed}
      * Message: sensor_msgs/msg/PointCloud2 (topic | message)
      * Idx Array ROS type                  OGN type                  Name
@@ -171,45 +196,40 @@ public:
      * 10  no    BOOLEAN (bool)            eBool (bool)              is_dense
      * \endcode
      *
-     * @param print Whether to print the human-readable structure of the dynamic message to the console.
-     * @returns A human-readable tabular structure of the dynamic message.
+     * @param[in] print Whether to output the summary to console
+     * @return std::string Formatted string containing the message structure
      */
     virtual std::string generateSummary(bool print) = 0;
 
     /**
-     * Read the message fields value and return them contained in a JSON object.
-     *
-     * @returns Message data as JSON.
+     * @brief Reads message data as JSON
+     * @return const nlohmann::json& Reference to JSON object containing message data
      */
     virtual const nlohmann::json& readData() = 0;
 
     /**
-     * Read the message fields value and return them contained in a vector of shared pointers object.
-     *
-     * @param asOgnType Whether the pointers point to OmniGraph or ROS 2 specific data types.
-     * @returns Message data as vector of shared pointers.
+     * @brief Reads message data as vector of shared pointers
+     * @param[in] asOgnType Whether to return OmniGraph or ROS 2 data types
+     * @return const std::vector<std::shared_ptr<void>>& Vector of message field data
      */
     virtual const std::vector<std::shared_ptr<void>>& readData(bool asOgnType) = 0;
 
     /**
-     * Write the message fields value from a JSON object.
-     *
-     * @param data Message data as JSON.
+     * @brief Writes message data from JSON
+     * @param[in] data JSON object containing message data
      */
     virtual void writeData(const nlohmann::json& data) = 0;
 
     /**
-     * Write the message fields value from a vector of shared pointers object.
-     *
-     * @param data Message data as vector of shared pointers object.
-     * @param fromOgnType Whether the pointers point to OmniGraph or ROS 2 specific data types.
+     * @brief Writes message data from vector of shared pointers
+     * @param[in] data Vector containing message field data
+     * @param[in] fromOgnType Whether input data uses OmniGraph types
      */
     virtual void writeData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType) = 0;
 
     /**
-     * Get the dynamic message fields description (\ref DynamicMessageField).
-     *
-     * @returns Message fields description.
+     * @brief Gets the message field descriptions
+     * @return const std::vector<DynamicMessageField>& Vector of field descriptions
      */
     const std::vector<DynamicMessageField>& getMessageFields()
     {
@@ -217,16 +237,17 @@ public:
     };
 
     /**
-     * Get the dynamic message container as vector of shared pointers.
-     *
-     * The vector container is a constant vector of non-constant shared pointers.
+     * @brief Gets the message data container as vector
+     * @details
+     * Returns a constant vector of non-constant shared pointers, allowing
+     * modification of field values but not container structure.
      * This means that the elements of the vector (the message fields) cannot be modified but their content
      * (the message fields' value) can. This is particularly useful when writing the message data using a vector
      * as a container since it is not necessary to create pointers to the required data types.
      * See \ref Ros2DynamicMessage::writeData for use example.
      *
-     * @param asOgnType Whether the pointers point to OmniGraph or ROS 2 specific data types.
-     * @returns Message container as vector of shared pointers.
+     * @param[in] asOgnType Whether to return OmniGraph or ROS 2 data types
+     * @return const std::vector<std::shared_ptr<void>>& Vector container
      */
     const std::vector<std::shared_ptr<void>>& getVectorContainer(bool asOgnType)
     {
@@ -234,9 +255,8 @@ public:
     };
 
     /**
-     * Check whether the ROS 2 message has been created and initialized properly.
-     *
-     * @returns Whether the ROS 2 message has been created and initialized properly.
+     * @brief Checks message validity
+     * @return bool True if message is properly created and initialized
      */
     bool isValid()
     {
@@ -244,12 +264,10 @@ public:
     }
 
 protected:
-    std::vector<DynamicMessageField> m_messagesFields; //!< Message fields description.
-    nlohmann::json m_messageJsonContainer; //!< Message container as JSON.
-    std::vector<std::shared_ptr<void>> m_messageVectorRosContainer; //!< Message container as ROS 2-specific data types
-                                                                    //!< vector.
-    std::vector<std::shared_ptr<void>> m_messageVectorOgnContainer; //!< Message container as OmniGraph-specific data
-                                                                    //!< types vector.
+    std::vector<DynamicMessageField> m_messagesFields; /**< Message fields description */
+    nlohmann::json m_messageJsonContainer; /**< JSON message container */
+    std::vector<std::shared_ptr<void>> m_messageVectorRosContainer; /**< ROS 2 data types vector container */
+    std::vector<std::shared_ptr<void>> m_messageVectorOgnContainer; /**< OmniGraph data types vector container */
 };
 
 /**
@@ -524,7 +542,9 @@ public:
     void destroy(T msg)
     {
         if (!msg)
+        {
             return;
+        }
         m_generatorLibrary->callSymbolWithArg<void>(std::string(m_pkgName) + "__" + std::string(m_msgSubfolder) + "__" +
                                                         std::string(m_msgName) + getMessageSpec(false) + "__destroy",
                                                     msg);
@@ -543,7 +563,7 @@ protected:
 private:
     std::string getTypeSupportSpec(const bool& introspection)
     {
-        switch (BackendMessageType(m_msgType))
+        switch ((m_msgType))
         {
         case BackendMessageType::eMessage:
             return "message";
@@ -566,7 +586,7 @@ private:
     }
     std::string getMessageSpec(const bool& introspection)
     {
-        switch (BackendMessageType(m_msgType))
+        switch ((m_msgType))
         {
         case BackendMessageType::eMessage:
             return "";

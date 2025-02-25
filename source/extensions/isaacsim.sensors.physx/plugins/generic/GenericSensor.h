@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -29,75 +29,159 @@ namespace sensors
 namespace physx
 {
 
+/**
+ * @class GenericSensor
+ * @brief A generic range sensor implementation that supports customizable scanning patterns
+ * @details This sensor class provides a flexible range sensing capability with configurable
+ *          azimuth and zenith angles, allowing for custom scanning patterns. It supports
+ *          batch processing of sensor data and visualization options. The sensor can be
+ *          configured to operate in streaming mode with adjustable sampling rates and
+ *          batch sizes for efficient data processing.
+ */
 class GenericSensor : public RangeSensorComponent
 {
 
 public:
+    /**
+     * @brief Constructs a new Generic Sensor instance
+     * @param[in] physxPtr Pointer to the PhysX interface for physics simulation
+     */
     GenericSensor(omni::physx::IPhysx* physxPtr);
+
+    /**
+     * @brief Virtual destructor for proper cleanup
+     */
     ~GenericSensor();
 
+    /**
+     * @brief Initializes the generic sensor when the component starts
+     * @details Sets up initial parameters, allocates memory for scan data, and prepares the sensor for operation
+     */
     virtual void onStart();
+
+    /**
+     * @brief Performs pre-tick operations before the main sensor update
+     * @details Updates sensor parameters and prepares for the next scan cycle
+     */
     virtual void preTick();
+
+    /**
+     * @brief Performs the main sensor update during each tick
+     * @details Executes the scanning operation and processes sensor data based on current configuration
+     */
     virtual void tick();
+
+    /**
+     * @brief Handles component property changes
+     * @details Updates sensor configuration when properties are modified through the interface
+     */
     virtual void onComponentChange();
 
-
+    /**
+     * @brief Gets the number of samples processed in the last tick
+     * @return Number of samples processed
+     */
     int getNumSamplesTicked() const
     {
         return mSamplesPerTick;
     }
+
+    /**
+     * @brief Gets the latest depth data from the sensor
+     * @return Reference to vector containing normalized depth values (0-65535)
+     */
     std::vector<uint16_t>& getDepthData()
     {
         return mLastDepth;
     }
 
+    /**
+     * @brief Gets the latest linear depth data in meters
+     * @return Reference to vector containing depth values in meters
+     */
     std::vector<float>& getLinearDepthData()
     {
         return mLastLinearDepth;
     }
 
+    /**
+     * @brief Gets the latest intensity data from the sensor
+     * @return Reference to vector containing intensity values (0-255)
+     */
     std::vector<uint8_t>& getIntensityData()
     {
         return mLastIntensity;
     }
 
+    /**
+     * @brief Gets the zenith angles for each sensor ray
+     * @return Reference to vector containing zenith angles in radians
+     */
     std::vector<float>& getZenithData()
     {
         return mZenith;
     }
 
+    /**
+     * @brief Gets the azimuth angles for each sensor ray
+     * @return Reference to vector containing azimuth angles in radians
+     */
     std::vector<float>& getAzimuthData()
     {
         return mLastAzimuth;
     }
 
+    /**
+     * @brief Gets the offset positions for each sensor ray
+     * @return Reference to vector containing 3D offset positions
+     */
     std::vector<carb::Float3>& getOffsetData()
     {
         return mLastOffset;
     }
 
+    /**
+     * @brief Checks if the next batch of sensor pattern vectors should be sent
+     * @return True if ready for next batch, false otherwise
+     */
     bool sendNextBatch();
+
     /**
-     * @brief indicate whether the next batch of sensor pattern vectors should be sent
-     *
+     * @brief Sets the next batch of sensor pattern angles
+     * @param[in] azimuth_angles Array of azimuth angles in radians
+     * @param[in] zenith_angles Array of zenith angles in radians
+     * @param[in] sample_length Number of samples in the batch
      */
-
-
     void setNextBatchRays(const float* azimuth_angles, const float* zenith_angles, const int sample_length);
-    /**
-     *  @brief passing in the next batch of sensor pattern
-     */
 
-    void setNextBatchOffsets(const float* origin_offsets, const int sample_length);
     /**
-     *  @brief if each ray has its own offset
+     * @brief Sets the origin offsets for each ray in the next batch
+     * @param[in] origin_offsets Array of 3D offset positions for each ray
+     * @param[in] sample_length Number of samples in the batch
      */
+    void setNextBatchOffsets(const float* origin_offsets, const int sample_length);
 
 private:
+    /**
+     * @brief Wraps the sensor data arrays at the specified starting index
+     * @param[in] start Starting index for the wrap operation
+     */
     void wrapData(int start);
+
+    /**
+     * @brief Dumps the current sensor data (for debugging purposes)
+     */
     void dumpData();
 
-
+    /**
+     * @brief Performs a raycast with additional proximity checks
+     * @param[in] pos Starting position of the ray
+     * @param[in] dir Direction of the ray
+     * @param[in] distance Maximum distance to check
+     * @param[out] hit Hit result information
+     * @param[in] physxScene PhysX scene to perform the raycast in
+     * @return True if the ray hit something, false otherwise
+     */
     bool raycastClose(const ::physx::PxVec3& pos,
                       const ::physx::PxVec3& dir,
                       float distance,
@@ -239,38 +323,125 @@ private:
 
     int mSamplingRate; // number of samples per second
     bool mStreaming;
-    int mBatchSize = 0; // the total number of samples for each batch of data
+
+    /**
+     * @brief Total number of samples for each batch of data
+     */
+    int mBatchSize = 0;
+
+    /**
+     * @brief Minimum allowed batch size
+     */
     int minBatchSize = 0;
+
+    /**
+     * @brief Length of the A buffer for double buffering
+     */
     int A_length = 0;
+
+    /**
+     * @brief Length of the B buffer for double buffering
+     */
     int B_length = 0;
 
+    /**
+     * @brief Index of the last processed sample
+     */
     int mLastSample = 0;
-    int mSamplesPerTick = 60; // number of samples per tick
+
+    /**
+     * @brief Number of samples processed per tick
+     */
+    int mSamplesPerTick = 60;
+
+    /**
+     * @brief Maximum allowed samples per tick
+     */
     int maxSamplesPerTick = 1000000;
 
+    /**
+     * @brief Minimum depth range in world units
+     */
     float mMinDepth = 0;
+
+    /**
+     * @brief Maximum depth range in world units
+     */
     float mMaxDepth = 1e8;
 
+    /**
+     * @brief Double-buffered azimuth angle arrays
+     */
     std::vector<float> mAzimuth_A{}, mAzimuth_B{};
+
+    /**
+     * @brief Double-buffered zenith angle arrays
+     */
     std::vector<float> mZenith_A{}, mZenith_B{};
+
+    /**
+     * @brief Double-buffered offset position arrays
+     */
     std::vector<carb::Float3> mOffset_A{}, mOffset_B{};
-    // bool mCustomOffset = false;
 
-
+    /**
+     * @brief Pointers to active azimuth angle buffer
+     */
     float *pActiveAzimuth, *pActiveZenith;
+
+    /**
+     * @brief Pointer to active offset position buffer
+     */
     carb::Float3* pActiveOffset;
 
+    /**
+     * @brief Current and last zenith angles
+     */
     std::vector<float> mZenith, mLastZenith;
+
+    /**
+     * @brief Current and last azimuth angles
+     */
     std::vector<float> mAzimuth, mLastAzimuth;
+
+    /**
+     * @brief Current and last offset positions
+     */
     std::vector<carb::Float3> mOffset, mLastOffset;
 
+    /**
+     * @brief Current and last linear depth measurements in meters
+     */
     std::vector<float> mLinearDepth, mLastLinearDepth;
+
+    /**
+     * @brief Current and last intensity measurements
+     */
     std::vector<uint8_t> mIntensity, mLastIntensity;
+
+    /**
+     * @brief Current and last normalized depth measurements
+     */
     std::vector<uint16_t> mDepth, mLastDepth;
+
+    /**
+     * @brief Hit positions in sensor local space
+     */
     std::vector<carb::Float3> mHitPos;
 
+    /**
+     * @brief PhysX ray cast hit flags configuration
+     */
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+
+    /**
+     * @brief Final translation of the sensor in world space
+     */
     ::physx::PxVec3 mFinalTranslation;
+
+    /**
+     * @brief Final rotation of the sensor in world space
+     */
     ::physx::PxQuat mFinalRotation;
 };
 

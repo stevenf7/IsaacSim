@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -139,7 +139,9 @@ PYBIND11_MODULE(_sensor, m)
             [](ContactSensorInterface* li, const char* body_path) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 size_t num_data = 0;
                 CsRawData* data = li->getSensorRawData(body_path, num_data);
                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
@@ -156,7 +158,9 @@ PYBIND11_MODULE(_sensor, m)
             [](ContactSensorInterface* li, const char* body_path) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 size_t num_data = 0;
                 CsRawData* data = li->getBodyRawData(body_path, num_data);
                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),

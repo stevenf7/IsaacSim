@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -51,9 +51,7 @@ LidarSensor::LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::Syn
     mSyntheticDataPtr = syntheticDataPtr;
 }
 
-LidarSensor::~LidarSensor()
-{
-}
+LidarSensor::~LidarSensor() = default;
 
 void LidarSensor::onStart()
 {
@@ -65,7 +63,7 @@ void LidarSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorLidar& typedPrim = (pxr::RangeSensorLidar)mPrim;
+    const pxr::RangeSensorLidar& typedPrim = pxr::RangeSensorLidar(mPrim);
 
     isaacsim::core::utils::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
     isaacsim::core::utils::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
@@ -89,20 +87,22 @@ void LidarSensor::onComponentChange()
     mMinDepth = mMinRange / mMetersPerUnit;
     mMaxDepth = mMaxRange / mMetersPerUnit;
 
-    mMaxStepSize = float(1.0 / 30.0);
+    mMaxStepSize = static_cast<float>(1.0 / 30.0);
 
-    mCols = int(mHorizontalFov / mHorizontalResolution);
+    mCols = static_cast<int>(mHorizontalFov / mHorizontalResolution);
 
     // Add one so that we have symmetry
     // Otherwise we are missing one angle for the Velodyne 16 case as 30/2 = 15
-    mRows = mHighLod ? int(mVerticalFov / mVerticalResolution) + 1 : 1;
+    mRows = mHighLod ? static_cast<int>(mVerticalFov / mVerticalResolution) + 1 : 1;
 
     if (mRotationRate != 0.0f && mRotationRate > 1.0 / mMaxStepSize)
-        mRotationRate = float(1.0 / mMaxStepSize);
+    {
+        mRotationRate = static_cast<float>(1.0 / mMaxStepSize);
+    }
 
 
     mColScanSpeed = mCols * mRotationRate;
-    mMaxColsPerTick = int(mColScanSpeed * mMaxStepSize);
+    mMaxColsPerTick = static_cast<int>(mColScanSpeed * mMaxStepSize);
 
     mDepth.assign(mRows * mCols, 0);
     mHitPos.assign(mRows * mCols, { 0, 0, 0 });
@@ -116,10 +116,14 @@ void LidarSensor::onComponentChange()
     float startZenith = -0.5f * mVerticalFov;
 
     for (int col = 0; col < mCols; col++)
-        mAzimuth[col] = float((startAzimuth + col * mHorizontalResolution) * M_PI / 180.0f);
+    {
+        mAzimuth[col] = static_cast<float>((startAzimuth + col * mHorizontalResolution) * M_PI / 180.0f);
+    }
 
     for (int row = 0; row < mRows; row++)
-        mZenith[row] = float((startZenith + row * mVerticalResolution) * M_PI / 180.0f);
+    {
+        mZenith[row] = static_cast<float>((startZenith + row * mVerticalResolution) * M_PI / 180.0f);
+    }
 
     mAzimuthRange = { mAzimuth[0], mAzimuth[mCols - 1] };
     mZenithRange = { mZenith[0], mZenith[mRows - 1] };
@@ -283,7 +287,7 @@ void LidarSensor::tick()
     else
     {
         mRemainingTime += elapsedTime;
-        mLastNumColsTicked = int(mColScanSpeed * mRemainingTime);
+        mLastNumColsTicked = static_cast<int>(mColScanSpeed * mRemainingTime);
 
         // If too much time is remaining, cap the number of columns
         if (mLastNumColsTicked > mMaxColsPerTick)

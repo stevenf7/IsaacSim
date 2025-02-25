@@ -73,7 +73,7 @@ public:
 
             const auto& prim = db.inputs.chassisPrim();
             const char* primPath;
-            if (prim.size() > 0)
+            if (!prim.empty())
             {
                 if (!stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0])))
                 {

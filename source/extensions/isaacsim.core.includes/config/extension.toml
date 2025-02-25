@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.1"
+version = "1.1.2"
 category = "Internal"
 title = "Isaac Sim Common Includes"
 description = "Extension containing common isaac sim headers"

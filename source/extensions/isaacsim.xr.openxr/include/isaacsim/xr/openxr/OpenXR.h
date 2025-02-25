@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -33,10 +33,26 @@ Carbonite SDK API:
 namespace isaacsim::xr::openxr
 {
 
+/**
+ * @brief Interface for OpenXR hand tracking functionality
+ * @details Provides access to OpenXR hand tracking features, allowing applications
+ *          to retrieve hand joint locations for VR/AR applications
+ */
 struct IOpenxr
 {
     CARB_PLUGIN_INTERFACE("isaacsim::xr::openxr::IOpenxr", 1, 0);
 
+    /**
+     * @brief Retrieves the locations of hand joints
+     * @details Gets the positions and orientations of all joints in a specified hand
+     *          at a given time, optionally transforming to stage space coordinates
+     *
+     * @param[in] hand The hand to get joint locations for (left or right)
+     * @param[in] time Optional timestamp for the joint locations
+     * @param[in] stageAxis if true,axis/units will respect USD stage conventions
+     * @return Array of joint locations if successful, empty optional if not
+     * @throws May throw exceptions if hand tracking fails
+     */
     virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locate_hand_joints(
         XrHandEXT hand, std::optional<XrTime> time, bool stageAxis) noexcept(false) = 0;
 };

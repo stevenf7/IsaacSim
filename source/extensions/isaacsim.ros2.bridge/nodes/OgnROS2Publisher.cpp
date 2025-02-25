@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -83,7 +83,9 @@ public:
             bool status = createMessageAndAttributes(
                 nodeObj, state.m_messagePackage, state.m_messageSubfolder, state.m_messageName);
             if (!status)
+            {
                 return false;
+            }
             state.m_messageUpdateNeeded = false;
             state.m_publisherUpdateNeeded = true;
             return false;
@@ -123,7 +125,7 @@ public:
 
             Ros2QoSProfile qos;
             const std::string& qosProfile = db.inputs.qosProfile();
-            if (qosProfile == "")
+            if (qosProfile.empty())
             {
                 qos.depth = state.m_queueSize;
             }

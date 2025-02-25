@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -42,13 +42,17 @@ Ros2DynamicMessageImpl::Ros2DynamicMessageImpl(std::string pkgName,
     // get message fields
     const void* members = getIntrospectionMembers();
     if (members)
+    {
         parseMessageFields("", members);
+    }
 }
 
 Ros2DynamicMessageImpl::~Ros2DynamicMessageImpl()
 {
     if (m_msg)
+    {
         destroy(static_cast<void*>(m_msg));
+    }
 }
 
 const void* Ros2DynamicMessageImpl::getTypeSupportHandle()
@@ -61,7 +65,9 @@ const nlohmann::json& Ros2DynamicMessageImpl::readData()
     const void* members = getIntrospectionMembers();
     m_messageJsonContainer.clear();
     if (members)
+    {
         getMessageValues(members, reinterpret_cast<uint8_t*>(m_msg), m_messageJsonContainer);
+    }
     return m_messageJsonContainer;
 }
 
@@ -70,8 +76,10 @@ const std::vector<std::shared_ptr<void>>& Ros2DynamicMessageImpl::readData(bool 
     size_t index = 0;
     const void* members = getIntrospectionMembers();
     if (members)
+    {
         getMessageValues(members, reinterpret_cast<uint8_t*>(m_msg),
                          asOgnType ? m_messageVectorOgnContainer : m_messageVectorRosContainer, index, asOgnType);
+    }
     return asOgnType ? m_messageVectorOgnContainer : m_messageVectorRosContainer;
 }
 
@@ -79,7 +87,9 @@ void Ros2DynamicMessageImpl::writeData(const nlohmann::json& data)
 {
     const void* members = getIntrospectionMembers();
     if (members)
+    {
         setMessageValues(members, reinterpret_cast<uint8_t*>(m_msg), data);
+    }
 }
 
 void Ros2DynamicMessageImpl::writeData(const std::vector<std::shared_ptr<void>>& data, bool fromOgnType)
@@ -87,7 +97,9 @@ void Ros2DynamicMessageImpl::writeData(const std::vector<std::shared_ptr<void>>&
     size_t index = 0;
     const void* members = getIntrospectionMembers();
     if (members)
+    {
         setMessageValues(members, reinterpret_cast<uint8_t*>(m_msg), data, index, fromOgnType);
+    }
 }
 
 const void* Ros2DynamicMessageImpl::getIntrospectionMembers()
@@ -95,7 +107,7 @@ const void* Ros2DynamicMessageImpl::getIntrospectionMembers()
     void* typeSupportHandle = getTypeSupportIntrospectionHandleDynamic();
     if (typeSupportHandle)
     {
-        switch (BackendMessageType(m_msgType))
+        switch (m_msgType)
         {
         case BackendMessageType::eMessage:
         case BackendMessageType::eSendGoalRequest:
@@ -190,7 +202,9 @@ std::string Ros2DynamicMessageImpl::generateSummary(bool print)
     }
     stream << std::endl;
     if (print)
+    {
         std::cout << stream.str();
+    }
     return stream.str();
 }
 
@@ -214,17 +228,25 @@ void Ros2DynamicMessageImpl::parseMessageFields(const std::string& parentName, c
             type = member->is_array_ ? "float[]" : "float";
             dataType = omni::fabric::BaseDataType::eFloat;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<float>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<float>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
             type = member->is_array_ ? "double[]" : "double";
             dataType = omni::fabric::BaseDataType::eDouble;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<double>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<double>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
             type = member->is_array_ ? "double[]" : "double";
@@ -244,9 +266,13 @@ void Ros2DynamicMessageImpl::parseMessageFields(const std::string& parentName, c
             type = member->is_array_ ? "uchar[]" : "uchar";
             dataType = omni::fabric::BaseDataType::eUChar;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<uint8_t>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<uint8_t>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
             type = member->is_array_ ? "uint[]" : "uint";
@@ -266,17 +292,25 @@ void Ros2DynamicMessageImpl::parseMessageFields(const std::string& parentName, c
             type = member->is_array_ ? "bool[]" : "bool";
             dataType = omni::fabric::BaseDataType::eBool;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<bool>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<bool>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
             type = member->is_array_ ? "uchar[]" : "uchar";
             dataType = omni::fabric::BaseDataType::eUChar;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<uint8_t>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<uint8_t>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
             type = member->is_array_ ? "uint[]" : "uint";
@@ -338,49 +372,73 @@ void Ros2DynamicMessageImpl::parseMessageFields(const std::string& parentName, c
             type = member->is_array_ ? "uint[]" : "uint";
             dataType = omni::fabric::BaseDataType::eUInt;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<uint32_t>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<uint32_t>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
             type = member->is_array_ ? "int[]" : "int";
             dataType = omni::fabric::BaseDataType::eInt;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<int32_t>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<int32_t>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
             type = member->is_array_ ? "uint64[]" : "uint64";
             dataType = omni::fabric::BaseDataType::eUInt64;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<uint64_t>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<uint64_t>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
             type = member->is_array_ ? "int64[]" : "int64";
             dataType = omni::fabric::BaseDataType::eInt64;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<int64_t>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<int64_t>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
             type = member->is_array_ ? "token[]" : "token";
             dataType = omni::fabric::BaseDataType::eToken;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<std::string>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<std::string>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING:
             type = member->is_array_ ? "token[]" : "token";
             dataType = omni::fabric::BaseDataType::eToken;
             if (member->is_array_)
+            {
                 rosValue = ognValue = std::make_shared<std::vector<std::string>>();
+            }
             else
+            {
                 rosValue = ognValue = std::make_shared<std::string>();
+            }
             break;
         case rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE:
             if (member->is_array_)
@@ -425,12 +483,14 @@ void Ros2DynamicMessageImpl::getArrayEmbeddedMessage(const rosidl_typesupport_in
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
         {
             auto jsonObj = nlohmann::json::object();
             getMessageValues(embeddedMembers, &data[i * embeddedMembers->size_of_], jsonObj);
             array.push_back(jsonObj);
         }
+    }
 }
 
 void Ros2DynamicMessageImpl::setArrayEmbeddedMessage(const rosidl_typesupport_introspection_c__MessageMember* member,
@@ -445,12 +505,18 @@ void Ros2DynamicMessageImpl::setArrayEmbeddedMessage(const rosidl_typesupport_in
     {
         member->resize_function(data, array.size());
         for (size_t i = 0; i < array.size(); ++i)
+        {
             setMessageValues(embeddedMembers, reinterpret_cast<uint8_t*>(member->get_function(data, i)), array.at(i));
+        }
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
+        {
             setMessageValues(embeddedMembers, &data[i * embeddedMembers->size_of_], array.at(i));
+        }
+    }
 }
 
 template <typename ArrayType, typename RosType, typename OgnType>
@@ -470,14 +536,18 @@ void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__
             const ArrayType* source = reinterpret_cast<const ArrayType*>(data);
             ognArray->reserve(source->size);
             for (size_t i = 0; i < source->size; ++i)
+            {
                 ognArray->push_back(static_cast<OgnType>(*reinterpret_cast<const RosType*>(&source->data[i])));
+            }
         }
         // fixed size array
         else
         {
             ognArray->reserve(member->array_size_);
             for (size_t i = 0; i < member->array_size_; ++i)
+            {
                 ognArray->push_back(static_cast<OgnType>(*reinterpret_cast<const RosType*>(&data[i * sizeof(RosType)])));
+            }
         }
     }
     // ROS data type array
@@ -491,14 +561,18 @@ void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__
             const ArrayType* source = reinterpret_cast<const ArrayType*>(data);
             rosArray->reserve(source->size);
             for (size_t i = 0; i < source->size; ++i)
+            {
                 rosArray->push_back(*reinterpret_cast<const RosType*>(&source->data[i]));
+            }
         }
         // fixed size array
         else
         {
             rosArray->reserve(member->array_size_);
             for (size_t i = 0; i < member->array_size_; ++i)
+            {
                 rosArray->push_back(*reinterpret_cast<const RosType*>(&data[i * sizeof(RosType)]));
+            }
         }
     }
 }
@@ -513,12 +587,18 @@ void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__
     {
         const ArrayType* source = reinterpret_cast<const ArrayType*>(data);
         for (size_t i = 0; i < source->size; ++i)
+        {
             array.push_back(*reinterpret_cast<const RosType*>(&source->data[i]));
+        }
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
+        {
             array.push_back(*reinterpret_cast<const RosType*>(&data[i * sizeof(RosType)]));
+        }
+    }
 }
 
 template <typename ArrayType, typename RosType>
@@ -538,8 +618,12 @@ void Ros2DynamicMessageImpl::getArray(const rosidl_typesupport_introspection_c__
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
+        {
             array.push_back(*reinterpret_cast<const RosType*>(&data[i * sizeof(RosType)]));
+        }
+    }
 }
 
 template <typename ArrayType, auto ArrayInit, typename RosType>
@@ -553,12 +637,18 @@ void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__
         ArrayType* dest = reinterpret_cast<ArrayType*>(data);
         ArrayInit(dest, value.size());
         for (size_t i = 0; i < dest->size; ++i)
+        {
             *reinterpret_cast<RosType*>(&dest->data[i]) = value.at(i).get<RosType>();
+        }
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
+        {
             *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = value.at(i).get<RosType>();
+        }
+    }
 }
 
 template <typename ArrayType, auto ArrayInit, typename RosType, typename OgnType>
@@ -577,12 +667,18 @@ void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__
             ArrayType* dest = reinterpret_cast<ArrayType*>(data);
             ArrayInit(dest, ognArray->size());
             for (size_t i = 0; i < dest->size; ++i)
+            {
                 *reinterpret_cast<RosType*>(&dest->data[i]) = static_cast<RosType>(ognArray->at(i));
+            }
         }
         // fixed size array
         else
+        {
             for (size_t i = 0; i < member->array_size_; ++i)
+            {
                 *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = static_cast<RosType>(ognArray->at(i));
+            }
+        }
         return;
     }
     // ROS data type array
@@ -593,12 +689,18 @@ void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__
         ArrayType* dest = reinterpret_cast<ArrayType*>(data);
         ArrayInit(dest, rosArray->size());
         for (size_t i = 0; i < dest->size; ++i)
+        {
             *reinterpret_cast<RosType*>(&dest->data[i]) = rosArray->at(i);
+        }
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
+        {
             *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = rosArray->at(i);
+        }
+    }
 }
 
 template <typename ArrayType, auto ArrayInit, typename RosType>
@@ -612,12 +714,18 @@ void Ros2DynamicMessageImpl::setArray(const rosidl_typesupport_introspection_c__
         ArrayType* dest = reinterpret_cast<ArrayType*>(data);
         ArrayInit(dest, array.size());
         for (size_t i = 0; i < dest->size; ++i)
+        {
             *reinterpret_cast<RosType*>(&dest->data[i]) = array.at(i);
+        }
     }
     // fixed size array
     else
+    {
         for (size_t i = 0; i < member->array_size_; ++i)
+        {
             *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = array.at(i);
+        }
+    }
 }
 
 template <typename RosType, typename OgnType>
@@ -625,18 +733,26 @@ void Ros2DynamicMessageImpl::getSingleValue(uint8_t* data, std::shared_ptr<void>
 {
     auto value = reinterpret_cast<const RosType*>(data);
     if (asOgnType)
+    {
         *std::static_pointer_cast<OgnType>(valuePtr) = static_cast<OgnType>(*value);
+    }
     else
+    {
         *std::static_pointer_cast<RosType>(valuePtr) = *value;
+    }
 }
 
 template <typename RosType, typename OgnType>
 void Ros2DynamicMessageImpl::setSingleValue(uint8_t* data, const std::shared_ptr<void>& valuePtr, bool fromOgnType)
 {
     if (fromOgnType)
+    {
         *reinterpret_cast<RosType*>(data) = static_cast<RosType>(*std::static_pointer_cast<const OgnType>(valuePtr));
+    }
     else
+    {
         *reinterpret_cast<RosType*>(data) = *std::static_pointer_cast<const RosType>(valuePtr);
+    }
 }
 
 
@@ -657,7 +773,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__float__Sequence, float>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const float*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
@@ -668,7 +786,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__double__Sequence, double>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const double*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
@@ -679,7 +799,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__long_double__Sequence, long double>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const long double*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_CHAR:
@@ -690,7 +812,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__char__Sequence, uint8_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint8_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
@@ -701,7 +825,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__wchar__Sequence, uint16_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint16_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN:
@@ -712,7 +838,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__boolean__Sequence, bool>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const bool*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
@@ -723,7 +851,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__octet__Sequence, uint8_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint8_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
@@ -734,7 +864,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__uint8__Sequence, uint8_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint8_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT8:
@@ -745,7 +877,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__int8__Sequence, int8_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const int8_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT16:
@@ -756,7 +890,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__uint16__Sequence, uint16_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint16_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT16:
@@ -767,7 +903,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__int16__Sequence, int16_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const int16_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT32:
@@ -778,7 +916,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__uint32__Sequence, uint32_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint32_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
@@ -789,7 +929,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__int32__Sequence, int32_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const int32_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
@@ -800,7 +942,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__uint64__Sequence, uint64_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const uint64_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
@@ -811,7 +955,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 getArray<rosidl_runtime_c__int64__Sequence, int64_t>(member, data, container[member->name_]);
             }
             else
+            {
                 container[member->name_] = *reinterpret_cast<const int64_t*>(data);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
@@ -822,7 +968,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members, uint8_t* mess
                 std::vector<rosidl_runtime_c__String> array;
                 getArray<rosidl_runtime_c__String__Sequence, rosidl_runtime_c__String>(member, data, array);
                 for (auto const& item : array)
+                {
                     container[member->name_].push_back(std::string(item.data));
+                }
             }
             else
             {
@@ -881,121 +1029,181 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members,
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__float__Sequence, float, float>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<float, float>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__double__Sequence, double, double>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<double, double>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__long_double__Sequence, long double, double>(member, data, valuePtr, asOgnType);
+            }
             else
+            {
                 getSingleValue<long double, double>(data, valuePtr, asOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_CHAR:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__char__Sequence, uint8_t, uint8_t>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<uint8_t, uint8_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__wchar__Sequence, uint16_t, uint32_t>(member, data, valuePtr, asOgnType);
+            }
             else
+            {
                 getSingleValue<uint16_t, uint32_t>(data, valuePtr, asOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__boolean__Sequence, bool, bool>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<bool, bool>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__octet__Sequence, uint8_t, uint8_t>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<uint8_t, uint8_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__uint8__Sequence, uint8_t, uint32_t>(member, data, valuePtr, asOgnType);
+            }
             else
+            {
                 getSingleValue<uint8_t, uint32_t>(data, valuePtr, asOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT8:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__int8__Sequence, int8_t, int32_t>(member, data, valuePtr, asOgnType);
+            }
             else
+            {
                 getSingleValue<int8_t, int32_t>(data, valuePtr, asOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT16:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__uint16__Sequence, uint16_t, uint32_t>(member, data, valuePtr, asOgnType);
+            }
             else
+            {
                 getSingleValue<uint16_t, uint32_t>(data, valuePtr, asOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT16:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__int16__Sequence, int16_t, int32_t>(member, data, valuePtr, asOgnType);
+            }
             else
+            {
                 getSingleValue<int16_t, int32_t>(data, valuePtr, asOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT32:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__uint32__Sequence, uint32_t, uint32_t>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<uint32_t, uint32_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__int32__Sequence, int32_t, int32_t>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<int32_t, int32_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__uint64__Sequence, uint64_t, uint64_t>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<uint64_t, uint64_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
         {
             if (member->is_array_)
+            {
                 getArray<rosidl_runtime_c__int64__Sequence, int64_t, int64_t>(member, data, valuePtr, false);
+            }
             else
+            {
                 getSingleValue<int64_t, int64_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
@@ -1008,7 +1216,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members,
                 array->clear();
                 array->reserve(rosArray.size());
                 for (auto const& item : rosArray)
+                {
                     array->push_back(std::string(item.data));
+                }
             }
             else
             {
@@ -1021,9 +1231,13 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members,
         {
             // TODO: proccess WSTRING (no messages with 'path:*/msgs/*.msg "wstring"')
             if (member->is_array_)
+            {
                 std::static_pointer_cast<std::vector<std::string>>(valuePtr)->clear();
+            }
             else
+            {
                 *std::static_pointer_cast<std::string>(valuePtr) = std::string();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE:
@@ -1034,7 +1248,9 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members,
                 getArrayEmbeddedMessage(member, data, jsonArray);
                 std::static_pointer_cast<std::vector<nlohmann::json>>(valuePtr)->clear();
                 for (size_t j = 0; j < jsonArray.size(); ++j)
+                {
                     std::static_pointer_cast<std::vector<nlohmann::json>>(valuePtr)->push_back(jsonArray.at(j));
+                }
             }
             else
             {
@@ -1053,150 +1269,214 @@ void Ros2DynamicMessageImpl::getMessageValues(const void* members,
 void Ros2DynamicMessageImpl::setMessageValues(const void* members, uint8_t* messageData, const nlohmann::json& container)
 {
     if (!container.is_object())
+    {
         return;
+    }
     auto messageMembers = reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers*>(members);
     for (size_t i = 0; i < messageMembers->member_count_; ++i)
     {
         const rosidl_typesupport_introspection_c__MessageMember* member = messageMembers->members_ + i;
         auto data = &messageData[member->offset_];
         if (!container.contains(member->name_))
+        {
             continue;
+        }
         auto value = container[member->name_];
         switch (member->type_id_)
         {
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__float__Sequence, rosidl_runtime_c__float__Sequence__init, float>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<float*>(data) = value.get<float>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__double__Sequence, rosidl_runtime_c__double__Sequence__init, double>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<double*>(data) = value.get<double>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__long_double__Sequence, rosidl_runtime_c__long_double__Sequence__init, long double>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<long double*>(data) = value.get<long double>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_CHAR:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__char__Sequence, rosidl_runtime_c__char__Sequence__init, uint8_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint8_t*>(data) = value.get<uint8_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__wchar__Sequence, rosidl_runtime_c__wchar__Sequence__init, uint16_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint16_t*>(data) = value.get<uint16_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__boolean__Sequence, rosidl_runtime_c__bool__Sequence__init, bool>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<bool*>(data) = value.get<bool>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__octet__Sequence, rosidl_runtime_c__octet__Sequence__init, uint8_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint8_t*>(data) = value.get<uint8_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint8__Sequence, rosidl_runtime_c__uint8__Sequence__init, uint8_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint8_t*>(data) = value.get<uint8_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT8:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int8__Sequence, rosidl_runtime_c__int8__Sequence__init, int8_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<int8_t*>(data) = value.get<int8_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT16:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint16__Sequence, rosidl_runtime_c__uint16__Sequence__init, uint16_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint16_t*>(data) = value.get<uint16_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT16:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int16__Sequence, rosidl_runtime_c__int16__Sequence__init, int16_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<int16_t*>(data) = value.get<int16_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT32:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint32__Sequence, rosidl_runtime_c__uint32__Sequence__init, uint32_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint32_t*>(data) = value.get<uint32_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int32__Sequence, rosidl_runtime_c__int32__Sequence__init, int32_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<int32_t*>(data) = value.get<int32_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint64__Sequence, rosidl_runtime_c__uint64__Sequence__init, uint64_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<uint64_t*>(data) = value.get<uint64_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int64__Sequence, rosidl_runtime_c__int64__Sequence__init, int64_t>(
                     member, data, value);
+            }
             else
+            {
                 *reinterpret_cast<int64_t*>(data) = value.get<int64_t>();
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
@@ -1206,13 +1486,17 @@ void Ros2DynamicMessageImpl::setMessageValues(const void* members, uint8_t* mess
                 std::vector<std::string> array = value;
                 std::vector<rosidl_runtime_c__String> rosArray(array.size());
                 for (size_t j = 0; j < array.size(); ++j)
+                {
                     rosidl_runtime_c__String__assign(&rosArray.at(j), array.at(j).c_str());
+                }
                 setArray<rosidl_runtime_c__String__Sequence, rosidl_runtime_c__String__Sequence__init,
                          rosidl_runtime_c__String>(member, data, rosArray);
             }
             else
+            {
                 rosidl_runtime_c__String__assign(
                     reinterpret_cast<rosidl_runtime_c__String*>(data), value.get<std::string>().c_str());
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING:
@@ -1222,9 +1506,13 @@ void Ros2DynamicMessageImpl::setMessageValues(const void* members, uint8_t* mess
         case rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE:
         {
             if (member->is_array_)
+            {
                 setArrayEmbeddedMessage(member, data, value);
+            }
             else
+            {
                 setMessageValues(member->members_->data, data, value);
+            }
             break;
         }
         default:
@@ -1250,136 +1538,196 @@ void Ros2DynamicMessageImpl::setMessageValues(const void* members,
         case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__float__Sequence, rosidl_runtime_c__float__Sequence__init, float, float>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<float, float>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__double__Sequence, rosidl_runtime_c__double__Sequence__init, double, double>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<double, double>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__long_double__Sequence, rosidl_runtime_c__long_double__Sequence__init,
                          long double, double>(member, data, valuePtr, fromOgnType);
+            }
             else
+            {
                 setSingleValue<long double, double>(data, valuePtr, fromOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_CHAR:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__char__Sequence, rosidl_runtime_c__char__Sequence__init, uint8_t, uint8_t>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<uint8_t, uint8_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__wchar__Sequence, rosidl_runtime_c__wchar__Sequence__init, uint16_t, uint32_t>(
                     member, data, valuePtr, fromOgnType);
+            }
             else
+            {
                 setSingleValue<uint16_t, uint32_t>(data, valuePtr, fromOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__boolean__Sequence, rosidl_runtime_c__bool__Sequence__init, bool, bool>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<bool, bool>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__octet__Sequence, rosidl_runtime_c__octet__Sequence__init, uint8_t, uint8_t>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<uint8_t, uint8_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint8__Sequence, rosidl_runtime_c__uint8__Sequence__init, uint8_t, uint32_t>(
                     member, data, valuePtr, fromOgnType);
+            }
             else
+            {
                 setSingleValue<uint8_t, uint32_t>(data, valuePtr, fromOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT8:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int8__Sequence, rosidl_runtime_c__int8__Sequence__init, int8_t, int32_t>(
                     member, data, valuePtr, fromOgnType);
+            }
             else
+            {
                 setSingleValue<int8_t, int32_t>(data, valuePtr, fromOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT16:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint16__Sequence, rosidl_runtime_c__uint16__Sequence__init, uint16_t, uint32_t>(
                     member, data, valuePtr, fromOgnType);
+            }
             else
+            {
                 setSingleValue<uint16_t, uint32_t>(data, valuePtr, fromOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT16:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int16__Sequence, rosidl_runtime_c__int16__Sequence__init, int16_t, int32_t>(
                     member, data, valuePtr, fromOgnType);
+            }
             else
+            {
                 setSingleValue<int16_t, int32_t>(data, valuePtr, fromOgnType);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT32:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint32__Sequence, rosidl_runtime_c__uint32__Sequence__init, uint32_t, uint32_t>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<uint32_t, uint32_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int32__Sequence, rosidl_runtime_c__int32__Sequence__init, int32_t, int32_t>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<int32_t, int32_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__uint64__Sequence, rosidl_runtime_c__uint64__Sequence__init, uint64_t, uint64_t>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<uint64_t, uint64_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
         {
             if (member->is_array_)
+            {
                 setArray<rosidl_runtime_c__int64__Sequence, rosidl_runtime_c__int64__Sequence__init, int64_t, int64_t>(
                     member, data, valuePtr, false);
+            }
             else
+            {
                 setSingleValue<int64_t, int64_t>(data, valuePtr, false);
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
@@ -1389,13 +1737,17 @@ void Ros2DynamicMessageImpl::setMessageValues(const void* members,
                 auto array = std::static_pointer_cast<std::vector<std::string>>(valuePtr);
                 std::vector<rosidl_runtime_c__String> rosArray(array->size());
                 for (size_t j = 0; j < array->size(); ++j)
+                {
                     rosidl_runtime_c__String__assign(&rosArray.at(j), array->at(j).c_str());
+                }
                 setArray<rosidl_runtime_c__String__Sequence, rosidl_runtime_c__String__Sequence__init,
                          rosidl_runtime_c__String>(member, data, rosArray);
             }
             else
+            {
                 rosidl_runtime_c__String__assign(reinterpret_cast<rosidl_runtime_c__String*>(data),
                                                  std::static_pointer_cast<const std::string>(valuePtr)->c_str());
+            }
             break;
         }
         case rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING:

@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -47,43 +47,83 @@ void wrapCudaMemcpyAsync(T* dst, const T* src, uint32_t startLoc, uint32_t num, 
 
 void getTransformFromSensorPose(const omni::sensors::FrameAtTime& parm, omni::math::linalg::matrix4d& matrixOutput);
 
+/**
+ * @class LidarConfigHelper
+ * @brief Helper class for managing LiDAR sensor configuration
+ * @details Provides utilities for handling LiDAR profiles, scan types, and configuration parameters.
+ *          Manages the storage and access of LiDAR-specific settings and profile data.
+ */
 class LidarConfigHelper
 {
 public:
+    /** @brief Configuration string for the LiDAR sensor */
     std::string config;
+    /** @brief Type of LiDAR scanning pattern */
     LidarScanType scanType{ LidarScanType::kUnknown };
-    LidarProfile* profile; // convenient pointer to lidar profile stored in profileBuffer
-    std::vector<uint8_t> profileBuffer; // data buffer containing lidar profile
+    /** @brief Pointer to the active LiDAR profile */
+    LidarProfile* profile;
+    /** @brief Buffer storing the raw profile data */
+    std::vector<uint8_t> profileBuffer;
 
+    /** @brief Gets the minimum range of the LiDAR sensor */
     float getNearRange() const;
+    /** @brief Gets the maximum range of the LiDAR sensor */
     float getFarRange() const;
+    /** @brief Gets the number of vertical channels in the LiDAR */
     uint32_t getNumChannels() const;
+    /** @brief Gets the number of echoes per beam */
     uint32_t getNumEchos() const;
+    /** @brief Gets the total number of returns per complete scan */
     uint32_t getReturnsPerScan() const;
+    /** @brief Gets the number of ticks required for a complete scan */
     uint32_t getTicksPerScan() const;
+    /**
+     * @brief Updates the LiDAR configuration from a render product path
+     * @param[in] renderProductPath Path to the render product configuration
+     * @return True if update was successful, false otherwise
+     */
     bool updateLidarConfig(const char* renderProductPath);
 };
 
 // GenericModelOutputHelper is used when you want a host side copy of a
 // gmo, and you want pointers in elements and aux to be kept from the input
+/**
+ * @class GenericModelOutputHelper
+ * @brief Helper class for managing host-side copies of generic model outputs
+ * @details Provides functionality to maintain and manage host-side copies of sensor data,
+ *          preserving pointer relationships and handling data transfer between device and host.
+ *          Supports different sensor types including LiDAR, ultrasonic, and radar.
+ */
 class GenericModelOutputHelper
 {
 public:
+    /** @brief Generic model output structure containing sensor data */
     omni::sensors::GenericModelOutput m_gmo;
+    /** @brief Union of auxiliary data structures for different sensor types */
     union
     {
+        /** @brief LiDAR-specific auxiliary data */
         omni::sensors::LidarAuxiliaryData m_auxlidar;
+        /** @brief Ultrasonic-specific auxiliary data */
         omni::sensors::USSAuxiliaryData m_auxUltrasonic;
+        /** @brief Radar-specific auxiliary data */
         omni::sensors::RadarAuxiliaryData m_auxRadar;
     };
 
 private:
+    /** @brief CUDA pointer attributes for source data */
     cudaPointerAttributes srcAttrs;
+    /** @brief Type of memory copy operation (device-to-host or host-to-host) */
     enum cudaMemcpyKind kind;
+    /** @brief Pointer to raw data buffer */
     uint8_t* data;
     size_t offset;
 
 public:
+    /**
+     * @brief Constructs a new Generic Model Output Helper
+     * @param[in] gmoPtr Pointer to the source generic model output data
+     */
     GenericModelOutputHelper(void* gmoPtr)
     {
         data = reinterpret_cast<uint8_t*>(gmoPtr);
@@ -95,6 +135,13 @@ public:
         cudaMemcpyAsync(&m_gmo, gmoPtr, sizeof(omni::sensors::GenericModelOutput), kind);
         setGenericModelOutputPtrs();
     }
+    /**
+     * @brief Validates the generic model output configuration
+     * @param[in] outType Expected output type
+     * @param[in] coordType Expected coordinate system type
+     * @param[in] modality Expected sensor modality
+     * @return True if configuration is valid, false otherwise
+     */
     bool isValid(const OutputType& outType, const CoordsType& coordType, const Modality& modality)
     {
         if (m_gmo.magicNumber != MAGIC_NUMBER_GMO || m_gmo.outputType != outType || m_gmo.coordsType != coordType ||
@@ -104,12 +151,22 @@ public:
         }
         return true;
     }
+    /**
+     * @brief Gets the emitter ID for a specific element
+     * @param[in] i Index of the element
+     * @return Emitter ID value
+     */
     uint32_t getEmitterId(int i) const
     {
         uint32_t returnMe;
         cudaMemcpyAsync(&returnMe, m_auxlidar.emitterId + sizeof(uint32_t) * i, sizeof(uint32_t), kind);
         return returnMe;
     }
+    /**
+     * @brief Gets the tick ID for a specific element
+     * @param[in] i Index of the element
+     * @return Tick ID value
+     */
     uint32_t getTickId(int i) const
     {
         uint32_t returnMe;
@@ -117,6 +174,10 @@ public:
         return returnMe;
     }
 
+    /**
+     * @brief Sets up pointers for the generic model output structure
+     * @details Initializes and configures pointers for basic elements and auxiliary data
+     */
     inline void setGenericModelOutputPtrs()
     {
         GenericModelOutput* modelOutput{ &m_gmo };
@@ -160,6 +221,10 @@ public:
             setRadarAuxiliaryDataPtrs();
         }
     }
+    /**
+     * @brief Sets up pointers for LiDAR auxiliary data
+     * @details Configures pointers for LiDAR-specific auxiliary data fields
+     */
     inline void setLidarAuxiliaryDataPtrs()
     {
         // LidarAuxiliaryData auxData;
@@ -257,6 +322,10 @@ public:
             auxData->tickStates = nullptr;
         }
     }
+    /**
+     * @brief Sets up pointers for ultrasonic auxiliary data
+     * @details Configures pointers for ultrasonic-specific auxiliary data fields
+     */
     inline void setUSSAuxiliaryDataPtrs()
     {
         // USSAuxiliaryData auxData;
@@ -266,6 +335,10 @@ public:
         modelOutput->auxiliaryData = reinterpret_cast<void*>(auxData);
         offset += sizeof(USSAuxiliaryData);
     }
+    /**
+     * @brief Sets up pointers for radar auxiliary data
+     * @details Configures pointers for radar-specific auxiliary data fields
+     */
     inline void setRadarAuxiliaryDataPtrs()
     {
         cudaMemcpyAsync(&m_auxRadar, data + offset, sizeof(RadarAuxiliaryData), kind);

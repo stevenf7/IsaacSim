@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -15,18 +15,16 @@ namespace ros2
 namespace tf_viewer
 {
 
-Ros2BufferCoreImpl::Ros2BufferCoreImpl()
-{
-}
+Ros2BufferCoreImpl::Ros2BufferCoreImpl() = default;
 
-Ros2BufferCoreImpl::~Ros2BufferCoreImpl()
-{
-}
+Ros2BufferCoreImpl::~Ros2BufferCoreImpl() = default;
 
 bool Ros2BufferCoreImpl::setTransform(void* msg, const std::string& authority, bool isStatic)
 {
     if (!msg)
+    {
         return false;
+    }
     tf2_msgs__msg__TFMessage* tfMsg = static_cast<tf2_msgs__msg__TFMessage*>(msg);
     for (size_t i = 0; i < tfMsg->transforms.size; ++i)
     {

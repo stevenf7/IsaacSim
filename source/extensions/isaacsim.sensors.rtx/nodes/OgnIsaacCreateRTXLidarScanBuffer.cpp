@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -338,25 +338,46 @@ public:
             // Could move the rest of these to dynamic but may cause hickups?
             state.hostPcShrunkBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
             if (db.inputs.outputDistance())
+            {
                 state.hostDistanceShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputIntensity())
+            {
                 state.hostIntensityShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputAzimuth())
+            {
                 state.hostAzimuthShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputElevation())
+            {
                 state.hostElevationShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputObjectId())
+            {
                 state.hostObjectIdShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputVelocity())
+            {
                 state.hostVelocityShrunkBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
+            }
             if (db.inputs.outputNormal())
+            {
                 state.hostNormalShrunkBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
+            }
             if (db.inputs.outputTimestamp())
+            {
                 state.hostTimestampShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputEmitterId())
+            {
                 state.hostEmitterIdShrunkBuffer.resize(outSize, 0);
+            }
             if (db.inputs.outputMaterialId())
+            {
                 state.hostMaterialIdShrunkBuffer.resize(outSize, 0);
+            }
+
 // fill the others
 // need to wait for futures?
 #define _GATHER_OUTPUT(BUFF_NAME)                                                                                      \

@@ -60,7 +60,7 @@ public:
 
             Ros2QoSProfile qos;
             const std::string& qosProfile = db.inputs.qosProfile();
-            if (qosProfile == "")
+            if (qosProfile.empty())
             {
                 qos.depth = db.inputs.queueSize();
             }

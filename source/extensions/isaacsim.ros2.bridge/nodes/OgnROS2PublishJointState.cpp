@@ -81,7 +81,7 @@ public:
 
             const auto& prim = db.inputs.targetPrim();
             const char* primPath;
-            if (prim.size() > 0)
+            if (!prim.empty())
             {
                 if (!stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0])))
                 {
@@ -121,7 +121,7 @@ public:
 
             Ros2QoSProfile qos;
             const std::string& qosProfile = db.inputs.qosProfile();
-            if (qosProfile == "")
+            if (qosProfile.empty())
             {
                 qos.depth = db.inputs.queueSize();
             }

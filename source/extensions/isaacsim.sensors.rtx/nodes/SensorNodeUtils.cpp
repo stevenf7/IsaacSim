@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -91,7 +91,7 @@ bool LidarConfigHelper::updateLidarConfig(const char* renderProductPath)
 
     this->config = curConfig;
 
-    if (this->config == "")
+    if (this->config.empty())
     {
         this->scanType = LidarScanType::kUnknown;
         return false;

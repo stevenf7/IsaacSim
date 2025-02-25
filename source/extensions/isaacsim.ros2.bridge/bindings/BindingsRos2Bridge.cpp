@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,6 +6,14 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
+/** @file
+ * @brief Python bindings for the ROS 2 bridge interface
+ * @details
+ * This file provides Python bindings for the ROS 2 bridge functionality in Isaac Sim.
+ * It exposes the core ROS 2 bridge interface to Python, allowing Python scripts to
+ * interact with ROS 2 functionality through the bridge.
+ */
 
 #include <carb/BindingsPythonUtils.h>
 
@@ -27,6 +35,15 @@ namespace bridge
 namespace
 {
 
+/**
+ * @brief Python module definition for ROS 2 bridge bindings
+ * @details
+ * Creates and configures the Python module that exposes ROS 2 bridge functionality.
+ * The module provides access to the Ros2Bridge interface and its methods for
+ * managing ROS 2 communication in Isaac Sim.
+ *
+ * @param[in,out] m Python module object to configure
+ */
 PYBIND11_MODULE(_ros2_bridge, m)
 {
     using namespace carb;

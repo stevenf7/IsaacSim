@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -101,7 +101,7 @@ CsRawData* ContactManager::getCsRawData(const char* usdPath, size_t& size)
 CsRawData* ContactManager::getCsRawData(uint64_t token, size_t& size)
 {
     // If filtered list was not generated, create it now
-    if (mContactRawMap.find(token) == mContactRawMap.end() || mContactRawMap[token].size() == 0)
+    if (mContactRawMap.find(token) == mContactRawMap.end() || mContactRawMap[token].empty())
     {
         mContactRawMap[token].resize(mContactRaw.size());
         auto it = std::copy_if(mContactRaw.begin(), mContactRaw.end(), mContactRawMap[token].begin(),
@@ -116,10 +116,14 @@ void ContactManager::removeRawData(const ContactPair& p)
 {
     // CARB_LOG_INFO("Remove Raw Data %s %s", std::string(p.body0).c_str(), std::string(p.body1).c_str());
     if (mContactRawMap.find(p.body0) != mContactRawMap.end())
+    {
         mContactRawMap[p.body0].resize(0);
+    }
     if (mContactRawMap.find(p.body1) != mContactRawMap.end())
+    {
         mContactRawMap[p.body1].resize(0);
-    if (mContactRaw.size() > 0)
+    }
+    if (!mContactRaw.empty())
     {
         auto it = std::remove_if(
             mContactRaw.begin(), mContactRaw.end(), [p](const CsRawData& d) { return p == ContactPair(d); });

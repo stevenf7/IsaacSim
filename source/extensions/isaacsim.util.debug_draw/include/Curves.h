@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,6 +7,9 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
 
 #include <iostream>
 
@@ -19,41 +22,101 @@ namespace debug_draw
 namespace curves
 {
 
-
+/**
+ * @brief Enumeration of supported basis curve types
+ */
 enum class eBasisCurveType
 {
+    /**
+     * @brief Bezier curve type using Bernstein polynomials
+     */
     Bezier = 0,
+
+    /**
+     * @brief Catmull-Rom spline curve type
+     */
     CatmullRom = 1,
+
+    /**
+     * @brief B-spline curve type
+     */
     BSpline = 2
 };
 
+/**
+ * @brief Enumeration of curve wrapping modes
+ */
 enum class eBasisCurveWrap
 {
+    /**
+     * @brief Curve wraps around to form a closed loop
+     */
     Periodic = 0,
+
+    /**
+     * @brief Curve has distinct start and end points
+     */
     NonPeriodic = 1,
+
+    /**
+     * @brief Curve is pinned at endpoints with special handling
+     */
     Pinned = 2
 };
 
+/**
+ * @brief Coefficients for spline curve basis functions and their tangents
+ * @details Contains the basis function coefficients and tangent basis coefficients
+ *          used in spline curve calculations
+ */
 struct coeff
 {
+    /**
+     * @brief Basis function coefficients for curve position calculation
+     */
     pxr::GfVec4f basis;
+
+    /**
+     * @brief Basis function coefficients for curve tangent calculation
+     */
     pxr::GfVec4f tangentBasis;
 };
 
-// Basis class for all spline based curves
+/**
+ * @brief Base class for all spline-based curves
+ * @details Provides common functionality for different types of spline curves,
+ *          including tessellation, evaluation, and segment handling
+ */
 class SplineCurve
 {
 
 public:
+    /**
+     * @brief Step size for curve tessellation
+     * @details Controls the density of points generated during curve tessellation.
+     *          Smaller values create smoother curves with more points.
+     */
     float m_stepSize = 0.1f;
 
+    /**
+     * @brief Constructs a SplineCurve with specified wrap mode and vertex step
+     * @param[in] wrapMode The wrapping behavior of the curve
+     * @param[in] vstep Number of control points to step between curve segments
+     */
     SplineCurve(eBasisCurveWrap wrapMode, uint32_t vstep) : m_wrapMode(wrapMode), m_vstep(vstep)
     {
     }
-    virtual ~SplineCurve()
-    {
-    }
+    virtual ~SplineCurve() = default;
 
+    /**
+     * @brief Tessellates the curve into a series of points and tangents
+     * @details Converts control points into a series of tessellated points and their
+     *          corresponding tangents based on the curve's mathematical properties
+     *
+     * @param[in] controlPoints Array of control points defining the curve
+     * @param[out] tessellatedPoints Output array of tessellated points
+     * @param[out] tessellatedTangents Output array of tangent vectors at tessellated points
+     */
     virtual void tessellate(const pxr::VtArray<pxr::GfVec3f>& controlPoints,
                             pxr::VtArray<pxr::GfVec4f>& tessellatedPoints,
                             pxr::VtArray<pxr::GfVec4f>& tessellatedTangents)
@@ -96,8 +159,27 @@ public:
     }
 
 protected:
+    /**
+     * @brief Evaluates the basis functions for the curve
+     * @details Calculates the coefficients for both position and tangent at a given parameter value
+     *
+     * @param[in] u The parameter value (1-t)
+     * @param[in] u2 The square of the parameter value (u^2)
+     * @param[in] u3 The cube of the parameter value (u^3)
+     * @return Coefficients for curve position and tangent calculation
+     */
     virtual coeff evalBasis(float u, float u2, float u3) = 0;
 
+    /**
+     * @brief Evaluates a segment of the curve
+     * @details Computes tessellated points and tangents for a curve segment
+     *          defined by four control points
+     *
+     * @param[in] controlPoints Array of all control points
+     * @param[out] tessellatedPoints Output array for computed points
+     * @param[out] tessellatedTangents Output array for computed tangents
+     * @param[in] index Starting index in control points array for this segment
+     */
     virtual void eval(const pxr::VtArray<pxr::GfVec3f>& controlPoints,
                       pxr::VtArray<pxr::GfVec4f>& tessellatedPoints,
                       pxr::VtArray<pxr::GfVec4f>& tessellatedTangents,
@@ -120,12 +202,21 @@ protected:
             coeff cf = evalBasis(u, u * u, u * u * u);
             t += tStep;
             tessellatedPoints.push_back(
-                pxr::GfVec4f(p0 * cf.basis[0] + p1 * cf.basis[1] + p2 * cf.basis[2] + p3 * cf.basis[3]));
-            tessellatedTangents.push_back(pxr::GfVec4f(p0 * cf.tangentBasis[0] + p1 * cf.tangentBasis[1] +
-                                                       p2 * cf.tangentBasis[2] + p3 * cf.tangentBasis[3]));
+                static_cast<pxr::GfVec4f>(p0 * cf.basis[0] + p1 * cf.basis[1] + p2 * cf.basis[2] + p3 * cf.basis[3]));
+            tessellatedTangents.push_back(static_cast<pxr::GfVec4f>(p0 * cf.tangentBasis[0] + p1 * cf.tangentBasis[1] +
+                                                                    p2 * cf.tangentBasis[2] + p3 * cf.tangentBasis[3]));
         }
     }
 
+    /**
+     * @brief Injects additional tessellated segments for curve endpoints
+     * @details Handles special cases for curve endpoints when using pinned wrap mode
+     *
+     * @param[in] controlPoints Array of all control points
+     * @param[out] tessellatedPoints Output array for computed points
+     * @param[out] tessellatedTangents Output array for computed tangents
+     * @param[in] index Index indicating which endpoint (0 for start, size for end)
+     */
     virtual void injectTessellatedSegment(const pxr::VtArray<pxr::GfVec3f>& controlPoints,
                                           pxr::VtArray<pxr::GfVec4f>& tessellatedPoints,
                                           pxr::VtArray<pxr::GfVec4f>& tessellatedTangents,
@@ -172,27 +263,53 @@ protected:
             coeff cf = evalBasis(u, u * u, u * u * u);
             t += tStep;
             tessellatedPoints.push_back(
-                pxr::GfVec4f(p0 * cf.basis[0] + p1 * cf.basis[1] + p2 * cf.basis[2] + p3 * cf.basis[3]));
-            tessellatedTangents.push_back(pxr::GfVec4f(p0 * cf.tangentBasis[0] + p1 * cf.tangentBasis[1] +
-                                                       p2 * cf.tangentBasis[2] + p3 * cf.tangentBasis[3]));
+                static_cast<pxr::GfVec4f>(p0 * cf.basis[0] + p1 * cf.basis[1] + p2 * cf.basis[2] + p3 * cf.basis[3]));
+            tessellatedTangents.push_back(static_cast<pxr::GfVec4f>(p0 * cf.tangentBasis[0] + p1 * cf.tangentBasis[1] +
+                                                                    p2 * cf.tangentBasis[2] + p3 * cf.tangentBasis[3]));
         }
     }
 
+    /**
+     * @brief The wrapping behavior of the curve
+     */
     eBasisCurveWrap m_wrapMode;
+
+    /**
+     * @brief Number of control points to step between curve segments
+     */
     uint32_t m_vstep;
 };
 
+/**
+ * @brief Catmull-Rom spline curve implementation
+ * @details A type of cubic spline that passes through its control points and
+ *          provides C1 continuity. Commonly used for smooth interpolation
+ *          between keyframes or points.
+ */
 class CatmullRom : public SplineCurve
 {
 public:
+    /**
+     * @brief Constructs a Catmull-Rom spline
+     * @param[in] wrapMode The wrapping behavior of the curve
+     * @param[in] vstep Number of control points to step between curve segments
+     */
     CatmullRom(eBasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
     {
     }
-    ~CatmullRom() override
-    {
-    }
+    ~CatmullRom() override = default;
 
 protected:
+    /**
+     * @brief Evaluates the Catmull-Rom basis functions
+     * @details Computes the coefficients for both position and tangent using
+     *          the Catmull-Rom spline basis matrix
+     *
+     * @param[in] u The parameter value (1-t)
+     * @param[in] u2 The square of the parameter value (u^2)
+     * @param[in] u3 The cube of the parameter value (u^3)
+     * @return Coefficients for curve position and tangent calculation
+     */
     coeff evalBasis(float u, float u2, float u3) override
     {
         coeff cf;
@@ -205,17 +322,36 @@ protected:
     }
 };
 
+/**
+ * @brief B-spline curve implementation
+ * @details A type of cubic spline that provides C2 continuity and local control.
+ *          The curve generally does not pass through its control points but
+ *          follows their shape smoothly.
+ */
 class BSpline : public SplineCurve
 {
 public:
+    /**
+     * @brief Constructs a B-spline curve
+     * @param[in] wrapMode The wrapping behavior of the curve
+     * @param[in] vstep Number of control points to step between curve segments
+     */
     BSpline(eBasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
     {
     }
-    ~BSpline() override
-    {
-    }
+    ~BSpline() override = default;
 
 protected:
+    /**
+     * @brief Evaluates the B-spline basis functions
+     * @details Computes the coefficients for both position and tangent using
+     *          the cubic B-spline basis matrix
+     *
+     * @param[in] u The parameter value (1-t)
+     * @param[in] u2 The square of the parameter value (u^2)
+     * @param[in] u3 The cube of the parameter value (u^3)
+     * @return Coefficients for curve position and tangent calculation
+     */
     coeff evalBasis(float u, float u2, float u3) override
     {
         coeff cf;
@@ -228,17 +364,36 @@ protected:
     }
 };
 
+/**
+ * @brief Bezier curve implementation
+ * @details A type of parametric curve that uses Bernstein polynomials as a basis.
+ *          The curve is defined by its control points and provides intuitive
+ *          geometric control over its shape.
+ */
 class Bezier : public SplineCurve
 {
 public:
+    /**
+     * @brief Constructs a Bezier curve
+     * @param[in] wrapMode The wrapping behavior of the curve
+     * @param[in] vstep Number of control points to step between curve segments
+     */
     Bezier(eBasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
     {
     }
-    ~Bezier() override
-    {
-    }
+    ~Bezier() override = default;
 
 protected:
+    /**
+     * @brief Evaluates the Bezier basis functions
+     * @details Computes the coefficients for both position and tangent using
+     *          the cubic Bezier basis matrix (Bernstein polynomials)
+     *
+     * @param[in] u The parameter value (1-t)
+     * @param[in] u2 The square of the parameter value (u^2)
+     * @param[in] u3 The cube of the parameter value (u^3)
+     * @return Coefficients for curve position and tangent calculation
+     */
     coeff evalBasis(float u, float u2, float u3) override
     {
         coeff cf;
@@ -257,13 +412,45 @@ const pxr::TfToken UVToken("primvars:st");
 /*
  *  Exposed class to Python
  */
+/**
+ * @class BasisCurves
+ * @brief A class for managing and manipulating basis curves in USD stage.
+ * @details
+ * This class provides functionality to create, tessellate, and manipulate basis curves
+ * in a USD stage. It supports different curve types including Bezier, CatmullRom, and BSpline,
+ * and can generate mesh representations of the curves.
+ *
+ * The class is exposed to Python for scripting purposes and handles the creation
+ * of curve meshes with specified widths and normals.
+ */
 class BasisCurves
 {
 public:
-    // arrays accessed from within script
+    /**
+     * @brief Array of tessellated points representing the curve in 4D space.
+     * @details Contains the discretized points along the curve, where each point
+     * is represented as a GfVec4f (x, y, z, w).
+     */
     pxr::VtArray<pxr::GfVec4f> tessellatedPoints;
+
+    /**
+     * @brief Array of tessellated tangent vectors for the curve in 4D space.
+     * @details Contains the tangent vectors at each tessellated point,
+     * represented as GfVec4f vectors.
+     */
     pxr::VtArray<pxr::GfVec4f> tessellatedTangents;
 
+    /**
+     * @brief Constructs a BasisCurves object.
+     * @param[in] stageId The USD stage ID where the curve exists.
+     * @param[in] primPath The primitive path for the curve in the USD stage.
+     * @param[in] meshPrimPath The primitive path for the mesh representation.
+     * @param[in] stepSize The tessellation step size (default: 0.1).
+     * @details
+     * Creates a BasisCurves object that manages a curve primitive in the USD stage.
+     * The constructor initializes the appropriate curve type (Bezier, CatmullRom, or BSpline)
+     * based on the primitive's attributes.
+     */
     BasisCurves(long int stageId, const std::string& primPath, const std::string& meshPrimPath, const float stepSize = 0.1)
     {
         m_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -311,6 +498,21 @@ public:
         delete m_curve;
     }
 
+    /**
+     * @brief Tessellates the curve into discrete points and tangents.
+     * @return The number of tessellated points generated.
+     * @details
+     * This function performs the tessellation of the curve, generating discrete points
+     * and tangents along the curve path. It also creates a mesh representation of the
+     * curve using the specified width and normal attributes from the USD primitive.
+     *
+     * The function clears existing tessellated points and tangents before generating
+     * new ones. It only supports ribbon-style curves (curves with normal attributes)
+     * and does not support tube-style curves.
+     *
+     * @note The function requires valid normal and width attributes in the USD primitive.
+     * @return Returns 0 if tessellation fails, otherwise returns the number of tessellated points.
+     */
     size_t tessellateCurve()
     {
         tessellatedPoints.clear();
@@ -380,6 +582,17 @@ public:
         return length;
     }
 
+    /**
+     * @brief Creates a mesh representation of the curve.
+     * @param[in] width Half-width of the curve ribbon.
+     * @param[in] normal The normal vector for the curve ribbon orientation.
+     * @param[in] tessellatedPoints Array of tessellated points along the curve.
+     * @param[in] tessellatedTangents Array of tangent vectors at tessellated points.
+     * @details
+     * Creates a mesh representation of the curve as a ribbon with the specified width
+     * and orientation. The mesh is generated using the tessellated points and tangents,
+     * creating a ribbon-like surface that follows the curve path.
+     */
     void createCurveMesh(float width,
                          pxr::GfVec3f normal,
                          pxr::VtArray<pxr::GfVec4f>& tessellatedPoints,

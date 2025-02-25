@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,6 +7,13 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+/** @file
+ * @brief ROS 2 error handling macros
+ * @details
+ * This file provides utility macros for handling and reporting ROS Client Library (rcl)
+ * errors in a consistent manner throughout the Isaac Sim ROS 2 bridge. The macros
+ * facilitate error reporting with contextual information about where the error occurred.
+ */
 #pragma once
 
 #include <carb/logging/Log.h>
@@ -26,10 +33,23 @@ namespace bridge
 {
 
 /**
- * Print `rcl` current error string as ERROR.
+ * @def RCL_ERROR_MSG
+ * @brief Macro for printing RCL errors with context
+ * @details
+ * Prints the current RCL error string as an ERROR level message, including
+ * information about where the error occurred. After printing, it resets
+ * the RCL error state to prevent error propagation.
  *
- * @param caller Class, method, function, etc. from which the code is called.
- * @param called Called code (method, function, etc.).
+ * Usage example:
+ * ```cpp
+ * if (rcl_operation_failed) {
+ *     RCL_ERROR_MSG(MyClass::MyMethod, rcl_operation);
+ *     return false;
+ * }
+ * ```
+ *
+ * @param caller The context where the error occurred (e.g., class, method, function)
+ * @param called The RCL operation that failed
  */
 #define RCL_ERROR_MSG(caller, called)                                                                                  \
     do                                                                                                                 \
@@ -39,10 +59,23 @@ namespace bridge
     } while (0)
 
 /**
- * Print `rcl` current error string as WARNING.
+ * @def RCL_WARN_MSG
+ * @brief Macro for printing RCL warnings with context
+ * @details
+ * Prints the current RCL error string as a WARNING level message, including
+ * information about where the warning occurred. After printing, it resets
+ * the RCL error state to prevent warning propagation.
  *
- * @param caller Class, method, function, etc. from which the code is called.
- * @param called Called code (method, function, etc.).
+ * Usage example:
+ * ```cpp
+ * if (rcl_operation_suspicious) {
+ *     RCL_WARN_MSG(MyClass::MyMethod, rcl_operation);
+ *     // continue execution
+ * }
+ * ```
+ *
+ * @param caller The context where the warning occurred (e.g., class, method, function)
+ * @param called The RCL operation that triggered the warning
  */
 #define RCL_WARN_MSG(caller, called)                                                                                   \
     do                                                                                                                 \

@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,7 +8,11 @@
 //
 
 /** @file
- * @brief ROS 2 Quality of Service (QoS) related definitions.
+ * @brief ROS 2 Quality of Service (QoS) definitions and utilities
+ * @details
+ * This file contains the definitions and utilities for handling ROS 2 Quality of Service (QoS)
+ * settings in the Isaac Sim bridge. It provides enums, structures, and conversion utilities
+ * for managing QoS profiles according to ROS 2 specifications.
  */
 #pragma once
 
@@ -27,84 +31,115 @@ namespace bridge
 {
 
 /**
- * Enumerations of ROS 2 QoS History policy
+ * @enum Ros2QoSHistoryPolicy
+ * @brief Enumerations of ROS 2 QoS History policy
+ * @details
+ * Defines the history policy options for ROS 2 QoS settings, determining how messages
+ * are stored before being sent or after being received.
  *
- * See [QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html).
+ * @see [ROS 2 QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html)
  */
 enum class Ros2QoSHistoryPolicy
 {
-    eSystemDefault,
-    eKeepLast,
-    eKeepAll,
-    eUnknown
+    eSystemDefault, /**< Use the system default history setting */
+    eKeepLast, /**< Keep only the last N messages (N defined by queue depth) */
+    eKeepAll, /**< Keep all messages */
+    eUnknown /**< Unknown or invalid history policy */
 };
 
 /**
- * Enumerations of ROS 2 QoS Reliability policy
+ * @enum Ros2QoSReliabilityPolicy
+ * @brief Enumerations of ROS 2 QoS Reliability policy
+ * @details
+ * Defines the reliability policy options for ROS 2 QoS settings, determining the
+ * guarantees about message delivery.
  *
- * See [QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html).
+ * @see [ROS 2 QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html)
  */
 enum class Ros2QoSReliabilityPolicy
 {
-    eSystemDefault,
-    eReliable,
-    eBestEffort,
-    eUnknown
+    eSystemDefault, /**< Use the system default reliability setting */
+    eReliable, /**< Guarantee message delivery with retries */
+    eBestEffort, /**< No delivery guarantee, may drop messages */
+    eUnknown /**< Unknown or invalid reliability policy */
 };
 
 /**
- * Enumerations of ROS 2 QoS Durability policy
+ * @enum Ros2QoSDurabilityPolicy
+ * @brief Enumerations of ROS 2 QoS Durability policy
+ * @details
+ * Defines the durability policy options for ROS 2 QoS settings, determining how messages
+ * are handled for late-joining subscribers.
  *
- * See [QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html).
+ * @see [ROS 2 QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html)
  */
 enum class Ros2QoSDurabilityPolicy
 {
-    eSystemDefault,
-    eTransientLocal,
-    eVolatile,
-    eUnknown
+    eSystemDefault, /**< Use the system default durability setting */
+    eTransientLocal, /**< Store messages locally for late joiners */
+    eVolatile, /**< No storage of messages for late joiners */
+    eUnknown /**< Unknown or invalid durability policy */
 };
 
 /**
- * Enumerations of ROS 2 QoS Liveliness policy
+ * @enum Ros2QoSLivelinessPolicy
+ * @brief Enumerations of ROS 2 QoS Liveliness policy
+ * @details
+ * Defines the liveliness policy options for ROS 2 QoS settings, determining how
+ * the system monitors the presence of entities.
  *
- * See [QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html).
+ * @see [ROS 2 QoS policies](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html)
  */
 enum class Ros2QoSLivelinessPolicy
 {
-    eSystemDefault,
-    eAutomatic,
-    eManualByNode, // Deprecated
-    eManualByTopic,
-    eUnknown
+    eSystemDefault, /**< Use the system default liveliness setting */
+    eAutomatic, /**< System automatically monitors liveliness */
+    eManualByNode, /**< Node must manually assert liveliness (Deprecated) */
+    eManualByTopic, /**< Publisher must manually assert liveliness */
+    eUnknown /**< Unknown or invalid liveliness policy */
 };
 
 /**
- * ROS 2 QoS Time
+ * @struct Ros2QoSTime
+ * @brief ROS 2 QoS time representation
+ * @details
+ * Structure for representing time durations in ROS 2 QoS settings,
+ * using seconds and nanoseconds components.
  */
 struct Ros2QoSTime
 {
-    uint64_t sec; //!< Seconds.
-    uint64_t nsec; //!< Nanoseconds.
+    uint64_t sec; /**< Time in seconds */
+    uint64_t nsec; /**< Additional time in nanoseconds */
 };
 
 /**
- * ROS 2 QoS Profile
+ * @struct Ros2QoSProfile
+ * @brief ROS 2 QoS Profile configuration
+ * @details
+ * Comprehensive structure for configuring all aspects of ROS 2 Quality of Service.
+ * Provides settings for history, reliability, durability, deadlines, lifespan,
+ * and liveliness policies.
  */
 struct Ros2QoSProfile
 {
-    Ros2QoSHistoryPolicy history; //!< History QoS policy setting.
-    size_t depth; //!< Size of the message queue.
-    Ros2QoSReliabilityPolicy reliability; //!< Reliability QoS policy setting.
-    Ros2QoSDurabilityPolicy durability; //!< Durability QoS policy setting.
-    Ros2QoSTime deadline; //!< Period at which messages are expected to be sent/received.
-    Ros2QoSTime lifespan; //!< Age at which messages are considered expired/no longer valid.
-    Ros2QoSLivelinessPolicy liveliness; //!< Liveliness QoS policy setting.
-    Ros2QoSTime livelinessLeaseDuration; //!< Time within which the RMW node or publisher must show that it is alive.
-    bool avoidRosNamespaceConventions; //!< Whether to circumvent any ROS 2-specific namespacing conventions.
+    Ros2QoSHistoryPolicy history; /**< History policy setting */
+    size_t depth; /**< Size of the message queue */
+    Ros2QoSReliabilityPolicy reliability; /**< Reliability policy setting */
+    Ros2QoSDurabilityPolicy durability; /**< Durability policy setting */
+    Ros2QoSTime deadline; /**< Period for expected message send/receive */
+    Ros2QoSTime lifespan; /**< Maximum age for valid messages */
+    Ros2QoSLivelinessPolicy liveliness; /**< Liveliness policy setting */
+    Ros2QoSTime livelinessLeaseDuration; /**< Time window for liveliness assertion */
+    bool avoidRosNamespaceConventions; /**< Flag to bypass ROS 2 namespace conventions */
 
     /**
-     * Constructor to system default values.
+     * @brief Default constructor initializing system default values
+     * @details
+     * Initializes the QoS profile with ROS 2 default values from rmw_qos_profile_default:
+     * - History: Keep last 10 messages
+     * - Reliability: Reliable delivery
+     * - Durability: Volatile
+     * - Other timing parameters: 0
      */
     Ros2QoSProfile()
     {
@@ -124,6 +159,9 @@ struct Ros2QoSProfile
 namespace
 {
 
+/**
+ * @brief Mapping from string representations to History policy enums
+ */
 const std::map<std::string, Ros2QoSHistoryPolicy> Ros2QoSHistoryString2PolicyMap = {
     { "systemDefault", Ros2QoSHistoryPolicy::eSystemDefault },
     { "keepLast", Ros2QoSHistoryPolicy::eKeepLast },
@@ -131,6 +169,9 @@ const std::map<std::string, Ros2QoSHistoryPolicy> Ros2QoSHistoryString2PolicyMap
     { "unknown", Ros2QoSHistoryPolicy::eUnknown }
 };
 
+/**
+ * @brief Mapping from string representations to Reliability policy enums
+ */
 const std::map<std::string, Ros2QoSReliabilityPolicy> Ros2QoSReliabilityString2PolicyMap = {
     { "systemDefault", Ros2QoSReliabilityPolicy::eSystemDefault },
     { "reliable", Ros2QoSReliabilityPolicy::eReliable },
@@ -138,6 +179,9 @@ const std::map<std::string, Ros2QoSReliabilityPolicy> Ros2QoSReliabilityString2P
     { "unknown", Ros2QoSReliabilityPolicy::eUnknown }
 };
 
+/**
+ * @brief Mapping from string representations to Durability policy enums
+ */
 const std::map<std::string, Ros2QoSDurabilityPolicy> Ros2QoSDurabilityString2PolicyMap = {
     { "systemDefault", Ros2QoSDurabilityPolicy::eSystemDefault },
     { "transientLocal", Ros2QoSDurabilityPolicy::eTransientLocal },
@@ -145,12 +189,12 @@ const std::map<std::string, Ros2QoSDurabilityPolicy> Ros2QoSDurabilityString2Pol
     { "unknown", Ros2QoSDurabilityPolicy::eUnknown }
 };
 
+/**
+ * @brief Mapping from string representations to Liveliness policy enums
+ */
 const std::map<std::string, Ros2QoSLivelinessPolicy> Ros2QoSLivelinessString2PolicyMap = {
     { "systemDefault", Ros2QoSLivelinessPolicy::eSystemDefault },
     { "automatic", Ros2QoSLivelinessPolicy::eAutomatic },
-
-    // manualByNode deprecated
-    //  {"manualByNode", Ros2QoSLivelinessPolicy::eManualByNode},
     { "manualByTopic", Ros2QoSLivelinessPolicy::eManualByTopic },
     { "unknown", Ros2QoSLivelinessPolicy::eUnknown }
 };
@@ -158,11 +202,24 @@ const std::map<std::string, Ros2QoSLivelinessPolicy> Ros2QoSLivelinessString2Pol
 } // namespace anonymous
 
 /**
- * Convert a QoS profile formatted as JSON to \ref Ros2QoSProfile.
+ * @brief Converts a JSON string to a ROS 2 QoS profile
+ * @details
+ * Parses a JSON string containing QoS settings and converts it into a Ros2QoSProfile
+ * structure. The JSON must contain all required fields with appropriate types:
+ * - history: string (matching Ros2QoSHistoryPolicy)
+ * - depth: non-negative integer
+ * - reliability: string (matching Ros2QoSReliabilityPolicy)
+ * - durability: string (matching Ros2QoSDurabilityPolicy)
+ * - deadline: non-negative float (seconds)
+ * - lifespan: non-negative float (seconds)
+ * - liveliness: string (matching Ros2QoSLivelinessPolicy)
+ * - leaseDuration: non-negative float (seconds)
  *
- * @param qos \ref Ros2QoSProfile instance where to storage the converted data.
- * @param jsonString JSON formatted string.
- * @returns Whether the conversion has been successfully completed.
+ * @param[out] qos Reference to Ros2QoSProfile to store the converted settings
+ * @param[in] jsonString JSON string containing QoS settings
+ * @return bool True if conversion successful, false otherwise
+ *
+ * @note The function performs extensive validation of the JSON input
  */
 inline static const bool jsonToRos2QoSProfile(Ros2QoSProfile& qos, const std::string& jsonString)
 {
@@ -186,7 +243,6 @@ inline static const bool jsonToRos2QoSProfile(Ros2QoSProfile& qos, const std::st
     }
     catch (nlohmann::json::parse_error& e)
     {
-
         std::cerr << "Parsing error: " << e.what() << '\n';
         return false;
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,6 +9,10 @@
 
 #pragma once
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #include <DynamicControlTypes.h>
 #include <cmath>
 
@@ -18,14 +22,32 @@ namespace core
 {
 namespace utils
 {
+
+/**
+ * @namespace math
+ * @brief Mathematical utility functions for 3D graphics and physics calculations.
+ * @details
+ * This namespace provides a comprehensive set of mathematical operations commonly used in
+ * 3D graphics and physics simulations. It includes:
+ * - Vector operations (dot product, cross product, normalization)
+ * - Quaternion operations (multiplication, inversion, normalization)
+ * - Transform operations (composition, inversion)
+ * - Interpolation functions (linear and spherical)
+ * - Geometric utilities (basis vectors, look-at calculations)
+ *
+ * All functions are implemented as inline for performance optimization.
+ */
 namespace math
 {
 /**
- * @brief Cross product between carb::Float3
+ * @brief Computes the cross product of two 3D vectors.
+ * @details Calculates the vector perpendicular to both input vectors following the right-hand rule.
  *
- *  @param[in] carb::Float3.
- *  @param[in] carb::Float3.
- *  @return carb::Float3
+ * @param[in] b First vector
+ * @param[in] c Second vector
+ * @return carb::Float3 The cross product vector
+ *
+ * @note The resulting vector is perpendicular to both input vectors
  */
 inline carb::Float3 cross(const carb::Float3& b, const carb::Float3& c)
 {
@@ -33,11 +55,14 @@ inline carb::Float3 cross(const carb::Float3& b, const carb::Float3& c)
 }
 
 /**
- * @brief Dot product between carb::Float3
+ * @brief Computes the dot product of two 3D vectors.
+ * @details Calculates the scalar product of two vectors, representing their similarity.
  *
- *  @param[in] carb::Float3.
- *  @param[in] carb::Float3.
- *  @return float
+ * @param[in] v1 First vector
+ * @param[in] v2 Second vector
+ * @return float The dot product scalar
+ *
+ * @note Returns 0 for perpendicular vectors, positive for similar directions, negative for opposite directions
  */
 inline float dot(const carb::Float3& v1, const carb::Float3& v2)
 {
@@ -45,23 +70,28 @@ inline float dot(const carb::Float3& v1, const carb::Float3& v2)
 }
 
 /**
- * @brief Dot product between carb::Float4
+ * @brief Computes the dot product of two 4D vectors.
+ * @details Calculates the scalar product of two 4D vectors, useful for quaternion calculations.
  *
- *  @param[in] carb::Float4.
- *  @param[in] carb::Float4.
- *  @return float
+ * @param[in] v1 First vector
+ * @param[in] v2 Second vector
+ * @return float The dot product scalar
  */
 inline float dot(const carb::Float4& v1, const carb::Float4& v2)
 {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 }
 
-
 /**
- * @brief Inverse of float4 as a quaternion
+ * @brief Computes the inverse of a quaternion.
+ * @details
+ * For unit quaternions, the inverse is equal to the conjugate.
+ * This function assumes the input quaternion is normalized.
  *
- *  @param[in] carb::Float4.
- *  @return carb::Float4.
+ * @param[in] q Input quaternion
+ * @return carb::Float4 The inverse quaternion
+ *
+ * @note Assumes input quaternion is normalized
  */
 inline carb::Float4 inverse(const carb::Float4& q)
 {
@@ -69,11 +99,12 @@ inline carb::Float4 inverse(const carb::Float4& q)
 }
 
 /**
- * @brief Multiply carb::Float3 with a float
+ * @brief Scales a 3D vector by a scalar value.
+ * @details Multiplies each component of the vector by the scalar.
  *
- *  @param[in] carb::Float3.
- *  @param[in] float.
- *  @return carb::Float3
+ * @param[in] a Vector to scale
+ * @param[in] x Scalar value
+ * @return carb::Float3 The scaled vector
  */
 inline carb::Float3 operator*(const carb::Float3& a, const float x)
 {
@@ -81,11 +112,12 @@ inline carb::Float3 operator*(const carb::Float3& a, const float x)
 }
 
 /**
- * @brief Multiply carb::Float4 with a float
+ * @brief Scales a 4D vector/quaternion by a scalar value.
+ * @details Multiplies each component of the vector by the scalar.
  *
- *  @param[in] carb::Float4.
- *  @param[in] float.
- *  @return carb::Float4
+ * @param[in] a Vector to scale
+ * @param[in] x Scalar value
+ * @return carb::Float4 The scaled vector
  */
 inline carb::Float4 operator*(const carb::Float4& a, const float x)
 {
@@ -93,11 +125,16 @@ inline carb::Float4 operator*(const carb::Float4& a, const float x)
 }
 
 /**
- * @brief Quaternion Multiplication between carb::Float4 and carb::Float4
+ * @brief Performs quaternion multiplication.
+ * @details
+ * Implements the Hamilton product for quaternions, representing 3D rotation composition.
+ * The order of multiplication matters (non-commutative).
  *
- *  @param[in] carb::Float4.
- *  @param[in] carb::Float4.
- *  @return carb::Float4
+ * @param[in] a First quaternion (applied second)
+ * @param[in] b Second quaternion (applied first)
+ * @return carb::Float4 The resulting quaternion
+ *
+ * @note The resulting rotation is b followed by a
  */
 inline carb::Float4 operator*(const carb::Float4& a, const carb::Float4& b)
 {
@@ -106,11 +143,12 @@ inline carb::Float4 operator*(const carb::Float4& a, const carb::Float4& b)
 }
 
 /**
- * @brief Add two carb::Float3
+ * @brief Adds two 3D vectors.
+ * @details Component-wise addition of vectors.
  *
- *  @param[in] carb::Float3.
- *  @param[in] carb::Float3.
- *  @return carb::Float3
+ * @param[in] a First vector
+ * @param[in] b Second vector
+ * @return carb::Float3 The sum vector
  */
 inline carb::Float3 operator+(const carb::Float3& a, const carb::Float3& b)
 {
@@ -118,49 +156,54 @@ inline carb::Float3 operator+(const carb::Float3& a, const carb::Float3& b)
 }
 
 /**
- * @brief Subtract two carb::Float3
+ * @brief Subtracts two 3D vectors.
+ * @details Component-wise subtraction of vectors.
  *
- *  @param[in] carb::Float3.
- *  @param[in] carb::Float3.
- *  @return carb::Float3
+ * @param[in] a First vector (minuend)
+ * @param[in] b Second vector (subtrahend)
+ * @return carb::Float3 The difference vector
  */
 inline carb::Float3 operator-(const carb::Float3& a, const carb::Float3& b)
 {
     return carb::Float3{ a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
-
 /**
- * @brief Add two carb::Float4
+ * @brief Adds two 4D vectors/quaternions.
+ * @details Component-wise addition of vectors.
  *
- *  @param[in] carb::Float4.
- *  @param[in] carb::Float4.
- *  @return carb::Float4
+ * @param[in] a First vector
+ * @param[in] b Second vector
+ * @return carb::Float4 The sum vector
  */
 inline carb::Float4 operator+(const carb::Float4& a, const carb::Float4& b)
 {
     return carb::Float4{ a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
 }
 
-
 /**
- * @brief Subtract two carb::Float4
+ * @brief Subtracts two 4D vectors/quaternions.
+ * @details Component-wise subtraction of vectors.
  *
- *  @param[in] carb::Float4.
- *  @param[in] carb::Float4.
- *  @return carb::Float4
+ * @param[in] a First vector (minuend)
+ * @param[in] b Second vector (subtrahend)
+ * @return carb::Float4 The difference vector
  */
 inline carb::Float4 operator-(const carb::Float4& a, const carb::Float4& b)
 {
     return carb::Float4{ a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
 }
 
-
 /**
- * @brief Normalize carb::Float4
+ * @brief Normalizes a quaternion to unit length.
+ * @details
+ * Scales the quaternion so its magnitude becomes 1.
+ * Returns identity quaternion if input magnitude is 0.
  *
- *  @param[in] carb::Float4.
- *  @return carb::Float4.
+ * @param[in] q Input quaternion
+ * @return carb::Float4 Normalized quaternion
+ *
+ * @note Returns identity quaternion (0,0,0,1) if input magnitude is 0
  */
 inline carb::Float4 normalize(const carb::Float4& q)
 {
@@ -168,7 +211,6 @@ inline carb::Float4 normalize(const carb::Float4& q)
     if (lSq > 0.0f)
     {
         float invL = 1.0f / std::sqrt(lSq);
-
         return q * invL;
     }
     else
@@ -178,10 +220,15 @@ inline carb::Float4 normalize(const carb::Float4& q)
 }
 
 /**
- * @brief Normalize carb::Float3
+ * @brief Normalizes a 3D vector to unit length.
+ * @details
+ * Scales the vector so its magnitude becomes 1.
+ * Returns zero vector if input magnitude is 0.
  *
- *  @param[in] carb::Float3.
- *  @return carb::Float3.
+ * @param[in] q Input vector
+ * @return carb::Float3 Normalized vector
+ *
+ * @note Returns zero vector if input magnitude is 0
  */
 inline carb::Float3 normalize(const carb::Float3& q)
 {
@@ -189,7 +236,6 @@ inline carb::Float3 normalize(const carb::Float3& q)
     if (lSq > 0.0f)
     {
         float invL = 1.0f / sqrtf(lSq);
-
         return q * invL;
     }
     else
@@ -199,11 +245,16 @@ inline carb::Float3 normalize(const carb::Float3& q)
 }
 
 /**
- * @brief Rotate a vector carb::Float3 by quaternion carb::Float4
+ * @brief Rotates a vector by a quaternion.
+ * @details
+ * Applies a quaternion rotation to a 3D vector.
+ * Uses the quaternion sandwich product: q * v * q^(-1)
  *
- *  @param[in] carb::Float4.
- *  @param[in] carb::Float3.
- *  @return carb::Float3.
+ * @param[in] q Rotation quaternion (must be normalized)
+ * @param[in] x Vector to rotate
+ * @return carb::Float3 Rotated vector
+ *
+ * @note Assumes input quaternion is normalized
  */
 inline carb::Float3 rotate(const carb::Float4& q, const carb::Float3 x)
 {
@@ -211,13 +262,17 @@ inline carb::Float3 rotate(const carb::Float4& q, const carb::Float3 x)
     return x * (2.0f * q.w * q.w - 1.0f) + cross(v_q, x) * q.w * 2.0f + v_q * dot(v_q, x) * 2.0f;
 }
 
-
 /**
- * @brief Multiple two DcTransform objects
+ * @brief Multiplies two transforms to compose them.
+ * @details
+ * Combines two transforms by applying them in sequence.
+ * The order of multiplication matters (non-commutative).
  *
- *  @param[in] DcTransform.
- *  @param[in] DcTransform.
- *  @return DcTransform.
+ * @param[in] self First transform (applied second)
+ * @param[in] other Second transform (applied first)
+ * @return DcTransform The composed transform
+ *
+ * @note The resulting transform applies other first, then self
  */
 inline omni::isaac::dynamic_control::DcTransform operator*(const omni::isaac::dynamic_control::DcTransform& self,
                                                            const omni::isaac::dynamic_control::DcTransform& other)
@@ -226,10 +281,15 @@ inline omni::isaac::dynamic_control::DcTransform operator*(const omni::isaac::dy
 }
 
 /**
- * @brief Get Inverse of DcTransform
+ * @brief Computes the inverse of a transform.
+ * @details
+ * Calculates the inverse transform that, when applied after the original,
+ * results in the identity transform.
  *
- *  @param[in] DcTransform.
- *  @return DcTransform.
+ * @param[in] transform Transform to invert
+ * @return DcTransform The inverse transform
+ *
+ * @note For a valid transform T, T * inverse(T) equals the identity transform
  */
 inline omni::isaac::dynamic_control::DcTransform inverse(const omni::isaac::dynamic_control::DcTransform& transform)
 {
@@ -240,11 +300,14 @@ inline omni::isaac::dynamic_control::DcTransform inverse(const omni::isaac::dyna
 }
 
 /**
- * @brief computes local pose of b in a space
+ * @brief Computes the relative transform from a to b.
+ * @details
+ * Calculates the transform that, when applied to a, results in b.
+ * This is equivalent to inverse(a) * b.
  *
- *  @param[in] pxr::DcTransform.
- *  @param[in] pxr::DcTransform.
- *  @return pxr::DcTransform.
+ * @param[in] a Reference transform
+ * @param[in] b Target transform
+ * @return DcTransform Transform from a to b
  */
 inline omni::isaac::dynamic_control::DcTransform transformInv(const omni::isaac::dynamic_control::DcTransform& a,
                                                               const omni::isaac::dynamic_control::DcTransform& b)
@@ -279,11 +342,16 @@ inline omni::isaac::dynamic_control::DcTransform transformInv(const omni::isaac:
 }
 
 /**
- * @brief computes local pose of b in a space
+ * @brief Computes the local transform of b relative to transform a
+ * @details
+ * Calculates the transform that represents b's pose in a's local coordinate frame.
+ * This is equivalent to inverse(a) * b.
  *
- *  @param[in] pxr::GfTransform.
- *  @param[in] pxr::GfTransform.
- *  @return pxr::GfTransform.
+ * @param[in] a Reference transform that defines the local coordinate frame
+ * @param[in] b Target transform to be expressed in a's frame
+ * @return pxr::GfTransform Transform representing b in a's local frame
+ *
+ * @note This is the Pixar USD transform version of transformInv()
  */
 inline pxr::GfTransform transformInv(const pxr::GfTransform& a, const pxr::GfTransform& b)
 {
@@ -295,10 +363,15 @@ inline pxr::GfTransform transformInv(const pxr::GfTransform& a, const pxr::GfTra
 }
 
 /**
- * @brief Rotate x axis basis vector by quaternion carb::Float4
+ * @brief Gets the X basis vector from a rotation quaternion.
+ * @details
+ * Extracts the local X axis direction after applying the rotation.
+ * Equivalent to rotating the world X axis (1,0,0) by the quaternion.
  *
- *  @param[in] carb::Float4.
- *  @return carb::Float3.
+ * @param[in] q Rotation quaternion (must be normalized)
+ * @return carb::Float3 The rotated X basis vector
+ *
+ * @note Assumes input quaternion is normalized
  */
 inline carb::Float3 getBasisVectorX(const carb::Float4& q)
 {
@@ -306,10 +379,15 @@ inline carb::Float3 getBasisVectorX(const carb::Float4& q)
 }
 
 /**
- * @brief Rotate y axis basis vector by quaternion carb::Float4
+ * @brief Gets the Y basis vector from a rotation quaternion.
+ * @details
+ * Extracts the local Y axis direction after applying the rotation.
+ * Equivalent to rotating the world Y axis (0,1,0) by the quaternion.
  *
- *  @param[in] carb::Float4.
- *  @return carb::Float3.
+ * @param[in] q Rotation quaternion (must be normalized)
+ * @return carb::Float3 The rotated Y basis vector
+ *
+ * @note Assumes input quaternion is normalized
  */
 inline carb::Float3 getBasisVectorY(const carb::Float4& q)
 {
@@ -317,24 +395,33 @@ inline carb::Float3 getBasisVectorY(const carb::Float4& q)
 }
 
 /**
- * @brief Rotate z axis basis vector by quaternion carb::Float4
+ * @brief Gets the Z basis vector from a rotation quaternion.
+ * @details
+ * Extracts the local Z axis direction after applying the rotation.
+ * Equivalent to rotating the world Z axis (0,0,1) by the quaternion.
  *
- *  @param[in] carb::Float4.
- *  @return carb::Float3.
+ * @param[in] q Rotation quaternion (must be normalized)
+ * @return carb::Float3 The rotated Z basis vector
+ *
+ * @note Assumes input quaternion is normalized
  */
 inline carb::Float3 getBasisVectorZ(const carb::Float4& q)
 {
     return rotate(q, carb::Float3{ 0.0f, 0.0f, 1.0f });
 }
 
-
 /**
- * @brief Linear interpolation between two vectors
+ * @brief Linearly interpolates between two 3D vectors.
+ * @details
+ * Performs linear interpolation between start and end vectors.
+ * The parameter t controls the interpolation: 0 returns start, 1 returns end.
  *
- *  @param[in] carb::Float3.
- *  @param[in] carb::Float3.
- *  @param[in] float.
- *  @return carb::Float3.
+ * @param[in] start Starting vector
+ * @param[in] end Ending vector
+ * @param[in] t Interpolation parameter [0,1]
+ * @return carb::Float3 The interpolated vector
+ *
+ * @note For values of t outside [0,1], extrapolation is performed
  */
 inline carb::Float3 lerp(const carb::Float3& start, const carb::Float3& end, const float t)
 {
@@ -342,12 +429,17 @@ inline carb::Float3 lerp(const carb::Float3& start, const carb::Float3& end, con
 }
 
 /**
- * @brief Linear interpolation between two vectors
+ * @brief Linearly interpolates between two quaternions.
+ * @details
+ * Performs linear interpolation between start and end quaternions.
+ * Note that this does not maintain constant angular velocity.
  *
- *  @param[in] carb::Float4.
- *  @param[in] carb::Float4.
- *  @param[in] float.
- *  @return carb::Float4.
+ * @param[in] start Starting quaternion
+ * @param[in] end Ending quaternion
+ * @param[in] t Interpolation parameter [0,1]
+ * @return carb::Float4 The interpolated quaternion
+ *
+ * @note For better rotation interpolation, consider using slerp instead
  */
 inline carb::Float4 lerp(const carb::Float4& start, const carb::Float4& end, const float t)
 {
@@ -355,12 +447,18 @@ inline carb::Float4 lerp(const carb::Float4& start, const carb::Float4& end, con
 }
 
 /**
- * @brief Spherical Linear interpolation between two vectors
+ * @brief Performs spherical linear interpolation between quaternions.
+ * @details
+ * Interpolates along the shortest arc on the quaternion sphere.
+ * Maintains constant angular velocity throughout the interpolation.
  *
- *  @param[in] carb::Float3.
- *  @param[in] carb::Float3.
- *  @param[in] float.
- *  @return carb::Float3.
+ * @param[in] start Starting quaternion (must be normalized)
+ * @param[in] end Ending quaternion (must be normalized)
+ * @param[in] t Interpolation parameter [0,1]
+ * @return carb::Float4 The interpolated quaternion
+ *
+ * @note Both input quaternions must be normalized
+ * @warning May be unstable for angles close to 180 degrees
  */
 inline carb::Float4 slerp(const carb::Float4& start, const carb::Float4& end, const float t)
 {
@@ -390,12 +488,15 @@ inline carb::Float4 slerp(const carb::Float4& start, const carb::Float4& end, co
 }
 
 /**
- * @brief Linear interpolation between two Transforms
+ * @brief Linearly interpolates between two transforms.
+ * @details
+ * Performs separate linear interpolation on position and rotation components.
+ * Position uses vector lerp, rotation uses quaternion lerp.
  *
- *  @param[in] omni::isaac::dynamic_control::DcTransform.
- *  @param[in] omni::isaac::dynamic_control::DcTransform.
- *  @param[in] float.
- *  @return omni::isaac::dynamic_control::DcTransform.
+ * @param[in] a Starting transform
+ * @param[in] b Ending transform
+ * @param[in] t Interpolation parameter [0,1]
+ * @return DcTransform The interpolated transform
  */
 inline omni::isaac::dynamic_control::DcTransform lerp(const omni::isaac::dynamic_control::DcTransform& a,
                                                       const omni::isaac::dynamic_control::DcTransform& b,
@@ -405,12 +506,15 @@ inline omni::isaac::dynamic_control::DcTransform lerp(const omni::isaac::dynamic
 }
 
 /**
- * @brief Spherical Linear interpolation between two Transforms
+ * @brief Performs spherical linear interpolation between transforms.
+ * @details
+ * Interpolates position linearly and rotation using slerp.
+ * This provides smoother rotation interpolation than regular lerp.
  *
- *  @param[in] omni::isaac::dynamic_control::DcTransform.
- *  @param[in] omni::isaac::dynamic_control::DcTransform.
- *  @param[in] float.
- *  @return omni::isaac::dynamic_control::DcTransform.
+ * @param[in] a Starting transform
+ * @param[in] b Ending transform
+ * @param[in] t Interpolation parameter [0,1]
+ * @return DcTransform The interpolated transform
  */
 inline omni::isaac::dynamic_control::DcTransform slerp(const omni::isaac::dynamic_control::DcTransform& a,
                                                        const omni::isaac::dynamic_control::DcTransform& b,
@@ -420,12 +524,17 @@ inline omni::isaac::dynamic_control::DcTransform slerp(const omni::isaac::dynami
 }
 
 /**
- * @brief Compute look at rotation based on camera position, target location and up vector
+ * @brief Computes a look-at quaternion rotation.
+ * @details
+ * Creates a rotation that orients an object to look at a target point.
+ * The up vector defines the world-space up direction for orientation.
  *
- * @param camera
- * @param target
- * @param up
- * @return pxr::GfQuatf
+ * @param[in] camera Position of the camera/object
+ * @param[in] target Point to look at
+ * @param[in] up World-space up vector (typically {0,1,0})
+ * @return pxr::GfQuatf The resulting look-at rotation
+ *
+ * @note The up vector should not be parallel to the look direction
  */
 inline pxr::GfQuatf lookAt(const pxr::GfVec3f& camera, const pxr::GfVec3f& target, const pxr::GfVec3f& up)
 {
@@ -460,11 +569,16 @@ inline pxr::GfQuatf lookAt(const pxr::GfVec3f& camera, const pxr::GfVec3f& targe
 }
 
 /**
- * @brief Rounds to nearest Nth decimal place
+ * @brief Rounds a number to the nearest multiple of a given value.
+ * @details
+ * Rounds the input to the nearest multiple of the place value.
+ * For example, roundNearest(3.7, 0.5) returns 3.5.
  *
- * @param input decimal number input
- * @param place Nth place to round to, ex: 10000.0 for rounding to nearest ten-thousandths. Must be a positive value.
- * @return double
+ * @param[in] input Value to round
+ * @param[in] place Multiple to round to
+ * @return double The rounded value
+ *
+ * @note If place is 0, returns the input value unchanged
  */
 inline double roundNearest(double input, double place)
 {

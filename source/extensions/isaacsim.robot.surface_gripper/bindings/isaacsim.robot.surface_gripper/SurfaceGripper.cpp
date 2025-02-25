@@ -211,7 +211,7 @@ bool SurfaceGripper::attemptClose(float additionalOffset)
             if (!m_jointHandle)
             {
                 std::string s(m_props.d6JointPath);
-                m_jointProperties.name = (char*)(s).c_str();
+                m_jointProperties.name = const_cast<char*>(s.c_str());
                 m_jointHandle = m_dc->createD6Joint(&m_jointProperties);
             }
             m_dc->setD6JointProperties(m_jointHandle, &m_jointProperties);

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,26 +20,39 @@ namespace isaac
 {
 namespace dynamic_control
 {
+/**
+ * @brief Handle type for dynamic control objects
+ * @details Used to reference physics objects such as rigid bodies, joints, DOFs, articulations, etc.
+ */
 using DcHandle = uint64_t;
 
+/**
+ * @brief Invalid handle constant
+ * @details Used to indicate an invalid or uninitialized handle
+ */
 constexpr DcHandle kDcInvalidHandle = DcHandle(0);
 
+/**
+ * @enum DcObjectType
+ * @brief Types of objects that can be controlled via dynamic control
+ */
 enum DcObjectType : uint32_t
 {
-    eDcObjectNone,
-    eDcObjectRigidBody,
-    eDcObjectJoint,
-    eDcObjectDof,
-    eDcObjectArticulation,
-    eDcObjectAttractor,
-    eDcObjectD6Joint,
+    eDcObjectNone, //!< No object/invalid object type
+    eDcObjectRigidBody, //!< Rigid body object
+    eDcObjectJoint, //!< Joint object
+    eDcObjectDof, //!< Degree of freedom object
+    eDcObjectArticulation, //!< Articulation object
+    eDcObjectAttractor, //!< Attractor object
+    eDcObjectD6Joint, //!< D6 joint object
 
-    kDcObjectTypeCount
+    kDcObjectTypeCount //!< Total number of object types
 };
 
 /// Transform
 /**
- * Represents a pose (e.g. of a rigid body)
+ * @brief Represents a pose (e.g. of a rigid body)
+ * @details Contains position and rotation information for an object in 3D space
  */
 struct DcTransform
 {
@@ -50,7 +63,8 @@ struct DcTransform
 
 /// Velocity
 /**
- * Holds linear and angular velocities, in $m/s$ and $radians/s$
+ * @brief Holds linear and angular velocities, in $m/s$ and $radians/s$
+ * @details Used to represent the complete velocity state of a rigid body
  */
 struct DcVelocity
 {
@@ -60,19 +74,49 @@ struct DcVelocity
 
 // useful constants
 
+/**
+ * @brief Zero vector constant
+ * @details Represents a 3D vector with all components set to zero
+ */
 constexpr carb::Float3 kFloat3Zero = { 0.0f, 0.0f, 0.0f };
 
+/**
+ * @brief Identity quaternion constant
+ * @details Represents a quaternion with no rotation (identity)
+ */
 constexpr carb::Float4 kQuatIdentity = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+/**
+ * @brief Zero quaternion constant
+ * @details Represents a quaternion with all components set to zero (not a valid rotation)
+ */
 constexpr carb::Float4 kQuatZero = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+/**
+ * @brief Identity transform constant
+ * @details Represents a transform with no translation and no rotation
+ */
 constexpr DcTransform kTransformIdentity = { kFloat3Zero, kQuatIdentity };
+
+/**
+ * @brief Zero transform constant
+ * @details Represents a transform with no translation and identity rotation
+ */
 constexpr DcTransform kTransformZero = { kFloat3Zero, kQuatIdentity };
 
+/**
+ * @brief Zero velocity constant
+ * @details Represents a velocity with no linear or angular components
+ */
 constexpr DcVelocity kVelocityZero{ kFloat3Zero, kFloat3Zero };
 
 /** @defgroup DcStateFlags
  * States that can be get/set from Degrees of Freedom and Rigid Bodies
  * @{
+ */
+/**
+ * @brief Type for state flags
+ * @details Used to specify which state components to get or set
  */
 using DcStateFlags = int;
 constexpr DcStateFlags kDcStateNone = 0; //!< No state selected
@@ -84,7 +128,8 @@ constexpr DcStateFlags kDcStateAll = (kDcStatePos | kDcStateVel | kDcStateEffort
 
 /// Drive modes for degrees-of-freedom.
 /**
- * A DoF that is set on a specific drive mode will ignore drive target
+ * @brief Drive modes for degrees-of-freedom
+ * @details A DoF that is set on a specific drive mode will ignore drive target
  * commands sent for a different mode.
  * Joint limits, if they exist, will still be enforced.
  */
@@ -97,7 +142,7 @@ enum class DcDriveMode : int32_t
 
 /**
  * @brief Result of a Raycast
- *
+ * @details Contains information about a raycast hit, including the hit object and distance
  */
 struct DcRayCastResult
 {
@@ -107,7 +152,8 @@ struct DcRayCastResult
 };
 
 /**
- * State of a rigid body
+ * @brief State of a rigid body
+ * @details Contains the pose and velocity of a rigid body
  */
 struct DcRigidBodyState
 {
@@ -116,7 +162,8 @@ struct DcRigidBodyState
 };
 
 /**
- * State of a degree of freedom
+ * @brief State of a degree of freedom
+ * @details Contains the position, velocity, and effort of a degree of freedom
  */
 struct DcDofState
 {
@@ -127,18 +174,22 @@ struct DcDofState
 
 /// Types of joint
 /**
+ * @brief Types of joint
+ * @details Defines the different types of joints that can be created
  */
 enum class DcJointType : int32_t
 {
     eNone, //!< invalid/unknown/uninitialized joint type
-    eFixed,
-    eRevolute,
-    ePrismatic,
-    eSpherical,
+    eFixed, //!< Fixed joint with no degrees of freedom
+    eRevolute, //!< Revolute joint with one rotational degree of freedom
+    ePrismatic, //!< Prismatic joint with one translational degree of freedom
+    eSpherical, //!< Spherical joint with three rotational degrees of freedom
 };
 
 /// Types of degree of freedom
 /**
+ * @brief Types of degree of freedom
+ * @details Defines the different types of degrees of freedom
  */
 enum class DcDofType : int32_t
 {
@@ -147,32 +198,41 @@ enum class DcDofType : int32_t
     eTranslation, //!< The degrees of freedom correspond to a translation between bodies.
 };
 
+/**
+ * @brief Properties of an articulation
+ * @details Contains settings that control the behavior of an articulation
+ */
 struct DcArticulationProperties
 {
 
     // float stabilizationThreshold = 10.0;
     // float sleepThreshold = 50.0;
-    uint32_t solverPositionIterationCount = 32;
-    uint32_t solverVelocityIterationCount = 1;
-    bool enableSelfCollisions = false;
+    uint32_t solverPositionIterationCount = 32; //!< Number of position iterations for the solver
+    uint32_t solverVelocityIterationCount = 1; //!< Number of velocity iterations for the solver
+    bool enableSelfCollisions = false; //!< Whether to enable self-collisions within the articulation
 };
 
+/**
+ * @brief Properties of a rigid body
+ * @details Contains settings that control the behavior of a rigid body
+ */
 struct DcRigidBodyProperties
 {
-    float mass;
-    carb::Float3 moment;
-    carb::Float3 cMassLocalPose;
-    float maxDepenetrationVelocity = std::numeric_limits<float>::max();
-    float maxContactImpulse = std::numeric_limits<float>::max();
-    uint32_t solverPositionIterationCount = 16;
-    uint32_t solverVelocityIterationCount = 1;
+    float mass; //!< Mass of the rigid body
+    carb::Float3 moment; //!< Moment of inertia of the rigid body
+    carb::Float3 cMassLocalPose; //!< Local pose of the center of mass
+    float maxDepenetrationVelocity = std::numeric_limits<float>::max(); //!< Maximum velocity used for depenetration
+    float maxContactImpulse = std::numeric_limits<float>::max(); //!< Maximum impulse that can be applied at a contact
+    uint32_t solverPositionIterationCount = 16; //!< Number of position iterations for the solver
+    uint32_t solverVelocityIterationCount = 1; //!< Number of velocity iterations for the solver
     // float stabilizationThreshold = 10.0;
     // bool enableSpeculativeCCD = false;
     // bool enableGyroscopicForces = true;
     // bool retainAccelerations = false;
 };
 /**
- * Properties of a degree-of-freedom
+ * @brief Properties of a degree-of-freedom
+ * @details Contains settings that control the behavior of a degree of freedom
  */
 struct DcDofProperties
 {
@@ -193,6 +253,10 @@ struct DcDofProperties
  * Flags for Axes used in Attractor setup
  * @{
  */
+/**
+ * @brief Type for axis flags
+ * @details Used to specify which axes to affect in attractors and joints
+ */
 using DcAxisFlags = int;
 constexpr DcAxisFlags kDcAxisNone = 0; //!< No axis selected
 constexpr DcAxisFlags kDcAxisX = (1 << 0); //!< Corresponds to translation around the body x-axis
@@ -209,7 +273,8 @@ constexpr DcAxisFlags kDcAxisAll = kDcAxisAllTranslation | kDcAxisAllRotation; /
 
 /// Properties to set up a pose attractor
 /**
- * The Attractor is used to pull a rigid body towards a pose. Each pose axis can be individually selected. *
+ * @brief Properties to set up a pose attractor
+ * @details The Attractor is used to pull a rigid body towards a pose. Each pose axis can be individually selected.
  */
 struct DcAttractorProperties
 {
@@ -227,11 +292,12 @@ struct DcAttractorProperties
 
 /// Properties to set up a D6 Joint
 /**
- * The Joint is used to connect two rigid bodies.
+ * @brief Properties to set up a D6 Joint
+ * @details The Joint is used to connect two rigid bodies.
  */
 struct DcD6JointProperties
 {
-    char* name{ nullptr };
+    char* name{ nullptr }; //!< Name of the joint
     DcHandle body0 = kDcInvalidHandle; //!< Rigid body to set the joint to
     DcHandle body1 = kDcInvalidHandle; //!< Rigid body to set the joint to
     DcAxisFlags axes = kDcAxisNone; //!< Joint Axes, using DcTransformAxesFlags. Multiple axes can be selected
@@ -254,23 +320,43 @@ struct DcD6JointProperties
 
 /////////////////////////////
 
+/**
+ * @brief Maximum number of dimensions for a shape
+ */
 constexpr int kMaxDims = 8;
 
+/**
+ * @brief Shape descriptor for tensors
+ * @details Describes the dimensions of a tensor
+ */
 struct DcShape
 {
-    int ndims = 0;
-    int dims[kMaxDims] = { 0 };
+    int ndims = 0; //!< Number of dimensions
+    int dims[kMaxDims] = { 0 }; //!< Size of each dimension
 };
 
+/**
+ * @brief Data types for tensors
+ */
 enum class DcDtype
 {
-    kVoid,
-    kFloat32,
+    kVoid, //!< Void data type
+    kFloat32, //!< 32-bit floating point data type
 };
 
+/**
+ * @brief Forward declaration of tensor structure
+ */
 struct DcTensor;
 
+/**
+ * @brief Forward declaration of actuator structure
+ */
 struct DcActuator;
+
+/**
+ * @brief Forward declaration of actuator group structure
+ */
 struct DcActuatorGroup;
 
 }

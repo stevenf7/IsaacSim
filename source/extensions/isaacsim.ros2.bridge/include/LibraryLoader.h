@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,10 +6,19 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+
+/** @file
+ * @brief Dynamic library loading utilities
+ * @details
+ * This file provides utilities for loading and managing dynamic libraries
+ * in the Isaac Sim bridge. It includes classes for single and multiple
+ * library loading with platform-specific handling.
+ */
 #pragma once
 #include <carb/extras/Library.h>
 #include <carb/logging/Log.h>
 
+#include <memory>
 #include <vector>
 namespace isaacsim
 {
@@ -18,13 +27,31 @@ namespace core
 namespace utils
 {
 
-
+/**
+ * @class LibraryLoader
+ * @brief Single dynamic library loader
+ * @details
+ * Handles loading, symbol resolution, and unloading of a single dynamic library.
+ * Provides platform-independent interface for library operations with automatic
+ * cleanup on destruction.
+ */
 class LibraryLoader
 {
 public:
-    std::string loadedLibraryFile;
-    carb::extras::LibraryHandle loadedLibrary = carb::extras::kInvalidLibraryHandle;
+    std::string loadedLibraryFile; /**< Path to the loaded library file */
+    carb::extras::LibraryHandle loadedLibrary = carb::extras::kInvalidLibraryHandle; /**< Handle to the loaded library
+                                                                                      */
 
+    /**
+     * @brief Constructor for LibraryLoader
+     * @details
+     * Attempts to load the specified library with platform-specific naming conventions.
+     * On Windows, appends .dll, on other platforms prepends lib and appends .so
+     *
+     * @param[in] library Base name of the library to load
+     * @param[in] prefix Optional prefix to add to the library name
+     * @param[in] test If true, suppresses error messages on load failure
+     */
     LibraryLoader(std::string library, std::string prefix = "", bool test = false)
     {
         {
@@ -51,6 +78,10 @@ public:
         }
     }
 
+    /**
+     * @brief Destructor
+     * @details Ensures proper cleanup by unloading the library if it was loaded
+     */
     ~LibraryLoader()
     {
         if (loadedLibrary)
@@ -62,12 +93,30 @@ public:
         loadedLibrary = carb::extras::kInvalidLibraryHandle;
     }
 
+    /**
+     * @brief Gets a symbol from the loaded library
+     * @details
+     * Template function to retrieve a symbol of any type from the library
+     *
+     * @tparam T Type of the symbol to retrieve
+     * @param[in] symbol Name of the symbol to retrieve
+     * @return T The retrieved symbol cast to type T
+     */
     template <typename T>
     T getSymbol(std::string symbol)
     {
         return carb::extras::getLibrarySymbol<T>(loadedLibrary, symbol.c_str());
     }
 
+    /**
+     * @brief Calls a symbol function with no arguments
+     * @details
+     * Template function to call a function symbol that takes no arguments
+     *
+     * @tparam T Return type of the function
+     * @param[in] symbol Name of the function to call
+     * @return T The return value from the function call, or nullptr if symbol not found
+     */
     template <typename T>
     T callSymbol(std::string symbol)
     {
@@ -84,6 +133,17 @@ public:
         return calledSymbol();
     }
 
+    /**
+     * @brief Calls a symbol function with arguments
+     * @details
+     * Template function to call a function symbol with variable number of arguments
+     *
+     * @tparam T Return type of the function
+     * @tparam Arguments Types of the function arguments
+     * @param[in] symbol Name of the function to call
+     * @param[in] args Arguments to pass to the function
+     * @return T The return value from the function call
+     */
     template <typename T, typename... Arguments>
     T callSymbolWithArg(std::string symbol, Arguments... args)
     {
@@ -99,6 +159,11 @@ public:
 
         return calledSymbol(args...);
     }
+
+    /**
+     * @brief Checks if the library is loaded
+     * @return bool True if the library was loaded successfully
+     */
     bool isValid()
     {
         // Return true if the library handle is not invalid
@@ -109,14 +174,35 @@ public:
 private:
 };
 
+/**
+ * @class MultiLibraryLoader
+ * @brief Manager for multiple dynamic libraries
+ * @details
+ * Provides functionality to load and manage multiple dynamic libraries
+ * simultaneously. Handles cleanup of all loaded libraries on destruction.
+ */
 class MultiLibraryLoader
 {
 public:
+    /**
+     * @brief Destructor
+     * @details Cleans up all loaded libraries
+     */
     ~MultiLibraryLoader()
     {
         loadedLibraries.clear();
     }
 
+    /**
+     * @brief Loads a new library
+     * @details
+     * Creates a new LibraryLoader instance for the specified library
+     * and adds it to the managed collection
+     *
+     * @param[in] library Base name of the library to load
+     * @param[in] prefix Optional prefix to add to the library name
+     * @return std::shared_ptr<LibraryLoader> Pointer to the created loader
+     */
     std::shared_ptr<LibraryLoader> LoadLibrary(const std::string library, std::string prefix = "")
     {
         auto loadedLib = std::make_shared<LibraryLoader>(library, prefix);
@@ -125,7 +211,7 @@ public:
     }
 
 private:
-    std::vector<std::shared_ptr<LibraryLoader>> loadedLibraries;
+    std::vector<std::shared_ptr<LibraryLoader>> loadedLibraries; /**< Collection of managed library loaders */
 };
 
 

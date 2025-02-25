@@ -38,7 +38,7 @@ PYBIND11_MODULE(_surface_gripper, m)
     using namespace carb;
     using namespace isaacsim::robot::surface_gripper;
     // We use carb data types, must import bindings for them
-    auto carb_module = py::module::import("carb");
+    auto carbModule = py::module::import("carb");
 
 
     m.doc() =
@@ -146,16 +146,16 @@ PYBIND11_MODULE(_surface_gripper, m)
                 return props;
             }));
 
-    auto surface_gripper = py::class_<SurfaceGripper>(m, "Surface_Gripper")
-                               .def(py::init([]() { return new SurfaceGripper(); }),
-                                    R"pbdoc(
+    auto surfaceGripper = py::class_<SurfaceGripper>(m, "Surface_Gripper")
+                              .def(py::init([]() { return new SurfaceGripper(); }),
+                                   R"pbdoc(
                 Creates a Surface Gripper helper for suction-style object manipulation
 
                 The surface gripper creates and manages breakable joints between rigid bodies
                 when activated. Requires proper initialization before use.
                 )pbdoc")
-                               .def("initialize", &SurfaceGripper::initialize,
-                                    R"pbdoc(
+                              .def("initialize", &SurfaceGripper::initialize,
+                                   R"pbdoc(
                 Configure the gripper with specified properties
 
                 Args:
@@ -164,39 +164,39 @@ PYBIND11_MODULE(_surface_gripper, m)
                 Returns:
                     bool: True if initialization succeeded, False otherwise
                 )pbdoc")
-                               .def("close", &SurfaceGripper::close,
-                                    R"pbdoc(
+                              .def("close", &SurfaceGripper::close,
+                                   R"pbdoc(
                 Attempt to grip nearby objects within threshold distance
 
                 Returns: 
                     bool: True if successfully closed and attached to an object,
                           False if no valid target found
                 )pbdoc")
-                               .def("open", &SurfaceGripper::open,
-                                    R"pbdoc(
+                              .def("open", &SurfaceGripper::open,
+                                   R"pbdoc(
                 Release any attached object and reset gripper state
 
                 Returns:
                     bool: True if gripper was closed and released successfully,
                           False if already open or not initialized
                 )pbdoc")
-                               .def("update", &SurfaceGripper::update,
-                                    R"pbdoc(
+                              .def("update", &SurfaceGripper::update,
+                                   R"pbdoc(
                 Update gripper state (must be called regularly during simulation)
 
                 Checks for broken joints and handles automatic retry logic when enabled.
                 Should be called every simulation step for proper operation.
                 )pbdoc")
-                               .def("is_attempting_close", &SurfaceGripper::isAttemptingClose,
-                                    R"pbdoc(
+                              .def("is_attempting_close", &SurfaceGripper::isAttemptingClose,
+                                   R"pbdoc(
                 Check if gripper is in retry mode attempting to find targets
 
                 Returns:
                     bool: True if gripper is actively searching for attachable objects,
                           False if in idle state
                 )pbdoc")
-                               .def("is_closed", &SurfaceGripper::isClosed,
-                                    R"pbdoc(
+                              .def("is_closed", &SurfaceGripper::isClosed,
+                                   R"pbdoc(
                 Check current gripper closure status
 
                 Returns:

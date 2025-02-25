@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -40,28 +40,66 @@
 #include <unordered_map>
 #include <vector>
 
+/**
+ * @namespace isaacsim
+ * @brief Root namespace for Isaac Sim functionality.
+ */
 namespace isaacsim
 {
+/**
+ * @namespace sensors
+ * @brief Namespace containing sensor-related functionality.
+ */
 namespace sensors
 {
+/**
+ * @namespace physics
+ * @brief Namespace containing physics-based sensor implementations.
+ */
 namespace physics
 {
 
+/**
+ * @class IsaacSensorManager
+ * @brief Manager class for handling Isaac physics-based sensors.
+ * @details
+ * This class manages various physics-based sensors in the Isaac environment, including
+ * contact sensors and IMU sensors. It handles sensor lifecycle, updates, and provides
+ * access to individual sensor components.
+ *
+ * The manager inherits from BridgeApplicationBase and provides functionality for
+ * adding, updating, and managing sensor components in the physics simulation.
+ */
 class IsaacSensorManager : public isaacsim::core::utils::BridgeApplicationBase<IsaacBaseSensorComponent>
 {
 public:
+    /**
+     * @brief Constructs a new IsaacSensorManager instance.
+     * @details Initializes the manager with a PhysX interface and creates a contact manager instance.
+     * @param[in] physXInterface Pointer to the PhysX interface used for physics simulation.
+     */
     IsaacSensorManager(omni::physx::IPhysx* physXInterface)
     {
         mPhysXInterface = physXInterface;
         mContactManager = std::make_unique<ContactManager>();
     }
 
+    /**
+     * @brief Destructor for IsaacSensorManager.
+     * @details Cleans up all components and releases the contact manager.
+     */
     ~IsaacSensorManager()
     {
         mComponents.clear();
         mContactManager.reset();
     }
 
+    /**
+     * @brief Handles the stop event for all managed sensors.
+     * @details
+     * Resets all components to their initial state, stops all sensors,
+     * resets the contact manager, and resets internal timers.
+     */
     void onStop()
     {
         // PxScene can change after stop is pressed so reset mDoStart bool to force OnStart to run
@@ -77,6 +115,14 @@ public:
         this->mTimeNanoSeconds = 0;
     }
 
+    /**
+     * @brief Handles the addition of a new sensor component.
+     * @details
+     * Creates and initializes appropriate sensor components based on the USD prim type.
+     * Supports creation of contact sensors and IMU sensors.
+     *
+     * @param[in] prim The USD primitive representing the sensor to be added.
+     */
     void onComponentAdd(const pxr::UsdPrim& prim)
     {
         std::unique_ptr<IsaacBaseSensorComponent> component;
@@ -117,12 +163,23 @@ public:
         }
     }
 
+    /**
+     * @brief Returns a vector of supported sensor component types.
+     * @details Provides a list of USD prim types that this manager can handle.
+     * @return Vector of strings representing supported sensor types.
+     */
     virtual std::vector<std::string> getComponentIsAVector() const
     {
         return { "IsaacSensorIsaacContactSensor", "IsaacSensorIsaacImuSensor" };
     }
 
-
+    /**
+     * @brief Handles changes to a sensor component's properties.
+     * @details
+     * Updates the component's state when its properties change in the USD stage.
+     *
+     * @param[in] prim The USD primitive whose properties have changed.
+     */
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
         isaacsim::core::utils::BridgeApplicationBase<IsaacBaseSensorComponent>::onComponentChange(prim);
@@ -133,6 +190,13 @@ public:
         }
     }
 
+    /**
+     * @brief Retrieves a sensor component by its path.
+     * @details Looks up a sensor component using its USD path string.
+     *
+     * @param[in] Path String representation of the sensor's USD path.
+     * @return Pointer to the sensor component if found, nullptr otherwise.
+     */
     IsaacBaseSensorComponent* getComponent(std::string Path)
     {
         if (mComponents.find(Path) != mComponents.end())
@@ -142,6 +206,14 @@ public:
         return nullptr;
     }
 
+    /**
+     * @brief Updates all sensor components during the physics simulation step.
+     * @details
+     * Processes physics updates for all sensor components, including contact and IMU sensors.
+     * Handles component initialization, timestep updates, and sensor-specific physics calculations.
+     *
+     * @param[in] dt Time step delta in seconds.
+     */
     void onPhysicsStep(const double& dt)
     {
 
@@ -171,7 +243,14 @@ public:
         // update timestep
     }
 
-    // override tick in bridge application
+    /**
+     * @brief Performs a tick update for all sensor components.
+     * @details
+     * Updates all enabled sensor components during the simulation tick.
+     * Handles component initialization and tick-based updates.
+     *
+     * @param[in] dt Time step delta in seconds.
+     */
     virtual void tick(double dt)
     {
         if (mComponents.size() == 0)
@@ -198,6 +277,13 @@ public:
         }
     }
 
+    /**
+     * @brief Retrieves a contact sensor component for a given USD primitive.
+     * @details Attempts to find and cast a component to a ContactSensor type.
+     *
+     * @param[in] prim USD primitive associated with the contact sensor.
+     * @return Pointer to the ContactSensor if found, nullptr otherwise.
+     */
     ContactSensor* getContactSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
@@ -210,11 +296,24 @@ public:
         return nullptr;
     }
 
+    /**
+     * @brief Gets the contact manager instance.
+     * @details Provides access to the manager's contact handling system.
+     *
+     * @return Pointer to the ContactManager instance.
+     */
     ContactManager* getContactManager()
     {
         return mContactManager.get();
     }
 
+    /**
+     * @brief Retrieves an IMU sensor component for a given USD primitive.
+     * @details Attempts to find and cast a component to an ImuSensor type.
+     *
+     * @param[in] prim USD primitive associated with the IMU sensor.
+     * @return Pointer to the ImuSensor if found, nullptr otherwise.
+     */
     ImuSensor* getImuSensor(const pxr::UsdPrim& prim)
     {
         if (prim)
@@ -228,9 +327,28 @@ public:
     }
 
 private:
+    /**
+     * @brief Pointer to the PhysX interface used for physics simulation.
+     * @details Provides access to the PhysX physics engine functionality.
+     */
     omni::physx::IPhysx* mPhysXInterface = nullptr;
+
+    /**
+     * @brief Unique pointer to the contact manager instance.
+     * @details Manages contact-related functionality for all contact sensors.
+     */
     std::unique_ptr<ContactManager> mContactManager = nullptr;
+
+    /**
+     * @brief Map of rigid body identifiers to data buffer indices.
+     * @details Used to track and access rigid body data in the data buffer.
+     */
     std::unordered_map<std::string, size_t> mRigidBodyToDataBufferMap;
+
+    /**
+     * @brief Buffer containing rigid body data.
+     * @details Stores physics-related data for rigid bodies in the simulation.
+     */
     std::vector<float> mRigidBodyDataBuffer;
 };
 }

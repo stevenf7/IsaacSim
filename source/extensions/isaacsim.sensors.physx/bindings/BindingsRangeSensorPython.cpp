@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -165,7 +165,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 uint16_t* data = li->getDepthData(sensorPath);
                 int rows = li->getNumRows(sensorPath);
                 int numColsTicked = li->getNumColsTicked(sensorPath);
@@ -184,7 +186,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 float* data = li->getLinearDepthData(sensorPath);
                 int rows = li->getNumRows(sensorPath);
                 int numColsTicked = li->getNumColsTicked(sensorPath);
@@ -204,7 +208,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 uint8_t* data = li->getIntensityData(sensorPath);
                 int rows = li->getNumRows(sensorPath);
                 int numColsTicked = li->getNumColsTicked(sensorPath);
@@ -223,7 +229,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 float* data = li->getZenithData(sensorPath);
                 int rows = li->getNumRows(sensorPath);
                 return py::array(py::buffer_info(
@@ -241,7 +249,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 float* data = li->getAzimuthData(sensorPath);
                 int numColsTicked = li->getNumColsTicked(sensorPath);
                 return py::array(py::buffer_info(
@@ -259,7 +269,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 carb::Float3* data = li->getPointCloud(sensorPath);
                 int rows = li->getNumRows(sensorPath);
                 int numColsTicked = li->getNumColsTicked(sensorPath);
@@ -292,7 +304,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LidarSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 return py::list(py::cast(li->getPrimData(sensorPath)));
             },
             R"pbdoc(
@@ -326,7 +340,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x)
             {
                 if (!gs)
+                {
                     return;
+                }
                 const auto& r = x.unchecked<2>();
                 gs->setNextBatchRays(sensorPath, r.data(0, 0), r.data(1, 0), static_cast<int>(r.shape(1)));
             },
@@ -341,7 +357,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath, py::array_t<float> x)
             {
                 if (!gs)
+                {
                     return;
+                }
                 const auto& r = x.unchecked<>();
                 gs->setNextBatchOffsets(sensorPath, r.data(), static_cast<int>(r.shape(0)));
             },
@@ -362,7 +380,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
             {
                 if (!gs)
+                {
                     return py::none();
+                }
                 uint16_t* data = gs->getDepthData(sensorPath);
                 int samples = gs->getNumSamplesTicked(sensorPath);
                 return py::array(py::buffer_info(data, sizeof(uint16_t), py::format_descriptor<uint16_t>::value, 1,
@@ -380,7 +400,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
             {
                 if (!gs)
+                {
                     return py::none();
+                }
                 float* data = gs->getLinearDepthData(sensorPath);
                 int samples = gs->getNumSamplesTicked(sensorPath);
                 return py::array(py::buffer_info(
@@ -398,7 +420,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
             {
                 if (!gs)
+                {
                     return py::none();
+                }
                 uint8_t* data = gs->getIntensityData(sensorPath);
                 int samples = gs->getNumSamplesTicked(sensorPath);
                 return py::array(py::buffer_info(
@@ -416,7 +440,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
             {
                 if (!gs)
+                {
                     return py::none();
+                }
                 float* data = gs->getZenithData(sensorPath);
                 int samples = gs->getNumSamplesTicked(sensorPath);
                 return py::array(py::buffer_info(
@@ -434,7 +460,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
             {
                 if (!gs)
+                {
                     return py::none();
+                }
                 float* data = gs->getAzimuthData(sensorPath);
                 int samples = gs->getNumSamplesTicked(sensorPath);
                 return py::array(py::buffer_info(
@@ -451,7 +479,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
             {
                 if (!gs)
+                {
                     return py::none();
+                }
                 carb::Float3* data = gs->getPointCloud(sensorPath);
                 int samples = gs->getNumSamplesTicked(sensorPath);
                 return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
@@ -477,7 +507,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LightBeamSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 float* data = li->getLinearDepthData(sensorPath);
                 int numRays = li->getNumRays(sensorPath);
                 return py::array(py::buffer_info(
@@ -494,7 +526,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LightBeamSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 uint8_t* data = li->getBeamHitData(sensorPath);
                 int numRays = li->getNumRays(sensorPath);
                 return py::array(py::buffer_info(
@@ -512,7 +546,9 @@ PYBIND11_MODULE(_range_sensor, m)
             [](const LightBeamSensorInterface* li, const char* sensorPath) -> py::object
             {
                 if (!li)
+                {
                     return py::none();
+                }
                 carb::Float3* data = li->getHitPosData(sensorPath);
                 int numRays = li->getNumRays(sensorPath);
                 return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
