@@ -1,26 +1,24 @@
 local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "isaacsim/replicator/examples")
 
-project_ext_ogn( ext, ogn )
-project_ext( ext, { generate_ext_project=true })
+project_ext_ogn(ext, ogn)
+project_ext(ext, { generate_ext_project = true })
 
+add_files("python", "*.py")
+add_files("python/nodes", "python/nodes/**.py")
+add_files("python/tests", "python/tests/**.py")
 
-    add_files("python", "*.py")
-    add_files("python/nodes", "python/nodes/**.py")
-    add_files("python/tests", "python/tests/**.py")
+add_ogn_dependencies(ogn, { "python/nodes" })
 
-    add_ogn_dependencies(ogn, {"python/nodes"})
-
-    -- Copy the init script directly into the build tree to avoid reload conflicts.
-    repo_build.prebuild_copy {
-        { "python/__init__.py", ogn.python_target_path },
-    }
-    -- Linking directories allows them to hot reload when files are modified in the source tree
-    -- Docs are linked to get the README into the extension window
-    repo_build.prebuild_link {
-        { "docs", ext.target_dir.."/docs" },
-        { "data", ext.target_dir.."/data" },
-        { "python/impl", ogn.python_target_path.."/impl" },
-        { "python/tests", ogn.python_tests_target_path },
-    }
-
+-- Copy the init script directly into the build tree to avoid reload conflicts.
+repo_build.prebuild_copy {
+    { "python/__init__.py", ogn.python_target_path },
+}
+-- Linking directories allows them to hot reload when files are modified in the source tree
+-- Docs are linked to get the README into the extension window
+repo_build.prebuild_link {
+    { "docs", ext.target_dir .. "/docs" },
+    { "data", ext.target_dir .. "/data" },
+    { "python/impl", ogn.python_target_path .. "/impl" },
+    { "python/tests", ogn.python_tests_target_path },
+}

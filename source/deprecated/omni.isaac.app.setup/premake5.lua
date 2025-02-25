@@ -1,12 +1,12 @@
--- Use folder name to build extension name and tag. 
+-- Use folder name to build extension name and tag.
 local ext = get_current_extension_info()
-ext.target_dir = deprecated_exts_path.."/"..ext.id
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
 
-project_ext (ext)
+project_ext(ext)
 
 -- Link only those files and folders into the extension target directory
 repo_build.prebuild_link {
-    { "docs", ext.target_dir.."/docs" },
-    { "data", ext.target_dir.."/data" },
-    { "omni", ext.target_dir.."/omni" },
+    { "docs", ext.target_dir .. "/docs" },
+    { "data", ext.target_dir .. "/data" },
+    { "omni", ext.target_dir .. "/omni" },
 }

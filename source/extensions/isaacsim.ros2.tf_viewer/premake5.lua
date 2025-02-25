@@ -1,96 +1,97 @@
 local ext = get_current_extension_info()
-project_ext (ext)
+project_ext(ext)
 
 -- backend (ROS2 Humble)
 project_with_location("isaacsim.ros2.tf_viewer.humble")
-    targetdir (ext.bin_dir)
-    kind "SharedLib"
-    language "C++"
+targetdir(ext.bin_dir)
+kind("SharedLib")
+language("C++")
 
-    pic "On"
-    staticruntime "Off"
-    defines { "ROS2_BACKEND_HUMBLE" }
-    add_files("impl", "backend")
-    add_files("iface", "include")
-    add_files("source", "%{root}/_build/target-deps/nv_ros2_humble/src/geometry2/tf2/src")
-    includedirs {
-        "%{root}/_build/target-deps/nv_ros2_humble/include",
-        "%{root}/_build/target-deps/nv_ros2_humble/include/console_bridge_vendor",
-        "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
-    }
-    libdirs {
-        "%{root}/_build/target-deps/nv_ros2_humble/lib",
-    }
-    links{
-        "rcutils"
-    }
+pic("On")
+staticruntime("Off")
+defines { "ROS2_BACKEND_HUMBLE" }
+add_files("impl", "backend")
+add_files("iface", "include")
+add_files("source", "%{root}/_build/target-deps/nv_ros2_humble/src/geometry2/tf2/src")
+includedirs {
+    "%{root}/_build/target-deps/nv_ros2_humble/include",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/console_bridge_vendor",
+    "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
+}
+libdirs {
+    "%{root}/_build/target-deps/nv_ros2_humble/lib",
+}
+links {
+    "rcutils",
+}
 
-    filter { "system:linux" }
-        disablewarnings {"error=pragmas"}
-        buildoptions("-fvisibility=default")
-        linkoptions { "-Wl,--export-dynamic" }
-    filter { "system:windows" }
-        includedirs {
-            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_c",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_interface",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/builtin_interfaces",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/std_msgs",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/geometry_msgs",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/tf2_msgs",
-            "%{root}/_build/target-deps/nv_ros2_humble/include/tf2",
-        }
-        links{
-            "console_bridge"
-        }
-        -- avoid inconsistent dll linkage
-        defines { "TF2__VISIBILITY_CONTROL_H_" }
-        buildoptions { "-DTF2_PUBLIC=" }
-    filter {}
+filter { "system:linux" }
+disablewarnings { "error=pragmas" }
+buildoptions("-fvisibility=default")
+linkoptions { "-Wl,--export-dynamic" }
+filter { "system:windows" }
+includedirs {
+    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_c",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_interface",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/builtin_interfaces",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/std_msgs",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/geometry_msgs",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/tf2_msgs",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/tf2",
+}
+links {
+    "console_bridge",
+}
+-- avoid inconsistent dll linkage
+defines { "TF2__VISIBILITY_CONTROL_H_" }
+buildoptions { "-DTF2_PUBLIC=" }
+filter {}
 
-    filter { "configurations:debug" }
-        defines { "_DEBUG" }
-    filter { "configurations:release" }
-        defines { "NDEBUG" }
-    filter {}
+filter { "configurations:debug" }
+defines { "_DEBUG" }
+filter { "configurations:release" }
+defines { "NDEBUG" }
+filter {}
 
 -- build the C++ plugin that will be loaded by the extension
 project_ext_plugin(ext, "isaacsim.ros2.tf_viewer.plugin")
-    rtti "On"
+rtti("On")
 
-    add_files("include", "include")
-    add_files("source", "plugins")
-    link_boost_for_windows({"boost_python310"})
-    includedirs {
-        "include",
-        "plugins",
-        "%{root}/source/extensions/isaacsim.core.includes/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-        "%{root}/_build/target-deps/python/include/python3.10",
-        "%{root}/_build/target-deps/python/include",
-        "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/nlohmann-json/include",
-        "%{root}/source/extensions/isaacsim.ros2.bridge",
-        "%{root}/source/extensions/isaacsim.ros2.bridge/include",
-        "%{root}/source/extensions/isaacsim.core.nodes/include",
-        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-    }
-    libdirs {
-       "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-    }
-    filter { "system:linux" }
-        disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
-        links {
-            "boost_system",
-            "boost_python310",
-        }
-    filter { "system:windows" }
-        links {
-            "usd", "sdf",
-        }
-    filter {}
+add_files("include", "include")
+add_files("source", "plugins")
+link_boost_for_windows { "boost_python310" }
+includedirs {
+    "include",
+    "plugins",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include",
+    "%{root}/_build/target-deps/rtx_plugins/include",
+    "%{root}/_build/target-deps/nlohmann-json/include",
+    "%{root}/source/extensions/isaacsim.ros2.bridge",
+    "%{root}/source/extensions/isaacsim.ros2.bridge/include",
+    "%{root}/source/extensions/isaacsim.core.nodes/include",
+    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+}
+libdirs {
+    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+}
+filter { "system:linux" }
+disablewarnings { "error=narrowing", "error=unused-but-set-variable", "error=unused-variable" }
+links {
+    "boost_system",
+    "boost_python310",
+}
+filter { "system:windows" }
+links {
+    "usd",
+    "sdf",
+}
+filter {}
 
 -- build Python bindings that will be loaded by the extension
 project_ext_bindings {
@@ -98,20 +99,20 @@ project_ext_bindings {
     project_name = "isaacsim.ros2.tf_viewer.python",
     module = "_transform_listener",
     src = "bindings",
-    target_subdir = "isaacsim/ros2/tf_viewer"
+    target_subdir = "isaacsim/ros2/tf_viewer",
 }
-    includedirs {
-        "include",
-    }
+includedirs {
+    "include",
+}
 
 -- link/copy folders and files that should be packaged with the extension
 repo_build.prebuild_link {
-    { "python/impl", ext.target_dir.."/isaacsim/ros2/tf_viewer/impl" },
-    { "python/tests", ext.target_dir.."/isaacsim/ros2/tf_viewer/tests" },
-    { "data", ext.target_dir.."/data" },
-    { "docs", ext.target_dir.."/docs" },
+    { "python/impl", ext.target_dir .. "/isaacsim/ros2/tf_viewer/impl" },
+    { "python/tests", ext.target_dir .. "/isaacsim/ros2/tf_viewer/tests" },
+    { "data", ext.target_dir .. "/data" },
+    { "docs", ext.target_dir .. "/docs" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/isaacsim/ros2/tf_viewer" },
+    { "python/*.py", ext.target_dir .. "/isaacsim/ros2/tf_viewer" },
 }

@@ -1,13 +1,13 @@
 local ext = get_current_extension_info()
-ext.target_dir = deprecated_exts_path.."/"..ext.id
-project_ext (ext)
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
+project_ext(ext)
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/utils/scripts" },
-    { "docs", ext.target_dir.."/docs" },
-    { "data", ext.target_dir.."/data" },
+    { "python/scripts", ext.target_dir .. "/omni/isaac/utils/scripts" },
+    { "docs", ext.target_dir .. "/docs" },
+    { "data", ext.target_dir .. "/data" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/utils" },
+    { "python/*.py", ext.target_dir .. "/omni/isaac/utils" },
 }
