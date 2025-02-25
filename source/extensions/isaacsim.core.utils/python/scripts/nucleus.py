@@ -76,10 +76,10 @@ async def download_assets_async(
     dst: str,
     progress_callback,
     concurrency: int = 10,
-    copy_behaviour: omni.client._omniclient.CopyBehavior = CopyBehavior.OVERWRITE,
+    copy_behaviour: omni.client.CopyBehavior = CopyBehavior.OVERWRITE,
     copy_after_delete: bool = True,
     timeout: float = 300.0,
-) -> omni.client._omniclient.Result:
+) -> omni.client.Result:
     """Download assets from S3 bucket
 
     Args:
@@ -87,12 +87,12 @@ async def download_assets_async(
         dst (str): URL of Nucleus server to copy assets to
         progress_callback: Callback function to keep track of progress of copy
         concurrency (int): Number of concurrent copy operations. Default value: 3
-        copy_behaviour (omni.client._omniclient.CopyBehavior): Behavior if the destination exists. Default value: OVERWRITE
+        copy_behaviour (omni.client.CopyBehavior): Behavior if the destination exists. Default value: OVERWRITE
         copy_after_delete (bool): True if destination needs to be deleted before a copy. Default value: True
         timeout (float): Default value: 300 seconds
 
     Returns:
-        Result (omni.client._omniclient.Result): Result of copy
+        Result (omni.client.Result): Result of copy
     """
     # omni.client is a singleton, import locally to allow to run with multiprocessing
 

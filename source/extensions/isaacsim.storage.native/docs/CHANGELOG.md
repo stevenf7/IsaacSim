@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.7] - 2025-02-25
+### Changed
+- Removed remaining omni.client._omniclient type hints in favor of public API
+
 ## [1.0.6] - 2025-01-26
 ### Changed
 - Update test settings
