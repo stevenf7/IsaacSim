@@ -20,7 +20,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-09-27
 ### Changed
 - Extension renamed to isaacsim.robot_motion.lula_test_widget
@@ -38,7 +37,6 @@
 - Updated Controllers due to changes to motion generation ArticulationTrajectory
 
 ## [0.1.0] - 2023-01-06
-
 ### Added
 
 - Initial version of Lula Test Widget

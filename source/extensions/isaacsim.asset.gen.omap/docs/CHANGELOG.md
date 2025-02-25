@@ -64,7 +64,7 @@
 ### Changed
 - Refactored into components
 
-## [0.4.2] - 2024-02-07
+## [0.4.3] - 2024-02-07
 ### Changed
 - Updated path to the nucleus extension
 

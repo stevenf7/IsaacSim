@@ -4,21 +4,17 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [1.1.2] - 2025-01-14
-
 ### Added
 
 - Missing dependency
 
 ## [1.1.1] - 2025-01-13
-
 ### Fixed
 
 - Add missing `pathlib` to `exporter/urdf/ui_builder.py`
 
 ## [1.1.0] - 2024-10-29
-
 ### Fixed
 - Fix incorrect URDF export when the USD prims have scaling values
 
@@ -48,7 +44,6 @@
 ### Fixed
 - removed unnecessary dependencies
 
-
 ## [0.3.0] - 2024-04-26
 ### Fixed
 - Fix cylinder radii check
@@ -63,7 +58,6 @@
 - Add hack to not include camera mesh files when exporting from isaac sim extension
 - Add mesh file path char length check
 - Add NodeType.SENSOR and functionality to include sensor frames in the URDF
-
 
 ## [0.2.0] - 2023-12-01
 ### Fixed
@@ -81,11 +75,9 @@
 - Ability to set mesh path prefix
 - Optionally setting output to directory (URDF file name automatically set to match USD file name)
 
-
 ## [0.1.1] - 2023-09-19
 ### Fixed
 - Add missing dependencies and remove unused code
-
 
 ## [0.1.0] - 2023-07-27
 ### Added

@@ -16,7 +16,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-10-08
 ### Changed
 - Extension  renamed to isaacsim.util.camera_inspector.
@@ -30,25 +29,22 @@
 - Updated documentation link
 
 ## [0.2.0] - 2023-08-22
-
 ### Changed
 - Resized widgets to fit in screen
+
 ### Removed
 - gui_utils.py
 - All functions moved into extension.py
 
 ## [0.1.2] - 2023-08-15
-
 ### Added
 - Check for valid prim path during each call to update camera stats
 - Fixes error when selected camera has its prim path modified
 
 ## [0.1.1] - 2023-08-12
-
 ### Changed
 - Change UI to display WXYZ instead of XYZW for orientation
 
 ## [0.1.0] - 2023-07-23
-
 ### Added
 - Initial version

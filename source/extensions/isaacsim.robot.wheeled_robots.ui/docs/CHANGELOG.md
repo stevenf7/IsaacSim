@@ -3,6 +3,7 @@
 ## [2.1.6] - 2025-02-10
 ### Added
 - Added test for differential robot graph shortcut
+
 ## [2.1.5] - 2025-01-27
 ### Changed
 - Updated docs link
@@ -34,7 +35,6 @@
 ## [2.0.0] - 2024-10-02
 ### Changed
 - extension renamed to isaacsim.robot.wheeled_robots.ui
-
 
 ## [1.1.2] - 2024-09-13
 ### Fixed

@@ -68,6 +68,7 @@
 ### Changed
 - omni.hydra is not a required dependency, but is needed to collect memory stats
 - omni.kit.test is a required dependency, not just for running tests
+
 ### Removed
 - removed unused omni.kit.profiler.window dependency
 
@@ -113,12 +114,12 @@
 ## [1.4.0] - 2024-02-02
 ### Added
 - User can now specify per-benchmark metadata when using BaseIsaacBenchmark, which will persist across phases
+
 ### Changed
 - Refactors "middleware" in extension
 - OsmoKPIFile backend now prints one KPI file per phase, rather than one KPI file per workflow
 - Deprecates individual runtime/frametime APIs in BaseIsaacBenchmark, moves functionality to start_phase() and stop_collecting_measurements()
 - metrics.measurements.TestRun renamed to metrics.measurements.TestPhase
-
 
 ## [1.3.2] - 2024-02-02
 ### Changed

@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [1.1.0] - 2024-10-30
 ### Changed
 - Use USDRT for component initialization using prim types directly rather than traversing stage for better performance

@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [2.3.2] - 2024-12-01
 ### Changed
 - Make this extension python version specific
@@ -26,7 +25,7 @@
 - Removed unused omni.kit.pipapi dependency
 
 ## [2.2.0] - 2023-05-15
-### Removed 
+### Removed
 - boto3, s3transfer to omni.pip.compute
 
 ## [2.1.0] - 2023-05-08
@@ -43,31 +42,25 @@
 - certifi install at runtime
 
 ## [1.2.0] - 2022-07-20
-
 ### Added
 - boto3, s3transfer
 
 ## [1.1.0] - 2022-07-11
-
 ### Changed
 - Make extension kit sdk version specific
 
 ## [1.0.0] - 2022-07-01
-
 ### Changed
 - Updating version for publishing
 
 ## [0.3.0] - 2022-04-16
-
 ### Added
 - osqp, qdldl
 
 ## [0.2.0] - 2022-01-13
-
 ### Added
 - Split Isaac Pip Archive into Core and ML archives
 
 ## [0.1.0] - 2021-08-24
-
 ### Added
 - Initial version of Isaac Pip Archive

@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [2.0.6] - 2024-12-09
 ### Fixed
 - startup test
@@ -51,4 +50,5 @@
 - Updated to new UI and added resizing
 
 ## [0.1.0] - 2020-10-29
+### Changed
 - Ported old version to extensions 2.0

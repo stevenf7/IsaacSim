@@ -15,6 +15,7 @@
 ## [2.1.1] - 2024-12-11
 ### Changed
 - Fix extension renaming
+
 ## [2.1.0] - 2024-11-01
 ### Changed
 - Menu name
@@ -49,5 +50,5 @@
 - Updated asset path
 
 ## [1.0.0] - 2024-03-20
-
+### Changed
 - First Version
