@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,29 +16,54 @@
 
 #include <DynamicControl.h>
 #include <PxActor.h>
+
 namespace isaacsim
 {
 namespace core
 {
 namespace utils
 {
+
+/**
+ * @namespace isaacsim::core::utils::conversions
+ * @brief Provides type conversion utilities between different geometry and transform representations.
+ * @details
+ * This namespace contains a comprehensive set of conversion functions between:
+ * - Carb types (Float3, Float4)
+ * - USD types (GfVec3f/d, GfQuatf/d, GfTransform, GfMatrix4f/d)
+ * - PhysX types (PxVec3, PxQuat, PxTransform)
+ * - Dynamic Control types (DcTransform)
+ *
+ * @note All conversion functions are marked inline for performance optimization
+ * @warning Care should be taken with precision loss when converting between single and double precision types
+ */
 namespace conversions
 {
 /**
- * @brief Convert a carb::Float3 into a pxr::GfVec3f
+ * @brief Converts a carb::Float3 into a pxr::GfVec3f.
+ * @details Performs a direct component-wise conversion from Carb's Float3 to USD's GfVec3f.
  *
- * @param v
- * @return pxr::GfVec3f
+ * @param[in] v Input vector in Carb format
+ * @return pxr::GfVec3f Equivalent vector in USD format
+ *
+ * @note No precision loss as both types use single precision
  */
 inline pxr::GfVec3f asGfVec3f(const carb::Float3& v)
 {
     return pxr::GfVec3f(v.x, v.y, v.z);
 }
+
 /**
- * @brief Convert a carb::Float4 into a pxr::GfQuatf
+ * @brief Converts a carb::Float4 into a pxr::GfQuatf.
+ * @details
+ * Converts a quaternion from Carb to USD format, handling component reordering:
+ * - Carb format: (x, y, z, w)
+ * - USD format: (w, x, y, z)
  *
- * @param q
- * @return pxr::GfQuatf
+ * @param[in] q Input quaternion in Carb format
+ * @return pxr::GfQuatf Equivalent quaternion in USD format
+ *
+ * @note Component order is adjusted during conversion
  */
 inline pxr::GfQuatf asGfQuatf(const carb::Float4& q)
 {
@@ -46,20 +71,32 @@ inline pxr::GfQuatf asGfQuatf(const carb::Float4& q)
 }
 
 /**
- * @brief Convert a carb::Float3 into a pxr::GfVec3d
+ * @brief Converts a carb::Float3 into a pxr::GfVec3d.
+ * @details
+ * Performs a component-wise conversion with promotion to double precision:
+ * - x, y, z components are converted from float to double
  *
- * @param v
- * @return pxr::GfVec3d
+ * @param[in] v Input vector in Carb format (single precision)
+ * @return pxr::GfVec3d Equivalent vector in USD format (double precision)
+ *
+ * @note Involves precision promotion from float to double
  */
 inline pxr::GfVec3d asGfVec3d(const carb::Float3& v)
 {
     return pxr::GfVec3d(v.x, v.y, v.z);
 }
+
 /**
- * @brief Convert a carb::Float4 into a pxr::GfQuatd
+ * @brief Converts a carb::Float4 into a pxr::GfQuatd.
+ * @details
+ * Converts a quaternion from Carb to USD format with precision promotion:
+ * - Handles component reordering (x,y,z,w) -> (w,x,y,z)
+ * - Promotes single precision to double precision
  *
- * @param q
- * @return pxr::GfQuatd
+ * @param[in] q Input quaternion in Carb format (single precision)
+ * @return pxr::GfQuatd Equivalent quaternion in USD format (double precision)
+ *
+ * @note Combines component reordering with precision promotion
  */
 inline pxr::GfQuatd asGfQuatd(const carb::Float4& q)
 {
@@ -67,10 +104,16 @@ inline pxr::GfQuatd asGfQuatd(const carb::Float4& q)
 }
 
 /**
- * @brief  Convert a carb::Float4 into a pxr::GfRotation
+ * @brief Converts a carb::Float4 into a pxr::GfRotation.
+ * @details
+ * Creates a USD rotation representation from a Carb quaternion:
+ * 1. Converts the quaternion to GfQuatd format
+ * 2. Constructs a GfRotation from the quaternion
  *
- * @param q
- * @return pxr::GfRotation
+ * @param[in] q Input quaternion in Carb format
+ * @return pxr::GfRotation Equivalent rotation in USD format
+ *
+ * @see asGfQuatd
  */
 inline pxr::GfRotation asGfRotation(const carb::Float4& q)
 {
@@ -78,10 +121,17 @@ inline pxr::GfRotation asGfRotation(const carb::Float4& q)
 }
 
 /**
- * @brief  Convert a DcTransform into a pxr::GfTransform
+ * @brief Converts a DcTransform into a pxr::GfTransform.
+ * @details
+ * Creates a complete transform from a Dynamic Control transform:
+ * 1. Sets rotation using quaternion conversion
+ * 2. Sets translation using vector conversion
  *
- * @param pose
- * @return pxr::GfTransform
+ * @param[in] pose Input transform in Dynamic Control format
+ * @return pxr::GfTransform Equivalent transform in USD format
+ *
+ * @see asGfRotation
+ * @see asGfVec3d
  */
 inline pxr::GfTransform asGfTransform(const omni::isaac::dynamic_control::DcTransform& pose)
 {
@@ -92,11 +142,18 @@ inline pxr::GfTransform asGfTransform(const omni::isaac::dynamic_control::DcTran
 }
 
 /**
- * @brief  Convert a carb::Float3 and a carb::Float4 into a pxr::GfTransform
+ * @brief Converts position and rotation into a pxr::GfTransform.
+ * @details
+ * Creates a complete transform from separate position and rotation:
+ * 1. Sets rotation using quaternion conversion
+ * 2. Sets translation using vector conversion
  *
- * @param p
- * @param r
- * @return pxr::GfTransform
+ * @param[in] p Position vector in Carb format
+ * @param[in] r Rotation quaternion in Carb format
+ * @return pxr::GfTransform Equivalent transform in USD format
+ *
+ * @see asGfRotation
+ * @see asGfVec3d
  */
 inline pxr::GfTransform asGfTransform(const carb::Float3& p, const carb::Float4& r)
 {
@@ -107,10 +164,18 @@ inline pxr::GfTransform asGfTransform(const carb::Float3& p, const carb::Float4&
 }
 
 /**
- * @brief Convert a DcTransform to a GfMatrix4f
+ * @brief Converts a DcTransform to a GfMatrix4f.
+ * @details
+ * Creates a 4x4 transformation matrix in single precision:
+ * 1. Sets translation component from position
+ * 2. Sets rotation component from quaternion
  *
- * @param input
- * @return pxr::GfMatrix4f
+ * @param[in] input Input transform in Dynamic Control format
+ * @return pxr::GfMatrix4f Equivalent transform matrix in USD format
+ *
+ * @note Uses single precision floating point
+ * @see asGfVec3f
+ * @see asGfQuatf
  */
 inline pxr::GfMatrix4f asGfMatrix4f(const omni::isaac::dynamic_control::DcTransform& input)
 {
@@ -119,11 +184,19 @@ inline pxr::GfMatrix4f asGfMatrix4f(const omni::isaac::dynamic_control::DcTransf
     mat.SetRotateOnly(pxr::GfMatrix3f(asGfQuatf(input.r)));
     return mat;
 }
+
 /**
- * @brief Convert a DcTransform to a Transposed GfMatrix4f
+ * @brief Converts a DcTransform to a transposed GfMatrix4f.
+ * @details
+ * Creates a transposed 4x4 transformation matrix:
+ * 1. Sets translation and rotation components
+ * 2. Transposes the resulting matrix
  *
- * @param input
- * @return pxr::GfMatrix4f
+ * @param[in] input Input transform in Dynamic Control format
+ * @return pxr::GfMatrix4f Transposed transform matrix in USD format
+ *
+ * @note Useful for operations requiring column-major matrix format
+ * @see asGfMatrix4f
  */
 inline pxr::GfMatrix4f asGfMatrix4fT(const omni::isaac::dynamic_control::DcTransform& input)
 {
@@ -134,10 +207,18 @@ inline pxr::GfMatrix4f asGfMatrix4fT(const omni::isaac::dynamic_control::DcTrans
 }
 
 /**
- * @brief Convert a DcTransform to a GfMatrix4d
+ * @brief Converts a DcTransform to a GfMatrix4d.
+ * @details
+ * Creates a 4x4 transformation matrix in double precision:
+ * 1. Sets translation component with precision promotion
+ * 2. Sets rotation component with precision promotion
  *
- * @param input
- * @return pxr::GfMatrix4d
+ * @param[in] input Input transform in Dynamic Control format
+ * @return pxr::GfMatrix4d Equivalent transform matrix in USD format
+ *
+ * @note Promotes single precision components to double precision
+ * @see asGfVec3d
+ * @see asGfQuatd
  */
 inline pxr::GfMatrix4d asGfMatrix4d(const omni::isaac::dynamic_control::DcTransform& input)
 {
@@ -148,10 +229,14 @@ inline pxr::GfMatrix4d asGfMatrix4d(const omni::isaac::dynamic_control::DcTransf
 }
 
 /**
- * @brief convert pxr::GfVec3f to carb::Float3
+ * @brief Converts pxr::GfVec3f to carb::Float3.
+ * @details
+ * Performs direct component-wise conversion from USD to Carb format.
  *
- * @param v
- * @return carb::Float3
+ * @param[in] v Input vector in USD format
+ * @return carb::Float3 Equivalent vector in Carb format
+ *
+ * @note No precision loss as both types use single precision
  */
 inline carb::Float3 asCarbFloat3(const pxr::GfVec3f& v)
 {
@@ -159,22 +244,32 @@ inline carb::Float3 asCarbFloat3(const pxr::GfVec3f& v)
 }
 
 /**
- * @brief convert pxr::GfVec3d to carb::Float3
+ * @brief Converts pxr::GfVec3d to carb::Float3.
+ * @details
+ * Performs component-wise conversion with precision demotion:
+ * - x, y, z components are converted from double to float
  *
- * @param v
- * @return carb::Float3
+ * @param[in] v Input vector in USD format (double precision)
+ * @return carb::Float3 Equivalent vector in Carb format (single precision)
+ *
+ * @warning Potential precision loss during double to float conversion
  */
 inline carb::Float3 asCarbFloat3(const pxr::GfVec3d& v)
 {
     return carb::Float3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
 }
 
-
 /**
- * @brief convert pxr::GfVec4f to carb::Float4
+ * @brief Converts pxr::GfQuatf to carb::Float4.
+ * @details
+ * Converts quaternion with component reordering:
+ * - USD format: (w, x, y, z)
+ * - Carb format: (x, y, z, w)
  *
- * @param v
- * @return carb::Float4
+ * @param[in] v Input quaternion in USD format
+ * @return carb::Float4 Equivalent quaternion in Carb format
+ *
+ * @note Component order is adjusted during conversion
  */
 inline carb::Float4 asCarbFloat4(const pxr::GfQuatf& v)
 {
@@ -182,12 +277,18 @@ inline carb::Float4 asCarbFloat4(const pxr::GfQuatf& v)
     return carb::Float4{ imag[0], imag[1], imag[2], v.GetReal() };
 }
 
-
 /**
- * @brief convert pxr::GfVec4f to carb::Float4
+ * @brief Converts pxr::GfQuatd to carb::Float4.
+ * @details
+ * Converts quaternion with component reordering and precision demotion:
+ * 1. Extracts imaginary and real parts
+ * 2. Converts from double to float
+ * 3. Reorders components from USD to Carb format
  *
- * @param v
- * @return carb::Float4
+ * @param[in] v Input quaternion in USD format (double precision)
+ * @return carb::Float4 Equivalent quaternion in Carb format (single precision)
+ *
+ * @warning Potential precision loss during double to float conversion
  */
 inline carb::Float4 asCarbFloat4(const pxr::GfQuatd& v)
 {
@@ -197,10 +298,14 @@ inline carb::Float4 asCarbFloat4(const pxr::GfQuatd& v)
 }
 
 /**
- * @brief convert carb::Float3 into PxVec3
+ * @brief Converts carb::Float3 into PhysX vector.
+ * @details
+ * Performs direct component-wise conversion to PhysX format.
  *
- * @param v
- * @return ::physx::PxVec3
+ * @param[in] v Input vector in Carb format
+ * @return PxVec3 Equivalent vector in PhysX format
+ *
+ * @note No precision loss as both types use single precision
  */
 inline ::physx::PxVec3 asPxVec3(const carb::Float3& v)
 {
@@ -208,10 +313,14 @@ inline ::physx::PxVec3 asPxVec3(const carb::Float3& v)
 }
 
 /**
- * @brief convert pxr::GfVec3f into PxVec3
+ * @brief Converts pxr::GfVec3f into PhysX vector.
+ * @details
+ * Performs direct component-wise conversion from USD to PhysX format.
  *
- * @param v
- * @return ::physx::PxVec3
+ * @param[in] v Input vector in USD format
+ * @return PxVec3 Equivalent vector in PhysX format
+ *
+ * @note No precision loss as both types use single precision
  */
 inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3f& v)
 {
@@ -219,22 +328,30 @@ inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3f& v)
 }
 
 /**
- * @brief convert usdrt::GfVec3f into PxVec3
+ * @brief Converts usdrt::GfVec3f into PhysX vector.
+ * @details
+ * Performs direct component-wise conversion from USD runtime to PhysX format.
  *
- * @param v
- * @return ::physx::PxVec3
+ * @param[in] v Input vector in USD runtime format
+ * @return PxVec3 Equivalent vector in PhysX format
+ *
+ * @note No precision loss as both types use single precision
  */
 inline ::physx::PxVec3 asPxVec3(const usdrt::GfVec3f& v)
 {
     return ::physx::PxVec3{ v[0], v[1], v[2] };
 }
 
-
 /**
- * @brief convert pxr::GfVec3d into PxVec3
+ * @brief Converts pxr::GfVec3d into PhysX vector.
+ * @details
+ * Performs component-wise conversion with precision demotion:
+ * - x, y, z components are converted from double to float
  *
- * @param v
- * @return ::physx::PxVec3
+ * @param[in] v Input vector in USD format (double precision)
+ * @return PxVec3 Equivalent vector in PhysX format (single precision)
+ *
+ * @warning Potential precision loss during double to float conversion
  */
 inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3d& v)
 {
@@ -242,10 +359,15 @@ inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3d& v)
 }
 
 /**
- * @brief convert usdrt::GfVec3d into PxVec3
+ * @brief Converts usdrt::GfVec3d into PhysX vector.
+ * @details
+ * Performs component-wise conversion with precision demotion:
+ * - x, y, z components are converted from double to float
  *
- * @param v
- * @return ::physx::PxVec3
+ * @param[in] v Input vector in USD runtime format (double precision)
+ * @return PxVec3 Equivalent vector in PhysX format (single precision)
+ *
+ * @warning Potential precision loss during double to float conversion
  */
 inline ::physx::PxVec3 asPxVec3(const usdrt::GfVec3d& v)
 {
@@ -253,10 +375,16 @@ inline ::physx::PxVec3 asPxVec3(const usdrt::GfVec3d& v)
 }
 
 /**
- * @brief Convert carb::Float4 into PxQuat
+ * @brief Converts carb::Float4 into PhysX quaternion.
+ * @details
+ * Converts quaternion with component reordering:
+ * - Carb format: (x, y, z, w)
+ * - PhysX format: (x, y, z, w)
  *
- * @param q
- * @return ::physx::PxQuat
+ * @param[in] q Input quaternion in Carb format
+ * @return PxQuat Equivalent quaternion in PhysX format
+ *
+ * @note Component order matches between formats
  */
 inline ::physx::PxQuat asPxQuat(const carb::Float4& q)
 {
@@ -264,10 +392,16 @@ inline ::physx::PxQuat asPxQuat(const carb::Float4& q)
 }
 
 /**
- * @brief Convert pxr::GfQuatf into PxQuat
+ * @brief Converts pxr::GfQuatf into PhysX quaternion.
+ * @details
+ * Converts quaternion with component reordering:
+ * - USD format: (w, x, y, z)
+ * - PhysX format: (x, y, z, w)
  *
- * @param q
- * @return ::physx::PxQuat
+ * @param[in] v Input quaternion in USD format
+ * @return PxQuat Equivalent quaternion in PhysX format
+ *
+ * @note Component order is adjusted during conversion
  */
 inline ::physx::PxQuat asPxQuat(const pxr::GfQuatf& v)
 {
@@ -275,25 +409,35 @@ inline ::physx::PxQuat asPxQuat(const pxr::GfQuatf& v)
     return ::physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
 }
 
-
 /**
- * @brief Convert usdrt::GfQuatf into PxQuat
+ * @brief Converts usdrt::GfQuatf into PhysX quaternion.
+ * @details
+ * Converts quaternion with component reordering:
+ * - USD runtime format: (w, x, y, z)
+ * - PhysX format: (x, y, z, w)
  *
- * @param q
- * @return ::physx::PxQuat
+ * @param[in] v Input quaternion in USD runtime format
+ * @return PxQuat Equivalent quaternion in PhysX format
+ *
+ * @note Component order is adjusted during conversion
  */
 inline ::physx::PxQuat asPxQuat(const usdrt::GfQuatf& v)
 {
     const usdrt::GfVec3f& imag = v.GetImaginary();
     return ::physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
 }
-
-
 /**
- * @brief Convert pxr::GfQuatd into PxQuat
+ * @brief Converts pxr::GfQuatd into PhysX quaternion.
+ * @details
+ * Converts quaternion with component reordering and precision demotion:
+ * 1. Extracts imaginary and real parts
+ * 2. Converts from double to float
+ * 3. Reorders components from USD runtime to PhysX format
  *
- * @param q
- * @return ::physx::PxQuat
+ * @param[in] v Input quaternion in USD runtime format (double precision)
+ * @return PxQuat Equivalent quaternion in PhysX format (single precision)
+ *
+ * @warning Potential precision loss during double to float conversion
  */
 inline ::physx::PxQuat asPxQuat(const pxr::GfQuatd& v)
 {
@@ -301,12 +445,18 @@ inline ::physx::PxQuat asPxQuat(const pxr::GfQuatd& v)
     return ::physx::PxQuat{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
                             static_cast<float>(v.GetReal()) };
 }
-
 /**
- * @brief Convert usdrt::GfQuatd into PxQuat
+ * @brief Converts usdrt::GfQuatd into PhysX quaternion.
+ * @details
+ * Converts quaternion with component reordering and precision demotion:
+ * 1. Extracts imaginary and real parts
+ * 2. Converts from double to float
+ * 3. Reorders components from USD runtime to PhysX format
  *
- * @param q
- * @return ::physx::PxQuat
+ * @param[in] v Input quaternion in USD runtime format (double precision)
+ * @return PxQuat Equivalent quaternion in PhysX format (single precision)
+ *
+ * @warning Potential precision loss during double to float conversion
  */
 inline ::physx::PxQuat asPxQuat(const usdrt::GfQuatd& v)
 {
@@ -315,12 +465,19 @@ inline ::physx::PxQuat asPxQuat(const usdrt::GfQuatd& v)
                             static_cast<float>(v.GetReal()) };
 }
 
-
 /**
- * @brief  Convert a DcTransform into a pxTransform
+ * @brief Converts DcTransform into PhysX transform.
+ * @details
+ * Creates a complete PhysX transform from Dynamic Control transform:
+ * 1. Converts position to PxVec3
+ * 2. Converts rotation to PxQuat
  *
- * @param pose
- * @return ::physx::PxTransform
+ * @param[in] pose Input transform in Dynamic Control format
+ * @return PxTransform Equivalent transform in PhysX format
+ *
+ * @note No precision loss as both formats use single precision
+ * @see asPxVec3
+ * @see asPxQuat
  */
 inline ::physx::PxTransform asPxTransform(const omni::isaac::dynamic_control::DcTransform& pose)
 {
@@ -328,10 +485,18 @@ inline ::physx::PxTransform asPxTransform(const omni::isaac::dynamic_control::Dc
 }
 
 /**
- * @brief Convert GfTransform to PxTransform
+ * @brief Converts USD transform into PhysX transform.
+ * @details
+ * Creates a complete PhysX transform from USD transform:
+ * 1. Extracts translation and rotation components
+ * 2. Converts to PhysX format with potential precision demotion
  *
- * @param trans
- * @return ::physx::PxTransform
+ * @param[in] trans Input transform in USD format
+ * @return PxTransform Equivalent transform in PhysX format
+ *
+ * @warning Potential precision loss when converting from double precision USD types
+ * @see asPxVec3
+ * @see asPxQuat
  */
 inline ::physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
 {
@@ -350,10 +515,18 @@ inline ::physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
 }
 
 /**
- * @brief Convert usdrt::GfMatrix4d to PxTransform
+ * @brief Converts USD runtime matrix into PhysX transform.
+ * @details
+ * Creates a PhysX transform from a USD runtime 4x4 matrix:
+ * 1. Creates a GfTransform from the matrix
+ * 2. Extracts translation and rotation components
+ * 3. Converts to PhysX format with potential precision demotion
  *
- * @param trans
- * @return ::physx::PxTransform
+ * @param[in] mat Input 4x4 matrix in USD runtime format
+ * @return PxTransform Equivalent transform in PhysX format
+ *
+ * @warning Potential precision loss when converting from double precision USD types
+ * @see asPxTransform(const pxr::GfTransform&)
  */
 inline ::physx::PxTransform asPxTransform(const usdrt::GfMatrix4d& mat)
 {
@@ -374,11 +547,19 @@ inline ::physx::PxTransform asPxTransform(const usdrt::GfMatrix4d& mat)
 }
 
 /**
- * @brief Converts a usdrt Gf translation and orientation to
+ * @brief Converts USD runtime translation and orientation into PhysX transform.
+ * @details
+ * Creates a PhysX transform from separate position and orientation:
+ * 1. Converts translation vector to PxVec3
+ * 2. Converts orientation quaternion to PxQuat
  *
- * @param translation
- * @param orientation
- * @return ::physx::PxTransform
+ * @param[in] translation Position vector in USD runtime format
+ * @param[in] orientation Rotation quaternion in USD runtime format
+ * @return PxTransform Equivalent transform in PhysX format
+ *
+ * @warning Potential precision loss when converting from double precision USD types
+ * @see asPxVec3
+ * @see asPxQuat
  */
 inline ::physx::PxTransform asPxTransform(const usdrt::GfVec3d& translation, const usdrt::GfQuatd& orientation)
 {
@@ -394,33 +575,49 @@ inline ::physx::PxTransform asPxTransform(const usdrt::GfVec3d& translation, con
 }
 
 /**
- * @brief Create a DcTransform from a GfVec3f and a GfQuatf
+ * @brief Converts USD position and orientation into Dynamic Control transform.
+ * @details
+ * Creates a Dynamic Control transform from separate components:
+ * 1. Converts position vector to Float3
+ * 2. Converts orientation quaternion to Float4
  *
- * @param p
- * @param q
- * @return omni::isaac::dynamic_control::DcTransform
+ * @param[in] p Position vector in USD format
+ * @param[in] q Rotation quaternion in USD format
+ * @return omni::isaac::dynamic_control::DcTransform Equivalent transform in Dynamic Control format
+ *
+ * @note No precision loss when using single precision USD types
+ * @see asCarbFloat3
+ * @see asCarbFloat4
  */
 inline omni::isaac::dynamic_control::DcTransform asDcTransform(const pxr::GfVec3f& p, const pxr::GfQuatf& q)
 {
-    omni::isaac::dynamic_control::DcTransform t;
-    t.p = asCarbFloat3(p);
-    t.r = asCarbFloat4(q);
-    return t;
+    omni::isaac::dynamic_control::DcTransform pose;
+    pose.p = asCarbFloat3(p);
+    pose.r = asCarbFloat4(q);
+    return pose;
 }
 
 /**
- * @brief Create a DcTransform from a GfVec3d and a GfQuatd
+ * @brief Converts USD double precision position and orientation into Dynamic Control transform.
+ * @details
+ * Creates a Dynamic Control transform from separate components with precision demotion:
+ * 1. Converts double precision position to Float3
+ * 2. Converts double precision orientation to Float4
  *
- * @param p
- * @param q
- * @return omni::isaac::dynamic_control::DcTransform
+ * @param[in] p Position vector in USD format (double precision)
+ * @param[in] q Rotation quaternion in USD format (double precision)
+ * @return omni::isaac::dynamic_control::DcTransform Equivalent transform in Dynamic Control format
+ *
+ * @warning Potential precision loss during double to float conversion
+ * @see asCarbFloat3
+ * @see asCarbFloat4
  */
 inline omni::isaac::dynamic_control::DcTransform asDcTransform(const pxr::GfVec3d& p, const pxr::GfQuatd& q)
 {
-    omni::isaac::dynamic_control::DcTransform t;
-    t.p = asCarbFloat3(p);
-    t.r = asCarbFloat4(q);
-    return t;
+    omni::isaac::dynamic_control::DcTransform pose;
+    pose.p = asCarbFloat3(p);
+    pose.r = asCarbFloat4(q);
+    return pose;
 }
 }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -56,7 +56,7 @@ public:
         auto& orientation = db.outputs.orientation();
         auto& sensorTime = db.outputs.sensorTime();
 
-        if (prim.size() > 0)
+        if (!prim.empty())
         {
             primPath = omni::fabric::toSdfPath(prim[0]).GetText();
         }

@@ -1,4 +1,9 @@
 # Changelog
+## [4.2.4] - 2025-02-21
+### Changed
+- Update style format and naming conventions in c++ code, add doxygen docstrings
+
+
 
 ## [4.2.3] - 2025-02-17
 ### Changed

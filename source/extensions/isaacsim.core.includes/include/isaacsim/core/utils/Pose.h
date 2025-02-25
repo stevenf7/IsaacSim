@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -30,13 +30,44 @@ namespace isaacsim
 {
 namespace core
 {
-
 namespace utils
 {
 
+/**
+ * @namespace pose
+ * @brief Utilities for handling pose transformations in USD scene graphs.
+ * @details
+ * Provides functions for computing and manipulating poses (transforms) in USD scenes.
+ * Handles both world-space and local-space transformations, supporting:
+ * - World transform computation without caching
+ * - Relative transform computation between prims
+ * - Support for both USD and USDRT stages
+ * - Automatic handling of position, orientation, and scale
+ */
 namespace pose
 {
 
+/**
+ * @brief Computes the world transform of a prim.
+ * @details
+ * Calculates the complete world transform by:
+ * 1. Checking for world transform attributes (position, orientation, scale)
+ * 2. Falling back to local transform computation if world transform unavailable
+ * 3. Recursively computing parent transforms when needed
+ *
+ * The function handles three cases:
+ * - Prims with world transform attributes
+ * - Prims with local transform only
+ * - Regular USD prims without USDRT extensions
+ *
+ * @param[in] usdStage Reference to the USD stage
+ * @param[in] usdrtStage Reference to the USDRT stage
+ * @param[in] path Path to the prim whose transform to compute
+ * @param[in] timecode Time code for the transform evaluation (default: Default())
+ * @return usdrt::GfMatrix4d The computed world transform matrix
+ *
+ * @warning May be computationally expensive for deep hierarchies
+ */
 static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
                                                   usdrt::UsdStageRefPtr usdrtStage,
                                                   const pxr::SdfPath& path,
@@ -106,13 +137,24 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
         return localMat * parentXform;
     }
 }
+
 /**
- * @brief Get the relative transform matrix from the source prim ot the target prim
+ * @brief Computes the relative transform matrix between two prims.
+ * @details
+ * Calculates the transform that converts coordinates from the source prim's
+ * frame to the target prim's frame. The computation follows these steps:
+ * 1. Compute world transforms for both source and target prims
+ * 2. Invert the target's world transform
+ * 3. Multiply to get the relative transform
  *
- * @param sourcePrim: source prim from which frame to compute the relative transform
- * @param targetPrim: target prim to which fram to compute the relative transform
+ * @param[in] usdStage Reference to the USD stage
+ * @param[in] usdrtStage Reference to the USDRT stage
+ * @param[in] sourcePrim Path to the source prim
+ * @param[in] targetPrim Path to the target prim
+ * @return usdrt::GfMatrix4d The relative transform matrix (column-major)
  *
- * @return usdrt/Gf/Matrix4d
+ * @note The returned matrix is in column-major format
+ * @warning Ensure both prims exist in the stage before calling
  */
 inline usdrt::GfMatrix4d getRelativeTransform(pxr::UsdStageRefPtr usdStage,
                                               usdrt::UsdStageRefPtr usdrtStage,
@@ -131,7 +173,7 @@ inline usdrt::GfMatrix4d getRelativeTransform(pxr::UsdStageRefPtr usdStage,
     return sourceToTargetColumnMajorTransform;
 }
 
-}
-}
-}
-}
+} // namespace pose
+} // namespace utils
+} // namespace core
+} // namespace isaacsim

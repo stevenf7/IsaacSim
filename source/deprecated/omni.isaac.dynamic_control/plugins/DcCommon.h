@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,9 +16,19 @@
 namespace std
 {
 // hash function for SdfPath
+/**
+ * @struct hash<pxr::SdfPath>
+ * @brief Hash function specialization for pxr::SdfPath
+ * @details Enables using SdfPath as a key in unordered containers
+ */
 template <>
 struct hash<pxr::SdfPath>
 {
+    /**
+     * @brief Computes the hash value for an SdfPath
+     * @param[in] path The SdfPath to hash
+     * @return The hash value
+     */
     size_t operator()(const pxr::SdfPath& path) const
     {
         return path.GetHash();
@@ -56,11 +66,26 @@ constexpr uint32_t getHandleContextId(DcHandle h)
     return static_cast<uint32_t>(h >> 40);
 }
 
+/**
+ * @class Bucket
+ * @brief A container for managing objects with unique IDs
+ * @details
+ * Provides a way to store, retrieve, and remove objects using unique IDs.
+ * Takes ownership of the objects and manages their lifetime.
+ *
+ * @tparam T The type of objects stored in the bucket
+ */
 template <class T>
 class Bucket
 {
 public:
-    // bucket takes ownership
+    /**
+     * @brief Adds an object to the bucket
+     * @details Takes ownership of the object and assigns it a unique ID
+     *
+     * @param[in] obj The object to add, transferred as an rvalue reference
+     * @return The unique ID assigned to the object
+     */
     uint32_t add(std::unique_ptr<T>&& obj)
     {
         uint32_t id = ++mNextId;
@@ -68,6 +93,13 @@ public:
         return id;
     }
 
+    /**
+     * @brief Gets an object by its ID
+     * @details Returns a pointer to the object if found, or nullptr if not found
+     *
+     * @param[in] id The ID of the object to retrieve
+     * @return Pointer to the object, or nullptr if not found
+     */
     T* get(uint32_t id) const
     {
         auto it = mDict.find(id);
@@ -81,6 +113,12 @@ public:
         }
     }
 
+    /**
+     * @brief Removes an object by its ID
+     * @details If the object is found, it is removed and destroyed
+     *
+     * @param[in] id The ID of the object to remove
+     */
     void remove(uint32_t id)
     {
         auto it = mDict.find(id);
@@ -90,6 +128,10 @@ public:
         }
     }
 
+    /**
+     * @brief Clears all objects from the bucket
+     * @details Removes and destroys all objects
+     */
     void clear()
     {
         mDict.clear();

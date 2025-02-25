@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -26,7 +26,7 @@ static inline uint32_t distToColor(double ratio, bool bigEndian)
 {
     // we want to normalize ratio so that it fits in to 6 regions
     // where each region is 256 units long
-    int normalized = int(ratio * 256 * 6);
+    int normalized = static_cast<int>(ratio * 256 * 6);
 
     // find the distance to the start of the closest region
     int x = normalized % 256;
@@ -75,7 +75,7 @@ static inline carb::ColorRgba distToRgba(double ratio)
 {
     // we want to normalize ratio so that it fits in to 6 regions
     // where each region is 256 units long
-    int normalized = int(ratio * 256 * 6);
+    int normalized = static_cast<int>(ratio * 256 * 6);
 
     // find the distance to the start of the closest region
     int x = normalized % 256;

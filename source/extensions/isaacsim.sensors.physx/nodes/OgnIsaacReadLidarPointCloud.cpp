@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -55,7 +55,7 @@ public:
         {
             const auto& prim = db.inputs.lidarPrim();
             const char* primPath;
-            if (prim.size() > 0)
+            if (!prim.empty())
             {
                 primPath = omni::fabric::toSdfPath(prim[0]).GetText();
             }

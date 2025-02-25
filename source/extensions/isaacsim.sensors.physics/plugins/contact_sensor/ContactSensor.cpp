@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -258,7 +258,7 @@ void ContactSensor::onComponentChange()
     pxr::GfVec2f thresholdAttr = pxr::GfVec2f(0.01f, 100000.0f);
 
     // contact sensor onComponentChange
-    const pxr::IsaacSensorIsaacContactSensor& typedPrim = (pxr::IsaacSensorIsaacContactSensor)mPrim;
+    const pxr::IsaacSensorIsaacContactSensor& typedPrim = pxr::IsaacSensorIsaacContactSensor(mPrim);
 
     isaacsim::core::utils::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
     isaacsim::core::utils::safeGetAttribute(typedPrim.GetRadiusAttr(), radius);

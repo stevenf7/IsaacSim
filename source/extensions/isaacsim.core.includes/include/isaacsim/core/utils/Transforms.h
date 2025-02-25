@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -19,25 +19,56 @@
 
 #include <isaacsim/core/utils/Conversions.h>
 
-
 namespace isaacsim
 {
 namespace core
 {
 namespace utils
 {
+
+/**
+ * @namespace transforms
+ * @brief Utilities for manipulating transforms of USD prims and physics objects.
+ * @details
+ * Provides functions for modifying transforms of objects in the scene, handling both:
+ * - Physics-based objects (articulations and rigid bodies)
+ * - Regular USD prims
+ *
+ * Features:
+ * - Transform setting with physics state preservation
+ * - Scale manipulation with physics constraints
+ * - Automatic physics state management (wake/sleep)
+ * - Proper handling of local vs. world space transforms
+ */
 namespace transforms
 {
+
 using omni::isaac::dynamic_control::DcHandle;
 using omni::isaac::dynamic_control::DcObjectType;
 using omni::isaac::dynamic_control::DcTransform;
+
 /**
- * @brief Set the transform of the object
+ * @brief Sets the transform (position and rotation) of a USD prim.
+ * @details
+ * Handles different types of objects appropriately:
+ * 1. For articulated objects:
+ *    - Wakes up the articulation
+ *    - Sets root body pose
+ *    - Resets velocities
+ * 2. For rigid bodies:
+ *    - Wakes up the body
+ *    - Sets pose directly
+ *    - Resets velocities
+ * 3. For regular prims:
+ *    - Computes and sets local transform
+ *    - Handles parent space correctly
  *
- * @param mDynamicControlPtr
- * @param prim
- * @param pxBodyTranslation
- * @param pxBodyRotation
+ * @param[in,out] prim USD prim to transform
+ * @param[in] pxBodyTranslation New position in world space
+ * @param[in] pxBodyRotation New rotation in world space
+ *
+ * @note For physics objects, this function only works during simulation
+ * @warning Resets linear and angular velocities to zero for physics objects
  */
 inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr::GfQuatf pxBodyRotation)
 {
@@ -53,7 +84,6 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr
         DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
         if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
         {
-
             DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
             mDynamicControlPtr->wakeUpArticulation(artculationHandle);
             DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
@@ -88,10 +118,18 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr
 }
 
 /**
- * @brief Sets the scale of the object
+ * @brief Sets the scale of a USD prim.
+ * @details
+ * Applies scaling to the prim's local transform, with special handling for physics objects:
+ * - Only scales non-physics objects during simulation
+ * - Preserves existing transform components
+ * - Applies scale in local space
  *
- * @param prim
- * @param pxBodyScale
+ * @param[in,out] prim USD prim to scale
+ * @param[in] pxBodyScale Scale factors for x, y, and z axes
+ *
+ * @note During simulation, only non-physics objects can be scaled
+ * @warning Scaling physics objects during simulation may have unexpected results
  */
 inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
 {
@@ -113,7 +151,8 @@ inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
         omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
     }
 }
-}
-}
-}
-}
+
+} // namespace transforms
+} // namespace utils
+} // namespace core
+} // namespace isaacsim

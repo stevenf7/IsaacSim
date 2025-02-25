@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,81 +28,186 @@ namespace sensors
 namespace physx
 {
 
+/**
+ * @class LidarSensor
+ * @brief A LiDAR (Light Detection and Ranging) sensor implementation
+ * @details This class simulates a LiDAR sensor with configurable parameters such as
+ *          rotation rate, field of view, and resolution. It provides both depth and
+ *          intensity data, along with optional semantic information about detected objects.
+ *          The sensor performs ray casting in the physics scene to detect objects and
+ *          measure distances.
+ */
 class LidarSensor : public RangeSensorComponent
 {
 
 public:
+    /**
+     * @brief Constructs a new LiDAR sensor instance
+     * @param[in] physxPtr Pointer to the PhysX interface for physics simulation
+     * @param[in] syntheticDataPtr Pointer to the synthetic data interface for semantic information
+     */
     LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::SyntheticData* syntheticDataPtr);
+
+    /**
+     * @brief Virtual destructor for proper cleanup
+     */
     ~LidarSensor();
 
+    /**
+     * @brief Initializes the LiDAR sensor when the component starts
+     * @details Sets up initial parameters, allocates memory for scan data, and prepares the sensor for operation
+     */
     virtual void onStart();
+
+    /**
+     * @brief Performs pre-tick operations before the main sensor update
+     * @details Updates sensor parameters and prepares for the next scan cycle
+     */
     virtual void preTick();
+
+    /**
+     * @brief Performs the main sensor update during each tick
+     * @details Executes the LiDAR scanning operation, updates sensor data, and processes results
+     */
     virtual void tick();
+
+    /**
+     * @brief Handles component property changes
+     * @details Updates sensor configuration when properties are modified through the interface
+     */
     virtual void onComponentChange();
 
+    /**
+     * @brief Gets the number of columns (horizontal samples) in the scan pattern
+     * @return Number of columns in the scan grid
+     */
     int getNumCols() const
     {
         return mCols;
     }
 
+    /**
+     * @brief Gets the number of rows (vertical samples) in the scan pattern
+     * @return Number of rows in the scan grid
+     */
     int getNumRows() const
     {
         return mRows;
     }
 
+    /**
+     * @brief Gets the number of columns processed in the last tick
+     * @return Number of columns processed in the most recent update
+     */
     int getNumColsTicked() const
     {
         return mLastNumColsTicked;
     }
 
+    /**
+     * @brief Gets the latest depth data from the sensor
+     * @return Reference to vector containing normalized depth values (0-65535)
+     */
     std::vector<uint16_t>& getDepthData()
     {
         return mLastDepth;
     }
 
+    /**
+     * @brief Gets the timestamp for each beam in the scan
+     * @return Reference to vector containing beam timestamps in seconds
+     */
     std::vector<float>& getBeamTimeData()
     {
         return mLastBeamTime;
     }
 
+    /**
+     * @brief Gets the latest linear depth data in meters
+     * @return Reference to vector containing depth values in meters
+     */
     std::vector<float>& getLinearDepthData()
     {
         return mLastLinearDepth;
     }
 
+    /**
+     * @brief Gets the latest intensity data from the sensor
+     * @return Reference to vector containing intensity values (0-255)
+     */
     std::vector<uint8_t>& getIntensityData()
     {
         return mLastIntensity;
     }
 
+    /**
+     * @brief Gets the zenith angles for each sensor ray
+     * @return Reference to vector containing zenith angles in radians
+     */
     std::vector<float>& getZenithData()
     {
         return mZenith;
     }
 
+    /**
+     * @brief Gets the azimuth angles for each sensor ray
+     * @return Reference to vector containing azimuth angles in radians
+     */
     std::vector<float>& getAzimuthData()
     {
         return mLastAzimuth;
     }
 
+    /**
+     * @brief Gets the primitive data for each hit point
+     * @return Reference to vector containing primitive names/identifiers
+     */
     std::vector<std::string>& getPrimData()
     {
         return mLastPrimData;
     }
 
+    /**
+     * @brief Gets the azimuth angle range of the sensor
+     * @return Pair of minimum and maximum azimuth angles in radians
+     */
     carb::Float2 getAzimuthRange()
     {
         return mAzimuthRange;
     }
 
+    /**
+     * @brief Gets the zenith angle range of the sensor
+     * @return Pair of minimum and maximum zenith angles in radians
+     */
     carb::Float2 getZenithRange()
     {
         return mZenithRange;
     }
 
 private:
+    /**
+     * @brief Dumps sensor data for debugging purposes
+     * @param[in] start Starting index in the scan pattern
+     * @param[in] stop Ending index in the scan pattern
+     * @param[in] elapsedTime Time elapsed during the scan in seconds
+     */
     void dumpData(int start, int stop, double elapsedTime);
 
+    /**
+     * @brief Performs the LiDAR scanning operation
+     * @tparam drawPoints Enable/disable point visualization
+     * @tparam drawLines Enable/disable line visualization
+     * @tparam enableSemantics Enable/disable semantic data collection
+     * @param[in] start Starting column index for the scan
+     * @param[in] stop Ending column index for the scan
+     * @param[in] rows Number of vertical samples
+     * @param[in] cols Number of horizontal samples
+     * @param[in] origin Origin point of the sensor in world space
+     * @param[in] worldRotation Rotation of the sensor in world space
+     * @param[in] zUp Whether the world coordinate system is Z-up
+     * @details Performs ray casting for each point in the scan pattern and processes hit results
+     */
     template <bool drawPoints, bool drawLines, bool enableSemantics>
     void scan(int start,
               int stop,
@@ -239,45 +344,160 @@ private:
 
     // From the prim
     float mRotationRate = 20.0f;
+
+    /**
+     * @brief High level of detail flag for sensor operation
+     */
     bool mHighLod = true;
+
+    /**
+     * @brief Horizontal field of view in degrees
+     */
     float mHorizontalFov = 360.0f;
+
+    /**
+     * @brief Vertical field of view in degrees
+     */
     float mVerticalFov = 30.0f;
+
+    /**
+     * @brief Horizontal angular resolution in degrees
+     */
     float mHorizontalResolution = 0.4f;
+
+    /**
+     * @brief Vertical angular resolution in degrees
+     */
     float mVerticalResolution = 4.0f;
+
+    /**
+     * @brief Yaw offset angle in degrees
+     */
     float mYawOffset = 0.0f;
 
-    // Ranges converted to proper units
+    /**
+     * @brief Minimum depth range in world units
+     */
     float mMinDepth = 0;
+
+    /**
+     * @brief Maximum depth range in world units
+     */
     float mMaxDepth = 1e8;
+
+    /**
+     * @brief Maximum step size for scanning
+     */
     float mMaxStepSize = 0;
+
+    /**
+     * @brief Maximum number of columns to process per tick
+     */
     int mMaxColsPerTick = 0;
+
+    /**
+     * @brief Last processed column index
+     */
     int mLastCol = 0;
+
+    /**
+     * @brief Scanning speed in columns per second
+     */
     float mColScanSpeed = 0;
+
+    /**
+     * @brief Remaining time for the current scan cycle
+     */
     double mRemainingTime = 0;
 
+    /**
+     * @brief Number of vertical samples (rows)
+     */
+    int mRows = 0;
 
-    int mRows = 0, mCols = 0;
+    /**
+     * @brief Number of horizontal samples (columns)
+     */
+    int mCols = 0;
+
+    /**
+     * @brief Number of columns processed in the last tick
+     */
     int mLastNumColsTicked = 0;
 
+    /**
+     * @brief Vector of zenith angles for each row
+     */
     std::vector<float> mZenith;
+
+    /**
+     * @brief Current and last azimuth angles for each column
+     */
     std::vector<float> mAzimuth, mLastAzimuth;
 
+    /**
+     * @brief Range of azimuth angles (min, max) in radians
+     */
     carb::Float2 mAzimuthRange;
+
+    /**
+     * @brief Range of zenith angles (min, max) in radians
+     */
     carb::Float2 mZenithRange;
 
+    /**
+     * @brief Current and last beam timestamps
+     */
     std::vector<float> mBeamTime, mLastBeamTime;
+
+    /**
+     * @brief Current and last linear depth measurements in meters
+     */
     std::vector<float> mLinearDepth, mLastLinearDepth;
+
+    /**
+     * @brief Current and last intensity measurements
+     */
     std::vector<uint8_t> mIntensity, mLastIntensity;
 
+    /**
+     * @brief Current and last normalized depth measurements
+     */
     std::vector<uint16_t> mDepth, mLastDepth;
+
+    /**
+     * @brief Hit positions in sensor local space
+     */
     std::vector<carb::Float3> mHitPos;
 
+    /**
+     * @brief PhysX ray cast hit flags configuration
+     */
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+
+    /**
+     * @brief Final translation of the sensor in world space
+     */
     ::physx::PxVec3 mFinalTranslation;
+
+    /**
+     * @brief Final rotation of the sensor in world space
+     */
     ::physx::PxQuat mFinalRotation;
 
+    /**
+     * @brief Pointer to synthetic data interface for semantic information
+     */
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
+
+    /**
+     * @brief Flag to enable/disable semantic data collection
+     */
     bool mEnableSemantics;
+
+    /**
+     * @brief Current and last primitive data for semantic information
+     */
     std::vector<std::string> mPrimData, mLastPrimData;
 };
 

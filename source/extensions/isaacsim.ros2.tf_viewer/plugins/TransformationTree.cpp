@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -56,7 +56,7 @@ public:
                 CARB_LOG_ERROR("Unable to load symbols from the isaacsim.ros2.tf_viewer.%s library", rosDistro.c_str());
                 return false;
             }
-            m_tf2Factory = (Tf2Factory*)createFactory();
+            m_tf2Factory = createFactory();
         }
         if (!m_buffer)
         {
@@ -120,14 +120,18 @@ public:
     void reset()
     {
         if (!m_buffer)
+        {
             return;
+        }
         m_buffer->clear();
     }
 
     void computeTransforms(const std::string& rootFrame)
     {
         if (!m_buffer)
+        {
             return;
+        }
         // clear containers
         m_frames.clear();
         m_relations.clear();
@@ -145,8 +149,10 @@ public:
                 double translation[3], rotation[4];
                 retval = m_buffer->getTransform(rootFrame, frame, translation, rotation);
                 if (retval)
+                {
                     m_transforms[frame] = { { translation[0], translation[1], translation[2] },
                                             { rotation[0], rotation[1], rotation[2], rotation[3] } };
+                }
             }
         }
     }
@@ -186,7 +192,9 @@ private:
     bool _subscriberCallback(bool isStatic)
     {
         if (!m_buffer)
+        {
             return false;
+        }
         auto subscriber = isStatic ? m_subscriberTfStatic : m_subscriberTf;
         auto message = isStatic ? m_messageTfStatic : m_messageTf;
         while (subscriber->spin(message->getPtr()))

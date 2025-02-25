@@ -143,12 +143,28 @@ command = "dump_extensions"
 entry_point = "${config_root}/tools/isaac/dump_extensions.py:setup_repo_tool"
 
 ########################################################################################################################
+# Generate Doxygen Input
+########################################################################################################################
+
+[generate_doxygen_input]
+command = "generate_doxygen_input"
+entry_point = "${config_root}/tools/isaac/generate_doxygen_input.py:setup_repo_tool"
+
+########################################################################################################################
 # Validate changelogs
 ########################################################################################################################
 
 [validate_changelogs]
 command = "validate_changelogs"
 entry_point = "${config_root}/tools/isaac/validate_changelogs.py:setup_repo_tool"
+
+########################################################################################################################
+# Check extension structure
+########################################################################################################################
+
+[check_extension_structure]
+command = "check_extension_structure"
+entry_point = "${config_root}/tools/isaac/check_extension_structure.py:setup_repo_tool"
 
 ########################################################################################################################
 # Format Lua files

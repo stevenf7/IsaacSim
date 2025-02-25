@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,7 +9,7 @@
 #include <carb/PluginUtils.h>
 
 #include <isaacsim/core/simulation_manager/SimulationManager.h>
-#include <isaacsim/core/simulation_manager/UsdNoticeListner.h>
+#include <isaacsim/core/simulation_manager/UsdNoticeListener.h>
 #include <omni/ext/IExt.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/fabric/stage/StageReaderWriter.h>
@@ -142,7 +142,9 @@ public:
         std::transform(deletionCallbacksMap.begin(), deletionCallbacksMap.end(), std::back_inserter(deletionKeys),
                        [](auto& p) { return p.first; });
         for (auto const& key : deletionKeys)
+        {
             deletionCallbacksMap[key]("/");
+        }
         mUsdNoticeListener->getDeletionCallbacks().clear();
         mUsdNoticeListener->getPhysicsSceneAdditionCallbacks().clear();
         mUsdNoticeListener->getPhysicsScenes().clear();

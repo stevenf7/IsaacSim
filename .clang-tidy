@@ -1,0 +1,38 @@
+Checks: >
+    -*, 
+    readability-identifier-naming,
+    modernize-use-pragma-once,
+    modernize-use-equals-default,
+    modernize-use-enum-default,
+    readability-braces-around-statements,
+    readability-container-size-empty,
+    cert-err60-cpp,
+    misc-include-cleaner
+    
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstantVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstantVariablePrefix
+    value: k
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_
+  - key: readability-identifier-naming.ProtectedMemberPrefix
+    value: m_
+  - key: readability-identifier-naming.StaticConstantMemberPrefix
+    value: s_
+  - key: readability-identifier-naming.GlobalConstantPrefix
+    value: g_
+  - key: readability-identifier-naming.EnumConstantPrefix
+    value: e
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -101,7 +101,7 @@ void PrimitiveDrawingHelper::setVertices(const carb::Float3* p, size_t numPositi
         mDirty = true;
     }
     mVertices.resize(numPositions);
-    for (int i = 0; i < (int)numPositions; ++i)
+    for (int i = 0; i < static_cast<int>(numPositions); ++i)
     {
         mVertices[i].position.x = p[i].x;
         mVertices[i].position.y = p[i].y;
@@ -123,22 +123,23 @@ void PrimitiveDrawingHelper::setVertices(const carb::Float3* p, size_t numPositi
 // transform the positions of vertices
 void PrimitiveDrawingHelper::transformVertices(const double m[])
 {
-    int numPositions = (int)mVertices.size();
+    int numPositions = static_cast<int>(mVertices.size());
     for (int i = 0; i < numPositions; ++i)
     {
-        mVertices[i].position = carb::Float3{ (float)(m[0] * mVertices[i].position.x + m[4] * mVertices[i].position.y +
-                                                      m[8] * mVertices[i].position.z + m[12]),
-                                              (float)(m[1] * mVertices[i].position.x + m[5] * mVertices[i].position.y +
-                                                      m[9] * mVertices[i].position.z + m[13]),
-                                              (float)(m[2] * mVertices[i].position.x + m[6] * mVertices[i].position.y +
-                                                      m[10] * mVertices[i].position.z + m[14]) };
+        mVertices[i].position =
+            carb::Float3{ static_cast<float>(m[0] * mVertices[i].position.x + m[4] * mVertices[i].position.y +
+                                             m[8] * mVertices[i].position.z + m[12]),
+                          static_cast<float>(m[1] * mVertices[i].position.x + m[5] * mVertices[i].position.y +
+                                             m[9] * mVertices[i].position.z + m[13]),
+                          static_cast<float>(m[2] * mVertices[i].position.x + m[6] * mVertices[i].position.y +
+                                             m[10] * mVertices[i].position.z + m[14]) };
     }
 }
 
 // set a constant color
 void PrimitiveDrawingHelper::setColor(const carb::ColorRgba& color)
 {
-    int numPositions = (int)mVertices.size();
+    int numPositions = static_cast<int>(mVertices.size());
     for (int i = 0; i < numPositions; ++i)
     {
         mVertices[i].color = color;
@@ -148,7 +149,7 @@ void PrimitiveDrawingHelper::setColor(const carb::ColorRgba& color)
 // set a constant width
 void PrimitiveDrawingHelper::setWidth(float width)
 {
-    int numPositions = (int)mVertices.size();
+    int numPositions = static_cast<int>(mVertices.size());
     for (int i = 0; i < numPositions; ++i)
     {
         mVertices[i].width = width;

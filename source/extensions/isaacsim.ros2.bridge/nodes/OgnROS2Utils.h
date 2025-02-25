@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -182,11 +182,13 @@ inline bool findMatchingAttribute(OgnROS2DatabaseDerivedType& db,
         {
             bool status = false;
             for (auto const& attribute : dynamicAttributes)
+            {
                 if (db.tokenToString(attribute().name()) == (InputOutput(isOutput) + ":" + prependStr + messageField.name))
                 {
                     status = attribute().typeName() == messageField.ognType;
                     break;
                 }
+            }
             if (!status)
             {
                 return false;

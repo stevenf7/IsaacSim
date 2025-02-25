@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -43,9 +43,7 @@ GenericSensor::GenericSensor(omni::physx::IPhysx* physxPtr) : RangeSensorCompone
 {
 }
 
-GenericSensor::~GenericSensor()
-{
-}
+GenericSensor::~GenericSensor() = default;
 
 void GenericSensor::onStart()
 {
@@ -57,7 +55,7 @@ void GenericSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorGeneric& typedPrim = (pxr::RangeSensorGeneric)mPrim;
+    const pxr::RangeSensorGeneric& typedPrim = pxr::RangeSensorGeneric(mPrim);
 
     isaacsim::core::utils::safeGetAttribute(typedPrim.GetSamplingRateAttr(), mSamplingRate);
     isaacsim::core::utils::safeGetAttribute(typedPrim.GetStreamingAttr(), mStreaming);
@@ -104,7 +102,7 @@ void GenericSensor::setNextBatchRays(const float* azimuth_angles, const float* z
 
     if (!mStreaming)
     {
-        A_length = int(sample_length / 2);
+        A_length = (sample_length / 2);
         B_length = sample_length - A_length;
         mAzimuth_A.assign(A_length, 0);
         mZenith_A.assign(A_length, 0);
@@ -174,7 +172,7 @@ void GenericSensor::setNextBatchOffsets(const float* origin_offsets, const int s
 {
     if (!mStreaming)
     {
-        int offset_A_length = int(sample_length / 2);
+        int offset_A_length = (sample_length / 2);
         int offset_B_length = sample_length - offset_A_length;
         if ((offset_A_length != A_length) || (offset_B_length != B_length))
         {
@@ -223,7 +221,7 @@ void GenericSensor::wrapData(int start)
 {
 
     double current_fps = 1.0 / mTimeDelta;
-    mSamplesPerTick = std::max(1, int(mSamplingRate / current_fps)); // scan at least once per tick
+    mSamplesPerTick = std::max(1, static_cast<int>(mSamplingRate / current_fps)); // scan at least once per tick
     if (mBatchSize < mSamplesPerTick)
     {
         CARB_LOG_ERROR(

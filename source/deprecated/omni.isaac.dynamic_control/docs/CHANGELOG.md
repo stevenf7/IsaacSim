@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.18] - 2025-02-25
+### Changed
+- Update style format and naming conventions in c++ code, add doxygen docstrings
+
 ## [1.3.17] - 2025-02-14
 ### Fixed
 - UR10 unit test

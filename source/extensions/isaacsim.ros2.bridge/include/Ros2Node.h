@@ -8,7 +8,11 @@
 //
 
 /** @file
- * @brief ROS 2 Node definition.
+ * @brief ROS 2 Node definition and implementation
+ * @details
+ * This file contains the base class definition for ROS 2 nodes in the Isaac Sim bridge.
+ * It provides core functionality for node initialization, namespace management,
+ * and node lifecycle handling.
  */
 #pragma once
 
@@ -35,19 +39,29 @@ namespace bridge
 {
 
 /**
- * Base class for ROS 2 bridge nodes.
- *
- * This class handles the lifetime of the internal ROS 2 node handle automatically.
+ * @class Ros2Node
+ * @brief Base class for ROS 2 bridge nodes
+ * @details
+ * This class provides the foundation for ROS 2 nodes in the Isaac Sim bridge.
+ * It handles node lifecycle management, initialization, and automatic cleanup
+ * of the internal ROS 2 node handle. Derived classes should implement specific
+ * node functionality while relying on this base class for core ROS 2 operations.
  */
 class Ros2Node : public BaseResetNode
 {
 
 public:
     /**
-     * Constructor.
+     * @brief Constructor for the ROS 2 node
+     * @details
+     * Initializes the node by retrieving necessary interfaces:
+     * - Core node framework interface
+     * - ROS 2 bridge interface
+     * - Settings interface for configuration
+     * - ROS 2 factory for node creation
      *
-     * During the construction of the object, the carb interfaces and the ROS 2 factory will be retrieved to be used by
-     * the derived classes.
+     * The constructor also configures publishing verification settings
+     * based on the extension configuration.
      */
     Ros2Node()
     {
@@ -63,7 +77,8 @@ public:
     }
 
     /**
-     * Destructor.
+     * @brief Destructor
+     * @details Ensures proper cleanup by calling reset()
      */
     ~Ros2Node()
     {
@@ -71,9 +86,12 @@ public:
     }
 
     /**
-     * Reset the \ref Ros2NodeHandle handler.
+     * @brief Resets the node handle
+     * @details
+     * Cleans up the ROS 2 node handle. Derived classes should call this method
+     * after cleaning up their own publishers/subscribers.
      *
-     * This method should be called by derived classes after they reset any publishers/subscribers attached to the node.
+     * @note This is a virtual method that can be overridden by derived classes
      */
     virtual void reset()
     {
@@ -86,15 +104,18 @@ public:
     }
 
     /**
-     * Do node work to initialize the node handler once.
+     * @brief Initializes the ROS 2 node handle
+     * @details
+     * Creates and initializes the ROS 2 node handle with the specified name and namespace.
+     * This method should be called before performing any operations with the node.
+     * Node name changes are only applied after a Stop and Play cycle.
      *
-     * This function should be called before doing any work with any OmniGraph node.
-     * Changes to the node name are only handled if Stop and Play are pressed.
+     * @param[in] nodeName Name for the ROS 2 node
+     * @param[in] namespaceName Namespace for the ROS 2 node
+     * @param[in] contextHandleAddr Memory address of the context handler
+     * @return bool True if initialization succeeded, false otherwise
      *
-     * @param nodeName Name of the node.
-     * @param namespaceName Namespace of the node.
-     * @param contextHandleAddr Context handler's memory address.
-     * @returns Whether the node handler has been initialized.
+     * @note The method sanitizes node names and validates them before initialization
      */
     bool initializeNodeHandle(const std::string& nodeName, const std::string& namespaceName, uint64_t contextHandleAddr)
     {
@@ -154,9 +175,10 @@ public:
     }
 
     /**
-     * Get whether the ROS 2 node has been initialized.
+     * @brief Checks if the node is initialized
+     * @details Verifies if the node handle has been properly created and initialized
      *
-     * @returns True if the node handle has been initialized, False otherwise.
+     * @return bool True if the node handle exists, false otherwise
      */
     bool isInitialized() const
     {
@@ -164,13 +186,16 @@ public:
     }
 
     /**
-     * Add the specified prefix to the given topic name.
+     * @brief Adds a prefix to a topic name
+     * @details
+     * Prepends the specified prefix to a topic name, ensuring proper
+     * separator character (/) placement between prefix and topic name.
      *
-     * This method will insert the separator character (`/`) between the prefix and the topic name.
+     * @param[in] prefix Prefix to add to the topic name
+     * @param[in] topicName Original topic name
+     * @return std::string The prefixed topic name
      *
-     * @param prefix Prefix to add to the topic.
-     * @param topicName Name of the topic.
-     * @returns Name of the topic prefixed with the specified prefix.
+     * @note Returns empty string if input topic name is empty
      */
     static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topicName)
     {
@@ -182,16 +207,19 @@ public:
     }
 
     /**
-     * Collect namespaces defined for parent prims in a stage and automatically form a node namespace.
+     * @brief Collects namespace information from USD stage
+     * @details
+     * Traverses up the USD stage hierarchy from the start prim, collecting
+     * namespace information from isaac:namespace attributes. For non-TF nodes,
+     * builds a hierarchical namespace. For TF nodes, only uses the highest-level
+     * namespace.
      *
-     * This method performs a reverse search up a USD stage and for each parent prim containing isaac:namespace
-     * attribute, it will continue prepending the each namespace value. It will insert the separator character (`/`)
-     * between each namespace value.
+     * @param[in] namespaceInput Initial namespace (if not empty, skips collection)
+     * @param[in] startPrim USD Prim to start namespace collection from
+     * @param[in] tfNode Whether collecting namespace for a TF node
+     * @return std::string Collected namespace string
      *
-     * @param namespaceInput Node Namespace. If not empty, it will be returned as it is and no search will be performed.
-     * @param startPrim USD Prim to start the reverse search.
-     * @param tfNode Set to true if collecting namespace for a TF ROS 2 node
-     * @returns Name of the topic prefixed with the specified prefix.
+     * @note Returns input namespace if not empty
      */
     static inline std::string collectNamespace(const std::string& namespaceInput,
                                                const PXR_NS::UsdPrim& startPrim,
@@ -245,6 +273,15 @@ public:
     }
 
 private:
+    /**
+     * @brief Sanitizes a name for ROS 2 use
+     * @details
+     * Replaces all non-alphanumeric characters (except underscore)
+     * with underscores to ensure ROS 2 naming compliance.
+     *
+     * @param[in] input String to sanitize
+     * @return std::string Sanitized string
+     */
     static inline std::string sanitizeName(std::string input)
     {
         std::replace_if(
@@ -252,6 +289,15 @@ private:
         return input;
     }
 
+    /**
+     * @brief Trims non-alphanumeric characters from string
+     * @details
+     * Removes leading and trailing non-alphanumeric characters
+     * from the input string.
+     *
+     * @param[in] s String to trim
+     * @return std::string Trimmed string
+     */
     static inline std::string trimNonAlnum(const std::string& s)
     {
         if (s.size() == 0)
@@ -263,10 +309,14 @@ private:
         size_t endIdx = s.size() - 1;
 
         while (startIdx < s.size() && !std::isalnum(s[startIdx]))
+        {
             startIdx++;
+        }
 
         while (endIdx > startIdx && !std::isalnum(s[endIdx]))
+        {
             endIdx--;
+        }
 
         return s.substr(startIdx, endIdx - startIdx + 1);
     }

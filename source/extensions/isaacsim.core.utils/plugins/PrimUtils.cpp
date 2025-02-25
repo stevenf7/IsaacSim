@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -64,7 +64,7 @@ std::vector<std::string> isaacsim::core::utils::findMatchingPrimPaths(const std:
 
     roots.push_back(stage->GetPseudoRoot());
 
-    int numTokens = int(tokens.size());
+    int numTokens = static_cast<int>(tokens.size());
 
     for (int i = 0; i < numTokens; i++)
     {

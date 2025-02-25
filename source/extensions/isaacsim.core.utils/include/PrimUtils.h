@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,6 +8,12 @@
 //
 
 #pragma once
+
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
+#include <string>
 
 #ifdef _MSC_VER
 #    if OMPRIMUTILSEXPORT

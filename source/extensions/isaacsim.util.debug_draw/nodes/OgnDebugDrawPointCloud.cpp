@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -62,7 +62,9 @@ public:
         if (!input)
         {
             if (numVerts)
+            {
                 db.logError("DebugDrawPointCloud Buffer is invalid, but should have %d vertices.", numVerts);
+            }
 
             state.m_pointDrawing->clear();
             state.m_pointDrawing->draw();

@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,25 +20,48 @@
 
 #include <DynamicControl.h>
 
-
-using namespace omni::isaac::dynamic_control;
 using namespace isaacsim::core::utils::conversions;
-using namespace isaacsim::core::utils;
+
 namespace isaacsim
 {
 namespace core
 {
-
 namespace utils
 {
-
 namespace posetree
 {
 
-
+/**
+ * @class PoseTree
+ * @brief A utility class for managing and traversing hierarchical pose transformations in a scene.
+ * @details
+ * PoseTree provides functionality to manage and process pose transformations between different frames
+ * in a hierarchical scene structure. It handles both rigid bodies and articulated objects, computing
+ * relative transforms between parent and child frames.
+ *
+ * The class supports:
+ * - Parent-child relationships between prims
+ * - Rigid body transformations
+ * - Articulation hierarchies
+ * - Camera-specific transformations
+ *
+ * @note This class requires a valid USD stage and DynamicControl instance to function properly.
+ * @warning Frame names must be unique within the tree. Duplicate names will be automatically renamed
+ *          with their full path.
+ */
 class PoseTree
 {
 public:
+    /**
+     * @brief Constructs a new PoseTree instance.
+     * @details Initializes the PoseTree with USD stage and dynamic control references.
+     *
+     * @param[in] stageId The unique identifier for the USD stage
+     * @param[in] dynamicControlPtr Pointer to the DynamicControl instance for physics interactions
+     *
+     * @pre stageId must be valid and correspond to an existing USD stage
+     * @pre dynamicControlPtr must be a valid pointer to a DynamicControl instance
+     */
     PoseTree(const uint64_t& stageId, omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     {
         // Store the USD and USDRT stage references from the stage ID
@@ -47,11 +70,15 @@ public:
 
         mDynamicControlPtr = dynamicControlPtr;
     }
+
     /**
-     * @brief Set the Parent Prim Path
+     * @brief Sets the parent prim path and frame name for the pose tree.
+     * @details Establishes the root reference frame for subsequent pose calculations.
      *
-     * @param parentPath SDF path for parent prim
-     * @param parentFrame frame name for parent prim
+     * @param[in] parentPath SDF path for the parent prim in the USD stage
+     * @param[in] parentFrame Name identifier for the parent frame
+     *
+     * @note The parent frame serves as the root reference for all child transformations
      */
     void setParentPrimPath(const pxr::SdfPath& parentPath, const std::string& parentFrame)
     {
@@ -60,9 +87,10 @@ public:
     }
 
     /**
-     * @brief Set the Target Prim Paths
+     * @brief Sets the target prim paths to be processed in the pose tree.
+     * @details Defines the set of prims whose poses will be computed relative to the parent frame.
      *
-     * @param targets list of sdk prim paths
+     * @param[in] targets Vector of SDF paths representing the target prims
      */
     void setTargetPrimPaths(const pxr::SdfPathVector& targets)
     {
@@ -70,9 +98,23 @@ public:
     }
 
     /**
-     * @brief traverses the full pose tree and calls processTransform for each transform
+     * @brief Traverses the complete pose tree and processes each transform.
+     * @details
+     * Performs a depth-first traversal of the pose tree, computing transforms between parent and child frames.
+     * Handles different types of prims including:
+     * - Articulations and their bodies
+     * - Rigid bodies
+     * - Regular transforms
+     * - Special cases like cameras
      *
-     * @param processTransform user defined function that can be used to handle a new transform
+     * @param[in] processTransform Callback function to handle each computed transform
+     *
+     * @note The callback function receives:
+     *       - Parent frame name (string)
+     *       - Child frame name (string)
+     *       - Relative transform between frames (PxTransform)
+     *
+     * @warning For cameras without RTXLidar API, an additional 180-degree rotation about the x-axis is applied
      */
     void processAllFrames(
         std::function<void(const std::string&, const std::string&, const ::physx::PxTransform&)>& processTransform)
@@ -80,12 +122,14 @@ public:
         // If the parent prim path is not empty, get the type of prim and its pose.
         if (!mParentPath.IsEmpty())
         {
-            DcObjectType type = mDynamicControlPtr->peekObjectType(mParentPath.GetString().c_str());
-            if (type == eDcObjectRigidBody)
+            omni::isaac::dynamic_control::DcObjectType type =
+                mDynamicControlPtr->peekObjectType(mParentPath.GetString().c_str());
+            if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
             {
                 mParentPose = getRigidBodyPose(mParentPath);
             }
-            else if (type == eDcObjectNone || type == eDcObjectArticulation)
+            else if (type == omni::isaac::dynamic_control::eDcObjectNone ||
+                     type == omni::isaac::dynamic_control::eDcObjectArticulation)
             {
                 mParentPose = getXformPose(mParentPath);
             }
@@ -95,11 +139,14 @@ public:
         // For each target prim determine its type and compute the associated poses
         for (pxr::SdfPath primPath : mTargets)
         {
-            DcObjectType type = mDynamicControlPtr->peekObjectType(primPath.GetString().c_str());
-            if (type == eDcObjectArticulation)
+            omni::isaac::dynamic_control::DcObjectType type =
+                mDynamicControlPtr->peekObjectType(primPath.GetString().c_str());
+            if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
             {
-                DcHandle artculationHandle = mDynamicControlPtr->getArticulation(primPath.GetString().c_str());
-                DcHandle rootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
+                omni::isaac::dynamic_control::DcHandle artculationHandle =
+                    mDynamicControlPtr->getArticulation(primPath.GetString().c_str());
+                omni::isaac::dynamic_control::DcHandle rootBody =
+                    mDynamicControlPtr->getArticulationRootBody(artculationHandle);
                 ::physx::PxTransform body1Pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rootBody));
 
                 std::string framePath(mDynamicControlPtr->getRigidBodyPath(rootBody));
@@ -118,15 +165,17 @@ public:
                 size_t numDofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
                 for (size_t j = 0; j < numDofs; j++)
                 {
-                    DcHandle parentBody = mDynamicControlPtr->getArticulationBody(artculationHandle, j);
+                    omni::isaac::dynamic_control::DcHandle parentBody =
+                        mDynamicControlPtr->getArticulationBody(artculationHandle, j);
                     ::physx::PxTransform body0Pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(parentBody));
                     std::string parentPath(mDynamicControlPtr->getRigidBodyPath(parentBody));
                     std::string parentName = GetName(mUsdStage->GetPrimAtPath(pxr::SdfPath(parentPath)));
                     size_t numJoints = mDynamicControlPtr->getRigidBodyChildJointCount(parentBody);
                     for (size_t k = 0; k < numJoints; k++)
                     {
-                        DcHandle joint = mDynamicControlPtr->getRigidBodyChildJoint(parentBody, k);
-                        DcHandle child_body = mDynamicControlPtr->getJointChildBody(joint);
+                        omni::isaac::dynamic_control::DcHandle joint =
+                            mDynamicControlPtr->getRigidBodyChildJoint(parentBody, k);
+                        omni::isaac::dynamic_control::DcHandle child_body = mDynamicControlPtr->getJointChildBody(joint);
 
 
                         ::physx::PxTransform body1Pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
@@ -139,7 +188,7 @@ public:
                     }
                 }
             }
-            else if (type == eDcObjectRigidBody)
+            else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
             {
                 ::physx::PxTransform body1Pose = getRigidBodyPose(primPath);
 
@@ -156,7 +205,7 @@ public:
                     processTransform(mParentFrame, childFrameId, body1Pose);
                 }
             }
-            else if (type == eDcObjectNone)
+            else if (type == omni::isaac::dynamic_control::eDcObjectNone)
             {
                 pxr::UsdPrim prim = mUsdStage->GetPrimAtPath(primPath);
 
@@ -182,33 +231,47 @@ public:
     }
 
     /**
-     * @brief Get the Rigid Body Pose of a prim from physics
+     * @brief Retrieves the physics-based pose of a rigid body.
+     * @details Queries the DynamicControl system for the current pose of a rigid body prim.
      *
-     * @param path
-     * @return ::physx::PxTransform
+     * @param[in] path SDF path to the rigid body prim
+     * @return PxTransform representing the world-space pose of the rigid body
+     *
+     * @pre The prim at the specified path must be a valid rigid body
      */
     ::physx::PxTransform getRigidBodyPose(const pxr::SdfPath& path)
     {
-        DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(path.GetString().c_str());
+        omni::isaac::dynamic_control::DcHandle rigidBodyHandle =
+            mDynamicControlPtr->getRigidBody(path.GetString().c_str());
         return asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
     }
+
     /**
-     * @brief Get the pose of the prim via fabric if it exists, or usd
+     * @brief Gets the pose of a prim using fabric or USD.
+     * @details Computes the world-space transform of a prim, prioritizing fabric data if available.
      *
-     * @param path path to the prim
-     * @return ::physx::PxTransform
+     * @param[in] path SDF path to the target prim
+     * @return PxTransform representing the world-space pose of the prim
      */
     ::physx::PxTransform getXformPose(const pxr::SdfPath& path)
     {
         return asPxTransform(isaacsim::core::utils::pose::computeWorldXformNoCache(mUsdStage, mUsdrtStage, path));
     }
+
     /**
-     * @brief Get the unique name to use for frame. if two frames have the same name the full usd path with underscores
-     * is used.
+     * @brief Generates a unique frame name for a given prim.
+     * @details
+     * Ensures unique frame names by:
+     * 1. Using the provided frame name if unique
+     * 2. Using a cached renamed version if previously processed
+     * 3. Creating a new unique name based on the full path if needed
      *
-     * @param frame
-     * @param path
-     * @return std::string
+     * @param[in] frame Desired frame name
+     * @param[in] path Full USD path of the prim
+     * @return std::string Unique frame name
+     *
+     * @note If a name collision occurs, the full path is used with '/' replaced by '_'
+     * @warning Logs a warning when name collisions occur, suggesting the use of isaac:nameOverride
      */
     std::string getUniqueFrameName(const std::string& frame, const std::string& path)
     {
@@ -239,16 +302,31 @@ public:
     }
 
 private:
+    /** @brief SDF path to the parent prim */
     pxr::SdfPath mParentPath;
+
+    /** @brief Name identifier for the parent frame */
     std::string mParentFrame;
+
+    /** @brief Vector of target prim paths to process */
     pxr::SdfPathVector mTargets;
+
+    /** @brief Cached transform of the parent frame */
     ::physx::PxTransform mParentPose = ::physx::PxTransform(::physx::PxIdentity);
 
+    /** @brief Reference to the USD stage */
     pxr::UsdStageRefPtr mUsdStage;
+
+    /** @brief Reference to the USDRT stage */
     usdrt::UsdStageRefPtr mUsdrtStage;
+
+    /** @brief Pointer to the DynamicControl instance */
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
 
+    /** @brief Map of original paths to renamed frames */
     std::map<std::string, std::string> mRenamedFrames;
+
+    /** @brief Set of published frame names */
     std::map<std::string, bool> mPublishedFrames;
 };
 }

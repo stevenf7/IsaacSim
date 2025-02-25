@@ -14,7 +14,7 @@
 
 namespace isaacsim::core::api
 {
-class coreExt : public omni::ext::IExt
+class CoreExt : public omni::ext::IExt
 {
 public:
     void onStartup(const char* extId) override{};
@@ -24,7 +24,7 @@ public:
 
 const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.core.api.plugin", "Core interface to Isaac sim", "NVIDIA",
                                                   carb::PluginHotReload::eEnabled, "dev" };
-CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::core::api::coreExt)
+CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::core::api::CoreExt)
 
 void addCrashreporterMetadata()
 {
@@ -44,7 +44,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
 }
 
-void fillInterface(isaacsim::core::api::coreExt& iface)
+void fillInterface(isaacsim::core::api::CoreExt& iface)
 {
     iface = {};
 }

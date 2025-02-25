@@ -207,7 +207,7 @@ void Ros2CameraInfoMessageImpl::writeDistortionParameters(std::vector<double>& a
         return;
     }
     sensor_msgs__msg__CameraInfo* cameraInfoMsg = static_cast<sensor_msgs__msg__CameraInfo*>(m_msg);
-    if (array.size() > 0)
+    if (!array.empty())
     {
         m_distortionBuffer = array; // Copy the data to our member vector
         cameraInfoMsg->d.data = m_distortionBuffer.data();
@@ -391,7 +391,7 @@ void Ros2NitrosBridgeImageMessageImpl::generateBuffer(const uint32_t height,
 
 void Ros2NitrosBridgeImageMessageImpl::writeData(const std::vector<int32_t>& data)
 {
-    if (!m_msg || !data.size())
+    if (!m_msg || data.empty())
     {
         return;
     }
@@ -857,7 +857,7 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
                     isaacsim::core::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(jointPath))),
                     jointStateMsg->name.data[j]);
             }
-            if (omni::physics::tensors::DofType(dofTypes[j]) == omni::physics::tensors::DofType::eTranslation)
+            if (static_cast<omni::physics::tensors::DofType>(dofTypes[j]) == omni::physics::tensors::DofType::eTranslation)
             {
                 jointStateMsg->position.data[j] =
                     isaacsim::core::utils::math::roundNearest(jointPositions[j] * stageUnits, 10000.0); // m

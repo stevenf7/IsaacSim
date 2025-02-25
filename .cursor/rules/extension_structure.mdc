@@ -1,0 +1,99 @@
+---
+description: These rules are for the structure of an extension
+globs: 
+---
+# Isaac Sim Extension Structure Guidelines
+
+This document outlines the required structure and naming conventions for Isaac Sim extensions.
+
+## Extension Naming
+
+- Extension names MUST follow the pattern: `isaacsim.<category>[.<subcategory>...]`
+- Examples of valid extension names:
+  - `isaacsim.asset.gen.omap`
+  - `isaacsim.simulation_manager`
+  - `isaacsim.ros2.tf_viewer`
+  - `isaacsim.tools.converter`
+
+## Required Folders and Files
+
+Every extension MUST include:
+
+1. **config/** folder
+   - Must contain `extension.toml` file
+
+2. **data/** folder
+   - Must contain `icon.png` file
+   - Must contain `preview.png` file
+
+3. **docs/** folder
+   - Must contain `CHANGELOG.md` file
+   - Must contain `README.md` file
+   - Must contain `index.rst` file
+   - May contain additional `.rst` files
+
+4. **premake5.lua** file in the root of the extension
+
+## Optional Folders
+
+Extensions MAY include the following folders with specific requirements:
+
+### bindings/ (Optional)
+If present:
+- Must contain a subfolder named exactly like the extension (e.g., `bindings/isaacsim.my_extension/`)
+- The subfolder must contain a file named `<PascalCaseName>Bindings.cpp`
+  - Where `<PascalCaseName>` is derived from the extension name by:
+    - Replacing dots with underscores
+    - Capitalizing each word
+  - Example: `isaacsim.my_extension` → `IsaacsimMyExtensionBindings.cpp`
+
+### include/ (Optional)
+If present:
+- Must contain subfolders that match the extension name with dots replaced by directory separators
+- Example: For `isaacsim.foo.bar.baz`, the structure should be `include/isaacsim/foo/bar/baz/`
+- Must contain ONLY header files (`.h` files)
+
+### library/ (Optional)
+- No specific requirements for this folder
+
+### nodes/ (Optional)
+If present:
+- Must contain a `config/` subfolder with a `CategoryDefinition.json` file
+- Must contain an `icons/` subfolder with at least one `.svg` file
+- Must contain matching `.ogn` and `.cpp` files for each node, with names starting with "Ogn"
+- Must NOT contain header (`.h`) files directly in the nodes folder
+- Must NOT contain any `.cpp` files that do not correspond to an `.ogn` file (every `.cpp` file must have a matching `.ogn` file)
+
+
+### plugins/ (Optional)
+If present:
+- Must contain a subfolder named exactly like the extension (e.g., `plugins/isaacsim.my_extension/`)
+- The subfolder may contain any number of `.cpp` and `.h` files
+
+### python/ (Optional)
+If present:
+- Must contain an `impl/` subfolder with:
+  - A required `__init__.py` file
+  - An optional `extension.py` file
+  - Any number of additional Python files
+- May contain a `nodes/` subfolder with:
+  - A `config/` subfolder containing `CategoryDefinition.json`
+  - An `icons/` subfolder containing at least one `.svg` file
+- May contain a `tests/` subfolder with:
+  - A required `__init__.py` file
+  - Test files that MUST start with `test_` prefix
+  - An optional `common.py` file
+
+## File Naming Conventions
+
+- C++ source files must:
+  - Use PascalCase naming (start with a capital letter)
+  - End with `.cpp` extension
+
+- Header files must:
+  - Use PascalCase naming (start with a capital letter)
+  - End with `.h` extension
+
+- Python files must:
+  - End with `.py` extension
+  - Test files must start with `test_` prefix (in python/tests/ folder) 

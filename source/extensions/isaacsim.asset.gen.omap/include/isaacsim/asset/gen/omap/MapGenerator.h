@@ -9,6 +9,10 @@
 
 #pragma once
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #include <carb/Defines.h>
 #include <carb/Types.h>
 #if defined(_WIN32)
@@ -59,105 +63,180 @@ namespace omap
 #endif
 
 /**
- * @brief Generator class for creating occupancy maps from USD stages
+ * @class MapGenerator
+ * @brief Generator class for creating 2D and 3D occupancy maps from USD stages
+ * @details
+ * The MapGenerator class provides functionality to generate occupancy maps from USD stage data.
+ * It supports both 2D and 3D map generation with configurable cell sizes and occupancy values.
+ * The generator uses PhysX for collision detection and octomap for spatial representation.
+ *
+ * @note This class requires valid PhysX and USD stage pointers to function properly
  */
 class DllExport MapGenerator
 {
 public:
     /**
-     * @brief Constructs a new MapGenerator
-     * @param physx Pointer to PhysX interface
-     * @param stage Pointer to USD stage
+     * @brief Constructs a new MapGenerator instance
+     * @details Initializes the generator with PhysX interface and USD stage references
+     *
+     * @param[in] physx Pointer to the PhysX interface for collision detection
+     * @param[in] stage Pointer to the USD stage containing the scene geometry
+     *
+     * @pre physx pointer must be valid and initialized
+     * @pre stage must be a valid USD stage
      */
     MapGenerator(omni::physx::IPhysx* physx, pxr::UsdStageWeakPtr stage);
+
+    /**
+     * @brief Destructor for MapGenerator
+     */
     ~MapGenerator();
 
     /**
-     * @brief Updates the generator settings
-     * @param cellSize Size of each cell in meters
-     * @param occupiedValue Value for occupied cells
-     * @param unoccupiedValue Value for unoccupied cells
-     * @param unknownValue Value for unknown cells
+     * @brief Updates the generator's occupancy map settings
+     * @details Configures the cell size and values used for different occupancy states
+     *
+     * @param[in] cellSize Size of each occupancy grid cell in meters
+     * @param[in] occupiedValue Numerical value assigned to occupied cells
+     * @param[in] unoccupiedValue Numerical value assigned to unoccupied cells
+     * @param[in] unknownValue Numerical value assigned to cells with unknown occupancy
+     *
+     * @pre cellSize must be positive
      */
     void updateSettings(float cellSize, float occupiedValue, float unoccupiedValue, float unknownValue);
 
     /**
-     * @brief Sets the transform for map generation
-     * @param inputOrigin Origin point in world coordinates
-     * @param minPoint Minimum bounds relative to origin
-     * @param maxPoint Maximum bounds relative to origin
+     * @brief Sets the transformation parameters for map generation
+     * @details Defines the origin and bounds of the area to be mapped
+     *
+     * @param[in] inputOrigin Origin point in world coordinates
+     * @param[in] minPoint Minimum bounds relative to origin
+     * @param[in] maxPoint Maximum bounds relative to origin
+     *
+     * @pre minPoint components must be less than maxPoint components
      */
     void setTransform(carb::Float3 inputOrigin, carb::Float3 minPoint, carb::Float3 maxPoint);
 
     /**
      * @brief Generates a 2D occupancy map
+     * @details Creates a 2D projection of the scene's occupancy
      */
     void generate2d();
 
     /**
      * @brief Generates a 3D occupancy map
+     * @details Creates a full 3D volumetric representation of the scene's occupancy
      */
     void generate3d();
 
     /**
-     * @brief Gets positions of occupied cells
-     * @return Vector of 3D positions
+     * @brief Retrieves positions of all occupied cells
+     * @return Vector of 3D positions for occupied cells
      */
     std::vector<carb::Float3> getOccupiedPositions();
 
     /**
-     * @brief Gets positions of free cells
-     * @return Vector of 3D positions
+     * @brief Retrieves positions of all free (unoccupied) cells
+     * @return Vector of 3D positions for free cells
      */
     std::vector<carb::Float3> getFreePositions();
 
     /**
-     * @brief Gets minimum bounds of the map
-     * @return Minimum bounds as Float3
+     * @brief Gets the minimum boundary point of the map
+     * @return Minimum boundary coordinates as Float3
      */
     carb::Float3 getMinBound();
 
     /**
-     * @brief Gets maximum bounds of the map
-     * @return Maximum bounds as Float3
+     * @brief Gets the maximum boundary point of the map
+     * @return Maximum boundary coordinates as Float3
      */
     carb::Float3 getMaxBound();
 
     /**
-     * @brief Gets dimensions of the map in cells
-     * @return Dimensions as Int3
+     * @brief Gets the dimensions of the map in cell units
+     * @return Number of cells in each dimension as Int3
      */
     carb::Int3 getDimensions();
 
     /**
-     * @brief Gets the occupancy buffer
-     * @return Vector of cell values
+     * @brief Retrieves the raw occupancy buffer
+     * @return Vector of occupancy values for all cells
      */
     std::vector<float> getBuffer();
 
     /**
-     * @brief Gets colored byte buffer for visualization
-     * @param occupied Color for occupied cells
-     * @param unoccupied Color for unoccupied cells
-     * @param unknown Color for unknown cells
-     * @return Vector of RGBA values
+     * @brief Generates a colored visualization buffer
+     * @details Creates an RGBA buffer for visualization purposes
+     *
+     * @param[in] occupied Color for occupied cells (RGBA)
+     * @param[in] unoccupied Color for unoccupied cells (RGBA)
+     * @param[in] unknown Color for unknown cells (RGBA)
+     * @return Vector of bytes representing RGBA values
      */
     std::vector<char> getColoredByteBuffer(const carb::Int4& occupied,
                                            const carb::Int4& unoccupied,
                                            const carb::Int4& unknown);
 
 private:
+    /**
+     * @brief Cell size in meters
+     */
     float m_cellSize = 0.05f;
+
+    /**
+     * @brief Pointer to PhysX interface
+     */
     omni::physx::IPhysx* m_physx = nullptr;
+
+    /**
+     * @brief Weak pointer to USD stage
+     */
     pxr::UsdStageWeakPtr m_stage = nullptr;
+
+    /**
+     * @brief Parent USD primitive
+     */
     pxr::UsdPrim m_parentPrim;
+
+    /**
+     * @brief Pointer to octomap tree structure
+     */
     octomap::OcTree* m_tree = nullptr;
+
+    /**
+     * @brief Pointer to PhysX scene
+     */
     ::physx::PxScene* m_physxScenePtr = nullptr;
+
+    /**
+     * @brief Origin point for map generation
+     */
     carb::Float3 m_inputOrigin;
+
+    /**
+     * @brief Minimum point relative to origin
+     */
     carb::Float3 m_inputMinPoint;
+
+    /**
+     * @brief Maximum point relative to origin
+     */
     carb::Float3 m_inputMaxPoint;
+
+    /**
+     * @brief Value assigned to occupied cells
+     */
     float m_occupiedValue = 1.0f;
+
+    /**
+     * @brief Value assigned to unoccupied cells
+     */
     float m_unoccupiedValue = 0.0f;
+
+    /**
+     * @brief Value assigned to unknown cells
+     */
     float m_unknownValue = 0.5f;
 };
 

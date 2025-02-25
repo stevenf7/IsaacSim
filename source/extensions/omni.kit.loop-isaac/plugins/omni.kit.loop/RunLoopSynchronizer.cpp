@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,16 +6,12 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
-#include <carb/dictionary/IDictionary.h>
-#include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
 #include <carb/settings/ISettings.h>
-#include <carb/tasking/TaskingUtils.h>
 
 #include <omni/kit/IApp.h>
 
-#include <chrono>
 #include <math.h>
 
 // clang-format off
@@ -128,7 +124,9 @@ public:
         m_index = (m_index + 1) % m_array.size();
 
         if (m_validCount < m_array.size())
+        {
             m_validCount++;
+        }
 
         m_average = m_sum / m_validCount;
 
