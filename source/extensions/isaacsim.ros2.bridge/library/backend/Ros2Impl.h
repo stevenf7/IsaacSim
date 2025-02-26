@@ -45,7 +45,7 @@
 #include "vision_msgs/msg/detection3_d_array.h"
 #include "vision_msgs/msg/object_hypothesis_with_pose.h"
 
-#include <include/Ros2FactoryImpl.h>
+#include <isaacsim/ros2/bridge/Ros2FactoryImpl.h>
 #include <nlohmann/json.hpp>
 #include <omni/physics/tensors/IArticulationView.h>
 #include <rcl/error_handling.h>

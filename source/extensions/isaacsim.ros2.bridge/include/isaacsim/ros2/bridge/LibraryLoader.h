@@ -65,15 +65,11 @@ public:
             // loadedLibrary = dlopen(libraryPath.c_str(), RTLD_NOW | RTLD_GLOBAL);
             loadedLibrary = carb::extras::loadLibrary(libraryPath.c_str(), carb::extras::fLibFlagNow);
 
-            if (loadedLibrary == carb::extras::kInvalidLibraryHandle)
+            if (loadedLibrary == carb::extras::kInvalidLibraryHandle && !test)
             {
-                if (!test)
-                {
-                    printf("Could not load the dynamic library from %s. Error: %s\n", libraryPath.c_str(),
-                           carb::extras::getLastLoadLibraryError().c_str());
-                }
 
-                loadedLibrary = carb::extras::kInvalidLibraryHandle;
+                printf("Could not load the dynamic library from %s. Error: %s\n", libraryPath.c_str(),
+                       carb::extras::getLastLoadLibraryError().c_str());
             }
         }
     }

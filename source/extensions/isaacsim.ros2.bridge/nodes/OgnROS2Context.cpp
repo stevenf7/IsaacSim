@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,9 +11,9 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <include/Ros2Bridge.h>
-#include <include/Ros2Factory.h>
 #include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/ros2/bridge/Ros2Factory.h>
 
 #include <CoreNodes.h>
 #include <OgnROS2ContextDatabase.h>

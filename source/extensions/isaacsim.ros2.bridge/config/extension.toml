@@ -56,16 +56,16 @@ name = "isaacsim.ros2.bridge.tests"
 public = false
 
 [[python.module]]
-name = "isaacsim.ros2.bridge.scripts.samples.ros_samples"
+name = "isaacsim.ros2.bridge.impl.samples.ros_samples"
 
 [[python.module]]
-name = "isaacsim.ros2.bridge.scripts.samples.ros_waypoint_follower_sample"
+name = "isaacsim.ros2.bridge.impl.samples.ros_waypoint_follower_sample"
 
 [[python.module]]
-name = "isaacsim.ros2.bridge.scripts.samples.ros_moveit_sample"
+name = "isaacsim.ros2.bridge.impl.samples.ros_moveit_sample"
 
 [[python.module]]
-name = "isaacsim.ros2.bridge.scripts.og_shortcuts.og_shortcut_menu"
+name = "isaacsim.ros2.bridge.impl.og_shortcuts.og_shortcut_menu"
 
 [fswatcher.paths]
 exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]

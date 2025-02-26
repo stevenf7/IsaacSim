@@ -16,7 +16,7 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
-#include <include/Ros2Node.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 
 #include <OgnROS2SubscribeJointStateDatabase.h>

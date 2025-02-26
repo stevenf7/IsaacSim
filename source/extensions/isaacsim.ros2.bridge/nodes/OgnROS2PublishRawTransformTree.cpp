@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <include/Ros2Node.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2PublishRawTransformTreeDatabase.h>
 

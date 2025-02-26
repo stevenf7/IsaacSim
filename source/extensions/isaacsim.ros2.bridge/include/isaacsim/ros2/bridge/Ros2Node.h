@@ -23,8 +23,8 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/settings/ISettings.h>
 
-#include <include/Ros2Bridge.h>
-#include <include/Ros2Factory.h>
+#include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/ros2/bridge/Ros2Factory.h>
 #include <omni/usd/UsdContextIncludes.h>
 
 #include <CoreNodes.h>

@@ -11,8 +11,8 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <include/Ros2Node.h>
 #include <isaacsim/core/utils/PoseTree.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdUtils.h>
 

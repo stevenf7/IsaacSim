@@ -13,8 +13,8 @@
 
 #include <carb/extras/Library.h>
 
-#include <include/Ros2Factory.h>
-#include <include/Ros2Node.h>
+#include <isaacsim/ros2/bridge/Ros2Factory.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2PublishClockDatabase.h>
 

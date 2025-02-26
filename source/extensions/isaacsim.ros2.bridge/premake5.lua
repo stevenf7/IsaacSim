@@ -38,7 +38,7 @@ language("C++")
 pic("On")
 staticruntime("Off")
 defines { "ROS2_BACKEND_HUMBLE" }
-add_files("impl", "backend")
+add_files("impl", "library/backend")
 add_files("iface", "include")
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
@@ -203,11 +203,11 @@ project_ext_bindings {
     target_subdir = "isaacsim/ros2/bridge",
 }
 includedirs {
-    "%{root}/source/extensions/isaacsim.ros2.bridge",
+    "%{root}/source/extensions/isaacsim.ros2.bridge/include",
 }
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir .. "/isaacsim/ros2/bridge/scripts" },
+    { "python/impl", ext.target_dir .. "/isaacsim/ros2/bridge/impl" },
     { "python/tests", ext.target_dir .. "/isaacsim/ros2/bridge/tests" },
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },

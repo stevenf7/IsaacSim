@@ -12,7 +12,7 @@
 // clang-format on
 
 #if !defined(_WIN32)
-#    include <include/ipc_buffer_manager.hpp>
+#    include <isaacsim/ros2/bridge/IpcBufferManager.h>
 #endif
 
 #include <carb/graphics/GraphicsTypes.h>
@@ -20,9 +20,9 @@
 #include <carb/tasking/ITasking.h>
 #include <carb/tasking/TaskingUtils.h>
 
-#include <include/Ros2Node.h>
 #include <isaacsim/core/utils/Buffer.h>
 #include <isaacsim/core/utils/ScopedCudaDevice.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2PublishImageDatabase.h>
 

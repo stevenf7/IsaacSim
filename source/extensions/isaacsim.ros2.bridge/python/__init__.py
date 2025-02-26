@@ -7,6 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .scripts.camera_info_utils import *
-from .scripts.collect_namespace import *
-from .scripts.extension import *
+from .impl.camera_info_utils import *
+from .impl.collect_namespace import *
+from .impl.extension import *

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,8 +28,9 @@
 #include <carb/tokens/TokensUtils.h>
 
 #include <experimental/filesystem>
-#include <include/Ros2Bridge.h>
-#include <include/Ros2Factory.h>
+#include <isaacsim/ros2/bridge/LibraryLoader.h>
+#include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/ros2/bridge/Ros2Factory.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IApp.h>
@@ -40,7 +41,6 @@
 #include <omni/usd/UsdTypes.h>
 
 #include <DynamicControl.h>
-#include <LibraryLoader.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -197,7 +197,7 @@ CARB_EXPORT void carbOnPluginStartup()
     {
         // Load test library, print error if it fails
         auto tempLoader = std::make_shared<isaacsim::core::utils::LibraryLoader>("rosidl_runtime_c", "", false);
-        if (tempLoader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
+        if (!tempLoader->isValid())
         {
 #ifdef _WIN32
             app->printAndLog(
@@ -214,8 +214,8 @@ CARB_EXPORT void carbOnPluginStartup()
             // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree.
             // Do not print lib specific errors
             auto tempLoader =
-                std::make_shared<isaacsim::core::utils::LibraryLoader>("rosidl_runtime_c", g_extensionPath, true);
-            if (tempLoader->loadedLibrary == carb::extras::kInvalidLibraryHandle)
+                std::make_shared<isaacsim::core::utils::LibraryLoader>("rosidl_runtime_c", g_extensionPath, false);
+            if (!tempLoader->isValid())
             {
                 CARB_LOG_WARN(
                     "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
