@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,14 +11,14 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "OgnROS2Utils.h"
 #include "isaacsim/core/utils/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
-#include <include/Ros2Node.h>
 #include <isaacsim/core/utils/Math.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
+#include <isaacsim/ros2/bridge/Ros2OgnUtils.h>
 #include <omni/fabric/FabricUSD.h>
 
 #include <CoreNodes.h>

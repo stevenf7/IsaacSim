@@ -14,8 +14,8 @@ import carb
 import omni.ext
 import omni.usd
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.ros2.bridge.scripts.og_shortcuts.og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
-from isaacsim.ros2.bridge.scripts.og_shortcuts.og_utils import (
+from isaacsim.ros2.bridge.impl.og_shortcuts.og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
+from isaacsim.ros2.bridge.impl.og_shortcuts.og_utils import (
     Ros2ClockGraph,
     Ros2GenericPubGraph,
     Ros2JointStatesGraph,

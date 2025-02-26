@@ -11,7 +11,8 @@
 
 #include <carb/PluginUtils.h>
 
-#include <Ros2Node.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
+
 #include <Tf2Factory.h>
 #include <TransformListener.h>
 

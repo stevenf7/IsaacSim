@@ -15,8 +15,8 @@
 #include <carb/Types.h>
 #include <carb/tokens/TokensUtils.h>
 
-#include <include/Ros2Node.h>
 #include <isaacsim/core/utils/Math.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/graph/core/OgnHelpers.h>
 #include <omni/graph/core/Type.h>

@@ -16,13 +16,13 @@
  */
 #pragma once
 
-#include <include/Ros2QoS.h>
 #include <isaacsim/core/utils/Math.h>
+#include <isaacsim/ros2/bridge/LibraryLoader.h>
+#include <isaacsim/ros2/bridge/Ros2QoS.h>
 #include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
 
 #include <DynamicControl.h>
-#include <LibraryLoader.h>
 #include <memory>
 #include <string>
 #include <vector>

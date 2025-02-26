@@ -7,7 +7,7 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include <include/Ros2Node.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2SubscribeTwistDatabase.h>
 

@@ -17,8 +17,8 @@
 // clang-format on
 #include "isaacsim/core/utils/UsdUtilities.h"
 
-#include <include/Ros2Node.h>
 #include <isaacsim/core/utils/ScopedCudaDevice.h>
+#include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2PublishPointCloudDatabase.h>
 

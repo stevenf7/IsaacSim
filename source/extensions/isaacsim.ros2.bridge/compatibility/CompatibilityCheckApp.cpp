@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,10 +8,9 @@
 //
 // A simple executable to check if the users system is compatible with ROS 2
 
+#include <isaacsim/ros2/bridge/LibraryLoader.h>
 #include <rcl/error_handling.h>
 #include <rcl/rcl.h>
-
-#include <LibraryLoader.h>
 
 
 int main(int argc, char* argv[])

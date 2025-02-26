@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,13 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
 
 #include "Ros2Impl.h"
 
-#include <include/Ros2Macros.h>
+#include <isaacsim/ros2/bridge/Ros2Macros.h>
 #include <rcl/rcl.h>
 
 namespace isaacsim

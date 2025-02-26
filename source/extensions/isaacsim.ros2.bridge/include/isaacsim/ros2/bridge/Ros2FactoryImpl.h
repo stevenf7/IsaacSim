@@ -17,7 +17,7 @@
  */
 #pragma once
 
-#include <include/Ros2Factory.h>
+#include <isaacsim/ros2/bridge/Ros2Factory.h>
 
 namespace isaacsim
 {
