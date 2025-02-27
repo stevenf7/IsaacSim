@@ -71,7 +71,7 @@ includedirs {
     "%{root}/_build/target-deps/python/include/python3.10",
     "%{root}/_build/target-deps/python/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/_build/target-deps/nlohmann-json/include",
+    "%{root}/_build/target-deps/nlohmann_json/include",
     "%{root}/source/extensions/isaacsim.ros2.bridge",
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
