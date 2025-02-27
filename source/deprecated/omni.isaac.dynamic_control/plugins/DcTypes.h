@@ -91,6 +91,10 @@ struct DcRigidBody
      */
     DcHandle parentJoint = kDcInvalidHandle;
     // std::vector<DcHandle> parentJoints;
+    /**
+     * @brief Handles to the child joints of this rigid body
+     * @details Contains a list of joints for which this rigid body is the parent
+     */
     std::vector<DcHandle> childJoints;
 
     /**
@@ -216,8 +220,11 @@ struct DcDof
      */
     DcDriveMode driveMode = DcDriveMode::eAcceleration;
 
-
-    size_t cacheIdx = 0; // index in PxArticulationCache
+    /**
+     * @brief Index in the PhysX articulation cache
+     * @details Used to access this DOF's data in the articulation cache
+     */
+    size_t cacheIdx = 0;
 
     /**
      * @brief Handle to the joint this degree of freedom belongs to

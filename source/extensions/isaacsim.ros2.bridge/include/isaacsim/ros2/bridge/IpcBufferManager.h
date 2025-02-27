@@ -32,13 +32,30 @@
 #include <unistd.h>
 #include <vector>
 
-
+/**
+ * @class IPCBufferManager
+ * @brief Manages CUDA device memory buffers for inter-process communication (IPC).
+ * @details
+ * This class creates and manages a pool of CUDA device memory buffers that can be
+ * shared between processes using POSIX file descriptors. It handles the allocation,
+ * mapping, and access control for these buffers, as well as cycling through them
+ * for use in communication scenarios.
+ */
 class IPCBufferManager
 {
 public:
     IPCBufferManager() = default;
 
-    // Constructor, Create device memory buffers and export to FD
+    /**
+     * @brief Constructor that creates device memory buffers and exports them to file descriptors.
+     * @details
+     * Allocates a specified number of CUDA device memory buffers and exports them as
+     * POSIX file descriptors for inter-process communication. The buffers are set up
+     * with read/write access permissions.
+     *
+     * @param[in] size Number of buffers to create in the pool.
+     * @param[in] buffer_step Size of each buffer in bytes.
+     */
     IPCBufferManager(size_t size, size_t buffer_step)
     {
         buffer_size_ = size;
@@ -125,7 +142,13 @@ public:
         }
     }
 
-    // Move the index to next available device memory block
+    /**
+     * @brief Advances to the next available device memory buffer in the pool.
+     * @details
+     * Increments the current buffer index, wrapping around to the beginning
+     * when the end of the buffer pool is reached. This implements a circular
+     * buffer pattern for cycling through available memory blocks.
+     */
     void next()
     {
         current_handle_index_ += 1;
@@ -135,13 +158,27 @@ public:
         }
     }
 
-    // Get the device pointer to the current device memory block
+    /**
+     * @brief Retrieves the device pointer to the current memory buffer.
+     * @details
+     * Returns the CUDA device pointer for the currently selected buffer
+     * in the pool, which can be used for CUDA operations.
+     *
+     * @return CUdeviceptr Device pointer to the current buffer.
+     */
     CUdeviceptr get_cur_buffer_ptr()
     {
         return buffer_ptrs_[current_handle_index_];
     }
 
-    // Get the FD exported from current device memory block
+    /**
+     * @brief Retrieves the IPC handle for the current memory buffer.
+     * @details
+     * Returns a reference to the vector containing the process ID and file descriptor
+     * for the currently selected buffer, which can be used for inter-process communication.
+     *
+     * @return std::vector<int>& Reference to the vector containing the process ID and file descriptor.
+     */
     std::vector<int>& get_cur_ipc_mem_handle()
     {
         return shareable_handles_[current_handle_index_];

@@ -57,8 +57,8 @@ enum DcObjectType : uint32_t
 struct DcTransform
 {
     carb::Float3 p{ 0.0f, 0.0f, 0.0f }; //!< Position, in meters
-    carb::Float4 r{ 0.0f, 0.0f, 0.0f, 1.0f }; //!< Rotation Quaternion, represented in the format $x\hat{i} + y\hat{j} +
-                                              //!< z\hat{k} + w$
+    carb::Float4 r{ 0.0f, 0.0f, 0.0f, 1.0f }; //!< Rotation Quaternion, represented in the format x*i + y*j +
+                                              //!< z*k + w
 };
 
 /// Velocity
@@ -110,7 +110,7 @@ constexpr DcTransform kTransformZero = { kFloat3Zero, kQuatIdentity };
  */
 constexpr DcVelocity kVelocityZero{ kFloat3Zero, kFloat3Zero };
 
-/** @defgroup DcStateFlags
+/** @defgroup DcStateFlags Dynamic Control State Flags
  * States that can be get/set from Degrees of Freedom and Rigid Bodies
  * @{
  */
@@ -307,7 +307,7 @@ struct DcD6JointProperties
     DcTransform pose1{ kTransformIdentity }; //!< Offset from Rigid Body 1 to Joint.
     DcJointType jointType; //!< Joint type being defined
     bool hasLimits[6]; //!< Flag for determining if joint has limits or is locked
-    bool softLimit{ true }; ///!< whether joint limits are progressively harder
+    bool softLimit{ true }; //!< Whether joint limits are progressively harder (soft limits) or rigid
     float lowerLimit; //!< lower joint limit, same for all axes
     float upperLimit; //!< upper joint limit, same for all axes
     float limitStiffness{ 1e5f }; //!< Joint Stiffness
