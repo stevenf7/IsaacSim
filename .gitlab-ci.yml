@@ -148,6 +148,7 @@ osec:sonarqube:
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
+      SONAR_EXTRA_ARGS: -Dsonar.branch.name=$CI_COMMIT_REF_NAME
     before_script:
       - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
     rules:
