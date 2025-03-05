@@ -44,6 +44,7 @@
 # The SWIPAT template is here: http://nvbugs/2732212
 # Dependencies for aiohttp should not be installed by default as we do not want to pull in chardet due to its license. Use cchardet instead
 
+# Target kit 107.x
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [

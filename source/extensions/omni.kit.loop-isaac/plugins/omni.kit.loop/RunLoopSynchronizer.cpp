@@ -6,17 +6,19 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+#include "RunLoopSynchronizer.h"
+
+#include <carb/dictionary/IDictionary.h>
+#include <carb/eventdispatcher/IEventDispatcher.h>
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>
 #include <carb/settings/ISettings.h>
+#include <carb/tasking/TaskingUtils.h>
 
 #include <omni/kit/IApp.h>
 
+#include <chrono>
 #include <math.h>
-
-// clang-format off
-#include "RunLoopSynchronizer.h"
-// clang-format on
 
 namespace omni
 {
@@ -503,31 +505,29 @@ void RunLoopSynchronizer::_setupPresentThread()
 
     if ((m_presentPreSubscription || m_presentPostSubscription) && !needPresentThreadUpdate)
     {
-        if (m_presentPreSubscription)
-        {
-            m_presentPreSubscription->unsubscribe();
-            m_presentPreSubscription = nullptr;
-        }
-        if (m_presentPostSubscription)
-        {
-            m_presentPostSubscription->unsubscribe();
-            m_presentPostSubscription = nullptr;
-        }
+        m_presentPreSubscription.reset();
+        m_presentPostSubscription.reset();
     }
     else if ((!m_presentPreSubscription || !m_presentPostSubscription) && needPresentThreadUpdate)
     {
         omni::kit::IApp* app = carb::getCachedInterface<omni::kit::IApp>();
-        omni::kit::RunLoop* presentRunLoop = app->getRunLoop("present");
+        // omni::kit::RunLoop* presentRunLoop = app->getRunLoop("present");
+
+        auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
 
         if (!m_presentPreSubscription)
         {
-            m_presentPreSubscription = carb::events::createSubscriptionToPop(
-                presentRunLoop->preUpdate, [this](carb::events::IEvent* e) { this->presentPreNotify(); });
+            m_presentPreSubscription =
+                ed->observeEvent(carb::RStringKey("omni.kit.loop-default"), carb::eventdispatcher::kDefaultOrder,
+                                 carb::RString("runloop:present:preUpdate"),
+                                 [this](const carb::eventdispatcher::Event&) { this->presentPreNotify(); });
         }
         if (!m_presentPostSubscription)
         {
-            m_presentPostSubscription = carb::events::createSubscriptionToPop(
-                presentRunLoop->postUpdate, [this](carb::events::IEvent* e) { this->presentPostNotify(); });
+            m_presentPostSubscription =
+                ed->observeEvent(carb::RStringKey("omni.kit.loop-default"), carb::eventdispatcher::kDefaultOrder,
+                                 carb::RString("runloop:present:postUpdate"),
+                                 [this](const carb::eventdispatcher::Event&) { this->presentPostNotify(); });
         }
     }
 }

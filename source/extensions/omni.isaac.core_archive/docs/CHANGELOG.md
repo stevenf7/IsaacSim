@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.5.1] - 2025-01-30
+### Changed
+- Updated to latest release changes
+
+## [2.5.0] - 2025-01-16
+### Changed
+- updated matplotlib==3.10.0,
+- added contourpy==1.3.1, fonttools==4.55.3, python-dateutil==2.9.0.post0, six==1.17.0
+
+## [2.4.0] - 2025-01-15
+### Changed
+- Update to Kit 107.x, Python 3.11
+
 ## [2.3.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings

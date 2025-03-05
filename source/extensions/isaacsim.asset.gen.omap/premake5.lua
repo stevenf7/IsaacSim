@@ -15,21 +15,27 @@ add_files("impl", "library")
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/octomap/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
 }
-links { "octomap", "octomath", "usdPhysics", "sdf", "tf", "usd" }
+links { "octomap", "octomath" }
+
+extra_usd_libs = { "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
 disablewarnings { "error=pragmas" }
 includedirs {
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include/python3.11",
 }
 buildoptions("-fvisibility=default")
 libdirs {
@@ -58,32 +64,30 @@ include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
     "%{root}/source/extensions/isaacsim.util.debug_draw/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
-links {
-    "usdUtils",
-    "omni.usd",
-    "isaacsim.util.debug_draw.primitive_drawing",
-    "usdPhysics",
-    "isaacsim.asset.gen.omap.generator",
-    "sdf",
-    "tf",
-    "usd",
-}
+links { "isaacsim.util.debug_draw.primitive_drawing", "isaacsim.asset.gen.omap.generator", "omni.usd" }
+
+extra_usd_libs = { "usdUtils" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
+
 filter { "system:linux" }
 disablewarnings { "error=pragmas" }
 includedirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.11",
 }
 libdirs {
     "%{root}/_build/target-deps/octomap/lib64",
@@ -123,22 +127,28 @@ include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
 }
 
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
 }
-links { "sdf", "tf", "usd", "usdUtils", "usdPhysics", "isaacsim.asset.gen.omap.generator" }
+links { "isaacsim.asset.gen.omap.generator" }
+
+extra_usd_libs = { "usdUtils" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
-links { "tbb", "boost_python310", "pthread" }
+links { "tbb", "pthread" }
 buildoptions { "-pthread" }
 includedirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/python/include/python3.11",
 }
 -- libdirs {
 --     "%{root}/_build/target-deps/octomap/lib64",
@@ -147,7 +157,7 @@ filter { "system:windows" }
 -- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
 disablewarnings { "4099" }
 disablewarnings { "4251" }
-link_boost_for_windows { "boost_python310" }
+-- link_boost_for_windows({"boost_python310"})
 
 libdirs {
     "%{root}/_build/target-deps/tbb/lib/intel64/vc14",

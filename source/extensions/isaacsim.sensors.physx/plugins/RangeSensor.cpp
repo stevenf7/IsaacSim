@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -1035,7 +1035,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.order = 50; // happens after physx, dc, but before robot engine bridge
 
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
-    g_stepSubscription = g_physx->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
+    g_stepSubscription = g_physx->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep, nullptr);
     if (!g_stageUpdateNode)
     {
         CARB_LOG_ERROR("*** Failed to create stage update node\n");
@@ -1052,7 +1052,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 
     gRangeSensorManager.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
-    g_physx->unsubscribePhysicsStepEvents(g_stepSubscription);
+    g_physx->unsubscribePhysicsOnStepEvents(g_stepSubscription);
 
     g_physx = nullptr;
     g_stage = nullptr;

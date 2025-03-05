@@ -33,7 +33,6 @@ name = "isaacsim.asset.gen.conveyor.ui.tests"
 
 dependencies = [
     "omni.kit.ui_test",
-    "omni.kit.test"
 ]
 
 args = [

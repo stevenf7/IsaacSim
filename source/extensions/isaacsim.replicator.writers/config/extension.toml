@@ -36,7 +36,6 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 dependencies = [
-    "omni.kit.test",
 ]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

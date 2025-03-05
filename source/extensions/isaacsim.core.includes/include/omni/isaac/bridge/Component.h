@@ -68,8 +68,12 @@ public:
         mPrim = prim;
         mStage = stage;
         mDoStart = true;
-        mUsdrtStage =
-            usdrt::UsdStage::Attach({ static_cast<uint64_t>(pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt()) });
+
+        omni::fabric::IStageReaderWriter* iStageReaderWriter =
+            carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        uint64_t stageId = static_cast<uint64_t>(pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt());
+        omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
+        mUsdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
     }
 
     /**

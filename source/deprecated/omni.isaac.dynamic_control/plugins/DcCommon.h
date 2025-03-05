@@ -15,25 +15,6 @@
 
 namespace std
 {
-// hash function for SdfPath
-/**
- * @struct hash<pxr::SdfPath>
- * @brief Hash function specialization for pxr::SdfPath
- * @details Enables using SdfPath as a key in unordered containers
- */
-template <>
-struct hash<pxr::SdfPath>
-{
-    /**
-     * @brief Computes the hash value for an SdfPath
-     * @param[in] path The SdfPath to hash
-     * @return The hash value
-     */
-    size_t operator()(const pxr::SdfPath& path) const
-    {
-        return path.GetHash();
-    }
-};
 }
 
 namespace omni

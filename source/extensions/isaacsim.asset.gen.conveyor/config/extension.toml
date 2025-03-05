@@ -42,8 +42,6 @@ exclude = ["Ogn*Database.py"]
 [[test]]
 dependencies=[
 "omni.physx.stageupdate",
-"usdrt.scenegraph",
-"omni.timeline",
 ]
 
 stdoutFailPatterns.exclude = [

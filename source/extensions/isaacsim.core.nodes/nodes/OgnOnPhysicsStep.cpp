@@ -116,8 +116,8 @@ public:
                 gGraphsWithPhysxStepNode[graphObj.graphHandle] = PhysicsStepData();
                 state.mGraphHandlePair = handleIDPair{ graphObj.graphHandle, instanceId };
                 gGraphsWithPhysxStepNode[graphObj.graphHandle].stepSubscription =
-                    gPhysXInterface->subscribePhysicsStepEvents(
-                        onPhysicsStep, reinterpret_cast<void*>(&state.mGraphHandlePair));
+                    gPhysXInterface->subscribePhysicsOnStepEvents(
+                        false, 0, onPhysicsStep, reinterpret_cast<void*>(&state.mGraphHandlePair));
             }
             gGraphsWithPhysxStepNode[graphObj.graphHandle].nodes.push_back(nodeObj.nodeHandle);
             state.mInitialized = true;
@@ -149,7 +149,7 @@ public:
             // If No more step nodes are present, remove graph from map
             if (graphData->second.nodes.size() == 0)
             {
-                gPhysXInterface->unsubscribePhysicsStepEvents(graphData->second.stepSubscription);
+                gPhysXInterface->unsubscribePhysicsOnStepEvents(graphData->second.stepSubscription);
                 gGraphsWithPhysxStepNode.erase(graphData);
             }
         }

@@ -10,9 +10,10 @@
 #pragma once
 
 #include <omni/math/linalg/matrix.h>
-#include <omni/sensors/GMOAuxiliaryData.h>
-#include <omni/sensors/GenericModelOutputTypes.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
+
+#include <GMOAuxiliaryData.h>
+#include <GenericModelOutputTypes.h>
 
 namespace isaacsim
 {
@@ -144,8 +145,8 @@ public:
      */
     bool isValid(const OutputType& outType, const CoordsType& coordType, const Modality& modality)
     {
-        if (m_gmo.magicNumber != MAGIC_NUMBER_GMO || m_gmo.outputType != outType || m_gmo.coordsType != coordType ||
-            m_gmo.modality != modality)
+        if (m_gmo.magicNumber != MAGIC_NUMBER_GMO || m_gmo.outputType != outType ||
+            m_gmo.elementsCoordsType != coordType || m_gmo.modality != modality)
         {
             return false;
         }

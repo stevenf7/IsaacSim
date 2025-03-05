@@ -28,6 +28,8 @@ version_file = "${root}/VERSION"
 
 [repo_build]
 
+premake.linux_x86_64_cxx_abi=false
+
 # List of packman projects to pull (in order)
 
 fetch.packman_target_files_to_pull = [
@@ -62,8 +64,8 @@ fetch.pip.files_to_pull = [
 
 vscode.python_env.PYTHONPATH = [
   "$$$${PYTHONPATH}",
-  "$root/_build/$platform/$config/kit/python/lib/python3.10",
-  "$root/_build/$platform/$config/kit/python/lib/python3.10/site-packages",
+  "$root/_build/$platform/$config/kit/python/lib/python3.11",
+  "$root/_build/$platform/$config/kit/python/lib/python3.11/site-packages",
   "$root/_build/$platform/$config/python_packages",
   "$root/_build/$platform/$config/exts/isaacsim.simulation_app",
   "$root/_build/$platform/$config/extsDeprecated/omni.isaac.kit",
@@ -176,7 +178,7 @@ ext_folders = [
 # Apps to run and precache
 apps = [
     "${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.kit",
-    "${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.deprecated.kit"
+    # "${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.deprecated.kit"
 ]
 
 # Registries to use
@@ -188,7 +190,6 @@ registries = [
 # Link selected extensions into a separate folder without a version. Used for build-time referencing extensions.
 # Wildcards are supported in the list.
 links.exts.include = [
-  "omni.sensors.nv.*",
   "omni.usd.core",
   "omni.syntheticdata",
   "usdrt.scenegraph",
@@ -433,7 +434,7 @@ s3_exclude_patterns = []
 generate_plugin_buildfiles = false
 plugin_buildfile_format = "premake"
 usd_python_root = "${root}/_build/target-deps/python"
-usd_root = "${root}/_build/target-deps/nv_usd/%{cfg.buildcfg}"
+usd_root = "${root}/_build/target-deps/usd/%{cfg.buildcfg}"
 
 [repo_usd.plugin.robotSchema]
 schema_file = "${root}/source/extensions/isaacsim.robot.schema/robot_schema/RobotSchema.usda"
@@ -1153,75 +1154,20 @@ files.include = [
 files.exclude = [
   ".vscode/*",
   "_build/*",
-  "_compiler/*", 
-  "_repo/*", 
+  "_compiler/*",
+  "_repo/*",
   ".git/*",
-  ".eggs/*", 
+  ".eggs/*",
   ".pytest_cache/*",
   ".venv/*",
-  ".vscode/*", 
+  ".vscode/*",
   "*/_vendor/*",
   "tools/repoman/*",
   "tools/packman/*",
   "tools/container/*"
 ]
 [repo_edit_sysconfig]
-sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.10/_sysconfigdata__linux_x86_64-linux-gnu.py"
-
-########################################################################################################################
-# Update extscache
-########################################################################################################################
-
-[repo_update_extscache]
-
-url = "https://gitlab-master.nvidia.com/omniverse/ov-create/-/raw/release/2024.1.0/source/apps/omni.create.full.kit"
-
-# please provide extensions in the format "extension.name-version" or {dep = "extension.name-version", tag = "tag"}
-deps_for_isaac = [
-  "omni.anim.people-0.6.7",
-  "omni.cuopt.examples-1.2.0",
-  "omni.cuopt.service-1.2.0",
-  "omni.cuopt.visualization-1.2.0",
-  "omni.importer.onshape-0.8.1",
-  "isaacsim.asset.importer.mjcf-2.3.3",
-  "isaacsim.asset.importer.urdf-2.3.10",
-  "omni.kit.test_helpers_gfx",
-  "omni.net-0.2.0-isaac",
-  "isaacsim.replicator.agent.camera_calibration-0.5.8",
-  "isaacsim.replicator.agent.core-0.5.14",
-  "isaacsim.replicator.agent.ui-0.5.13",
-  "isaacsim.replicator.metropolis.utils-0.0.6",
-  "omni.replicator.core-1.11.35",
-  "isaacsim.replicator.object-0.3.21",
-  "omni.replicator.replicator_yaml-2.0.10",
-  "omni.rtx.shadercache.vulkan",
-  "omni.sensors.nv.camera-0.20.1-coreapi",
-  "omni.sensors.nv.common-2.5.0-coreapi",
-  "omni.sensors.nv.ids-1.4.0-coreapi",
-  "omni.sensors.nv.lidar-2.6.3-coreapi",
-  "omni.sensors.nv.materials-1.4.0-coreapi",
-  "omni.sensors.nv.radar-2.6.1-coreapi",
-  "omni.sensors.nv.ultrasonic-2.4.0-coreapi",
-  "omni.sensors.nv.wpm-2.4.0-coreapi",
-  "omni.sensors.tiled-0.0.6",
-  "omni.usd.metrics.assembler.physics-106.2.0",
-  "semantics.schema.editor-0.3.8",
-  "semantics.schema.property-1.0.4",
-  "omni.warp.core-1.3.1",
-  "omni.warp-1.3.1",
-]
-
-windows_only = [
-  "omni.kit.window.modifier.titlebar",
-]
-
-linux_only = []
-
-exclude = []
-
-override = []
-
-output_file = "${root}/source/apps/isaacsim.exp.extscache.kit"
+sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_x86_64-linux-gnu.py"
 
 ########################################################################################################################
 # Find duplicate files
@@ -1323,7 +1269,7 @@ source_folder = "${root}/_build/${platform}/release"
 pyproject.authors = [{name = "Isaac Sim team"}]
 pyproject.classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "License :: Other/Proprietary License",
 ]
 pyproject.license = {text = "NVIDIA Proprietary Software"}
@@ -1331,7 +1277,7 @@ pyproject.readme = """
 See [Install Isaac Sim using PIP](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_python.html)
 for details on how to install and run Isaac Sim in a (virtual) Python environment.
 """
-pyproject.requires-python = "==3.10.*"
+pyproject.requires-python = "==3.11.*"
 pyproject.urls = [
   {"Home page" = "https://developer.nvidia.com/isaac-sim"},
   {"Documentation" = "https://docs.isaacsim.omniverse.nvidia.com"},

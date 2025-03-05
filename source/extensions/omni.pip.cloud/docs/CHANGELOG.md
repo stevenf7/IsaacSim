@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.1] - 2025-01-30
+### Changed
+- Updated to latest release 4.5 changes
+
+## [1.3.0] - 2025-01-16
+### Changed
+- updated boto3[crt]==1.36.1, botocore==1.36.1
+- added jmespath==1.0.1, python-dateutil==2.9.0.post0, six==1.17.0
+
+## [1.2.0] - 2025-01-15
+### Changed
+- Update to Kit 107.x, Python 3.11
+
 ## [1.1.7] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings

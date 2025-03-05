@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -63,7 +63,10 @@ public:
             const GraphContextObj& context = db.abi_context();
             state.mStageId = context.iContext->getStageId(context);
             state.mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.mStageId));
-            state.mUsdrtStage = usdrt::UsdStage::Attach({ (state.mStageId) });
+            omni::fabric::IStageReaderWriter* iStageReaderWriter =
+                carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+            omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(state.mStageId);
+            state.mUsdrtStage = usdrt::UsdStage::Attach(state.mStageId, stageInProgress);
             if (!state.mStage)
             {
                 db.logError("Could not find USD stage %ld", state.mStageId);

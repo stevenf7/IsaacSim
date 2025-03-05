@@ -37,7 +37,7 @@ name = "isaacsim.robot.surface_gripper"
 name = "isaacsim.robot.surface_gripper.tests"
 
 [[test]]
-dependencies = ["isaacsim.core.utils"]
+dependencies = []
 stdoutFailPatterns.exclude = [
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]

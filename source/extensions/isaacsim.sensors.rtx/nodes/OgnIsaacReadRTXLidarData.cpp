@@ -16,8 +16,7 @@
 
 #include <carb/InterfaceUtils.h>
 
-#include <omni/sensors/GenericModelOutput.h>
-
+#include <GenericModelOutput.h>
 #include <OgnIsaacReadRTXLidarDataDatabase.h>
 
 

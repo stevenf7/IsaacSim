@@ -36,9 +36,6 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 dependencies = [
-    "isaacsim.storage.native",
-    "omni.kit.test",
-    "omni.physics.tensors",
 ]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

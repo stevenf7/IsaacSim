@@ -1066,27 +1066,33 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     desired_default_state.orientations.numpy(),
-                    default_state.orientations.numpy()
-                    if indices is None
-                    else default_state.orientations.numpy()[indices],
+                    (
+                        default_state.orientations.numpy()
+                        if indices is None
+                        else default_state.orientations.numpy()[indices]
+                    ),
                     atol=1e-4,
                 ).all()
             )
             self.assertTrue(
                 self.isclose(
                     desired_default_state.linear_velocities.numpy(),
-                    default_state.linear_velocities.numpy()
-                    if indices is None
-                    else default_state.linear_velocities.numpy()[indices],
+                    (
+                        default_state.linear_velocities.numpy()
+                        if indices is None
+                        else default_state.linear_velocities.numpy()[indices]
+                    ),
                     atol=1e-4,
                 ).all()
             )
             self.assertTrue(
                 self.isclose(
                     desired_default_state.angular_velocities.numpy(),
-                    default_state.angular_velocities.numpy()
-                    if indices is None
-                    else default_state.angular_velocities.numpy()[indices],
+                    (
+                        default_state.angular_velocities.numpy()
+                        if indices is None
+                        else default_state.angular_velocities.numpy()[indices]
+                    ),
                     atol=1e-4,
                 ).all()
             )
@@ -1212,27 +1218,33 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 self.isclose(
                     desired_default_state.orientations.numpy(),
-                    default_state.orientations.numpy()
-                    if indices is None
-                    else default_state.orientations.numpy()[indices],
+                    (
+                        default_state.orientations.numpy()
+                        if indices is None
+                        else default_state.orientations.numpy()[indices]
+                    ),
                     atol=1e-4,
                 ).all()
             )
             self.assertTrue(
                 self.isclose(
                     desired_default_state.linear_velocities.numpy(),
-                    default_state.linear_velocities.numpy()
-                    if indices is None
-                    else default_state.linear_velocities.numpy()[indices],
+                    (
+                        default_state.linear_velocities.numpy()
+                        if indices is None
+                        else default_state.linear_velocities.numpy()[indices]
+                    ),
                     atol=1e-4,
                 ).all()
             )
             self.assertTrue(
                 self.isclose(
                     desired_default_state.angular_velocities.numpy(),
-                    default_state.angular_velocities.numpy()
-                    if indices is None
-                    else default_state.angular_velocities.numpy()[indices],
+                    (
+                        default_state.angular_velocities.numpy()
+                        if indices is None
+                        else default_state.angular_velocities.numpy()[indices]
+                    ),
                     atol=1e-4,
                 ).all()
             )

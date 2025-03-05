@@ -22,28 +22,29 @@ add_ogn_dependencies(ogn, { "nodes" })
 
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/source/extensions/isaacsim.robot.wheeled_robots/include",
 }
 
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
 }
 
 links {
-    "gf",
-    "sdf",
-    "tf",
-    "usd",
-    "usdGeom",
-    "usdUtils",
+    --    "usdGeom", "usdUtils", "omni.usd",
 }
+
+extra_usd_libs = {}
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "configurations:debug" }
 defines { "_DEBUG" }
@@ -60,7 +61,7 @@ project_ext_bindings {
     src = ogn.bindings_path,
     target_subdir = ogn.bindings_target_path,
 }
-add_files("bindings", "bindings/*.*")
+add_files("bindings", "bindings")
 add_files("python", "python/*.py")
 add_files("python/controllers", "python/controllers/*.py")
 add_files("python/nodes", "python/nodes/*.py")

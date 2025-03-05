@@ -122,7 +122,7 @@ def _load_and_process_env_file(path, subdirs={}):
         data = json.load(h)
 
     if "packman_deps" in data:
-        for (dep, props) in data["packman_deps"].items():
+        for dep, props in data["packman_deps"].items():
             _err_out(f"  > {dep}")
             dep_path = os.path.join(runtime.bin_path, props["path"])
 
@@ -141,7 +141,7 @@ def _save_env_config(packman_links={}):
 
     data = {"packman_deps": {}}
 
-    for (dep, path) in packman_links.items():
+    for dep, path in packman_links.items():
         dep_rel_path = path[len(runtime.bin_path) + 1 :]
         data["packman_deps"][dep] = {"path": dep_rel_path}
 
@@ -207,7 +207,7 @@ def _bootstrap_packman_deps(projectf, subdirs={}, make_links=0):
 
     ret = {}
 
-    for (dep, location) in pull_result.items():
+    for dep, location in pull_result.items():
         paths = []
 
         if dep in subdirs:
@@ -238,7 +238,7 @@ def _bootstrap_packman_deps(projectf, subdirs={}, make_links=0):
             ret[dep] = location
 
     if len(subdirs):
-        for (dep, subdir) in subdirs.items():
+        for dep, subdir in subdirs.items():
             _err_out(
                 f"  > you requested to add `{subdir}` subdir of `{dep}`, "
                 + f"but `{dep}` was not returned by Packman - probably, you got "

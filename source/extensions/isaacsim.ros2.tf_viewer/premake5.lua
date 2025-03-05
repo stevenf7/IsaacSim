@@ -15,6 +15,7 @@ add_files("iface", "include")
 add_files("source", "%{root}/_build/target-deps/nv_ros2_humble/src/geometry2/tf2/src")
 includedirs {
     "%{root}/_build/target-deps/nv_ros2_humble/include",
+    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
     "%{root}/_build/target-deps/nv_ros2_humble/include/console_bridge_vendor",
     "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
 }
@@ -61,14 +62,14 @@ rtti("On")
 
 add_files("include", "include")
 add_files("source", "plugins")
-link_boost_for_windows { "boost_python310" }
+-- link_boost_for_windows({"boost_python310"})
 includedirs {
     "include",
     "plugins",
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/python/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/nlohmann_json/include",
@@ -78,18 +79,19 @@ includedirs {
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
 }
+
+extra_usd_libs = {}
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
+
 filter { "system:linux" }
 disablewarnings { "error=narrowing", "error=unused-but-set-variable", "error=unused-variable" }
 links {
     "boost_system",
-    "boost_python310",
-}
-filter { "system:windows" }
-links {
-    "usd",
-    "sdf",
 }
 filter {}
 

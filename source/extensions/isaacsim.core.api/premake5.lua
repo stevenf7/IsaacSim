@@ -39,21 +39,26 @@ defines { "OMPRIMUTILSEXPORT" }
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/generated/include/",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{target_deps}/carb_sdk_plugins/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
-links { "sdf", "tf", "omni.usd", "usd", "usdGeom", "usdUtils", "usdPhysics" }
+
+extra_usd_libs = {}
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
 disablewarnings { "error=pragmas" }
 includedirs {
-    "%{root}/_build/target-deps/python/include/python3.10",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
 }
 buildoptions("-fvisibility=default")
 filter { "system:windows" }

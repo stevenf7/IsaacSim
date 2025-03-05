@@ -108,7 +108,7 @@ function workspace_kit_settings()
         carbSDKLibs,
         carbSDKLibs .. "/scripting-python-3.10",
         "%{kit_sdk}/plugins",
-        targetDepsDir .. "/nv_usd/%{cfg.buildcfg}/lib",
+        targetDepsDir .. "/usd/%{cfg.buildcfg}/lib",
     }
 end
 
@@ -307,8 +307,6 @@ function include_extensions()
     include("source/extensions/isaacsim.robot.manipulators")
     include("source/extensions/isaacsim.robot.policy.examples")
     include("source/extensions/isaacsim.robot.surface_gripper.ui")
-    include("source/extensions/isaacsim.robot.surface_gripper.ui")
-    include("source/extensions/isaacsim.robot.surface_gripper")
     include("source/extensions/isaacsim.robot.surface_gripper")
     include("source/extensions/isaacsim.robot.wheeled_robots.ui")
     include("source/extensions/isaacsim.robot.wheeled_robots")
@@ -1088,6 +1086,7 @@ building_for_isaac_sim = true
 defines { "BUILDING_FOR_ISAAC_SIM" }
 
 kit = require(root .. "/_repo/deps/repo_kit_tools/kit-template/premake5-kit")
+repo_build.setup_options()
 -- kit.setup_all()
 kit.include_kit()
 -- kit.random_hacks()

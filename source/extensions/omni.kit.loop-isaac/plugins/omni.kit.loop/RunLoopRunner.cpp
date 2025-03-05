@@ -10,12 +10,16 @@
 
 #include <carb/ObjectUtils.h>
 #include <carb/PluginUtils.h>
+#include <carb/cpp/StringView.h>
 #include <carb/dictionary/IDictionary.h>
+#include <carb/eventdispatcher/EventDispatcherUtils.h>
+#include <carb/eventdispatcher/IMessageQueue.h>
 #include <carb/events/IEvents.h>
 #include <carb/filesystem/IFileSystem.h>
 #include <carb/settings/ISettings.h>
 #include <carb/settings/SettingsUtils.h>
 #include <carb/tasking/TaskingUtils.h>
+#include <carb/thread/Mutex.h>
 
 #include <omni/ext/IExt.h>
 #include <omni/extras/DictHelpers.h>
@@ -54,6 +58,9 @@ CARB_PLUGIN_IMPL_DEPS(
 using namespace carb;
 using namespace std::chrono;
 
+CARB_IGNOREWARNING_MSC(4996) // deprecation warning
+CARB_IGNOREWARNING_GNUC("-Wdeprecated-declarations")
+
 namespace omni
 {
 namespace kit
@@ -66,6 +73,8 @@ namespace kit
 
 
 constexpr const uint64_t kProfilerMask = 1;
+CARB_PROFILE_DECLARE_CHANNEL("RunloopRunner.events", kProfilerMask, false, kRunloopRunnerEventsProfileChannel);
+
 const double kDefaultFrequency = 60;
 
 /**
@@ -185,8 +194,17 @@ class RunLoopThread
 public:
     bool mainThread = false;
     std::string name;
+
+private:
     RunLoop* loop = nullptr;
 
+    RString preUpdateName, updateName, postUpdateName;
+    RStringKey messageBusName;
+    eventdispatcher::IMessageQueuePtr messageBusQ;
+    bool usingEventAdapter{ false };
+
+public:
+    bool updateEnabled = true;
     std::atomic<bool> quit{ false };
     std::atomic<bool> running{ false };
 
@@ -214,13 +232,36 @@ public:
     ~RunLoopThread()
     {
         if (m_thread.joinable())
-        {
             m_thread.join();
+    }
+
+    void setLoop(RunLoop* loop_, bool usingEventAdapter_, bool usingMessageBusEventAdapter_)
+    {
+        loop = loop_;
+        usingEventAdapter = usingEventAdapter_;
+        if (usingEventAdapter)
+        {
+            preUpdateName = RString(loop->preUpdate->getName());
+            updateName = RString(loop->update->getName());
+            postUpdateName = RString(loop->postUpdate->getName());
         }
+        if (usingMessageBusEventAdapter_)
+        {
+            messageBusName = RStringKey(loop->messageBus->getName());
+            messageBusQ = getCachedInterface<eventdispatcher::IMessageQueueFactory>()->getMessageQueue(messageBusName);
+            CARB_CHECK(messageBusQ);
+        }
+    }
+
+    RunLoop* getLoop() const noexcept
+    {
+        return loop;
     }
 
     void updateLoop()
     {
+        carb::this_thread::setName(fmt::format("RunLoopThread:{}", name).c_str());
+
         running = true;
         while (!quit)
         {
@@ -231,10 +272,8 @@ public:
 
     void run()
     {
-        if (!mainThread && loop)
-        {
+        if (!mainThread && loop && !m_thread.joinable())
             m_thread = std::thread(&RunLoopThread::updateLoop, this);
-        }
     }
 
     void update()
@@ -243,11 +282,14 @@ public:
         auto startTime = high_resolution_clock::now();
         double dt = duration_cast<microseconds>(startTime - m_lastUpdateTime).count() * 0.000001;
         m_lastUpdateTime = startTime;
+
         if (mIsManualDt)
         {
             dt = mDeltaTime;
         }
-        CARB_PROFILE_EVENT(kProfilerMask, carb::profiler::InstantType::Thread, "[%s] frame event", name.c_str());
+
+        CARB_PROFILE_EVENT(
+            kRunloopRunnerEventsProfileChannel, carb::profiler::InstantType::Thread, "[%s] frame event", name.c_str());
 
 #if 0 // For perf debugging - disable by default
         std::time_t t = std::time(nullptr);
@@ -268,47 +310,78 @@ public:
         //    dt = this->minLoopTime.count() * 0.000001;
         //}
 
-        // Send pre-update to all listeners
+        if (usingEventAdapter)
         {
-            CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Pre-Update Events", name.c_str());
-            //
-            // Main thread should share the iteration count since that is the one place
-            // that knows which "iteration" is being run
-            //
+            static const RStringKey kDt("dt");
+            static const RStringKey kSWHFrameNumber("SWHFrameNumber");
+
+            carb::eventdispatcher::NamedVariant params[2] = { { kDt, carb::variant::Variant(dt) } };
+            size_t numParams = 1;
+
             if (mainThread)
             {
-                this->loop->preUpdate->push(
-                    0, std::make_pair("dt", dt), std::make_pair("SWHFrameNumber", m_runloopIterationCount));
+                params[numParams++] = { kSWHFrameNumber, carb::variant::Variant(m_runloopIterationCount) };
+                std::sort(params, params + numParams, carb::eventdispatcher::detail::NamedVariantLess{});
             }
-            else
-            {
-                this->loop->preUpdate->push(0, std::make_pair("dt", dt));
-            }
-            this->loop->preUpdate->pump();
-        }
 
-        // Send update to all listeners
+            auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
+
+            // Dispatch the events. We don't do profile zones here because EventDispatcher already does named zones.
+            ed->internalDispatch({ preUpdateName, numParams, params });
+            if (updateEnabled)
+                ed->internalDispatch({ updateName, numParams, params });
+            ed->internalDispatch({ postUpdateName, numParams, params });
+        }
+        else
         {
-            CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Update Events", name.c_str());
-            if (mainThread)
             {
-                this->loop->update->push(
-                    0, std::make_pair("dt", dt), std::make_pair("SWHFrameNumber", m_runloopIterationCount));
+                CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Pre-Update Events", name.c_str());
+                //
+                // Main thread should share the iteration count since that is the one place
+                // that knows which "iteration" is being run
+                //
+                if (mainThread)
+                {
+                    this->loop->preUpdate->push(
+                        0, std::make_pair("dt", dt), std::make_pair("SWHFrameNumber", m_runloopIterationCount));
+                }
+                else
+                {
+                    this->loop->preUpdate->push(0, std::make_pair("dt", dt));
+                }
+                this->loop->preUpdate->pump();
             }
-            else
+
+            // Send update to all listeners
+            if (updateEnabled)
             {
-                this->loop->update->push(0, std::make_pair("dt", dt));
+                CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Update Events", name.c_str());
+                if (mainThread)
+                {
+                    this->loop->update->push(
+                        0, std::make_pair("dt", dt), std::make_pair("SWHFrameNumber", m_runloopIterationCount));
+                }
+                else
+                {
+                    this->loop->update->push(0, std::make_pair("dt", dt));
+                }
+                this->loop->update->pump();
             }
-            this->loop->update->pump();
+
+            // Send post-update to all listeners
+            {
+                CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Post-Update Events", name.c_str());
+                this->loop->postUpdate->push(0, std::make_pair("dt", dt));
+                this->loop->postUpdate->pump();
+            }
         }
 
-        // Send post-update to all listeners
+        if (messageBusQ)
         {
-            CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Post-Update Events", name.c_str());
-            this->loop->postUpdate->push(0, std::make_pair("dt", dt));
-            this->loop->postUpdate->pump();
+            // Pump the message queue
+            (void)eventdispatcher::popAllAndDispatch(messageBusQ.get());
         }
-
+        else
         {
             CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Message Bus Events", name.c_str());
             this->loop->messageBus->pump();
@@ -359,9 +432,7 @@ public:
     {
         auto settings = getCachedInterface<settings::ISettings>();
         if (!settings)
-        {
             return;
-        }
 
         if (!m_minLoopTimeString.length())
         {
@@ -375,6 +446,7 @@ public:
             m_slidingMaximumOutlierCountPath = fmt::format("{0}/{1}/slidingMaximum/outlierCount", kAppRunLoops, name);
             m_slidingMaximumToleranceFactorPath =
                 fmt::format("{0}/{1}/slidingMaximum/outlierTolerance", kAppRunLoops, name);
+            m_updateEnabled = fmt::format("{0}/{1}/update/enabled", kAppRunLoops, name);
 
             settings->setDefaultBool(m_rateLimitEnabledString.c_str(), false);
             settings->setDefaultBool(m_rateLimitUseBusyLoopString.c_str(), false);
@@ -385,6 +457,7 @@ public:
             settings->setDefaultInt(m_slidingMaximumCountPath.c_str(), 60);
             settings->setDefaultInt(m_slidingMaximumOutlierCountPath.c_str(), 6);
             settings->setDefaultFloat(m_slidingMaximumToleranceFactorPath.c_str(), 2.0f);
+            settings->setDefaultBool(m_updateEnabled.c_str(), true);
 
             static struct SetDefaultOnce
             {
@@ -403,6 +476,7 @@ public:
         syncToPresent = settings->getAsBool(m_syncToPresent.c_str());
         syncToPresentGlobal = settings->getAsBool(kSyncToPresentGlobal);
         useSlidingMaximum = settings->getAsBool(m_slidingMaximumEnabledPath.c_str());
+        updateEnabled = settings->getAsBool(m_updateEnabled.c_str());
 
         if (useSlidingMaximum)
         {
@@ -457,6 +531,7 @@ private:
     std::string m_slidingMaximumCountPath;
     std::string m_slidingMaximumOutlierCountPath;
     std::string m_slidingMaximumToleranceFactorPath;
+    std::string m_updateEnabled;
 
     std::unique_ptr<RunLoopSynchronizer> m_runLoopSynchronizer;
 
@@ -490,8 +565,24 @@ private:
     PrecisionSleep m_windowsSleep;
 };
 
+// Use a transparent compare struct so we can compare against char* without having to construct a std::string
+struct Compare
+{
+    using is_transparent = bool;
+
+    bool operator()(const std::string& lhs, const std::string& rhs) const
+    {
+        return lhs < rhs;
+    }
+    bool operator()(const std::string& lhs, const char* rhs) const
+    {
+        return lhs < rhs;
+    }
+};
+
 // public so we can access it in setters
-std::map<std::string, RunLoopThread> m_runLoops;
+std::map<std::string, RunLoopThread, Compare> m_runLoops;
+
 
 class RunLoopRunnerImpl : public omni::kit::IRunLoopRunner
 {
@@ -500,7 +591,7 @@ class RunLoopRunnerImpl : public omni::kit::IRunLoopRunner
 public:
     virtual void startup() override
     {
-        std::unique_lock<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
 
         // Read settings
         auto settings = getCachedInterface<settings::ISettings>();
@@ -521,21 +612,28 @@ public:
         }
 
         for (auto& kv : m_runLoops)
-        {
             kv.second.run();
-        }
 
         m_started = true;
     }
 
     virtual void onAddRunLoop(const char* name, RunLoop* loop) override
     {
-        std::unique_lock<std::mutex> lock(m_mutex);
+        std::unique_lock lock(m_mutex);
+
+        if (!m_usingEventAdapter)
+        {
+            m_usingEventAdapter = carb::cpp::string_view("RunLoop.update") != loop->update->getName();
+        }
+        if (!m_usingMessageBusEventAdapter)
+        {
+            m_usingMessageBusEventAdapter = carb::cpp::string_view("RunLoop.messageBus") != loop->messageBus->getName();
+        }
 
         RunLoopThread* t = _getOrCreateThread(lock, name);
-        t->loop = loop;
+        t->setLoop(loop, m_usingEventAdapter.value(), m_usingMessageBusEventAdapter.value());
 
-        if (std::string(name) == kRunLoopDefault)
+        if (carb::cpp::string_view(kRunLoopDefault) == name)
         {
             t->mainThread = true;
             t->running = true;
@@ -543,9 +641,7 @@ public:
         }
 
         if (m_started)
-        {
             t->run();
-        }
     }
 
     virtual void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
@@ -553,11 +649,11 @@ public:
         bool bRequestedQuit = false;
 
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
+            std::unique_lock lock(m_mutex);
             auto it = m_runLoops.find(name);
             if (it != m_runLoops.end())
             {
-                if (it->second.loop == loop)
+                if (it->second.getLoop() == loop)
                 {
                     bRequestedQuit = true;
                     it->second.quit = true;
@@ -575,11 +671,11 @@ public:
             do
             {
                 bRunning = false;
-                std::unique_lock<std::mutex> lock(m_mutex);
+                std::unique_lock lock(m_mutex);
                 auto it = m_runLoops.find(name);
                 if (it != m_runLoops.end())
                 {
-                    if (it->second.loop == loop && it->second.running)
+                    if (it->second.getLoop() == loop && it->second.running)
                     {
                         bRunning = true;
                         carb::cpp::this_thread::sleep_for(kSleepTimeMs);
@@ -604,11 +700,17 @@ public:
 
     virtual void shutdown() override
     {
-        for (auto& l : m_runLoops)
+        decltype(m_runLoops) runLoops;
+        {
+            std::unique_lock lock(m_mutex);
+            m_runLoops.swap(runLoops);
+        }
+
+        for (auto& l : runLoops)
         {
             l.second.quit = true;
         }
-        m_runLoops.clear();
+        runLoops.clear();
     }
 
     void quickShutdown()
@@ -618,9 +720,7 @@ public:
         for (auto& loop : m_runLoops)
         {
             if (!loop.second.mainThread)
-            {
                 loop.second.quit = true;
-            }
         }
 
         // Wait up to 100 ms for all threads to "exit". We cannot join these threads because the thread calling
@@ -638,13 +738,12 @@ public:
                 if (loop.second.running && !loop.second.mainThread)
                 {
                     allDone = false;
+                    break;
                 }
             }
 
             if (allDone)
-            {
                 break;
-            }
 
             lock.unlock();
             std::this_thread::yield();
@@ -658,24 +757,23 @@ public:
     }
 
 private:
-    RunLoopThread* _getOrCreateThread(const std::unique_lock<std::mutex>& lock, const std::string& name)
+    RunLoopThread* _getOrCreateThread(const std::unique_lock<carb::thread::mutex>& lock, const std::string& name)
     {
         // lock must already be hold
-        CARB_ASSERT(lock.mutex() == &m_mutex);
+        CARB_ASSERT(lock.mutex() == &m_mutex && lock.owns_lock());
 
         auto it = m_runLoops.find(name);
         if (it == m_runLoops.end())
-        {
             it = m_runLoops.emplace(std::piecewise_construct, std::forward_as_tuple(name), std::forward_as_tuple(name)).first;
-        }
         return std::addressof(it->second);
     }
 
     bool m_started = false;
 
 
+    carb::cpp::optional<bool> m_usingEventAdapter, m_usingMessageBusEventAdapter;
     RunLoopThread* m_mainThread = nullptr;
-    std::mutex m_mutex;
+    carb::thread::mutex m_mutex;
 };
 
 static void SetManualStepSize(double dt, std::string name = "")

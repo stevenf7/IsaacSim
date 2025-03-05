@@ -9,6 +9,7 @@
 #pragma once
 
 #include <carb/dictionary/IDictionary.h>
+#include <carb/eventdispatcher/EventDispatcherTypes.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/tasking/TaskingUtils.h>
 
@@ -119,8 +120,8 @@ private:
     std::unique_ptr<SlidingMaximum> m_sliding;
 
     // Present thread
-    carb::events::ISubscriptionPtr m_presentPreSubscription;
-    carb::events::ISubscriptionPtr m_presentPostSubscription;
+    carb::eventdispatcher::ObserverGuard m_presentPreSubscription;
+    carb::eventdispatcher::ObserverGuard m_presentPostSubscription;
     // Present thread setting watch
     carb::dictionary::SubscriptionId* m_presentThreadEnabledSubscription = nullptr;
 

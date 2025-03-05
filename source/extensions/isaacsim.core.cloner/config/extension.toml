@@ -30,7 +30,6 @@ name = "isaacsim.core.cloner"
 [[test]]
 dependencies = [
     "isaacsim.core.api",
-    "isaacsim.storage.native",
     "omni.physx.ui",
 ]
 args = [

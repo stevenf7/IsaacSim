@@ -15,14 +15,14 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.asset.gen.conveyor/include",
     target_deps .. "/rtx_plugins/include",
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/include",
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/usd/%{cfg.buildcfg}/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
     target_deps .. "/omni_client_library/include",
 }
 libdirs {
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/lib",
+    target_deps .. "/usd/%{cfg.buildcfg}/lib",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
@@ -32,28 +32,21 @@ filter { "system:linux" }
 exceptionhandling("On")
 removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
 includedirs {
-    target_deps .. "/nv_usd/%{config}/include/boost",
-    target_deps .. "/python/include/python3.10",
+    target_deps .. "/usd/%{config}/include/boost",
+    target_deps .. "/python/include/python3.11",
 }
 filter {}
 
 add_ogn_dependencies(ogn)
+
+links { "physxSchema", "omni.usd" }
+
 -- Specifies the external libraries required by the nodes
-links {
-    "vt",
-    "gf",
-    "sdf",
-    "arch",
-    "usd",
-    "tf",
-    "usdUtils",
-    "usdShade",
-    "usdGeom",
-    "usdSkel",
-    "omni.usd",
-    "usdPhysics",
-    "physxSchema",
-}
+extra_usd_libs = { "usdGeom", "usdShade", "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 project_ext_ogn(ext, ogn)
 
@@ -68,6 +61,7 @@ add_files("bindings", "bindings/*.*")
 add_files("python", "python/*.py")
 add_files("python/impl", "python/impl/**.py")
 add_files("python/tests", "python/tests/**.py")
+
 includedirs {
     "%{root}/source/extensions/isaacsim.asset.gen.conveyor/include",
 }
