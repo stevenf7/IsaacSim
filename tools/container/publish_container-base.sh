@@ -53,9 +53,9 @@ docker push nvcr.io/nvidian/$APP_NAME:latest-$FAMILY_NAME-$CI_COMMIT_BRANCH
 
 # FOR PRODUCTION #
 if [[ "${CI_COMMIT_BRANCH}" =~ /^release\/.*/ ]]; then
-    echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0-$FAMILY_NAME!
-    docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0-$FAMILY_NAME
-    docker push nvcr.io/nvstaging/isaacsim/isaac-sim:4.5.0-$FAMILY_NAME
+    echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0-$FAMILY_NAME!
+    docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0-$FAMILY_NAME
+    docker push nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0-$FAMILY_NAME
 fi
 
 docker images
