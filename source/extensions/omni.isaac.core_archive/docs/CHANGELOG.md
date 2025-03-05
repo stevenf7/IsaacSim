@@ -1,4 +1,7 @@
 # Changelog
+## [2.5.2] - 2025-03-04
+### Changed
+- Update to kit 107.1 and fix build issues
 
 ## [2.5.1] - 2025-01-30
 ### Changed
@@ -13,7 +16,7 @@
 ### Changed
 - Update to Kit 107.x, Python 3.11
 
-## [2.3.3] - 2025-01-21
+## [2.3.3] - 2025-01-14
 ### Changed
 - Update extension description and add extension specific test settings
 
