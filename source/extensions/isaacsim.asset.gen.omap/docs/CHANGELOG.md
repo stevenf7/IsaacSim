@@ -1,9 +1,11 @@
 # Changelog
+## [2.0.13] - 2025-03-04
+### Changed
+- Update to kit 107.1 and fix build issues
+
 ## [2.0.12] - 2025-02-21
 ### Changed
 - Update style format and naming conventions in c++ code, add doxygen docstrings
-
-
 
 ## [2.0.11] - 2025-02-17
 ### Changed

@@ -1,4 +1,7 @@
 # Changelog
+## [2.2.4] - 2025-03-04
+### Changed
+- Update to kit 107.1 and fix build issues
 
 ## [2.2.3] - 2025-01-27
 ### Changed

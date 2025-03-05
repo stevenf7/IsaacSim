@@ -3,8 +3,6 @@
 ### Changed
 - Update style format and naming conventions in c++ code, add doxygen docstrings
 
-
-
 ## [0.2.6] - 2025-01-28
 ### Fixed
 - Windows signing issue

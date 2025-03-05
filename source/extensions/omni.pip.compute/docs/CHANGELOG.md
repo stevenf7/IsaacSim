@@ -1,4 +1,7 @@
 # Changelog
+## [1.5.2] - 2025-03-04
+### Changed
+- Update to kit 107.1 and fix build issues
 
 ## [1.5.1] - 2025-01-30
 ### Changed
@@ -8,11 +11,11 @@
 ### Changed
 - Update to Kit 107.x, Python 3.11
 
-## [1.4.5] - 2025-01-24
+## [1.4.5] - 2025-01-14
 ### Changed
 - switch to opencv-python-headless==4.9.0.80
 
-## [1.4.4] - 2025-01-21
+## [1.4.4] - 2025-01-13
 ### Changed
 - Update extension description and add extension specific test settings
 
