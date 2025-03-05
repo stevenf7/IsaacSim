@@ -46,7 +46,6 @@ exts."isaacsim.benchmark.examples".num_app_updates = 1
 [[test]]
 # these are not cached
 dependencies = [
-    "isaacsim.storage.native" # test only
 ]
 
 timeout = 900

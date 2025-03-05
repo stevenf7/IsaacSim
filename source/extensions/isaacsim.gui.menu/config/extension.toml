@@ -34,10 +34,6 @@ name = "isaacsim.gui.menu.tests"
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.timeline",
-    "isaacsim.core.utils",
-    "omni.kit.menu.utils",
-    "omni.kit.ui_test",
     "isaacsim.sensors.camera.ui",
     "isaacsim.sensors.physx.ui",
     "isaacsim.sensors.physics.ui",

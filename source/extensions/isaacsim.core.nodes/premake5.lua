@@ -24,10 +24,10 @@ include_physx()
 
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/_build/target-deps/omni_client_library/include",
@@ -39,22 +39,21 @@ includedirs {
     "%{root}/_build/target-deps/python/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
 
 links {
-    "gf",
-    "sdf",
-    "tf",
-    "usd",
-    "usdGeom",
-    "usdUtils",
     "omni.usd",
-    "vt",
 }
+
+extra_usd_libs = { "usdGeom" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "configurations:debug" }
 defines { "_DEBUG" }

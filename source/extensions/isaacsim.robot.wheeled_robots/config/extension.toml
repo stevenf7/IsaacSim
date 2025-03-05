@@ -49,7 +49,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 dependencies = [
-    "isaacsim.storage.native" # test only
 ]
 
 args = [

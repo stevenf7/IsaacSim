@@ -52,7 +52,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 dependencies = [
-    "isaacsim.storage.native", # test only
     "omni.kit.hydra_texture"
 ]
 

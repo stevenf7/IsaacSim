@@ -41,7 +41,6 @@ function include_physx()
         "PhysXCooking_static_64",
         "PhysXCommon_static_64",
         "PhysXFoundation_static_64",
-        "PhysXVehicle_static_64",
     }
 
     includedirs {

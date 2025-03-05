@@ -32,9 +32,9 @@ void getTransformFromSensorPose(const omni::sensors::FrameAtTime& inPose, omni::
 {
     // async.pose is [X, Y, Z, W].
     // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
-    omni::math::linalg::vec3d posM{ inPose.posM.x, inPose.posM.y, inPose.posM.z };
-    omni::math::linalg::quatd pose{ inPose.orientation.w, inPose.orientation.x, inPose.orientation.y,
-                                    inPose.orientation.z };
+    omni::math::linalg::vec3d posM{ inPose.posM[0], inPose.posM[1], inPose.posM[2] };
+    omni::math::linalg::quatd pose{ inPose.orientation[3], inPose.orientation[0], inPose.orientation[1],
+                                    inPose.orientation[2] };
     matrixOutput.SetIdentity();
     matrixOutput.SetRotateOnly(pose);
     matrixOutput.SetTranslateOnly(posM);

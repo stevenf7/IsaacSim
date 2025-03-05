@@ -20,11 +20,11 @@
 #include <isaacsim/core/utils/ScopedCudaDevice.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
-#include <omni/sensors/GenericModelOutput.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
 #include <thrust/copy.h>
 #include <thrust/device_ptr.h>
 
+#include <GenericModelOutput.h>
 #include <OgnIsaacCreateRTXLidarScanBufferDatabase.h>
 
 extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int N, int cdi);

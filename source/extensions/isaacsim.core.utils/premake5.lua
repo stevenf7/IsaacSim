@@ -17,7 +17,7 @@ defines { "OMPRIMUTILSEXPORT" }
 include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
@@ -27,17 +27,24 @@ includedirs {
 }
 
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/nv_usd/release/lib",
+    extsbuild_dir .. "/omni.usd.core/bin",
 }
-links { "arch", "gf", "sdf", "tf", "vt", "pcp", "usd", "usdGeom", "usdUtils", "usdPhysics" }
+links { "omni.usd" }
+
+extra_usd_libs = { "usdUtils", "usdGeom", "usdPhysics", "pcp" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux", "platforms:x86_64" }
-links { "tbb", "boost_python310" }
+links { "tbb" }
 filter {}
 
 filter { "system:windows", "platforms:x86_64" }
-link_boost_for_windows { "boost_python310" }
+-- link_boost_for_windows({"boost_python310"})
 libdirs {
     "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
 }

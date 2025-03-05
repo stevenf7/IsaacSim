@@ -13,20 +13,24 @@ add_files("impl", "library")
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/source/extensions/isaacsim.util.debug_draw/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
-links { "sdf", "omni.usd" }
+
+links { "omni.usd" }
+-- Begin OpenUSD
+add_usd()
+-- End OpenUSD
 
 filter { "system:linux" }
 disablewarnings { "error=pragmas" }
 includedirs {
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include/python3.11",
 }
 buildoptions("-fvisibility=default")
 filter { "system:windows" }
@@ -55,7 +59,7 @@ include_physx()
 add_ogn_dependencies(ogn)
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
@@ -65,14 +69,14 @@ includedirs {
     "%{root}/source/extensions/isaacsim.util.debug_draw/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
 
 if os.target() == "linux" then
     includedirs {
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-        "%{root}/_build/target-deps/python/include/python3.10",
+        "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
+        "%{root}/_build/target-deps/python/include/python3.11",
     }
 else
     libdirs {
@@ -80,19 +84,16 @@ else
     }
 end
 
-links {
-    "gf",
-    "tf",
-    "sdf",
-    "vt",
-    "usd",
-    "usdGeom",
+links { "isaacsim.util.debug_draw.primitive_drawing", "omni.usd" }
+
+extra_usd_libs = {
     "usdUtils",
-    "usdShade",
-    "usdImaging",
-    "omni.usd",
-    "isaacsim.util.debug_draw.primitive_drawing",
+    "usdGeom",
 }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "configurations:debug" }
 defines { "_DEBUG" }
@@ -121,34 +122,32 @@ dependson { "isaacsim.util.debug_draw.primitive_drawing" }
 include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/source/extensions/isaacsim.util.debug_draw/include",
 }
 
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/nv_usd/release/lib",
 }
-links {
-    "arch",
-    "gf",
-    "sdf",
-    "tf",
-    "vt",
-    "pcp",
-    "usd",
-    "usdGeom",
+links { "isaacsim.util.debug_draw.primitive_drawing" }
+
+extra_usd_libs = {
     "usdUtils",
-    "isaacsim.util.debug_draw.primitive_drawing",
+    "usdGeom",
 }
 
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
+
 filter { "system:linux", "platforms:x86_64" }
-links { "tbb", "boost_python310" }
+links { "tbb" }
 filter {}
 
 filter { "system:windows", "platforms:x86_64" }
-link_boost_for_windows { "boost_python310" }
+-- link_boost_for_windows({"boost_python310"})
 
 filter {}
 

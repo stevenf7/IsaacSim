@@ -69,13 +69,9 @@ menu.window = "Isaac Sim Assets"
 
 [[test]]
 dependencies = [
-    "omni.kit.renderer.core",
-    "omni.kit.renderer.capture",
     "omni.kit.tool.collect",
     "omni.kit.menu.stage",
     "omni.kit.ui_test",
-    "omni.usd",
-    "omni.kit.clipboard",
     "omni.kit.browser.asset",
 ]
 

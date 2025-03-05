@@ -9,7 +9,6 @@ project_ext(ext)
 project_ext_plugin(ext, ogn.plugin_project)
 cppdialect("C++17")
 
-dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin" }
 add_files("impl", "plugins")
 add_files("nodes", ogn.nodes_path)
 
@@ -19,49 +18,35 @@ include_physx()
 add_cuda_dependencies()
 
 includedirs {
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
+    "%{kit_sdk_bin_dir}/dev/internal/include/",
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    targetDepsDir .. "/nv_usd/%{cfg.buildcfg}/include",
-    targetDepsDir .. "/usd_ext_physics/%{cfg.buildcfg}/include",
-    targetDepsDir .. "/omni_physics/%{config}/include",
-    targetDepsDir .. "/rtx_plugins/include",
-    extsbuild_dir .. "/usdrt.scenegraph/include",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+    "%{root}/source/extensions/isaacsim.core.nodes/include",
+    "%{root}/source/extensions/isaacsim.sensors.rtx/include",
+    targetDepsDir .. "/generic_model_output/%{platform}/%{config}/include",
     targetDepsDir .. "/omni_client_library/include",
     targetDepsDir .. "/python/include",
-    "%{root}/source/extensions/isaacsim.core.nodes/include",
-    "%{kit_sdk_bin_dir}/dev/fabric/include/",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-    bin_dir .. "/extsbuild/omni.sensors.nv.common/include",
+    targetDepsDir .. "/rtx_plugins/include",
 }
 libdirs {
-    targetDepsDir .. "/python/lib",
-    targetDepsDir .. "/nv_usd/%{cfg.buildcfg}/lib",
-    targetDepsDir .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
+    targetDepsDir .. "/python/lib",
 }
 
 links {
-    "carb",
-    "gf",
-    "tf",
-    "sdf",
-    "usd",
-    "usdGeom",
-    "usdUtils",
-    "physxSchema",
-    "usdPhysics",
-    "physicsSchemaTools",
     "omni.usd",
-    "isaacSensorSchema",
-    "arch",
-    "vt",
 }
+
+extra_usd_libs = {}
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
 includedirs {
-    targetDepsDir .. "/nv_usd/%{cfg.buildcfg}/include/boost",
-    targetDepsDir .. "/python/include/python3.10",
+    targetDepsDir .. "/usd/%{cfg.buildcfg}/include/boost",
+    targetDepsDir .. "/python/include/python3.11",
 }
 filter { "system:windows" }
 libdirs {

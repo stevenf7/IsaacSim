@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -325,7 +325,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.order = 20; // should run after physics
     gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
 
-    gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
+    gStepSubscription = gPhysXInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep, nullptr);
 
 
     // This increases forever until we stop sim.
@@ -339,7 +339,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
     RELEASE_OGN_NODES()
 
-    gPhysXInterface->unsubscribePhysicsStepEvents(gStepSubscription);
+    gPhysXInterface->unsubscribePhysicsOnStepEvents(gStepSubscription);
     gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
 }
 

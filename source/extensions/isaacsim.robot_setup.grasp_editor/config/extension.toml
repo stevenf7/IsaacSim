@@ -28,7 +28,6 @@ name = "isaacsim.robot_setup.grasp_editor"
 [[test]]
 dependencies = [
     "omni.hydra.rtx",
-    "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
     "omni.graph.nodes"
 ]

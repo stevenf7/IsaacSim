@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2019-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -39,6 +39,11 @@
 #        define OMNI_USD_SUPPRESS_DEPRECATION_WARNINGS
 #        undef __DEPRECATED
 #    endif
+#endif
+
+// Hide deprecated TBB warnings since they are emited from OpenUsd headers
+#if !defined(TBB_SUPPRESS_DEPRECATED_MESSAGES)
+#    define TBB_SUPPRESS_DEPRECATED_MESSAGES 1
 #endif
 
 // Include cstdio here so that vsnprintf is properly declared. This is necessary because pyerrors.h has
@@ -172,8 +177,10 @@
 // #include <audioSchema/sound.h>
 
 // -- omni.usd
+// clang-format off
 #include <omni/usd/UsdContextIncludes.h>
 #include <omni/usd/UtilsIncludes.h>
+// clang-format on
 
 #ifdef _MSC_VER
 #    pragma warning(pop)

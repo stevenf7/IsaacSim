@@ -1,33 +1,37 @@
 <project toolsVersion="5.6">
-    <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-        <package name="nv_ros" version="noetic_20240811_2bd464e-linux64_release" platforms="linux-x86_64"/>
-    </dependency>
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
-        <package name="nv_ros2" version="humble_20240905_34f2adb-linux64_release" platforms="linux-x86_64"/>
-        <package name="nv_ros2" version="humble_20240905_win64_release.7z" platforms="windows-x86_64"/>
+        <package name="nv_ros2" version="humble_20250210_d75069f-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="humble_20250219_win64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
-        <package name="lula" version="v0.10.1_773b0cc.linux-x86_64.release" platforms="linux-x86_64"/>
-        <package name="lula" version="v0.10.1_build1.windows-x86_64.release" platforms="windows-x86_64"/>
+        <package name="lula" version="v0.10.1_8bfff40.linux-x86_64.release" platforms="linux-x86_64"/>
+        <package name="lula" version="v0.10.1_9817dce.linux-aarc64.release" platforms="linux-aarch64" />
+        <package name="lula" version="v0.10.1_build3.windows-x86_64.release" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="octomap" linkPath="../_build/target-deps/octomap">
         <package name="octomap" version="linux-x86_64.${config}.20221128_d417c18" platforms="linux-x86_64" />
+        <package name="octomap" version="linux-aarch64.${config}.20250203_d417c18" platforms="linux-aarch64" />
         <package name="octomap" version="windows-x86_64.${config}.20221405_d417c18" platforms="windows-x86_64" />
     </dependency>
     <dependency name="tinyxml2" linkPath="../_build/target-deps/tinyxml2">
         <package name="tinyxml2" version="linux_x64_20200823_2c5a6bf" platforms="linux-x86_64" />
+        <package name="tinyxml2" version="linux_aarch64_20250203_2c5a6bf" platforms="linux-aarch64" />
         <package name="tinyxml2" version="win_x64_20200824_2c5a6bf" platforms="windows-x86_64" />
     </dependency>
     <dependency name="doctest" linkPath="../_build/target-deps/doctest">
         <package name="doctest" version="2.4.5+nv4-0.7z" />
     </dependency>
     <dependency name="openssl" linkPath="../_build/target-deps/openssl">
-        <package name="openssl" version="1.1.1t+nv1-${platform}" />
+        <package name="openssl" version="1.1.1m+nv1-${platform_target}" platforms="linux-x86_64 windows-x86_64"/>
+        <package name="openssl" version="1.1.1m+nv1-linux-aarch64" platforms="linux-aarch64" />
     </dependency>
-    <dependency name="omni-isaacsim-schema" linkPath="../_build/target-deps/omni-isaacsim-schema/${platform}/${config}">
-        <package name="omni-isaacsim-schema" version="2.1.1+isaacsim.0.f4a8e4fc.local.${platform}.${config}"/>
+    <dependency name="omni-isaacsim-schema" linkPath="../_build/target-deps/omni-isaacsim-schema/${platform_target}/${config}">
+        <package name="omni-isaacsim-schema_usd_24.05_py_3.11" version="3.0.0+main.9.44f19db4.gl.${platform_target}.${config}"/>
     </dependency>
     <dependency name="nlohmann_json" linkPath="../_build/target-deps/nlohmann_json">
         <package name="nlohmann_json" version="3.11.3-a3143f5-0"/>
    </dependency>
+  <dependency name="generic_model_output_${config}" linkPath="../_build/target-deps/generic_model_output/${platform_target}/${config}">
+    <package name="generic-model-output" version="107.1.0+master.176407.ea6f0fae.gl.${platform_target}.${config}"/>
+  </dependency>
 </project>

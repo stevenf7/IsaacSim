@@ -381,9 +381,11 @@ for profile in config:
                     plt.plot(
                         range(len(measurements)),
                         [
-                            measurements[x][phase][metric_num]
-                            if phase in measurements[x] and metric_num in measurements[x][phase]
-                            else None
+                            (
+                                measurements[x][phase][metric_num]
+                                if phase in measurements[x] and metric_num in measurements[x][phase]
+                                else None
+                            )
                             for x in range(len(measurements))
                         ],
                         "-o",

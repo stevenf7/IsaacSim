@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -3792,7 +3792,7 @@ CARB_EXPORT void carbOnPluginStartup()
         auto desc = gPhysxSceneQuery->getInterfaceDesc();
         CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
     }
-    gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(SuUpdate, nullptr);
+    gStepSubscription = gPhysXInterface->subscribePhysicsOnStepEvents(false, 0, SuUpdate, nullptr);
 
     gEventSubscription = carb::events::createSubscriptionToPop(
         gPhysXInterface->getSimulationEventStreamV2().get(),
@@ -3836,7 +3836,7 @@ CARB_EXPORT void carbOnPluginStartup()
 CARB_EXPORT void carbOnPluginShutdown()
 {
     using namespace omni::isaac::dynamic_control;
-    gPhysXInterface->unsubscribePhysicsStepEvents(gStepSubscription);
+    gPhysXInterface->unsubscribePhysicsOnStepEvents(gStepSubscription);
     gEventSubscription = nullptr;
     if (g_suNode)
     {

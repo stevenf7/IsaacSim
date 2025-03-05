@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -18,8 +18,8 @@
 
 #include <isaacsim/core/utils/Buffer.h>
 #include <omni/math/linalg/matrix.h>
-#include <omni/sensors/GenericModelOutput.h>
 
+#include <GenericModelOutput.h>
 #include <OgnIsaacComputeRTXRadarPointCloudDatabase.h>
 #include <math.h>
 
@@ -103,13 +103,13 @@ public:
             isaacsim::core::utils::safeGetAttribute(transAttr, translate);
             isaacsim::core::utils::safeGetAttribute(rotAttr, rotate);
         }
-        frameEnd.orientation.w = (float)rotate.GetReal();
-        frameEnd.orientation.x = (float)rotate.GetImaginary()[0];
-        frameEnd.orientation.y = (float)rotate.GetImaginary()[1];
-        frameEnd.orientation.z = (float)rotate.GetImaginary()[2];
-        frameEnd.posM.x = (float)translate[0];
-        frameEnd.posM.y = (float)translate[1];
-        frameEnd.posM.z = (float)translate[2];
+        frameEnd.orientation[3] = (float)rotate.GetReal();
+        frameEnd.orientation[0] = (float)rotate.GetImaginary()[0];
+        frameEnd.orientation[1] = (float)rotate.GetImaginary()[1];
+        frameEnd.orientation[2] = (float)rotate.GetImaginary()[2];
+        frameEnd.posM[0] = (float)translate[0];
+        frameEnd.posM[1] = (float)translate[1];
+        frameEnd.posM[2] = (float)translate[2];
 #endif
         getTransformFromSensorPose(frameEnd, matrixOutput);
         RadarAuxiliaryData* aux = reinterpret_cast<RadarAuxiliaryData*>(helper.m_gmo.auxiliaryData);

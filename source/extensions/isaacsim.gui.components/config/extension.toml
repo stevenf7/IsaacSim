@@ -40,7 +40,6 @@ name = "isaacsim.gui.components.tests"
 
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
-    "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
     "isaacsim.storage.native",
     "isaacsim.core.api",

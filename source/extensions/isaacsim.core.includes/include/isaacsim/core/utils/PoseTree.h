@@ -66,7 +66,10 @@ public:
     {
         // Store the USD and USDRT stage references from the stage ID
         mUsdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(static_cast<long>(stageId)));
-        mUsdrtStage = usdrt::UsdStage::Attach({ (stageId) });
+        omni::fabric::IStageReaderWriter* iStageReaderWriter =
+            carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
+        mUsdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
 
         mDynamicControlPtr = dynamicControlPtr;
     }

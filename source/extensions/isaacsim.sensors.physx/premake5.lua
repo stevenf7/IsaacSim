@@ -4,7 +4,6 @@ project_ext(ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.sensors.physx.plugin")
-dependson { "isaacsim.util.debug_draw.primitive_drawing" }
 add_files("impl", "plugins")
 add_files("ogn", ogn.nodes_path)
 
@@ -15,7 +14,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/gsl/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
@@ -31,7 +30,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.util.debug_draw/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
@@ -39,39 +38,21 @@ libdirs {
 }
 
 links {
-    "ar",
-    "arch",
-    "gf",
-    "js",
-    "kind",
-    "pcp",
-    "plug",
-    "sdf",
-    "tf",
-    "trace",
-    "usd",
-    "usdGeom",
-    "usdShade",
-    "vt",
-    "work",
-    "pxOsd",
-    "hdx",
-    "hd",
-    "usdImaging",
-    "hdSt",
-    "usdLux",
-    "usdUtils",
     "isaacSensorSchema",
     "rangeSensorSchema",
     "omni.usd",
-    "usdPhysics",
     "isaacsim.util.debug_draw.primitive_drawing",
 }
+extra_usd_libs = { "usdGeom", "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
 includedirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.11",
 }
 filter { "system:windows" }
 libdirs {

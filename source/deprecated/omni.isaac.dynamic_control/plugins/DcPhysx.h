@@ -318,18 +318,18 @@ private:
     Bucket<DcAttractor> mAttractors;
     Bucket<DcD6Joint> mD6Joints;
 
-    std::unordered_map<pxr::SdfPath, DcHandle> mRigidBodyMap;
-    std::unordered_map<pxr::SdfPath, DcHandle> mJointMap;
-    std::unordered_map<pxr::SdfPath, DcHandle> mDofMap;
-    std::unordered_map<pxr::SdfPath, DcHandle> mArticulationMap;
-    std::unordered_map<pxr::SdfPath, DcHandle> mAttractorMap;
-    std::unordered_map<pxr::SdfPath, DcHandle> mD6JointMap;
+    std::unordered_map<pxr::SdfPath, DcHandle, pxr::SdfPath::Hash> mRigidBodyMap;
+    std::unordered_map<pxr::SdfPath, DcHandle, pxr::SdfPath::Hash> mJointMap;
+    std::unordered_map<pxr::SdfPath, DcHandle, pxr::SdfPath::Hash> mDofMap;
+    std::unordered_map<pxr::SdfPath, DcHandle, pxr::SdfPath::Hash> mArticulationMap;
+    std::unordered_map<pxr::SdfPath, DcHandle, pxr::SdfPath::Hash> mAttractorMap;
+    std::unordered_map<pxr::SdfPath, DcHandle, pxr::SdfPath::Hash> mD6JointMap;
 
     // Maps USD paths to handles.  There can be more than one handle per path.
     // e.g., articulation at same path as one of its links
     // e.g., dof at the same path as a revolute/prismatic joint
     // e.g., multiple dofs of a spherical joint
-    std::unordered_map<pxr::SdfPath, std::set<DcHandle>> mHandleMap;
+    std::unordered_map<pxr::SdfPath, std::set<DcHandle>, pxr::SdfPath::Hash> mHandleMap;
 };
 
 }

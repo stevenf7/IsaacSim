@@ -44,7 +44,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/cuda/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/nv_ros2_humble/include",
     "%{root}/_build/target-deps/nlohmann_json/include",
@@ -54,16 +54,11 @@ includedirs {
     "%{root}/_build/target-deps/omni_client_library/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
     "%{root}/_build/target-deps/nv_ros2_humble/lib",
 }
 links {
-    "gf",
-    "sdf",
-    "tf",
-    "usd",
-    "usdPhysics",
     "rosidl_runtime_c",
     "rcutils",
     "rcl",
@@ -84,10 +79,16 @@ links {
     -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
 }
 
+extra_usd_libs = { "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
+
 filter { "system:linux" }
 disablewarnings { "error=pragmas" }
 includedirs {
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include/python3.11",
 }
 buildoptions("-fvisibility=default")
 linkoptions { "-Wl,--export-dynamic" }
@@ -128,7 +129,7 @@ add_files("impl", "plugins")
 add_files("impl", "cuda")
 add_files("iface", "include")
 add_files("ogn", ogn.nodes_path)
-link_boost_for_windows { "boost_python310" }
+-- link_boost_for_windows({"boost_python310"})
 add_cuda_dependencies()
 
 add_ogn_dependencies(ogn, { "python/nodes" })
@@ -136,11 +137,11 @@ add_ogn_dependencies(ogn, { "python/nodes" })
 include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/python/include/python3.10",
+    "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/python/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
@@ -157,28 +158,23 @@ includedirs {
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",
 }
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
 }
-links {
-    "gf",
-    "sdf",
-    "tf",
-    "usd",
-    "usdGeom",
-    "vt",
-    "usdUtils",
-    "omni.usd",
-    "usdPhysics",
-    "physxSchema",
-    "sdf",
-    "usdGeom",
-    "carb",
-    "isaacSensorSchema",
-}
+-- links {
+--     "gf",  "sdf", "tf",  "usd", "usdGeom", "vt", "usdUtils", "omni.usd", , "physxSchema", "sdf", , "carb",
+--     ,
+-- }
+links { "isaacSensorSchema", "physxSchema", "omni.usd" }
+
+extra_usd_libs = { "usdGeom", "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
 disablewarnings { "error=narrowing", "error=unused-but-set-variable", "error=unused-variable" }
@@ -222,9 +218,9 @@ repo_build.prebuild_copy {
 if os.target() == "linux" then
     repo_build.prebuild_copy {
         { "%{root}/_build/target-deps/nv_ros2_humble/lib/lib**", ext.target_dir .. "/humble/lib" },
-        { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.10/site-packages", ext.target_dir .. "/humble/rclpy" },
+        { "%{root}/_build/target-deps/nv_ros2_humble/lib/python3.11/site-packages", ext.target_dir .. "/humble/rclpy" },
         {
-            "%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.10/dist-packages",
+            "%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.11/dist-packages",
             ext.target_dir .. "/humble/rclpy",
         },
     }

@@ -56,9 +56,6 @@ class TestMenuAssets(OmniUiTest):
         self.contact_sensor_interface = _sensor.acquire_contact_sensor_interface()
         self.imu_sensor_interface = _sensor.acquire_imu_sensor_interface()
         self.lightbeam_sensor_interface = _range_sensor.acquire_lightbeam_sensor_interface()
-        self.carb_settings = carb.settings.get_settings()
-        self.carb_settings.set("/rtx/rendermode", "RaytracedLighting")
-        self.carb_settings.set("/rtx-transient/resourcemanager/enableTextureStreaming", False)
         pass
 
     # After running each test
@@ -142,8 +139,6 @@ class TestMenuAssets(OmniUiTest):
     async def test_apriltag_menu(self):
         apriltag_path = "Create/April Tags"
 
-        clear_stage()
-        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await menu_click(apriltag_path, human_delay_speed=10)
         await omni.kit.app.get_app().next_update_async()
@@ -308,9 +303,9 @@ class TestMenuAssets(OmniUiTest):
                 cube = DynamicCuboid(prim_path="/Cube")
                 self.usd_selection.set_selected_prim_paths(["/Cube"], True)
             print("clicking ", test_path)
-            await menu_click(test_path, human_delay_speed=32)
+            await menu_click(test_path, human_delay_speed=2)
             self._timeline.play()
-            for i in range(20):
+            for i in range(5):
                 await omni.kit.app.get_app().next_update_async()
 
             # # waiting for stage to load

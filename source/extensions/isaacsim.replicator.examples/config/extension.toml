@@ -35,9 +35,6 @@ exclude = ["Ogn*Database.py"]
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.kit.test",
-    "isaacsim.core.api",
-    "isaacsim.storage.native",
     "isaacsim.examples.interactive",
 ]
 args = [

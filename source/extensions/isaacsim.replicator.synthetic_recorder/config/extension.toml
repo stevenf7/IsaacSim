@@ -27,7 +27,6 @@ name = "isaacsim.replicator.synthetic_recorder"
 
 [[test]]
 dependencies = [
-    "omni.kit.test"
 ]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

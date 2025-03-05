@@ -31,9 +31,7 @@ name = "isaacsim.robot.wheeled_robots.ui"
 
 
 [[test]]
-dependencies = [
-    "omni.kit.ui_test",
-]
+dependencies = []
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
     '--/persistent/app/stage/upAxis="Z"',

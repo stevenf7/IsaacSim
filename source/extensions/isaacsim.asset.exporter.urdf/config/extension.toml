@@ -34,6 +34,4 @@ name = "isaacsim.asset.exporter.urdf.tests"
 
 [[test]]
 
-dependencies = [
-    "omni.kit.test"
-]
+dependencies = []

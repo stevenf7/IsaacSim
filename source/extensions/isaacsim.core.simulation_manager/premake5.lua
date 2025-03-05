@@ -13,34 +13,25 @@ includedirs {
     "plugins/isaacsim.core.simulation_manager",
     target_deps .. "/rtx_plugins/include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{target_deps}/nv_usd/%{cfg.buildcfg}/include",
-    "%{target_deps}/nv_usd/%{cfg.buildcfg}/include/boost",
-    "%{target_deps}/python/include/python3.10",
+    "%{target_deps}/usd/%{cfg.buildcfg}/include",
+    "%{target_deps}/usd/%{cfg.buildcfg}/include/boost",
+    "%{target_deps}/python/include/python3.11",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
 }
 
 libdirs {
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/lib",
+    target_deps .. "/usd/%{cfg.buildcfg}/lib",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
+links { "physxSchema", "omni.usd" }
 
-links {
-    "vt",
-    "gf",
-    "sdf",
-    "arch",
-    "usd",
-    "tf",
-    "usdUtils",
-    "usdShade",
-    "usdGeom",
-    "usdSkel",
-    "omni.usd",
-    "usdPhysics",
-    "physxSchema",
-}
+extra_usd_libs = { "usdUtils", "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "configurations:debug" }
 defines { "_DEBUG" }
@@ -59,7 +50,7 @@ project_ext_bindings {
 }
 dependson { "isaacsim.core.simulation_manager.plugin" }
 libdirs {
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/lib",
+    target_deps .. "/usd/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
 links { "isaacsim.core.simulation_manager.plugin" }
@@ -67,7 +58,7 @@ links { "isaacsim.core.simulation_manager.plugin" }
 includedirs {
     "include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
@@ -76,17 +67,22 @@ includedirs {
 }
 
 libdirs {
-    "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/nv_usd/release/lib",
 }
-links { "arch", "gf", "sdf", "tf", "vt", "pcp", "usd", "usdGeom", "usdUtils", "usdPhysics" }
+
+extra_usd_libs = { "usdGeom", "usdUtils", "usdPhysics" }
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux", "platforms:x86_64" }
-links { "tbb", "boost_python310" }
+links { "tbb" }
 filter {}
 
 filter { "system:windows", "platforms:x86_64" }
-link_boost_for_windows { "boost_python310" }
+-- link_boost_for_windows({"boost_python310"})
 libdirs {
     "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
 }

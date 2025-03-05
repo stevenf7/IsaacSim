@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.1] - 2025-01-30
+### Changed
+- Updated to latest release 4.5 changes
+
+## [1.5.0] - 2025-01-15
+### Changed
+- Update to Kit 107.x, Python 3.11
+
 ## [1.4.5] - 2025-01-24
 ### Changed
 - switch to opencv-python-headless==4.9.0.80

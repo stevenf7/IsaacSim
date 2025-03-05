@@ -27,7 +27,6 @@ name = "isaacsim.robot_setup.assembler"
 [[test]]
 
 dependencies = [
-    "isaacsim.storage.native" # test only
 ]
 
 args = [

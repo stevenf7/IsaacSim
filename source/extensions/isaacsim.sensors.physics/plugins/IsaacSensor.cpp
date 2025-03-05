@@ -422,7 +422,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.order = 50; // happens after physx, dc, but before robot engine bridge
 
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
-    g_stepSubscription = g_physx->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
+    g_stepSubscription = g_physx->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep, nullptr);
     if (!g_stageUpdateNode)
     {
         CARB_LOG_ERROR("*** Failed to create stage update node\n");
@@ -437,7 +437,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     RELEASE_OGN_NODES()
     g_isaacSensorManager.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
-    g_physx->unsubscribePhysicsStepEvents(g_stepSubscription);
+    g_physx->unsubscribePhysicsOnStepEvents(g_stepSubscription);
     g_physx = nullptr;
     g_stage = nullptr;
 }

@@ -12,8 +12,8 @@ include_physx()
 
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/include",
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/usd/%{cfg.buildcfg}/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
     target_deps .. "/rtx_plugins/include",
@@ -21,17 +21,25 @@ includedirs {
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
 }
 libdirs {
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/lib",
+    targetDepsDir .. "/usd/%{cfg.buildcfg}/lib",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
 
-links { "gf", "sdf", "usd", "usdGeom", "usdUtils", "tf", "arch", "omni.usd" }
+links { "omni.usd" }
+
+extra_usd_libs = {
+    "usdUtils",
+    "usdGeom",
+}
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
 
 filter { "system:linux" }
 includedirs {
-    target_deps .. "/nv_usd/%{cfg.buildcfg}/include/boost",
-    target_deps .. "/python/include/python3.10",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/python/include/python3.11",
 }
 filter { "system:windows" }
 libdirs {
