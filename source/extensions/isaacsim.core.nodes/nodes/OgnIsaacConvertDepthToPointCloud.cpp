@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,8 +12,8 @@
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
-#include <isaacsim/core/utils/Buffer.h>
-#include <isaacsim/core/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/includes/Buffer.h>
+#include <isaacsim/core/includes/ScopedCudaDevice.h>
 
 #include <cmath>
 #include <string>
@@ -56,9 +56,10 @@ public:
         cx = width * 0.5f;
         cy = height * 0.5f;
         {
-            isaacsim::core::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+            isaacsim::core::includes::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
             uint64_t handle = db.inputs.dataPtr();
-            isaacsim::core::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
+            isaacsim::core::includes::ScopedCudaTextureObject srcTexObj(
+                reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
             state.mBuffer.resize(db.inputs.width() * db.inputs.height());
             depthToPCLOgn(state.mBuffer.data(), srcTexObj, width, height, fx, fy, cx, cy);
         }
@@ -73,7 +74,7 @@ public:
     }
 
 private:
-    isaacsim::core::utils::DeviceBufferBase<float3> mBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float3> mBuffer;
 };
 REGISTER_OGN_NODE()
 }

@@ -3,7 +3,9 @@
         "version": 1,
         "description": "Executes an output execution pulse for every physics Simulation Step",
         "uiName": "On Physics Step",        
-        "categories": ["event"],
+        "categories": ["event", "isaacCore"],
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "icon": "icons/isaac-sim.svg",
         "inputs": {
         },
         "outputs": {

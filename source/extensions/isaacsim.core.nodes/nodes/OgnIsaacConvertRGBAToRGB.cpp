@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,8 +13,8 @@
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
-#include <isaacsim/core/utils/Buffer.h>
-#include <isaacsim/core/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/includes/Buffer.h>
+#include <isaacsim/core/includes/ScopedCudaDevice.h>
 
 #include <cmath>
 #include <string>
@@ -58,11 +58,12 @@ public:
         }
         else
         {
-            isaacsim::core::utils::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
+            isaacsim::core::includes::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
             uint64_t handle = db.inputs.dataPtr();
             state.mBuffer.resize(db.inputs.width() * db.inputs.height() * 3);
 
-            isaacsim::core::utils::ScopedCudaTextureObject srcTexObj(reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
+            isaacsim::core::includes::ScopedCudaTextureObject srcTexObj(
+                reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
             rgbaToRgbOgn(state.mBuffer.data(), srcTexObj, db.inputs.width(), db.inputs.height(), db.inputs.width() * 4);
             db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mBuffer.data());
             db.outputs.bufferSize() = static_cast<uint32_t>(state.mBuffer.sizeInBytes());
@@ -82,7 +83,7 @@ public:
     // }
 
 private:
-    isaacsim::core::utils::DeviceBuffer mBuffer;
+    isaacsim::core::includes::DeviceBuffer mBuffer;
 };
 REGISTER_OGN_NODE()
 }

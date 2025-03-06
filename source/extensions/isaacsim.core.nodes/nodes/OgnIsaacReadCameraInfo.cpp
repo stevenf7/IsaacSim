@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,10 +12,10 @@
 // clang-format on
 
 
-#include <isaacsim/core/utils/UsdUtilities.h>
+#include <isaacsim/core/includes/UsdUtilities.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/fabric/FabricUSD.h>
 
-#include <CoreNodes.h>
 #include <OgnIsaacReadCameraInfoDatabase.h>
 
 
@@ -44,7 +44,7 @@ public:
             CARB_LOG_WARN("Render product path is empty, skipping read camera info");
             return false;
         }
-        pxr::UsdPrim camera = isaacsim::core::utils::getCameraPrimFromRenderProduct(renderProductPath);
+        pxr::UsdPrim camera = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
 
         if (!camera.IsValid())
         {

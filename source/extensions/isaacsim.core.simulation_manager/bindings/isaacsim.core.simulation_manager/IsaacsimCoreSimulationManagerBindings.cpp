@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,7 +12,7 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <isaacsim/core/simulation_manager/SimulationManager.h>
+#include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <pybind11/functional.h>
 
 

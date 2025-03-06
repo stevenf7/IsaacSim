@@ -16,18 +16,17 @@
  */
 #pragma once
 
-#include "isaacsim/core/utils/BaseResetNode.h"
+#include "isaacsim/core/includes/BaseResetNode.h"
 
 #include <carb/Defines.h>
 #include <carb/Types.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/settings/ISettings.h>
 
-#include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
+#include <isaacsim/ros2/bridge/IRos2Bridge.h>
 #include <isaacsim/ros2/bridge/Ros2Factory.h>
 #include <omni/usd/UsdContextIncludes.h>
-
-#include <CoreNodes.h>
 //
 #include <omni/usd/UsdContext.h>
 
@@ -47,7 +46,7 @@ namespace bridge
  * of the internal ROS 2 node handle. Derived classes should implement specific
  * node functionality while relying on this base class for core ROS 2 operations.
  */
-class Ros2Node : public BaseResetNode
+class Ros2Node : public isaacsim::core::includes::BaseResetNode
 {
 
 public:

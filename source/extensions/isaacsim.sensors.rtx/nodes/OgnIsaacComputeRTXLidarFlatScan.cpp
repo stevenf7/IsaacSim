@@ -11,7 +11,7 @@
 // clang-format on
 
 #include "SensorNodeUtils.h"
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <GenericModelOutput.h>
 #include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>

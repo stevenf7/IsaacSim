@@ -11,11 +11,11 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <omni/fabric/FabricUSD.h>
 
-#include <IsaacSensor.h>
+#include <IPhysicsSensor.h>
 #include <OgnIsaacReadContactSensorDatabase.h>
 
 

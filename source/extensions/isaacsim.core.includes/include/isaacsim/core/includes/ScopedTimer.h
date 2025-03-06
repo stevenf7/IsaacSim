@@ -1,0 +1,95 @@
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto. Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
+
+#pragma once
+
+#include <chrono>
+#include <iostream>
+#include <string>
+
+namespace isaacsim
+{
+namespace core
+{
+namespace includes
+{
+
+/**
+ * @class ScopedTimer
+ * @brief RAII-style performance timer for code block measurement.
+ * @details
+ * Provides automatic timing of code blocks using RAII principles.
+ * Measures elapsed time between construction and destruction,
+ * automatically printing the results with a custom message.
+ *
+ * Features:
+ * - High-resolution timing using std::chrono::steady_clock
+ * - Automatic measurement of scoped blocks
+ * - Custom message support for timing identification
+ * - Millisecond precision output
+ *
+ * Example usage:
+ * @code
+ * {
+ *     ScopedTimer timer("Operation X");
+ *     // Code to measure...
+ * } // Timer automatically prints duration when scope ends
+ * @endcode
+ *
+ * @note Uses steady_clock for most reliable timing measurements
+ * @warning Output is sent to std::cout, which may affect timing of very short operations
+ */
+class ScopedTimer
+{
+public:
+    /**
+     * @brief Constructs a timer with an identifying message.
+     * @details
+     * Starts the timer immediately upon construction and stores the message
+     * for later output when the timer is destroyed.
+     *
+     * @param[in] message Descriptive message to identify this timing measurement
+     *
+     * @note The message will be printed with the elapsed time when the timer is destroyed
+     */
+    ScopedTimer(const std::string& message)
+    {
+        mMessage = message;
+        mStart = std::chrono::steady_clock::now();
+    }
+
+    /**
+     * @brief Destructor that prints the elapsed time.
+     * @details
+     * Automatically calculates and prints the elapsed time since construction.
+     * Output format: "<message> : <elapsed_time_ms>"
+     *
+     * @note Time is reported in milliseconds with floating-point precision
+     */
+    ~ScopedTimer()
+    {
+        mStop = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> diff = mStop - mStart;
+        std::cout << mMessage << " : " << diff.count() << std::endl;
+    }
+
+private:
+    /** @brief Start time point of the measurement */
+    std::chrono::time_point<std::chrono::steady_clock> mStart;
+
+    /** @brief Stop time point of the measurement */
+    std::chrono::time_point<std::chrono::steady_clock> mStop;
+
+    /** @brief Identifying message for this timing measurement */
+    std::string mMessage;
+};
+
+}
+}
+}

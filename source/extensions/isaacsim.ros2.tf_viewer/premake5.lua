@@ -22,7 +22,7 @@ for _, ros_distro in ipairs(ros2_ros_distroributions) do
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_runtime_cpp",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/console_bridge_vendor",
-        "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
+        "%{root}/source/extensions/isaacsim.ros2.tf_viewer/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/lib",
@@ -84,6 +84,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+    "%{root}/source/extensions/isaacsim.ros2.tf_viewer/include",
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",

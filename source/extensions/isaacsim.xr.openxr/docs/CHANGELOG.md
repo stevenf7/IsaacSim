@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.8] - 2025-03-05
+### Changed
+- Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines
+
 ## [0.2.7] - 2025-02-21
 ### Changed
 - Update style format and naming conventions in c++ code, add doxygen docstrings

@@ -12,7 +12,7 @@
 
 #include "SensorNodeUtils.h"
 
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/InterfaceUtils.h>
 
@@ -77,12 +77,12 @@ bool LidarConfigHelper::updateLidarConfig(const char* renderProductPath)
 {
     std::string curConfig = "";
     pxr::UsdAttribute configAttr =
-        isaacsim::core::utils::getCameraAttributeFromRenderProduct("sensorModelConfig", renderProductPath);
+        isaacsim::core::includes::getCameraAttributeFromRenderProduct("sensorModelConfig", renderProductPath);
     if (!configAttr.IsValid())
     {
         return false;
     }
-    isaacsim::core::utils::safeGetAttribute(configAttr, curConfig);
+    isaacsim::core::includes::safeGetAttribute(configAttr, curConfig);
 
     if (this->config == curConfig)
     {

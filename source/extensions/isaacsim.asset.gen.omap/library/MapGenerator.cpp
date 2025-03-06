@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "isaacsim/core/utils/ScopedTimer.h"
+#include "isaacsim/core/includes/ScopedTimer.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <isaacsim/asset/gen/omap/MapGenerator.h>

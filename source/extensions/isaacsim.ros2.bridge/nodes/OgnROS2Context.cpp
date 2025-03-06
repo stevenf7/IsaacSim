@@ -11,16 +11,16 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <isaacsim/core/utils/BaseResetNode.h>
-#include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
+#include <isaacsim/ros2/bridge/IRos2Bridge.h>
 #include <isaacsim/ros2/bridge/Ros2Factory.h>
 
-#include <CoreNodes.h>
 #include <OgnROS2ContextDatabase.h>
 
 using namespace isaacsim::ros2::bridge;
 
-class OgnROS2Context : public BaseResetNode
+class OgnROS2Context : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)

@@ -13,8 +13,8 @@
 
 #include <carb/BindingsPythonUtils.h>
 
+#include <isaacsim/asset/gen/omap/IOccupancyMap.h>
 #include <isaacsim/asset/gen/omap/MapGenerator.h>
-#include <isaacsim/asset/gen/omap/OccupancyMap.h>
 #include <omni/physx/IPhysx.h>
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>

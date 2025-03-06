@@ -57,15 +57,14 @@ defines { "NDEBUG" }
 filter {}
 
 repo_build.prebuild_link {
-    { "python/scripts/numpy", ext.target_dir .. "/isaacsim/core/utils/numpy" },
-    { "python/scripts/torch", ext.target_dir .. "/isaacsim/core/utils/torch" },
-    { "python/scripts/warp", ext.target_dir .. "/isaacsim/core/utils/warp" },
+    { "python/impl/numpy", ext.target_dir .. "/isaacsim/core/utils/numpy" },
+    { "python/impl/torch", ext.target_dir .. "/isaacsim/core/utils/torch" },
+    { "python/impl/warp", ext.target_dir .. "/isaacsim/core/utils/warp" },
     { "python/tests", ext.target_dir .. "/isaacsim/core/utils/tests" },
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },
 }
 
 repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir .. "/isaacsim/core/utils" },
-    { "python/scripts/*.py", ext.target_dir .. "/isaacsim/core/utils" },
+    { "python/impl/*.py", ext.target_dir .. "/isaacsim/core/utils" },
 }

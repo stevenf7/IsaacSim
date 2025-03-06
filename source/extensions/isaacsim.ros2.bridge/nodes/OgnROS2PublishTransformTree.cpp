@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <isaacsim/core/utils/PoseTree.h>
+#include <isaacsim/core/includes/PoseTree.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdUtils.h>
@@ -117,8 +117,8 @@ public:
             }
 
             // Reset this object
-            state.m_poseTree =
-                std::make_unique<isaacsim::core::utils::posetree::PoseTree>(state.m_stageId, state.m_dynamicControlPtr);
+            state.m_poseTree = std::make_unique<isaacsim::core::includes::posetree::PoseTree>(
+                state.m_stageId, state.m_dynamicControlPtr);
             state.m_poseTree->setParentPrimPath(state.m_parentPath, "world");
             state.m_poseTree->setTargetPrimPaths(state.m_targets);
 
@@ -258,7 +258,7 @@ private:
 
     long m_stageId;
     pxr::UsdStageRefPtr m_usdStage;
-    std::unique_ptr<isaacsim::core::utils::posetree::PoseTree> m_poseTree;
+    std::unique_ptr<isaacsim::core::includes::posetree::PoseTree> m_poseTree;
 };
 
 REGISTER_OGN_NODE()

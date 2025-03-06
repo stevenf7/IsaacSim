@@ -13,7 +13,7 @@
 #include <carb/renderer/RendererTypes.h>
 #include <carb/scenerenderer/SceneRenderer.h>
 
-#include <PrimitiveDrawingHelper.h>
+#include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 // #include <tbb/parallel_for.h>
 
 using namespace carb::scenerenderer;

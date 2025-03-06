@@ -16,10 +16,9 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/usd/UsdContextIncludes.h>
-
-#include <CoreNodes.h>
 //
 #include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdContext.h>

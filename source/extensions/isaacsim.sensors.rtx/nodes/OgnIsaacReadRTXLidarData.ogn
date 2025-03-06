@@ -9,7 +9,7 @@
             "uiName": "Isaac Read RTX Lidar Point Data"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacSensor",
+        "categories": "isaacRtxSensor",
         "inputs": {
             "exec": {
                 "type": "execution",

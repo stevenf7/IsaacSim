@@ -158,7 +158,7 @@ defines { "NDEBUG" }
 filter {}
 
 repo_build.prebuild_link {
-    { "python/scripts", ogn.python_target_path .. "/scripts" },
+    { "python/impl", ogn.python_target_path .. "/impl" },
     { "python/tests", ogn.python_tests_target_path },
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },

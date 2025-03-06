@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.6] - 2025-03-05
+### Changed
+- Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines
 
 ## [1.3.5] - 2025-01-21
 ### Changed

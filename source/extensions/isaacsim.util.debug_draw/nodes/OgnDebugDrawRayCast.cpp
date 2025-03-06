@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -17,11 +17,11 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
-#include <isaacsim/core/utils/BaseResetNode.h>
-#include <isaacsim/core/utils/Conversions.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/includes/Conversions.h>
+#include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 
 #include <OgnDebugDrawRayCastDatabase.h>
-#include <PrimitiveDrawingHelper.h>
 #include <iostream>
 
 namespace isaacsim
@@ -31,7 +31,7 @@ namespace util
 namespace debug_draw
 {
 
-class OgnDebugDrawRayCast : public BaseResetNode
+class OgnDebugDrawRayCast : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void setLineDrawing(isaacsim::util::debug_draw::OgnDebugDrawRayCast& state)
@@ -76,8 +76,8 @@ public:
 
         for (int i = 0; i < numRays; i++)
         {
-            auto beamOrigin = isaacsim::core::utils::conversions::asCarbFloat3(beamOrigins[i]);
-            auto beamEndPoint = isaacsim::core::utils::conversions::asCarbFloat3(beamEndPoints[i]);
+            auto beamOrigin = isaacsim::core::includes::conversions::asCarbFloat3(beamOrigins[i]);
+            auto beamEndPoint = isaacsim::core::includes::conversions::asCarbFloat3(beamEndPoints[i]);
             state.mStartPoints.push_back(beamOrigin);
             state.mEndPoints.push_back(beamEndPoint);
         }

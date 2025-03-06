@@ -157,7 +157,7 @@ bool SurfaceGripper::attemptClose(float additionalOffset)
     while (remainingAttempts)
     {
         remainingAttempts--;
-        carb::Float3 rayStart = isaacsim::core::utils::math::operator+(adjustedTransform.p, dir* additionalOffset);
+        carb::Float3 rayStart = isaacsim::core::includes::math::operator+(adjustedTransform.p, dir* additionalOffset);
         hit = m_physxQuery->raycastClosest(rayStart, dir, m_props.gripThreshold, result, false);
 
         if (hit)

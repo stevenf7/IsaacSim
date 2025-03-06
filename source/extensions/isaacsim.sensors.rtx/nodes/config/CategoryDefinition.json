@@ -1,6 +1,6 @@
 {
     "categoryDefinitions": {
-        "$description": "These categories are applied core isaac sim nodes",
-        "isaacSensor": "Nodes implementing isaac sim functionality for isaac sensors"
+        "$description": "These categories are applied to isaac sim rtx sensor nodes",
+        "isaacRtxSensor": "Nodes implementing isaac sim functionality for isaac rtx sensors"
     }
 }

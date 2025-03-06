@@ -11,9 +11,9 @@
 // clang-format on
 
 #include "SensorNodeUtils.h"
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <isaacsim/core/utils/Buffer.h>
+#include <isaacsim/core/includes/Buffer.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
 
@@ -235,7 +235,7 @@ public:
 
 
 private:
-    isaacsim::core::utils::HostBufferBase<float3> hostPcBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostPcBuffer;
 };
 
 REGISTER_OGN_NODE()

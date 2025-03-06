@@ -4,7 +4,7 @@
         "icon": "icons/isaac-sim.svg",        
         "description": "Node that reads out contact sensor data",
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacSensor",
+        "categories": "isaacPhysicsSensor",
         "metadata": {
             "uiName": "Isaac Read Contact Sensor Node"
         },

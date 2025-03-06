@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
 
 #include <OgnDifferentialControllerDatabase.h>
 #include <cmath>
@@ -23,7 +23,7 @@ namespace robot
 namespace wheeled_robots
 {
 
-class OgnDifferentialController : public BaseResetNode
+class OgnDifferentialController : public isaacsim::core::includes::BaseResetNode
 {
 
 public:
