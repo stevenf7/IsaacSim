@@ -40,13 +40,13 @@ class ROS2BridgeExtension(omni.ext.IExt):
         backup_ros_distro = carb.settings.get_settings().get_as_string("/exts/isaacsim.ros2.bridge/ros_distro")
         ros_distro = os.environ.get("ROS_DISTRO")
         if ros_distro is None:
-            carb.log_warn("ROS_DISTRO env var not found, Please source Humble, before enabling this extension")
+            carb.log_warn("ROS_DISTRO env var not found, Please source ROS before enabling this extension")
             omni.kit.app.get_app().print_and_log(f"Using backup internal ROS2 {backup_ros_distro} distro")
             ros_distro = backup_ros_distro
             os.environ["ROS_DISTRO"] = ros_distro
             # os.environ["RMW_IMPLEMENTATION"] = "rmw_fastrtps_cpp"
 
-        if ros_distro not in ["humble"]:
+        if ros_distro not in ["humble", "jazzy"]:
             carb.log_error(f"ROS_DISTRO of {ros_distro} is currently not supported")
             ext_manager.set_extension_enabled("isaacsim.ros2.bridge", False)
             return
@@ -94,6 +94,11 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 from humble.rclpy import Extension as rclpy_ext
 
                 self._rclpy_instance = rclpy_ext()
+            if ros_distro == "jazzy":
+                from jazzy.rclpy import Extension as rclpy_ext
+
+                self._rclpy_instance = rclpy_ext()
+
             if self._rclpy_instance is not None:
                 self._rclpy_instance.on_startup("isaacsim.ros2.bridge")
 

@@ -18,7 +18,7 @@ import omni.kit
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         ros_distro = os.environ.get("ROS_DISTRO")
-        if ros_distro in ["humble"] and os.path.join(f"{ros_distro}", "rclpy") in os.path.join(
+        if ros_distro in ["humble", "jazzy"] and os.path.join(f"{ros_distro}", "rclpy") in os.path.join(
             os.path.dirname(__file__)
         ):
             omni.kit.app.get_app().print_and_log("Attempting to load system rclpy")

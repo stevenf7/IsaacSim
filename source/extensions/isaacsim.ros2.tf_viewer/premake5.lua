@@ -1,60 +1,67 @@
 local ext = get_current_extension_info()
 project_ext(ext)
 
--- backend (ROS2 Humble)
-project_with_location("isaacsim.ros2.tf_viewer.humble")
-targetdir(ext.bin_dir)
-kind("SharedLib")
-language("C++")
-
-pic("On")
-staticruntime("Off")
-defines { "ROS2_BACKEND_HUMBLE" }
-add_files("impl", "backend")
-add_files("iface", "include")
-add_files("source", "%{root}/_build/target-deps/nv_ros2_humble/src/geometry2/tf2/src")
-includedirs {
-    "%{root}/_build/target-deps/nv_ros2_humble/include",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/console_bridge_vendor",
-    "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
-}
-libdirs {
-    "%{root}/_build/target-deps/nv_ros2_humble/lib",
-}
-links {
-    "rcutils",
+local ros2_ros_distroributions = {
+    "humble",
+    "jazzy",
 }
 
-filter { "system:linux" }
-disablewarnings { "error=pragmas" }
-buildoptions("-fvisibility=default")
-linkoptions { "-Wl,--export-dynamic" }
-filter { "system:windows" }
-includedirs {
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_c",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_interface",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/builtin_interfaces",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/std_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/geometry_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/tf2_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/tf2",
-}
-links {
-    "console_bridge",
-}
--- avoid inconsistent dll linkage
-defines { "TF2__VISIBILITY_CONTROL_H_" }
-buildoptions { "-DTF2_PUBLIC=" }
-filter {}
+for _, ros_distro in ipairs(ros2_ros_distroributions) do
+    project_with_location("isaacsim.ros2.tf_viewer." .. ros_distro)
+    targetdir(ext.bin_dir)
+    kind("SharedLib")
+    language("C++")
 
-filter { "configurations:debug" }
-defines { "_DEBUG" }
-filter { "configurations:release" }
-defines { "NDEBUG" }
-filter {}
+    pic("On")
+    staticruntime("Off")
+    defines { "ROS2_BACKEND_" .. string.upper(ros_distro) }
+    add_files("impl", "backend")
+    add_files("iface", "include")
+    add_files("source", "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/src/geometry2/tf2/src")
+    includedirs {
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_runtime_cpp",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/console_bridge_vendor",
+        "%{root}/source/extensions/isaacsim.ros2.tf_viewer",
+    }
+    libdirs {
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/lib",
+    }
+    links {
+        "rcutils",
+    }
+
+    filter { "system:linux" }
+    disablewarnings { "error=pragmas" }
+    buildoptions("-fvisibility=default")
+    linkoptions { "-Wl,--export-dynamic" }
+    filter { "system:windows" }
+    includedirs {
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_runtime_c",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_runtime_cpp",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_typesupport_interface",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rcutils",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/builtin_interfaces",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/std_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/geometry_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2",
+        "%{root}/source/extensions/isaacsim.ros2.bridge/include",
+    }
+    links {
+        "console_bridge",
+    }
+    -- avoid inconsistent dll linkage
+    defines { "TF2__VISIBILITY_CONTROL_H_" }
+    buildoptions { "-DTF2_PUBLIC=" }
+    filter {}
+
+    filter { "configurations:debug" }
+    defines { "_DEBUG" }
+    filter { "configurations:release" }
+    defines { "NDEBUG" }
+    filter {}
+end
 
 -- build the C++ plugin that will be loaded by the extension
 project_ext_plugin(ext, "isaacsim.ros2.tf_viewer.plugin")

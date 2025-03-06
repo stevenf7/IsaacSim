@@ -9,6 +9,7 @@
 // A simple executable to check if the users system is compatible with ROS 2
 
 #include <isaacsim/ros2/bridge/LibraryLoader.h>
+#include <isaacsim/ros2/bridge/Ros2Distro.h>
 #include <rcl/error_handling.h>
 #include <rcl/rcl.h>
 
@@ -25,7 +26,6 @@ int main(int argc, char* argv[])
         "rmw_implementation",
 #ifndef _WIN32
         "spdlog",
-        "tracetools",
 #endif
         "rcl_logging_spdlog",
         "rosidl_typesupport_c",
@@ -38,7 +38,15 @@ int main(int argc, char* argv[])
 
     char* rosDistro = getenv("ROS_DISTRO");
 
-    if (strcmp(rosDistro, "humble") == 0)
+    if (!rosDistro || !isaacsim::ros2::bridge::isRos2DistroSupported(rosDistro))
+    {
+        CARB_LOG_ERROR(
+            "Unsupported ROS_DISTRO '%s' - Supported distributions: Humble, Jazzy", rosDistro ? rosDistro : "null");
+        return EXIT_FAILURE;
+    }
+
+    const auto distro = isaacsim::ros2::bridge::stringToRos2Distro(rosDistro).value();
+    if (distro == isaacsim::ros2::bridge::Ros2Distro::eHumble)
     {
         lib_list.insert(lib_list.begin() + 5, std::string("ament_index_cpp"));
         lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));

@@ -1,4 +1,8 @@
 # Changelog
+## [4.3.0] - 2025-03-05
+### Changed
+- Add support for ROS2 Jazzy
+
 ## [4.2.5] - 2025-03-04
 ### Changed
 - Update to kit 107.1 and fix build issues
