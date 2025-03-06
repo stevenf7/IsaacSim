@@ -12,7 +12,7 @@
 // clang-format on
 
 
-#include <isaacsim/core/utils/Pose.h>
+#include <isaacsim/core/includes/Pose.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
@@ -74,7 +74,7 @@ public:
             }
         }
         usdrt::GfMatrix4d usdTransform =
-            isaacsim::core::utils::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
+            isaacsim::core::includes::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
         const double* sourceOrientation_i =
             usdTransform.ExtractRotationMatrix().ExtractRotation().GetImaginary().GetArray();
         const double sourceOrientation_r = usdTransform.ExtractRotationMatrix().ExtractRotation().GetReal();

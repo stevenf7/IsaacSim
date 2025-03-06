@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.3] - 2025-03-05
+### Changed
+- Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines
+
 ## [1.0.2] - 2025-03-04
 ### Changed
 - Update to kit 107.1 and fix build issues

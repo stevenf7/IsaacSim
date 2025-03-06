@@ -10,12 +10,12 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
-#include <isaacsim/core/utils/Math.h>
+#include <isaacsim/core/includes/Math.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <isaacsim/ros2/bridge/Ros2OgnUtils.h>
 #include <omni/fabric/FabricUSD.h>

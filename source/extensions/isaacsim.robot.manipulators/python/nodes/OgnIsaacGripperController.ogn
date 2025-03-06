@@ -4,7 +4,7 @@
         "description": "Isaac Sim Gripper Controller Node",
         "language": "Python",
         "categories": { 
-            "isaacSim":"Controller for Grippers"
+            "isaacRobotManipulators":"Controller for Grippers"
         },
         "metadata": {
             "uiName": "Isaac Gripper Controller Node"

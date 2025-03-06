@@ -5,7 +5,7 @@
         "description": "Node that reads out joint effort values",
         "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacSensor",
+        "categories": ["isaacPhysicsSensor"],
         "metadata": {
             "uiName": "Isaac Read Effort Node"
         },

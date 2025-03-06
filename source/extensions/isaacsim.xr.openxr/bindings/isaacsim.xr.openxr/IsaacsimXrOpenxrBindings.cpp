@@ -9,7 +9,7 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <isaacsim/xr/openxr/OpenXR.h>
+#include <isaacsim/xr/openxr/IOpenXR.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 #include <pybind11/pybind11.h>

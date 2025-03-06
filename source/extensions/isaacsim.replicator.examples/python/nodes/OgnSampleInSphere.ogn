@@ -3,6 +3,9 @@
         "version": 1,
         "description": "Assignes uniformly sampled location in a sphere.",
         "language": "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": ["isaacReplicatorExamples"],
+        "icon": "icons/isaac-sim.svg",
         "metadata": {
             "uiName": "Sample In Sphere"
         },

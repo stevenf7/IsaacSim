@@ -64,6 +64,9 @@ If present:
 - Must NOT contain header (`.h`) files directly in the nodes folder
 - Must NOT contain any `.cpp` files that do not correspond to an `.ogn` file (every `.cpp` file must have a matching `.ogn` file)
 
+- The category names defined in `CategoryDefinition.json` (e.g., "isaacReplicatorWriters") MUST match the "categories" tag in all associated `.ogn` files in that extension
+- Every `.ogn` file MUST have a "categories" tag - omitting this tag is an error
+
 
 ### plugins/ (Optional)
 If present:
@@ -89,11 +92,13 @@ If present:
 - C++ source files must:
   - Use PascalCase naming (start with a capital letter)
   - End with `.cpp` extension
+  - Files containing `CARB_PLUGIN_IMPL` MUST be named `PluginInterface.cpp`
 
 - Header files must:
   - Use PascalCase naming (start with a capital letter)
   - End with `.h` extension
+  - If the header file contains a `CARB_PLUGIN_INTERFACE`, its filename MUST start with a capital 'I'
 
 - Python files must:
   - End with `.py` extension
-  - Test files must start with `test_` prefix (in python/tests/ folder) 
+  - Test files must start with `test_` prefix (in python/tests/ folder)

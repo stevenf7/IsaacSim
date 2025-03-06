@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,11 +16,11 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
-#include <CoreNodes.h>
 #include <OgnIsaacRealTimeFactorDatabase.h>
 
 namespace isaacsim
@@ -30,7 +30,7 @@ namespace core
 namespace nodes
 {
 
-class OgnIsaacRealTimeFactor : public BaseResetNode
+class OgnIsaacRealTimeFactor : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)

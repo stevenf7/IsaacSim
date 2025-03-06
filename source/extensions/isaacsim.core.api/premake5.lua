@@ -8,22 +8,22 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_link {
     { "python/tests", ext.target_dir .. "/isaacsim/core/api/tests" },
-    { "python/scripts/world", ext.target_dir .. "/isaacsim/core/api/world" },
-    { "python/scripts/simulation_context", ext.target_dir .. "/isaacsim/core/api/simulation_context" },
-    { "python/scripts/scenes", ext.target_dir .. "/isaacsim/core/api/scenes" },
-    { "python/scripts/sensors", ext.target_dir .. "/isaacsim/core/api/sensors" },
-    { "python/scripts/objects", ext.target_dir .. "/isaacsim/core/api/objects" },
-    { "python/scripts/physics_context", ext.target_dir .. "/isaacsim/core/api/physics_context" },
-    { "python/scripts/articulations", ext.target_dir .. "/isaacsim/core/api/articulations" },
-    { "python/scripts/controllers", ext.target_dir .. "/isaacsim/core/api/controllers" },
-    { "python/scripts/loggers", ext.target_dir .. "/isaacsim/core/api/loggers" },
-    { "python/scripts/materials", ext.target_dir .. "/isaacsim/core/api/materials" },
-    { "python/scripts/robots", ext.target_dir .. "/isaacsim/core/api/robots" },
-    { "python/scripts/tasks", ext.target_dir .. "/isaacsim/core/api/tasks" },
+    { "python/impl/world", ext.target_dir .. "/isaacsim/core/api/world" },
+    { "python/impl/simulation_context", ext.target_dir .. "/isaacsim/core/api/simulation_context" },
+    { "python/impl/scenes", ext.target_dir .. "/isaacsim/core/api/scenes" },
+    { "python/impl/sensors", ext.target_dir .. "/isaacsim/core/api/sensors" },
+    { "python/impl/objects", ext.target_dir .. "/isaacsim/core/api/objects" },
+    { "python/impl/physics_context", ext.target_dir .. "/isaacsim/core/api/physics_context" },
+    { "python/impl/articulations", ext.target_dir .. "/isaacsim/core/api/articulations" },
+    { "python/impl/controllers", ext.target_dir .. "/isaacsim/core/api/controllers" },
+    { "python/impl/loggers", ext.target_dir .. "/isaacsim/core/api/loggers" },
+    { "python/impl/materials", ext.target_dir .. "/isaacsim/core/api/materials" },
+    { "python/impl/robots", ext.target_dir .. "/isaacsim/core/api/robots" },
+    { "python/impl/tasks", ext.target_dir .. "/isaacsim/core/api/tasks" },
 }
 
 repo_build.prebuild_copy {
-    { "python/scripts/*.py", ext.target_dir .. "/isaacsim/core/api" },
+    { "python/impl/*.py", ext.target_dir .. "/isaacsim/core/api" },
 }
 
 -- Build the C++ plugin that will be loaded by the extension.

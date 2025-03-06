@@ -9,7 +9,7 @@
             "uiName": "Isaac Compute RTX Lidar Flat Scan Node"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacSensor",
+        "categories": "isaacRtxSensor",
         "state": {"$comment": ["Internal state"]},
         "inputs": {
             "exec": {

@@ -9,8 +9,8 @@
 # Array or tuple values are accessed as numpy arrays so you probably need this import
 import omni.graph.core as og
 from isaacsim.core.nodes import BaseResetNode
+from isaacsim.sensors.physics.impl.effort_sensor import EffortSensor
 from isaacsim.sensors.physics.ogn.OgnIsaacReadEffortSensorDatabase import OgnIsaacReadEffortSensorDatabase
-from isaacsim.sensors.physics.scripts.effort_sensor import EffortSensor
 
 
 class OgnIsaacReadEffortSensorInternalState(BaseResetNode):

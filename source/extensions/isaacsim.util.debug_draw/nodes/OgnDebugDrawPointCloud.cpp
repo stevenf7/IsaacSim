@@ -17,10 +17,10 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 
 #include <OgnDebugDrawPointCloudDatabase.h>
-#include <PrimitiveDrawingHelper.h>
 #include <iostream>
 
 namespace isaacsim
@@ -30,7 +30,7 @@ namespace util
 namespace debug_draw
 {
 
-class OgnDebugDrawPointCloud : public BaseResetNode
+class OgnDebugDrawPointCloud : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void setPointDrawing(isaacsim::util::debug_draw::OgnDebugDrawPointCloud& state)

@@ -9,7 +9,7 @@
             "uiName": "Isaac Read Lidar Beams Node"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacRangeSensor",
+        "categories": "isaacPhysxSensor",
         "inputs": {
             "execIn": {
                 "type": "execution",

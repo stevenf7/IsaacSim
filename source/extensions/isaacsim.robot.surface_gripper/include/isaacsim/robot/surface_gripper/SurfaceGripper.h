@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "isaacsim/core/utils/Math.h"
+#include "isaacsim/core/includes/Math.h"
 
 #include <omni/physics/tensors/BodyTypes.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -25,7 +25,7 @@ namespace surface_gripper
 
 
 using namespace omni::isaac::dynamic_control;
-using namespace isaacsim::core::utils::math;
+using namespace isaacsim::core::includes::math;
 using omni::physics::tensors::Transform;
 
 /**

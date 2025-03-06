@@ -11,7 +11,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 #include "Ros2Impl.h"
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 #include "pxr/usd/usdPhysics/joint.h"
 #include "sensor_msgs/image_encodings.hpp"
 
@@ -854,26 +854,26 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
             if (jointPath)
             {
                 Ros2MessageInterfaceImpl::writeRosString(
-                    isaacsim::core::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(jointPath))),
+                    isaacsim::core::includes::GetName(stage->GetPrimAtPath(pxr::SdfPath(jointPath))),
                     jointStateMsg->name.data[j]);
             }
             if (static_cast<omni::physics::tensors::DofType>(dofTypes[j]) == omni::physics::tensors::DofType::eTranslation)
             {
                 jointStateMsg->position.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointPositions[j] * stageUnits, 10000.0); // m
+                    isaacsim::core::includes::math::roundNearest(jointPositions[j] * stageUnits, 10000.0); // m
                 jointStateMsg->velocity.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointVelocities[j] * stageUnits, 10000.0); // m/s
+                    isaacsim::core::includes::math::roundNearest(jointVelocities[j] * stageUnits, 10000.0); // m/s
                 jointStateMsg->effort.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointEfforts[j] * stageUnits, 10000.0); // N
+                    isaacsim::core::includes::math::roundNearest(jointEfforts[j] * stageUnits, 10000.0); // N
             }
             else
             {
                 jointStateMsg->position.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointPositions[j], 10000.0); // rad
+                    isaacsim::core::includes::math::roundNearest(jointPositions[j], 10000.0); // rad
                 jointStateMsg->velocity.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointVelocities[j], 10000.0); // rad/s
-                jointStateMsg->effort.data[j] =
-                    isaacsim::core::utils::math::roundNearest(jointEfforts[j] * stageUnits * stageUnits, 10000.0); // N*m
+                    isaacsim::core::includes::math::roundNearest(jointVelocities[j], 10000.0); // rad/s
+                jointStateMsg->effort.data[j] = isaacsim::core::includes::math::roundNearest(
+                    jointEfforts[j] * stageUnits * stageUnits, 10000.0); // N*m
             }
         }
     }

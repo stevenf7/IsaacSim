@@ -16,13 +16,13 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
-#include <isaacsim/core/utils/BaseResetNode.h>
-#include <isaacsim/core/utils/Conversions.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/includes/Conversions.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
-#include <CoreNodes.h>
 #include <DynamicControl.h>
 #include <OgnIsaacComputeOdometryDatabase.h>
 
@@ -33,10 +33,10 @@ namespace core
 namespace nodes
 {
 
-using isaacsim::core::utils::conversions::asGfRotation;
-using isaacsim::core::utils::conversions::asGfVec3d;
+using isaacsim::core::includes::conversions::asGfRotation;
+using isaacsim::core::includes::conversions::asGfVec3d;
 
-class OgnIsaacComputeOdometry : public BaseResetNode
+class OgnIsaacComputeOdometry : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)

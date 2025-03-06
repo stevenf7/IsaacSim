@@ -1,4 +1,4 @@
-// Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,9 +8,9 @@
 //
 
 
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
 
-#include <CoreNodes.h>
 #include <OgnIsaacRunOneSimulationFrameDatabase.h>
 
 namespace isaacsim
@@ -20,7 +20,7 @@ namespace core
 namespace nodes
 {
 
-class OgnIsaacRunOneSimulationFrame : public BaseResetNode
+class OgnIsaacRunOneSimulationFrame : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static bool compute(OgnIsaacRunOneSimulationFrameDatabase& db)

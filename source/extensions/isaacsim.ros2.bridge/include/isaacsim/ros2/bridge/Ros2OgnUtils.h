@@ -9,13 +9,13 @@
 
 #pragma once
 
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
 #include <carb/tokens/TokensUtils.h>
 
-#include <isaacsim/core/utils/Math.h>
+#include <isaacsim/core/includes/Math.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/graph/core/OgnHelpers.h>

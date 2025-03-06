@@ -1,10 +1,40 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import os
 import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
+
+
+# Add color code constants
+class Colors:
+    RESET = "\033[0m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+
+# Function to check if color should be disabled
+def should_disable_color():
+    """Check if color output should be disabled based on environment variables or terminal type."""
+    if "NO_COLOR" in os.environ or "TERM" in os.environ and os.environ["TERM"] == "dumb":
+        return True
+    return False
+
+
+# Function to apply color to text
+def colorize(text, color_code):
+    """Apply color to text if color is enabled."""
+    if should_disable_color():
+        return text
+    return f"{color_code}{text}{Colors.RESET}"
 
 
 class ExtensionValidator:
@@ -17,6 +47,7 @@ class ExtensionValidator:
         self.extension_path = Path(extension_path)
         self.extension_name = self.extension_path.name
         self.errors = []
+        self.warnings = []  # Add warnings list for less critical issues
         # Get the list of folders to ignore for this extension
         self.ignored_folders = self.IGNORED_FOLDERS.get(self.extension_name, [])
 
@@ -116,6 +147,120 @@ class ExtensionValidator:
             config_path = nodes_path / "config" / "CategoryDefinition.json"
             if not config_path.exists():
                 self.errors.append("Missing CategoryDefinition.json in nodes/config\n" f"Expected: {config_path}")
+            else:
+                # Parse CategoryDefinition.json to get category names
+                try:
+                    with open(config_path, "r") as f:
+                        category_def = json.load(f)
+
+                    # Extract category names from CategoryDefinition.json
+                    category_names = []
+                    if "categoryDefinitions" in category_def:
+                        # In this format, category names are the keys in the categoryDefinitions object
+                        # (excluding special keys like $description)
+                        for category_name, category_description in category_def["categoryDefinitions"].items():
+                            if not category_name.startswith("$"):  # Skip special keys like $description
+                                category_names.append(category_name)
+
+                    # Check if CategoryDefinition.json has any categories defined
+                    if not category_names:
+                        self.errors.append(
+                            f"No categories defined in CategoryDefinition.json\n"
+                            f"CategoryDefinition.json must define at least one category"
+                        )
+
+                    # Validate .ogn files have matching categories
+                    ogn_files = list(nodes_path.glob("Ogn*.ogn"))
+                    for ogn_file in ogn_files:
+                        with open(ogn_file, "r") as f:
+                            ogn_content = f.read()
+
+                        try:
+                            # Parse the .ogn file as JSON to check for required fields
+                            ogn_json = json.loads(ogn_content)
+
+                            # Get the node definition (first object inside the root object)
+                            if len(ogn_json) != 1:
+                                self.errors.append(
+                                    f"Invalid .ogn file structure in {ogn_file.name}\n"
+                                    f"Expected exactly one root object"
+                                )
+                                continue
+
+                            node_name = list(ogn_json.keys())[0]
+                            node_def = ogn_json[node_name]
+
+                            # Check for required fields
+                            required_fields = ["version", "description", "categories"]
+                            missing_fields = [field for field in required_fields if field not in node_def]
+
+                            if missing_fields:
+                                self.errors.append(
+                                    f"Missing required fields in {ogn_file.name}: {missing_fields}\n"
+                                    f"Every .ogn file must have the following fields: {required_fields}"
+                                )
+
+                            # Check that categoryDefinitions and icon are either both present or both absent
+                            has_category_definitions = "categoryDefinitions" in node_def
+                            has_icon = "icon" in node_def
+
+                            if has_category_definitions != has_icon:
+                                if has_category_definitions:
+                                    self.errors.append(
+                                        f"Missing 'icon' field in {ogn_file.name}\n"
+                                        f"When 'categoryDefinitions' is present, 'icon' must also be present"
+                                    )
+                                else:
+                                    self.errors.append(
+                                        f"Missing 'categoryDefinitions' field in {ogn_file.name}\n"
+                                        f"When 'icon' is present, 'categoryDefinitions' must also be present"
+                                    )
+
+                            # Check categories field
+                            if "categories" in node_def:
+                                categories_value = node_def["categories"]
+
+                                # Handle different formats of the categories field
+                                if isinstance(categories_value, str):
+                                    # Single category as a string
+                                    ogn_categories = [categories_value]
+                                elif isinstance(categories_value, list):
+                                    # Categories as an array
+                                    ogn_categories = categories_value
+                                elif isinstance(categories_value, dict):
+                                    # Categories as a dictionary - skip validation against CategoryDefinition.json
+                                    continue
+                                else:
+                                    self.errors.append(
+                                        f"Invalid 'categories' format in {ogn_file.name}\n"
+                                        f"Expected a string, array, or dictionary"
+                                    )
+                                    continue
+
+                                # Check if the .ogn file has at least one category
+                                if not ogn_categories:
+                                    self.errors.append(
+                                        f"Empty 'categories' in {ogn_file.name}\n"
+                                        f"Every .ogn file must have at least one category"
+                                    )
+                                    continue
+
+                                # Check if at least one category in the .ogn file matches a category in CategoryDefinition.json
+                                matched_categories = [cat for cat in ogn_categories if cat in category_names]
+                                if not matched_categories:
+                                    self.errors.append(
+                                        f"None of the categories {ogn_categories} in {ogn_file.name} match any category in CategoryDefinition.json\n"
+                                        f"At least one category must match. Categories in CategoryDefinition.json: {', '.join(category_names)}"
+                                    )
+
+                        except json.JSONDecodeError:
+                            self.errors.append(f"Invalid JSON in .ogn file: {ogn_file.name}")
+                            continue
+
+                except json.JSONDecodeError:
+                    self.errors.append(f"Invalid JSON in CategoryDefinition.json: {config_path}")
+                except Exception as e:
+                    self.errors.append(f"Error processing CategoryDefinition.json or .ogn files: {str(e)}")
 
             # Validate icons folder and svg file
             icons_path = nodes_path / "icons"
@@ -231,6 +376,36 @@ class ExtensionValidator:
                             "C++ source and header files must use PascalCase naming convention"
                         )
 
+                    # Check if header files with CARB_PLUGIN_INTERFACE start with 'I'
+                    if file_path.suffix == ".h":
+                        try:
+                            with open(file_path, "r", encoding="utf-8") as f:
+                                content = f.read()
+                                if "CARB_PLUGIN_INTERFACE" in content and not file_path.stem.startswith("I"):
+                                    self.errors.append(
+                                        f"Invalid interface naming: {file_path}\n"
+                                        "Header files containing CARB_PLUGIN_INTERFACE must start with a capital 'I'"
+                                    )
+                        except Exception as e:
+                            self.warnings.append(
+                                f"Could not read file {file_path} to check for CARB_PLUGIN_INTERFACE: {str(e)}"
+                            )
+
+                    # Check if C++ files with CARB_PLUGIN_IMPL are named PluginInterface.cpp
+                    if file_path.suffix == ".cpp":
+                        try:
+                            with open(file_path, "r", encoding="utf-8") as f:
+                                content = f.read()
+                                if "CARB_PLUGIN_IMPL" in content and file_path.name != "PluginInterface.cpp":
+                                    self.errors.append(
+                                        f"Invalid plugin implementation file name: {file_path}\n"
+                                        "Files containing CARB_PLUGIN_IMPL must be named PluginInterface.cpp"
+                                    )
+                        except Exception as e:
+                            self.warnings.append(
+                                f"Could not read file {file_path} to check for CARB_PLUGIN_IMPL: {str(e)}"
+                            )
+
     def validate_premake(self):
         premake_path = self.extension_path / "premake5.lua"
         if not premake_path.exists():
@@ -254,22 +429,38 @@ class ExtensionValidator:
         self.validate_file_naming()
         self.validate_premake()
 
-        return len(self.errors) == 0, self.errors
+        return len(self.errors) == 0, self.errors, self.warnings
 
 
 def validate_extension(path):
     validator = ExtensionValidator(path)
-    is_valid, errors = validator.validate()
+    is_valid, errors, warnings = validator.validate()
 
     if is_valid:
-        print(f"Extension at {path} is valid!")
+        print(colorize(f"✓ Extension at {path} is valid!", Colors.GREEN + Colors.BOLD))
+
+        # Print warnings if any
+        if warnings:
+            print(colorize("\nWarnings:", Colors.YELLOW + Colors.BOLD))
+            for warning in warnings:
+                for line in warning.split("\n"):
+                    print(colorize(f"- {line}" if line == warning.split("\n")[0] else f"  {line}", Colors.YELLOW))
+
         return True
     else:
-        print(f"Extension at {path} has the following errors:")
+        print(colorize(f"✗ Extension at {path} has the following errors:", Colors.RED + Colors.BOLD))
         for error in errors:
             # Split multi-line error messages and indent them properly
             for line in error.split("\n"):
-                print(f"- {line}" if line == error.split("\n")[0] else f"  {line}")
+                print(colorize(f"- {line}" if line == error.split("\n")[0] else f"  {line}", Colors.RED))
+
+        # Print warnings if any
+        if warnings:
+            print(colorize("\nWarnings:", Colors.YELLOW + Colors.BOLD))
+            for warning in warnings:
+                for line in warning.split("\n"):
+                    print(colorize(f"- {line}" if line == warning.split("\n")[0] else f"  {line}", Colors.YELLOW))
+
         return False
 
 
@@ -277,25 +468,47 @@ def validate_extensions_in_directory(directory_path, recursive=False):
     """Validate all extensions in a directory."""
     directory = Path(directory_path)
     if not directory.exists():
-        print(f"Directory {directory_path} does not exist.")
+        print(colorize(f"Directory {directory_path} does not exist.", Colors.RED))
         return False
 
     all_valid = True
+    valid_count = 0
+    invalid_count = 0
+    total_count = 0
 
     if recursive:
         # Find all directories that might be extensions
         for path in directory.glob("**/isaacsim.*"):
             if path.is_dir():
-                print(f"\nValidating extension: {path}")
-                if not validate_extension(path):
+                total_count += 1
+                print(colorize(f"\nValidating extension: {path}", Colors.CYAN + Colors.BOLD))
+                if validate_extension(path):
+                    valid_count += 1
+                else:
+                    invalid_count += 1
                     all_valid = False
     else:
         # Only check immediate subdirectories that start with isaacsim.
         for path in directory.glob("isaacsim.*"):
             if path.is_dir():
-                print(f"\nValidating extension: {path}")
-                if not validate_extension(path):
+                total_count += 1
+                print(colorize(f"\nValidating extension: {path}", Colors.CYAN + Colors.BOLD))
+                if validate_extension(path):
+                    valid_count += 1
+                else:
+                    invalid_count += 1
                     all_valid = False
+
+    # Print summary
+    print(colorize("\n=== Validation Summary ===", Colors.BOLD))
+    print(f"Total extensions checked: {colorize(str(total_count), Colors.BOLD)}")
+    print(f"Valid extensions: {colorize(str(valid_count), Colors.GREEN)}")
+    print(f"Invalid extensions: {colorize(str(invalid_count), Colors.RED)}")
+
+    if all_valid:
+        print(colorize("\n✓ All extensions are valid!", Colors.GREEN + Colors.BOLD))
+    else:
+        print(colorize(f"\n✗ {invalid_count} extension(s) have validation errors.", Colors.RED + Colors.BOLD))
 
     return all_valid
 
@@ -319,18 +532,45 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
         default="${root}/source/extensions",
         help="Source directory containing extensions (default: ${root}/source/extensions).",
     )
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored output.",
+    )
+
+    # Get the list of extensions to ignore from config
+    ignored_extensions = config.get("repo_check_extension_structure", {}).get("ignored_extensions", [])
+    parser.add_argument(
+        "--ignored-extensions",
+        nargs="+",
+        default=ignored_extensions,
+        help="List of extension names to ignore during validation.",
+    )
 
     return run_tool
 
 
 def run_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     """Run the extension structure validation tool."""
+    # Set color mode based on arguments
+    if hasattr(args, "no_color") and args.no_color:
+        os.environ["NO_COLOR"] = "1"
+
+    # Get the list of extensions to ignore
+    ignored_extensions = args.ignored_extensions if hasattr(args, "ignored_extensions") else []
+
     # If a specific extension path is provided, validate just that extension
     if hasattr(args, "extension_path") and args.extension_path:
         extension_path = args.extension_path
         if not os.path.exists(extension_path):
-            print(f"Error: Extension path {extension_path} does not exist.")
+            print(colorize(f"Error: Extension path {extension_path} does not exist.", Colors.RED + Colors.BOLD))
             return 1
+
+        # Check if this extension should be ignored
+        extension_name = Path(extension_path).name
+        if extension_name in ignored_extensions:
+            print(colorize(f"Skipping validation for ignored extension: {extension_name}", Colors.YELLOW))
+            return 0
 
         is_valid = validate_extension(extension_path)
         return 0 if is_valid else 1
@@ -340,16 +580,87 @@ def run_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     # Replace ${root} with the actual root path
     source_dir = source_dir.replace("${root}", config.get("root", "."))
 
-    print(f"Validating extensions in {source_dir}")
-    is_valid = validate_extensions_in_directory(source_dir, args.recursive if hasattr(args, "recursive") else False)
+    print(colorize(f"Validating extensions in {source_dir}", Colors.CYAN + Colors.BOLD))
 
-    return 0 if is_valid else 1
+    # Modify validate_extensions_in_directory to skip ignored extensions
+    directory = Path(source_dir)
+    if not directory.exists():
+        print(colorize(f"Directory {source_dir} does not exist.", Colors.RED))
+        return 1
+
+    all_valid = True
+    valid_count = 0
+    invalid_count = 0
+    ignored_count = 0
+    total_count = 0
+
+    recursive = args.recursive if hasattr(args, "recursive") else False
+
+    if recursive:
+        # Find all directories that might be extensions
+        for path in directory.glob("**/isaacsim.*"):
+            if path.is_dir():
+                total_count += 1
+                # Check if this extension should be ignored
+                if path.name in ignored_extensions:
+                    print(colorize(f"\nSkipping ignored extension: {path.name}", Colors.YELLOW))
+                    ignored_count += 1
+                    continue
+
+                print(colorize(f"\nValidating extension: {path}", Colors.CYAN + Colors.BOLD))
+                if validate_extension(path):
+                    valid_count += 1
+                else:
+                    invalid_count += 1
+                    all_valid = False
+    else:
+        # Only check immediate subdirectories that start with isaacsim.
+        for path in directory.glob("isaacsim.*"):
+            if path.is_dir():
+                total_count += 1
+                # Check if this extension should be ignored
+                if path.name in ignored_extensions:
+                    print(colorize(f"\nSkipping ignored extension: {path.name}", Colors.YELLOW))
+                    ignored_count += 1
+                    continue
+
+                print(colorize(f"\nValidating extension: {path}", Colors.CYAN + Colors.BOLD))
+                if validate_extension(path):
+                    valid_count += 1
+                else:
+                    invalid_count += 1
+                    all_valid = False
+
+    # Print summary
+    print(colorize("\n=== Validation Summary ===", Colors.BOLD))
+    print(f"Total extensions found: {colorize(str(total_count), Colors.BOLD)}")
+    print(f"Ignored extensions: {colorize(str(ignored_count), Colors.YELLOW)}")
+    print(f"Valid extensions: {colorize(str(valid_count), Colors.GREEN)}")
+    print(f"Invalid extensions: {colorize(str(invalid_count), Colors.RED)}")
+
+    if all_valid:
+        print(colorize("\n✓ All non-ignored extensions are valid!", Colors.GREEN + Colors.BOLD))
+    else:
+        print(colorize(f"\n✗ {invalid_count} extension(s) have validation errors.", Colors.RED + Colors.BOLD))
+
+    return 0 if all_valid else 1
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python check_extension_structure.py <extension_path>")
+    # Add command line argument for color
+    parser = argparse.ArgumentParser(description="Validate Isaac Sim extension structure")
+    parser.add_argument("extension_path", nargs="?", help="Path to the extension to validate")
+    parser.add_argument("--no-color", action="store_true", help="Disable colored output")
+
+    args = parser.parse_args()
+
+    # Set color mode based on arguments
+    if args.no_color:
+        os.environ["NO_COLOR"] = "1"
+
+    if not args.extension_path:
+        print(colorize("Usage: python check_extension_structure.py <extension_path>", Colors.YELLOW))
         sys.exit(1)
 
-    is_valid = validate_extension(sys.argv[1])
+    is_valid = validate_extension(args.extension_path)
     sys.exit(0 if is_valid else 1)

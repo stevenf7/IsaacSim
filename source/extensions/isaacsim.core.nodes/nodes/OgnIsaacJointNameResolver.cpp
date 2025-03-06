@@ -16,14 +16,14 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
-#include <isaacsim/core/utils/BaseResetNode.h>
-#include <isaacsim/core/utils/Conversions.h>
-#include <isaacsim/core/utils/UsdUtilities.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/includes/Conversions.h>
+#include <isaacsim/core/includes/UsdUtilities.h>
+#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
-#include <CoreNodes.h>
 #include <DynamicControl.h>
 #include <OgnIsaacJointNameResolverDatabase.h>
 #include <unordered_map>
@@ -35,7 +35,7 @@ namespace core
 namespace nodes
 {
 
-class OgnIsaacJointNameResolver : public BaseResetNode
+class OgnIsaacJointNameResolver : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
@@ -123,7 +123,7 @@ public:
             for (const pxr::UsdPrim& prim : pxr::UsdPrimRange(startPrim))
             {
 
-                std::string primNameOverride = isaacsim::core::utils::GetName(prim);
+                std::string primNameOverride = isaacsim::core::includes::GetName(prim);
                 std::string primName = prim.GetName();
                 if (primNameOverride != primName)
                 {

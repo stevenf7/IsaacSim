@@ -11,15 +11,15 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <omni/fabric/FabricUSD.h>
 #include <rangeSensorSchema/lidar.h>
 #include <rangeSensorSchema/rangeSensor.h>
 
 #include <OgnIsaacReadLidarPointCloudDatabase.h>
-#include <RangeSensorInterface.h>
 
 namespace isaacsim
 {
@@ -28,7 +28,7 @@ namespace core
 namespace nodes
 {
 
-class OgnIsaacReadLidarPointCloud : public BaseResetNode
+class OgnIsaacReadLidarPointCloud : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
@@ -108,7 +108,7 @@ public:
     {
         float maxRange = 100;
 
-        isaacsim::core::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), maxRange);
+        isaacsim::core::includes::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), maxRange);
 
         carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPrimPath);
         // float* theta = mLidarSensorInterface->getAzimuthData(mLidarPrimPath);

@@ -12,12 +12,12 @@
 // clang-format on
 
 #include "SensorNodeUtils.h"
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/tasking/ITasking.h>
 
-#include <isaacsim/core/utils/Buffer.h>
-#include <isaacsim/core/utils/ScopedCudaDevice.h>
+#include <isaacsim/core/includes/Buffer.h>
+#include <isaacsim/core/includes/ScopedCudaDevice.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
 #include <omni/sensors/lidar/LidarProfileTypes.h>
@@ -51,39 +51,39 @@ namespace rtx
 class OgnIsaacCreateRTXLidarScanBuffer : public LidarConfigHelper
 {
 private:
-    isaacsim::core::utils::HostBufferBase<float3> hostPcScanBuffer; // TODO pass out gpu or use managed memory.
-    isaacsim::core::utils::HostBufferBase<float> hostDistanceScanBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostIntensityScanBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostAzimuthScanBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostElevationScanBuffer;
-    isaacsim::core::utils::HostBufferBase<uint8_t> hostObjectIdScanBuffer;
-    isaacsim::core::utils::HostBufferBase<float3> hostVelocityScanBuffer;
-    isaacsim::core::utils::HostBufferBase<float3> hostNormalScanBuffer;
-    isaacsim::core::utils::HostBufferBase<int32_t> hostTimestampScanBuffer;
-    isaacsim::core::utils::HostBufferBase<uint32_t> hostEmitterIdScanBuffer;
-    isaacsim::core::utils::HostBufferBase<uint32_t> hostMaterialIdScanBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostPcScanBuffer; // TODO pass out gpu or use managed memory.
+    isaacsim::core::includes::HostBufferBase<float> hostDistanceScanBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostIntensityScanBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostAzimuthScanBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostElevationScanBuffer;
+    isaacsim::core::includes::HostBufferBase<uint8_t> hostObjectIdScanBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostVelocityScanBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostNormalScanBuffer;
+    isaacsim::core::includes::HostBufferBase<int32_t> hostTimestampScanBuffer;
+    isaacsim::core::includes::HostBufferBase<uint32_t> hostEmitterIdScanBuffer;
+    isaacsim::core::includes::HostBufferBase<uint32_t> hostMaterialIdScanBuffer;
 
     // when keep only positive distance is true, we ouput smaller arrays.
-    isaacsim::core::utils::HostBufferBase<uint32_t> hostIndexShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float3> hostPcShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostDistanceShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostIntensityShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostAzimuthShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float> hostElevationShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<uint8_t> hostObjectIdShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float3> hostVelocityShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<float3> hostNormalShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<int32_t> hostTimestampShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<uint32_t> hostEmitterIdShrunkBuffer;
-    isaacsim::core::utils::HostBufferBase<uint32_t> hostMaterialIdShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<uint32_t> hostIndexShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostPcShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostDistanceShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostIntensityShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostAzimuthShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float> hostElevationShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<uint8_t> hostObjectIdShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostVelocityShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> hostNormalShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<int32_t> hostTimestampShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<uint32_t> hostEmitterIdShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<uint32_t> hostMaterialIdShrunkBuffer;
 
-    isaacsim::core::utils::DeviceBufferBase<float3> pcBuffer; // 3d point cloud
-    isaacsim::core::utils::DeviceBufferBase<float> distanceBuffer;
-    isaacsim::core::utils::DeviceBufferBase<float> intensityBuffer;
-    isaacsim::core::utils::DeviceBufferBase<float> azimuthBuffer;
-    isaacsim::core::utils::DeviceBufferBase<float> elevationBuffer;
-    isaacsim::core::utils::DeviceBufferBase<int32_t> deltaTimesBuffer;
-    isaacsim::core::utils::DeviceBufferBase<int32_t> timestampBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float3> pcBuffer; // 3d point cloud
+    isaacsim::core::includes::DeviceBufferBase<float> distanceBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float> intensityBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float> azimuthBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float> elevationBuffer;
+    isaacsim::core::includes::DeviceBufferBase<int32_t> deltaTimesBuffer;
+    isaacsim::core::includes::DeviceBufferBase<int32_t> timestampBuffer;
 
     // TODOMTC EmitterProfile only need distanceCorrectionM, horOffsetM, vertOffsetM for GPU
 
@@ -255,7 +255,7 @@ public:
 
         // std::cout << "Before cuda calls  -------------------\n";
         {
-            isaacsim::core::utils::ScopedDevice scopedDev(cudaDeviceIndex);
+            isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
             if (db.inputs.outputTimestamp())
             {
                 state.deltaTimesBuffer.copyAsync(

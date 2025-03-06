@@ -9,7 +9,7 @@
             "uiName": "Isaac Create RTX Lidar Scan Buffer"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacSensor",
+        "categories": "isaacRtxSensor",
         "state": {"$comment": ["Internal state"]},
         "inputs": {
             "exec": {

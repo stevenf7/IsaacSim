@@ -11,6 +11,7 @@ add_files("impl", "compatibility")
 includedirs {
     "%{root}/_build/target-deps/nv_ros2_humble/include",
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
 }
 
 filter { "system:linux" }

@@ -17,7 +17,7 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/ros2/bridge/IRos2Bridge.h>
 #include <pybind11/numpy.h>
 
 CARB_BINDINGS("isaacsim.ros2.bridge.python")

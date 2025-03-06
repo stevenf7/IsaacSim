@@ -11,15 +11,15 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include "isaacsim/core/utils/UsdUtilities.h"
+#include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <isaacsim/core/utils/BaseResetNode.h>
+#include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <omni/fabric/FabricUSD.h>
 #include <rangeSensorSchema/lidar.h>
 #include <rangeSensorSchema/rangeSensor.h>
 
 #include <OgnIsaacReadLidarBeamsDatabase.h>
-#include <RangeSensorInterface.h>
 
 namespace isaacsim
 {
@@ -28,7 +28,7 @@ namespace core
 namespace nodes
 {
 
-class OgnIsaacReadLidarBeams : public BaseResetNode
+class OgnIsaacReadLidarBeams : public isaacsim::core::includes::BaseResetNode
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
@@ -140,13 +140,13 @@ public:
         auto& verticalFov = db.outputs.verticalFov();
         auto& verticalResolution = db.outputs.verticalResolution();
 
-        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
-        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
-        isaacsim::core::utils::safeGetAttribute(mRangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
-        isaacsim::core::utils::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
-        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
-        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetVerticalFovAttr(), verticalFov);
-        isaacsim::core::utils::safeGetAttribute(mLidarPrim.GetVerticalResolutionAttr(), verticalResolution);
+        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
+        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
+        isaacsim::core::includes::safeGetAttribute(mRangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
+        isaacsim::core::includes::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
+        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
+        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetVerticalFovAttr(), verticalFov);
+        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetVerticalResolutionAttr(), verticalResolution);
 
         size_t numBeamsTotal = numRows * numCols;
 

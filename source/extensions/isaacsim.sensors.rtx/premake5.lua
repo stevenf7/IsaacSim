@@ -26,6 +26,8 @@ includedirs {
     targetDepsDir .. "/generic_model_output/%{platform}/%{config}/include",
     targetDepsDir .. "/omni_client_library/include",
     targetDepsDir .. "/python/include",
+    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+    bin_dir .. "/extsbuild/omni.sensors.nv.common/include",
     targetDepsDir .. "/rtx_plugins/include",
 }
 libdirs {
@@ -71,15 +73,19 @@ project_ext_bindings {
 }
 add_files("bindings", "bindings/*.*")
 add_files("python", "python/*.py")
-add_files("python/scripts", "python/scripts/**.py")
+add_files("python/impl", "python/impl/**.py")
 add_files("python/tests", "python/tests/**.py")
+
+includedirs {
+    "%{root}/source/extensions/isaacsim.sensors.rtx/include",
+}
 
 add_ogn_dependencies(ogn)
 
 repo_build.prebuild_link {
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },
-    { "python/scripts", ogn.python_target_path .. "/scripts" },
+    { "python/impl", ogn.python_target_path .. "/impl" },
     { "python/tests", ogn.python_target_path .. "/tests" },
 }
 

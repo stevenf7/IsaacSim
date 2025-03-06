@@ -86,7 +86,7 @@ includedirs {
 }
 
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir .. "/isaacsim/sensors/physics/scripts" },
+    { "python/impl", ext.target_dir .. "/isaacsim/sensors/physics/impl" },
     { "python/tests", ext.target_dir .. "/isaacsim/sensors/physics/tests" },
     { "data", ext.target_dir .. "/data" },
     { "docs", ext.target_dir .. "/docs" },

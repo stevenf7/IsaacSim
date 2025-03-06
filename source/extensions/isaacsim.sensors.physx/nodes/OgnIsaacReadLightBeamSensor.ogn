@@ -4,7 +4,7 @@
         "icon": "icons/isaac-sim.svg",
         "description": "Node that reads out light beam sensor data",
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacRangeSensor",
+        "categories": "isaacPhysxSensor",
         "metadata": {
             "uiName": "Isaac Read LightBeam Sensor Node"
         },

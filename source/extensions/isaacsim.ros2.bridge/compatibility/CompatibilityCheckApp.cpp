@@ -8,7 +8,7 @@
 //
 // A simple executable to check if the users system is compatible with ROS 2
 
-#include <isaacsim/ros2/bridge/LibraryLoader.h>
+#include <isaacsim/core/includes/LibraryLoader.h>
 #include <isaacsim/ros2/bridge/Ros2Distro.h>
 #include <rcl/error_handling.h>
 #include <rcl/rcl.h>
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
         lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
     }
 
-    isaacsim::core::utils::MultiLibraryLoader g_backupLibLoader;
+    isaacsim::core::includes::MultiLibraryLoader g_backupLibLoader;
     std::string path = "";
     if (argc == 2)
     {
@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
         }
     }
     printf("Checking to see if RMW can be loaded:\n");
-    auto rcl = std::make_shared<isaacsim::core::utils::LibraryLoader>("rcl", path, false);
-    auto rcutils = std::make_shared<isaacsim::core::utils::LibraryLoader>("rcutils", path, false);
+    auto rcl = std::make_shared<isaacsim::core::includes::LibraryLoader>("rcl", path, false);
+    auto rcutils = std::make_shared<isaacsim::core::includes::LibraryLoader>("rcutils", path, false);
 
     rcl_init_options_t initOptions = rcl->callSymbolWithArg<rcl_init_options_t>("rcl_get_zero_initialized_init_options");
     auto allocator = rcutils->callSymbolWithArg<rcutils_allocator_t>("rcutils_get_default_allocator");
