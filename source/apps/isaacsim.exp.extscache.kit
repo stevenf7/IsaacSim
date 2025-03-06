@@ -174,8 +174,8 @@ folders = [
 # Base Isaac Sim Dependencies
 "omni.warp" = { version = "1.6.0", exact = true }
 "omni.warp.core" = { version = "1.6.0", exact = true }
-"omni.replicator.core" = { version = "1.11.35", exact = true }
-"omni.replicator.replicator_yaml" = { version = "2.0.10", exact = true }
+"omni.replicator.core" = {}
+"omni.replicator.replicator_yaml" = {}
 
 # Isaac Sim Sensors
 "omni.net" = {}
@@ -201,9 +201,9 @@ folders = [
 # "isaacsim.replicator.metropolis.utils" = { version = "0.0.6", exact = true }
 # "isaacsim.replicator.object" = { version = "0.3.21", exact = true }
 # "omni.anim.people" = { version = "0.6.7", exact = true }
-"omni.cuopt.examples" = { version = "1.2.0", exact = true }
-"omni.cuopt.service" = { version = "1.2.0", exact = true }
-"omni.cuopt.visualization" = { version = "1.2.0", exact = true }
+"omni.cuopt.examples" = {}
+"omni.cuopt.service" = {}
+"omni.cuopt.visualization" = {}
 
 # Livestreaming
 "omni.kit.livestream.core" = { version = "7.2.0", exact = true }
@@ -373,8 +373,8 @@ folders = [
 # "omni.usd.schema.sequence" = {}
 # "omni.vdb_timesample_editor" = {}
 # "omni.warehouse_creator" = {}
-# "semantics.schema.editor" = {}
-# "semantics.schema.property" = {}
+"semantics.schema.editor" = {}
+"semantics.schema.property" = {}
 
 # Windows only
 [dependencies."filter:platform"."windows-x86_64"]
@@ -394,14 +394,9 @@ folders = [
 # Kit SDK Version: 107.1.0+master.178078.6c86a0db.gl
 
 # Exact Version dependencies:
-# 	omni.cuopt.examples-1.2.0
-# 	omni.cuopt.service-1.2.0
-# 	omni.cuopt.visualization-1.2.0
 # 	omni.kit.livestream.core-7.2.0
 # 	omni.kit.livestream.webrtc-7.0.0
 # 	omni.kit.streamsdk.plugins-6.2.2
-# 	omni.replicator.core-1.11.35
-# 	omni.replicator.replicator_yaml-2.0.10
 # 	omni.sensors.nv.camera-0.21.0-coreapi
 # 	omni.sensors.nv.common-2.7.0-coreapi
 # 	omni.sensors.nv.ids-1.5.0-coreapi
@@ -425,6 +420,9 @@ enabled = [
 	"omni.anim.graph.schema-107.0.4",
 	"omni.anim.shared.core-107.0.0",
 	"omni.convexdecomposition-107.0.17",
+	"omni.cuopt.examples-1.2.0",
+	"omni.cuopt.service-1.2.0",
+	"omni.cuopt.visualization-1.2.0",
 	"omni.exporter.urdf-1.0.4",
 	"omni.graph.action-1.130.0",
 	"omni.graph.action_nodes-1.50.1",
@@ -521,6 +519,8 @@ enabled = [
 	"omni.physx.tensors-107.0.17",
 	"omni.physx.ui-107.0.17",
 	"omni.physx.vehicle-107.0.17",
+	"omni.replicator.core-1.11.36",
+	"omni.replicator.replicator_yaml-2.0.11",
 	"omni.services.core-1.9.0",
 	"omni.services.facilities.base-1.0.4",
 	"omni.services.pip_archive-0.14.1",
