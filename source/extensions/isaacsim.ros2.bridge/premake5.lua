@@ -29,98 +29,106 @@ includedirs {
 }
 filter {}
 
--- Humble stuff
-project_with_location("isaacsim.ros2.bridge.humble")
-targetdir(ext.bin_dir)
-kind("SharedLib")
-language("C++")
+-- Build the backend for each ROS distribution
+local ros_distributions = { "humble", "jazzy" }
 
-pic("On")
-staticruntime("Off")
-defines { "ROS2_BACKEND_HUMBLE" }
-add_files("impl", "library/backend")
-add_files("iface", "include")
-includedirs {
-    "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/cuda/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/omni_physics/%{config}/include",
-    "%{root}/_build/target-deps/nv_ros2_humble/include",
-    "%{root}/_build/target-deps/nlohmann_json/include",
-    "%{root}/source/extensions/isaacsim.ros2.bridge",
-    "%{root}/source/extensions/isaacsim.ros2.bridge/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-    "%{root}/_build/target-deps/omni_client_library/include",
-}
-libdirs {
-    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
-    extsbuild_dir .. "/omni.usd.core/bin",
-    "%{root}/_build/target-deps/nv_ros2_humble/lib",
-}
-links {
-    "rosidl_runtime_c",
-    "rcutils",
-    "rcl",
-    "rmw",
-    "tf2_msgs__rosidl_typesupport_c",
-    "tf2_msgs__rosidl_generator_c",
-    "geometry_msgs__rosidl_typesupport_c",
-    "geometry_msgs__rosidl_generator_c",
-    "nav_msgs__rosidl_typesupport_c",
-    "nav_msgs__rosidl_generator_c",
-    "std_msgs__rosidl_typesupport_c",
-    "std_msgs__rosidl_generator_c",
-    "rosgraph_msgs__rosidl_typesupport_c",
-    "rosgraph_msgs__rosidl_generator_c",
-    "sensor_msgs__rosidl_typesupport_c",
-    "sensor_msgs__rosidl_generator_c",
-    -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
-    -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
-}
+for _, ros_distro in ipairs(ros_distributions) do
+    project_with_location("isaacsim.ros2.bridge." .. ros_distro)
+    targetdir(ext.bin_dir)
+    kind("SharedLib")
+    language("C++")
 
-extra_usd_libs = { "usdPhysics" }
+    pic("On")
+    staticruntime("Off")
+    defines { "ROS2_BACKEND_" .. ros_distro:upper() }
+    add_files("impl", "library/backend")
+    add_files("iface", "include")
+    includedirs {
+        "%{root}/source/extensions/isaacsim.core.includes/include",
+        "%{root}/_build/target-deps/cuda/include",
+        "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
+        "%{root}/_build/target-deps/omni_physics/%{config}/include",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include",
+        "%{root}/_build/target-deps/nlohmann_json/include",
+        "%{root}/source/extensions/isaacsim.ros2.bridge",
+        "%{root}/source/extensions/isaacsim.ros2.bridge/include",
+        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/_build/target-deps/nv_ros2_"..ros_distro.."/include/type_description_interfaces",
+        "%{root}/_build/target-deps/nv_ros2_"..ros_distro.."/include/service_msgs",
+        "%{root}/_build/target-deps/nv_ros2_"..ros_distro.."/include/rosidl_dynamic_typesupport",
+    }
+    libdirs {
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
+        extsbuild_dir .. "/omni.usd.core/bin",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/lib",
+    }
+    links {
+        "rosidl_runtime_c",
+        "rcutils",
+        "rcl",
+        "rmw",
+        "tf2_msgs__rosidl_typesupport_c",
+        "tf2_msgs__rosidl_generator_c",
+        "geometry_msgs__rosidl_typesupport_c",
+        "geometry_msgs__rosidl_generator_c",
+        "nav_msgs__rosidl_typesupport_c",
+        "nav_msgs__rosidl_generator_c",
+        "std_msgs__rosidl_typesupport_c",
+        "std_msgs__rosidl_generator_c",
+        "rosgraph_msgs__rosidl_typesupport_c",
+        "rosgraph_msgs__rosidl_generator_c",
+        "sensor_msgs__rosidl_typesupport_c",
+        "sensor_msgs__rosidl_generator_c",
+        -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
+        -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
+    }
 
--- Begin OpenUSD
-add_usd(extra_usd_libs)
--- End OpenUSD
 
-filter { "system:linux" }
-disablewarnings { "error=pragmas" }
-includedirs {
-    "%{root}/_build/target-deps/python/include/python3.11",
-}
-buildoptions("-fvisibility=default")
-linkoptions { "-Wl,--export-dynamic" }
-filter { "system:windows" }
-includedirs {
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_c",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/builtin_interfaces",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/geometry_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/nav_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/sensor_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/tf2_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/vision_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/std_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosgraph_msgs",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_interface",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_typesupport_introspection_c",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rcl",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rcutils",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rmw",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/rcl_yaml_param_parser",
-    "%{root}/_build/target-deps/nv_ros2_humble/include/ackermann_msgs",
-}
-libdirs {
-    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
-}
-filter {}
+    extra_usd_libs = { "usdPhysics" }
 
-filter { "configurations:debug" }
-defines { "_DEBUG" }
-filter { "configurations:release" }
-defines { "NDEBUG" }
-filter {}
+    -- Begin OpenUSD
+    add_usd(extra_usd_libs)
+    -- End OpenUSD
+
+    filter { "system:linux" }
+    disablewarnings { "error=pragmas" }
+    includedirs {
+        "%{root}/_build/target-deps/python/include/python3.11",
+    }
+    buildoptions("-fvisibility=default")
+    linkoptions { "-Wl,--export-dynamic" }
+    filter { "system:windows" }
+    includedirs {
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_runtime_c",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/builtin_interfaces",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/geometry_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/nav_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/sensor_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/vision_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/std_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosgraph_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_typesupport_interface",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_typesupport_introspection_c",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rcl",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rcutils",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rmw",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rcl_yaml_param_parser",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/ackermann_msgs",
+    }
+    libdirs {
+        "%{root}/_build/target-deps/tbb/lib/intel64/vc14", -- Update for Jazzy if needed
+    }
+    filter {}
+
+    filter { "configurations:debug" }
+    defines { "_DEBUG" }
+    filter { "configurations:release" }
+    defines { "NDEBUG" }
+    filter {}
+end
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.ros2.bridge.plugin")
@@ -213,6 +221,7 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir .. "/isaacsim/ros2/bridge" },
     { "rclpy/*.py", ext.target_dir .. "/humble/rclpy" },
+    { "rclpy/*.py", ext.target_dir .. "/jazzy/rclpy" },
 }
 
 if os.target() == "linux" then
@@ -223,6 +232,12 @@ if os.target() == "linux" then
             "%{root}/_build/target-deps/nv_ros2_humble/local/lib/python3.11/dist-packages",
             ext.target_dir .. "/humble/rclpy",
         },
+    }
+    repo_build.prebuild_copy {
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/lib/lib**", ext.target_dir .. "/jazzy/lib" },
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/opt/libyaml_vendor/lib/**", ext.target_dir .. "/jazzy/lib" },
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/opt/spdlog_vendor/lib/**", ext.target_dir .. "/jazzy/lib" },
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/lib/python3.11/site-packages", ext.target_dir .. "/jazzy/rclpy" },
     }
 end
 

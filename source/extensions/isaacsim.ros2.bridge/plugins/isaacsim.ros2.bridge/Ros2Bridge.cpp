@@ -30,6 +30,7 @@
 #include <experimental/filesystem>
 #include <isaacsim/ros2/bridge/LibraryLoader.h>
 #include <isaacsim/ros2/bridge/Ros2Bridge.h>
+#include <isaacsim/ros2/bridge/Ros2Distro.h>
 #include <isaacsim/ros2/bridge/Ros2Factory.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
@@ -132,7 +133,6 @@ CARB_EXPORT void carbOnPluginStartup()
         "rmw_implementation",
 #ifndef _WIN32
         "spdlog",
-        "tracetools",
 #endif
         "rcl_logging_spdlog",
         "rosidl_typesupport_c",
@@ -180,7 +180,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     char* rosDistro = getenv("ROS_DISTRO");
 
-    if (strcmp(rosDistro, "humble") == 0)
+    if (isaacsim::ros2::bridge::stringToRos2Distro(rosDistro).value() == isaacsim::ros2::bridge::Ros2Distro::eHumble)
     {
         libraryList.insert(libraryList.begin() + 5, std::string("ament_index_cpp"));
         libraryList.insert(libraryList.begin() + 8, std::string("rcl_logging_interface"));
@@ -188,7 +188,7 @@ CARB_EXPORT void carbOnPluginStartup()
     }
 
     // Attempt to load a ROS 2 library. If it fails, force load internal Distro
-    if (rosDistro && strcmp(rosDistro, "humble") != 0)
+    if (!rosDistro || !isaacsim::ros2::bridge::isRos2DistroSupported(rosDistro))
     {
         CARB_LOG_ERROR("Unsupported ROS_DISTRO or ROS_DISTRO env var not specified: %s", rosDistro);
         return;

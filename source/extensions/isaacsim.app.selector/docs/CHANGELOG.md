@@ -1,4 +1,7 @@
 # Changelog
+## [2.9.0] - 2025-03-05
+### Changed
+- Add support for ROS2 Jazzy
 
 ## [2.8.9] - 2025-01-21
 ### Changed

@@ -11,11 +11,11 @@
 
 #include <carb/PluginUtils.h>
 
+#include <isaacsim/ros2/bridge/Ros2Distro.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <Tf2Factory.h>
 #include <TransformListener.h>
-
 
 const struct carb::PluginImplDesc pluginImplDesc = { "isaacsim.ros2.tf_viewer.plugin", "Transform Listener", "NVIDIA",
                                                      carb::PluginHotReload::eDisabled, "dev" };
@@ -32,7 +32,7 @@ class TransformListener : public ITransformListener, isaacsim::ros2::bridge::Ros
 public:
     bool initialize(const std::string& rosDistro)
     {
-        if (!(rosDistro == "humble"))
+        if (!isaacsim::ros2::bridge::isRos2DistroSupported(rosDistro))
         {
             CARB_LOG_ERROR("Unsupported ROS_DISTRO: %s", rosDistro.c_str());
             return false;
