@@ -1,7 +1,16 @@
 # Changelog
+## [14.1.0] - 2025-03-05
+### Added
+- OmniLidar USDAs corresponding to vendor-supplied lidar configurations
+- Support for adding RTX Lidar, Radar, Ultrasonic as OmniSensor prims
+- Tool to convert RTX Lidar configuration JSON to OmniLidar USDA
+
 ## [14.0.1] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines
+
+### Changed
+- Deprecated APIs for adding RTX Sensors as Camera prim
 
 ## [14.0.0] - 2025-03-05
 ### Changed

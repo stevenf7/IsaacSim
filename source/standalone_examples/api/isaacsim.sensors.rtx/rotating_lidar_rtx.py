@@ -50,7 +50,7 @@ my_carter = my_world.scene.add(
 
 # config_file_name="Example_Rotary"
 my_lidar = my_world.scene.add(
-    LidarRtx(prim_path="/World/Carter/chassis_link/front_hawk/right/lidar_rig/lidar", name="lidar")
+    LidarRtx(prim_path="/World/Carter/chassis_link/sensors/XT_32/PandarXT_32_10hz", name="lidar")
 )
 
 cube_1 = my_world.scene.add(

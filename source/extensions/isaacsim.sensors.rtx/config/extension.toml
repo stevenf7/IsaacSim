@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "14.0.1"
+version = "14.1.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -21,10 +21,11 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.nodes" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.robot.schema" = {}
+"isaacsim.storage.native" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.graph.action" = {}
 "omni.graph" = {}
-"isaacsim.storage.native" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.replicator.core" = {}
@@ -34,7 +35,7 @@ writeTarget.kit = true
 "omni.sensors.nv.radar" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # Needed for simulation to occur
-"isaacsim.robot.schema" = {}
+"omni.usd.schema.omni_sensors" = {}
 "omni.usd" = {} # needed for call to add aov
 "usdrt.scenegraph" = {}
 
@@ -82,7 +83,9 @@ stdoutFailPatterns.exclude = [
     "*Missing call to destroyResourceBindingSignature()*",
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
 ]
-
+stdoutFailPatterns.include = [
+    "*Could not open asset *exts/isaacsim.sensors.rtx/data/lidar_configs/* for reference*"
+]
 args = [
     '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
     "--/app/asyncRendering=0",
