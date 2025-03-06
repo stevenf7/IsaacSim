@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2023-2025, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,11 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import json
-import math
-import os
-import os.path
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Tuple
 
 import carb
 import numpy as np
@@ -20,10 +16,7 @@ import omni.graph.core as og
 import omni.replicator.core as rep
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
-from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_type_name, is_prim_path_valid
-from isaacsim.core.utils.stage import get_stage_units
-from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from omni.syntheticdata import sensors
 
 
@@ -36,71 +29,44 @@ class LidarRtx(BaseSensor):
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         config_file_name: Optional[str] = None,
-        firing_frequency: Optional[int] = None,
-        firing_dt: Optional[float] = None,
-        rotation_frequency: Optional[int] = None,
-        rotation_dt: Optional[float] = None,
-        valid_range: Optional[Tuple[float, float]] = None,
-        scan_type: Optional[str] = None,
-        elevation_range: Optional[Tuple[float, float]] = None,
-        range_resolution: Optional[float] = None,
-        range_accuracy: Optional[float] = None,
-        avg_power: float = None,
-        wave_length: float = None,
-        pulse_time: float = None,
+        asset_path: Optional[str] = None,
+        **kwargs,
     ) -> None:
-        if rotation_dt:
-            rotation_frequency = int(1.0 / rotation_dt)
+        DEPRECATED_ARGS = [
+            "firing_frequency",
+            "firing_dt",
+            "rotation_frequency",
+            "rotation_dt",
+            "valid_range",
+            "scan_type",
+            "elevation_range",
+            "range_resolution",
+            "range_accuracy",
+            "avg_power",
+            "wave_length",
+            "pulse_time",
+        ]
+        for arg in DEPRECATED_ARGS:
+            if arg in kwargs:
+                carb.log_warn(
+                    f"Argument {arg} is deprecated as of Isaac Sim 5.0 and will be removed in a future release."
+                )
 
-        if firing_dt:
-            firing_frequency = int(1.0 / firing_dt)
-
-        if elevation_range:
-            carb.log_warn(
-                "elevation_range is deprecated; Lidar config no longer supports upElevationDeg, downElevationDeg."
-            )
-
-        self._temp_data_file_path = None
         if is_prim_path_valid(prim_path):
-            if get_prim_type_name(prim_path) != "Camera" or not get_prim_at_path(prim_path).HasAPI(
-                IsaacRtxLidarSensorAPI
-            ):
-                raise Exception("prim path does not correspond to a Isaac Lidar prim.")
+            if get_prim_type_name(prim_path) == "Camera":
+                carb.log_warn(
+                    "Support for creating RTXLidar from Camera prims is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use OmniLidar prim instead."
+                )
+            elif get_prim_type_name(prim_path) != "OmniLidar":
+                raise Exception(f"Prim at {prim_path} is not an OmniLidar.")
+            elif not get_prim_at_path(prim_path).HasAPI("OmniSensorGenericLidarCoreAPI"):
+                raise Exception(f"Prim at {prim_path} does not have the OmniSensorGenericLidarCoreAPI schema.")
             carb.log_warn("Using existing RTX Lidar prim at path {}".format(prim_path))
         else:
-            if config_file_name is None:
-                file_index = 0
-                file_path = os.path.abspath(
-                    os.path.join(
-                        get_extension_path_from_name("isaacsim.sensors.rtx"),
-                        "data/lidar_configs/Temp_Config_" + str(file_index) + ".json",
-                    )
-                )
-                while os.path.isfile(file_path):
-                    file_index += 1
-                    file_path = os.path.abspath(
-                        os.path.join(
-                            get_extension_path_from_name("isaacsim.sensors.rtx"),
-                            "data/lidar_configs/Temp_Config_" + str(file_index) + ".json",
-                        )
-                    )
-                config_file_name = "Temp_Config_" + str(file_index)
-                self._temp_data_file_path = file_path
-                self._create_rtx_lidar_json_file(
-                    file_path=file_path,
-                    firing_frequency=firing_frequency,
-                    rotation_frequency=rotation_frequency,
-                    valid_range=valid_range,
-                    scan_type=scan_type,
-                    range_resolution=range_resolution,
-                    range_accuracy=range_accuracy,
-                    avg_power=avg_power,
-                    wave_length=wave_length,
-                    pulse_time=pulse_time,
-                )
             _, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name
+                "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name, asset_path=asset_path
             )
+
         self._render_product = rep.create.render_product(prim_path, resolution=(1, 1))
         self._render_product_path = self._render_product.path
         self._point_cloud_node_path = None
@@ -339,481 +305,4 @@ class LidarRtx(BaseSensor):
         if self._writer:
             self._writer.detach()
         self._writer = None
-        return
-
-    def _create_rtx_lidar_json_file(
-        self,
-        file_path: str,
-        firing_frequency: Optional[int] = None,
-        rotation_frequency: Optional[int] = None,
-        valid_range: Optional[Tuple[float, float]] = None,
-        scan_type: Optional[str] = None,
-        range_resolution: Optional[float] = None,
-        range_accuracy: Optional[float] = None,
-        avg_power: float = None,
-        wave_length: float = None,
-        pulse_time: float = None,
-    ):
-        file_name = file_path.split("/")[-1]
-        carb.log_info(f"writing to {file_path}")
-        config = dict()
-        config["class"] = "sensor"
-        config["type"] = "lidar"
-        config["name"] = str(file_name.split(".json")[0].replace("_", " "))
-        config["driveWorksId"] = "GENERIC"
-        config["profile"] = dict()
-        if scan_type:
-            config["profile"]["scanType"] = scan_type
-        else:
-            config["profile"]["scanType"] = "rotary"
-
-        config["profile"]["intensityProcessing"] = "normalization"
-        config["profile"]["rotationDirection"] = "CW"
-        config["profile"]["rayType"] = "IDEALIZED"
-
-        if valid_range:
-            nearRangeM = valid_range[0] / get_stage_units()
-            config["profile"]["nearRangeM"] = nearRangeM
-            if nearRangeM < 0.4:
-                config["profile"]["minDistBetweenEchos"] = nearRangeM
-            config["profile"]["farRangeM"] = valid_range[1] / get_stage_units()
-        else:
-            config["profile"]["nearRangeM"] = 1.0 / get_stage_units()
-            config["profile"]["farRangeM"] = 200.0 / get_stage_units()
-        if range_resolution:
-            config["profile"]["rangeResolutionM"] = range_resolution / get_stage_units()
-        else:
-            config["profile"]["rangeResolutionM"] = 0.004 / get_stage_units()
-        if range_accuracy:
-            config["profile"]["rangeAccuracyM"] = range_accuracy / get_stage_units()
-        else:
-            config["profile"]["rangeAccuracyM"] = 0.02 / get_stage_units()
-        if avg_power:
-            config["profile"]["avgPowerW"] = avg_power
-        else:
-            config["profile"]["avgPowerW"] = 0.002
-        if wave_length:
-            config["profile"]["wavelengthNm"] = wave_length / get_stage_units()
-        else:
-            config["profile"]["wavelengthNm"] = (9.03e-7 / get_stage_units()) * 1e9
-        if pulse_time:
-            config["profile"]["pulseTimeNs"] = pulse_time * 1e9
-        else:
-            config["profile"]["pulseTimeNs"] = 6e-9 * 1e9
-        if firing_frequency:
-            config["profile"]["reportRateBaseHz"] = firing_frequency
-        else:
-            config["profile"]["reportRateBaseHz"] = 36000
-        if rotation_frequency:
-            config["profile"]["scanRateBaseHz"] = rotation_frequency
-        else:
-            config["profile"]["scanRateBaseHz"] = 10
-        config["profile"]["minReflectance"] = 0.1
-        config["profile"]["minReflectanceRange"] = 120.0
-        config["profile"]["azimuthErrorMean"] = 0.0
-        config["profile"]["azimuthErrorStd"] = 0.015
-        config["profile"]["elevationErrorMean"] = 0.0
-        config["profile"]["elevationErrorStd"] = 0.0000
-        config["profile"]["maxReturns"] = 2
-        config["profile"]["numberOfEmitters"] = 128
-        config["profile"]["emitterStateCount"] = 1
-        config["profile"]["intensityMappingType"] = "LINEAR"
-        config["profile"]["emitterStates"] = [dict()]
-        config["profile"]["emitterStates"][0]["azimuthDeg"] = [
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -3.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            -1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-        ]
-        config["profile"]["emitterStates"][0]["elevationDeg"] = [
-            -15.0,
-            -14.19,
-            -13.39,
-            -12.58,
-            -11.77,
-            -10.97,
-            -10.16,
-            -9.35,
-            -8.55,
-            -7.74,
-            -6.94,
-            -6.13,
-            -5.32,
-            -4.52,
-            -3.71,
-            -2.9,
-            -2.1,
-            -1.29,
-            -0.48,
-            0.32,
-            1.13,
-            1.94,
-            2.74,
-            3.55,
-            4.35,
-            5.16,
-            5.97,
-            6.77,
-            7.58,
-            8.39,
-            9.19,
-            10.0,
-            -15.0,
-            -14.19,
-            -13.39,
-            -12.58,
-            -11.77,
-            -10.97,
-            -10.16,
-            -9.35,
-            -8.55,
-            -7.74,
-            -6.94,
-            -6.13,
-            -5.32,
-            -4.52,
-            -3.71,
-            -2.9,
-            -2.1,
-            -1.29,
-            -0.48,
-            0.32,
-            1.13,
-            1.94,
-            2.74,
-            3.55,
-            4.35,
-            5.16,
-            5.97,
-            6.77,
-            7.58,
-            8.39,
-            9.19,
-            10.0,
-            -15.0,
-            -14.19,
-            -13.39,
-            -12.58,
-            -11.77,
-            -10.97,
-            -10.16,
-            -9.35,
-            -8.55,
-            -7.74,
-            -6.94,
-            -6.13,
-            -5.32,
-            -4.52,
-            -3.71,
-            -2.9,
-            -2.1,
-            -1.29,
-            -0.48,
-            0.32,
-            1.13,
-            1.94,
-            2.74,
-            3.55,
-            4.35,
-            5.16,
-            5.97,
-            6.77,
-            7.58,
-            8.39,
-            9.19,
-            10.0,
-            -15.0,
-            -14.19,
-            -13.39,
-            -12.58,
-            -11.77,
-            -10.97,
-            -10.16,
-            -9.35,
-            -8.55,
-            -7.74,
-            -6.94,
-            -6.13,
-            -5.32,
-            -4.52,
-            -3.71,
-            -2.9,
-            -2.1,
-            -1.29,
-            -0.48,
-            0.32,
-            1.13,
-            1.94,
-            2.74,
-            3.55,
-            4.35,
-            5.16,
-            5.97,
-            6.77,
-            7.58,
-            8.39,
-            9.19,
-            10.0,
-        ]
-        config["profile"]["emitterStates"][0]["fireTimeNs"] = [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            3500,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            7000,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            10500,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            14000,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            17500,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            21000,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-            24500,
-        ]
-        with open(file_path, "w") as outfile:
-            json.dump(config, outfile)
-        return
-
-    def __del__(self):
-        if self._temp_data_file_path:
-            os.remove(self._temp_data_file_path)
         return

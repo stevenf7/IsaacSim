@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -29,19 +29,10 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
         self.my_world.scene.add_default_ground_plane()
-        assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
-        my_carter = self.my_world.scene.add(
-            SingleArticulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
-        )
-        self.xform = self.my_world.scene.add(
-            SingleXFormPrim(prim_path="/World/Carter/chassis_link/front_hawk/right/lidar_rig", name="rig")
-        )
+        self.xform = self.my_world.scene.add(SingleXFormPrim(prim_path="/lidar_rig", name="rig"))
         self._my_lidar = self.my_world.scene.add(
-            LidarRtx(prim_path="/World/Carter/chassis_link/front_hawk/right/lidar_rig/lidar", name="lidar")
+            LidarRtx(prim_path="/lidar_rig/lidar", name="lidar", config_file_name="Example_Rotary")
         )
-
         cube_1 = self.my_world.scene.add(
             VisualCuboid(
                 prim_path="/World/cube", name="cube_1", position=np.array([2, 2, 2.5]), scale=np.array([20, 0.2, 5])
