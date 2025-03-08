@@ -11,6 +11,7 @@ import omni.usd
 from .array_widget import ArrayPropertiesWidget
 from .custom_data import CustomDataWidget
 from .name_override import NameOverrideWidget
+from .namespace import NamespaceWidget
 
 
 class IsaacPropertyWidgets(omni.ext.IExt):
@@ -34,6 +35,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         )
         self._isaac_name_override = NameOverrideWidget(title="Name Override", collapsed=False)
         w.register_widget("prim", "isaac_name_override", self._isaac_name_override, False)
+        self._isaac_namespace = NamespaceWidget(title="Namespace", collapsed=False)
+        w.register_widget("prim", "isaac_namespace", self._isaac_namespace, False)
 
     def _unregister_widget(self):
         import omni.kit.window.property as p
@@ -42,5 +45,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         if w:
             w.unregister_widget("prim", "isaac_array")
             w.unregister_widget("prim", "isaac_custom_data")
+            w.unregister_widget("prim", "isaac_name_override")
+            w.unregister_widget("prim", "isaac_namespace")
             self._isaac_name_override.destroy()
+            self._isaac_namespace.destroy()
             self._registered = False

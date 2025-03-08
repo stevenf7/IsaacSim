@@ -1,7 +1,12 @@
 # Changelog
+
+## [4.3.2] - 2025-03-06
+### Changed
+- Update unit tests to use namespace override attribute from robot schema
+
 ## [4.3.1] - 2025-03-05
 ### Changed
-- Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines
+- Update extension codebase to adhere to isaac sim extension structure and file naming guidelines
 
 ## [4.3.0] - 2025-03-05
 ### Changed

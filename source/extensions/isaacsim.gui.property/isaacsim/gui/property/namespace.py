@@ -42,7 +42,7 @@ def Singleton(class_):
 
 
 @Singleton
-class NameOverrideWidget(UsdPropertiesWidget):
+class NamespaceWidget(UsdPropertiesWidget):
     def __init__(self, title: str, collapsed: bool = False):
         super().__init__(title, collapsed)
         from omni.kit.property.usd import PrimPathWidget
@@ -50,7 +50,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
         self._add_button_menus = []
         self._add_button_menus.append(
             PrimPathWidget.add_button_menu_entry(
-                "Isaac/NameOverride", show_fn=self._button_show, onclick_fn=self._button_onclick
+                "Isaac/Namespace", show_fn=self._button_show, onclick_fn=self._button_onclick
             )
         )
         self._old_payload = None
@@ -76,7 +76,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
                 prim = stage.GetPrimAtPath(item)
             elif isinstance(item, Usd.Prim):
                 prim = item
-            if not prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
+            if not prim.HasAttribute(robot_schema.Attributes.NAMESPACE.name):
                 return True
             else:
                 return False
@@ -87,10 +87,10 @@ class NameOverrideWidget(UsdPropertiesWidget):
         for path in payload:
             if path:
                 prim = stage.GetPrimAtPath(path)
-                if not prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
-                    prim.CreateAttribute(
-                        robot_schema.Attributes.NAME_OVERRIDE.name, Sdf.ValueTypeNames.String, True
-                    ).Set(prim.GetName())
+                if not prim.HasAttribute(robot_schema.Attributes.NAMESPACE.name):
+                    prim.CreateAttribute(robot_schema.Attributes.NAMESPACE.name, Sdf.ValueTypeNames.String, True).Set(
+                        prim.GetName()
+                    )
         self._request_refresh()
 
     def _request_refresh(self):
@@ -118,7 +118,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
             stage = self._payload.get_stage()
             if stage:
                 prim = stage.GetPrimAtPath(prim_path)
-                if prim and prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
+                if prim and prim.HasAttribute(robot_schema.Attributes.NAMESPACE.name):
                     return prim
         return None
 
@@ -144,18 +144,18 @@ class NameOverrideWidget(UsdPropertiesWidget):
         stage = self._payload.get_stage()
         if stage:
             prim = self._get_prim(self._payload.get_paths()[0])
-            if prim and prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
-                prim.RemoveProperty(robot_schema.Attributes.NAME_OVERRIDE.name)
+            if prim and prim.HasAttribute(robot_schema.Attributes.NAMESPACE.name):
+                prim.RemoveProperty(robot_schema.Attributes.NAMESPACE.name)
 
     def _filter_props_to_build(self, props):
         props = [
             prop
             for prop in props
-            if isinstance(prop, Usd.Attribute) and (prop.GetName() == robot_schema.Attributes.NAME_OVERRIDE.name)
+            if isinstance(prop, Usd.Attribute) and (prop.GetName() == robot_schema.Attributes.NAMESPACE.name)
         ]
         if props:
-            props[0].SetDisplayName("Name Override")
-            props[0].SetDocumentation("Name override for prim lookup in base name search")
+            props[0].SetDisplayName("Namespace")
+            props[0].SetDocumentation("Namespace of the prim in Isaac Sim")
         return props
 
     def build_items(self):
@@ -196,6 +196,6 @@ class NameOverrideWidget(UsdPropertiesWidget):
                     "",
                     style=button_style,
                     clicked_fn=self.on_remove_attr,
-                    identifier="remove_name_override",
-                    tooltip="Remove Name Override",
+                    identifier="remove_namespace",
+                    tooltip="Remove Namespace",
                 )

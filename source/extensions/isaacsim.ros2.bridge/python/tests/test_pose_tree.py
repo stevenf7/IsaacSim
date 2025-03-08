@@ -28,7 +28,7 @@ from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf
-from usd.schema.isaac import ISAAC_NAME_OVERRIDE
+from usd.schema.isaac import robot_schema
 
 from .common import add_cube, add_franka, get_qos_profile
 
@@ -178,7 +178,9 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
 
         cube2 = stage.GetPrimAtPath("/cube2/cube")
 
-        cube2.CreateAttribute(ISAAC_NAME_OVERRIDE, Sdf.ValueTypeNames.String, True).Set("Cube_override")
+        cube2.CreateAttribute(robot_schema.Attributes.NAME_OVERRIDE.name, Sdf.ValueTypeNames.String, True).Set(
+            "Cube_override"
+        )
 
         self._tf_data = None
         self._tf_data_prev = None

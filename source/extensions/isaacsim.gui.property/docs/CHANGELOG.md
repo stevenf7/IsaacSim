@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2025-03-06
+### Added
+- Introduced new widget for setting the isaac:namespace attribute
+
 ## [1.0.4] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings

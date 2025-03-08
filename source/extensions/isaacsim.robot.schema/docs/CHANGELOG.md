@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.2.0] - 2025-03-06
+### Added
+- Added support for isaac:namespace attribute
+
 ## [3.1.4] - 2025-03-04
 ### Changed
 - Update to kit 107.1 and fix build issues
