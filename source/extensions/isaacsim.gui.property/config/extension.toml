@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.4"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Property Extensions"
 description = "Adds Isaac Sim Specific Property Utils"
