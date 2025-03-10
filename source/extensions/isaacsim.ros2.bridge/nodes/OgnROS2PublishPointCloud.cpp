@@ -103,15 +103,15 @@ public:
         size_t height = 1;
         uint32_t pointStep = sizeof(GfVec3f);
         size_t width = 0;
-        size_t row_step = 0;
+        size_t rowStep = 0;
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
             if (db.inputs.dataPtr() != 0)
             {
                 width = db.inputs.bufferSize() / pointStep;
-                row_step = db.inputs.bufferSize();
-                size_t totalBytes = row_step;
+                rowStep = db.inputs.bufferSize();
+                size_t totalBytes = rowStep;
                 state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
                 // Data is on host as ptr, buffer size matches
                 memcpy(state.m_message->getBufferPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
@@ -120,8 +120,8 @@ public:
             else if (db.inputs.dataPtr() == 0)
             {
                 width = db.inputs.data.size();
-                row_step = pointStep * db.inputs.data.size();
-                size_t totalBytes = row_step;
+                rowStep = pointStep * db.inputs.data.size();
+                size_t totalBytes = rowStep;
                 state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
                 // Data is on host as ogn data, copy from cpu
                 memcpy(state.m_message->getBufferPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
@@ -133,8 +133,8 @@ public:
             if (db.inputs.dataPtr() != 0)
             {
                 width = db.inputs.bufferSize() / pointStep;
-                row_step = db.inputs.bufferSize();
-                // size_t totalBytes = row_step;
+                rowStep = db.inputs.bufferSize();
+                // size_t totalBytes = rowStep;
                 state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
 
                 isaacsim::core::includes::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());

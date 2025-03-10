@@ -45,13 +45,13 @@ namespace physx
 //             CARB_LOG_ERROR("Failed to acquire isaacsim::sensors::physx interface");
 //             return;
 //         }
-//         mStage = omni::usd::UsdContext::getContext()->getStage();
+//         m_stage = omni::usd::UsdContext::getContext()->getStage();
 //         pxr::VtArray<pxr::GfVec3f> colors;
 //         colors.push_back(pxr::GfVec3f(pointColor.x, pointColor.y, pointColor.z));
-//         pxr::UsdGeomCube occupiedCube = pxr::UsdGeomCube::Define(mStage, pxr::SdfPath(visualizerPath + "/cube"));
+//         pxr::UsdGeomCube occupiedCube = pxr::UsdGeomCube::Define(m_stage, pxr::SdfPath(visualizerPath + "/cube"));
 //         occupiedCube.CreateDisplayColorPrimvar().Set(colors);
 
-//         mInstancer = pxr::UsdGeomPointInstancer::Define(mStage, pxr::SdfPath(visualizerPath));
+//         mInstancer = pxr::UsdGeomPointInstancer::Define(m_stage, pxr::SdfPath(visualizerPath));
 //         pxr::SdfPathVector mSelectedPaths;
 //         mSelectedPaths.push_back(pxr::SdfPath(visualizerPath + "/cube"));
 //         mInstancer.GetPrototypesRel().SetTargets(mSelectedPaths);
@@ -99,7 +99,7 @@ namespace physx
 //     pxr::UsdGeomPointInstancer mInstancer;
 //     isaacsim::sensors::physx::RangeSensorInterface* mRangeSensorInterface;
 //     carb::Framework* framework;
-//     pxr::UsdStageWeakPtr mStage;
+//     pxr::UsdStageWeakPtr m_stage;
 // };
 }
 }

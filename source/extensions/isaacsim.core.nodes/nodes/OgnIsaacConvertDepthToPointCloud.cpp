@@ -60,21 +60,21 @@ public:
             uint64_t handle = db.inputs.dataPtr();
             isaacsim::core::includes::ScopedCudaTextureObject srcTexObj(
                 reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
-            state.mBuffer.resize(db.inputs.width() * db.inputs.height());
-            depthToPCLOgn(state.mBuffer.data(), srcTexObj, width, height, fx, fy, cx, cy);
+            state.m_buffer.resize(db.inputs.width() * db.inputs.height());
+            depthToPCLOgn(state.m_buffer.data(), srcTexObj, width, height, fx, fy, cx, cy);
         }
 
-        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mBuffer.data());
+        db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.m_buffer.data());
         db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
-        db.outputs.bufferSize() = static_cast<uint32_t>(state.mBuffer.sizeInBytes());
+        db.outputs.bufferSize() = static_cast<uint32_t>(state.m_buffer.sizeInBytes());
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         db.outputs.height() = 1;
-        db.outputs.width() = static_cast<uint32_t>(state.mBuffer.size());
+        db.outputs.width() = static_cast<uint32_t>(state.m_buffer.size());
         return true;
     }
 
 private:
-    isaacsim::core::includes::DeviceBufferBase<float3> mBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float3> m_buffer;
 };
 REGISTER_OGN_NODE()
 }

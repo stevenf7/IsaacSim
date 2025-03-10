@@ -48,7 +48,7 @@ namespace physx
 LidarSensor::LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::SyntheticData* syntheticDataPtr)
     : RangeSensorComponent(physxPtr)
 {
-    mSyntheticDataPtr = syntheticDataPtr;
+    m_syntheticDataPtr = syntheticDataPtr;
 }
 
 LidarSensor::~LidarSensor() = default;
@@ -63,306 +63,308 @@ void LidarSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorLidar& typedPrim = pxr::RangeSensorLidar(mPrim);
+    const pxr::RangeSensorLidar& typedPrim = pxr::RangeSensorLidar(m_prim);
 
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), mHorizontalFov);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetVerticalFovAttr(), mVerticalFov);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), mHorizontalResolution);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), mVerticalResolution);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetRotationRateAttr(), mRotationRate);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHighLodAttr(), mHighLod);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetYawOffsetAttr(), mYawOffset);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetEnableSemanticsAttr(), mEnableSemantics);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), m_horizontalFov);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetVerticalFovAttr(), m_verticalFov);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), m_horizontalResolution);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), m_verticalResolution);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetRotationRateAttr(), m_rotationRate);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHighLodAttr(), m_highLod);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetYawOffsetAttr(), m_yawOffset);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetEnableSemanticsAttr(), m_enableSemantics);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
-    mHorizontalResolution = pxr::GfClamp(mHorizontalResolution, 0.005f, 1024);
-    mHorizontalFov = pxr::GfClamp(mHorizontalFov, mHorizontalResolution, 360);
+    m_horizontalResolution = pxr::GfClamp(m_horizontalResolution, 0.005f, 1024);
+    m_horizontalFov = pxr::GfClamp(m_horizontalFov, m_horizontalResolution, 360);
 
-    mVerticalResolution = pxr::GfClamp(mVerticalResolution, 0.005f, 1024);
-    mVerticalFov = pxr::GfClamp(mVerticalFov, mVerticalResolution, 360);
-    mRotationRate = pxr::GfClamp(mRotationRate, 0, 1024);
-    mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
-    mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
+    m_verticalResolution = pxr::GfClamp(m_verticalResolution, 0.005f, 1024);
+    m_verticalFov = pxr::GfClamp(m_verticalFov, m_verticalResolution, 360);
+    m_rotationRate = pxr::GfClamp(m_rotationRate, 0, 1024);
+    m_minRange = pxr::GfClamp(m_minRange, 0, 1e9f);
+    m_maxRange = pxr::GfClamp(m_maxRange, m_minRange, 1e9f);
 
-    mMinDepth = mMinRange / mMetersPerUnit;
-    mMaxDepth = mMaxRange / mMetersPerUnit;
+    m_minDepth = m_minRange / m_metersPerUnit;
+    m_maxDepth = m_maxRange / m_metersPerUnit;
 
-    mMaxStepSize = static_cast<float>(1.0 / 30.0);
+    m_maxStepSize = static_cast<float>(1.0 / 30.0);
 
-    mCols = static_cast<int>(mHorizontalFov / mHorizontalResolution);
+    m_cols = static_cast<int>(m_horizontalFov / m_horizontalResolution);
 
     // Add one so that we have symmetry
     // Otherwise we are missing one angle for the Velodyne 16 case as 30/2 = 15
-    mRows = mHighLod ? static_cast<int>(mVerticalFov / mVerticalResolution) + 1 : 1;
+    m_rows = m_highLod ? static_cast<int>(m_verticalFov / m_verticalResolution) + 1 : 1;
 
-    if (mRotationRate != 0.0f && mRotationRate > 1.0 / mMaxStepSize)
+    if (m_rotationRate != 0.0f && m_rotationRate > 1.0 / m_maxStepSize)
     {
-        mRotationRate = static_cast<float>(1.0 / mMaxStepSize);
+        m_rotationRate = static_cast<float>(1.0 / m_maxStepSize);
     }
 
 
-    mColScanSpeed = mCols * mRotationRate;
-    mMaxColsPerTick = static_cast<int>(mColScanSpeed * mMaxStepSize);
+    m_colScanSpeed = m_cols * m_rotationRate;
+    m_maxColsPerTick = static_cast<int>(m_colScanSpeed * m_maxStepSize);
 
-    mDepth.assign(mRows * mCols, 0);
-    mHitPos.assign(mRows * mCols, { 0, 0, 0 });
-    mLinearDepth.assign(mRows * mCols, 0);
-    mBeamTime.assign(mRows * mCols, 0);
-    mIntensity.assign(mRows * mCols, 0);
-    mZenith.assign(mRows, 0.0f);
-    mAzimuth.assign(mCols, 0.0f);
+    m_depth.assign(m_rows * m_cols, 0);
+    m_hitPos.assign(m_rows * m_cols, { 0, 0, 0 });
+    m_linearDepth.assign(m_rows * m_cols, 0);
+    m_beamTime.assign(m_rows * m_cols, 0);
+    m_intensity.assign(m_rows * m_cols, 0);
+    m_zenith.assign(m_rows, 0.0f);
+    m_azimuth.assign(m_cols, 0.0f);
 
-    float startAzimuth = -0.5f * mHorizontalFov + mYawOffset;
-    float startZenith = -0.5f * mVerticalFov;
+    float startAzimuth = -0.5f * m_horizontalFov + m_yawOffset;
+    float startZenith = -0.5f * m_verticalFov;
 
-    for (int col = 0; col < mCols; col++)
+    for (int col = 0; col < m_cols; col++)
     {
-        mAzimuth[col] = static_cast<float>((startAzimuth + col * mHorizontalResolution) * M_PI / 180.0f);
+        m_azimuth[col] = static_cast<float>((startAzimuth + col * m_horizontalResolution) * M_PI / 180.0f);
     }
 
-    for (int row = 0; row < mRows; row++)
+    for (int row = 0; row < m_rows; row++)
     {
-        mZenith[row] = static_cast<float>((startZenith + row * mVerticalResolution) * M_PI / 180.0f);
+        m_zenith[row] = static_cast<float>((startZenith + row * m_verticalResolution) * M_PI / 180.0f);
     }
 
-    mAzimuthRange = { mAzimuth[0], mAzimuth[mCols - 1] };
-    mZenithRange = { mZenith[0], mZenith[mRows - 1] };
+    m_azimuthRange = { m_azimuth[0], m_azimuth[m_cols - 1] };
+    m_zenithRange = { m_zenith[0], m_zenith[m_rows - 1] };
 
     // High LOD false means 2D lidar
-    if (!mHighLod)
+    if (!m_highLod)
     {
-        mZenith[0] = 0.0f;
-        mZenithRange = { 0.0f, 0.0f };
+        m_zenith[0] = 0.0f;
+        m_zenithRange = { 0.0f, 0.0f };
     }
 
-    mLastAzimuth.assign(mMaxColsPerTick, 0.0f);
-    mLastDepth.assign(mRows * mMaxColsPerTick, 0);
-    mLastLinearDepth.assign(mRows * mMaxColsPerTick, 0);
-    mLastBeamTime.assign(mRows * mMaxColsPerTick, 0);
-    mLastHitPos.assign(mRows * mCols, { 0, 0, 0 });
-    mLastPrimData.assign(mRows * mCols, std::string());
-    mLastCol = 0;
-    mLastNumColsTicked = 0;
-    mRemainingTime = 0.0f;
-    mPrimData.assign(mRows * mCols, std::string());
+    m_lastAzimuth.assign(m_maxColsPerTick, 0.0f);
+    m_lastDepth.assign(m_rows * m_maxColsPerTick, 0);
+    m_lastLinearDepth.assign(m_rows * m_maxColsPerTick, 0);
+    m_lastBeamTime.assign(m_rows * m_maxColsPerTick, 0);
+    m_lastHitPos.assign(m_rows * m_cols, { 0, 0, 0 });
+    m_lastPrimData.assign(m_rows * m_cols, std::string());
+    m_lastCol = 0;
+    m_lastNumColsTicked = 0;
+    m_remainingTime = 0.0f;
+    m_primData.assign(m_rows * m_cols, std::string());
 }
 
 
 void LidarSensor::dumpData(int start, int stop, double dt)
 {
 
-    // Size of mLastDepth and mLastIntensity == mRows * mLastNumColsTicked
-    // Size of mDepth, and mIntensity == mRows * mCols
-    // Size of mAzimuth == mCols
-    // Size of mLastAzimuth == mLastNumColsTicked
+    // Size of m_lastDepth and m_lastIntensity == m_rows * m_lastNumColsTicked
+    // Size of m_depth, and m_intensity == m_rows * m_cols
+    // Size of m_azimuth == m_cols
+    // Size of m_lastAzimuth == m_lastNumColsTicked
 
     int colsToTick = stop - start;
-    int unwrappedSize = std::min(stop, mCols) - start;
-    int wrappedSize = std::max(0, stop - mCols);
+    int unwrappedSize = std::min(stop, m_cols) - start;
+    int wrappedSize = std::max(0, stop - m_cols);
 
-    mLastDepth.resize(mRows * colsToTick);
-    mLastHitPos.resize(mRows * colsToTick);
-    mLastLinearDepth.resize(mRows * colsToTick);
-    mLastBeamTime.resize(mRows * colsToTick);
-    mLastIntensity.resize(mRows * colsToTick);
-    mLastAzimuth.resize(colsToTick);
-    mLastPrimData.resize(mRows * colsToTick);
+    m_lastDepth.resize(m_rows * colsToTick);
+    m_lastHitPos.resize(m_rows * colsToTick);
+    m_lastLinearDepth.resize(m_rows * colsToTick);
+    m_lastBeamTime.resize(m_rows * colsToTick);
+    m_lastIntensity.resize(m_rows * colsToTick);
+    m_lastAzimuth.resize(colsToTick);
+    m_lastPrimData.resize(m_rows * colsToTick);
 
-    std::copy(mAzimuth.begin() + start, mAzimuth.begin() + (start + unwrappedSize), mLastAzimuth.begin());
-    std::copy(mDepth.begin() + start * mRows, mDepth.begin() + (start + unwrappedSize) * mRows, mLastDepth.begin());
-    std::copy(mHitPos.begin() + start * mRows, mHitPos.begin() + (start + unwrappedSize) * mRows, mLastHitPos.begin());
-
+    std::copy(m_azimuth.begin() + start, m_azimuth.begin() + (start + unwrappedSize), m_lastAzimuth.begin());
+    std::copy(m_depth.begin() + start * m_rows, m_depth.begin() + (start + unwrappedSize) * m_rows, m_lastDepth.begin());
     std::copy(
-        mBeamTime.begin() + start * mRows, mBeamTime.begin() + (start + unwrappedSize) * mRows, mLastBeamTime.begin());
+        m_hitPos.begin() + start * m_rows, m_hitPos.begin() + (start + unwrappedSize) * m_rows, m_lastHitPos.begin());
 
-    std::copy(mLinearDepth.begin() + start * mRows, mLinearDepth.begin() + (start + unwrappedSize) * mRows,
-              mLastLinearDepth.begin());
+    std::copy(m_beamTime.begin() + start * m_rows, m_beamTime.begin() + (start + unwrappedSize) * m_rows,
+              m_lastBeamTime.begin());
 
-    std::copy(mIntensity.begin() + start * mRows, mIntensity.begin() + (start + unwrappedSize) * mRows,
-              mLastIntensity.begin());
+    std::copy(m_linearDepth.begin() + start * m_rows, m_linearDepth.begin() + (start + unwrappedSize) * m_rows,
+              m_lastLinearDepth.begin());
 
-    std::copy(
-        mPrimData.begin() + start * mRows, mPrimData.begin() + (start + unwrappedSize) * mRows, mLastPrimData.begin());
+    std::copy(m_intensity.begin() + start * m_rows, m_intensity.begin() + (start + unwrappedSize) * m_rows,
+              m_lastIntensity.begin());
+
+    std::copy(m_primData.begin() + start * m_rows, m_primData.begin() + (start + unwrappedSize) * m_rows,
+              m_lastPrimData.begin());
 
     // We wrapped around
     if (wrappedSize > 0)
     {
-        std::copy(mAzimuth.begin(), mAzimuth.begin() + wrappedSize, mLastAzimuth.begin() + unwrappedSize);
-        std::copy(mDepth.begin(), mDepth.begin() + wrappedSize * mRows, mLastDepth.begin() + unwrappedSize * mRows);
-        std::copy(mHitPos.begin(), mHitPos.begin() + wrappedSize * mRows, mLastHitPos.begin() + unwrappedSize * mRows);
+        std::copy(m_azimuth.begin(), m_azimuth.begin() + wrappedSize, m_lastAzimuth.begin() + unwrappedSize);
+        std::copy(m_depth.begin(), m_depth.begin() + wrappedSize * m_rows, m_lastDepth.begin() + unwrappedSize * m_rows);
         std::copy(
-            mBeamTime.begin(), mBeamTime.begin() + wrappedSize * mRows, mLastBeamTime.begin() + unwrappedSize * mRows);
-        std::copy(mLinearDepth.begin(), mLinearDepth.begin() + wrappedSize * mRows,
-                  mLastLinearDepth.begin() + unwrappedSize * mRows);
-        std::copy(mIntensity.begin(), mIntensity.begin() + wrappedSize * mRows,
-                  mLastIntensity.begin() + unwrappedSize * mRows);
-        std::copy(
-            mPrimData.begin(), mPrimData.begin() + wrappedSize * mRows, mLastPrimData.begin() + unwrappedSize * mRows);
+            m_hitPos.begin(), m_hitPos.begin() + wrappedSize * m_rows, m_lastHitPos.begin() + unwrappedSize * m_rows);
+        std::copy(m_beamTime.begin(), m_beamTime.begin() + wrappedSize * m_rows,
+                  m_lastBeamTime.begin() + unwrappedSize * m_rows);
+        std::copy(m_linearDepth.begin(), m_linearDepth.begin() + wrappedSize * m_rows,
+                  m_lastLinearDepth.begin() + unwrappedSize * m_rows);
+        std::copy(m_intensity.begin(), m_intensity.begin() + wrappedSize * m_rows,
+                  m_lastIntensity.begin() + unwrappedSize * m_rows);
+        std::copy(m_primData.begin(), m_primData.begin() + wrappedSize * m_rows,
+                  m_lastPrimData.begin() + unwrappedSize * m_rows);
     }
 }
 
 void LidarSensor::preTick()
 {
     auto worldMat = isaacsim::core::includes::pose::computeWorldXformNoCache(
-        mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
+        m_stage, m_usdrtStage, m_prim.GetPath(), m_parentPrimTimeCode);
 
-    mFinalTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
-    mFinalRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
+    m_finalTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
+    m_finalRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
 }
 
 void LidarSensor::tick()
 {
     // Clear active semantic IDs each frame
-    mPrimData.assign(mRows * mCols, std::string());
+    m_primData.assign(m_rows * m_cols, std::string());
 
-    mLineDrawing->clear();
-    mPointDrawing->clear();
+    m_lineDrawing->clear();
+    m_pointDrawing->clear();
 
-    if (!mPxScene)
+    if (!m_pxScene)
     {
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
 
 
-    double elapsedTime = mTimeDelta;
-    bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
+    double elapsedTime = m_timeDelta;
+    bool zUp = pxr::UsdGeomGetStageUpAxis(m_stage) == pxr::UsdGeomTokens->z;
 
     // Every tick does a full scan
-    if (mRotationRate == 0.0f)
+    if (m_rotationRate == 0.0f)
     {
-        mLastNumColsTicked = mCols;
+        m_lastNumColsTicked = m_cols;
 
 
-        if (mEnableSemantics)
+        if (m_enableSemantics)
         {
-            if (mDrawPoints && mDrawLines)
+            if (m_drawPoints && m_drawLines)
             {
-                scan<true, true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, true, true>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
-            else if (mDrawPoints)
+            else if (m_drawPoints)
             {
-                scan<true, false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, false, true>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
-            else if (mDrawLines)
+            else if (m_drawLines)
             {
-                scan<false, true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, true, true>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
             else
             {
-                scan<false, false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, false, true>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
         }
         else
         {
-            if (mDrawPoints && mDrawLines)
+            if (m_drawPoints && m_drawLines)
             {
-                scan<true, true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, true, false>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
-            else if (mDrawPoints)
+            else if (m_drawPoints)
             {
-                scan<true, false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, false, false>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
-            else if (mDrawLines)
+            else if (m_drawLines)
             {
-                scan<false, true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, true, false>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
             else
             {
-                scan<false, false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, false, false>(0, m_cols, m_rows, m_cols, m_finalTranslation, m_finalRotation, zUp);
             }
         }
 
-        if (mFirstFrame)
+        if (m_firstFrame)
         {
-            mFirstFrame = false;
+            m_firstFrame = false;
         }
         else
         {
-            dumpData(0, mCols, elapsedTime);
+            dumpData(0, m_cols, elapsedTime);
 
-            mLastCol = 0;
+            m_lastCol = 0;
         }
     }
     else
     {
-        mRemainingTime += elapsedTime;
-        mLastNumColsTicked = static_cast<int>(mColScanSpeed * mRemainingTime);
+        m_remainingTime += elapsedTime;
+        m_lastNumColsTicked = static_cast<int>(m_colScanSpeed * m_remainingTime);
 
         // If too much time is remaining, cap the number of columns
-        if (mLastNumColsTicked > mMaxColsPerTick)
+        if (m_lastNumColsTicked > m_maxColsPerTick)
         {
-            mLastNumColsTicked = mMaxColsPerTick;
+            m_lastNumColsTicked = m_maxColsPerTick;
         }
 
-        float simulateTime = mLastNumColsTicked / mColScanSpeed;
-        mRemainingTime -= simulateTime;
+        float simulateTime = m_lastNumColsTicked / m_colScanSpeed;
+        m_remainingTime -= simulateTime;
 
 
-        // In the case where we capped the number of columns, we drop from mRemainingTime
-        // a multiple of mMaxStepSize
-        mRemainingTime = std::fmod(mRemainingTime, mMaxStepSize);
+        // In the case where we capped the number of columns, we drop from m_remainingTime
+        // a multiple of m_maxStepSize
+        m_remainingTime = std::fmod(m_remainingTime, m_maxStepSize);
 
         // Now scan the columns and dump the data
-        if (mEnableSemantics)
+        if (m_enableSemantics)
         {
-            if (mDrawPoints && mDrawLines)
+            if (m_drawPoints && m_drawLines)
             {
-                scan<true, true, true>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, true, true>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                       m_finalRotation, zUp);
             }
-            else if (mDrawPoints)
+            else if (m_drawPoints)
             {
-                scan<true, false, true>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, false, true>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                        m_finalRotation, zUp);
             }
-            else if (mDrawLines)
+            else if (m_drawLines)
             {
-                scan<false, true, true>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, true, true>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                        m_finalRotation, zUp);
             }
             else
             {
-                scan<false, false, true>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, false, true>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                         m_finalRotation, zUp);
             }
         }
         else
         {
-            if (mDrawPoints && mDrawLines)
+            if (m_drawPoints && m_drawLines)
             {
-                scan<true, true, false>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, true, false>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                        m_finalRotation, zUp);
             }
-            else if (mDrawPoints)
+            else if (m_drawPoints)
             {
-                scan<true, false, false>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, false, false>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                         m_finalRotation, zUp);
             }
-            else if (mDrawLines)
+            else if (m_drawLines)
             {
-                scan<false, true, false>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, true, false>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols, m_finalTranslation,
+                                         m_finalRotation, zUp);
             }
             else
             {
-                scan<false, false, false>(
-                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, false, false>(m_lastCol, m_lastCol + m_lastNumColsTicked, m_rows, m_cols,
+                                          m_finalTranslation, m_finalRotation, zUp);
             }
         }
 
-        if (mFirstFrame)
+        if (m_firstFrame)
         {
-            mFirstFrame = false;
+            m_firstFrame = false;
         }
         else
         {
-            dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
+            dumpData(m_lastCol, m_lastCol + m_lastNumColsTicked, simulateTime);
 
-            mLastCol = (mLastCol + mLastNumColsTicked) % mCols;
+            m_lastCol = (m_lastCol + m_lastNumColsTicked) % m_cols;
         }
     }
-    mSequenceNumber++;
+    m_sequenceNumber++;
 }
 
 

@@ -116,7 +116,7 @@ public:
     template <typename T>
     T callSymbol(std::string symbol)
     {
-        typedef T binding();
+        using binding = T();
         void* loadedSymbol = getSymbol<void*>(symbol.c_str());
 
         if (!loadedSymbol)
@@ -143,7 +143,7 @@ public:
     template <typename T, typename... Arguments>
     T callSymbolWithArg(std::string symbol, Arguments... args)
     {
-        typedef T binding(Arguments...);
+        using binding = T(Arguments...);
         void* loadedSymbol = getSymbol<void*>(symbol.c_str());
 
         if (!loadedSymbol)
@@ -186,7 +186,7 @@ public:
      */
     ~MultiLibraryLoader()
     {
-        loadedLibraries.clear();
+        m_loadedLibraries.clear();
     }
 
     /**
@@ -199,15 +199,15 @@ public:
      * @param[in] prefix Optional prefix to add to the library name
      * @return std::shared_ptr<LibraryLoader> Pointer to the created loader
      */
-    std::shared_ptr<LibraryLoader> LoadLibrary(const std::string library, std::string prefix = "")
+    std::shared_ptr<LibraryLoader> loadLibrary(const std::string library, std::string prefix = "")
     {
         auto loadedLib = std::make_shared<LibraryLoader>(library, prefix);
-        loadedLibraries.emplace_back(loadedLib);
+        m_loadedLibraries.emplace_back(loadedLib);
         return loadedLib;
     }
 
 private:
-    std::vector<std::shared_ptr<LibraryLoader>> loadedLibraries; /**< Collection of managed library loaders */
+    std::vector<std::shared_ptr<LibraryLoader>> m_loadedLibraries; /**< Collection of managed library loaders */
 };
 
 

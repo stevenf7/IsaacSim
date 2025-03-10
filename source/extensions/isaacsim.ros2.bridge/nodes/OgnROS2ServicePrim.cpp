@@ -130,7 +130,7 @@ enum class SdfDataType
 };
 
 
-std::map<std::string, SdfDataType> s_mapStringToSdfDataType = {
+std::map<std::string, SdfDataType> g_sMapStringToSdfDataType = {
     { "asset", SdfDataType::eAsset },
     { "asset[]", SdfDataType::eAssetArray },
     { "bool", SdfDataType::eBool },
@@ -240,7 +240,7 @@ std::map<std::string, SdfDataType> s_mapStringToSdfDataType = {
 };
 
 
-std::vector<std::string> s_vecStringArrayType = {
+std::vector<std::string> g_sVecStringArrayType = {
     "asset[]",      "bool[]",       "color3d[]",    "color3f[]",  "color3h[]",    "color4d[]",    "color4f[]",
     "color4h[]",    "double2[]",    "double3[]",    "double4[]",  "double[]",     "float2[]",     "float3[]",
     "float4[]",     "float[]",      "frame4d[]",    "half2[]",    "half3[]",      "half4[]",      "half[]",
@@ -940,9 +940,9 @@ private:
     pxr::VtValue valueTypeFromJson(const nlohmann::json& jsonObj, const pxr::TfToken& typeName)
     {
         auto name = typeName.GetString();
-        if (s_mapStringToSdfDataType.find(name) != s_mapStringToSdfDataType.end())
+        if (g_sMapStringToSdfDataType.find(name) != g_sMapStringToSdfDataType.end())
         {
-            return valueTypeFromJson(jsonObj, s_mapStringToSdfDataType[name]);
+            return valueTypeFromJson(jsonObj, g_sMapStringToSdfDataType[name]);
         }
         return pxr::VtValue();
     }
@@ -1543,9 +1543,9 @@ private:
                                    bool useDefaultValueIfEmpty = true)
     {
         auto name = typeName.GetString();
-        if (s_mapStringToSdfDataType.find(name) != s_mapStringToSdfDataType.end())
+        if (g_sMapStringToSdfDataType.find(name) != g_sMapStringToSdfDataType.end())
         {
-            return valueTypeToJson(vtValue, s_mapStringToSdfDataType[name], useDefaultValueIfEmpty);
+            return valueTypeToJson(vtValue, g_sMapStringToSdfDataType[name], useDefaultValueIfEmpty);
         }
         return nlohmann::json();
     }

@@ -225,11 +225,11 @@ public:
                 pxr::GfMatrix4d childTransform;
 
                 childTransform.SetIdentity();
-                childTransform.SetTranslateOnly(pxr::GfVec3d(
-                    transforms[i].translation_x, transforms[i].translation_y, transforms[i].translation_z));
+                childTransform.SetTranslateOnly(
+                    pxr::GfVec3d(transforms[i].translationX, transforms[i].translationY, transforms[i].translationZ));
                 childTransform.SetRotateOnly(pxr::GfQuatd(
-                    transforms[i].rotation_w,
-                    pxr::GfVec3d(transforms[i].rotation_x, transforms[i].rotation_y, transforms[i].rotation_z)));
+                    transforms[i].rotationW,
+                    pxr::GfVec3d(transforms[i].rotationX, transforms[i].rotationY, transforms[i].rotationZ)));
 
                 // Now compose the final child to usd parent transform
                 pxr::GfMatrix4d newChildTransform;
@@ -369,7 +369,7 @@ public:
                     pxr::SdfPathVector targets0, targets1;
                     joint.GetBody0Rel().GetTargets(&targets0);
                     joint.GetBody1Rel().GetTargets(&targets1);
-                    if (targets0.size() == 0 || targets1.size() == 0)
+                    if (targets0.empty() || targets1.empty())
                     {
                         continue;
                     }

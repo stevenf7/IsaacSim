@@ -67,7 +67,7 @@ public:
         auto messagePackage = std::string(db.inputs.messagePackage());
         auto messageSubfolder = std::string(db.inputs.messageSubfolder());
         auto messageName = std::string(db.inputs.messageName());
-        if (messagePackage.size() == 0 || messageSubfolder.size() == 0 || messageName.size() == 0)
+        if (messagePackage.empty() || messageSubfolder.empty() || messageName.empty())
         {
             db.logWarning("messagePackage [%s] or messageSubfolder [%s] or messageName [%s] empty, skipping compute",
                           messagePackage.c_str(), messageSubfolder.c_str(), messageName.c_str());
@@ -212,7 +212,7 @@ private:
         std::string messageSubfolder = std::string(db.inputs.messageSubfolder());
         std::string messageName = std::string(db.inputs.messageName());
 
-        if (messagePackage.size() == 0 || messageSubfolder.size() == 0 || messageName.size() == 0)
+        if (messagePackage.empty() || messageSubfolder.empty() || messageName.empty())
         {
             db.logWarning("messagePackage [%s] or messageSubfolder [%s] or messageName [%s] empty, skipping compute",
                           messagePackage.c_str(), messageSubfolder.c_str(), messageName.c_str());

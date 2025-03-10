@@ -40,10 +40,10 @@
 #include <map>
 #include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.sensors.physx.plugin", "Isaac Range Sensor", "NVIDIA",
-                                                  carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.physx.plugin", "Isaac Range Sensor", "NVIDIA",
+                                                    carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl,
+CARB_PLUGIN_IMPL(g_kPluginDesc,
                  isaacsim::sensors::physx::LidarSensorInterface,
                  isaacsim::sensors::physx::GenericSensorInterface,
                  isaacsim::sensors::physx::LightBeamSensorInterface)
@@ -68,11 +68,11 @@ omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
-omni::syntheticdata::SyntheticData* g_SyntheticDataInterface = nullptr;
-carb::tasking::ITasking* gTasking = nullptr;
+omni::syntheticdata::SyntheticData* g_syntheticDataInterface = nullptr;
+carb::tasking::ITasking* g_tasking = nullptr;
 
 
-std::unique_ptr<isaacsim::sensors::physx::RangeSensorManager> gRangeSensorManager;
+std::unique_ptr<isaacsim::sensors::physx::RangeSensorManager> g_rangeSensorManager;
 omni::physx::SubscriptionId g_stepSubscription;
 
 } // end of anonymous namespace
@@ -82,10 +82,10 @@ namespace lidar
 
 int CARB_ABI getNumCols(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->getNumCols();
@@ -105,10 +105,10 @@ int CARB_ABI getNumCols(const char* primPath)
 
 int CARB_ABI getNumRows(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -129,10 +129,10 @@ int CARB_ABI getNumRows(const char* primPath)
 
 int CARB_ABI getNumColsTicked(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -153,10 +153,10 @@ int CARB_ABI getNumColsTicked(const char* primPath)
 
 uint16_t* CARB_ABI getDepthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -177,10 +177,10 @@ uint16_t* CARB_ABI getDepthData(const char* primPath)
 
 float* CARB_ABI getLinearDepthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -201,10 +201,10 @@ float* CARB_ABI getLinearDepthData(const char* primPath)
 
 float* CARB_ABI getBeamTimeData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -224,10 +224,10 @@ float* CARB_ABI getBeamTimeData(const char* primPath)
 }
 uint8_t* CARB_ABI getIntensityData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -248,10 +248,10 @@ uint8_t* CARB_ABI getIntensityData(const char* primPath)
 
 float* CARB_ABI getZenithData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -272,10 +272,10 @@ float* CARB_ABI getZenithData(const char* primPath)
 
 float* CARB_ABI getAzimuthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -296,10 +296,10 @@ float* CARB_ABI getAzimuthData(const char* primPath)
 
 carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -320,10 +320,10 @@ carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 
 std::vector<std::string> CARB_ABI getPrimData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -345,10 +345,10 @@ std::vector<std::string> CARB_ABI getPrimData(const char* primPath)
 
 bool CARB_ABI isLidarSensor(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return true;
@@ -368,10 +368,10 @@ bool CARB_ABI isLidarSensor(const char* primPath)
 
 uint64_t CARB_ABI getSequenceNumber(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->getSequenceNumber();
@@ -391,10 +391,10 @@ uint64_t CARB_ABI getSequenceNumber(const char* primPath)
 
 carb::Float2 CARB_ABI getAzimuthRange(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->getAzimuthRange();
@@ -414,10 +414,10 @@ carb::Float2 CARB_ABI getAzimuthRange(const char* primPath)
 
 carb::Float2 CARB_ABI getZenithRange(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LidarSensor* sensor =
-            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->getZenithRange();
@@ -440,10 +440,10 @@ namespace lightbeam_sensor
 {
 bool CARB_ABI isLightBeamSensor(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return true;
@@ -463,10 +463,10 @@ bool CARB_ABI isLightBeamSensor(const char* primPath)
 
 float* CARB_ABI getLinearDepthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -487,10 +487,10 @@ float* CARB_ABI getLinearDepthData(const char* primPath)
 
 int CARB_ABI getNumRays(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -511,10 +511,10 @@ int CARB_ABI getNumRays(const char* primPath)
 
 carb::Float3* CARB_ABI getHitPosData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -523,22 +523,22 @@ carb::Float3* CARB_ABI getHitPosData(const char* primPath)
         else
         {
             CARB_LOG_ERROR("getHitPosData: Light Beam Sensor does not exist (%s)", primPath);
-            return 0;
+            return nullptr;
         }
     }
     else
     {
         CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
-        return 0;
+        return nullptr;
     }
 }
 
 uint8_t* CARB_ABI getBeamHitData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -547,22 +547,22 @@ uint8_t* CARB_ABI getBeamHitData(const char* primPath)
         else
         {
             CARB_LOG_ERROR("getBeamHitData: Light Beam Sensor does not exist (%s)", primPath);
-            return 0;
+            return nullptr;
         }
     }
     else
     {
         CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
-        return 0;
+        return nullptr;
     }
 }
 
 void CARB_ABI getTransformData(const char* primPath, omni::math::linalg::matrix4d& matrixOutput)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -583,10 +583,10 @@ void CARB_ABI getTransformData(const char* primPath, omni::math::linalg::matrix4
 
 carb::Float3* CARB_ABI getBeamOrigins(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -595,22 +595,22 @@ carb::Float3* CARB_ABI getBeamOrigins(const char* primPath)
         else
         {
             CARB_LOG_ERROR("getBeamOrigins: Light Beam Sensor does not exist (%s)", primPath);
-            return 0;
+            return nullptr;
         }
     }
     else
     {
         CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
-        return 0;
+        return nullptr;
     }
 }
 
 carb::Float3* CARB_ABI getBeamEndPoints(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::LightBeamSensor* sensor =
-            gRangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getLightBeamSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
 
         if (sensor)
         {
@@ -619,13 +619,13 @@ carb::Float3* CARB_ABI getBeamEndPoints(const char* primPath)
         else
         {
             CARB_LOG_ERROR("getBeamEndPoints: Light Beam Sensor does not exist (%s)", primPath);
-            return 0;
+            return nullptr;
         }
     }
     else
     {
         CARB_LOG_ERROR("Isaac Sensor Manager does not exist");
-        return 0;
+        return nullptr;
     }
 }
 
@@ -634,10 +634,10 @@ namespace generic
 {
 bool CARB_ABI isGenericSensor(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return true;
@@ -657,10 +657,10 @@ bool CARB_ABI isGenericSensor(const char* primPath)
 
 bool CARB_ABI sendNextBatch(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->sendNextBatch();
@@ -680,17 +680,17 @@ bool CARB_ABI sendNextBatch(const char* primPath)
 
 
 void CARB_ABI setNextBatchRays(const char* primPath,
-                               const float* azimuth_angles,
-                               const float* zenith_angles,
-                               const int sample_length)
+                               const float* azimuthAngles,
+                               const float* zenithAngles,
+                               const int sampleLength)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
-            sensor->setNextBatchRays(azimuth_angles, zenith_angles, sample_length);
+            sensor->setNextBatchRays(azimuthAngles, zenithAngles, sampleLength);
         }
         else
         {
@@ -703,15 +703,15 @@ void CARB_ABI setNextBatchRays(const char* primPath,
     }
 }
 
-void CARB_ABI setNextBatchOffsets(const char* primPath, const float* origin_offsets, const int sample_length)
+void CARB_ABI setNextBatchOffsets(const char* primPath, const float* originOffsets, const int sampleLength)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
-            sensor->setNextBatchOffsets(origin_offsets, sample_length);
+            sensor->setNextBatchOffsets(originOffsets, sampleLength);
         }
         else
         {
@@ -727,10 +727,10 @@ void CARB_ABI setNextBatchOffsets(const char* primPath, const float* origin_offs
 
 int CARB_ABI getNumSamplesTicked(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -751,10 +751,10 @@ int CARB_ABI getNumSamplesTicked(const char* primPath)
 
 uint16_t* CARB_ABI getDepthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -775,10 +775,10 @@ uint16_t* CARB_ABI getDepthData(const char* primPath)
 
 float* CARB_ABI getLinearDepthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -798,10 +798,10 @@ float* CARB_ABI getLinearDepthData(const char* primPath)
 }
 uint8_t* CARB_ABI getIntensityData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -822,10 +822,10 @@ uint8_t* CARB_ABI getIntensityData(const char* primPath)
 
 float* CARB_ABI getZenithData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -846,10 +846,10 @@ float* CARB_ABI getZenithData(const char* primPath)
 
 float* CARB_ABI getAzimuthData(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
 
@@ -870,10 +870,10 @@ float* CARB_ABI getAzimuthData(const char* primPath)
 
 carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 {
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         isaacsim::sensors::physx::GenericSensor* sensor =
-            gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+            g_rangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
             return sensor->getPointCloud().data();
@@ -903,18 +903,18 @@ void onAttach(long stageId, double metersPerUnit, void* data)
         return;
     }
 
-    if (gRangeSensorManager)
+    if (g_rangeSensorManager)
     {
-        gRangeSensorManager->initialize(g_stage);
-        gRangeSensorManager->initComponents();
+        g_rangeSensorManager->initialize(g_stage);
+        g_rangeSensorManager->initComponents();
     }
 }
 
 void onDetach(void* data)
 {
-    if (gRangeSensorManager)
+    if (g_rangeSensorManager)
     {
-        gRangeSensorManager->deleteAllComponents();
+        g_rangeSensorManager->deleteAllComponents();
     }
 }
 
@@ -925,17 +925,17 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
         return;
     }
 
-    if (gRangeSensorManager)
+    if (g_rangeSensorManager)
     {
-        gRangeSensorManager->tick(elapsedSecs);
+        g_rangeSensorManager->tick(elapsedSecs);
     }
 }
 
 void onStop(void* userData)
 {
-    if (gRangeSensorManager)
+    if (g_rangeSensorManager)
     {
-        gRangeSensorManager->onStop();
+        g_rangeSensorManager->onStop();
     }
 }
 
@@ -944,7 +944,7 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
     // CARB_LOG_INFO("++ Lidar: Prim Add: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
 
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
         pxr::UsdPrim addedPrim = g_stage->GetPrimAtPath(primPath);
         if (!addedPrim)
@@ -952,14 +952,14 @@ void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
             return;
         }
         // Add the root prim
-        gRangeSensorManager->onComponentAdd(addedPrim);
+        g_rangeSensorManager->onComponentAdd(addedPrim);
 
         // Check if it has any descendants that need to be added
         pxr::UsdPrimSubtreeRange range = addedPrim.GetDescendants();
         for (pxr::UsdPrimSubtreeRange::iterator iter = range.begin(); iter != range.end(); ++iter)
         {
             pxr::UsdPrim prim = *iter;
-            gRangeSensorManager->onComponentAdd(prim);
+            g_rangeSensorManager->onComponentAdd(prim);
         }
     }
 }
@@ -967,27 +967,27 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Change: %s of type %s\n", primPath,
     //    g_stage->GetPrimAtPath(pxr::SdfPath(primPath)).GetTypeName().GetString().c_str());
-    if (g_stage && gRangeSensorManager)
+    if (g_stage && g_rangeSensorManager)
     {
-        gRangeSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
+        g_rangeSensorManager->onComponentChange(g_stage->GetPrimAtPath(primOrPropertyPath));
     }
 }
 
 void onPhysicsStep(float dt, void* userData)
 {
     CARB_PROFILE_ZONE(0, "RangeSensor::onPhysicsStep");
-    if (gRangeSensorManager)
+    if (g_rangeSensorManager)
     {
-        gRangeSensorManager->onPhysicsStep(static_cast<double>(dt));
+        g_rangeSensorManager->onPhysicsStep(static_cast<double>(dt));
     }
 }
 
 void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
     // CARB_LOG_INFO("++ Lidar: Prim Remove: %s\n", primPath);
-    if (gRangeSensorManager)
+    if (g_rangeSensorManager)
     {
-        gRangeSensorManager->onComponentRemove(primPath);
+        g_rangeSensorManager->onComponentRemove(primPath);
     }
 }
 
@@ -1011,19 +1011,19 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    g_SyntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
-    if (!g_SyntheticDataInterface)
+    g_syntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
+    if (!g_syntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
         return;
     }
-    gTasking = carb::getCachedInterface<carb::tasking::ITasking>();
+    g_tasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
 
-    gRangeSensorManager =
-        std::make_unique<isaacsim::sensors::physx::RangeSensorManager>(g_physx, g_SyntheticDataInterface, gTasking);
+    g_rangeSensorManager =
+        std::make_unique<isaacsim::sensors::physx::RangeSensorManager>(g_physx, g_syntheticDataInterface, g_tasking);
 
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "Range Sensor Interface";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
@@ -1050,7 +1050,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
     RELEASE_OGN_NODES()
 
-    gRangeSensorManager.reset();
+    g_rangeSensorManager.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
     g_physx->unsubscribePhysicsOnStepEvents(g_stepSubscription);
 

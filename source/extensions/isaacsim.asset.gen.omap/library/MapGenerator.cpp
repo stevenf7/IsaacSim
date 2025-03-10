@@ -370,7 +370,7 @@ carb::Float3 MapGenerator::getMaxBound()
  */
 carb::Int3 MapGenerator::getDimensions()
 {
-    carb::Int3 num_cells = { 0, 0, 0 };
+    carb::Int3 numCells = { 0, 0, 0 };
 
     if (m_tree)
     {
@@ -380,15 +380,15 @@ carb::Int3 MapGenerator::getDimensions()
         carb::Float3 size = { max.x - min.x, max.y - min.y, max.z - min.z };
         // scale by the grid resolution to get the number of pixels
         // num_cells = meters / (meters/cell)
-        num_cells = { static_cast<int>(size.x / m_cellSize), static_cast<int>(size.y / m_cellSize),
-                      static_cast<int>(size.z / m_cellSize) };
+        numCells = { static_cast<int>(size.x / m_cellSize), static_cast<int>(size.y / m_cellSize),
+                     static_cast<int>(size.z / m_cellSize) };
     }
-    return num_cells;
+    return numCells;
 }
 
 // Direction vectors for 4-way connectivity (up, right, down, left)
-int row[] = { -1, 0, 1, 0 };
-int col[] = { 0, 1, 0, -1 };
+int g_row[] = { -1, 0, 1, 0 };
+int g_col[] = { 0, 1, 0, -1 };
 
 /**
  * Checks if a given cell position is valid and matches the target value
@@ -423,8 +423,8 @@ bool isSafe(float* buffer, carb::Int2 numCells, int x, int y, float target)
 void floodfill(float* buffer, carb::Int2 numCells, int sx, int sy, float replacement)
 {
     // Get the target value we're replacing at the start position
-    size_t start_index = sy * numCells.x + sx;
-    float target = buffer[start_index];
+    size_t startIndex = sy * numCells.x + sx;
+    float target = buffer[startIndex];
 
     // Stack for DFS - stores coordinates as (x,y) pairs
     std::stack<std::pair<int, int>> stack;
@@ -444,13 +444,13 @@ void floodfill(float* buffer, carb::Int2 numCells, int sx, int sy, float replace
         // Check all 4 neighboring cells
         for (int k = 0; k < 4; k++)
         {
-            int new_x = x + col[k];
-            int new_y = y + row[k];
+            int newX = x + g_col[k];
+            int newY = y + g_row[k];
 
             // If neighbor is valid and matches target, add to stack
-            if (isSafe(buffer, numCells, new_x, new_y, target))
+            if (isSafe(buffer, numCells, newX, newY, target))
             {
-                stack.push({ new_x, new_y });
+                stack.push({ newX, newY });
             }
         }
     }
@@ -476,16 +476,16 @@ std::vector<float> MapGenerator::getBuffer()
     // Get map bounds and dimensions
     carb::Float3 min = getMinBound();
     carb::Float3 max = getMaxBound();
-    carb::Int3 num_cells = getDimensions();
+    carb::Int3 numCells = getDimensions();
 
     // Validate grid size
-    if (num_cells.x * num_cells.y <= 0)
+    if (numCells.x * numCells.y <= 0)
     {
         return buffer;
     }
 
     // Initialize buffer with unknown values
-    buffer.resize(num_cells.x * num_cells.y);
+    buffer.resize(numCells.x * numCells.y);
     std::fill(buffer.begin(), buffer.end(), m_unknownValue);
 
     // Mark occupied cells in the buffer
@@ -495,7 +495,7 @@ std::vector<float> MapGenerator::getBuffer()
         {
             // Convert 3D world coordinates to 2D grid coordinates
             size_t index =
-                static_cast<size_t>(it.getCoordinate().y() / m_cellSize - min.y / m_cellSize) * num_cells.x +
+                static_cast<size_t>(it.getCoordinate().y() / m_cellSize - min.y / m_cellSize) * numCells.x +
                 static_cast<size_t>((-it.getCoordinate().x() + min.x + max.x) / m_cellSize - min.x / m_cellSize);
 
             buffer[index] = m_occupiedValue;
@@ -507,7 +507,7 @@ std::vector<float> MapGenerator::getBuffer()
                             static_cast<int>(m_inputOrigin.y / m_cellSize - min.y / m_cellSize) };
 
     // Fill known free space from robot's position
-    floodfill(buffer.data(), { num_cells.x, num_cells.y }, startPos.x, startPos.y, m_unoccupiedValue);
+    floodfill(buffer.data(), { numCells.x, numCells.y }, startPos.x, startPos.y, m_unoccupiedValue);
 
     return buffer;
 }

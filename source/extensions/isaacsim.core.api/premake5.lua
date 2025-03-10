@@ -34,7 +34,6 @@ language("C++")
 staticruntime("Off")
 add_files("impl", "plugins")
 add_files("iface", "include")
-defines { "OMPRIMUTILSEXPORT" }
 
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",

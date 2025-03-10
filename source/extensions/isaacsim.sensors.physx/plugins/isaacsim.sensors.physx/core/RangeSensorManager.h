@@ -67,9 +67,9 @@ public:
                        omni::syntheticdata::SyntheticData* syntheticDataPtr,
                        carb::tasking::ITasking* taskingPtr)
     {
-        mPhysxPtr = physxPtr;
-        mSyntheticDataPtr = syntheticDataPtr;
-        mTasking = taskingPtr;
+        m_physxPtr = physxPtr;
+        m_syntheticDataPtr = syntheticDataPtr;
+        m_tasking = taskingPtr;
     }
 
     /**
@@ -86,7 +86,7 @@ public:
      */
     void onPhysicsStep(const double& dt)
     {
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             if (component.second->mDoStart == true)
             {
@@ -100,12 +100,12 @@ public:
             }
             if (component.second->getEnabled())
             {
-                component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                component.second.get()->updateTimestamp(this->m_timeSeconds, dt, this->m_timeNanoSeconds);
                 component.second->onPhysicsStep();
             }
         }
-        this->mTimeSeconds += dt;
-        this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
+        this->m_timeSeconds += dt;
+        this->m_timeNanoSeconds = static_cast<int64_t>(m_timeSeconds * 1e9);
 
         // update timestep
     }
@@ -119,14 +119,14 @@ public:
      */
     void tick(double dt)
     {
-        std::unique_lock<std::mutex> lck(mComponentMtx);
+        std::unique_lock<std::mutex> lck(m_componentMtx);
         CARB_PROFILE_ZONE(0, "Isaac Range Sensor Tick");
-        if (mComponents.empty())
+        if (m_components.empty())
         {
             return;
         }
 
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             if (component.second->mDoStart == true)
             {
@@ -144,36 +144,36 @@ public:
             }
         }
         // No need to make threads if there is only one sensor.
-        if (mComponents.size() > 1)
+        if (m_components.size() > 1)
         {
-            mTasking->applyRange(mComponents.size(),
-                                 [&](size_t index)
-                                 {
-                                     auto it = mComponents.begin();
-                                     std::advance(it, index);
+            m_tasking->applyRange(m_components.size(),
+                                  [&](size_t index)
+                                  {
+                                      auto it = m_components.begin();
+                                      std::advance(it, index);
 
-                                     if (it->second.get()->getEnabled())
-                                     {
-                                         it->second.get()->updateTimestamp(
-                                             this->mTimeSeconds, dt, this->mTimeNanoSeconds);
-                                         it->second.get()->tick();
-                                     }
-                                 });
+                                      if (it->second.get()->getEnabled())
+                                      {
+                                          it->second.get()->updateTimestamp(
+                                              this->m_timeSeconds, dt, this->m_timeNanoSeconds);
+                                          it->second.get()->tick();
+                                      }
+                                  });
         }
         else
         {
-            for (auto& component : mComponents)
+            for (auto& component : m_components)
             {
                 if (component.second->getEnabled())
                 {
-                    component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                    component.second.get()->updateTimestamp(this->m_timeSeconds, dt, this->m_timeNanoSeconds);
                     component.second->tick();
                 }
             }
         }
 
 
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             if (component.second->getEnabled())
             {
@@ -181,8 +181,8 @@ public:
             }
         }
 
-        this->mTimeSeconds += dt;
-        this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
+        this->m_timeSeconds += dt;
+        this->m_timeNanoSeconds = static_cast<int64_t>(m_timeSeconds * 1e9);
     }
 
     /**
@@ -192,7 +192,7 @@ public:
     void onStop()
     {
         // PxScene can change after stop is pressed so reset mDoStart bool to force OnStart to run
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             component.second->mDoStart = true;
             component.second->onStop();
@@ -211,23 +211,23 @@ public:
 
         if (prim.IsA<pxr::RangeSensorLidar>())
         {
-            component = std::make_unique<LidarSensor>(mPhysxPtr, mSyntheticDataPtr);
+            component = std::make_unique<LidarSensor>(m_physxPtr, m_syntheticDataPtr);
         }
         else if (prim.IsA<pxr::RangeSensorGeneric>())
         {
-            component = std::make_unique<GenericSensor>(mPhysxPtr);
+            component = std::make_unique<GenericSensor>(m_physxPtr);
         }
         else if (prim.IsA<pxr::IsaacSensorIsaacLightBeamSensor>())
         {
-            component = std::make_unique<LightBeamSensor>(mPhysxPtr);
+            component = std::make_unique<LightBeamSensor>(m_physxPtr);
         }
 
         if (component)
         {
-            component->initialize(pxr::RangeSensorRangeSensor(prim), mStage);
+            component->initialize(pxr::RangeSensorRangeSensor(prim), m_stage);
             CARB_LOG_INFO("Create: Range Sensor %s with type: %s", prim.GetPath().GetString().c_str(),
                           component->getPrim().GetPrim().GetTypeName().GetString().c_str());
-            mComponents[prim.GetPath().GetString()] = std::move(component);
+            m_components[prim.GetPath().GetString()] = std::move(component);
         }
     }
 
@@ -249,9 +249,9 @@ public:
     {
         isaacsim::core::includes::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
         // update properties of this prim (onComponentChange)
-        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        if (m_components.find(prim.GetPath().GetString()) != m_components.end())
         {
-            mComponents[prim.GetPath().GetString()]->onComponentChange();
+            m_components[prim.GetPath().GetString()]->onComponentChange();
         }
     }
 
@@ -264,9 +264,9 @@ public:
     {
         if (prim)
         {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            if (m_components.find(prim.GetPath().GetString()) != m_components.end())
             {
-                return dynamic_cast<LidarSensor*>(mComponents[prim.GetPath().GetString()].get());
+                return dynamic_cast<LidarSensor*>(m_components[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;
@@ -281,9 +281,9 @@ public:
     {
         if (prim)
         {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            if (m_components.find(prim.GetPath().GetString()) != m_components.end())
             {
-                return dynamic_cast<GenericSensor*>(mComponents[prim.GetPath().GetString()].get());
+                return dynamic_cast<GenericSensor*>(m_components[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;
@@ -298,9 +298,9 @@ public:
     {
         if (prim)
         {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            if (m_components.find(prim.GetPath().GetString()) != m_components.end())
             {
-                return dynamic_cast<LightBeamSensor*>(mComponents[prim.GetPath().GetString()].get());
+                return dynamic_cast<LightBeamSensor*>(m_components[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;
@@ -310,17 +310,17 @@ private:
     /**
      * @brief Pointer to the PhysX interface for physics simulation
      */
-    omni::physx::IPhysx* mPhysxPtr = nullptr;
+    omni::physx::IPhysx* m_physxPtr = nullptr;
 
     /**
      * @brief Pointer to the synthetic data interface for additional sensor data
      */
-    omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
+    omni::syntheticdata::SyntheticData* m_syntheticDataPtr = nullptr;
 
     /**
      * @brief Pointer to the tasking interface for parallel processing
      */
-    carb::tasking::ITasking* mTasking = nullptr;
+    carb::tasking::ITasking* m_tasking = nullptr;
 };
 }
 }

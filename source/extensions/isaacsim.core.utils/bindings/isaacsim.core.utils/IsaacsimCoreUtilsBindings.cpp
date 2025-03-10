@@ -40,7 +40,7 @@ PYBIND11_MODULE(_isaac_utils, m)
     using namespace isaacsim::core::utils;
     using namespace omni::isaac::dynamic_control;
     // We use carb data types, must import bindings for them
-    auto carb_module = py::module::import("carb");
+    auto carbModule = py::module::import("carb");
 
     m.def("_find_matching_prim_paths", &findMatchingPrimPaths);
 

@@ -60,13 +60,13 @@ public:
         {
             isaacsim::core::includes::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
             uint64_t handle = db.inputs.dataPtr();
-            state.mBuffer.resize(db.inputs.width() * db.inputs.height() * 3);
+            state.m_buffer.resize(db.inputs.width() * db.inputs.height() * 3);
 
             isaacsim::core::includes::ScopedCudaTextureObject srcTexObj(
                 reinterpret_cast<cudaMipmappedArray_t>(handle), 0);
-            rgbaToRgbOgn(state.mBuffer.data(), srcTexObj, db.inputs.width(), db.inputs.height(), db.inputs.width() * 4);
-            db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.mBuffer.data());
-            db.outputs.bufferSize() = static_cast<uint32_t>(state.mBuffer.sizeInBytes());
+            rgbaToRgbOgn(state.m_buffer.data(), srcTexObj, db.inputs.width(), db.inputs.height(), db.inputs.width() * 4);
+            db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.m_buffer.data());
+            db.outputs.bufferSize() = static_cast<uint32_t>(state.m_buffer.sizeInBytes());
         }
         db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
         db.outputs.width() = db.inputs.width();
@@ -83,7 +83,7 @@ public:
     // }
 
 private:
-    isaacsim::core::includes::DeviceBuffer mBuffer;
+    isaacsim::core::includes::DeviceBuffer m_buffer;
 };
 REGISTER_OGN_NODE()
 }

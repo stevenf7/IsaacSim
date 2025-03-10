@@ -62,7 +62,7 @@ void UsdNoticeListener::handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
             }
             else
             {
-                static const pxr::TfToken gkindToken("kind");
+                static const pxr::TfToken s_kGkindToken("kind");
                 const auto& changedFields = objectsChanged.GetChangedFields(primPath);
                 const bool typeNameChange = std::find(changedFields.begin(), changedFields.end(),
                                                       pxr::SdfFieldKeys->TypeName) != changedFields.end();

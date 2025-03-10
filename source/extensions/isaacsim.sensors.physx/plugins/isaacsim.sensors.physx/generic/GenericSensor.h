@@ -83,7 +83,7 @@ public:
      */
     int getNumSamplesTicked() const
     {
-        return mSamplesPerTick;
+        return m_samplesPerTick;
     }
 
     /**
@@ -92,7 +92,7 @@ public:
      */
     std::vector<uint16_t>& getDepthData()
     {
-        return mLastDepth;
+        return m_lastDepth;
     }
 
     /**
@@ -101,7 +101,7 @@ public:
      */
     std::vector<float>& getLinearDepthData()
     {
-        return mLastLinearDepth;
+        return m_lastLinearDepth;
     }
 
     /**
@@ -110,7 +110,7 @@ public:
      */
     std::vector<uint8_t>& getIntensityData()
     {
-        return mLastIntensity;
+        return m_lastIntensity;
     }
 
     /**
@@ -119,7 +119,7 @@ public:
      */
     std::vector<float>& getZenithData()
     {
-        return mZenith;
+        return m_zenith;
     }
 
     /**
@@ -128,7 +128,7 @@ public:
      */
     std::vector<float>& getAzimuthData()
     {
-        return mLastAzimuth;
+        return m_lastAzimuth;
     }
 
     /**
@@ -137,7 +137,7 @@ public:
      */
     std::vector<carb::Float3>& getOffsetData()
     {
-        return mLastOffset;
+        return m_lastOffset;
     }
 
     /**
@@ -152,14 +152,14 @@ public:
      * @param[in] zenith_angles Array of zenith angles in radians
      * @param[in] sample_length Number of samples in the batch
      */
-    void setNextBatchRays(const float* azimuth_angles, const float* zenith_angles, const int sample_length);
+    void setNextBatchRays(const float* azimuthAngles, const float* zenithAngles, const int sampleLength);
 
     /**
      * @brief Sets the origin offsets for each ray in the next batch
      * @param[in] origin_offsets Array of 3D offset positions for each ray
      * @param[in] sample_length Number of samples in the batch
      */
-    void setNextBatchOffsets(const float* origin_offsets, const int sample_length);
+    void setNextBatchOffsets(const float* originOffsets, const int sampleLength);
 
 private:
     /**
@@ -190,12 +190,12 @@ private:
     {
 
 
-        const bool ret = ::physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, mHitFlags, hit);
+        const bool ret = ::physx::PxSceneQueryExt::raycastSingle(*physxScene, pos, dir, distance, m_hitFlags, hit);
         return ret;
     }
 
     template <bool drawPoints, bool drawLines>
-    void scan(const ::physx::PxVec3& sensor_origin,
+    void scan(const ::physx::PxVec3& sensorOrigin,
               const ::physx::PxQuat& worldRotation,
               omni::physx::IPhysx* physxPtr,
               ::physx::PxScene* physxScenePtr,
@@ -205,7 +205,7 @@ private:
               std::vector<uint8_t>& intensity,
               std::vector<float>& zenith,
               std::vector<float>& azimuth,
-              std::vector<carb::Float3>& origin_offset,
+              std::vector<carb::Float3>& originOffset,
               float maxDepth,
               float minDepth,
               float metersPerUnit,
@@ -224,8 +224,8 @@ private:
         ::physx::PxVec3 azimuthDir = ::physx::PxVec3(0.0f, 0.0f, 1.0f);
         ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
 
-        size_t n_scan = azimuth.size();
-        for (size_t i = 0; i < n_scan; i++)
+        size_t nScan = azimuth.size();
+        for (size_t i = 0; i < nScan; i++)
         {
             // Pitch then yaw
             ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(azimuth[i], azimuthDir);
@@ -233,7 +233,7 @@ private:
             ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
             ::physx::PxRaycastHit raycastHit;
             // Project the start point out to prevent collisions from origin
-            ::physx::PxVec3 origin = sensor_origin + isaacsim::core::includes::conversions::asPxVec3(origin_offset[i]);
+            ::physx::PxVec3 origin = sensorOrigin + isaacsim::core::includes::conversions::asPxVec3(originOffset[i]);
             bool hit = raycastClose(origin + unitDir * minDepth, unitDir, maxDepth, raycastHit, physxScenePtr);
 
             if (hit)
@@ -253,7 +253,7 @@ private:
                 carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                 // ::physx::PxVec3 hitPosRelRay = worldRotation.rotateInv(raycastHit.position - origin);
                 // hitPosRay[i] = { hitPosRelRay.x, hitPosRelRay.y, hitPosRelRay.z }; // relative to the ray's origin
-                ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - sensor_origin);
+                ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - sensorOrigin);
                 hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor's origin, not
                                                                             // accounting for individual ray origin
                                                                             // offset
@@ -269,7 +269,7 @@ private:
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
                     data.color = isaacsim::core::includes::color::distToRgba(ratio);
                     data.width = 5.0f;
-                    mPointDrawing->addVertex(data);
+                    m_pointDrawing->addVertex(data);
                 }
 
                 // else
@@ -286,9 +286,9 @@ private:
                     data.color = isaacsim::core::includes::color::distToRgba(ratio);
                     data.width = 1.0;
 
-                    mLineDrawing->addVertex(data);
+                    m_lineDrawing->addVertex(data);
                     data.position = hitPos;
-                    mLineDrawing->addVertex(data);
+                    m_lineDrawing->addVertex(data);
                 }
             }
             else
@@ -299,7 +299,7 @@ private:
                 ::physx::PxVec3 hitPos = origin + unitDir * (maxDepth + minDepth);
                 // ::physx::PxVec3 hitPosRelRay = worldRotation.rotateInv(hitPos - origin);
                 // hitPosRay[i] = { hitPosRelRay.x, hitPosRelRay.y, hitPosRelRay.z }; // relative to the ray's origin
-                ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - sensor_origin);
+                ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - sensorOrigin);
                 hitPosition[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor's origin, not
                                                                             // accounting for individual ray origin
                                                                             // offset
@@ -313,136 +313,136 @@ private:
                     data.color = { 1, 1, 1, 50.0f / 255.0f };
                     data.width = 1.0;
 
-                    mLineDrawing->addVertex(data);
+                    m_lineDrawing->addVertex(data);
                     data.position = { hitPos.x, hitPos.y, hitPos.z };
-                    mLineDrawing->addVertex(data);
+                    m_lineDrawing->addVertex(data);
                 }
             }
         }
     }
 
-    int mSamplingRate; // number of samples per second
-    bool mStreaming;
+    int m_samplingRate; // number of samples per second
+    bool m_streaming;
 
     /**
      * @brief Total number of samples for each batch of data
      */
-    int mBatchSize = 0;
+    int m_batchSize = 0;
 
     /**
      * @brief Minimum allowed batch size
      */
-    int minBatchSize = 0;
+    int m_minBatchSize = 0;
 
     /**
      * @brief Length of the A buffer for double buffering
      */
-    int A_length = 0;
+    int m_lengthA = 0;
 
     /**
      * @brief Length of the B buffer for double buffering
      */
-    int B_length = 0;
+    int m_lengthB = 0;
 
     /**
      * @brief Index of the last processed sample
      */
-    int mLastSample = 0;
+    int m_lastSample = 0;
 
     /**
      * @brief Number of samples processed per tick
      */
-    int mSamplesPerTick = 60;
+    int m_samplesPerTick = 60;
 
     /**
      * @brief Maximum allowed samples per tick
      */
-    int maxSamplesPerTick = 1000000;
+    int m_maxSamplesPerTick = 1000000;
 
     /**
      * @brief Minimum depth range in world units
      */
-    float mMinDepth = 0;
+    float m_minDepth = 0;
 
     /**
      * @brief Maximum depth range in world units
      */
-    float mMaxDepth = 1e8;
+    float m_maxDepth = 1e8;
 
     /**
      * @brief Double-buffered azimuth angle arrays
      */
-    std::vector<float> mAzimuth_A{}, mAzimuth_B{};
+    std::vector<float> m_azimuthA{}, m_azimuthB{};
 
     /**
      * @brief Double-buffered zenith angle arrays
      */
-    std::vector<float> mZenith_A{}, mZenith_B{};
+    std::vector<float> m_zenithA{}, m_zenithB{};
 
     /**
      * @brief Double-buffered offset position arrays
      */
-    std::vector<carb::Float3> mOffset_A{}, mOffset_B{};
+    std::vector<carb::Float3> m_offsetA{}, m_offsetB{};
 
     /**
      * @brief Pointers to active azimuth angle buffer
      */
-    float *pActiveAzimuth, *pActiveZenith;
+    float *m_activeAzimuthPtr, *m_activeZenithPtr;
 
     /**
      * @brief Pointer to active offset position buffer
      */
-    carb::Float3* pActiveOffset;
+    carb::Float3* m_activeOffsetPtr;
 
     /**
      * @brief Current and last zenith angles
      */
-    std::vector<float> mZenith, mLastZenith;
+    std::vector<float> m_zenith, m_lastZenith;
 
     /**
      * @brief Current and last azimuth angles
      */
-    std::vector<float> mAzimuth, mLastAzimuth;
+    std::vector<float> m_azimuth, m_lastAzimuth;
 
     /**
      * @brief Current and last offset positions
      */
-    std::vector<carb::Float3> mOffset, mLastOffset;
+    std::vector<carb::Float3> m_offset, m_lastOffset;
 
     /**
      * @brief Current and last linear depth measurements in meters
      */
-    std::vector<float> mLinearDepth, mLastLinearDepth;
+    std::vector<float> m_linearDepth, m_lastLinearDepth;
 
     /**
      * @brief Current and last intensity measurements
      */
-    std::vector<uint8_t> mIntensity, mLastIntensity;
+    std::vector<uint8_t> m_intensity, m_lastIntensity;
 
     /**
      * @brief Current and last normalized depth measurements
      */
-    std::vector<uint16_t> mDepth, mLastDepth;
+    std::vector<uint16_t> m_depth, m_lastDepth;
 
     /**
      * @brief Hit positions in sensor local space
      */
-    std::vector<carb::Float3> mHitPos;
+    std::vector<carb::Float3> m_hitPos;
 
     /**
      * @brief PhysX ray cast hit flags configuration
      */
-    const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+    const ::physx::PxHitFlags m_hitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
 
     /**
      * @brief Final translation of the sensor in world space
      */
-    ::physx::PxVec3 mFinalTranslation;
+    ::physx::PxVec3 m_finalTranslation;
 
     /**
      * @brief Final rotation of the sensor in world space
      */
-    ::physx::PxQuat mFinalRotation;
+    ::physx::PxQuat m_finalRotation;
 };
 
 

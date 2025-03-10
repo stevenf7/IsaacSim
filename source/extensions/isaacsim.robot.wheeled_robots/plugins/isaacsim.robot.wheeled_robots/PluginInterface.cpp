@@ -29,12 +29,13 @@ namespace
 /**
  * @brief Plugin descriptor for the Wheeled Robots module
  */
-const struct carb::PluginImplDesc g_pluginDesc = { "isaacsim.robot.wheeled_robots", "Isaac Sim Wheeled Robot Controllers",
-                                                   "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.robot.wheeled_robots",
+                                                    "Isaac Sim Wheeled Robot Controllers", "NVIDIA",
+                                                    carb::PluginHotReload::eEnabled, "dev" };
 
 } // anonymous namespace
 
-CARB_PLUGIN_IMPL(g_pluginDesc, isaacsim::robot::wheeled_robots::IWheeledRobots)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::robot::wheeled_robots::IWheeledRobots)
 CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry, omni::fabric::IToken, carb::settings::ISettings)
 DECLARE_OGN_NODES()
 

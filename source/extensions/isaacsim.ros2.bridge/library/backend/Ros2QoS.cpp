@@ -20,7 +20,7 @@ namespace ros2
 namespace bridge
 {
 
-const std::map<Ros2QoSHistoryPolicy, rmw_qos_history_policy_t> ros2QoSHistoryMap = {
+const std::map<Ros2QoSHistoryPolicy, rmw_qos_history_policy_t> g_kRos2QoSHistoryMap = {
     { Ros2QoSHistoryPolicy::eSystemDefault, RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT },
     { Ros2QoSHistoryPolicy::eKeepLast, RMW_QOS_POLICY_HISTORY_KEEP_LAST },
     { Ros2QoSHistoryPolicy::eKeepAll, RMW_QOS_POLICY_HISTORY_KEEP_ALL },
@@ -28,7 +28,7 @@ const std::map<Ros2QoSHistoryPolicy, rmw_qos_history_policy_t> ros2QoSHistoryMap
 };
 
 
-const std::map<Ros2QoSReliabilityPolicy, rmw_qos_reliability_policy_t> ros2QoSReliabilityMap = {
+const std::map<Ros2QoSReliabilityPolicy, rmw_qos_reliability_policy_t> g_kRos2QoSReliabilityMap = {
     { Ros2QoSReliabilityPolicy::eSystemDefault, RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT },
     { Ros2QoSReliabilityPolicy::eReliable, RMW_QOS_POLICY_RELIABILITY_RELIABLE },
     { Ros2QoSReliabilityPolicy::eBestEffort, RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT },
@@ -36,7 +36,7 @@ const std::map<Ros2QoSReliabilityPolicy, rmw_qos_reliability_policy_t> ros2QoSRe
 };
 
 
-const std::map<Ros2QoSDurabilityPolicy, rmw_qos_durability_policy_t> ros2QoSDurabilityMap = {
+const std::map<Ros2QoSDurabilityPolicy, rmw_qos_durability_policy_t> g_kRos2QoSDurabilityMap = {
     { Ros2QoSDurabilityPolicy::eSystemDefault, RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT },
     { Ros2QoSDurabilityPolicy::eTransientLocal, RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL },
     { Ros2QoSDurabilityPolicy::eVolatile, RMW_QOS_POLICY_DURABILITY_VOLATILE },
@@ -45,7 +45,7 @@ const std::map<Ros2QoSDurabilityPolicy, rmw_qos_durability_policy_t> ros2QoSDura
 
 // NOTE : RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_NODE is deprecated and throws compiler errors,
 //        so we handle this by just using the system default
-const std::map<Ros2QoSLivelinessPolicy, rmw_qos_liveliness_policy_t> ros2QoSLivelinessMap = {
+const std::map<Ros2QoSLivelinessPolicy, rmw_qos_liveliness_policy_t> g_kRos2QoSLivelinessMap = {
     { Ros2QoSLivelinessPolicy::eSystemDefault, RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT },
     { Ros2QoSLivelinessPolicy::eAutomatic, RMW_QOS_POLICY_LIVELINESS_AUTOMATIC },
     { Ros2QoSLivelinessPolicy::eManualByNode, RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT },
@@ -62,13 +62,13 @@ rmw_qos_profile_t Ros2QoSProfileConverter::convert(const Ros2QoSProfile& qos)
 {
     rmw_qos_profile_t profile;
 
-    profile.history = ros2QoSHistoryMap.at(qos.history);
+    profile.history = g_kRos2QoSHistoryMap.at(qos.history);
     profile.depth = qos.depth;
-    profile.reliability = ros2QoSReliabilityMap.at(qos.reliability);
-    profile.durability = ros2QoSDurabilityMap.at(qos.durability);
+    profile.reliability = g_kRos2QoSReliabilityMap.at(qos.reliability);
+    profile.durability = g_kRos2QoSDurabilityMap.at(qos.durability);
     profile.deadline = convertRos2QosTimeToImpl(qos.deadline);
     profile.lifespan = convertRos2QosTimeToImpl(qos.lifespan);
-    profile.liveliness = ros2QoSLivelinessMap.at(qos.liveliness);
+    profile.liveliness = g_kRos2QoSLivelinessMap.at(qos.liveliness);
     profile.liveliness_lease_duration = convertRos2QosTimeToImpl(qos.livelinessLeaseDuration);
     profile.avoid_ros_namespace_conventions = qos.avoidRosNamespaceConventions;
 

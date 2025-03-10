@@ -6,7 +6,7 @@ project_with_location("isaacsim.asset.gen.omap.generator")
 targetdir(ext.bin_dir)
 kind("SharedLib")
 language("C++")
-defines { "OMGENERATOREXPORT" }
+defines { "ISAACSIM_ASSET_GEN_OMAP_EXPORT" }
 
 pic("On")
 staticruntime("Off")

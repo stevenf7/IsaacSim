@@ -167,13 +167,13 @@ private:
      */
     bool isValid();
 
-    omni::usd::UsdContext* mUsdContext;
-    RenderingMode mRenderingMode;
-    bool mWorldSpace;
-    bool mDepthTest;
-    carb::scenerenderer::PrimitiveList* mPrimitiveList;
-    bool mDirty;
-    std::vector<carb::scenerenderer::PrimitiveVertex> mVertices;
+    omni::usd::UsdContext* m_usdContext;
+    RenderingMode m_renderingMode;
+    bool m_worldSpace;
+    bool m_depthTest;
+    carb::scenerenderer::PrimitiveList* m_primitiveList;
+    bool m_dirty;
+    std::vector<carb::scenerenderer::PrimitiveVertex> m_vertices;
 };
 }
 }

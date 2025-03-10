@@ -53,7 +53,7 @@ struct IOpenxr
      * @return Array of joint locations if successful, empty optional if not
      * @throws May throw exceptions if hand tracking fails
      */
-    virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locate_hand_joints(
+    virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locateHandJoints(
         XrHandEXT hand, std::optional<XrTime> time, bool stageAxis) noexcept(false) = 0;
 };
 

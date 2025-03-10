@@ -37,7 +37,7 @@ namespace includes
  * @brief Token for overriding prim names in Isaac Sim.
  * @details Used to specify custom names for prims that differ from their USD names.
  */
-static const PXR_NS::TfToken kIsaacNameOveride("isaac:nameOverride");
+static const PXR_NS::TfToken g_kIsaacNameOveride("isaac:nameOverride");
 
 /**
  * @brief Retrieves the camera prim associated with a render product.
@@ -129,12 +129,12 @@ void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
     }
 }
 
-inline std::string GetName(const pxr::UsdPrim& prim)
+inline std::string getName(const pxr::UsdPrim& prim)
 {
     std::string primName = prim.GetName().GetString();
-    if (prim.HasAttribute(kIsaacNameOveride))
+    if (prim.HasAttribute(g_kIsaacNameOveride))
     {
-        safeGetAttribute<std::string>(prim.GetAttribute(kIsaacNameOveride), primName);
+        safeGetAttribute<std::string>(prim.GetAttribute(g_kIsaacNameOveride), primName);
     }
     return primName;
 }
@@ -146,22 +146,22 @@ inline std::string GetName(const pxr::UsdPrim& prim)
  * - Platform-specific warning suppression
  * - Safe type conversion
  *
- * @param[in] path_token Path token as uint64_t
+ * @param[in] pathToken Path token as uint64_t
  * @return pxr::SdfPath Converted USD path
  *
  * @warning Uses reinterpret_cast, ensure token is a valid path representation
  */
-inline pxr::SdfPath getSdfPathFromUint64(uint64_t path_token)
+inline pxr::SdfPath getSdfPathFromUint64(uint64_t pathToken)
 {
 #if defined(_WIN32)
 #    pragma warning(push)
 #    pragma warning(disable : 4996)
-    return reinterpret_cast<const pxr::SdfPath&>(path_token);
+    return reinterpret_cast<const pxr::SdfPath&>(pathToken);
 #    pragma warning(pop)
 #else
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    return reinterpret_cast<const pxr::SdfPath&>(path_token);
+    return reinterpret_cast<const pxr::SdfPath&>(pathToken);
 #    pragma GCC diagnostic pop
 #endif
 }

@@ -30,8 +30,8 @@ using namespace omni::sensors;
 
 class OgnIsaacReadRTXLidarData : public LidarConfigHelper
 {
-    // buffer used to copy data from the gpu if needed.
-    std::vector<uint8_t> buffer;
+    // m_buffer used to copy data from the gpu if needed.
+    std::vector<uint8_t> m_buffer;
 
 public:
     static bool compute(OgnIsaacReadRTXLidarDataDatabase& db)
@@ -54,14 +54,14 @@ public:
         if (db.inputs.cudaDeviceIndex() != -1)
         {
             CARB_PROFILE_ZONE(0, "Copy Read RTX Lidar Data");
-            if (state.buffer.size() < db.inputs.bufferSize())
+            if (state.m_buffer.size() < db.inputs.bufferSize())
             {
-                state.buffer.resize(db.inputs.bufferSize());
+                state.m_buffer.resize(db.inputs.bufferSize());
             }
-            // omni::sensors::cpygmoToBuffer(&state.buffer[0], (const omni::sensors::GenericPointCloud*)(dataPtr), true,
-            // false, db.inputs.cudaDeviceIndex(), (cudaStream_t)db.inputs.cudaStream());
-            cudaMemcpyAsync(&state.buffer[0], dataPtr, db.inputs.bufferSize(), cudaMemcpyDeviceToHost);
-            dataPtr = state.buffer.data();
+            // omni::sensors::cpygmoToBuffer(&state.m_buffer[0], (const omni::sensors::GenericPointCloud*)(dataPtr),
+            // true, false, db.inputs.cudaDeviceIndex(), (cudaStream_t)db.inputs.cudaStream());
+            cudaMemcpyAsync(&state.m_buffer[0], dataPtr, db.inputs.bufferSize(), cudaMemcpyDeviceToHost);
+            dataPtr = state.m_buffer.data();
         }
         GenericModelOutputHelper helper(dataPtr);
         if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, Modality::LIDAR))
@@ -70,16 +70,16 @@ public:
                 "Input to IsaacReadRTXLidarData is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
         }
-        if (helper.m_gmo.numElements == 0)
+        if (helper.mGmo.numElements == 0)
         {
             return true;
         }
 
-        const size_t maxSize = helper.m_gmo.numElements;
-        const float* azimuths = helper.m_gmo.elements.x;
-        const float* elevations = helper.m_gmo.elements.y;
-        const float* distances = helper.m_gmo.elements.z;
-        const float* intensities = helper.m_gmo.elements.scalar;
+        const size_t maxSize = helper.mGmo.numElements;
+        const float* azimuths = helper.mGmo.elements.x;
+        const float* elevations = helper.mGmo.elements.y;
+        const float* distances = helper.mGmo.elements.z;
+        const float* intensities = helper.mGmo.elements.scalar;
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
         size_t outSize = maxSize;
@@ -101,46 +101,46 @@ public:
 
         db.outputs.depthRange() = { state.getNearRange(), state.getFarRange() };
         db.outputs.numBeams() = outSize;
-        db.outputs.frameId() = helper.m_gmo.frameId;
-        db.outputs.timestampNs() = helper.m_gmo.timestampNs;
+        db.outputs.frameId() = helper.mGmo.frameId;
+        db.outputs.timestampNs() = helper.mGmo.timestampNs;
 
-        getTransformFromSensorPose(helper.m_gmo.frameStart, transformStart);
-        getTransformFromSensorPose(helper.m_gmo.frameEnd, transform);
+        getTransformFromSensorPose(helper.mGmo.frameStart, transformStart);
+        getTransformFromSensorPose(helper.mGmo.frameEnd, transform);
 
         const omni::sensors::LidarAuxiliaryData* auxPoints =
-            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
+            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.mGmo.auxiliaryData);
         uint32_t hasAux = auxPoints ? (uint32_t)auxPoints->filledAuxMembers : 0x0000;
 
-#define _DEF_OUT_VAR(outName, outSz)                                                                                   \
+#define DEF_OUT_VAR(outName, outSz)                                                                                    \
     auto& db_outputs_##outName = db.outputs.outName();                                                                 \
     db_outputs_##outName.resize(outSz)
 
-        _DEF_OUT_VAR(deltaTimes, outSize);
-        _DEF_OUT_VAR(azimuths, outSize);
-        _DEF_OUT_VAR(elevations, outSize);
-        _DEF_OUT_VAR(distances, outSize);
-        _DEF_OUT_VAR(intensities, outSize);
-        _DEF_OUT_VAR(flags, outSize);
-        _DEF_OUT_VAR(velocities, auxPoints && hasAux & (uint32_t)LidarAuxHas::VELOCITIES ? outSize : 0);
-        _DEF_OUT_VAR(hitPointNormals, auxPoints && hasAux & (uint32_t)LidarAuxHas::HIT_NORMALS ? outSize : 0);
-        _DEF_OUT_VAR(emitterIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::ECHO_ID ? outSize : 0);
-        _DEF_OUT_VAR(materialIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::MAT_ID ? outSize : 0);
-        _DEF_OUT_VAR(objectIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::OBJ_ID ? outSize : 0);
-        _DEF_OUT_VAR(ticks, auxPoints && hasAux & (uint32_t)LidarAuxHas::TICK_ID ? outSize : 0);
-        _DEF_OUT_VAR(tickStates, auxPoints && hasAux & (uint32_t)LidarAuxHas::TICK_STATES ? outSize : 0);
-        _DEF_OUT_VAR(channels, auxPoints && hasAux & (uint32_t)LidarAuxHas::CHANNEL_ID ? outSize : 0);
-        _DEF_OUT_VAR(echos, auxPoints && hasAux & (uint32_t)LidarAuxHas::ECHO_ID ? outSize : 0);
+        DEF_OUT_VAR(deltaTimes, outSize);
+        DEF_OUT_VAR(azimuths, outSize);
+        DEF_OUT_VAR(elevations, outSize);
+        DEF_OUT_VAR(distances, outSize);
+        DEF_OUT_VAR(intensities, outSize);
+        DEF_OUT_VAR(flags, outSize);
+        DEF_OUT_VAR(velocities, auxPoints && hasAux & (uint32_t)LidarAuxHas::VELOCITIES ? outSize : 0);
+        DEF_OUT_VAR(hitPointNormals, auxPoints && hasAux & (uint32_t)LidarAuxHas::HIT_NORMALS ? outSize : 0);
+        DEF_OUT_VAR(emitterIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::ECHO_ID ? outSize : 0);
+        DEF_OUT_VAR(materialIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::MAT_ID ? outSize : 0);
+        DEF_OUT_VAR(objectIds, auxPoints && hasAux & (uint32_t)LidarAuxHas::OBJ_ID ? outSize : 0);
+        DEF_OUT_VAR(ticks, auxPoints && hasAux & (uint32_t)LidarAuxHas::TICK_ID ? outSize : 0);
+        DEF_OUT_VAR(tickStates, auxPoints && hasAux & (uint32_t)LidarAuxHas::TICK_STATES ? outSize : 0);
+        DEF_OUT_VAR(channels, auxPoints && hasAux & (uint32_t)LidarAuxHas::CHANNEL_ID ? outSize : 0);
+        DEF_OUT_VAR(echos, auxPoints && hasAux & (uint32_t)LidarAuxHas::ECHO_ID ? outSize : 0);
 
 #undef _DEFINE_OUTPUT_VARS
 
         if (!keepOnlyPositiveDistance)
         {
-            memcpy(db_outputs_deltaTimes.data(), helper.m_gmo.elements.timeOffsetNs, maxSize * sizeof(uint32_t));
+            memcpy(db_outputs_deltaTimes.data(), helper.mGmo.elements.timeOffsetNs, maxSize * sizeof(uint32_t));
             memcpy(db_outputs_azimuths.data(), azimuths, maxSize * sizeof(float));
             memcpy(db_outputs_elevations.data(), elevations, maxSize * sizeof(float));
             memcpy(db_outputs_distances.data(), distances, maxSize * sizeof(float));
             memcpy(db_outputs_intensities.data(), intensities, maxSize * sizeof(float));
-            memcpy(db_outputs_flags.data(), helper.m_gmo.elements.flags, maxSize * sizeof(uint8_t));
+            memcpy(db_outputs_flags.data(), helper.mGmo.elements.flags, maxSize * sizeof(uint8_t));
             if (db_outputs_velocities.size())
             {
                 memcpy(db_outputs_velocities.data(), auxPoints->velocities, 3 * maxSize * sizeof(float));
@@ -181,16 +181,16 @@ public:
         else
         {
             uint32_t i = 0;
-            for (uint32_t idx = 0; idx < helper.m_gmo.numElements; idx++)
+            for (uint32_t idx = 0; idx < helper.mGmo.numElements; idx++)
             {
                 if (distances[idx] > 0.f)
                 {
-                    db_outputs_deltaTimes[i] = helper.m_gmo.elements.timeOffsetNs[idx];
+                    db_outputs_deltaTimes[i] = helper.mGmo.elements.timeOffsetNs[idx];
                     db_outputs_azimuths[i] = azimuths[idx];
                     db_outputs_elevations[i] = elevations[idx];
                     db_outputs_distances[i] = distances[idx];
                     db_outputs_intensities[i] = intensities[idx];
-                    db_outputs_flags[i] = helper.m_gmo.elements.flags[idx];
+                    db_outputs_flags[i] = helper.mGmo.elements.flags[idx];
                     db_outputs_velocities[i][0] = auxPoints->velocities[idx * 3 + 0];
                     db_outputs_velocities[i][1] = auxPoints->velocities[idx * 3 + 1];
                     db_outputs_velocities[i][2] = auxPoints->velocities[idx * 3 + 2];

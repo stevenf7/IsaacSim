@@ -38,7 +38,7 @@ static constexpr char kAppRunLoops[] = "/app/runLoops";
 static constexpr char kSyncToPresentGlobal[] = "/app/runLoopsGlobal/syncToPresent";
 
 // clang-format off
-const struct carb::PluginImplDesc kPluginImpl = {
+const struct carb::PluginImplDesc g_kPluginDesc = {
     "omni.kit.loop-isaac.plugin",
     "",
     "NVIDIA",
@@ -839,7 +839,7 @@ private:
 }
 }
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::kit::IRunLoopRunnerImpl, omni::kit::IExtensionPluginImpl)
+CARB_PLUGIN_IMPL(g_kPluginDesc, omni::kit::IRunLoopRunnerImpl, omni::kit::IExtensionPluginImpl)
 
 void fillInterface(omni::kit::IRunLoopRunnerImpl& iface)
 {

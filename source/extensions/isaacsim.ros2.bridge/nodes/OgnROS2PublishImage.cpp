@@ -156,8 +156,8 @@ public:
 
             // Get extension settings for multithreading
             carb::settings::ISettings* threadSettings = carb::getCachedInterface<carb::settings::ISettings>();
-            static constexpr char thread_disable[] = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled";
-            state.m_multithreadingDisabled = threadSettings->getAsBool(thread_disable);
+            static constexpr char s_kThreadDisable[] = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled";
+            state.m_multithreadingDisabled = threadSettings->getAsBool(s_kThreadDisable);
             return true;
         }
 
@@ -411,7 +411,7 @@ public:
         {
             state.m_ipcBufferManager = std::make_shared<IPCBufferManager>(40, totalBytes);
         }
-        void* dataPtr = (void*)state.m_ipcBufferManager->get_cur_buffer_ptr();
+        void* dataPtr = (void*)state.m_ipcBufferManager->getCurBufferPtr();
 
         // Data on host
         if (db.inputs.cudaDeviceIndex() == -1)
@@ -438,7 +438,7 @@ public:
                 return false;
             }
 
-            state.m_nitrosBridgeMessage->writeData(state.m_ipcBufferManager->get_cur_ipc_mem_handle());
+            state.m_nitrosBridgeMessage->writeData(state.m_ipcBufferManager->getCurIpcMemHandle());
             state.m_ipcBufferManager->next();
 
             if (state.m_multithreadingDisabled)
@@ -539,7 +539,7 @@ public:
             CUDA_CHECK(cudaStreamSynchronize(*data.nitrosBridgeStream));
         }
 
-        data.nitrosBridgeMessage->writeData(data.ipcBufferManager->get_cur_ipc_mem_handle());
+        data.nitrosBridgeMessage->writeData(data.ipcBufferManager->getCurIpcMemHandle());
         data.ipcBufferManager->next();
         {
             CARB_PROFILE_ZONE(1, "nitros image publisher publish");

@@ -57,7 +57,7 @@ struct CsReading
     bool inContact{ false };
 
     /** @brief Validity of the data. False for when the sensor is disabled, true for enabled. */
-    bool is_valid{ false };
+    bool isValid{ false };
 };
 
 /**
@@ -111,28 +111,28 @@ struct IsReading
     float time{ 0.0f };
 
     /** @brief Accelerometer reading value x axis, in m/s^2. */
-    float lin_acc_x{ 0.0f };
+    float linAccX{ 0.0f };
 
     /** @brief Accelerometer reading value y axis, in m/s^2. */
-    float lin_acc_y{ 0.0f };
+    float linAccY{ 0.0f };
 
     /** @brief Accelerometer reading value z axis, in m/s^2. */
-    float lin_acc_z{ 0.0f };
+    float linAccZ{ 0.0f };
 
     /** @brief Gyroscope reading value x axis, in rad/s. */
-    float ang_vel_x{ 0.0f };
+    float angVelX{ 0.0f };
 
     /** @brief Gyroscope reading value y axis, in rad/s. */
-    float ang_vel_y{ 0.0f };
+    float angVelY{ 0.0f };
 
     /** @brief Gyroscope reading value z axis, in rad/s. */
-    float ang_vel_z{ 0.0f };
+    float angVelZ{ 0.0f };
 
     /** @brief Quaternion orientation of parent body (x, y, z, w). */
     carb::Float4 orientation{ 0.0f, 0.0f, 0.0f, 0.0f };
 
     /** @brief Validity of the data. False for when the sensor is disabled, true for enabled. */
-    bool is_valid{ false };
+    bool isValid{ false };
 };
 
 /**
@@ -148,22 +148,22 @@ struct IsRawData
     float dt{ 0.0f };
 
     /** @brief Linear velocity x raw reading value, in m/s. */
-    float lin_vel_x{ 0.0f };
+    float linVelX{ 0.0f };
 
     /** @brief Linear velocity y raw reading value, in m/s. */
-    float lin_vel_y{ 0.0f };
+    float linVelY{ 0.0f };
 
     /** @brief Linear velocity z raw reading value, in m/s. */
-    float lin_vel_z{ 0.0f };
+    float linVelZ{ 0.0f };
 
     /** @brief Angular velocity x raw reading value, in rad/s. */
-    float ang_vel_x{ 0.0f };
+    float angVelX{ 0.0f };
 
     /** @brief Angular velocity y raw reading value, in rad/s. */
-    float ang_vel_y{ 0.0f };
+    float angVelY{ 0.0f };
 
     /** @brief Angular velocity z raw reading value, in rad/s. */
-    float ang_vel_z{ 0.0f };
+    float angVelZ{ 0.0f };
 
     /** @brief Quaternion orientation of parent body (w, x, y, z). */
     carb::Float4 orientation{ 0.0f, 0.0f, 0.0f, 0.0f };

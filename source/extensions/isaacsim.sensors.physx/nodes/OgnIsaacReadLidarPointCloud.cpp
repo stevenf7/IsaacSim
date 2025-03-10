@@ -36,9 +36,9 @@ public:
         auto& state =
             OgnIsaacReadLidarPointCloudDatabase::sPerInstanceState<OgnIsaacReadLidarPointCloud>(nodeObj, instanceId);
 
-        state.mLidarSensorInterface = carb::getCachedInterface<isaacsim::sensors::physx::LidarSensorInterface>();
+        state.m_lidarSensorInterface = carb::getCachedInterface<isaacsim::sensors::physx::LidarSensorInterface>();
 
-        if (!state.mLidarSensorInterface)
+        if (!state.m_lidarSensorInterface)
         {
             CARB_LOG_ERROR("Failed to acquire isaacsim::sensors::physx interface");
             return;
@@ -51,7 +51,7 @@ public:
 
         auto& state = db.perInstanceState<OgnIsaacReadLidarPointCloud>();
 
-        if (state.mFirstFrame)
+        if (state.m_firstFrame)
         {
             const auto& prim = db.inputs.lidarPrim();
             const char* primPath;
@@ -65,7 +65,7 @@ public:
                 return false;
             }
 
-            state.mFirstFrame = false;
+            state.m_firstFrame = false;
 
             // Find our stage
             long stageId = context.iContext->getStageId(context);
@@ -76,7 +76,7 @@ public:
                 return false;
             }
 
-            state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
+            state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // Verify we have a valid lidar prim
             pxr::UsdPrim targetPrim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
@@ -86,15 +86,15 @@ public:
                 return false;
             }
 
-            state.mRangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
+            state.m_rangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
 
-            if (!state.mLidarSensorInterface->isLidarSensor(primPath))
+            if (!state.m_lidarSensorInterface->isLidarSensor(primPath))
             {
                 db.logError("Prim is not registered with Lidar extension");
                 return false;
             }
 
-            state.mLidarPrimPath = primPath;
+            state.m_lidarPrimPath = primPath;
 
             return true;
         }
@@ -108,48 +108,48 @@ public:
     {
         float maxRange = 100;
 
-        isaacsim::core::includes::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), maxRange);
+        isaacsim::core::includes::safeGetAttribute(m_rangeSensorPrim.GetMaxRangeAttr(), maxRange);
 
-        carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPrimPath);
-        // float* theta = mLidarSensorInterface->getAzimuthData(mLidarPrimPath);
-        float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPrimPath);
+        carb::Float3* lidarData = m_lidarSensorInterface->getPointCloud(m_lidarPrimPath);
+        // float* theta = m_lidarSensorInterface->getAzimuthData(m_lidarPrimPath);
+        float* ranges = m_lidarSensorInterface->getLinearDepthData(m_lidarPrimPath);
 
         if (!ranges || !lidarData)
         {
             return;
         }
 
-        int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPrimPath);
-        int numCols = mLidarSensorInterface->getNumCols(mLidarPrimPath);
-        int numRows = mLidarSensorInterface->getNumRows(mLidarPrimPath);
+        int numColsTicked = m_lidarSensorInterface->getNumColsTicked(m_lidarPrimPath);
+        int numCols = m_lidarSensorInterface->getNumCols(m_lidarPrimPath);
+        int numRows = m_lidarSensorInterface->getNumRows(m_lidarPrimPath);
 
         size_t numBeams = numColsTicked * numRows;
         size_t numBeamsTotal = numRows * numCols;
 
-        uint64_t curr_sequence_num = mLidarSensorInterface->getSequenceNumber(mLidarPrimPath);
+        uint64_t currSequenceNum = m_lidarSensorInterface->getSequenceNumber(m_lidarPrimPath);
 
 
-        if (curr_sequence_num == mPrevSequenceNumber)
+        if (currSequenceNum == m_prevSequenceNumber)
         {
             return;
         }
 
-        if (curr_sequence_num < mPrevSequenceNumber)
+        if (currSequenceNum < m_prevSequenceNumber)
         {
-            mResetPCL = true;
+            m_resetPCL = true;
         }
 
-        mPrevSequenceNumber = curr_sequence_num;
+        m_prevSequenceNumber = currSequenceNum;
 
-        if (mResetPCL)
+        if (m_resetPCL)
         {
-            mPointsData.clear();
-            mNumBeamsRemainingPCL = numBeamsTotal;
-            mResetPCL = false;
+            m_pointsData.clear();
+            m_numBeamsRemainingPCL = numBeamsTotal;
+            m_resetPCL = false;
         }
 
 
-        if (mNumBeamsRemainingPCL > numBeams)
+        if (m_numBeamsRemainingPCL > numBeams)
         {
             for (size_t i = 0; i < numBeams; i++)
             {
@@ -160,16 +160,16 @@ public:
                 }
 
                 GfVec3f point = { lidarData[i].x, lidarData[i].y, lidarData[i].z };
-                mPointsData.push_back(point * mUnitScale);
+                m_pointsData.push_back(point * m_unitScale);
             }
-            mNumBeamsRemainingPCL -= numBeams;
+            m_numBeamsRemainingPCL -= numBeams;
         }
-        else if (mNumBeamsRemainingPCL <= numBeams)
+        else if (m_numBeamsRemainingPCL <= numBeams)
         {
 
             // Save data up to maximum FOV
             size_t i = 0;
-            for (i = 0; i < mNumBeamsRemainingPCL; i++)
+            for (i = 0; i < m_numBeamsRemainingPCL; i++)
             {
                 if (ranges[i] >= maxRange)
                 {
@@ -177,20 +177,20 @@ public:
                 }
 
                 GfVec3f point = { lidarData[i].x, lidarData[i].y, lidarData[i].z };
-                mPointsData.push_back(point * mUnitScale);
+                m_pointsData.push_back(point * m_unitScale);
             }
 
-            db.outputs.data().resize(mPointsData.size());
+            db.outputs.data().resize(m_pointsData.size());
 
-            memcpy(db.outputs.data().data(), &mPointsData[0], mPointsData.size() * sizeof(GfVec3f));
+            memcpy(db.outputs.data().data(), &m_pointsData[0], m_pointsData.size() * sizeof(GfVec3f));
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
 
-            mPointsData.clear();
+            m_pointsData.clear();
 
             // Save remaining data
-            size_t numBeamsOffset = numBeams - mNumBeamsRemainingPCL;
+            size_t numBeamsOffset = numBeams - m_numBeamsRemainingPCL;
             for (size_t j = 0; j < numBeamsOffset; j++)
             {
                 if (ranges[i] >= maxRange)
@@ -199,10 +199,10 @@ public:
                     continue;
                 }
                 GfVec3f point = { lidarData[i].x, lidarData[i].y, lidarData[i].z };
-                mPointsData.push_back(point * mUnitScale);
+                m_pointsData.push_back(point * m_unitScale);
                 i++;
             }
-            mNumBeamsRemainingPCL = numBeamsTotal - numBeamsOffset;
+            m_numBeamsRemainingPCL = numBeamsTotal - numBeamsOffset;
         }
     }
     static bool updateNodeVersion(const GraphContextObj& context, const NodeObj& nodeObj, int oldVersion, int newVersion)
@@ -222,28 +222,28 @@ public:
     }
     virtual void reset()
     {
-        mResetPCL = true;
-        mFirstFrame = true;
+        m_resetPCL = true;
+        m_firstFrame = true;
     }
 
 
 private:
-    isaacsim::sensors::physx::LidarSensorInterface* mLidarSensorInterface = nullptr;
-    // pxr::RangeSensorLidar mLidarPrim;
-    pxr::RangeSensorRangeSensor mRangeSensorPrim;
+    isaacsim::sensors::physx::LidarSensorInterface* m_lidarSensorInterface = nullptr;
+    // pxr::RangeSensorLidar m_lidarPrim;
+    pxr::RangeSensorRangeSensor m_rangeSensorPrim;
 
-    const char* mLidarPrimPath = nullptr;
+    const char* m_lidarPrimPath = nullptr;
 
-    std::vector<GfVec3f> mPointsData;
+    std::vector<GfVec3f> m_pointsData;
 
-    uint64_t mPrevSequenceNumber = 0;
+    uint64_t m_prevSequenceNumber = 0;
 
-    bool mResetPCL = true;
-    size_t mNumBeamsRemainingPCL;
+    bool m_resetPCL = true;
+    size_t m_numBeamsRemainingPCL;
 
-    bool mFirstFrame = true;
+    bool m_firstFrame = true;
 
-    double mUnitScale;
+    double m_unitScale;
 };
 
 REGISTER_OGN_NODE()

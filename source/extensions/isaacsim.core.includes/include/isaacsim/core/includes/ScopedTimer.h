@@ -60,8 +60,8 @@ public:
      */
     ScopedTimer(const std::string& message)
     {
-        mMessage = message;
-        mStart = std::chrono::steady_clock::now();
+        m_message = message;
+        m_start = std::chrono::steady_clock::now();
     }
 
     /**
@@ -74,20 +74,20 @@ public:
      */
     ~ScopedTimer()
     {
-        mStop = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::milli> diff = mStop - mStart;
-        std::cout << mMessage << " : " << diff.count() << std::endl;
+        m_stop = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> diff = m_stop - m_start;
+        std::cout << m_message << " : " << diff.count() << std::endl;
     }
 
 private:
     /** @brief Start time point of the measurement */
-    std::chrono::time_point<std::chrono::steady_clock> mStart;
+    std::chrono::time_point<std::chrono::steady_clock> m_start;
 
     /** @brief Stop time point of the measurement */
-    std::chrono::time_point<std::chrono::steady_clock> mStop;
+    std::chrono::time_point<std::chrono::steady_clock> m_stop;
 
     /** @brief Identifying message for this timing measurement */
-    std::string mMessage;
+    std::string m_message;
 };
 
 }

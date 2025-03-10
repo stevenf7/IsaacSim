@@ -45,8 +45,8 @@ static inline usdrt::GfMatrix4d getXRMatrixFromOxrPose(const XrPosef& pose)
     usdrt::GfQuatd quat(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
     usdrt::GfMatrix3d rot(1.0);
     rot.SetRotate(quat);
-    usdrt::GfMatrix4d ret_mat(rot, trans);
-    return ret_mat;
+    usdrt::GfMatrix4d retMat(rot, trans);
+    return retMat;
 }
 }
 
@@ -156,21 +156,21 @@ public:
 
         if (stageAxis)
         {
-            const auto phy_T_world = XRMatrix::fromArray(m_lastFrameData.physicalWorldToWorldAnchor);
-            const auto world_T_virtual = XRMatrix::fromArray(m_lastFrameData.worldAnchorToVirtualWorld);
-            const usdrt::GfMatrix4d phy_T_world_usdrt = phy_T_world.template toUSDMatrix<usdrt::GfMatrix4d>();
-            const usdrt::GfMatrix4d world_T_virtual_usdrt = world_T_virtual.template toUSDMatrix<usdrt::GfMatrix4d>();
-            const usdrt::GfMatrix4d phy_T_virtual = phy_T_world_usdrt * world_T_virtual_usdrt;
+            const auto phyTWorld = XRMatrix::fromArray(m_lastFrameData.physicalWorldToWorldAnchor);
+            const auto worldTVirtual = XRMatrix::fromArray(m_lastFrameData.worldAnchorToVirtualWorld);
+            const usdrt::GfMatrix4d phyTWorldUsdrt = phyTWorld.template toUSDMatrix<usdrt::GfMatrix4d>();
+            const usdrt::GfMatrix4d worldTVirtualUsdrt = worldTVirtual.template toUSDMatrix<usdrt::GfMatrix4d>();
+            const usdrt::GfMatrix4d phyTVirtual = phyTWorldUsdrt * worldTVirtualUsdrt;
 
             std::for_each(result.jointLocations.begin(), result.jointLocations.end(),
                           [&](auto& location)
                           {
-                              const usdrt::GfMatrix4d joint_mat = getXRMatrixFromOxrPose(location.pose);
-                              const usdrt::GfMatrix4d joint_in_scene = joint_mat * phy_T_virtual;
-                              const auto quat = joint_in_scene.ExtractRotation().GetNormalized();
+                              const usdrt::GfMatrix4d jointMat = getXRMatrixFromOxrPose(location.pose);
+                              const usdrt::GfMatrix4d jointInScene = jointMat * phyTVirtual;
+                              const auto quat = jointInScene.ExtractRotation().GetNormalized();
                               const auto quati = quat.GetImaginary();
                               const auto quatr = quat.GetReal();
-                              const auto pos = joint_in_scene.ExtractTranslation();
+                              const auto pos = jointInScene.ExtractTranslation();
                               location.pose.position.x = static_cast<float>(pos[0]);
                               location.pose.position.y = static_cast<float>(pos[1]);
                               location.pose.position.z = static_cast<float>(pos[2]);
@@ -276,15 +276,15 @@ protected:
         m_lastFrameData = frameData;
     }
 
-protected:
-    static constexpr XrPosef identity_pose = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+
+    static constexpr XrPosef g_kIdentityPose = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
 
     // Create m_trackingSpace which will be used for all future hand joint queries.
     void createSpace()
     {
         XrReferenceSpaceCreateInfo referenceSpaceCreateInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
         referenceSpaceCreateInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
-        referenceSpaceCreateInfo.poseInReferenceSpace = identity_pose;
+        referenceSpaceCreateInfo.poseInReferenceSpace = g_kIdentityPose;
 
         CHECK_OXR(m_xrCreateReferenceSpace(m_session, &referenceSpaceCreateInfo, &m_trackingSpace));
     }
@@ -317,16 +317,16 @@ class OpenxrImpl : public IOpenxr
 public:
     virtual ~OpenxrImpl() = default;
 
-    virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locate_hand_joints(
+    virtual std::optional<std::array<XrHandJointLocationEXT, XR_HAND_JOINT_COUNT_EXT>> locateHandJoints(
         XrHandEXT hand, std::optional<XrTime> time, bool stageAxis) noexcept(false) override
     {
-        auto hand_tracker = m_component.getObjectPtr().as<HandTrackingImpl>().get();
-        if (hand_tracker == nullptr)
+        auto handTracker = m_component.getObjectPtr().as<HandTrackingImpl>().get();
+        if (handTracker == nullptr)
         {
             return {};
         }
 
-        const auto result = hand_tracker->querySingleHandJoints(hand, time, stageAxis);
+        const auto result = handTracker->querySingleHandJoints(hand, time, stageAxis);
 
         if (result)
         {
@@ -347,10 +347,10 @@ public:
                 omni::core::steal(new HandTrackingImpl()).as<omni::kit::xr::openxr::IOpenXRComponent_v1>();
 
             m_component = component;
-            auto* cached_interface = carb::getCachedInterface<omni::kit::xr::openxr::IOpenXRExtension_v1>();
-            if (cached_interface)
+            auto* cachedInterface = carb::getCachedInterface<omni::kit::xr::openxr::IOpenXRExtension_v1>();
+            if (cachedInterface)
             {
-                cached_interface->getComponentRegistry()->registerOpenXRComponent(component);
+                cachedInterface->getComponentRegistry()->registerOpenXRComponent(component);
             }
         }
         catch (...)
@@ -389,36 +389,36 @@ private:
 
 namespace
 {
-isaacsim::xr::openxr::OpenxrImpl* g_openxr_impl = nullptr;
+isaacsim::xr::openxr::OpenxrImpl* g_openxrImpl = nullptr;
 }
 
-void const CARB_ABI CreateOpenXR()
+void const CARB_ABI createOpenXr()
 {
-    if (g_openxr_impl == nullptr)
+    if (g_openxrImpl == nullptr)
     {
-        g_openxr_impl = new isaacsim::xr::openxr::OpenxrImpl();
-        g_openxr_impl->initExtension();
+        g_openxrImpl = new isaacsim::xr::openxr::OpenxrImpl();
+        g_openxrImpl->initExtension();
     }
 }
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    CreateOpenXR();
+    createOpenXr();
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    g_openxr_impl->deinitExtension();
-    delete g_openxr_impl;
+    g_openxrImpl->deinitExtension();
+    delete g_openxrImpl;
 }
 
-const struct carb::PluginImplDesc pluginImplDesc = { "isaacsim.xr.openxr.plugin", "OpenXR interface", "NVIDIA",
-                                                     carb::PluginHotReload::eEnabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.xr.openxr.plugin", "OpenXR interface", "NVIDIA",
+                                                    carb::PluginHotReload::eEnabled, "dev" };
 
-CARB_PLUGIN_IMPL(pluginImplDesc, isaacsim::xr::openxr::OpenxrImpl)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::xr::openxr::OpenxrImpl)
 
 void fillInterface(isaacsim::xr::openxr::OpenxrImpl& iface)
 {
-    CreateOpenXR();
-    iface = *g_openxr_impl;
+    createOpenXr();
+    iface = *g_openxrImpl;
 }

@@ -25,7 +25,7 @@
 #include <OgnIsaacComputeRTXLidarPointCloudDatabase.h>
 #include <iostream>
 #include <math.h>
-#define __DEBUG_PRINT_ON 0
+#define DEBUG_PRINT_ON 0
 
 namespace isaacsim
 {
@@ -48,8 +48,8 @@ inline void convertReturnToPoint(const unsigned int idx,
     const float azimuthDeg = gmo.elements.x[idx] + accuracyErrorAzimuthDeg;
     const float elevationDeg{ gmo.elements.y[idx] + accuracyErrorElevationDeg };
 
-    const float azimuthRad{ Deg2Rad(azimuthDeg) };
-    const float elevationRad{ Deg2Rad(elevationDeg) };
+    const float azimuthRad{ deg2Rad(azimuthDeg) };
+    const float elevationRad{ deg2Rad(elevationDeg) };
 
     const float sinAzimuth{ ::sinf(azimuthRad) };
     const float cosAzimuth{ ::cosf(azimuthRad) };
@@ -134,7 +134,7 @@ public:
                 "Input to IsaacComputeRTXLidarPointCloud is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
         }
-        if (helper.m_gmo.numElements == 0)
+        if (helper.mGmo.numElements == 0)
         {
             return true;
         }
@@ -156,15 +156,15 @@ public:
             }
         }
 
-        getTransformFromSensorPose(helper.m_gmo.frameEnd, matrixOutput);
+        getTransformFromSensorPose(helper.mGmo.frameEnd, matrixOutput);
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
-        size_t outSize = helper.m_gmo.numElements;
-        const float* distances = helper.m_gmo.elements.z;
+        size_t outSize = helper.mGmo.numElements;
+        const float* distances = helper.mGmo.elements.z;
         if (keepOnlyPositiveDistance)
         {
             outSize = 0;
-            for (size_t i = 0; i < helper.m_gmo.numElements; ++i)
+            for (size_t i = 0; i < helper.mGmo.numElements; ++i)
             {
                 if (distances[i] > 0.f)
                 {
@@ -173,22 +173,22 @@ public:
             }
         }
 
-        state.hostPcBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
-        float3* dataPtr = state.hostPcBuffer.data();
+        state.m_hostPcBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
+        float3* dataPtr = state.m_hostPcBuffer.data();
         db.outputs.dataPtr() = reinterpret_cast<uint64_t>(dataPtr);
         db.outputs.bufferSize() = outSize * sizeof(pxr::GfVec3f);
         db.outputs.cudaDeviceIndex() = -1; // TODO
         db.outputs.width() = static_cast<uint32_t>(outSize);
         db.outputs.height() = 1;
 
-#define _DEF_OUT_VAR(outName)                                                                                          \
+#define DEF_OUT_VAR(outName)                                                                                           \
     auto& db_outputs_##outName = db.outputs.outName();                                                                 \
     db_outputs_##outName.resize(outSize)
-        _DEF_OUT_VAR(intensity);
-        _DEF_OUT_VAR(range);
-        _DEF_OUT_VAR(azimuth);
-        _DEF_OUT_VAR(elevation);
-#undef _DEF_OUT_VAR
+        DEF_OUT_VAR(intensity);
+        DEF_OUT_VAR(range);
+        DEF_OUT_VAR(azimuth);
+        DEF_OUT_VAR(elevation);
+#undef DEF_OUT_VAR
 
         carb::Float3 accuracyErrorPosition{ db.inputs.accuracyErrorPosition()[0], db.inputs.accuracyErrorPosition()[1],
                                             db.inputs.accuracyErrorPosition()[2] };
@@ -196,11 +196,11 @@ public:
         float accuracyErrorElevationDeg = db.inputs.accuracyErrorElevationDeg();
 
         uint32_t atomicOutIdx = 0; // not atomic, but it will need to be if you parallelize this
-        for (uint32_t pointIdx = 0; pointIdx < helper.m_gmo.numElements; pointIdx++)
+        for (uint32_t pointIdx = 0; pointIdx < helper.mGmo.numElements; pointIdx++)
         {
 
             // Test for point validiy
-            if ((helper.m_gmo.elements.flags[pointIdx] & ElementFlags::VALID) != ElementFlags::VALID)
+            if ((helper.mGmo.elements.flags[pointIdx] & ElementFlags::VALID) != ElementFlags::VALID)
             {
                 continue;
             }
@@ -210,7 +210,7 @@ public:
                 const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
                 LidarPoint p;
                 convertReturnToPoint(
-                    pointIdx, helper.m_gmo, state.profile, accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
+                    pointIdx, helper.mGmo, state.profile, accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
                 p.x += accuracyErrorPosition.x;
                 p.y += accuracyErrorPosition.y;
                 p.z += accuracyErrorPosition.z;
@@ -218,14 +218,14 @@ public:
                 dataPtr[outIdx].y = p.y;
                 dataPtr[outIdx].z = p.z;
 
-#define _ASSIGN_OUT(outputName, index, comp, src) db_outputs_##outputName[index] comp = p.src
+#define ASSIGN_OUT(outputName, index, comp, src) db_outputs_##outputName[index] comp = p.src
 
-                _ASSIGN_OUT(intensity, outIdx, , intensity);
-                _ASSIGN_OUT(range, outIdx, , range);
-                _ASSIGN_OUT(azimuth, outIdx, , azimuth);
-                _ASSIGN_OUT(elevation, outIdx, , elevation);
+                ASSIGN_OUT(intensity, outIdx, , intensity);
+                ASSIGN_OUT(range, outIdx, , range);
+                ASSIGN_OUT(azimuth, outIdx, , azimuth);
+                ASSIGN_OUT(elevation, outIdx, , elevation);
 
-#undef _ASSIGN_OUT
+#undef ASSIGN_OUT
             }
         }
 
@@ -235,7 +235,7 @@ public:
 
 
 private:
-    isaacsim::core::includes::HostBufferBase<float3> hostPcBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> m_hostPcBuffer;
 };
 
 REGISTER_OGN_NODE()

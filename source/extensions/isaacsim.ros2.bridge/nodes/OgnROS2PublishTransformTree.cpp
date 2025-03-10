@@ -203,21 +203,21 @@ public:
 
         std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
             [stageUnits, &transforms, &time](
-                const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
+                const std::string& parentFrame, const std::string& childFrame, const physx::PxTransform& t)
         {
             TfTransformStamped currentMsg;
             currentMsg.timeStamp = time;
-            currentMsg.childFrame = child_frame;
-            currentMsg.parentFrame = parent_frame;
+            currentMsg.childFrame = childFrame;
+            currentMsg.parentFrame = parentFrame;
 
-            currentMsg.translation_x = t.p.x * static_cast<float>(stageUnits);
-            currentMsg.translation_y = t.p.y * static_cast<float>(stageUnits);
-            currentMsg.translation_z = t.p.z * static_cast<float>(stageUnits);
+            currentMsg.translationX = t.p.x * static_cast<float>(stageUnits);
+            currentMsg.translationY = t.p.y * static_cast<float>(stageUnits);
+            currentMsg.translationZ = t.p.z * static_cast<float>(stageUnits);
 
-            currentMsg.rotation_x = t.q.x;
-            currentMsg.rotation_y = t.q.y;
-            currentMsg.rotation_z = t.q.z;
-            currentMsg.rotation_w = t.q.w;
+            currentMsg.rotationX = t.q.x;
+            currentMsg.rotationY = t.q.y;
+            currentMsg.rotationZ = t.q.z;
+            currentMsg.rotationW = t.q.w;
 
             transforms.push_back(currentMsg);
         };

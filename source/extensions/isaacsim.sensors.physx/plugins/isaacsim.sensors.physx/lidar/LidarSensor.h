@@ -83,7 +83,7 @@ public:
      */
     int getNumCols() const
     {
-        return mCols;
+        return m_cols;
     }
 
     /**
@@ -92,7 +92,7 @@ public:
      */
     int getNumRows() const
     {
-        return mRows;
+        return m_rows;
     }
 
     /**
@@ -101,7 +101,7 @@ public:
      */
     int getNumColsTicked() const
     {
-        return mLastNumColsTicked;
+        return m_lastNumColsTicked;
     }
 
     /**
@@ -110,7 +110,7 @@ public:
      */
     std::vector<uint16_t>& getDepthData()
     {
-        return mLastDepth;
+        return m_lastDepth;
     }
 
     /**
@@ -119,7 +119,7 @@ public:
      */
     std::vector<float>& getBeamTimeData()
     {
-        return mLastBeamTime;
+        return m_lastBeamTime;
     }
 
     /**
@@ -128,7 +128,7 @@ public:
      */
     std::vector<float>& getLinearDepthData()
     {
-        return mLastLinearDepth;
+        return m_lastLinearDepth;
     }
 
     /**
@@ -137,7 +137,7 @@ public:
      */
     std::vector<uint8_t>& getIntensityData()
     {
-        return mLastIntensity;
+        return m_lastIntensity;
     }
 
     /**
@@ -146,7 +146,7 @@ public:
      */
     std::vector<float>& getZenithData()
     {
-        return mZenith;
+        return m_zenith;
     }
 
     /**
@@ -155,7 +155,7 @@ public:
      */
     std::vector<float>& getAzimuthData()
     {
-        return mLastAzimuth;
+        return m_lastAzimuth;
     }
 
     /**
@@ -164,7 +164,7 @@ public:
      */
     std::vector<std::string>& getPrimData()
     {
-        return mLastPrimData;
+        return m_lastPrimData;
     }
 
     /**
@@ -173,7 +173,7 @@ public:
      */
     carb::Float2 getAzimuthRange()
     {
-        return mAzimuthRange;
+        return m_azimuthRange;
     }
 
     /**
@@ -182,7 +182,7 @@ public:
      */
     carb::Float2 getZenithRange()
     {
-        return mZenithRange;
+        return m_zenithRange;
     }
 
 private:
@@ -217,11 +217,11 @@ private:
               const ::physx::PxQuat& worldRotation,
               bool zUp)
     {
-        if (!mPxScene)
+        if (!m_pxScene)
         {
             return;
         }
-        float invMaxDepth = 1.0f / mMaxDepth;
+        float invMaxDepth = 1.0f / m_maxDepth;
         // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up
         // vs Z up stage. So commented this out and using the pure Z up rotation version
         // ::physx::PxVec3 azimuthDir = zUp ? ::physx::PxVec3(0.0f, 0.0f, 1.0f) : ::physx::PxVec3(0.0f, 1.0f, 0.0f);
@@ -233,37 +233,37 @@ private:
         auto lidarLambda = [&](int colPreMod)
         {
             int col = colPreMod % cols;
-            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(mAzimuth[col], azimuthDir);
+            ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(m_azimuth[col], azimuthDir);
 
             for (int row = 0; row < rows; row++)
             {
                 int i = row + colPreMod * rows % (rows * cols);
 
                 // Time will be the same for all beams in this bucket - note beams are not interpolated over frame.
-                mBeamTime[i] = static_cast<float>(mTimeSeconds);
+                m_beamTime[i] = static_cast<float>(m_timeSeconds);
                 // Pitch then yaw
-                ::physx::PxQuat rot = mainrot * ::physx::PxQuat(mZenith[row], zenithDir);
+                ::physx::PxQuat rot = mainrot * ::physx::PxQuat(m_zenith[row], zenithDir);
                 ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
                 ::physx::PxRaycastHit raycastHit;
                 // Project the start point out to prevent collisions from origin
 
                 const bool hit = ::physx::PxSceneQueryExt::raycastSingle(
-                    *mPxScene, origin + unitDir * mMinDepth, unitDir, mMaxDepth, mHitFlags, raycastHit);
+                    *m_pxScene, origin + unitDir * m_minDepth, unitDir, m_maxDepth, m_hitFlags, raycastHit);
 
                 if (hit)
                 {
                     // the distance of the ray should be from center of lidar
-                    mDepth[i] = static_cast<uint16_t>((raycastHit.distance + mMinDepth) * invMaxDepth * 65535.0f);
-                    mLinearDepth[i] = (raycastHit.distance + mMinDepth) * mMetersPerUnit; // in meters
-                    mIntensity[i] = 255;
+                    m_depth[i] = static_cast<uint16_t>((raycastHit.distance + m_minDepth) * invMaxDepth * 65535.0f);
+                    m_linearDepth[i] = (raycastHit.distance + m_minDepth) * m_metersPerUnit; // in meters
+                    m_intensity[i] = 255;
 
                     carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
-                    mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+                    m_hitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
                     if (enableSemantics)
                     {
                         const char* hitActorName = raycastHit.actor->getName();
-                        mPrimData[i] = hitActorName;
+                        m_primData[i] = hitActorName;
                     }
                     if (drawPoints)
                     {
@@ -272,17 +272,17 @@ private:
                         // ::physx::PxVec3 diff = raycastHit.position - origin;
 
                         // auto temp = raycastHit.position - diff.getNormalized();
-                        // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
-                        auto ratio =
-                            (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
+                        // set ratio for color.  should be zero at m_minDepth and unity at m_maxDepth
+                        auto ratio = (m_linearDepth[i] - m_minDepth * m_metersPerUnit) /
+                                     ((m_maxDepth - m_minDepth) * m_metersPerUnit);
 
                         data.position = hitPos;
                         data.color = isaacsim::core::includes::color::distToRgba(ratio);
                         data.width = 5.0;
 
-                        mPointDrawing->addVertex(data);
+                        m_pointDrawing->addVertex(data);
                         // data.position = { temp.x, temp.y, temp.z };
-                        // mPointDrawing->addVertex(data);
+                        // m_pointDrawing->addVertex(data);
                     }
 
                     if (drawLines)
@@ -290,41 +290,41 @@ private:
                         carb::scenerenderer::PrimitiveVertex data;
 
                         ::physx::PxVec3 diff = raycastHit.position - origin;
-                        auto temp = origin + diff.getNormalized() * mMinDepth;
-                        // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
-                        auto ratio =
-                            (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
+                        auto temp = origin + diff.getNormalized() * m_minDepth;
+                        // set ratio for color.  should be zero at m_minDepth and unity at m_maxDepth
+                        auto ratio = (m_linearDepth[i] - m_minDepth * m_metersPerUnit) /
+                                     ((m_maxDepth - m_minDepth) * m_metersPerUnit);
 
                         data.position = { temp.x, temp.y, temp.z };
                         data.color = isaacsim::core::includes::color::distToRgba(ratio);
                         data.width = 1.0;
 
-                        mLineDrawing->addVertex(data);
+                        m_lineDrawing->addVertex(data);
                         data.position = hitPos;
-                        mLineDrawing->addVertex(data);
+                        m_lineDrawing->addVertex(data);
                     }
                 }
                 else
                 {
-                    mDepth[i] = 65535;
-                    mLinearDepth[i] = mMaxDepth * mMetersPerUnit; // in meters
-                    mIntensity[i] = 0;
-                    ::physx::PxVec3 hitPos = origin + unitDir * (mMaxDepth + mMinDepth);
+                    m_depth[i] = 65535;
+                    m_linearDepth[i] = m_maxDepth * m_metersPerUnit; // in meters
+                    m_intensity[i] = 0;
+                    ::physx::PxVec3 hitPos = origin + unitDir * (m_maxDepth + m_minDepth);
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
-                    mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
+                    m_hitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
                     if (drawLines)
                     {
                         carb::scenerenderer::PrimitiveVertex data;
 
-                        auto temp = origin + unitDir * mMinDepth;
+                        auto temp = origin + unitDir * m_minDepth;
 
                         data.position = { temp.x, temp.y, temp.z };
                         data.color = { 1, 1, 1, 50.0f / 255.0f };
                         data.width = 1.0;
 
-                        mLineDrawing->addVertex(data);
+                        m_lineDrawing->addVertex(data);
                         data.position = { hitPos.x, hitPos.y, hitPos.z };
-                        mLineDrawing->addVertex(data);
+                        m_lineDrawing->addVertex(data);
                     }
                 }
             }
@@ -338,167 +338,167 @@ private:
         }
         else
         {
-            mTasking->parallelFor(start, stop, lidarLambda);
+            m_tasking->parallelFor(start, stop, lidarLambda);
         }
     }
 
     // From the prim
-    float mRotationRate = 20.0f;
+    float m_rotationRate = 20.0f;
 
     /**
      * @brief High level of detail flag for sensor operation
      */
-    bool mHighLod = true;
+    bool m_highLod = true;
 
     /**
      * @brief Horizontal field of view in degrees
      */
-    float mHorizontalFov = 360.0f;
+    float m_horizontalFov = 360.0f;
 
     /**
      * @brief Vertical field of view in degrees
      */
-    float mVerticalFov = 30.0f;
+    float m_verticalFov = 30.0f;
 
     /**
      * @brief Horizontal angular resolution in degrees
      */
-    float mHorizontalResolution = 0.4f;
+    float m_horizontalResolution = 0.4f;
 
     /**
      * @brief Vertical angular resolution in degrees
      */
-    float mVerticalResolution = 4.0f;
+    float m_verticalResolution = 4.0f;
 
     /**
      * @brief Yaw offset angle in degrees
      */
-    float mYawOffset = 0.0f;
+    float m_yawOffset = 0.0f;
 
     /**
      * @brief Minimum depth range in world units
      */
-    float mMinDepth = 0;
+    float m_minDepth = 0;
 
     /**
      * @brief Maximum depth range in world units
      */
-    float mMaxDepth = 1e8;
+    float m_maxDepth = 1e8;
 
     /**
      * @brief Maximum step size for scanning
      */
-    float mMaxStepSize = 0;
+    float m_maxStepSize = 0;
 
     /**
      * @brief Maximum number of columns to process per tick
      */
-    int mMaxColsPerTick = 0;
+    int m_maxColsPerTick = 0;
 
     /**
      * @brief Last processed column index
      */
-    int mLastCol = 0;
+    int m_lastCol = 0;
 
     /**
      * @brief Scanning speed in columns per second
      */
-    float mColScanSpeed = 0;
+    float m_colScanSpeed = 0;
 
     /**
      * @brief Remaining time for the current scan cycle
      */
-    double mRemainingTime = 0;
+    double m_remainingTime = 0;
 
     /**
      * @brief Number of vertical samples (rows)
      */
-    int mRows = 0;
+    int m_rows = 0;
 
     /**
      * @brief Number of horizontal samples (columns)
      */
-    int mCols = 0;
+    int m_cols = 0;
 
     /**
      * @brief Number of columns processed in the last tick
      */
-    int mLastNumColsTicked = 0;
+    int m_lastNumColsTicked = 0;
 
     /**
      * @brief Vector of zenith angles for each row
      */
-    std::vector<float> mZenith;
+    std::vector<float> m_zenith;
 
     /**
      * @brief Current and last azimuth angles for each column
      */
-    std::vector<float> mAzimuth, mLastAzimuth;
+    std::vector<float> m_azimuth, m_lastAzimuth;
 
     /**
      * @brief Range of azimuth angles (min, max) in radians
      */
-    carb::Float2 mAzimuthRange;
+    carb::Float2 m_azimuthRange;
 
     /**
      * @brief Range of zenith angles (min, max) in radians
      */
-    carb::Float2 mZenithRange;
+    carb::Float2 m_zenithRange;
 
     /**
      * @brief Current and last beam timestamps
      */
-    std::vector<float> mBeamTime, mLastBeamTime;
+    std::vector<float> m_beamTime, m_lastBeamTime;
 
     /**
      * @brief Current and last linear depth measurements in meters
      */
-    std::vector<float> mLinearDepth, mLastLinearDepth;
+    std::vector<float> m_linearDepth, m_lastLinearDepth;
 
     /**
      * @brief Current and last intensity measurements
      */
-    std::vector<uint8_t> mIntensity, mLastIntensity;
+    std::vector<uint8_t> m_intensity, m_lastIntensity;
 
     /**
      * @brief Current and last normalized depth measurements
      */
-    std::vector<uint16_t> mDepth, mLastDepth;
+    std::vector<uint16_t> m_depth, m_lastDepth;
 
     /**
      * @brief Hit positions in sensor local space
      */
-    std::vector<carb::Float3> mHitPos;
+    std::vector<carb::Float3> m_hitPos;
 
     /**
      * @brief PhysX ray cast hit flags configuration
      */
-    const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+    const ::physx::PxHitFlags m_hitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
 
     /**
      * @brief Final translation of the sensor in world space
      */
-    ::physx::PxVec3 mFinalTranslation;
+    ::physx::PxVec3 m_finalTranslation;
 
     /**
      * @brief Final rotation of the sensor in world space
      */
-    ::physx::PxQuat mFinalRotation;
+    ::physx::PxQuat m_finalRotation;
 
     /**
      * @brief Pointer to synthetic data interface for semantic information
      */
-    omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
+    omni::syntheticdata::SyntheticData* m_syntheticDataPtr = nullptr;
 
     /**
      * @brief Flag to enable/disable semantic data collection
      */
-    bool mEnableSemantics;
+    bool m_enableSemantics;
 
     /**
      * @brief Current and last primitive data for semantic information
      */
-    std::vector<std::string> mPrimData, mLastPrimData;
+    std::vector<std::string> m_primData, m_lastPrimData;
 };
 
 

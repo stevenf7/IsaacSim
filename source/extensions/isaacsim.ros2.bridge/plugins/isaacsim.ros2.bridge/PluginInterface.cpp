@@ -47,10 +47,10 @@
 #include <unordered_map>
 #include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.ros2.bridge.plugin", "Isaac ROS2 bridge", "NVIDIA",
-                                                  carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.ros2.bridge.plugin", "Isaac ROS2 bridge", "NVIDIA",
+                                                    carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::ros2::bridge::Ros2Bridge)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::ros2::bridge::Ros2Bridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::isaac::dynamic_control::DynamicControl,
@@ -223,7 +223,7 @@ CARB_EXPORT void carbOnPluginStartup()
             }
             for (std::string lib : libraryList)
             {
-                g_backupLibraryLoader.LoadLibrary(lib, g_extensionPath);
+                g_backupLibraryLoader.loadLibrary(lib, g_extensionPath);
             }
         }
         g_factoryLoader =

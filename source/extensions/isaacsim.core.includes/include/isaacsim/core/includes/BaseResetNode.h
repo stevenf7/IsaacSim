@@ -65,9 +65,9 @@ public:
     {
         // When the node is created, we create a stage event subscription
         // The idea is that node is reset whenever stop is pressed
-        mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
-        mTimelineEventSub = carb::events::createSubscriptionToPopByType(
-            mTimeline->getTimelineEventStream(),
+        m_timeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+        m_timelineEventSub = carb::events::createSubscriptionToPopByType(
+            m_timeline->getTimelineEventStream(),
             static_cast<carb::events::EventType>(omni::timeline::TimelineEventType::eStop),
             [this](carb::events::IEvent* e) { reset(); }, 0, "IsaacSimOGNTimelineEventHandler");
     }
@@ -82,7 +82,7 @@ public:
      */
     virtual ~BaseResetNode()
     {
-        mTimelineEventSub = nullptr;
+        m_timelineEventSub = nullptr;
     }
 
     /**
@@ -98,10 +98,10 @@ public:
 
 private:
     /** @brief Subscription handle for timeline stop events */
-    carb::events::ISubscriptionPtr mTimelineEventSub;
+    carb::events::ISubscriptionPtr m_timelineEventSub;
 
     /** @brief Cached pointer to the timeline interface */
-    omni::timeline::ITimeline* mTimeline = nullptr;
+    omni::timeline::ITimeline* m_timeline = nullptr;
 };
 
 } // namespace includes

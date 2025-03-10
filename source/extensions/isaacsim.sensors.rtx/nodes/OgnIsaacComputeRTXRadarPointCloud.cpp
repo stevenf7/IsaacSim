@@ -33,22 +33,22 @@ using namespace omni::sensors;
 
 inline void convertDetectionToPoint(const GenericModelOutput& gmo, uint32_t idx, float3& p)
 {
-    const float* az_ang_deg = gmo.elements.x;
-    const float* elev_ang_deg = gmo.elements.y;
-    const float* r_m = gmo.elements.z;
+    const float* azAngDeg = gmo.elements.x;
+    const float* elevAngDeg = gmo.elements.y;
+    const float* rM = gmo.elements.z;
 
-    const float sinAzimuth{ ::sinf(Deg2Rad(az_ang_deg[idx])) };
-    const float cosAzimuth{ ::cosf(Deg2Rad(az_ang_deg[idx])) };
-    const float sinElevation{ ::sinf(Deg2Rad(elev_ang_deg[idx])) };
-    const float cosElevation{ ::cosf(Deg2Rad(elev_ang_deg[idx])) };
+    const float sinAzimuth{ ::sinf(deg2Rad(azAngDeg[idx])) };
+    const float cosAzimuth{ ::cosf(deg2Rad(azAngDeg[idx])) };
+    const float sinElevation{ ::sinf(deg2Rad(elevAngDeg[idx])) };
+    const float cosElevation{ ::cosf(deg2Rad(elevAngDeg[idx])) };
 
     const float rayDirectionX{ cosElevation * cosAzimuth };
     const float rayDirectionY{ cosElevation * sinAzimuth };
     const float rayDirectionZ{ sinElevation };
 
-    p.x = rayDirectionX * r_m[idx];
-    p.y = rayDirectionY * r_m[idx];
-    p.z = rayDirectionZ * r_m[idx];
+    p.x = rayDirectionX * rM[idx];
+    p.y = rayDirectionY * rM[idx];
+    p.z = rayDirectionZ * rM[idx];
 }
 
 class OgnIsaacComputeRTXRadarPointCloud
@@ -81,7 +81,7 @@ public:
                 "Input to IsaacComputeRTXRadarPointCloud is not a valid RADAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
         }
-        if (helper.m_gmo.numElements == 0)
+        if (helper.mGmo.numElements == 0)
         {
             return true;
         }
@@ -90,7 +90,7 @@ public:
         // When the GMO output for the radar starts outputing the correct transform, you can
         // undefine this.
 #ifndef RADAR_HAS_NO_TRANSFORM
-        frameEnd = helper.m_gmo.frameEnd;
+        frameEnd = helper.mGmo.frameEnd;
 #else
         pxr::GfVec3d translate{ 0, 0, 0 };
         pxr::GfQuatd rotate{ 1, 0, 0, 0 };
@@ -112,12 +112,12 @@ public:
         frameEnd.posM[2] = (float)translate[2];
 #endif
         getTransformFromSensorPose(frameEnd, matrixOutput);
-        RadarAuxiliaryData* aux = reinterpret_cast<RadarAuxiliaryData*>(helper.m_gmo.auxiliaryData);
+        RadarAuxiliaryData* aux = reinterpret_cast<RadarAuxiliaryData*>(helper.mGmo.auxiliaryData);
 
         // for the radar data:
         // x = az_ang_rad
         // y = elev_ang_rad
-        // z = r_m
+        // z = rM
         // scalar = rcs_dbsm
         // aux->rv_ms = rv_ms
         db.outputs.sensorID() = aux->sensorID; /**< Sensor Id for sensor that generated the aux */
@@ -131,10 +131,10 @@ public:
         db.outputs.minElRad() = aux->minElRad; /**< The min unambiguous elevation for the aux */
         db.outputs.maxElRad() = aux->maxElRad; /**< The max unambiguous elevation for the aux */
 
-        size_t outSize = helper.m_gmo.numElements; // aux->numDetections;
+        size_t outSize = helper.mGmo.numElements; // aux->numDetections;
 
-        state.hostPcBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
-        float3* dataPtr = state.hostPcBuffer.data();
+        state.m_hostPcBuffer.resize(outSize, make_float3(0.0f, 0.0f, 0.0f));
+        float3* dataPtr = state.m_hostPcBuffer.data();
         db.outputs.dataPtr() = reinterpret_cast<uint64_t>(dataPtr);
 
         db.outputs.bufferSize() = outSize * sizeof(pxr::GfVec3f);
@@ -142,44 +142,44 @@ public:
         db.outputs.width() = static_cast<uint32_t>(outSize);
         db.outputs.height() = 1;
 
-#define _DEF_OUT_VAR(outName)                                                                                          \
+#define DEF_OUT_VAR(outName)                                                                                           \
     auto& db_outputs_##outName = db.outputs.outName();                                                                 \
     db_outputs_##outName.resize(outSize)
-        _DEF_OUT_VAR(radialDistance);
-        _DEF_OUT_VAR(radialVelocity);
-        _DEF_OUT_VAR(azimuth);
-        _DEF_OUT_VAR(elevation);
-        _DEF_OUT_VAR(rcs);
-#undef _DEF_OUT_VAR
+        DEF_OUT_VAR(radialDistance);
+        DEF_OUT_VAR(radialVelocity);
+        DEF_OUT_VAR(azimuth);
+        DEF_OUT_VAR(elevation);
+        DEF_OUT_VAR(rcs);
+#undef DEF_OUT_VAR
 
         for (uint32_t i = 0; i < outSize; ++i)
         {
             // Test for point validiy
-            if ((helper.m_gmo.elements.flags[i] & ElementFlags::VALID) != ElementFlags::VALID)
+            if ((helper.mGmo.elements.flags[i] & ElementFlags::VALID) != ElementFlags::VALID)
             {
                 continue;
             }
-            convertDetectionToPoint(helper.m_gmo, i, dataPtr[i]);
+            convertDetectionToPoint(helper.mGmo, i, dataPtr[i]);
 
-            // x = az_ang_deg
-            // y = elev_ang_deg
-            // z = r_m
+            // x = azAngDeg
+            // y = elevAngDeg
+            // z = rM
             // scalar = rcs_dbsm
             // aux->rv_ms = rv_ms
-#define _IF_ASSIGN_OUT(has, outputName, src) db_outputs_##outputName[i] = (has) ? src[i] : 0
-            _IF_ASSIGN_OUT(true, radialDistance, helper.m_gmo.elements.z);
-            _IF_ASSIGN_OUT(true, radialVelocity, aux->rv_ms);
-            _IF_ASSIGN_OUT(true, azimuth, helper.m_gmo.elements.x);
-            _IF_ASSIGN_OUT(true, elevation, helper.m_gmo.elements.y);
-            _IF_ASSIGN_OUT(true, rcs, helper.m_gmo.elements.scalar);
-#undef _IF_ASSIGN_OUT
+#define IF_ASSIGN_OUT(has, outputName, src) db_outputs_##outputName[i] = (has) ? src[i] : 0
+            IF_ASSIGN_OUT(true, radialDistance, helper.mGmo.elements.z);
+            IF_ASSIGN_OUT(true, radialVelocity, aux->rv_ms);
+            IF_ASSIGN_OUT(true, azimuth, helper.mGmo.elements.x);
+            IF_ASSIGN_OUT(true, elevation, helper.mGmo.elements.y);
+            IF_ASSIGN_OUT(true, rcs, helper.mGmo.elements.scalar);
+#undef IF_ASSIGN_OUT
         }
 
         return true;
     }
 
 private:
-    isaacsim::core::includes::HostBufferBase<float3> hostPcBuffer;
+    isaacsim::core::includes::HostBufferBase<float3> m_hostPcBuffer;
 };
 
 REGISTER_OGN_NODE()

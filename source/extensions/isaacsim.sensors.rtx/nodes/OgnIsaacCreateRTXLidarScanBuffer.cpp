@@ -27,11 +27,11 @@
 #include <GenericModelOutput.h>
 #include <OgnIsaacCreateRTXLidarScanBufferDatabase.h>
 
-extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int N, int cdi);
-extern "C" void elevation(float* srcDest, float3* scratch, float* scratch2, float accuracyError, int N, int cdi);
+extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int n, int cdi);
+extern "C" void elevation(float* srcDest, float3* scratch, float* scratch2, float accuracyError, int n, int cdi);
 extern "C" void pointCloudWithTransform(
-    float3* srcDest, const float* cosEle, const float* dist, const float3& accuracyError, const double* T, int N, int cdi);
-extern "C" void timestamp(int32_t* dest, int32_t* src, uint64_t tickStartTime, int N, int cdi);
+    float3* srcDest, const float* cosEle, const float* dist, const float3& accuracyError, const double* t, int n, int cdi);
+extern "C" void timestamp(int32_t* dest, int32_t* src, uint64_t tickStartTime, int n, int cdi);
 
 
 namespace isaacsim
@@ -64,7 +64,7 @@ private:
     isaacsim::core::includes::HostBufferBase<uint32_t> hostMaterialIdScanBuffer;
 
     // when keep only positive distance is true, we ouput smaller arrays.
-    isaacsim::core::includes::HostBufferBase<uint32_t> hostIndexShrunkBuffer;
+    isaacsim::core::includes::HostBufferBase<uint32_t> m_hostIndexShrunkBuffer;
     isaacsim::core::includes::HostBufferBase<float3> hostPcShrunkBuffer;
     isaacsim::core::includes::HostBufferBase<float> hostDistanceShrunkBuffer;
     isaacsim::core::includes::HostBufferBase<float> hostIntensityShrunkBuffer;
@@ -77,13 +77,13 @@ private:
     isaacsim::core::includes::HostBufferBase<uint32_t> hostEmitterIdShrunkBuffer;
     isaacsim::core::includes::HostBufferBase<uint32_t> hostMaterialIdShrunkBuffer;
 
-    isaacsim::core::includes::DeviceBufferBase<float3> pcBuffer; // 3d point cloud
-    isaacsim::core::includes::DeviceBufferBase<float> distanceBuffer;
-    isaacsim::core::includes::DeviceBufferBase<float> intensityBuffer;
-    isaacsim::core::includes::DeviceBufferBase<float> azimuthBuffer;
-    isaacsim::core::includes::DeviceBufferBase<float> elevationBuffer;
-    isaacsim::core::includes::DeviceBufferBase<int32_t> deltaTimesBuffer;
-    isaacsim::core::includes::DeviceBufferBase<int32_t> timestampBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float3> m_pcBuffer; // 3d point cloud
+    isaacsim::core::includes::DeviceBufferBase<float> m_distanceBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float> m_intensityBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float> m_azimuthBuffer;
+    isaacsim::core::includes::DeviceBufferBase<float> m_elevationBuffer;
+    isaacsim::core::includes::DeviceBufferBase<int32_t> m_deltaTimesBuffer;
+    isaacsim::core::includes::DeviceBufferBase<int32_t> m_timestampBuffer;
 
     // TODOMTC EmitterProfile only need distanceCorrectionM, horOffsetM, vertOffsetM for GPU
 
@@ -147,7 +147,7 @@ public:
                 "Input to IsaacCreateRTXLidarScanBuffer is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
             return true;
         }
-        if (helper.m_gmo.numElements == 0)
+        if (helper.mGmo.numElements == 0)
         {
             return true;
         }
@@ -166,10 +166,10 @@ public:
         // TODOMTC use the auxPoints->scanComplete flag to just build on this till a complete scan?
         state.updateLidarConfig(db.tokenToString(db.inputs.renderProductPath()));
 
-        getTransformFromSensorPose(helper.m_gmo.frameEnd, matrixOutput); // TODOMTC interp moving transforms?
+        getTransformFromSensorPose(helper.mGmo.frameEnd, matrixOutput); // TODOMTC interp moving transforms?
 
         const omni::sensors::LidarAuxiliaryData* auxPoints =
-            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.m_gmo.auxiliaryData); // gpc.auxiliaryPoints);
+            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.mGmo.auxiliaryData); // gpc.auxiliaryPoints);
         // startLocFullScan is the location in a full scan buffer of first element in the incoming data.
         //   startTick is 0 for all solid state, so use the fist emitter Id.  This will usually be 0, unless one of the
         //   previous frames ran over, then it will start at the length of the run over.
@@ -178,7 +178,7 @@ public:
             state.getNumEchos() * (isSolidState ? helper.getEmitterId(0) : helper.getTickId(0) * state.getNumChannels());
 
         //  numReturnsInput is the number returns held in the incoming data
-        const uint32_t numReturnsInput = helper.m_gmo.numElements;
+        const uint32_t numReturnsInput = helper.mGmo.numElements;
 
         db.outputs.numReturnsPerScan() = state.getReturnsPerScan();
         db.outputs.ticksPerScan() = state.getTicksPerScan();
@@ -218,28 +218,28 @@ public:
             state.hostMaterialIdScanBuffer.resize(state.getReturnsPerScan(), 0);
         if (keepOnlyPositiveDistance)
         {
-            state.hostIndexShrunkBuffer.resize(state.getReturnsPerScan(), 0);
+            state.m_hostIndexShrunkBuffer.resize(state.getReturnsPerScan(), 0);
         }
 
-        state.pcBuffer.setDevice(cudaDeviceIndex);
-        state.distanceBuffer.setDevice(cudaDeviceIndex);
-        state.intensityBuffer.setDevice(cudaDeviceIndex);
-        state.azimuthBuffer.setDevice(cudaDeviceIndex);
-        state.elevationBuffer.setDevice(cudaDeviceIndex);
+        state.m_pcBuffer.setDevice(cudaDeviceIndex);
+        state.m_distanceBuffer.setDevice(cudaDeviceIndex);
+        state.m_intensityBuffer.setDevice(cudaDeviceIndex);
+        state.m_azimuthBuffer.setDevice(cudaDeviceIndex);
+        state.m_elevationBuffer.setDevice(cudaDeviceIndex);
 
-        state.pcBuffer.resize(numReturnsInput);
-        state.distanceBuffer.resize(numReturnsInput);
-        state.intensityBuffer.resize(numReturnsInput);
-        state.azimuthBuffer.resize(numReturnsInput);
-        state.elevationBuffer.resize(numReturnsInput);
+        state.m_pcBuffer.resize(numReturnsInput);
+        state.m_distanceBuffer.resize(numReturnsInput);
+        state.m_intensityBuffer.resize(numReturnsInput);
+        state.m_azimuthBuffer.resize(numReturnsInput);
+        state.m_elevationBuffer.resize(numReturnsInput);
         // to compute delta times we also need tick info
         if (db.inputs.outputTimestamp())
         {
-            state.timestampBuffer.setDevice(cudaDeviceIndex);
-            state.deltaTimesBuffer.setDevice(cudaDeviceIndex);
+            state.m_timestampBuffer.setDevice(cudaDeviceIndex);
+            state.m_deltaTimesBuffer.setDevice(cudaDeviceIndex);
 
-            state.timestampBuffer.resize(numReturnsInput);
-            state.deltaTimesBuffer.resize(numReturnsInput);
+            state.m_timestampBuffer.resize(numReturnsInput);
+            state.m_deltaTimesBuffer.resize(numReturnsInput);
         }
 
         // If the number or returns is greater then the returns left to fill in the scan, then we need to roll over the
@@ -258,20 +258,20 @@ public:
             isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
             if (db.inputs.outputTimestamp())
             {
-                state.deltaTimesBuffer.copyAsync(
-                    helper.m_gmo.elements.timeOffsetNs, numReturnsInput, cudaMemcpyHostToDevice);
-                // uint64_t *dest, const uint32_t *src, const uint64_t *tickSource, int tickSize, int N, int cdi)
-                timestamp(state.timestampBuffer.data(), state.deltaTimesBuffer.data(),
-                          helper.m_gmo.frameStart.timestampNs, numReturnsInput, cudaDeviceIndex);
-                wrapCudaMemcpyAsync(state.hostTimestampScanBuffer.data(), state.timestampBuffer.data(),
+                state.m_deltaTimesBuffer.copyAsync(
+                    helper.mGmo.elements.timeOffsetNs, numReturnsInput, cudaMemcpyHostToDevice);
+                // uint64_t *dest, const uint32_t *src, const uint64_t *tickSource, int tickSize, int n, int cdi)
+                timestamp(state.m_timestampBuffer.data(), state.m_deltaTimesBuffer.data(),
+                          helper.mGmo.frameStart.timestampNs, numReturnsInput, cudaDeviceIndex);
+                wrapCudaMemcpyAsync(state.hostTimestampScanBuffer.data(), state.m_timestampBuffer.data(),
                                     startLocFullScan, numReturns, numSpilloverReturns, cudaMemcpyDeviceToHost);
             }
-            state.elevationBuffer.copyAsync(helper.m_gmo.elements.y, numReturnsInput, cudaMemcpyHostToDevice);
-            state.distanceBuffer.copyAsync(helper.m_gmo.elements.z, numReturnsInput, cudaMemcpyHostToDevice);
-            state.azimuthBuffer.copyAsync(helper.m_gmo.elements.x, numReturnsInput, cudaMemcpyHostToDevice);
+            state.m_elevationBuffer.copyAsync(helper.mGmo.elements.y, numReturnsInput, cudaMemcpyHostToDevice);
+            state.m_distanceBuffer.copyAsync(helper.mGmo.elements.z, numReturnsInput, cudaMemcpyHostToDevice);
+            state.m_azimuthBuffer.copyAsync(helper.mGmo.elements.x, numReturnsInput, cudaMemcpyHostToDevice);
 
             if (db.inputs.outputDistance())
-                wrapCudaMemcpyAsync(state.hostDistanceScanBuffer.data(), helper.m_gmo.elements.z, startLocFullScan,
+                wrapCudaMemcpyAsync(state.hostDistanceScanBuffer.data(), helper.mGmo.elements.z, startLocFullScan,
                                     numReturns, numSpilloverReturns, cudaMemcpyHostToHost);
             if (db.inputs.outputVelocity() &&
                 (auxPoints->filledAuxMembers & LidarAuxHas::VELOCITIES) == LidarAuxHas::VELOCITIES)
@@ -281,8 +281,8 @@ public:
                 wrapCudaMemcpyAsync(state.hostObjectIdScanBuffer.data(), auxPoints->objId, startLocFullScan, numReturns,
                                     numSpilloverReturns, cudaMemcpyHostToHost);
             if (db.inputs.outputIntensity())
-                wrapCudaMemcpyAsync(state.hostIntensityScanBuffer.data(), helper.m_gmo.elements.scalar,
-                                    startLocFullScan, numReturns, numSpilloverReturns, cudaMemcpyHostToHost);
+                wrapCudaMemcpyAsync(state.hostIntensityScanBuffer.data(), helper.mGmo.elements.scalar, startLocFullScan,
+                                    numReturns, numSpilloverReturns, cudaMemcpyHostToHost);
             if (db.inputs.outputNormal() &&
                 (auxPoints->filledAuxMembers & LidarAuxHas::HIT_NORMALS) == LidarAuxHas::HIT_NORMALS)
                 wrapCudaMemcpyAsync(state.hostNormalScanBuffer.data(), (float3*)auxPoints->hitNormals, startLocFullScan,
@@ -294,22 +294,23 @@ public:
                 wrapCudaMemcpyAsync(state.hostMaterialIdScanBuffer.data(), auxPoints->matId, startLocFullScan,
                                     numReturns, numSpilloverReturns, cudaMemcpyHostToHost);
 
-            elevation(state.elevationBuffer.data(), state.pcBuffer.data(), state.intensityBuffer.data(),
+            elevation(state.m_elevationBuffer.data(), state.m_pcBuffer.data(), state.m_intensityBuffer.data(),
                       accuracyErrorElevationDeg, numReturnsInput, cudaDeviceIndex);
             if (db.inputs.outputElevation())
-                wrapCudaMemcpyAsync(state.hostElevationScanBuffer.data(), state.elevationBuffer.data(),
+                wrapCudaMemcpyAsync(state.hostElevationScanBuffer.data(), state.m_elevationBuffer.data(),
                                     startLocFullScan, numReturns, numSpilloverReturns, cudaMemcpyDeviceToHost);
 
-            azimuthDegToRad(state.azimuthBuffer.data(), state.pcBuffer.data(), accuracyErrorAzimuthDeg, numReturnsInput,
-                            cudaDeviceIndex);
+            azimuthDegToRad(state.m_azimuthBuffer.data(), state.m_pcBuffer.data(), accuracyErrorAzimuthDeg,
+                            numReturnsInput, cudaDeviceIndex);
             if (db.inputs.outputAzimuth())
-                wrapCudaMemcpyAsync(state.hostAzimuthScanBuffer.data(), state.azimuthBuffer.data(), startLocFullScan,
+                wrapCudaMemcpyAsync(state.hostAzimuthScanBuffer.data(), state.m_azimuthBuffer.data(), startLocFullScan,
                                     numReturns, numSpilloverReturns, cudaMemcpyDeviceToHost);
 
-            pointCloudWithTransform(state.pcBuffer.data(), state.intensityBuffer.data(), state.distanceBuffer.data(),
-                                    accuracyErrorPosition, db.inputs.transformPoints() ? matrixOutput.data() : nullptr,
-                                    numReturnsInput, cudaDeviceIndex);
-            wrapCudaMemcpyAsync(state.hostPcScanBuffer.data(), state.pcBuffer.data(), startLocFullScan, numReturns,
+            pointCloudWithTransform(state.m_pcBuffer.data(), state.m_intensityBuffer.data(),
+                                    state.m_distanceBuffer.data(), accuracyErrorPosition,
+                                    db.inputs.transformPoints() ? matrixOutput.data() : nullptr, numReturnsInput,
+                                    cudaDeviceIndex);
+            wrapCudaMemcpyAsync(state.hostPcScanBuffer.data(), state.m_pcBuffer.data(), startLocFullScan, numReturns,
                                 numSpilloverReturns, cudaMemcpyDeviceToHost);
 
             cudaDeviceSynchronize();
@@ -324,7 +325,7 @@ public:
             auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
             outSize = 0;
             const float* distScan = state.hostDistanceScanBuffer.data();
-            uint32_t* ib = state.hostIndexShrunkBuffer.data(); // index buffer
+            uint32_t* ib = state.m_hostIndexShrunkBuffer.data(); // index buffer
             // preform sequential stream compaction
             const int rps = state.getReturnsPerScan();
             for (int i = 0; i < rps; ++i) // starts as max size.
@@ -390,12 +391,12 @@ public:
                              shrunkBuff[i] = scanBuffer[ib[i]];                                                        \
                          }                                                                                             \
                      })
-#define _GATHER_OUTPUT_IF(BUFF_NAME)                                                                                   \
+#define GATHER_OUTPUT_IF(BUFF_NAME)                                                                                    \
     if (db.inputs.output##BUFF_NAME())                                                                                 \
     _GATHER_OUTPUT(BUFF_NAME)
 
 
-#define _GATHER_OUTPUT_SEQUENTIAL(BUFF_NAME)                                                                           \
+#define GATHER_OUTPUT_SEQUENTIAL(BUFF_NAME)                                                                            \
     {                                                                                                                  \
         const auto* scanBuffer = state.host##BUFF_NAME##ScanBuffer.data();                                             \
         auto* shrunkBuff = state.host##BUFF_NAME##ShrunkBuffer.data();                                                 \
@@ -404,24 +405,24 @@ public:
             shrunkBuff[i] = scanBuffer[ib[i]];                                                                         \
         }                                                                                                              \
     }
-#define _GATHER_OUTPUT_SEQUENTIAL_IF(BUFF_NAME)                                                                        \
+#define GATHER_OUTPUT_SEQUENTIAL_IF(BUFF_NAME)                                                                         \
     if (db.inputs.output##BUFF_NAME())                                                                                 \
-    _GATHER_OUTPUT_SEQUENTIAL(BUFF_NAME)
+    GATHER_OUTPUT_SEQUENTIAL(BUFF_NAME)
 
             _GATHER_OUTPUT(Pc);
-            _GATHER_OUTPUT_IF(Distance);
-            _GATHER_OUTPUT_IF(Intensity);
-            _GATHER_OUTPUT_IF(Azimuth);
-            _GATHER_OUTPUT_IF(Elevation);
-            _GATHER_OUTPUT_IF(ObjectId);
-            _GATHER_OUTPUT_IF(Velocity);
-            _GATHER_OUTPUT_IF(Normal);
-            _GATHER_OUTPUT_IF(Timestamp);
-            _GATHER_OUTPUT_IF(EmitterId);
-            _GATHER_OUTPUT_IF(MaterialId);
+            GATHER_OUTPUT_IF(Distance);
+            GATHER_OUTPUT_IF(Intensity);
+            GATHER_OUTPUT_IF(Azimuth);
+            GATHER_OUTPUT_IF(Elevation);
+            GATHER_OUTPUT_IF(ObjectId);
+            GATHER_OUTPUT_IF(Velocity);
+            GATHER_OUTPUT_IF(Normal);
+            GATHER_OUTPUT_IF(Timestamp);
+            GATHER_OUTPUT_IF(EmitterId);
+            GATHER_OUTPUT_IF(MaterialId);
 
 #undef _GATHER_OUTPUT
-#undef _GATHER_OUTPUT_SEQUENTIAL
+#undef GATHER_OUTPUT_SEQUENTIAL
 
             db.outputs.indexPtr() = reinterpret_cast<uint64_t>(ib);
             db.outputs.indexBufferSize() = outSize * sizeof(uint32_t);

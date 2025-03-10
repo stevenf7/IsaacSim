@@ -123,7 +123,7 @@ public:
             for (const pxr::UsdPrim& prim : pxr::UsdPrimRange(startPrim))
             {
 
-                std::string primNameOverride = isaacsim::core::includes::GetName(prim);
+                std::string primNameOverride = isaacsim::core::includes::getName(prim);
                 std::string primName = prim.GetName();
                 if (primNameOverride != primName)
                 {

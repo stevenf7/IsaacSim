@@ -112,15 +112,15 @@ struct TfTransformStamped
     std::string childFrame; /**< Frame ID of the child frame to which this transform points */
 
     // Translation components
-    double translation_x; /**< Translation of child frame from parent frame (x-axis) */
-    double translation_y; /**< Translation of child frame from parent frame (y-axis) */
-    double translation_z; /**< Translation of child frame from parent frame (z-axis) */
+    double translationX; /**< Translation of child frame from parent frame (x-axis) */
+    double translationY; /**< Translation of child frame from parent frame (y-axis) */
+    double translationZ; /**< Translation of child frame from parent frame (z-axis) */
 
     // Quaternion components
-    double rotation_x; /**< Rotation of child frame from parent frame (quaternion x-component) */
-    double rotation_y; /**< Rotation of child frame from parent frame (quaternion y-component) */
-    double rotation_z; /**< Rotation of child frame from parent frame (quaternion z-component) */
-    double rotation_w; /**< Rotation of child frame from parent frame (quaternion w-component) */
+    double rotationX; /**< Rotation of child frame from parent frame (quaternion x-component) */
+    double rotationY; /**< Rotation of child frame from parent frame (quaternion y-component) */
+    double rotationZ; /**< Rotation of child frame from parent frame (quaternion z-component) */
+    double rotationW; /**< Rotation of child frame from parent frame (quaternion w-component) */
 };
 
 /**

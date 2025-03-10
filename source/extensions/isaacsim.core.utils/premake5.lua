@@ -12,7 +12,7 @@ project_ext_bindings {
 staticruntime("Off")
 add_files("impl", "plugins")
 add_files("iface", "include")
-defines { "OMPRIMUTILSEXPORT" }
+defines { "ISAACSIM_CORE_UTILS_EXPORT" }
 
 include_physx()
 includedirs {

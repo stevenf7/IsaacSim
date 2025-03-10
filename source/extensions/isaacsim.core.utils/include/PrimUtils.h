@@ -16,13 +16,13 @@
 #include <string>
 
 #ifdef _MSC_VER
-#    if OMPRIMUTILSEXPORT
-#        define DllExport __declspec(dllexport)
+#    if ISAACSIM_CORE_UTILS_EXPORT
+#        define DLL_EXPORT __declspec(dllexport)
 #    else
-#        define DllExport __declspec(dllimport)
+#        define DLL_EXPORT __declspec(dllimport)
 #    endif
 #else
-#    define DllExport
+#    define DLL_EXPORT
 #endif
 
 namespace isaacsim
@@ -32,11 +32,11 @@ namespace core
 namespace utils
 {
 
-DllExport std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,
-                                                         long int stageId,
-                                                         const std::string& api = std::string(""));
+DLL_EXPORT std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,
+                                                          long int stageId,
+                                                          const std::string& api = std::string(""));
 
-DllExport void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
+DLL_EXPORT void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
 }
 }
 }

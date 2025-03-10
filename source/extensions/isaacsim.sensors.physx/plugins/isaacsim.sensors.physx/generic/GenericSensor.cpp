@@ -55,30 +55,30 @@ void GenericSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorGeneric& typedPrim = pxr::RangeSensorGeneric(mPrim);
+    const pxr::RangeSensorGeneric& typedPrim = pxr::RangeSensorGeneric(m_prim);
 
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSamplingRateAttr(), mSamplingRate);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetStreamingAttr(), mStreaming);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSamplingRateAttr(), m_samplingRate);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetStreamingAttr(), m_streaming);
 
-    mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
-    mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
-    mMinDepth = mMinRange / mMetersPerUnit;
-    mMaxDepth = mMaxRange / mMetersPerUnit;
+    m_minRange = pxr::GfClamp(m_minRange, 0, 1e9f);
+    m_maxRange = pxr::GfClamp(m_maxRange, m_minRange, 1e9f);
+    m_minDepth = m_minRange / m_metersPerUnit;
+    m_maxDepth = m_maxRange / m_metersPerUnit;
 
 
-    // all of these will be resized to mSamplesPerTick;
-    mAzimuth.assign(mSamplingRate, 0);
-    mZenith.assign(mSamplingRate, 0);
-    mOffset.assign(mSamplingRate, { 0, 0, 0 });
-    mLinearDepth.assign(mSamplingRate, 0);
-    mIntensity.assign(mSamplingRate, 0);
-    mDepth.assign(mSamplingRate, 0);
-    mHitPos.assign(mSamplingRate, { 0, 0, 0 });
+    // all of these will be resized to m_samplesPerTick;
+    m_azimuth.assign(m_samplingRate, 0);
+    m_zenith.assign(m_samplingRate, 0);
+    m_offset.assign(m_samplingRate, { 0, 0, 0 });
+    m_linearDepth.assign(m_samplingRate, 0);
+    m_intensity.assign(m_samplingRate, 0);
+    m_depth.assign(m_samplingRate, 0);
+    m_hitPos.assign(m_samplingRate, { 0, 0, 0 });
 }
 
 bool GenericSensor::sendNextBatch()
 {
-    if (mAzimuth_A.empty() || mAzimuth_B.empty())
+    if (m_azimuthA.empty() || m_azimuthB.empty())
     {
         return true;
     }
@@ -88,7 +88,7 @@ bool GenericSensor::sendNextBatch()
     }
 }
 
-void GenericSensor::setNextBatchRays(const float* azimuth_angles, const float* zenith_angles, const int sample_length)
+void GenericSensor::setNextBatchRays(const float* azimuthAngles, const float* zenithAngles, const int sampleLength)
 {
     // if not streaming
     // copy the first half of the data to batch_A, second half to batch_B
@@ -100,59 +100,59 @@ void GenericSensor::setNextBatchRays(const float* azimuth_angles, const float* z
     // if one of the batches become empty during data wrapping, the next tick should fill the batch before it checks in
     // line 475 (so it shouldn't skip any ticks for scanning)
 
-    if (!mStreaming)
+    if (!m_streaming)
     {
-        A_length = (sample_length / 2);
-        B_length = sample_length - A_length;
-        mAzimuth_A.assign(A_length, 0);
-        mZenith_A.assign(A_length, 0);
-        mAzimuth_B.assign(B_length, 0);
-        mZenith_B.assign(B_length, 0);
-        memcpy(&mAzimuth_A.front(), azimuth_angles, A_length * sizeof(float));
-        memcpy(&mZenith_A.front(), zenith_angles, A_length * sizeof(float));
-        memcpy(&mAzimuth_B.front(), azimuth_angles + A_length, B_length * sizeof(float));
-        memcpy(&mZenith_B.front(), zenith_angles + A_length, B_length * sizeof(float));
+        m_lengthA = (sampleLength / 2);
+        m_lengthB = sampleLength - m_lengthA;
+        m_azimuthA.assign(m_lengthA, 0);
+        m_zenithA.assign(m_lengthA, 0);
+        m_azimuthB.assign(m_lengthB, 0);
+        m_zenithB.assign(m_lengthB, 0);
+        memcpy(&m_azimuthA.front(), azimuthAngles, m_lengthA * sizeof(float));
+        memcpy(&m_zenithA.front(), zenithAngles, m_lengthA * sizeof(float));
+        memcpy(&m_azimuthB.front(), azimuthAngles + m_lengthA, m_lengthB * sizeof(float));
+        memcpy(&m_zenithB.front(), zenithAngles + m_lengthA, m_lengthB * sizeof(float));
 
         // set pointer to start with A
-        pActiveAzimuth = mAzimuth_A.data();
-        pActiveZenith = mZenith_A.data();
-        mBatchSize = A_length;
+        m_activeAzimuthPtr = m_azimuthA.data();
+        m_activeZenithPtr = m_zenithA.data();
+        m_batchSize = m_lengthA;
     }
     else
     {
-        if (mAzimuth_A.empty())
+        if (m_azimuthA.empty())
         {
-            mAzimuth_A.assign(sample_length, 0);
-            mZenith_A.assign(sample_length, 0);
-            memcpy(&mAzimuth_A.front(), azimuth_angles, sample_length * sizeof(float));
-            memcpy(&mZenith_A.front(), zenith_angles, sample_length * sizeof(float));
+            m_azimuthA.assign(sampleLength, 0);
+            m_zenithA.assign(sampleLength, 0);
+            memcpy(&m_azimuthA.front(), azimuthAngles, sampleLength * sizeof(float));
+            memcpy(&m_zenithA.front(), zenithAngles, sampleLength * sizeof(float));
 
             // the last batch that's set is always the backup batch, the pActiveBatch should point to the earlier set
             // batch.
-            if (!mAzimuth_B.empty())
+            if (!m_azimuthB.empty())
             {
-                pActiveAzimuth = mAzimuth_B.data();
-                pActiveZenith = mZenith_B.data();
+                m_activeAzimuthPtr = m_azimuthB.data();
+                m_activeZenithPtr = m_zenithB.data();
             }
             else
             {
                 CARB_LOG_WARN("need more data");
             }
         }
-        else if (mAzimuth_B.empty())
+        else if (m_azimuthB.empty())
         {
 
-            mAzimuth_B.assign(sample_length, 0);
-            mZenith_B.assign(sample_length, 0);
-            memcpy(&mAzimuth_B.front(), azimuth_angles, sample_length * sizeof(float));
-            memcpy(&mZenith_B.front(), zenith_angles, sample_length * sizeof(float));
+            m_azimuthB.assign(sampleLength, 0);
+            m_zenithB.assign(sampleLength, 0);
+            memcpy(&m_azimuthB.front(), azimuthAngles, sampleLength * sizeof(float));
+            memcpy(&m_zenithB.front(), zenithAngles, sampleLength * sizeof(float));
 
             // the last batch that's set is always the backup batch, the pActiveBatch should point to the earlier set
             // batch.
-            if (!mAzimuth_A.empty())
+            if (!m_azimuthA.empty())
             {
-                pActiveAzimuth = mAzimuth_A.data();
-                pActiveZenith = mZenith_A.data();
+                m_activeAzimuthPtr = m_azimuthA.data();
+                m_activeZenithPtr = m_zenithA.data();
             }
             else
             {
@@ -163,50 +163,50 @@ void GenericSensor::setNextBatchRays(const float* azimuth_angles, const float* z
         {
             CARB_LOG_WARN("new sensor pattern data not set. Only send new data when send_next_batch() returns true");
         }
-        mBatchSize = sample_length;
+        m_batchSize = sampleLength;
     }
 }
 
 
-void GenericSensor::setNextBatchOffsets(const float* origin_offsets, const int sample_length)
+void GenericSensor::setNextBatchOffsets(const float* originOffsets, const int sampleLength)
 {
-    if (!mStreaming)
+    if (!m_streaming)
     {
-        int offset_A_length = (sample_length / 2);
-        int offset_B_length = sample_length - offset_A_length;
-        if ((offset_A_length != A_length) || (offset_B_length != B_length))
+        int offsetMLengthA = (sampleLength / 2);
+        int offsetMLengthB = sampleLength - offsetMLengthA;
+        if ((offsetMLengthA != m_lengthA) || (offsetMLengthB != m_lengthB))
         {
             CARB_LOG_WARN("offset data size mismatch");
         }
-        mOffset_A.assign(A_length, { 0, 0, 0 });
-        mOffset_B.assign(B_length, { 0, 0, 0 });
-        memcpy(&mOffset_A.front(), origin_offsets, A_length * sizeof(carb::Float3));
-        memcpy(&mOffset_B.front(), origin_offsets + A_length, B_length * sizeof(carb::Float3));
-        pActiveOffset = mOffset_A.data();
+        m_offsetA.assign(m_lengthA, { 0, 0, 0 });
+        m_offsetB.assign(m_lengthB, { 0, 0, 0 });
+        memcpy(&m_offsetA.front(), originOffsets, m_lengthA * sizeof(carb::Float3));
+        memcpy(&m_offsetB.front(), originOffsets + m_lengthA, m_lengthB * sizeof(carb::Float3));
+        m_activeOffsetPtr = m_offsetA.data();
     }
     else
     {
-        if (sample_length != mBatchSize)
+        if (sampleLength != m_batchSize)
         {
             CARB_LOG_WARN("offset data size mismatch");
         }
 
-        if (mOffset_A.empty())
+        if (m_offsetA.empty())
         {
-            mOffset_A.assign(sample_length, { 0, 0, 0 });
-            memcpy(&mOffset_A.front(), origin_offsets, sample_length * sizeof(carb::Float3));
-            if (!mOffset_B.empty())
+            m_offsetA.assign(sampleLength, { 0, 0, 0 });
+            memcpy(&m_offsetA.front(), originOffsets, sampleLength * sizeof(carb::Float3));
+            if (!m_offsetB.empty())
             {
-                pActiveOffset = mOffset_B.data();
+                m_activeOffsetPtr = m_offsetB.data();
             }
         }
-        else if (mOffset_B.empty())
+        else if (m_offsetB.empty())
         {
-            mOffset_B.assign(sample_length, { 0, 0, 0 });
-            memcpy(&mOffset_B.front(), origin_offsets, sample_length * sizeof(carb::Float3));
-            if (!mOffset_A.empty())
+            m_offsetB.assign(sampleLength, { 0, 0, 0 });
+            memcpy(&m_offsetB.front(), originOffsets, sampleLength * sizeof(carb::Float3));
+            if (!m_offsetA.empty())
             {
-                pActiveOffset = mOffset_A.data();
+                m_activeOffsetPtr = m_offsetA.data();
             }
         }
         else
@@ -220,88 +220,88 @@ void GenericSensor::setNextBatchOffsets(const float* origin_offsets, const int s
 void GenericSensor::wrapData(int start)
 {
 
-    double current_fps = 1.0 / mTimeDelta;
-    mSamplesPerTick = std::max(1, static_cast<int>(mSamplingRate / current_fps)); // scan at least once per tick
-    if (mBatchSize < mSamplesPerTick)
+    double currentFps = 1.0 / m_timeDelta;
+    m_samplesPerTick = std::max(1, static_cast<int>(m_samplingRate / currentFps)); // scan at least once per tick
+    if (m_batchSize < m_samplesPerTick)
     {
         CARB_LOG_ERROR(
             "Not enough data per sample batch to match sampling rate. Scanning faster than intended and could have missing data. Lower the sample rate or send more data per batch.");
     }
-    else if (mSamplesPerTick > maxSamplesPerTick)
+    else if (m_samplesPerTick > m_maxSamplesPerTick)
     {
         CARB_LOG_WARN("Sampling rate exceed specs. Scanning slower than intended.");
-        mSamplesPerTick = maxSamplesPerTick;
+        m_samplesPerTick = m_maxSamplesPerTick;
     }
 
-    mAzimuth.resize(mSamplesPerTick);
-    mZenith.resize(mSamplesPerTick);
-    mOffset.resize(mSamplesPerTick);
-    mDepth.resize(mSamplesPerTick);
-    mIntensity.resize(mSamplesPerTick);
-    mHitPos.resize(mSamplesPerTick);
-    mLinearDepth.resize(mSamplesPerTick);
+    m_azimuth.resize(m_samplesPerTick);
+    m_zenith.resize(m_samplesPerTick);
+    m_offset.resize(m_samplesPerTick);
+    m_depth.resize(m_samplesPerTick);
+    m_intensity.resize(m_samplesPerTick);
+    m_hitPos.resize(m_samplesPerTick);
+    m_linearDepth.resize(m_samplesPerTick);
 
 
-    int stop = start + mSamplesPerTick;
-    int pt_counter = 0;
+    int stop = start + m_samplesPerTick;
+    int ptCounter = 0;
 
-    if (stop <= mBatchSize)
+    if (stop <= m_batchSize)
     {
         // get all the data from currentBatch
         for (int i = start; i < stop; i++)
         {
-            mAzimuth[pt_counter] = pActiveAzimuth[i];
-            mZenith[pt_counter] = pActiveZenith[i];
-            mOffset[pt_counter] = pActiveOffset[i];
-            pt_counter++;
+            m_azimuth[ptCounter] = m_activeAzimuthPtr[i];
+            m_zenith[ptCounter] = m_activeZenithPtr[i];
+            m_offset[ptCounter] = m_activeOffsetPtr[i];
+            ptCounter++;
         }
-        mLastSample = stop;
+        m_lastSample = stop;
     }
     else
     {
-        for (int j = start; j < mBatchSize; j++)
+        for (int j = start; j < m_batchSize; j++)
         {
-            mAzimuth[pt_counter] = pActiveAzimuth[j];
-            mZenith[pt_counter] = pActiveZenith[j];
-            mOffset[pt_counter] = pActiveOffset[j];
+            m_azimuth[ptCounter] = m_activeAzimuthPtr[j];
+            m_zenith[ptCounter] = m_activeZenithPtr[j];
+            m_offset[ptCounter] = m_activeOffsetPtr[j];
 
-            pt_counter++;
+            ptCounter++;
         }
         // switch batches
-        if (pActiveAzimuth == mAzimuth_A.data())
+        if (m_activeAzimuthPtr == m_azimuthA.data())
         {
-            pActiveAzimuth = mAzimuth_B.data();
-            pActiveZenith = mZenith_B.data();
-            pActiveOffset = mOffset_B.data();
+            m_activeAzimuthPtr = m_azimuthB.data();
+            m_activeZenithPtr = m_zenithB.data();
+            m_activeOffsetPtr = m_offsetB.data();
 
             // if streaming, empty out the batch that has just been read
-            if (mStreaming)
+            if (m_streaming)
             {
-                mAzimuth_A = {};
-                mZenith_A = {};
-                mOffset_A = {};
+                m_azimuthA = {};
+                m_zenithA = {};
+                m_offsetA = {};
             }
             else
             {
-                mBatchSize = B_length;
+                m_batchSize = m_lengthB;
             }
         }
-        else if (pActiveAzimuth == mAzimuth_B.data())
+        else if (m_activeAzimuthPtr == m_azimuthB.data())
         {
-            pActiveAzimuth = mAzimuth_A.data();
-            pActiveZenith = mZenith_A.data();
-            pActiveOffset = mOffset_A.data();
+            m_activeAzimuthPtr = m_azimuthA.data();
+            m_activeZenithPtr = m_zenithA.data();
+            m_activeOffsetPtr = m_offsetA.data();
 
             // if streaming, empty out the batch that has just been read
-            if (mStreaming)
+            if (m_streaming)
             {
-                mAzimuth_B = {};
-                mZenith_B = {};
-                mOffset_B = {};
+                m_azimuthB = {};
+                m_zenithB = {};
+                m_offsetB = {};
             }
             else
             {
-                mBatchSize = A_length;
+                m_batchSize = m_lengthA;
             }
         }
         else
@@ -310,27 +310,27 @@ void GenericSensor::wrapData(int start)
             return;
         }
 
-        for (int k = 0; k <= (stop % mBatchSize); k++)
+        for (int k = 0; k <= (stop % m_batchSize); k++)
         {
-            mAzimuth[pt_counter] = pActiveAzimuth[k];
-            mZenith[pt_counter] = pActiveZenith[k];
-            mOffset[pt_counter] = pActiveOffset[k];
-            pt_counter++;
+            m_azimuth[ptCounter] = m_activeAzimuthPtr[k];
+            m_zenith[ptCounter] = m_activeZenithPtr[k];
+            m_offset[ptCounter] = m_activeOffsetPtr[k];
+            ptCounter++;
         }
-        mLastSample = stop % mBatchSize;
+        m_lastSample = stop % m_batchSize;
     }
 }
 
 
 void GenericSensor::dumpData()
 {
-    mLastAzimuth = mAzimuth;
-    mLastZenith = mZenith;
-    mLastOffset = mOffset;
-    mLastDepth = mDepth;
-    mLastLinearDepth = mLinearDepth;
-    mLastIntensity = mIntensity;
-    mLastHitPos = mHitPos;
+    m_lastAzimuth = m_azimuth;
+    m_lastZenith = m_zenith;
+    m_lastOffset = m_offset;
+    m_lastDepth = m_depth;
+    m_lastLinearDepth = m_linearDepth;
+    m_lastIntensity = m_intensity;
+    m_lastHitPos = m_hitPos;
 }
 
 
@@ -338,62 +338,62 @@ void GenericSensor::preTick()
 {
 
     auto worldMat = isaacsim::core::includes::pose::computeWorldXformNoCache(
-        mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
+        m_stage, m_usdrtStage, m_prim.GetPath(), m_parentPrimTimeCode);
 
-    mFinalTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
-    mFinalRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
+    m_finalTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
+    m_finalRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
 }
 
 void GenericSensor::tick()
 {
-    mLineDrawing->clear();
-    mPointDrawing->clear();
+    m_lineDrawing->clear();
+    m_pointDrawing->clear();
 
-    if (!mPxScene)
+    if (!m_pxScene)
     {
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
 
-    bool zUp = pxr::UsdGeomGetStageUpAxis(mStage) == pxr::UsdGeomTokens->z;
+    bool zUp = pxr::UsdGeomGetStageUpAxis(m_stage) == pxr::UsdGeomTokens->z;
 
     // scanning
     // make sure both batches have data
-    if (mAzimuth_A.empty() || mAzimuth_B.empty())
+    if (m_azimuthA.empty() || m_azimuthB.empty())
     {
         return; // and fetch more data one batch at a time until both are full
     }
 
-    if (mOffset_A.empty() && mOffset_B.empty())
+    if (m_offsetA.empty() && m_offsetB.empty())
     {
         // if offset is not set, default to (0,0,0)
-        mOffset_A.assign(mBatchSize, { 0, 0, 0 });
-        mOffset_B.assign(mBatchSize, { 0, 0, 0 });
-        pActiveOffset = mOffset_A.data();
+        m_offsetA.assign(m_batchSize, { 0, 0, 0 });
+        m_offsetB.assign(m_batchSize, { 0, 0, 0 });
+        m_activeOffsetPtr = m_offsetA.data();
     }
 
-    if (pActiveAzimuth != NULL)
+    if (m_activeAzimuthPtr != nullptr)
     {
-        wrapData(mLastSample);
-        if (mDrawLines && mDrawPoints)
+        wrapData(m_lastSample);
+        if (m_drawLines && m_drawPoints)
         {
-            scan<true, true>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
-                             mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+            scan<true, true>(m_finalTranslation, m_finalRotation, m_physx, m_pxScene, m_depth, m_hitPos, m_linearDepth,
+                             m_intensity, m_zenith, m_azimuth, m_offset, m_maxDepth, m_minDepth, m_metersPerUnit, zUp);
         }
-        else if (mDrawLines)
+        else if (m_drawLines)
         {
-            scan<false, true>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
-                              mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+            scan<false, true>(m_finalTranslation, m_finalRotation, m_physx, m_pxScene, m_depth, m_hitPos, m_linearDepth,
+                              m_intensity, m_zenith, m_azimuth, m_offset, m_maxDepth, m_minDepth, m_metersPerUnit, zUp);
         }
-        else if (mDrawPoints)
+        else if (m_drawPoints)
         {
-            scan<true, false>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
-                              mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+            scan<true, false>(m_finalTranslation, m_finalRotation, m_physx, m_pxScene, m_depth, m_hitPos, m_linearDepth,
+                              m_intensity, m_zenith, m_azimuth, m_offset, m_maxDepth, m_minDepth, m_metersPerUnit, zUp);
         }
         else
         {
-            scan<false, false>(mFinalTranslation, mFinalRotation, mPhysx, mPxScene, mDepth, mHitPos, mLinearDepth,
-                               mIntensity, mZenith, mAzimuth, mOffset, mMaxDepth, mMinDepth, mMetersPerUnit, zUp);
+            scan<false, false>(m_finalTranslation, m_finalRotation, m_physx, m_pxScene, m_depth, m_hitPos, m_linearDepth,
+                               m_intensity, m_zenith, m_azimuth, m_offset, m_maxDepth, m_minDepth, m_metersPerUnit, zUp);
         }
         dumpData();
     }

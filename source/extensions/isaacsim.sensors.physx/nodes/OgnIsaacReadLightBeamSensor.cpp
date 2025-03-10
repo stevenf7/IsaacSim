@@ -36,9 +36,9 @@ public:
         auto& state =
             OgnIsaacReadLightBeamSensorDatabase::sPerInstanceState<OgnIsaacReadLightBeamSensor>(nodeObj, instanceId);
 
-        state.mLightBeamSensorInterface = carb::getCachedInterface<LightBeamSensorInterface>();
+        state.m_lightBeamSensorInterface = carb::getCachedInterface<LightBeamSensorInterface>();
 
-        if (!state.mLightBeamSensorInterface)
+        if (!state.m_lightBeamSensorInterface)
         {
             CARB_LOG_ERROR("Failed to acquire omni::isaac::sensor interface");
             return;
@@ -72,56 +72,56 @@ public:
             return false;
         }
 
-        uint8_t* beamHitData = state.mLightBeamSensorInterface->getBeamHitData(primPath);
-        float* linearDepthData = state.mLightBeamSensorInterface->getLinearDepthData(primPath);
-        carb::Float3* hitPosData = state.mLightBeamSensorInterface->getHitPosData(primPath);
-        int numRays = state.mLightBeamSensorInterface->getNumRays(primPath);
-        carb::Float3* rayOrigins = state.mLightBeamSensorInterface->getBeamOrigins(primPath);
-        carb::Float3* rayEndPoints = state.mLightBeamSensorInterface->getBeamEndPoints(primPath);
+        uint8_t* beamHitData = state.m_lightBeamSensorInterface->getBeamHitData(primPath);
+        float* linearDepthData = state.m_lightBeamSensorInterface->getLinearDepthData(primPath);
+        carb::Float3* hitPosData = state.m_lightBeamSensorInterface->getHitPosData(primPath);
+        int numRays = state.m_lightBeamSensorInterface->getNumRays(primPath);
+        carb::Float3* rayOrigins = state.m_lightBeamSensorInterface->getBeamOrigins(primPath);
+        carb::Float3* rayEndPoints = state.m_lightBeamSensorInterface->getBeamEndPoints(primPath);
 
         // Clear vectors
-        state.mBeamHitData.clear();
-        state.mLinearDepthData.clear();
-        state.mHitPosData.clear();
-        state.mBeamOrigins.clear();
-        state.mBeamEndPoints.clear();
+        state.m_beamHitData.clear();
+        state.m_linearDepthData.clear();
+        state.m_hitPosData.clear();
+        state.m_beamOrigins.clear();
+        state.m_beamEndPoints.clear();
 
         for (int i = 0; i < numRays; i++)
         {
-            state.mBeamHitData.push_back(beamHitData[i]);
-            state.mLinearDepthData.push_back(linearDepthData[i]);
-            state.mHitPosData.push_back(isaacsim::core::includes::conversions::asGfVec3f(hitPosData[i]) * unitScale);
-            state.mBeamOrigins.push_back(isaacsim::core::includes::conversions::asGfVec3f(rayOrigins[i]) * unitScale);
-            state.mBeamEndPoints.push_back(isaacsim::core::includes::conversions::asGfVec3f(rayEndPoints[i]) * unitScale);
+            state.m_beamHitData.push_back(beamHitData[i]);
+            state.m_linearDepthData.push_back(linearDepthData[i]);
+            state.m_hitPosData.push_back(isaacsim::core::includes::conversions::asGfVec3f(hitPosData[i]) * unitScale);
+            state.m_beamOrigins.push_back(isaacsim::core::includes::conversions::asGfVec3f(rayOrigins[i]) * unitScale);
+            state.m_beamEndPoints.push_back(isaacsim::core::includes::conversions::asGfVec3f(rayEndPoints[i]) * unitScale);
         }
 
         // fill in outputs
         db.outputs.numRays() = numRays;
-        db.outputs.beamHitData().resize(state.mBeamHitData.size());
-        db.outputs.hitPosData().resize(state.mHitPosData.size());
-        db.outputs.linearDepthData().resize(state.mLinearDepthData.size());
-        db.outputs.beamOrigins().resize(state.mBeamOrigins.size());
-        db.outputs.beamEndPoints().resize(state.mBeamEndPoints.size());
+        db.outputs.beamHitData().resize(state.m_beamHitData.size());
+        db.outputs.hitPosData().resize(state.m_hitPosData.size());
+        db.outputs.linearDepthData().resize(state.m_linearDepthData.size());
+        db.outputs.beamOrigins().resize(state.m_beamOrigins.size());
+        db.outputs.beamEndPoints().resize(state.m_beamEndPoints.size());
 
-        memcpy(db.outputs.beamHitData().data(), &state.mBeamHitData[0], state.mBeamHitData.size() * sizeof(bool));
-        memcpy(db.outputs.hitPosData().data(), &state.mHitPosData[0], state.mHitPosData.size() * sizeof(GfVec3f));
-        memcpy(db.outputs.linearDepthData().data(), &state.mLinearDepthData[0],
-               state.mLinearDepthData.size() * sizeof(float));
-        memcpy(db.outputs.beamOrigins().data(), &state.mBeamOrigins[0], state.mBeamOrigins.size() * sizeof(GfVec3f));
-        memcpy(
-            db.outputs.beamEndPoints().data(), &state.mBeamEndPoints[0], state.mBeamEndPoints.size() * sizeof(GfVec3f));
+        memcpy(db.outputs.beamHitData().data(), &state.m_beamHitData[0], state.m_beamHitData.size() * sizeof(bool));
+        memcpy(db.outputs.hitPosData().data(), &state.m_hitPosData[0], state.m_hitPosData.size() * sizeof(GfVec3f));
+        memcpy(db.outputs.linearDepthData().data(), &state.m_linearDepthData[0],
+               state.m_linearDepthData.size() * sizeof(float));
+        memcpy(db.outputs.beamOrigins().data(), &state.m_beamOrigins[0], state.m_beamOrigins.size() * sizeof(GfVec3f));
+        memcpy(db.outputs.beamEndPoints().data(), &state.m_beamEndPoints[0],
+               state.m_beamEndPoints.size() * sizeof(GfVec3f));
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 
 private:
-    LightBeamSensorInterface* mLightBeamSensorInterface = nullptr;
-    std::vector<GfVec3f> mHitPosData;
-    std::vector<float> mLinearDepthData;
-    std::vector<uint8_t> mBeamHitData;
-    std::vector<GfVec3f> mBeamOrigins;
-    std::vector<GfVec3f> mBeamEndPoints;
+    LightBeamSensorInterface* m_lightBeamSensorInterface = nullptr;
+    std::vector<GfVec3f> m_hitPosData;
+    std::vector<float> m_linearDepthData;
+    std::vector<uint8_t> m_beamHitData;
+    std::vector<GfVec3f> m_beamOrigins;
+    std::vector<GfVec3f> m_beamEndPoints;
 };
 
 

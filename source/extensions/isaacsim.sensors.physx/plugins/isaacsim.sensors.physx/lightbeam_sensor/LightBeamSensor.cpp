@@ -74,78 +74,78 @@ void LightBeamSensor::onComponentChange()
 {
     RangeSensorComponent::onComponentChange();
 
-    const pxr::IsaacSensorIsaacLightBeamSensor& typedPrim = pxr::IsaacSensorIsaacLightBeamSensor(mPrim);
+    const pxr::IsaacSensorIsaacLightBeamSensor& typedPrim = pxr::IsaacSensorIsaacLightBeamSensor(m_prim);
 
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetCurtainLengthAttr(), mCurtainLength);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetNumRaysAttr(), mNumRays);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetCurtainAxisAttr(), mCurtainAxis);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetForwardAxisAttr(), mForwardAxis);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetMinRangeAttr(), mMinRange);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetMaxRangeAttr(), mMaxRange);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetCurtainLengthAttr(), m_curtainLength);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetNumRaysAttr(), m_numRays);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetCurtainAxisAttr(), m_curtainAxis);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetForwardAxisAttr(), m_forwardAxis);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetMinRangeAttr(), m_minRange);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetMaxRangeAttr(), m_maxRange);
 
-    mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
-    mMinRange = pxr::GfClamp(mMinRange, 0, 1e9f);
-    mMaxRange = pxr::GfClamp(mMaxRange, mMinRange, 1e9f);
-    mMaxDepth = mMaxRange / mMetersPerUnit;
-    mMinDepth = mMinRange / mMetersPerUnit;
-    mLinearDepth.assign(mNumRays, 0);
-    mHitPos.assign(mNumRays, { 0, 0, 0 });
-    mBeamHit.assign(mNumRays, 0);
-    mBeamOrigins.assign(mNumRays, { 0, 0, 0 });
-    mBeamEndPoints.assign(mNumRays, { 0, 0, 0 });
+    m_metersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->m_stage));
+    m_minRange = pxr::GfClamp(m_minRange, 0, 1e9f);
+    m_maxRange = pxr::GfClamp(m_maxRange, m_minRange, 1e9f);
+    m_maxDepth = m_maxRange / m_metersPerUnit;
+    m_minDepth = m_minRange / m_metersPerUnit;
+    m_linearDepth.assign(m_numRays, 0);
+    m_hitPos.assign(m_numRays, { 0, 0, 0 });
+    m_beamHit.assign(m_numRays, 0);
+    m_beamOrigins.assign(m_numRays, { 0, 0, 0 });
+    m_beamEndPoints.assign(m_numRays, { 0, 0, 0 });
 }
 
 void LightBeamSensor::scan(const ::physx::PxVec3& origin, const ::physx::PxQuat& worldRotation)
 {
-    if (!mPxScene)
+    if (!m_pxScene)
     {
         return;
     }
 
     ::physx::PxVec3 unitDir =
-        worldRotation.rotate(isaacsim::core::includes::conversions::asPxVec3(mForwardAxis)).getNormalized();
+        worldRotation.rotate(isaacsim::core::includes::conversions::asPxVec3(m_forwardAxis)).getNormalized();
     ::physx::PxVec3 unitCurtain =
-        worldRotation.rotate(isaacsim::core::includes::conversions::asPxVec3(mCurtainAxis)).getNormalized();
+        worldRotation.rotate(isaacsim::core::includes::conversions::asPxVec3(m_curtainAxis)).getNormalized();
 
     auto lightbeamLambda = [&]()
     {
         // for each ray in the light curtain
-        for (int ray = 0; ray < mNumRays; ray++)
+        for (int ray = 0; ray < m_numRays; ray++)
         {
             // increase casting origin by unit offset
-            ::physx::PxVec3 rayOffset = ray * mCurtainLength / mNumRays * unitCurtain;
+            ::physx::PxVec3 rayOffset = ray * m_curtainLength / m_numRays * unitCurtain;
             ::physx::PxRaycastHit raycastHit;
 
             // Calculate the start point of the ray
-            ::physx::PxVec3 startPoint = origin + unitDir * mMinDepth + rayOffset;
+            ::physx::PxVec3 startPoint = origin + unitDir * m_minDepth + rayOffset;
 
             // Project the start point out to prevent collisions from origin
             const bool hit = ::physx::PxSceneQueryExt::raycastSingle(
-                *mPxScene, startPoint, unitDir, mMaxDepth, mHitFlags, raycastHit);
+                *m_pxScene, startPoint, unitDir, m_maxDepth, m_hitFlags, raycastHit);
 
             // Store the start point (in world coordinates)
-            mBeamOrigins[ray] = { startPoint.x, startPoint.y, startPoint.z };
+            m_beamOrigins[ray] = { startPoint.x, startPoint.y, startPoint.z };
 
             if (hit)
             {
-                mBeamHit[ray] = 1;
+                m_beamHit[ray] = 1;
                 // calculate the distance and position of the ray hit
-                mLinearDepth[ray] = (raycastHit.distance + mMinDepth) * mMetersPerUnit; // in meters
+                m_linearDepth[ray] = (raycastHit.distance + m_minDepth) * m_metersPerUnit; // in meters
                 ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
-                mHitPos[ray] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
+                m_hitPos[ray] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
                 // Calculate and store the end point (in world coordinates)
                 ::physx::PxVec3 endPoint = raycastHit.position;
-                mBeamEndPoints[ray] = { endPoint.x, endPoint.y, endPoint.z };
+                m_beamEndPoints[ray] = { endPoint.x, endPoint.y, endPoint.z };
             }
             else
             {
-                mBeamHit[ray] = 0;
-                mLinearDepth[ray] = mMaxDepth * mMetersPerUnit; // in meters
-                ::physx::PxVec3 hitPos = origin + unitDir * (mMaxDepth + mMinDepth) + rayOffset;
+                m_beamHit[ray] = 0;
+                m_linearDepth[ray] = m_maxDepth * m_metersPerUnit; // in meters
+                ::physx::PxVec3 hitPos = origin + unitDir * (m_maxDepth + m_minDepth) + rayOffset;
                 // store the end point (in world coordinates)
-                mBeamEndPoints[ray] = { hitPos.x, hitPos.y, hitPos.z };
+                m_beamEndPoints[ray] = { hitPos.x, hitPos.y, hitPos.z };
                 ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(hitPos - origin);
-                mHitPos[ray] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
+                m_hitPos[ray] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
             }
         }
     };
@@ -156,23 +156,23 @@ void LightBeamSensor::scan(const ::physx::PxVec3& origin, const ::physx::PxQuat&
 
 void LightBeamSensor::onPhysicsStep()
 {
-    if (!mPxScene)
+    if (!m_pxScene)
     {
         CARB_LOG_ERROR("Physics Scene does not exist");
         return;
     }
 
-    auto worldMat = isaacsim::core::includes::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+    auto worldMat = isaacsim::core::includes::pose::computeWorldXformNoCache(m_stage, m_usdrtStage, m_prim.GetPath());
 
-    mWorldTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
-    mWorldRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
+    m_worldTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
+    m_worldRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
 
     // run full scan
-    scan(mWorldTranslation, mWorldRotation);
+    scan(m_worldTranslation, m_worldRotation);
 
-    if (mPreviousEnabled != this->mEnabled)
+    if (m_previousEnabled != this->m_enabled)
     {
-        if (mEnabled)
+        if (m_enabled)
         {
             this->onPhysicsStep(); // force on physics step to run to get up to date value
         }
@@ -180,7 +180,7 @@ void LightBeamSensor::onPhysicsStep()
         {
             this->onStop();
         }
-        mPreviousEnabled = this->mEnabled;
+        m_previousEnabled = this->m_enabled;
     }
 }
 

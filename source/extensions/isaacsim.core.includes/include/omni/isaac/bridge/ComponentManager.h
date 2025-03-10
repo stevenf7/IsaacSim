@@ -58,7 +58,7 @@ public:
      */
     virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
-        mStage = stage;
+        m_stage = stage;
     }
 
     /**
@@ -135,21 +135,21 @@ public:
      */
     pxr::UsdStageWeakPtr getStage()
     {
-        return mStage;
+        return m_stage;
     }
 
 protected:
     /** @brief Weak pointer to the managed USD stage */
-    pxr::UsdStageWeakPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr m_stage = nullptr;
 
     /** @brief Current simulation time in seconds */
-    double mTimeSeconds = 0;
+    double m_timeSeconds = 0;
 
     /** @brief Current simulation time in nanoseconds */
-    int64_t mTimeNanoSeconds = 0;
+    int64_t m_timeNanoSeconds = 0;
 
     /** @brief Time delta for current tick in seconds */
-    double mTimeDelta = 0;
+    double m_timeDelta = 0;
 };
 }
 }

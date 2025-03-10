@@ -66,16 +66,16 @@ namespace physics
 ImuSensor::~ImuSensor()
 {
     reset();
-    mRawBuffer.clear();
-    mSensorReadings.clear();
-    mSensorReadingsSensorFrame.clear();
-    mRigidBodyDataBuffer = nullptr;
+    m_rawBuffer.clear();
+    m_sensorReadings.clear();
+    m_sensorReadingsSensorFrame.clear();
+    m_rigidBodyDataBuffer = nullptr;
 }
 
 void ImuSensor::initialize(std::vector<float>* rigidBodyDataBuffer, size_t& dataBufferIndex)
 {
-    mDataBufferIndex = dataBufferIndex;
-    mRigidBodyDataBuffer = rigidBodyDataBuffer;
+    m_dataBufferIndex = dataBufferIndex;
+    m_rigidBodyDataBuffer = rigidBodyDataBuffer;
     onComponentChange();
 }
 
@@ -84,7 +84,7 @@ IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<
                                       const bool& getLatestValue,
                                       const bool& readGravity)
 {
-    if (mProps.sensorPeriod > 0 && mProps.sensorPeriod < mTimeDelta && mTimeDelta - mProps.sensorPeriod > 0.001)
+    if (m_props.sensorPeriod > 0 && m_props.sensorPeriod < m_timeDelta && m_timeDelta - m_props.sensorPeriod > 0.001)
     {
         CARB_LOG_WARN_ONCE(
             "*** warning: IMU sensor frequency is higher than physics frequency, returning the latest physics value");
@@ -92,75 +92,75 @@ IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<
 
     IsReading sensorReading = IsReading();
 
-    if (mEnabled)
+    if (m_enabled)
     {
         // if sensor period is shorter than physics downtime, or user choose latest value return current value
         // or internal time + sensor period time is behind the last step time, then something went wrong
         // i.e. sensor was disabled for a long time and then re-enabled
         // get the latest time and measurement
-        if (mProps.sensorPeriod <= mTimeDelta || mSensorTime + mProps.sensorPeriod < mSensorReadings[1].time ||
+        if (m_props.sensorPeriod <= m_timeDelta || m_sensorTime + m_props.sensorPeriod < m_sensorReadings[1].time ||
             getLatestValue)
         {
-            sensorReading = mSensorReadings[0];
-            sensorReading.is_valid = true;
-            if (mProps.sensorPeriod > 0 && mSensorTime + mProps.sensorPeriod < mSensorReadings[1].time)
+            sensorReading = m_sensorReadings[0];
+            sensorReading.isValid = true;
+            if (m_props.sensorPeriod > 0 && m_sensorTime + m_props.sensorPeriod < m_sensorReadings[1].time)
             {
                 CARB_LOG_WARN("*** warning IMU sensor time out of sync, using latest measurements");
             }
         }
         else
         {
-            sensorReading.time = mSensorTime;
-            sensorReading.is_valid = true;
-            float time_ratio = 1;
+            sensorReading.time = m_sensorTime;
+            sensorReading.isValid = true;
+            float timeRatio = 1;
 
-            if (mSensorReadingsSensorFrame[1].time != mSensorReadingsSensorFrame[0].time)
+            if (m_sensorReadingsSensorFrame[1].time != m_sensorReadingsSensorFrame[0].time)
             {
-                time_ratio = (mSensorTime - mSensorReadingsSensorFrame[1].time) /
-                             (mSensorReadingsSensorFrame[0].time - mSensorReadingsSensorFrame[1].time);
+                timeRatio = (m_sensorTime - m_sensorReadingsSensorFrame[1].time) /
+                            (m_sensorReadingsSensorFrame[0].time - m_sensorReadingsSensorFrame[1].time);
             }
             else
             {
-                time_ratio = (mSensorTime - mSensorReadingsSensorFrame[1].time) / static_cast<float>(mTimeDelta);
+                timeRatio = (m_sensorTime - m_sensorReadingsSensorFrame[1].time) / static_cast<float>(m_timeDelta);
             }
             // user didn't pass in a interpolation function
             if (!interpolateFunction)
             {
-                sensorReading.lin_acc_x =
-                    lerp(mSensorReadingsSensorFrame[1].lin_acc_x, mSensorReadingsSensorFrame[0].lin_acc_x, time_ratio);
-                sensorReading.lin_acc_y =
-                    lerp(mSensorReadingsSensorFrame[1].lin_acc_y, mSensorReadingsSensorFrame[0].lin_acc_y, time_ratio);
-                sensorReading.lin_acc_z =
-                    lerp(mSensorReadingsSensorFrame[1].lin_acc_z, mSensorReadingsSensorFrame[0].lin_acc_z, time_ratio);
+                sensorReading.linAccX =
+                    lerp(m_sensorReadingsSensorFrame[1].linAccX, m_sensorReadingsSensorFrame[0].linAccX, timeRatio);
+                sensorReading.linAccY =
+                    lerp(m_sensorReadingsSensorFrame[1].linAccY, m_sensorReadingsSensorFrame[0].linAccY, timeRatio);
+                sensorReading.linAccZ =
+                    lerp(m_sensorReadingsSensorFrame[1].linAccZ, m_sensorReadingsSensorFrame[0].linAccZ, timeRatio);
 
-                sensorReading.ang_vel_x =
-                    lerp(mSensorReadingsSensorFrame[1].ang_vel_x, mSensorReadingsSensorFrame[0].ang_vel_x, time_ratio);
-                sensorReading.ang_vel_y =
-                    lerp(mSensorReadingsSensorFrame[1].ang_vel_y, mSensorReadingsSensorFrame[0].ang_vel_y, time_ratio);
-                sensorReading.ang_vel_z =
-                    lerp(mSensorReadingsSensorFrame[1].ang_vel_z, mSensorReadingsSensorFrame[0].ang_vel_z, time_ratio);
+                sensorReading.angVelX =
+                    lerp(m_sensorReadingsSensorFrame[1].angVelX, m_sensorReadingsSensorFrame[0].angVelX, timeRatio);
+                sensorReading.angVelY =
+                    lerp(m_sensorReadingsSensorFrame[1].angVelY, m_sensorReadingsSensorFrame[0].angVelY, timeRatio);
+                sensorReading.angVelZ =
+                    lerp(m_sensorReadingsSensorFrame[1].angVelZ, m_sensorReadingsSensorFrame[0].angVelZ, timeRatio);
 
-                sensorReading.orientation.w = lerp(mSensorReadingsSensorFrame[1].orientation.w,
-                                                   mSensorReadingsSensorFrame[0].orientation.w, time_ratio);
-                sensorReading.orientation.x = lerp(mSensorReadingsSensorFrame[1].orientation.x,
-                                                   mSensorReadingsSensorFrame[0].orientation.x, time_ratio);
-                sensorReading.orientation.y = lerp(mSensorReadingsSensorFrame[1].orientation.y,
-                                                   mSensorReadingsSensorFrame[0].orientation.y, time_ratio);
-                sensorReading.orientation.z = lerp(mSensorReadingsSensorFrame[1].orientation.z,
-                                                   mSensorReadingsSensorFrame[0].orientation.z, time_ratio);
+                sensorReading.orientation.w = lerp(m_sensorReadingsSensorFrame[1].orientation.w,
+                                                   m_sensorReadingsSensorFrame[0].orientation.w, timeRatio);
+                sensorReading.orientation.x = lerp(m_sensorReadingsSensorFrame[1].orientation.x,
+                                                   m_sensorReadingsSensorFrame[0].orientation.x, timeRatio);
+                sensorReading.orientation.y = lerp(m_sensorReadingsSensorFrame[1].orientation.y,
+                                                   m_sensorReadingsSensorFrame[0].orientation.y, timeRatio);
+                sensorReading.orientation.z = lerp(m_sensorReadingsSensorFrame[1].orientation.z,
+                                                   m_sensorReadingsSensorFrame[0].orientation.z, timeRatio);
             }
             // use user's interpolation function
             else
             {
-                sensorReading = interpolateFunction(mSensorReadingsSensorFrame, mSensorTime);
+                sensorReading = interpolateFunction(m_sensorReadingsSensorFrame, m_sensorTime);
             }
         }
 
         if (readGravity)
         {
-            sensorReading.lin_acc_x += static_cast<float>(mGravitySensorFrame[0]);
-            sensorReading.lin_acc_y += static_cast<float>(mGravitySensorFrame[1]);
-            sensorReading.lin_acc_z += static_cast<float>(mGravitySensorFrame[2]);
+            sensorReading.linAccX += static_cast<float>(m_gravitySensorFrame[0]);
+            sensorReading.linAccY += static_cast<float>(m_gravitySensorFrame[1]);
+            sensorReading.linAccZ += static_cast<float>(m_gravitySensorFrame[2]);
         }
     }
     return sensorReading;
@@ -168,169 +168,155 @@ IsReading ImuSensor::getSensorReading(const std::function<IsReading(std::vector<
 
 void ImuSensor::reset()
 {
-    mRawBuffer.resize(mRawBufferSize, IsRawData());
-    mSensorReadings.resize(mRawBufferSize, IsReading());
-    mSensorReadingsSensorFrame.resize(mRawBufferSize, IsReading());
-    mSensorTime = 0;
+    m_rawBuffer.resize(m_rawBufferSize, IsRawData());
+    m_sensorReadings.resize(m_rawBufferSize, IsReading());
+    m_sensorReadingsSensorFrame.resize(m_rawBufferSize, IsReading());
+    m_sensorTime = 0;
 }
 
 void ImuSensor::onPhysicsStep()
 {
-    if (mRigidBodyDataBuffer == nullptr)
+    if (m_rigidBodyDataBuffer == nullptr)
     {
         return;
     }
-    // v_w linear velocity in world frame
-    omni::math::linalg::vec3d v_w = omni::math::linalg::vec3d((*mRigidBodyDataBuffer)[mDataBufferIndex],
-                                                              (*mRigidBodyDataBuffer)[mDataBufferIndex + 1],
-                                                              (*mRigidBodyDataBuffer)[mDataBufferIndex + 2]);
+    // vW linear velocity in world frame
+    omni::math::linalg::vec3d vW = omni::math::linalg::vec3d((*m_rigidBodyDataBuffer)[m_dataBufferIndex],
+                                                             (*m_rigidBodyDataBuffer)[m_dataBufferIndex + 1],
+                                                             (*m_rigidBodyDataBuffer)[m_dataBufferIndex + 2]);
 
-    // w_w angular velocity in world frame
-    omni::math::linalg::vec3d w_w = omni::math::linalg::vec3d((*mRigidBodyDataBuffer)[mDataBufferIndex + 3],
-                                                              (*mRigidBodyDataBuffer)[mDataBufferIndex + 4],
-                                                              (*mRigidBodyDataBuffer)[mDataBufferIndex + 5]);
+    // wW angular velocity in world frame
+    omni::math::linalg::vec3d wW = omni::math::linalg::vec3d((*m_rigidBodyDataBuffer)[m_dataBufferIndex + 3],
+                                                             (*m_rigidBodyDataBuffer)[m_dataBufferIndex + 4],
+                                                             (*m_rigidBodyDataBuffer)[m_dataBufferIndex + 5]);
 
 
     // Get transformation matrix from body to world
-    usdrt::GfMatrix4d R_bw =
-        isaacsim::core::includes::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath()).GetOrthonormalized();
+    usdrt::GfMatrix4d rBw =
+        isaacsim::core::includes::pose::computeWorldXformNoCache(m_stage, m_usdrtStage, m_prim.GetPath())
+            .GetOrthonormalized();
 
     // Inverse to get transformation matrix from world to body
-    usdrt::GfMatrix4d R_wb = R_bw.GetInverse();
+    usdrt::GfMatrix4d rWb = rBw.GetInverse();
 
     // sensor orientation in world frame
-    usdrt::GfMatrix3d R_w = R_bw.ExtractRotationMatrix();
-    omni::math::linalg::quatd q_wb = R_w.ExtractRotation();
+    usdrt::GfMatrix3d rW = rBw.ExtractRotationMatrix();
+    omni::math::linalg::quatd qWb = rW.ExtractRotation();
 
     // velocity of sensor frame in sensor frame
-    omni::math::linalg::vec3d v_b = R_wb.TransformDir(v_w);
+    omni::math::linalg::vec3d vB = rWb.TransformDir(vW);
 
     // angular velocity of sensor frame in sensor frame
-    omni::math::linalg::vec3d w_b = R_wb.TransformDir(w_w);
+    omni::math::linalg::vec3d wB = rWb.TransformDir(wW);
 
     // gravity that the IMU experience in sensor frame
-    mGravitySensorFrame = R_wb.TransformDir(mGravity);
+    m_gravitySensorFrame = rWb.TransformDir(m_gravity);
 
-    // we then finite diff v_b to get a_b, to reduce noise, average multiple finite diffs
+    // we then finite diff vB to get a_b, to reduce noise, average multiple finite diffs
     // save raw data into a buffer list , buffer 0 always saves the latest velocities
-    if (!mRawBuffer.empty())
+    if (!m_rawBuffer.empty())
     {
-        mRawBuffer.pop_back();
+        m_rawBuffer.pop_back();
     }
 
-    const double* imaginary = q_wb.GetImaginary().GetArray();
+    const double* imaginary = qWb.GetImaginary().GetArray();
 
     // read in new data
-    mRawBuffer.insert(mRawBuffer.begin(), IsRawData());
-    mRawBuffer[0].time = static_cast<float>(mTimeSeconds);
-    mRawBuffer[0].dt = static_cast<float>(mTimeDelta);
-    mRawBuffer[0].lin_vel_x = static_cast<float>(v_b[0]);
-    mRawBuffer[0].lin_vel_y = static_cast<float>(v_b[1]);
-    mRawBuffer[0].lin_vel_z = static_cast<float>(v_b[2]);
-    mRawBuffer[0].ang_vel_x = static_cast<float>(w_b[0]);
-    mRawBuffer[0].ang_vel_y = static_cast<float>(w_b[1]);
-    mRawBuffer[0].ang_vel_z = static_cast<float>(w_b[2]);
-    mRawBuffer[0].orientation.w = static_cast<float>(q_wb.GetReal());
-    mRawBuffer[0].orientation.x = static_cast<float>(imaginary[0]);
-    mRawBuffer[0].orientation.y = static_cast<float>(imaginary[1]);
-    mRawBuffer[0].orientation.z = static_cast<float>(imaginary[2]);
+    m_rawBuffer.insert(m_rawBuffer.begin(), IsRawData());
+    m_rawBuffer[0].time = static_cast<float>(m_timeSeconds);
+    m_rawBuffer[0].dt = static_cast<float>(m_timeDelta);
+    m_rawBuffer[0].linVelX = static_cast<float>(vB[0]);
+    m_rawBuffer[0].linVelY = static_cast<float>(vB[1]);
+    m_rawBuffer[0].linVelZ = static_cast<float>(vB[2]);
+    m_rawBuffer[0].angVelX = static_cast<float>(wB[0]);
+    m_rawBuffer[0].angVelY = static_cast<float>(wB[1]);
+    m_rawBuffer[0].angVelZ = static_cast<float>(wB[2]);
+    m_rawBuffer[0].orientation.w = static_cast<float>(qWb.GetReal());
+    m_rawBuffer[0].orientation.x = static_cast<float>(imaginary[0]);
+    m_rawBuffer[0].orientation.y = static_cast<float>(imaginary[1]);
+    m_rawBuffer[0].orientation.z = static_cast<float>(imaginary[2]);
 
-    if (!mSensorReadings.empty())
+    if (!m_sensorReadings.empty())
     {
-        mSensorReadings.pop_back();
+        m_sensorReadings.pop_back();
     }
-    mSensorReadings.insert(mSensorReadings.begin(), IsReading());
+    m_sensorReadings.insert(m_sensorReadings.begin(), IsReading());
 
     // signal processing
-    mSensorReadings[0].time = static_cast<float>(mTimeSeconds);
-    // ang_vel output strategy: average past mAngularVelocityFilterSize timesteps
-    float tmp_sum_x = 0, tmp_sum_y = 0, tmp_sum_z = 0;
-    for (int i = 0; i < mAngularVelocityFilterSize; i++)
+    m_sensorReadings[0].time = static_cast<float>(m_timeSeconds);
+    // ang_vel output strategy: average past m_angularVelocityFilterSize timesteps
+    float tmpSumX = 0, tmpSumY = 0, tmpSumZ = 0;
+    for (int i = 0; i < m_angularVelocityFilterSize; i++)
     {
-        tmp_sum_x += mRawBuffer[i].ang_vel_x;
-        tmp_sum_y += mRawBuffer[i].ang_vel_y;
-        tmp_sum_z += mRawBuffer[i].ang_vel_z;
+        tmpSumX += m_rawBuffer[i].angVelX;
+        tmpSumY += m_rawBuffer[i].angVelY;
+        tmpSumZ += m_rawBuffer[i].angVelZ;
     }
-    mSensorReadings[0].ang_vel_x = static_cast<float>(tmp_sum_x / mAngularVelocityFilterSize);
-    mSensorReadings[0].ang_vel_y = static_cast<float>(tmp_sum_y / mAngularVelocityFilterSize);
-    mSensorReadings[0].ang_vel_z = static_cast<float>(tmp_sum_z / mAngularVelocityFilterSize);
+    m_sensorReadings[0].angVelX = static_cast<float>(tmpSumX / m_angularVelocityFilterSize);
+    m_sensorReadings[0].angVelY = static_cast<float>(tmpSumY / m_angularVelocityFilterSize);
+    m_sensorReadings[0].angVelZ = static_cast<float>(tmpSumZ / m_angularVelocityFilterSize);
 
-    // lin acc output strategy: average mLinearAccelerationFilterSize finite diffs
-    // say if mLinearAccelerationFilterSize = 2, we do (([0] - [2]) / (2dt) + ([1] - [3]) / (2dt))/2
-    tmp_sum_x = 0.0f;
-    tmp_sum_y = 0.0f;
-    tmp_sum_z = 0.0f;
-    for (int i = 0; i < mLinearAccelerationFilterSize; i++)
+    // lin acc output strategy: average m_linearAccelerationFilterSize finite diffs
+    // say if m_linearAccelerationFilterSize = 2, we do (([0] - [2]) / (2dt) + ([1] - [3]) / (2dt))/2
+    tmpSumX = 0.0f;
+    tmpSumY = 0.0f;
+    tmpSumZ = 0.0f;
+    for (int i = 0; i < m_linearAccelerationFilterSize; i++)
     {
-        float dt = mRawBuffer[i].time - mRawBuffer[i + mLinearAccelerationFilterSize].time;
+        float dt = m_rawBuffer[i].time - m_rawBuffer[i + m_linearAccelerationFilterSize].time;
 
         if (dt > 1e-10)
         {
-            tmp_sum_x += (mRawBuffer[i].lin_vel_x - mRawBuffer[i + mLinearAccelerationFilterSize].lin_vel_x) / dt;
-            tmp_sum_y += (mRawBuffer[i].lin_vel_y - mRawBuffer[i + mLinearAccelerationFilterSize].lin_vel_y) / dt;
-            tmp_sum_z += (mRawBuffer[i].lin_vel_z - mRawBuffer[i + mLinearAccelerationFilterSize].lin_vel_z) / dt;
+            tmpSumX += (m_rawBuffer[i].linVelX - m_rawBuffer[i + m_linearAccelerationFilterSize].linVelX) / dt;
+            tmpSumY += (m_rawBuffer[i].linVelY - m_rawBuffer[i + m_linearAccelerationFilterSize].linVelY) / dt;
+            tmpSumZ += (m_rawBuffer[i].linVelZ - m_rawBuffer[i + m_linearAccelerationFilterSize].linVelZ) / dt;
         }
     }
 
 
     // average acc
-    mSensorReadings[0].lin_acc_x = static_cast<float>(tmp_sum_x / mLinearAccelerationFilterSize);
-    mSensorReadings[0].lin_acc_y = static_cast<float>(tmp_sum_y / mLinearAccelerationFilterSize);
-    mSensorReadings[0].lin_acc_z = static_cast<float>(tmp_sum_z / mLinearAccelerationFilterSize);
+    m_sensorReadings[0].linAccX = static_cast<float>(tmpSumX / m_linearAccelerationFilterSize);
+    m_sensorReadings[0].linAccY = static_cast<float>(tmpSumY / m_linearAccelerationFilterSize);
+    m_sensorReadings[0].linAccZ = static_cast<float>(tmpSumZ / m_linearAccelerationFilterSize);
 
     // // add gravity
-    // mSensorReadings[0].lin_acc_x += static_cast<float>(g_b[0]);
-    // mSensorReadings[0].lin_acc_y += static_cast<float>(g_b[1]);
-    // mSensorReadings[0].lin_acc_z += static_cast<float>(g_b[2]);
+    // m_sensorReadings[0].linAccX += static_cast<float>(g_b[0]);
+    // m_sensorReadings[0].linAccY += static_cast<float>(g_b[1]);
+    // m_sensorReadings[0].linAccZ += static_cast<float>(g_b[2]);
 
-    // Log raw buffer:
-    // CARB_LOG_INFO("mRawBuffer [%f, %f, %f, %f, %f, %f, %f, %f, %f, %f]", mRawBuffer[0].lin_vel_x,
-    //               mRawBuffer[1].lin_vel_x, mRawBuffer[2].lin_vel_x, mRawBuffer[3].lin_vel_x,
-    //               mRawBuffer[4].lin_vel_x, mRawBuffer[5].lin_vel_x, mRawBuffer[6].lin_vel_x,
-    //               mRawBuffer[7].lin_vel_x, mRawBuffer[8].lin_vel_x, mRawBuffer[9].lin_vel_x);
+    float tmpSumW = 0.0;
+    tmpSumX = 0.0f;
+    tmpSumY = 0.0f;
+    tmpSumZ = 0.0f;
 
-    float tmp_sum_w = 0.0;
-    tmp_sum_x = 0.0f;
-    tmp_sum_y = 0.0f;
-    tmp_sum_z = 0.0f;
-
-    for (int i = 0; i < mOrientationFilterSize; i++)
+    for (int i = 0; i < m_orientationFilterSize; i++)
     {
-        tmp_sum_w += mRawBuffer[i].orientation.w;
-        tmp_sum_x += mRawBuffer[i].orientation.x;
-        tmp_sum_y += mRawBuffer[i].orientation.y;
-        tmp_sum_z += mRawBuffer[i].orientation.z;
+        tmpSumW += m_rawBuffer[i].orientation.w;
+        tmpSumX += m_rawBuffer[i].orientation.x;
+        tmpSumY += m_rawBuffer[i].orientation.y;
+        tmpSumZ += m_rawBuffer[i].orientation.z;
     }
 
-    mSensorReadings[0].orientation.w = static_cast<float>(tmp_sum_w / mOrientationFilterSize);
-    mSensorReadings[0].orientation.x = static_cast<float>(tmp_sum_x / mOrientationFilterSize);
-    mSensorReadings[0].orientation.y = static_cast<float>(tmp_sum_y / mOrientationFilterSize);
-    mSensorReadings[0].orientation.z = static_cast<float>(tmp_sum_z / mOrientationFilterSize);
+    m_sensorReadings[0].orientation.w = static_cast<float>(tmpSumW / m_orientationFilterSize);
+    m_sensorReadings[0].orientation.x = static_cast<float>(tmpSumX / m_orientationFilterSize);
+    m_sensorReadings[0].orientation.y = static_cast<float>(tmpSumY / m_orientationFilterSize);
+    m_sensorReadings[0].orientation.z = static_cast<float>(tmpSumZ / m_orientationFilterSize);
 
-    // Print out reading pair:
-    // CARB_LOG_INFO("mReadingPair[0]: [(%f, %f, %f), (%f, %f, %f), (%f, %f, %f, %f)]", mReadingPair[0].lin_acc_x,
-    //               mReadingPair[0].lin_acc_y, mReadingPair[0].lin_acc_z, mReadingPair[0].ang_vel_x,
-    //               mReadingPair[0].ang_vel_y, mReadingPair[0].ang_vel_z, mReadingPair[0].orientation.w,
-    //               mReadingPair[0].orientation.x, mReadingPair[0].orientation.y, mReadingPair[0].orientation.z);
-    // CARB_LOG_INFO("mReadingPair[1]: [(%f, %f, %f), (%f, %f, %f), (%f, %f, %f, %f)]", mReadingPair[1].lin_acc_x,
-    //               mReadingPair[1].lin_acc_y, mReadingPair[1].lin_acc_z, mReadingPair[1].ang_vel_x,
-    //               mReadingPair[1].ang_vel_y, mReadingPair[1].ang_vel_z, mReadingPair[1].orientation.w,
-    //               mReadingPair[1].orientation.x, mReadingPair[1].orientation.y, mReadingPair[1].orientation.z);
-    if (mProps.sensorPeriod <= mTimeDelta)
+    if (m_props.sensorPeriod <= m_timeDelta)
     {
-        mSensorTime = mSensorReadings[0].time;
+        m_sensorTime = m_sensorReadings[0].time;
     }
-    else if (mSensorTime + mProps.sensorPeriod <= mSensorReadings[0].time)
+    else if (m_sensorTime + m_props.sensorPeriod <= m_sensorReadings[0].time)
     {
-        mSensorTime += mProps.sensorPeriod;
-        mSensorReadingsSensorFrame = mSensorReadings;
+        m_sensorTime += m_props.sensorPeriod;
+        m_sensorReadingsSensorFrame = m_sensorReadings;
     }
     // }
 }
 
 bool ImuSensor::findValidParent()
 {
-    pxr::UsdPrim tempPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
+    pxr::UsdPrim tempPrim = this->m_stage->GetPrimAtPath(this->m_prim.GetPath()).GetParent();
 
     while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
     {
@@ -339,13 +325,13 @@ bool ImuSensor::findValidParent()
         tempPrim.GetAttribute(pxr::TfToken("physics:rigidBodyEnabled")).Get(&rigidBodyEnabled);
         if (rigidBodyEnabled)
         {
-            mParentPrim = tempPrim;
+            m_parentPrim = tempPrim;
             return true;
         }
         // go to parent
         tempPrim = tempPrim.GetParent();
     }
-    CARB_LOG_WARN("No valid parent for %s with a rigid body api was found.", this->mPrim.GetPath().GetString().c_str());
+    CARB_LOG_WARN("No valid parent for %s with a rigid body api was found.", this->m_prim.GetPath().GetString().c_str());
     return false;
 }
 
@@ -356,53 +342,53 @@ void ImuSensor::onComponentChange()
 
     // get orientation quad sensor period, and translate
 
-    const pxr::IsaacSensorIsaacImuSensor& typedPrim = pxr::IsaacSensorIsaacImuSensor(mPrim);
+    const pxr::IsaacSensorIsaacImuSensor& typedPrim = pxr::IsaacSensorIsaacImuSensor(m_prim);
 
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->mProps.sensorPeriod);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->m_props.sensorPeriod);
     isaacsim::core::includes::safeGetAttribute(
-        typedPrim.GetLinearAccelerationFilterWidthAttr(), this->mLinearAccelerationFilterSize);
+        typedPrim.GetLinearAccelerationFilterWidthAttr(), this->m_linearAccelerationFilterSize);
     isaacsim::core::includes::safeGetAttribute(
-        typedPrim.GetAngularVelocityFilterWidthAttr(), this->mAngularVelocityFilterSize);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->mOrientationFilterSize);
+        typedPrim.GetAngularVelocityFilterWidthAttr(), this->m_angularVelocityFilterSize);
+    isaacsim::core::includes::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->m_orientationFilterSize);
 
     // reject 0 or negative rolling avg size
-    mLinearAccelerationFilterSize = std::max(mLinearAccelerationFilterSize, 1);
-    mAngularVelocityFilterSize = std::max(mAngularVelocityFilterSize, 1);
-    mOrientationFilterSize = std::max(mOrientationFilterSize, 1);
+    m_linearAccelerationFilterSize = std::max(m_linearAccelerationFilterSize, 1);
+    m_angularVelocityFilterSize = std::max(m_angularVelocityFilterSize, 1);
+    m_orientationFilterSize = std::max(m_orientationFilterSize, 1);
 
-    int max_rolling_size =
-        std::max(std::max(mLinearAccelerationFilterSize, mAngularVelocityFilterSize), mOrientationFilterSize);
+    int maxRollingSize =
+        std::max(std::max(m_linearAccelerationFilterSize, m_angularVelocityFilterSize), m_orientationFilterSize);
 
     // size of the raw data must be 2 times larger than the max rolling avg size
     // also the buffer should be sufficiently large (20)
-    if (this->mRawBufferSize != 2 * max_rolling_size)
+    if (this->m_rawBufferSize != 2 * maxRollingSize)
     {
-        this->mRawBufferSize = std::max(2 * max_rolling_size, 20);
-        mRawBuffer.resize(mRawBufferSize, IsRawData());
-        mSensorReadings.resize(mRawBufferSize, IsReading());
+        this->m_rawBufferSize = std::max(2 * maxRollingSize, 20);
+        m_rawBuffer.resize(m_rawBufferSize, IsRawData());
+        m_sensorReadings.resize(m_rawBufferSize, IsReading());
     }
-    pxr::GfQuatd sensor_quat(0.0);
-    mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:orient")).Get(&sensor_quat);
-    sensor_quat.Normalize();
+    pxr::GfQuatd sensorQuat(0.0);
+    m_prim.GetPrim().GetAttribute(pxr::TfToken("xformOp:orient")).Get(&sensorQuat);
+    sensorQuat.Normalize();
 
     pxr::GfVec3d position(0.0);
-    mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
+    m_prim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
 
 
     omni::math::linalg::quatd rotate(
-        sensor_quat.GetReal(),
-        omni::math::linalg::vec3d(sensor_quat.GetImaginary().GetArray()[0], sensor_quat.GetImaginary().GetArray()[1],
-                                  sensor_quat.GetImaginary().GetArray()[2]));
+        sensorQuat.GetReal(),
+        omni::math::linalg::vec3d(sensorQuat.GetImaginary().GetArray()[0], sensorQuat.GetImaginary().GetArray()[1],
+                                  sensorQuat.GetImaginary().GetArray()[2]));
 
-    mProps.orientation.SetRotate(rotate);
+    m_props.orientation.SetRotate(rotate);
 
-    mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
+    m_unitScale = UsdGeomGetStageMetersPerUnit(m_stage);
     // gravity that the IMU experiences in world frame
     omni::math::linalg::vec3d dir = omni::math::linalg::vec3d(0, 0, -1.0f);
     float mag = 9.80665f;
-    mGravity = mag / mUnitScale * -dir;
+    m_gravity = mag / m_unitScale * -dir;
     // If a scene exists we try reading gravity from it
-    pxr::UsdPrimRange range = mStage->Traverse();
+    pxr::UsdPrimRange range = m_stage->Traverse();
     omni::physx::IPhysx* physxPtr = carb::getCachedInterface<omni::physx::IPhysx>();
 
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
@@ -419,37 +405,37 @@ void ImuSensor::onComponentChange()
             if (physxScenePtr)
             {
                 ::physx::PxVec3 gravity = physxScenePtr->getGravity();
-                mGravity = -omni::math::linalg::vec3d(gravity.x, gravity.y, gravity.z) / mUnitScale;
+                m_gravity = -omni::math::linalg::vec3d(gravity.x, gravity.y, gravity.z) / m_unitScale;
             }
             else
             {
                 // Fallback onto USD values
                 isaacsim::core::includes::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
-                pxr::GfVec3f dir_attr;
-                isaacsim::core::includes::safeGetAttribute(scene.GetGravityDirectionAttr(), dir_attr); // (0, 0, -1.0f)
+                pxr::GfVec3f dirAttr;
+                isaacsim::core::includes::safeGetAttribute(scene.GetGravityDirectionAttr(), dirAttr); // (0, 0, -1.0f)
 
-                dir.Set(static_cast<double>(dir_attr.GetArray()[0]), static_cast<double>(dir_attr.GetArray()[1]),
-                        static_cast<double>(dir_attr.GetArray()[2]));
-                mGravity = static_cast<double>(mag) / mUnitScale * -dir;
+                dir.Set(static_cast<double>(dirAttr.GetArray()[0]), static_cast<double>(dirAttr.GetArray()[1]),
+                        static_cast<double>(dirAttr.GetArray()[2]));
+                m_gravity = static_cast<double>(mag) / m_unitScale * -dir;
             }
         }
     }
 
-    if (mPreviousEnabled != this->mEnabled)
+    if (m_previousEnabled != this->m_enabled)
     {
-        if (mEnabled)
+        if (m_enabled)
         {
             this->onPhysicsStep(); // force on physics step to run to get up to date value
-            mSensorTime = static_cast<float>(mTimeSeconds);
-            mRawBuffer.resize(mRawBufferSize, IsRawData());
-            mSensorReadings.resize(mRawBufferSize, IsReading());
-            mSensorReadingsSensorFrame = mSensorReadings;
+            m_sensorTime = static_cast<float>(m_timeSeconds);
+            m_rawBuffer.resize(m_rawBufferSize, IsRawData());
+            m_sensorReadings.resize(m_rawBufferSize, IsReading());
+            m_sensorReadingsSensorFrame = m_sensorReadings;
         }
         else
         {
             this->onStop();
         }
-        mPreviousEnabled = this->mEnabled;
+        m_previousEnabled = this->m_enabled;
     }
 }
 
@@ -462,13 +448,13 @@ void ImuSensor::printIsReading(const IsReading& reading)
 {
     CARB_LOG_INFO("Is Reading");
     CARB_LOG_INFO("time: %f", reading.time);
-    CARB_LOG_INFO("ang vel x: %f", reading.ang_vel_x);
-    CARB_LOG_INFO("ang vel y: %f", reading.ang_vel_y);
-    CARB_LOG_INFO("ang vel z: %f", reading.ang_vel_z);
+    CARB_LOG_INFO("ang vel x: %f", reading.angVelX);
+    CARB_LOG_INFO("ang vel y: %f", reading.angVelY);
+    CARB_LOG_INFO("ang vel z: %f", reading.angVelZ);
 
-    CARB_LOG_INFO("lin accel x: %f", reading.lin_acc_x);
-    CARB_LOG_INFO("lin accel y: %f", reading.lin_acc_y);
-    CARB_LOG_INFO("lin accel z: %f", reading.lin_acc_z);
+    CARB_LOG_INFO("lin accel x: %f", reading.linAccX);
+    CARB_LOG_INFO("lin accel y: %f", reading.linAccY);
+    CARB_LOG_INFO("lin accel z: %f", reading.linAccZ);
     CARB_LOG_INFO("orientation xyzw: (%f, %f, %f, %f)", reading.orientation.x, reading.orientation.y,
                   reading.orientation.z, reading.orientation.w);
 }

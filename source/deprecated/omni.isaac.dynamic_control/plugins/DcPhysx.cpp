@@ -34,10 +34,10 @@
 #include <string>
 #include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.dynamic_control.plugin", "Isaac Dynamic Control",
-                                                  "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "omni.isaac.dynamic_control.plugin", "Isaac Dynamic Control",
+                                                    "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::dynamic_control::DynamicControl)
+CARB_PLUGIN_IMPL(g_kPluginDesc, omni::isaac::dynamic_control::DynamicControl)
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::physx::IPhysxSceneQuery, omni::kit::IStageUpdate)
 
 using namespace ::physx;

@@ -26,10 +26,10 @@
 
 #include <algorithm>
 
-const struct carb::PluginImplDesc pluginDesc = { "isaacsim.sensors.rtx.plugin", "Isaac Sim Sensors RTX Node plugin.",
-                                                 "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.rtx.plugin", "Isaac Sim Sensors RTX Node plugin.",
+                                                    "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
 
-CARB_PLUGIN_IMPL(pluginDesc, isaacsim::sensors::rtx::IIsaacSimSensorsRtx)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::sensors::rtx::IIsaacSimSensorsRtx)
 CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
                       omni::fabric::IToken,
                       carb::settings::ISettings,

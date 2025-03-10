@@ -49,16 +49,16 @@ public:
      */
     ImuSensor() : IsaacBaseSensorComponent()
     {
-        mRawBuffer.resize(mRawBufferSize, IsRawData());
+        m_rawBuffer.resize(m_rawBufferSize, IsRawData());
         reset();
     }
 
     /**
      * @brief Initializes the IMU sensor with a data buffer
      * @param[in] rigidBodyDataBuffer Pointer to the buffer storing rigid body data
-     * @param[in,out] mDataBufferIndex Reference to the current buffer index
+     * @param[in,out] m_dataBufferIndex Reference to the current buffer index
      */
-    void initialize(std::vector<float>* rigidBodyDataBuffer, size_t& mDataBufferIndex);
+    void initialize(std::vector<float>* rigidBodyDataBuffer, size_t& m_dataBufferIndex);
 
     /**
      * @brief Virtual destructor for proper cleanup
@@ -84,7 +84,7 @@ public:
 
     /**
      * @brief Called by component manager tick to update sensor data
-     * @details Processes finite difference data in mRawReadingList and saves in mReadingPair
+     * @details Processes finite difference data in mRawReadingList and saves in m_readingPair
      */
     virtual void onPhysicsStep();
 
@@ -121,52 +121,52 @@ public:
 
 private:
     /** @brief Properties structure for the IMU sensor */
-    IsProperties mProps;
+    IsProperties m_props;
 
-    /** @brief Size of raw data buffer, must be larger than 2*mLinearAccelerationFilterSize */
-    int mRawBufferSize = 20;
+    /** @brief Size of raw data buffer, must be larger than 2*m_linearAccelerationFilterSize */
+    int m_rawBufferSize = 20;
 
     /** @brief Current index in the data buffer */
-    size_t mDataBufferIndex = 0;
+    size_t m_dataBufferIndex = 0;
 
     /** @brief Pointer to the rigid body data buffer */
-    std::vector<float>* mRigidBodyDataBuffer = nullptr;
+    std::vector<float>* m_rigidBodyDataBuffer = nullptr;
 
     /** @brief Initial buffer state */
-    IsRawData mInitBuffer;
+    IsRawData m_initBuffer;
 
     /** @brief Raw velocities data array */
-    std::vector<IsRawData> mRawBuffer;
+    std::vector<IsRawData> m_rawBuffer;
 
     /** @brief Moving average window size for angular velocities */
-    int mAngularVelocityFilterSize = 1;
+    int m_angularVelocityFilterSize = 1;
 
     /** @brief Moving average window size for finite difference acceleration */
-    int mLinearAccelerationFilterSize = 1;
+    int m_linearAccelerationFilterSize = 1;
 
     /** @brief Moving average window size for orientation values */
-    int mOrientationFilterSize = 1;
+    int m_orientationFilterSize = 1;
 
     /** @brief IsReading at the measurement sensor period */
-    std::vector<IsReading> mSensorReadingsSensorFrame;
+    std::vector<IsReading> m_sensorReadingsSensorFrame;
 
     /** @brief Sensor readings in sensor timestamps */
-    std::vector<IsReading> mSensorReadings;
+    std::vector<IsReading> m_sensorReadings;
 
     /** @brief Unit scale factor for measurements */
-    double mUnitScale{ 1.0 };
+    double m_unitScale{ 1.0 };
 
     /** @brief Current sensor time */
-    float mSensorTime{ 0 };
+    float m_sensorTime{ 0 };
 
     /** @brief Previous enabled state */
-    bool mPreviousEnabled{ true };
+    bool m_previousEnabled{ true };
 
     /** @brief Gravity vector in sensor frame */
-    omni::math::linalg::vec3d mGravitySensorFrame;
+    omni::math::linalg::vec3d m_gravitySensorFrame;
 
     /** @brief Gravity vector in world frame */
-    omni::math::linalg::vec3d mGravity;
+    omni::math::linalg::vec3d m_gravity;
 };
 
 

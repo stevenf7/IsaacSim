@@ -33,16 +33,16 @@
 ///
 
 
-const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.util.debug_draw.plugin", "Isaac Sim debug drawing plugin",
-                                                  "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
-CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::util::debug_draw::DebugDraw)
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.util.debug_draw.plugin", "Isaac Sim debug drawing plugin",
+                                                    "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::util::debug_draw::DebugDraw)
 CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::graph::core::IGraphRegistry, omni::fabric::IToken)
 DECLARE_OGN_NODES()
 
 using namespace carb::scenerenderer;
 
-omni::kit::StageUpdatePtr gStageUpdate = nullptr;
-omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
+omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
+omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 // // Points
 // carb::scenerenderer::PrimitiveList* gDebugPointList;
 // std::vector<carb::scenerenderer::PrimitiveVertex> gDebugPointVector;
@@ -51,7 +51,7 @@ omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 // std::vector<carb::scenerenderer::PrimitiveVertex> gDebugLineVector;
 // carb::scenerenderer::PrimitiveList* gDebugLineList;
 
-omni::usd::UsdContext* gUsdContext = nullptr;
+omni::usd::UsdContext* g_usdContext = nullptr;
 
 
 void convertColor(uint32_t inColor, carb::ColorRgba& outColor)
@@ -70,14 +70,14 @@ pxr::GfVec3f getOrientation(pxr::GfVec3f& normal, pxr::GfVec3f& tangent)
 }
 
 
-std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> gPointDrawing;
-std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
+std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> g_pointDrawing;
+std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> g_lineDrawing;
 
 
 void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
 {
-    gPointDrawing->draw();
-    gLineDrawing->draw();
+    g_pointDrawing->draw();
+    g_lineDrawing->draw();
 }
 
 void CARB_ABI drawPoints(const std::vector<carb::Float3>& points,
@@ -86,18 +86,18 @@ void CARB_ABI drawPoints(const std::vector<carb::Float3>& points,
 {
     for (size_t i = 0; i < points.size(); i++)
     {
-        gPointDrawing->addVertex(points[i], colors[i], size[i]);
+        g_pointDrawing->addVertex(points[i], colors[i], size[i]);
     }
 }
 
 void CARB_ABI clearPoints()
 {
-    gPointDrawing->clear();
+    g_pointDrawing->clear();
 }
 
 size_t CARB_ABI getNumPoints()
 {
-    return gPointDrawing->size();
+    return g_pointDrawing->size();
 }
 
 
@@ -111,8 +111,8 @@ void CARB_ABI drawLines(const std::vector<carb::Float3>& startPoints,
     {
         for (size_t i = 0; i < startPoints.size(); i++)
         {
-            gLineDrawing->addVertex(startPoints[i], colors[i], widths[i]);
-            gLineDrawing->addVertex(endPoints[i], colors[i], widths[i]);
+            g_lineDrawing->addVertex(startPoints[i], colors[i], widths[i]);
+            g_lineDrawing->addVertex(endPoints[i], colors[i], widths[i]);
         }
     }
     else
@@ -132,7 +132,7 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
     pxr::VtArray<pxr::GfVec4f> tessellatedPoints;
     pxr::VtArray<pxr::GfVec4f> tessellatedTangents;
 
-    isaacsim::util::debug_draw::curves::BSpline curve(isaacsim::util::debug_draw::curves::eBasisCurveWrap::Pinned, 1);
+    isaacsim::util::debug_draw::curves::BSpline curve(isaacsim::util::debug_draw::curves::BasisCurveWrap::ePinned, 1);
 
     pxr::VtArray<pxr::GfVec3f> ctrlPoints;
     for (size_t i = 0; i < points.size(); i++)
@@ -175,29 +175,29 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
             point.position = carb::Float3({ a1[0], a1[1], a1[2] });
             point.width = 1.0;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
             point.position = carb::Float3({ a2[0], a2[1], a2[2] });
             point.width = 1.0;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
 
             point.position = carb::Float3({ b1[0], b1[1], b1[2] });
             point.width = 1.0;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
             point.position = carb::Float3({ b2[0], b2[1], b2[2] });
             point.width = 1.0;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
 
             point.position = carb::Float3({ b1[0], b1[1], b1[2] });
             point.width = 1.0;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
             point.position = carb::Float3({ a2[0], a2[1], a2[2] });
             point.width = 1.0;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
 
 
             // First line
@@ -207,11 +207,11 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
                 point.position = carb::Float3({ b1[0], b1[1], b1[2] });
                 point.width = 1.0;
                 point.color = colors;
-                gLineDrawing->addVertex(point);
+                g_lineDrawing->addVertex(point);
                 point.position = carb::Float3({ a1[0], a1[1], a1[2] });
                 point.width = 1.0;
                 point.color = colors;
-                gLineDrawing->addVertex(point);
+                g_lineDrawing->addVertex(point);
             }
             // last line
             if (i == tessellatedPoints.size() - 2)
@@ -219,11 +219,11 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
                 point.position = carb::Float3({ b2[0], b2[1], b2[2] });
                 point.width = 1.0;
                 point.color = colors;
-                gLineDrawing->addVertex(point);
+                g_lineDrawing->addVertex(point);
                 point.position = carb::Float3({ a2[0], a2[1], a2[2] });
                 point.width = 1.0;
                 point.color = colors;
-                gLineDrawing->addVertex(point);
+                g_lineDrawing->addVertex(point);
             }
         }
     }
@@ -236,49 +236,49 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
             point.position = carb::Float3({ pointPtr[0], pointPtr[1], pointPtr[2] });
             point.width = width;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
 
             pointPtr = tessellatedPoints[i + 1].data();
 
             point.position = carb::Float3({ pointPtr[0], pointPtr[1], pointPtr[2] });
             point.width = width;
             point.color = colors;
-            gLineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(point);
         }
     }
 }
 
 void CARB_ABI clearLines()
 {
-    gLineDrawing->clear();
+    g_lineDrawing->clear();
 }
 
 size_t CARB_ABI getNumLines()
 {
     // each line is two points
-    return static_cast<size_t>(gLineDrawing->size() / 2);
+    return static_cast<size_t>(g_lineDrawing->size() / 2);
 }
 
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
-    gUsdContext = omni::usd::UsdContext::getContext();
-    gPointDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
-    gLineDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+    g_usdContext = omni::usd::UsdContext::getContext();
+    g_pointDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        g_usdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+    g_lineDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        g_usdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 }
 
 void onDetach(void* data)
 {
-    gPointDrawing.reset();
-    gLineDrawing.reset();
+    g_pointDrawing.reset();
+    g_lineDrawing.reset();
 }
 
 CARB_EXPORT void carbOnPluginStartup()
 {
 
     INITIALIZE_OGN_NODES()
-    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac DebugDraw";
@@ -286,22 +286,22 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onDetach = onDetach;
     desc.onUpdate = onUpdate;
     // Create the stage update node and make sure it runs after physx
-    size_t index = gStageUpdate->getStageUpdateNodeCount();
-    gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
-    gStageUpdate->setStageUpdateNodeOrder(index, 75);
+    size_t index = g_stageUpdate->getStageUpdateNodeCount();
+    g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
+    g_stageUpdate->setStageUpdateNodeOrder(index, 75);
 
-    gPointDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
-    gLineDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
-        gUsdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
+    g_pointDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        g_usdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
+    g_lineDrawing = std::make_unique<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        g_usdContext, isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
     RELEASE_OGN_NODES()
-    gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
-    gPointDrawing.reset();
-    gLineDrawing.reset();
+    g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
+    g_pointDrawing.reset();
+    g_lineDrawing.reset();
 }
 
 void fillInterface(isaacsim::util::debug_draw::DebugDraw& iface)
