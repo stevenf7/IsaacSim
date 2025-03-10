@@ -22,12 +22,12 @@ using namespace isaacsim::ros2::bridge;
 struct Bbox3DData
 {
     uint32_t semanticId;
-    float x_min;
-    float y_min;
-    float z_min;
-    float x_max;
-    float y_max;
-    float z_max;
+    float xMin;
+    float yMin;
+    float zMin;
+    float xMax;
+    float yMax;
+    float zMax;
     pxr::GfMatrix4f transform;
     float occlusionRatio;
 };

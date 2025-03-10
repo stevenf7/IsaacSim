@@ -38,35 +38,35 @@ public:
     {
         auto& state =
             OgnIsaacReadSimulationTimeDatabase::sPerInstanceState<OgnIsaacReadSimulationTime>(nodeObj, instanceId);
-        state.mCoreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
     }
 
     static bool compute(OgnIsaacReadSimulationTimeDatabase& db)
     {
         auto& state = db.perInstanceState<OgnIsaacReadSimulationTime>();
 
-        state.mResetOnStop = db.inputs.resetOnStop();
+        state.m_resetOnStop = db.inputs.resetOnStop();
         if (db.inputs.swhFrameNumber() > 0)
         {
-            if (state.mResetOnStop)
+            if (state.m_resetOnStop)
             {
-                db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTimeAtSwhFrame(db.inputs.swhFrameNumber());
+                db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeAtSwhFrame(db.inputs.swhFrameNumber());
             }
             else
             {
                 db.outputs.simulationTime() =
-                    state.mCoreNodeFramework->getSimTimeMonotonicAtSwhFrame(db.inputs.swhFrameNumber());
+                    state.m_coreNodeFramework->getSimTimeMonotonicAtSwhFrame(db.inputs.swhFrameNumber());
             }
         }
         else
         {
-            if (state.mResetOnStop)
+            if (state.m_resetOnStop)
             {
-                db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTime();
+                db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTime();
             }
             else
             {
-                db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTimeMonotonic();
+                db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeMonotonic();
             }
         }
         return true;
@@ -74,8 +74,8 @@ public:
 
 
 private:
-    bool mResetOnStop = true;
-    isaacsim::core::nodes::CoreNodes* mCoreNodeFramework;
+    bool m_resetOnStop = true;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

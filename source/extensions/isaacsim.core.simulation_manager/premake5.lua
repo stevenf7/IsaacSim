@@ -6,6 +6,8 @@ project_ext(ext)
 -- -------------------------------------
 -- Build the C++ plugin that will be loaded by the extension
 project_ext_plugin(ext, "isaacsim.core.simulation_manager.plugin")
+defines { "ISAACSIM_CORE_SIMULATION_MANAGER_EXPORT" }
+
 add_files("include", "include/isaacsim/core/simulation_manager")
 add_files("source", "plugins/isaacsim.core.simulation_manager")
 includedirs {

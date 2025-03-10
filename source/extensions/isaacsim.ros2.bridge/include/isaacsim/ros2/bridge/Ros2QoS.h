@@ -162,7 +162,7 @@ namespace
 /**
  * @brief Mapping from string representations to History policy enums
  */
-const std::map<std::string, Ros2QoSHistoryPolicy> Ros2QoSHistoryString2PolicyMap = {
+const std::map<std::string, Ros2QoSHistoryPolicy> g_kRos2QoSHistoryString2PolicyMap = {
     { "systemDefault", Ros2QoSHistoryPolicy::eSystemDefault },
     { "keepLast", Ros2QoSHistoryPolicy::eKeepLast },
     { "keepAll", Ros2QoSHistoryPolicy::eKeepAll },
@@ -172,7 +172,7 @@ const std::map<std::string, Ros2QoSHistoryPolicy> Ros2QoSHistoryString2PolicyMap
 /**
  * @brief Mapping from string representations to Reliability policy enums
  */
-const std::map<std::string, Ros2QoSReliabilityPolicy> Ros2QoSReliabilityString2PolicyMap = {
+const std::map<std::string, Ros2QoSReliabilityPolicy> g_kRos2QoSReliabilityString2PolicyMap = {
     { "systemDefault", Ros2QoSReliabilityPolicy::eSystemDefault },
     { "reliable", Ros2QoSReliabilityPolicy::eReliable },
     { "bestEffort", Ros2QoSReliabilityPolicy::eBestEffort },
@@ -182,7 +182,7 @@ const std::map<std::string, Ros2QoSReliabilityPolicy> Ros2QoSReliabilityString2P
 /**
  * @brief Mapping from string representations to Durability policy enums
  */
-const std::map<std::string, Ros2QoSDurabilityPolicy> Ros2QoSDurabilityString2PolicyMap = {
+const std::map<std::string, Ros2QoSDurabilityPolicy> g_kRos2QoSDurabilityString2PolicyMap = {
     { "systemDefault", Ros2QoSDurabilityPolicy::eSystemDefault },
     { "transientLocal", Ros2QoSDurabilityPolicy::eTransientLocal },
     { "volatile", Ros2QoSDurabilityPolicy::eVolatile },
@@ -192,7 +192,7 @@ const std::map<std::string, Ros2QoSDurabilityPolicy> Ros2QoSDurabilityString2Pol
 /**
  * @brief Mapping from string representations to Liveliness policy enums
  */
-const std::map<std::string, Ros2QoSLivelinessPolicy> Ros2QoSLivelinessString2PolicyMap = {
+const std::map<std::string, Ros2QoSLivelinessPolicy> g_kRos2QoSLivelinessString2PolicyMap = {
     { "systemDefault", Ros2QoSLivelinessPolicy::eSystemDefault },
     { "automatic", Ros2QoSLivelinessPolicy::eAutomatic },
     { "manualByTopic", Ros2QoSLivelinessPolicy::eManualByTopic },
@@ -258,25 +258,26 @@ inline static const bool jsonToRos2QoSProfile(Ros2QoSProfile& qos, const std::st
     }
 
     // Validate that the values for the keys exist in the corresponding maps
-    if (Ros2QoSHistoryString2PolicyMap.find(json["history"].get<std::string>()) == Ros2QoSHistoryString2PolicyMap.end())
+    if (g_kRos2QoSHistoryString2PolicyMap.find(json["history"].get<std::string>()) ==
+        g_kRos2QoSHistoryString2PolicyMap.end())
     {
         std::cerr << "Invalid value for 'history'\n";
         return false;
     }
-    if (Ros2QoSReliabilityString2PolicyMap.find(json["reliability"].get<std::string>()) ==
-        Ros2QoSReliabilityString2PolicyMap.end())
+    if (g_kRos2QoSReliabilityString2PolicyMap.find(json["reliability"].get<std::string>()) ==
+        g_kRos2QoSReliabilityString2PolicyMap.end())
     {
         std::cerr << "Invalid value for 'reliability'\n";
         return false;
     }
-    if (Ros2QoSDurabilityString2PolicyMap.find(json["durability"].get<std::string>()) ==
-        Ros2QoSDurabilityString2PolicyMap.end())
+    if (g_kRos2QoSDurabilityString2PolicyMap.find(json["durability"].get<std::string>()) ==
+        g_kRos2QoSDurabilityString2PolicyMap.end())
     {
         std::cerr << "Invalid value for 'durability'\n";
         return false;
     }
-    if (Ros2QoSLivelinessString2PolicyMap.find(json["liveliness"].get<std::string>()) ==
-        Ros2QoSLivelinessString2PolicyMap.end())
+    if (g_kRos2QoSLivelinessString2PolicyMap.find(json["liveliness"].get<std::string>()) ==
+        g_kRos2QoSLivelinessString2PolicyMap.end())
     {
         std::cerr << "Invalid value for 'liveliness'\n";
         return false;
@@ -290,13 +291,13 @@ inline static const bool jsonToRos2QoSProfile(Ros2QoSProfile& qos, const std::st
         return Ros2QoSTime{ secs, nanoseconds };
     };
 
-    qos.history = Ros2QoSHistoryString2PolicyMap.at(json["history"].get<std::string>());
+    qos.history = g_kRos2QoSHistoryString2PolicyMap.at(json["history"].get<std::string>());
     qos.depth = json["depth"];
-    qos.reliability = Ros2QoSReliabilityString2PolicyMap.at(json["reliability"].get<std::string>());
-    qos.durability = Ros2QoSDurabilityString2PolicyMap.at(json["durability"].get<std::string>());
+    qos.reliability = g_kRos2QoSReliabilityString2PolicyMap.at(json["reliability"].get<std::string>());
+    qos.durability = g_kRos2QoSDurabilityString2PolicyMap.at(json["durability"].get<std::string>());
     qos.deadline = createRos2QoSTimeType(json["deadline"]);
     qos.lifespan = createRos2QoSTimeType(json["lifespan"]);
-    qos.liveliness = Ros2QoSLivelinessString2PolicyMap.at(json["liveliness"].get<std::string>());
+    qos.liveliness = g_kRos2QoSLivelinessString2PolicyMap.at(json["liveliness"].get<std::string>());
     qos.livelinessLeaseDuration = createRos2QoSTimeType(json["leaseDuration"]);
     qos.avoidRosNamespaceConventions = false;
     return true;

@@ -16,8 +16,8 @@
 #include <isaacsim/ros2/tf_viewer/ITransformListener.h>
 #include <isaacsim/ros2/tf_viewer/Tf2Factory.h>
 
-const struct carb::PluginImplDesc pluginImplDesc = { "isaacsim.ros2.tf_viewer.plugin", "Transform Listener", "NVIDIA",
-                                                     carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.ros2.tf_viewer.plugin", "Transform Listener", "NVIDIA",
+                                                    carb::PluginHotReload::eDisabled, "dev" };
 
 namespace isaacsim
 {
@@ -49,7 +49,7 @@ public:
         if (!m_tf2Factory)
         {
 
-            typedef Tf2Factory* (*createFactory_binding)(void);
+            using createFactory_binding = Tf2Factory* (*)();
             createFactory_binding createFactory = (m_libraryLoader->getSymbol<createFactory_binding>("createFactory"));
             if (!createFactory)
             {
@@ -112,8 +112,8 @@ public:
         }
 
         bool status = true;
-        status &= _subscriberCallback(false);
-        status &= _subscriberCallback(true);
+        status &= subscriberCallback(false);
+        status &= subscriberCallback(true);
         return status;
     }
 
@@ -189,7 +189,7 @@ private:
     std::unordered_map<std::string, std::tuple<std::tuple<double, double, double>, std::tuple<double, double, double, double>>>
         m_transforms;
 
-    bool _subscriberCallback(bool isStatic)
+    bool subscriberCallback(bool isStatic)
     {
         if (!m_buffer)
         {
@@ -209,7 +209,7 @@ private:
 } // namespace ros2
 } // namespace isaacsim
 
-CARB_PLUGIN_IMPL(pluginImplDesc, isaacsim::ros2::tf_viewer::TransformListener)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::ros2::tf_viewer::TransformListener)
 
 void fillInterface(isaacsim::ros2::tf_viewer::TransformListener& iface)
 {

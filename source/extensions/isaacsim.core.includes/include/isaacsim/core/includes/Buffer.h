@@ -28,12 +28,12 @@ namespace includes
  * @brief Enumeration specifying the type of memory allocation.
  * @details Defines whether the buffer resides in host (CPU) or device (GPU) memory.
  */
-enum class eMemoryType
+enum class MemoryType
 {
     /** @brief Memory allocated in host (CPU) RAM */
-    Host = 0,
+    eHost = 0,
     /** @brief Memory allocated in device (GPU) VRAM */
-    Device = 1,
+    eDevice = 1,
 };
 
 /**
@@ -95,14 +95,14 @@ public:
      * @brief Gets the memory type of the buffer.
      * @return Memory type (Host or Device)
      */
-    eMemoryType type() const
+    MemoryType type() const
     {
-        return mMemoryType;
+        return m_memoryType;
     }
 
 protected:
     /** @brief Type of memory where the buffer resides */
-    eMemoryType mMemoryType;
+    MemoryType m_memoryType;
 };
 
 /**
@@ -123,7 +123,7 @@ protected:
 template <typename T>
 class DeviceBufferBase : public Buffer<T>
 {
-    using Buffer<T>::mMemoryType;
+    using Buffer<T>::m_memoryType;
 
 public:
     /**
@@ -133,8 +133,8 @@ public:
      */
     DeviceBufferBase(const size_t& size = 0, const int device = -1)
     {
-        mMemoryType = eMemoryType::Device;
-        mDevice = device;
+        m_memoryType = MemoryType::eDevice;
+        m_device = device;
         resize(size);
     }
 
@@ -143,9 +143,9 @@ public:
      */
     virtual ~DeviceBufferBase()
     {
-        ScopedDevice scopedDevice(mDevice);
-        CUDA_CHECK(cudaFree(mBuffer));
-        mBuffer = nullptr;
+        ScopedDevice scopedDevice(m_device);
+        CUDA_CHECK(cudaFree(m_buffer));
+        m_buffer = nullptr;
     }
 
     /**
@@ -158,17 +158,17 @@ public:
      */
     virtual void setDevice(const int device = -1)
     {
-        if (device != mDevice)
+        if (device != m_device)
         {
             // if the device doesn't match and we had a buffer allocated, release it on the old device and switch
-            if (mBuffer)
+            if (m_buffer)
             {
-                ScopedDevice scopedDevice(mDevice);
-                CUDA_CHECK(cudaFree(mBuffer));
-                mBuffer = nullptr;
+                ScopedDevice scopedDevice(m_device);
+                CUDA_CHECK(cudaFree(m_buffer));
+                m_buffer = nullptr;
             }
-            mDevice = device;
-            resize(mSize);
+            m_device = device;
+            resize(m_size);
         }
     }
 
@@ -182,19 +182,19 @@ public:
      */
     virtual void resize(size_t size)
     {
-        if ((size != mSize && size > 0) || mBuffer == nullptr)
+        if ((size != m_size && size > 0) || m_buffer == nullptr)
         {
-            ScopedDevice scopedDevice(mDevice);
-            if (mBuffer)
+            ScopedDevice scopedDevice(m_device);
+            if (m_buffer)
             {
-                CUDA_CHECK(cudaFree(mBuffer));
-                mBuffer = nullptr;
+                CUDA_CHECK(cudaFree(m_buffer));
+                m_buffer = nullptr;
             }
             if (size > 0)
             {
-                CUDA_CHECK(cudaMalloc(&mBuffer, size * sizeof(T)));
+                CUDA_CHECK(cudaMalloc(&m_buffer, size * sizeof(T)));
             }
-            mSize = size;
+            m_size = size;
         }
     }
 
@@ -204,7 +204,7 @@ public:
      */
     virtual T* data() const
     {
-        return mBuffer;
+        return m_buffer;
     }
 
     /**
@@ -213,7 +213,7 @@ public:
      */
     virtual size_t size() const
     {
-        return mSize;
+        return m_size;
     }
 
     /**
@@ -224,8 +224,8 @@ public:
      */
     virtual void copy(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
     {
-        ScopedDevice scopedDevice(mDevice);
-        CUDA_CHECK(cudaMemcpy(mBuffer, src, size * sizeof(T), kind));
+        ScopedDevice scopedDevice(m_device);
+        CUDA_CHECK(cudaMemcpy(m_buffer, src, size * sizeof(T), kind));
     }
 
     /**
@@ -236,8 +236,8 @@ public:
      */
     virtual void copyAsync(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
     {
-        ScopedDevice scopedDevice(mDevice);
-        CUDA_CHECK(cudaMemcpyAsync(mBuffer, src, size * sizeof(T), kind));
+        ScopedDevice scopedDevice(m_device);
+        CUDA_CHECK(cudaMemcpyAsync(m_buffer, src, size * sizeof(T), kind));
     }
 
     /**
@@ -247,14 +247,14 @@ public:
      */
     void debugPrint(const std::string& start, const std::string& end)
     {
-        ScopedDevice scopedDevice(mDevice);
+        ScopedDevice scopedDevice(m_device);
         printf("%s", start.c_str());
-        std::vector<T> hostBuffer(mSize);
-        CUDA_CHECK(cudaMemcpyAsync(hostBuffer.data(), mBuffer, mSize * sizeof(T), cudaMemcpyDeviceToHost));
-        for (size_t i; i < mSize; ++i)
+        std::vector<T> hostBuffer(m_size);
+        CUDA_CHECK(cudaMemcpyAsync(hostBuffer.data(), m_buffer, m_size * sizeof(T), cudaMemcpyDeviceToHost));
+        for (size_t i; i < m_size; ++i)
         {
             std::cout << hostBuffer[i];
-            if (i != mSize - 1)
+            if (i != m_size - 1)
             {
                 std::cout << ", ";
             }
@@ -264,11 +264,11 @@ public:
 
 private:
     /** @brief Pointer to device memory */
-    T* mBuffer = nullptr;
+    T* m_buffer = nullptr;
     /** @brief Current size of the buffer in elements */
-    size_t mSize = 0;
+    size_t m_size = 0;
     /** @brief CUDA device ID where memory is allocated */
-    int mDevice = 0;
+    int m_device = 0;
 };
 
 /**
@@ -283,7 +283,7 @@ private:
 template <typename T>
 class HostBufferBase : public Buffer<T>
 {
-    using Buffer<T>::mMemoryType;
+    using Buffer<T>::m_memoryType;
 
 public:
     /**
@@ -292,7 +292,7 @@ public:
      */
     HostBufferBase(size_t size = 0)
     {
-        mMemoryType = eMemoryType::Host;
+        m_memoryType = MemoryType::eHost;
         resize(size);
     }
 
@@ -302,7 +302,7 @@ public:
      */
     virtual void resize(size_t size)
     {
-        mBuffer.resize(size);
+        m_buffer.resize(size);
     }
 
     /**
@@ -312,7 +312,7 @@ public:
      */
     virtual void resize(size_t size, const T& val)
     {
-        mBuffer.resize(size, val);
+        m_buffer.resize(size, val);
     }
 
     /**
@@ -321,7 +321,7 @@ public:
      */
     virtual T* data() const
     {
-        return (T*)mBuffer.data();
+        return (T*)m_buffer.data();
     }
 
     /**
@@ -330,11 +330,11 @@ public:
      */
     virtual size_t size() const
     {
-        return mBuffer.size();
+        return m_buffer.size();
     }
 
     /** @brief Underlying vector storing the data */
-    std::vector<T> mBuffer;
+    std::vector<T> m_buffer;
 };
 
 /** @brief Type alias for a device buffer of bytes */

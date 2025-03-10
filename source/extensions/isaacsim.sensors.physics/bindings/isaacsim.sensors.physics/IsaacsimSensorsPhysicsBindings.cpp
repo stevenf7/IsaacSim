@@ -83,8 +83,8 @@ PYBIND11_MODULE(_sensor, m)
     using namespace carb;
     using namespace isaacsim::sensors::physics;
 
-    auto carb_module = py::module::import("carb");
-    auto numpy_common_module = py::module::import("omni.kit.numpy.common");
+    auto carbModule = py::module::import("carb");
+    auto numpyCommonModule = py::module::import("omni.kit.numpy.common");
 
     py::class_<CsRawPython>(m, "CsRawData", "Contact Raw Data")
         .def(py::init<>())
@@ -108,25 +108,24 @@ PYBIND11_MODULE(_sensor, m)
             "**Deprecation Alert**, inContact will be renamed to in_contact. boolean that flags if the sensor registers a contact. (:obj:`bool`)")
         .def_readwrite(
             "in_contact", &CsReading::inContact, "boolean that flags if the sensor registers a contact. (:obj:`bool`)")
-        .def_readwrite("is_valid", &CsReading::is_valid, "validity of the data. (:obj:`bool`)");
+        .def_readwrite("is_valid", &CsReading::isValid, "validity of the data. (:obj:`bool`)");
 
     py::class_<IsReading>(m, "IsSensorReading", "Imu Sensor Reading")
         .def(py::init<>())
         .def_readwrite("time", &IsReading::time, "timestamp of the reading, in seconds. (:obj:`float`)")
-        .def_readwrite("lin_acc_x", &IsReading::lin_acc_x, "Accelerometer reading value x axis, in m/s^2. (:obj:`float`)")
-        .def_readwrite("lin_acc_y", &IsReading::lin_acc_y, "Accelerometer reading value y axis, in m/s^2. (:obj:`float`)")
-        .def_readwrite("lin_acc_z", &IsReading::lin_acc_z, "Accelerometer reading value z axis, in m/s^2. (:obj:`float`)")
-        .def_readwrite("ang_vel_x", &IsReading::ang_vel_x, "Gyroscope reading value x axis, in rad/s. (:obj:`float`)")
-        .def_readwrite("ang_vel_y", &IsReading::ang_vel_y, "Gyroscope reading value y axis, in rad/s. (:obj:`float`)")
-        .def_readwrite("ang_vel_z", &IsReading::ang_vel_z, "Gyroscope reading value z axis, in rad/s. (:obj:`float`)")
+        .def_readwrite("lin_acc_x", &IsReading::linAccX, "Accelerometer reading value x axis, in m/s^2. (:obj:`float`)")
+        .def_readwrite("lin_acc_y", &IsReading::linAccY, "Accelerometer reading value y axis, in m/s^2. (:obj:`float`)")
+        .def_readwrite("lin_acc_z", &IsReading::linAccZ, "Accelerometer reading value z axis, in m/s^2. (:obj:`float`)")
+        .def_readwrite("ang_vel_x", &IsReading::angVelX, "Gyroscope reading value x axis, in rad/s. (:obj:`float`)")
+        .def_readwrite("ang_vel_y", &IsReading::angVelY, "Gyroscope reading value y axis, in rad/s. (:obj:`float`)")
+        .def_readwrite("ang_vel_z", &IsReading::angVelZ, "Gyroscope reading value z axis, in rad/s. (:obj:`float`)")
         .def_readwrite(
             "orientation", &IsReading::orientation, "Orientation quaternion reading (x, y, z, w). (:obj:`carb.Float4`)")
-        .def_readwrite("is_valid", &IsReading::is_valid, "validity of sensor reading. (:obj:`bool`)");
+        .def_readwrite("is_valid", &IsReading::isValid, "validity of sensor reading. (:obj:`bool`)");
 
-    PYBIND11_NUMPY_DTYPE(CsReading, time, value, inContact, is_valid);
+    PYBIND11_NUMPY_DTYPE(CsReading, time, value, inContact, isValid);
     PYBIND11_NUMPY_DTYPE(CsRawPython, time, dt, body0, body1, position, normal, impulse);
-    PYBIND11_NUMPY_DTYPE(
-        IsReading, time, lin_acc_x, lin_acc_y, lin_acc_z, ang_vel_x, ang_vel_y, ang_vel_z, orientation, is_valid);
+    PYBIND11_NUMPY_DTYPE(IsReading, time, linAccX, linAccY, linAccZ, angVelX, angVelY, angVelZ, orientation, isValid);
 
     m.doc() = R"pbdoc(
     This Extension provides an interface to 'pxr.IsaacSensorSchemaIsaacBaseSensor' to be used in a stage.
@@ -136,16 +135,16 @@ PYBIND11_MODULE(_sensor, m)
         m, "ContactSensorInterface", "acquire_contact_sensor_interface", "release_contact_sensor_interface")
         .def(
             "get_contact_sensor_raw_data",
-            [](ContactSensorInterface* li, const char* body_path) -> py::object
+            [](ContactSensorInterface* li, const char* bodyPath) -> py::object
             {
                 if (!li)
                 {
                     return py::none();
                 }
-                size_t num_data = 0;
-                CsRawData* data = li->getSensorRawData(body_path, num_data);
+                size_t numData = 0;
+                CsRawData* data = li->getSensorRawData(bodyPath, numData);
                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
-                                                 1, { num_data }, { sizeof(CsRawPython) }));
+                                                 1, { numData }, { sizeof(CsRawPython) }));
             },
             R"pbdoc(
                 Args:
@@ -155,16 +154,16 @@ PYBIND11_MODULE(_sensor, m)
                     :obj:`numpy.array`: The list of contact raw data that contains the specified body that the contact sensor is attached to.)pbdoc")
         .def(
             "get_rigid_body_raw_data",
-            [](ContactSensorInterface* li, const char* body_path) -> py::object
+            [](ContactSensorInterface* li, const char* bodyPath) -> py::object
             {
                 if (!li)
                 {
                     return py::none();
                 }
-                size_t num_data = 0;
-                CsRawData* data = li->getBodyRawData(body_path, num_data);
+                size_t numData = 0;
+                CsRawData* data = li->getBodyRawData(bodyPath, numData);
                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
-                                                 1, { num_data }, { sizeof(CsRawPython) }));
+                                                 1, { numData }, { sizeof(CsRawPython) }));
             },
             R"pbdoc(
                 Get raw data from a rigid body that have contact report API enabled
@@ -200,23 +199,23 @@ PYBIND11_MODULE(_sensor, m)
         m, "ImuSensorInterface", "acquire_imu_sensor_interface", "release_imu_sensor_interface")
         .def(
             "get_sensor_reading",
-            [](const ImuSensorInterface* li, const char* sensor_path,
-               std::function<IsReading(std::vector<IsReading>, float)> interpolation_function = nullptr,
-               bool use_latest_data = false, bool read_gravity = true) -> py::object
+            [](const ImuSensorInterface* li, const char* sensorPath,
+               std::function<IsReading(std::vector<IsReading>, float)> interpolationFunction = nullptr,
+               bool useLatestData = false, bool readGravity = true) -> py::object
             {
                 if (!li)
                 {
                     return py::none();
                 }
                 IsReading data = IsReading();
-                if (interpolation_function)
+                if (interpolationFunction)
                 {
-                    data = li->getSensorReading(sensor_path, carb::wrapPythonCallback(std::move(interpolation_function)),
-                                                use_latest_data, read_gravity);
+                    data = li->getSensorReading(sensorPath, carb::wrapPythonCallback(std::move(interpolationFunction)),
+                                                useLatestData, readGravity);
                 }
                 else
                 {
-                    data = li->getSensorReading(sensor_path, nullptr, use_latest_data, read_gravity);
+                    data = li->getSensorReading(sensorPath, nullptr, useLatestData, readGravity);
                 }
                 return py::cast(data);
             },

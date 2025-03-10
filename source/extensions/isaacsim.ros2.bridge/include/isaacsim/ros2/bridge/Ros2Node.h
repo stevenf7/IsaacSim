@@ -68,8 +68,8 @@ public:
         m_ros2Bridge = carb::getCachedInterface<isaacsim::ros2::bridge::Ros2Bridge>();
 
         m_settings = carb::getCachedInterface<carb::settings::ISettings>();
-        static constexpr char setting[] = "/exts/isaacsim.ros2.bridge/publish_without_verification";
-        m_publishWithoutVerification = m_settings->getAsBool(setting);
+        static constexpr char s_kSetting[] = "/exts/isaacsim.ros2.bridge/publish_without_verification";
+        m_publishWithoutVerification = m_settings->getAsBool(s_kSetting);
 
         // Here m_factory should be set according to the env var for ROS Distro..?
         m_factory = m_ros2Bridge->getFactory();
@@ -157,7 +157,7 @@ public:
         }
 
         // Create the ROS 2 node handler
-        if (m_namespaceName.size() == 0)
+        if (m_namespaceName.empty())
         {
             m_nodeHandle = m_factory->createNodeHandle(sanitizedNodeName.c_str(), "", m_contextHandle->get());
         }
@@ -198,7 +198,7 @@ public:
      */
     static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topicName)
     {
-        if (topicName.size() == 0)
+        if (topicName.empty())
         {
             return std::string("");
         }
@@ -230,15 +230,15 @@ public:
         }
         std::string namespaceString = "";
         PXR_NS::UsdPrim currentPrim = startPrim;
-        static const PXR_NS::TfToken isaacNamespace("isaac:namespace");
+        static const PXR_NS::TfToken s_kIsaacNamespace("isaac:namespace");
 
         std::string namespaceValue = "";
 
         // Traverse upwards until there are no more parents
         while (currentPrim.IsValid())
         {
-            const pxr::UsdAttribute attr = currentPrim.GetAttribute(isaacNamespace);
-            if (currentPrim.GetAttribute(isaacNamespace).HasValue())
+            const pxr::UsdAttribute attr = currentPrim.GetAttribute(s_kIsaacNamespace);
+            if (currentPrim.GetAttribute(s_kIsaacNamespace).HasValue())
             {
                 if (attr.Get(&namespaceValue))
                 {
@@ -299,7 +299,7 @@ private:
      */
     static inline std::string trimNonAlnum(const std::string& s)
     {
-        if (s.size() == 0)
+        if (s.empty())
         {
             return "";
         }

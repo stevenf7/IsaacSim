@@ -45,39 +45,39 @@ public:
         const auto* const iBundle = context.iBundle;
 
         auto& state = db.perInstanceState<OgnIsaacReadWorldPose>();
-        const auto& input_prim = db.inputs.prim();
+        const auto& inputPrim = db.inputs.prim();
         const auto& includeScale = db.inputs.includeScale();
         pxr::SdfPath primPath;
-        if (input_prim.size() > 0)
+        if (inputPrim.size() > 0)
         {
-            primPath = omni::fabric::toSdfPath(input_prim[0]);
+            primPath = omni::fabric::toSdfPath(inputPrim[0]);
         }
         else
         {
             db.logError("Omnigraph Error: no input prim");
             return false;
         }
-        if (state.mStage == nullptr)
+        if (state.m_stage == nullptr)
         {
             //  Find our stage
             const GraphContextObj& context = db.abi_context();
-            state.mStageId = context.iContext->getStageId(context);
-            state.mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.mStageId));
+            state.m_stageId = context.iContext->getStageId(context);
+            state.m_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.m_stageId));
             omni::fabric::IStageReaderWriter* iStageReaderWriter =
                 carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
-            omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(state.mStageId);
-            state.mUsdrtStage = usdrt::UsdStage::Attach(state.mStageId, stageInProgress);
-            if (!state.mStage)
+            omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(state.m_stageId);
+            state.m_usdrtStage = usdrt::UsdStage::Attach(state.m_stageId, stageInProgress);
+            if (!state.m_stage)
             {
-                db.logError("Could not find USD stage %ld", state.mStageId);
+                db.logError("Could not find USD stage %ld", state.m_stageId);
                 return false;
             }
         }
         usdrt::GfMatrix4d usdTransform =
-            isaacsim::core::includes::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
-        const double* sourceOrientation_i =
+            isaacsim::core::includes::pose::computeWorldXformNoCache(state.m_stage, state.m_usdrtStage, primPath);
+        const double* sourceOrientationI =
             usdTransform.ExtractRotationMatrix().ExtractRotation().GetImaginary().GetArray();
-        const double sourceOrientation_r = usdTransform.ExtractRotationMatrix().ExtractRotation().GetReal();
+        const double sourceOrientationR = usdTransform.ExtractRotationMatrix().ExtractRotation().GetReal();
         const double* sourceTranslation = usdTransform.ExtractTranslation().GetArray();
         auto& bundleContents = db.outputs.primsBundle();
         auto bundleHandle = bundleContents.abi_bundleHandle();
@@ -105,10 +105,10 @@ public:
             scaleData[2] = sourceScale[2];
         }
 
-        orientationData[0] = sourceOrientation_r;
-        orientationData[1] = sourceOrientation_i[0];
-        orientationData[2] = sourceOrientation_i[1];
-        orientationData[3] = sourceOrientation_i[2];
+        orientationData[0] = sourceOrientationR;
+        orientationData[1] = sourceOrientationI[0];
+        orientationData[2] = sourceOrientationI[1];
+        orientationData[3] = sourceOrientationI[2];
 
         positionData[0] = sourceTranslation[0];
         positionData[1] = sourceTranslation[1];
@@ -118,9 +118,9 @@ public:
     }
 
 private:
-    pxr::UsdStageRefPtr mStage = nullptr;
-    long mStageId;
-    usdrt::UsdStageRefPtr mUsdrtStage{ nullptr };
+    pxr::UsdStageRefPtr m_stage = nullptr;
+    long m_stageId;
+    usdrt::UsdStageRefPtr m_usdrtStage{ nullptr };
 };
 REGISTER_OGN_NODE()
 }

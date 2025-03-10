@@ -34,8 +34,8 @@ struct Ros2DistroInfo
     Ros2Distro distro;
 };
 
-constexpr std::array<Ros2DistroInfo, 2> kDistroMapping{ { { "humble", Ros2Distro::eHumble },
-                                                          { "jazzy", Ros2Distro::eJazzy } } };
+constexpr std::array<Ros2DistroInfo, 2> g_kDistroMapping{ { { "humble", Ros2Distro::eHumble },
+                                                            { "jazzy", Ros2Distro::eJazzy } } };
 
 inline std::string toLower(const std::string& input)
 {
@@ -47,10 +47,10 @@ inline std::string toLower(const std::string& input)
 
 inline std::optional<Ros2Distro> stringToRos2Distro(const std::string& lowerDistro)
 {
-    auto it = std::find_if(kDistroMapping.begin(), kDistroMapping.end(),
+    auto it = std::find_if(g_kDistroMapping.begin(), g_kDistroMapping.end(),
                            [&lowerDistro](const auto& info) { return lowerDistro == info.name; });
 
-    if (it != kDistroMapping.end())
+    if (it != g_kDistroMapping.end())
     {
         return it->distro;
     }

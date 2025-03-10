@@ -20,8 +20,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef IPC_BUFFER_MANAGER_HPP_
-#define IPC_BUFFER_MANAGER_HPP_
+#ifndef IPC_BUFFER_MANAGER_HPP
+#define IPC_BUFFER_MANAGER_HPP
 
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -54,12 +54,12 @@ public:
      * with read/write access permissions.
      *
      * @param[in] size Number of buffers to create in the pool.
-     * @param[in] buffer_step Size of each buffer in bytes.
+     * @param[in] bufferStep Size of each buffer in bytes.
      */
-    IPCBufferManager(size_t size, size_t buffer_step)
+    IPCBufferManager(size_t size, size_t bufferStep)
     {
-        buffer_size_ = size;
-        buffer_step_ = buffer_step;
+        m_bufferSize = size;
+        m_bufferStep = bufferStep;
 
         CUmemAllocationProp prop = {};
         prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
@@ -67,78 +67,78 @@ public:
         prop.location.id = 0;
         prop.requestedHandleTypes = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
         size_t granularity = 0;
-        auto cuda_err = cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM);
-        if (CUDA_SUCCESS != cuda_err)
+        auto cudaErr = cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM);
+        if (CUDA_SUCCESS != cudaErr)
         {
-            const char* error_str = NULL;
-            cuGetErrorString(cuda_err, &error_str);
-            fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemGetAllocationGranularity %s\n", error_str);
+            const char* errorStr = NULL;
+            cuGetErrorString(cudaErr, &errorStr);
+            fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemGetAllocationGranularity %s\n", errorStr);
         }
-        alloc_size_ = buffer_step - (buffer_step % granularity) + granularity;
+        m_allocSize = bufferStep - (bufferStep % granularity) + granularity;
 
-        for (size_t i = 0; i < buffer_size_; i++)
+        for (size_t i = 0; i < m_bufferSize; i++)
         {
-            CUmemGenericAllocationHandle generic_allocation_handle;
-            auto cuda_err = cuMemCreate(&generic_allocation_handle, alloc_size_, &prop, 0);
-            if (CUDA_SUCCESS != cuda_err)
+            CUmemGenericAllocationHandle genericAllocationHandle;
+            auto cudaErr = cuMemCreate(&genericAllocationHandle, m_allocSize, &prop, 0);
+            if (CUDA_SUCCESS != cudaErr)
             {
-                const char* error_str = NULL;
-                cuGetErrorString(cuda_err, &error_str);
-                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemCreate %s\n", error_str);
+                const char* errorStr = NULL;
+                cuGetErrorString(cudaErr, &errorStr);
+                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemCreate %s\n", errorStr);
             }
 
             int fd = -1;
-            cuda_err = cuMemExportToShareableHandle(
-                reinterpret_cast<void*>(&fd), generic_allocation_handle, CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR, 0);
-            if (CUDA_SUCCESS != cuda_err)
+            cudaErr = cuMemExportToShareableHandle(
+                reinterpret_cast<void*>(&fd), genericAllocationHandle, CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR, 0);
+            if (CUDA_SUCCESS != cudaErr)
             {
-                const char* error_str = NULL;
-                cuGetErrorString(cuda_err, &error_str);
-                fprintf(stderr, "[Error] IPCBufferManager: Failed to cuMemExportToShareableHandle %s\n", error_str);
+                const char* errorStr = NULL;
+                cuGetErrorString(cudaErr, &errorStr);
+                fprintf(stderr, "[Error] IPCBufferManager: Failed to cuMemExportToShareableHandle %s\n", errorStr);
             }
 
-            CUdeviceptr d_ptr = 0ULL;
-            cuda_err = cuMemAddressReserve(&d_ptr, alloc_size_, 0, 0, 0);
-            if (CUDA_SUCCESS != cuda_err)
+            CUdeviceptr dPtr = 0ULL;
+            cudaErr = cuMemAddressReserve(&dPtr, m_allocSize, 0, 0, 0);
+            if (CUDA_SUCCESS != cudaErr)
             {
-                const char* error_str = NULL;
-                cuGetErrorString(cuda_err, &error_str);
-                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemAddressReserve %s\n", error_str);
+                const char* errorStr = NULL;
+                cuGetErrorString(cudaErr, &errorStr);
+                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemAddressReserve %s\n", errorStr);
             }
 
-            cuda_err = cuMemMap(d_ptr, alloc_size_, 0, generic_allocation_handle, 0);
-            if (CUDA_SUCCESS != cuda_err)
+            cudaErr = cuMemMap(dPtr, m_allocSize, 0, genericAllocationHandle, 0);
+            if (CUDA_SUCCESS != cudaErr)
             {
-                const char* error_str = NULL;
-                cuGetErrorString(cuda_err, &error_str);
-                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemMap %s\n", error_str);
+                const char* errorStr = NULL;
+                cuGetErrorString(cudaErr, &errorStr);
+                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemMap %s\n", errorStr);
             }
 
             CUmemAccessDesc accessDesc = {};
             accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
             accessDesc.location.id = 0;
             accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
-            cuda_err = cuMemSetAccess(d_ptr, alloc_size_, &accessDesc, 1);
-            if (CUDA_SUCCESS != cuda_err)
+            cudaErr = cuMemSetAccess(dPtr, m_allocSize, &accessDesc, 1);
+            if (CUDA_SUCCESS != cudaErr)
             {
-                const char* error_str = NULL;
-                cuGetErrorString(cuda_err, &error_str);
-                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemSetAccess %s\n", error_str);
+                const char* errorStr = NULL;
+                cuGetErrorString(cudaErr, &errorStr);
+                fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemSetAccess %s\n", errorStr);
             }
 
-            buffer_ptrs_.push_back(d_ptr);
-            shareable_handles_.push_back({ getpid(), fd });
-            generic_handles.push_back(generic_allocation_handle);
+            m_bufferPtrs.push_back(dPtr);
+            m_shareableHandles.push_back({ getpid(), fd });
+            m_genericHandles.push_back(genericAllocationHandle);
         }
     }
 
     // Destructor, free the alloacted device memory pool
     ~IPCBufferManager()
     {
-        for (size_t i = 0; i < buffer_size_; i++)
+        for (size_t i = 0; i < m_bufferSize; i++)
         {
-            cuMemRelease(generic_handles[i]);
-            cuMemUnmap(buffer_ptrs_[i], alloc_size_);
+            cuMemRelease(m_genericHandles[i]);
+            cuMemUnmap(m_bufferPtrs[i], m_allocSize);
         }
     }
 
@@ -151,10 +151,10 @@ public:
      */
     void next()
     {
-        current_handle_index_ += 1;
-        if (current_handle_index_ == buffer_size_)
+        m_currentHandleIndex += 1;
+        if (m_currentHandleIndex == m_bufferSize)
         {
-            current_handle_index_ = 0;
+            m_currentHandleIndex = 0;
         }
     }
 
@@ -166,9 +166,9 @@ public:
      *
      * @return CUdeviceptr Device pointer to the current buffer.
      */
-    CUdeviceptr get_cur_buffer_ptr()
+    CUdeviceptr getCurBufferPtr()
     {
-        return buffer_ptrs_[current_handle_index_];
+        return m_bufferPtrs[m_currentHandleIndex];
     }
 
     /**
@@ -179,20 +179,20 @@ public:
      *
      * @return std::vector<int>& Reference to the vector containing the process ID and file descriptor.
      */
-    std::vector<int>& get_cur_ipc_mem_handle()
+    std::vector<int>& getCurIpcMemHandle()
     {
-        return shareable_handles_[current_handle_index_];
+        return m_shareableHandles[m_currentHandleIndex];
     }
 
 private:
-    size_t buffer_size_;
-    size_t buffer_step_;
-    size_t current_handle_index_ = 0;
-    size_t alloc_size_;
+    size_t m_bufferSize;
+    size_t m_bufferStep;
+    size_t m_currentHandleIndex = 0;
+    size_t m_allocSize;
 
-    std::vector<std::vector<int>> shareable_handles_;
-    std::vector<CUmemGenericAllocationHandle> generic_handles;
-    std::vector<CUdeviceptr> buffer_ptrs_;
+    std::vector<std::vector<int>> m_shareableHandles;
+    std::vector<CUmemGenericAllocationHandle> m_genericHandles;
+    std::vector<CUdeviceptr> m_bufferPtrs;
 };
 
-#endif // IPC_BUFFER_MANAGER_HPP_
+#endif // IPC_BUFFER_MANAGER_HPP

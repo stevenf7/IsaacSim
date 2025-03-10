@@ -28,11 +28,11 @@
 /**
  * @brief Plugin descriptor for the conveyor belt plugin
  */
-const struct carb::PluginImplDesc kPluginDescriptor = { "isaacsim.asset.gen.conveyor.plugin",
-                                                        "OmniGraph Isaac Conveyor Node plugin.", "NVIDIA",
-                                                        carb::PluginHotReload::eEnabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.asset.gen.conveyor.plugin",
+                                                    "OmniGraph Isaac Conveyor Node plugin.", "NVIDIA",
+                                                    carb::PluginHotReload::eEnabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginDescriptor, isaacsim::asset::gen::conveyor::IOmniIsaacConveyor)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::asset::gen::conveyor::IOmniIsaacConveyor)
 CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry, omni::fabric::IToken, carb::settings::ISettings)
 DECLARE_OGN_NODES()
 

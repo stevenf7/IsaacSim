@@ -35,9 +35,9 @@ public:
     {
         auto& state = OgnIsaacReadLidarBeamsDatabase::sPerInstanceState<OgnIsaacReadLidarBeams>(nodeObj, instanceId);
 
-        state.mLidarSensorInterface = carb::getCachedInterface<isaacsim::sensors::physx::LidarSensorInterface>();
+        state.m_lidarSensorInterface = carb::getCachedInterface<isaacsim::sensors::physx::LidarSensorInterface>();
 
-        if (!state.mLidarSensorInterface)
+        if (!state.m_lidarSensorInterface)
         {
             CARB_LOG_ERROR("Failed to acquire isaacsim::sensors::physx interface");
             return;
@@ -50,7 +50,7 @@ public:
 
         auto& state = db.perInstanceState<OgnIsaacReadLidarBeams>();
 
-        if (state.mFirstFrame)
+        if (state.m_firstFrame)
         {
             const auto& prim = db.inputs.lidarPrim();
             const char* primPath;
@@ -65,7 +65,7 @@ public:
             }
 
 
-            state.mFirstFrame = false;
+            state.m_firstFrame = false;
 
 
             // Find our stage
@@ -85,16 +85,16 @@ public:
                 return false;
             }
 
-            state.mLidarPrim = pxr::RangeSensorLidar(targetPrim);
-            state.mRangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
+            state.m_lidarPrim = pxr::RangeSensorLidar(targetPrim);
+            state.m_rangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
 
-            if (!state.mLidarSensorInterface->isLidarSensor(primPath))
+            if (!state.m_lidarSensorInterface->isLidarSensor(primPath))
             {
                 db.logError("Prim is not registered with Lidar extension");
                 return false;
             }
 
-            state.mLidarPrimPath = primPath;
+            state.m_lidarPrimPath = primPath;
 
             return true;
         }
@@ -106,7 +106,7 @@ public:
 
     void readLidar(OgnIsaacReadLidarBeamsDatabase& db)
     {
-        if (!mLidarSensorInterface->isLidarSensor(mLidarPrimPath))
+        if (!m_lidarSensorInterface->isLidarSensor(m_lidarPrimPath))
         {
             db.logError("Invalid Lidar Reference, Prim is not registered with Lidar extension");
             return;
@@ -115,18 +115,18 @@ public:
         auto& numRows = db.outputs.numRows();
         auto& numCols = db.outputs.numCols();
 
-        numRows = mLidarSensorInterface->getNumRows(mLidarPrimPath);
-        numCols = mLidarSensorInterface->getNumCols(mLidarPrimPath);
+        numRows = m_lidarSensorInterface->getNumRows(m_lidarPrimPath);
+        numCols = m_lidarSensorInterface->getNumCols(m_lidarPrimPath);
 
-        int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPrimPath);
+        int numColsTicked = m_lidarSensorInterface->getNumColsTicked(m_lidarPrimPath);
 
         size_t numBeams = numColsTicked * numRows;
 
-        float* azimuthData = mLidarSensorInterface->getAzimuthData(mLidarPrimPath);
-        // float* zenithData = mLidarSensorInterface->getZenithData(mLidarPrimPath);
-        float* beamTimes = mLidarSensorInterface->getBeamTimeData(mLidarPrimPath);
-        float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPrimPath);
-        uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPrimPath);
+        float* azimuthData = m_lidarSensorInterface->getAzimuthData(m_lidarPrimPath);
+        // float* zenithData = m_lidarSensorInterface->getZenithData(m_lidarPrimPath);
+        float* beamTimes = m_lidarSensorInterface->getBeamTimeData(m_lidarPrimPath);
+        float* ranges = m_lidarSensorInterface->getLinearDepthData(m_lidarPrimPath);
+        uint8_t* intensities = m_lidarSensorInterface->getIntensityData(m_lidarPrimPath);
 
         if (!azimuthData || !beamTimes || !ranges || !intensities)
         {
@@ -140,63 +140,63 @@ public:
         auto& verticalFov = db.outputs.verticalFov();
         auto& verticalResolution = db.outputs.verticalResolution();
 
-        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
-        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
-        isaacsim::core::includes::safeGetAttribute(mRangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
-        isaacsim::core::includes::safeGetAttribute(mRangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
-        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
-        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetVerticalFovAttr(), verticalFov);
-        isaacsim::core::includes::safeGetAttribute(mLidarPrim.GetVerticalResolutionAttr(), verticalResolution);
+        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetHorizontalFovAttr(), horizontalFov);
+        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
+        isaacsim::core::includes::safeGetAttribute(m_rangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
+        isaacsim::core::includes::safeGetAttribute(m_rangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
+        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetRotationRateAttr(), rotationRate);
+        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetVerticalFovAttr(), verticalFov);
+        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetVerticalResolutionAttr(), verticalResolution);
 
         size_t numBeamsTotal = numRows * numCols;
 
         if (horizontalFov <= 0.0)
         {
-            db.logError("Lidar Prim %s: Horizontal FOV must be greater than 0.0", mLidarPrimPath);
+            db.logError("Lidar Prim %s: Horizontal FOV must be greater than 0.0", m_lidarPrimPath);
             return;
         }
         if (horizontalFov > 360.0)
         {
-            db.logError("Lidar Prim %s: Horizontal FOV must be less than or equal to 360.0", mLidarPrimPath);
+            db.logError("Lidar Prim %s: Horizontal FOV must be less than or equal to 360.0", m_lidarPrimPath);
             return;
         }
         if (horizontalResolution <= 0.0)
         {
-            db.logError("Lidar Prim %s: Horizontal Resolution must be greater than 0.0", mLidarPrimPath);
+            db.logError("Lidar Prim %s: Horizontal Resolution must be greater than 0.0", m_lidarPrimPath);
             return;
         }
         if (rotationRate < 0.0)
         {
-            db.logError("Lidar Prim %s: Rotation Rate must be equal to or greater than 0.0", mLidarPrimPath);
+            db.logError("Lidar Prim %s: Rotation Rate must be equal to or greater than 0.0", m_lidarPrimPath);
             return;
         }
         if (verticalFov <= 0.0)
         {
-            db.logError("Lidar Prim %s: Vertical FOV must be greater than 0.0", mLidarPrimPath);
+            db.logError("Lidar Prim %s: Vertical FOV must be greater than 0.0", m_lidarPrimPath);
             return;
         }
         if (verticalResolution <= 0.0)
         {
-            db.logError("Lidar Prim %s: Vertical Resolution must be greater than 0.0", mLidarPrimPath);
+            db.logError("Lidar Prim %s: Vertical Resolution must be greater than 0.0", m_lidarPrimPath);
             return;
         }
 
-        uint64_t curr_sequence_num = mLidarSensorInterface->getSequenceNumber(mLidarPrimPath);
+        uint64_t currSequenceNum = m_lidarSensorInterface->getSequenceNumber(m_lidarPrimPath);
 
-        if (curr_sequence_num == mPrevSequenceNumber)
+        if (currSequenceNum == m_prevSequenceNumber)
         {
             return;
         }
 
-        if (curr_sequence_num < mPrevSequenceNumber)
+        if (currSequenceNum < m_prevSequenceNumber)
         {
-            mResetLaserScan = true;
+            m_resetLaserScan = true;
         }
 
-        mPrevSequenceNumber = curr_sequence_num;
+        m_prevSequenceNumber = currSequenceNum;
 
-        carb::Float2 azimuthRange = mLidarSensorInterface->getAzimuthRange(mLidarPrimPath);
-        carb::Float2 zenithRange = mLidarSensorInterface->getZenithRange(mLidarPrimPath);
+        carb::Float2 azimuthRange = m_lidarSensorInterface->getAzimuthRange(m_lidarPrimPath);
+        carb::Float2 zenithRange = m_lidarSensorInterface->getZenithRange(m_lidarPrimPath);
 
         auto& azimuthRangeOutput = db.outputs.azimuthRange();
         auto& zenithRangeOutput = db.outputs.zenithRange();
@@ -207,18 +207,18 @@ public:
         zenithRangeOutput[0] = zenithRange.x / static_cast<float>(M_PI) * 180.0f;
         zenithRangeOutput[1] = zenithRange.y / static_cast<float>(M_PI) * 180.0f;
 
-        if (mResetLaserScan)
+        if (m_resetLaserScan)
         {
-            mBeamTimeData.clear();
-            mIntensitiesData.clear();
-            mRangesData.clear();
+            m_beamTimeData.clear();
+            m_intensitiesData.clear();
+            m_rangesData.clear();
 
-            mNumBeamsRemaining = numBeamsTotal;
+            m_numBeamsRemaining = numBeamsTotal;
 
             bool foundStart = false;
-            for (mBeamIdx = 0; mBeamIdx < numBeams; mBeamIdx++)
+            for (m_beamIdx = 0; m_beamIdx < numBeams; m_beamIdx++)
             {
-                if (azimuthData[mBeamIdx] == azimuthRange.x)
+                if (azimuthData[m_beamIdx] == azimuthRange.x)
                 {
                     foundStart = true;
                     break;
@@ -228,100 +228,100 @@ public:
             {
                 return;
             }
-            mResetLaserScan = false;
+            m_resetLaserScan = false;
         }
 
-        if (mNumBeamsRemaining > numBeams)
+        if (m_numBeamsRemaining > numBeams)
         {
-            for (size_t i = mBeamIdx; i < numBeams; i++)
+            for (size_t i = m_beamIdx; i < numBeams; i++)
             {
-                mBeamTimeData.push_back(beamTimes[i]);
-                mIntensitiesData.push_back(intensities[i]);
-                mRangesData.push_back(ranges[i]);
-                mNumBeamsRemaining--;
+                m_beamTimeData.push_back(beamTimes[i]);
+                m_intensitiesData.push_back(intensities[i]);
+                m_rangesData.push_back(ranges[i]);
+                m_numBeamsRemaining--;
             }
-            mBeamIdx = 0;
+            m_beamIdx = 0;
         }
 
-        else if (mNumBeamsRemaining <= numBeams)
+        else if (m_numBeamsRemaining <= numBeams)
         {
 
             // Save data up to maximum FOV
             size_t idx;
-            for (idx = 0; idx < mNumBeamsRemaining; idx++)
+            for (idx = 0; idx < m_numBeamsRemaining; idx++)
             {
-                mBeamTimeData.push_back(beamTimes[idx]);
-                mIntensitiesData.push_back(intensities[idx]);
-                mRangesData.push_back(ranges[idx]);
+                m_beamTimeData.push_back(beamTimes[idx]);
+                m_intensitiesData.push_back(intensities[idx]);
+                m_rangesData.push_back(ranges[idx]);
             }
 
-            size_t buffSize = mRangesData.size();
+            size_t buffSize = m_rangesData.size();
 
             db.outputs.beamTimeData.resize(buffSize);
             db.outputs.linearDepthData.resize(buffSize);
             db.outputs.intensitiesData.resize(buffSize);
 
-            std::memcpy(db.outputs.beamTimeData().data(), &mBeamTimeData[0], mBeamTimeData.size() * sizeof(float));
-            std::memcpy(db.outputs.linearDepthData().data(), &mRangesData[0], mRangesData.size() * sizeof(float));
+            std::memcpy(db.outputs.beamTimeData().data(), &m_beamTimeData[0], m_beamTimeData.size() * sizeof(float));
+            std::memcpy(db.outputs.linearDepthData().data(), &m_rangesData[0], m_rangesData.size() * sizeof(float));
             std::memcpy(
-                db.outputs.intensitiesData().data(), &mIntensitiesData[0], mIntensitiesData.size() * sizeof(uint8_t));
+                db.outputs.intensitiesData().data(), &m_intensitiesData[0], m_intensitiesData.size() * sizeof(uint8_t));
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
 
             // Reset fields for new lidar scan
-            mBeamTimeData.clear();
-            mRangesData.clear();
-            mIntensitiesData.clear();
+            m_beamTimeData.clear();
+            m_rangesData.clear();
+            m_intensitiesData.clear();
 
             if (idx < numBeams)
             {
                 if (azimuthData[idx] != azimuthRange.x)
                 {
-                    mResetLaserScan = true;
+                    m_resetLaserScan = true;
                     return;
                 }
             }
 
             // Save remaining data
-            size_t numBeamsOffset = numBeams - mNumBeamsRemaining;
+            size_t numBeamsOffset = numBeams - m_numBeamsRemaining;
             for (size_t j = 0; j < numBeamsOffset; j++)
             {
-                mBeamTimeData.push_back(beamTimes[idx]);
-                mIntensitiesData.push_back(intensities[idx]);
-                mRangesData.push_back(ranges[idx]);
+                m_beamTimeData.push_back(beamTimes[idx]);
+                m_intensitiesData.push_back(intensities[idx]);
+                m_rangesData.push_back(ranges[idx]);
                 idx++;
             }
-            mNumBeamsRemaining = numBeamsTotal - numBeamsOffset;
+            m_numBeamsRemaining = numBeamsTotal - numBeamsOffset;
         }
     }
 
     virtual void reset()
     {
-        mResetLaserScan = true;
-        mFirstFrame = true;
+        m_resetLaserScan = true;
+        m_firstFrame = true;
     }
 
 
 private:
-    isaacsim::sensors::physx::LidarSensorInterface* mLidarSensorInterface = nullptr;
-    pxr::RangeSensorLidar mLidarPrim;
-    pxr::RangeSensorRangeSensor mRangeSensorPrim;
+    isaacsim::sensors::physx::LidarSensorInterface* m_lidarSensorInterface = nullptr;
+    pxr::RangeSensorLidar m_lidarPrim;
+    pxr::RangeSensorRangeSensor m_rangeSensorPrim;
 
-    const char* mLidarPrimPath = nullptr;
+    const char* m_lidarPrimPath = nullptr;
 
-    std::vector<uint8_t> mIntensitiesData;
-    std::vector<float> mRangesData;
-    std::vector<float> mBeamTimeData;
+    std::vector<uint8_t> m_intensitiesData;
+    std::vector<float> m_rangesData;
+    std::vector<float> m_beamTimeData;
 
-    uint64_t mPrevSequenceNumber = 0;
+    uint64_t m_prevSequenceNumber = 0;
 
-    bool mResetLaserScan = true;
-    size_t mNumBeamsRemaining;
+    bool m_resetLaserScan = true;
+    size_t m_numBeamsRemaining;
 
-    size_t mBeamIdx = 0;
+    size_t m_beamIdx = 0;
 
-    bool mFirstFrame = true;
+    bool m_firstFrame = true;
 };
 
 REGISTER_OGN_NODE()

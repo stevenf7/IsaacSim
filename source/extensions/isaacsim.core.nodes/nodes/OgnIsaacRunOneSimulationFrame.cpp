@@ -27,9 +27,9 @@ public:
     {
         auto& state = db.perInstanceState<OgnIsaacRunOneSimulationFrame>();
 
-        if (state.mFirstFrame)
+        if (state.m_firstFrame)
         {
-            state.mFirstFrame = false;
+            state.m_firstFrame = false;
             db.outputs.step() = kExecutionAttributeStateEnabled;
         }
         return true;
@@ -37,12 +37,12 @@ public:
 
     virtual void reset()
     {
-        mFirstFrame = true;
+        m_firstFrame = true;
     }
 
 
 private:
-    bool mFirstFrame = true;
+    bool m_firstFrame = true;
 };
 
 REGISTER_OGN_NODE()

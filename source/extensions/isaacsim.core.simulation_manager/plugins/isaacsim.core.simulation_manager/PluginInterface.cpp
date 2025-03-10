@@ -16,9 +16,9 @@
 
 #include <algorithm>
 
-const struct carb::PluginImplDesc pluginImplDesc = { "isaacsim.core.simulation_manager.plugin",
-                                                     "Helpful text describing the plugin", "Author",
-                                                     carb::PluginHotReload::eEnabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.simulation_manager.plugin",
+                                                    "Helpful text describing the plugin", "Author",
+                                                    carb::PluginHotReload::eEnabled, "dev" };
 
 namespace isaacsim
 {
@@ -32,28 +32,28 @@ class SimulationManagerImpl : public ISimulationManager
 public:
     SimulationManagerImpl()
     {
-        mUsdNoticeListener = new UsdNoticeListener();
-        mUsdNoticeListenerKey =
-            pxr::TfNotice::Register(pxr::TfCreateWeakPtr(mUsdNoticeListener), &UsdNoticeListener::handle);
+        m_usdNoticeListener = new UsdNoticeListener();
+        m_usdNoticeListenerKey =
+            pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener), &UsdNoticeListener::handle);
     }
 
     ~SimulationManagerImpl()
     {
-        delete mUsdNoticeListener;
+        delete m_usdNoticeListener;
     }
 
     int registerDeletionCallback(const std::function<void(std::string)>& callback) override
     {
-        int& callbackIter = mUsdNoticeListener->getCallbackIter();
-        mUsdNoticeListener->getDeletionCallbacks().emplace(callbackIter, callback);
+        int& callbackIter = m_usdNoticeListener->getCallbackIter();
+        m_usdNoticeListener->getDeletionCallbacks().emplace(callbackIter, callback);
         callbackIter += 1;
         return callbackIter - 1;
     }
 
     int registerPhysicsSceneAdditionCallback(const std::function<void(std::string)>& callback) override
     {
-        int& callbackIter = mUsdNoticeListener->getCallbackIter();
-        mUsdNoticeListener->getPhysicsSceneAdditionCallbacks().emplace(callbackIter, callback);
+        int& callbackIter = m_usdNoticeListener->getCallbackIter();
+        m_usdNoticeListener->getPhysicsSceneAdditionCallbacks().emplace(callbackIter, callback);
         callbackIter += 1;
         return callbackIter - 1;
     }
@@ -61,9 +61,9 @@ public:
     bool deregisterCallback(const int& callbackId) override
     {
         std::map<int, std::function<void(const std::string&)>>& physicsSceneCallbacks =
-            mUsdNoticeListener->getPhysicsSceneAdditionCallbacks();
+            m_usdNoticeListener->getPhysicsSceneAdditionCallbacks();
         std::map<int, std::function<void(const std::string&)>>& deletiomCallbacks =
-            mUsdNoticeListener->getDeletionCallbacks();
+            m_usdNoticeListener->getDeletionCallbacks();
         if (physicsSceneCallbacks.count(callbackId) > 0)
         {
             physicsSceneCallbacks.erase(callbackId);
@@ -79,17 +79,17 @@ public:
 
     int& getCallbackIter() override
     {
-        return mUsdNoticeListener->getCallbackIter();
+        return m_usdNoticeListener->getCallbackIter();
     }
 
     void setCallbackIter(int const& val) override
     {
-        int& callbackIter = mUsdNoticeListener->getCallbackIter();
+        int& callbackIter = m_usdNoticeListener->getCallbackIter();
         callbackIter = val;
     }
     void enableUsdNoticeHandler(bool const& flag) override
     {
-        mUsdNoticeListener->enable(flag);
+        m_usdNoticeListener->enable(flag);
     }
 
     void enableFabricUsdNoticeHandler(long stageId, bool const& flag) override
@@ -138,23 +138,23 @@ public:
     void reset() override
     {
         std::vector<int> deletionKeys;
-        auto deletionCallbacksMap = mUsdNoticeListener->getDeletionCallbacks();
+        auto deletionCallbacksMap = m_usdNoticeListener->getDeletionCallbacks();
         std::transform(deletionCallbacksMap.begin(), deletionCallbacksMap.end(), std::back_inserter(deletionKeys),
                        [](auto& p) { return p.first; });
         for (auto const& key : deletionKeys)
         {
             deletionCallbacksMap[key]("/");
         }
-        mUsdNoticeListener->getDeletionCallbacks().clear();
-        mUsdNoticeListener->getPhysicsSceneAdditionCallbacks().clear();
-        mUsdNoticeListener->getPhysicsScenes().clear();
-        int& callbackIter = mUsdNoticeListener->getCallbackIter();
+        m_usdNoticeListener->getDeletionCallbacks().clear();
+        m_usdNoticeListener->getPhysicsSceneAdditionCallbacks().clear();
+        m_usdNoticeListener->getPhysicsScenes().clear();
+        int& callbackIter = m_usdNoticeListener->getCallbackIter();
         callbackIter = 0;
     }
 
 private:
-    UsdNoticeListener* mUsdNoticeListener = nullptr;
-    pxr::TfNotice::Key mUsdNoticeListenerKey;
+    UsdNoticeListener* m_usdNoticeListener = nullptr;
+    pxr::TfNotice::Key m_usdNoticeListenerKey;
 };
 
 /**
@@ -196,7 +196,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
 }
 
-CARB_PLUGIN_IMPL(pluginImplDesc,
+CARB_PLUGIN_IMPL(g_kPluginDesc,
                  isaacsim::core::simulation_manager::SimulationManagerImpl,
                  isaacsim::core::simulation_manager::Extension)
 

@@ -43,10 +43,10 @@ public:
     {
         auto& state = OgnIsaacComputeOdometryDatabase::sPerInstanceState<OgnIsaacComputeOdometry>(nodeObj, instanceId);
 
-        state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-        state.mCoreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
+        state.m_dynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
 
-        if (!state.mDynamicControlPtr)
+        if (!state.m_dynamicControlPtr)
         {
             CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
             return;
@@ -58,7 +58,7 @@ public:
         const GraphContextObj& context = db.abi_context();
 
         auto& state = db.perInstanceState<OgnIsaacComputeOdometry>();
-        if (state.mFirstFrame)
+        if (state.m_firstFrame)
         {
 
             // Find our stage
@@ -89,42 +89,42 @@ public:
             }
 
 
-            auto type = state.mDynamicControlPtr->peekObjectType(primPath);
+            auto type = state.m_dynamicControlPtr->peekObjectType(primPath);
 
             // Checking we have a valid articulation
             if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
             {
-                state.mArticulationHandle = state.mDynamicControlPtr->getArticulation(primPath);
-                if (!state.mArticulationHandle)
+                state.m_articulationHandle = state.m_dynamicControlPtr->getArticulation(primPath);
+                if (!state.m_articulationHandle)
                 {
                     db.logError("Articulation not found for prim");
                     return false;
                 }
 
-                state.mRigidBodyHandle = state.mDynamicControlPtr->getArticulationRootBody(state.mArticulationHandle);
+                state.m_rigidBodyHandle = state.m_dynamicControlPtr->getArticulationRootBody(state.m_articulationHandle);
             }
             else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
             {
-                state.mRigidBodyHandle = state.mDynamicControlPtr->getRigidBody(primPath);
+                state.m_rigidBodyHandle = state.m_dynamicControlPtr->getRigidBody(primPath);
             }
             else
             {
                 db.logError("prim is not a valid rigid body or articulation root");
                 return false;
             }
-            if (!state.mRigidBodyHandle)
+            if (!state.m_rigidBodyHandle)
             {
                 db.logError("prim is not a valid rigid body");
                 return false;
             }
 
 
-            state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
+            state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // get starting pose in the world frame
-            state.mStartingPose = state.mDynamicControlPtr->getRigidBodyPose(state.mRigidBodyHandle);
-            state.mLastTime = state.mCoreNodeFramework->getSimTime();
-            state.mFirstFrame = false;
+            state.m_startingPose = state.m_dynamicControlPtr->getRigidBodyPose(state.m_rigidBodyHandle);
+            state.m_lastTime = state.m_coreNodeFramework->getSimTime();
+            state.m_firstFrame = false;
         }
 
         state.computeOdometry(db);
@@ -135,84 +135,86 @@ public:
 
     void computeOdometry(OgnIsaacComputeOdometryDatabase& db)
     {
-        auto bodyPose = mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle);
+        auto bodyPose = m_dynamicControlPtr->getRigidBodyPose(m_rigidBodyHandle);
 
-        auto bodyLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mRigidBodyHandle);
-        auto bodyGlobalLinVel = mDynamicControlPtr->getRigidBodyLinearVelocity(mRigidBodyHandle);
-        auto bodyAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mRigidBodyHandle);
+        auto bodyLocalLinVel = m_dynamicControlPtr->getRigidBodyLocalLinearVelocity(m_rigidBodyHandle);
+        auto bodyGlobalLinVel = m_dynamicControlPtr->getRigidBodyLinearVelocity(m_rigidBodyHandle);
+        auto bodyAngVel = m_dynamicControlPtr->getRigidBodyAngularVelocity(m_rigidBodyHandle);
 
-        if (mCoreNodeFramework->getSimTime() != mLastTime)
+        if (m_coreNodeFramework->getSimTime() != m_lastTime)
         {
-            double dt = mCoreNodeFramework->getSimTime() - mLastTime;
+            double dt = m_coreNodeFramework->getSimTime() - m_lastTime;
             // Local accelerations
-            mLinearAcceleration.x = static_cast<float>((bodyLocalLinVel.x - mPrevLinearVelocity.x) / dt);
-            mLinearAcceleration.y = static_cast<float>((bodyLocalLinVel.y - mPrevLinearVelocity.y) / dt);
-            mLinearAcceleration.z = static_cast<float>((bodyLocalLinVel.z - mPrevLinearVelocity.z) / dt);
+            m_linearAcceleration.x = static_cast<float>((bodyLocalLinVel.x - m_prevLinearVelocity.x) / dt);
+            m_linearAcceleration.y = static_cast<float>((bodyLocalLinVel.y - m_prevLinearVelocity.y) / dt);
+            m_linearAcceleration.z = static_cast<float>((bodyLocalLinVel.z - m_prevLinearVelocity.z) / dt);
 
             // Global accelerations
-            mGlobalLinearAcceleration.x = static_cast<float>((bodyGlobalLinVel.x - mPrevGlobalLinearVelocity.x) / dt);
-            mGlobalLinearAcceleration.y = static_cast<float>((bodyGlobalLinVel.y - mPrevGlobalLinearVelocity.y) / dt);
-            mGlobalLinearAcceleration.z = static_cast<float>((bodyGlobalLinVel.z - mPrevGlobalLinearVelocity.z) / dt);
+            m_globalLinearAcceleration.x = static_cast<float>((bodyGlobalLinVel.x - m_prevGlobalLinearVelocity.x) / dt);
+            m_globalLinearAcceleration.y = static_cast<float>((bodyGlobalLinVel.y - m_prevGlobalLinearVelocity.y) / dt);
+            m_globalLinearAcceleration.z = static_cast<float>((bodyGlobalLinVel.z - m_prevGlobalLinearVelocity.z) / dt);
 
-            mAngularAcceleration.x = static_cast<float>((bodyAngVel.x - mPrevAngularVelocity.x) / dt);
-            mAngularAcceleration.y = static_cast<float>((bodyAngVel.y - mPrevAngularVelocity.y) / dt);
-            mAngularAcceleration.z = static_cast<float>((bodyAngVel.z - mPrevAngularVelocity.z) / dt);
+            m_angularAcceleration.x = static_cast<float>((bodyAngVel.x - m_prevAngularVelocity.x) / dt);
+            m_angularAcceleration.y = static_cast<float>((bodyAngVel.y - m_prevAngularVelocity.y) / dt);
+            m_angularAcceleration.z = static_cast<float>((bodyAngVel.z - m_prevAngularVelocity.z) / dt);
 
-            db.outputs.linearAcceleration().Set(mLinearAcceleration.x, mLinearAcceleration.y, mLinearAcceleration.z);
+            db.outputs.linearAcceleration().Set(m_linearAcceleration.x, m_linearAcceleration.y, m_linearAcceleration.z);
             db.outputs.globalLinearAcceleration().Set(
-                mGlobalLinearAcceleration.x, mGlobalLinearAcceleration.y, mGlobalLinearAcceleration.z);
-            db.outputs.angularAcceleration().Set(mAngularAcceleration.x, mAngularAcceleration.y, mAngularAcceleration.z);
+                m_globalLinearAcceleration.x, m_globalLinearAcceleration.y, m_globalLinearAcceleration.z);
+            db.outputs.angularAcceleration().Set(
+                m_angularAcceleration.x, m_angularAcceleration.y, m_angularAcceleration.z);
         }
 
         // calculate odom reading from starting position
         pxr::GfVec3d globalTranslation = pxr::GfVec3d(
-            bodyPose.p.x - mStartingPose.p.x, bodyPose.p.y - mStartingPose.p.y, bodyPose.p.z - mStartingPose.p.z);
+            bodyPose.p.x - m_startingPose.p.x, bodyPose.p.y - m_startingPose.p.y, bodyPose.p.z - m_startingPose.p.z);
 
-        db.outputs.position() = (asGfRotation(mStartingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
+        db.outputs.position() =
+            (asGfRotation(m_startingPose.r).GetInverse()).TransformDir(globalTranslation) * m_unitScale;
 
-        db.outputs.orientation() = (asGfRotation(bodyPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
+        db.outputs.orientation() = (asGfRotation(bodyPose.r) * asGfRotation(m_startingPose.r).GetInverse()).GetQuat();
 
         db.outputs.linearVelocity().Set(bodyLocalLinVel.x, bodyLocalLinVel.y, bodyLocalLinVel.z);
         db.outputs.globalLinearVelocity().Set(bodyGlobalLinVel.x, bodyGlobalLinVel.y, bodyGlobalLinVel.z);
         db.outputs.angularVelocity().Set(bodyAngVel.x, bodyAngVel.y, bodyAngVel.z);
 
-        mPrevLinearVelocity = bodyLocalLinVel;
-        mPrevGlobalLinearVelocity = bodyGlobalLinVel;
-        mPrevAngularVelocity = bodyAngVel;
-        mLastTime = mCoreNodeFramework->getSimTime();
+        m_prevLinearVelocity = bodyLocalLinVel;
+        m_prevGlobalLinearVelocity = bodyGlobalLinVel;
+        m_prevAngularVelocity = bodyAngVel;
+        m_lastTime = m_coreNodeFramework->getSimTime();
     }
 
     virtual void reset()
     {
-        mFirstFrame = true;
+        m_firstFrame = true;
     }
 
 private:
-    omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+    omni::isaac::dynamic_control::DcHandle m_articulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
     // Rigidbody whose state (velocity, acceleration) is being published.
-    omni::isaac::dynamic_control::DcHandle mRigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+    omni::isaac::dynamic_control::DcHandle m_rigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
+    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
 
     // pose of the robot at start
-    omni::isaac::dynamic_control::DcTransform mStartingPose;
+    omni::isaac::dynamic_control::DcTransform m_startingPose;
 
-    double mUnitScale;
+    double m_unitScale;
 
-    bool mFirstFrame = true;
+    bool m_firstFrame = true;
 
-    double mLastTime = 0.0;
-    carb::Float3 mLinearAcceleration = { 0, 0, 0 };
-    carb::Float3 mAngularAcceleration = { 0, 0, 0 };
+    double m_lastTime = 0.0;
+    carb::Float3 m_linearAcceleration = { 0, 0, 0 };
+    carb::Float3 m_angularAcceleration = { 0, 0, 0 };
 
-    carb::Float3 mPrevLinearVelocity = { 0, 0, 0 };
-    carb::Float3 mPrevAngularVelocity = { 0, 0, 0 };
+    carb::Float3 m_prevLinearVelocity = { 0, 0, 0 };
+    carb::Float3 m_prevAngularVelocity = { 0, 0, 0 };
 
-    carb::Float3 mGlobalLinearAcceleration = { 0, 0, 0 };
-    carb::Float3 mPrevGlobalLinearVelocity = { 0, 0, 0 };
+    carb::Float3 m_globalLinearAcceleration = { 0, 0, 0 };
+    carb::Float3 m_prevGlobalLinearVelocity = { 0, 0, 0 };
 
-    isaacsim::core::nodes::CoreNodes* mCoreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

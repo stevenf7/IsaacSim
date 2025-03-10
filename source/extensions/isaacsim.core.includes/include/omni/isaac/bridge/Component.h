@@ -65,15 +65,15 @@ public:
      */
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
-        mPrim = prim;
-        mStage = stage;
+        m_prim = prim;
+        m_stage = stage;
         mDoStart = true;
 
         omni::fabric::IStageReaderWriter* iStageReaderWriter =
             carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
         uint64_t stageId = static_cast<uint64_t>(pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt());
         omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
-        mUsdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
+        m_usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
     }
 
     /**
@@ -130,9 +130,9 @@ public:
      */
     virtual void updateTimestamp(double timeSeconds, double dt, int64_t timeNano)
     {
-        this->mTimeSeconds = timeSeconds;
-        this->mTimeDelta = dt;
-        this->mTimeNanoSeconds = timeNano;
+        this->m_timeSeconds = timeSeconds;
+        this->m_timeDelta = dt;
+        this->m_timeNanoSeconds = timeNano;
     }
 
     /**
@@ -141,7 +141,7 @@ public:
      */
     PrimType& getPrim()
     {
-        return mPrim;
+        return m_prim;
     }
 
     /**
@@ -150,7 +150,7 @@ public:
      */
     bool getEnabled()
     {
-        return mEnabled;
+        return m_enabled;
     }
 
     /**
@@ -159,7 +159,7 @@ public:
      */
     uint64_t getSequenceNumber()
     {
-        return mSequenceNumber;
+        return m_sequenceNumber;
     }
 
     /** @brief Flag indicating whether onStart should be called */
@@ -167,35 +167,35 @@ public:
 
 protected:
     /** @brief USD prim reference storing component settings */
-    PrimType mPrim;
+    PrimType m_prim;
 
     /** @brief Weak pointer to the USD stage containing the prim */
-    pxr::UsdStageWeakPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr m_stage = nullptr;
 
     /** @brief Runtime USD stage reference */
-    usdrt::UsdStageRefPtr mUsdrtStage = nullptr;
+    usdrt::UsdStageRefPtr m_usdrtStage = nullptr;
 
     /** @brief Current simulation time in seconds */
-    double mTimeSeconds = 0;
+    double m_timeSeconds = 0;
 
     /** @brief Current simulation time in nanoseconds */
-    int64_t mTimeNanoSeconds = 0;
+    int64_t m_timeNanoSeconds = 0;
 
     /** @brief Time delta for current tick in seconds */
-    double mTimeDelta = 0;
+    double m_timeDelta = 0;
 
     /** @brief Component sequence number for ordering/identification */
-    uint64_t mSequenceNumber = 0;
+    uint64_t m_sequenceNumber = 0;
 
     /** @brief Component enabled state flag */
-    bool mEnabled = true;
+    bool m_enabled = true;
 };
 
 /**
  * @typedef Component
  * @brief Convenience typedef for ComponentBase specialized with pxr::UsdPrim
  */
-typedef ComponentBase<pxr::UsdPrim> Component;
+using Component = ComponentBase<pxr::UsdPrim>;
 
 }
 }

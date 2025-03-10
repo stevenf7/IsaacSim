@@ -23,7 +23,7 @@ namespace rtx
 {
 using namespace omni::sensors;
 
-inline constexpr float Deg2Rad(float deg)
+inline constexpr float deg2Rad(float deg)
 {
     return (deg / 180.f) * 3.141592653589f;
 }
@@ -99,26 +99,26 @@ class GenericModelOutputHelper
 {
 public:
     /** @brief Generic model output structure containing sensor data */
-    omni::sensors::GenericModelOutput m_gmo;
+    omni::sensors::GenericModelOutput mGmo;
     /** @brief Union of auxiliary data structures for different sensor types */
     union
     {
         /** @brief LiDAR-specific auxiliary data */
-        omni::sensors::LidarAuxiliaryData m_auxlidar;
+        omni::sensors::LidarAuxiliaryData mAuxlidar;
         /** @brief Ultrasonic-specific auxiliary data */
-        omni::sensors::USSAuxiliaryData m_auxUltrasonic;
+        omni::sensors::USSAuxiliaryData mAuxUltrasonic;
         /** @brief Radar-specific auxiliary data */
-        omni::sensors::RadarAuxiliaryData m_auxRadar;
+        omni::sensors::RadarAuxiliaryData mAuxRadar;
     };
 
 private:
     /** @brief CUDA pointer attributes for source data */
-    cudaPointerAttributes srcAttrs;
+    cudaPointerAttributes m_srcAttrs;
     /** @brief Type of memory copy operation (device-to-host or host-to-host) */
-    enum cudaMemcpyKind kind;
+    enum cudaMemcpyKind m_kind;
     /** @brief Pointer to raw data buffer */
-    uint8_t* data;
-    size_t offset;
+    uint8_t* m_data;
+    size_t m_offset;
 
 public:
     /**
@@ -127,13 +127,13 @@ public:
      */
     GenericModelOutputHelper(void* gmoPtr)
     {
-        data = reinterpret_cast<uint8_t*>(gmoPtr);
-        cudaPointerGetAttributes(&srcAttrs, gmoPtr);
+        m_data = reinterpret_cast<uint8_t*>(gmoPtr);
+        cudaPointerGetAttributes(&m_srcAttrs, gmoPtr);
 
         // const omni::sensors::GenericModelOutput& ingmo =
         //   *reinterpret_cast<const omni::sensors::GenericModelOutput*>(gmoPtr);
-        kind = srcAttrs.type == cudaMemoryTypeDevice ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
-        cudaMemcpyAsync(&m_gmo, gmoPtr, sizeof(omni::sensors::GenericModelOutput), kind);
+        m_kind = m_srcAttrs.type == cudaMemoryTypeDevice ? cudaMemcpyDeviceToHost : cudaMemcpyHostToHost;
+        cudaMemcpyAsync(&mGmo, gmoPtr, sizeof(omni::sensors::GenericModelOutput), m_kind);
         setGenericModelOutputPtrs();
     }
     /**
@@ -145,8 +145,8 @@ public:
      */
     bool isValid(const OutputType& outType, const CoordsType& coordType, const Modality& modality)
     {
-        if (m_gmo.magicNumber != MAGIC_NUMBER_GMO || m_gmo.outputType != outType ||
-            m_gmo.elementsCoordsType != coordType || m_gmo.modality != modality)
+        if (mGmo.magicNumber != MAGIC_NUMBER_GMO || mGmo.outputType != outType ||
+            mGmo.elementsCoordsType != coordType || mGmo.modality != modality)
         {
             return false;
         }
@@ -160,7 +160,7 @@ public:
     uint32_t getEmitterId(int i) const
     {
         uint32_t returnMe;
-        cudaMemcpyAsync(&returnMe, m_auxlidar.emitterId + sizeof(uint32_t) * i, sizeof(uint32_t), kind);
+        cudaMemcpyAsync(&returnMe, mAuxlidar.emitterId + sizeof(uint32_t) * i, sizeof(uint32_t), m_kind);
         return returnMe;
     }
     /**
@@ -171,7 +171,7 @@ public:
     uint32_t getTickId(int i) const
     {
         uint32_t returnMe;
-        cudaMemcpyAsync(&returnMe, m_auxlidar.tickId + sizeof(uint32_t) * i, sizeof(uint32_t), kind);
+        cudaMemcpyAsync(&returnMe, mAuxlidar.tickId + sizeof(uint32_t) * i, sizeof(uint32_t), m_kind);
         return returnMe;
     }
 
@@ -181,32 +181,32 @@ public:
      */
     inline void setGenericModelOutputPtrs()
     {
-        GenericModelOutput* modelOutput{ &m_gmo };
-        if (m_gmo.magicNumber != MAGIC_NUMBER_GMO)
+        GenericModelOutput* modelOutput{ &mGmo };
+        if (mGmo.magicNumber != MAGIC_NUMBER_GMO)
         {
             modelOutput->elements = BasicElements(); // nullptr
             modelOutput->auxiliaryData = nullptr;
             return;
         }
-        offset = sizeof(GenericModelOutput);
+        m_offset = sizeof(GenericModelOutput);
         // Basic elements
-        modelOutput->elements.timeOffsetNs = reinterpret_cast<int32_t*>(data + offset);
-        offset += sizeof(int32_t) * modelOutput->numElements;
-        modelOutput->elements.x = reinterpret_cast<float*>(data + offset);
-        offset += sizeof(float) * modelOutput->numElements;
-        modelOutput->elements.y = reinterpret_cast<float*>(data + offset);
-        offset += sizeof(float) * modelOutput->numElements;
-        modelOutput->elements.z = reinterpret_cast<float*>(data + offset);
-        offset += sizeof(float) * modelOutput->numElements;
-        modelOutput->elements.scalar = reinterpret_cast<float*>(data + offset);
-        offset += sizeof(float) * modelOutput->numElements;
-        modelOutput->elements.flags = reinterpret_cast<uint8_t*>(data + offset);
-        offset += sizeof(uint8_t) * modelOutput->numElements;
+        modelOutput->elements.timeOffsetNs = reinterpret_cast<int32_t*>(m_data + m_offset);
+        m_offset += sizeof(int32_t) * modelOutput->numElements;
+        modelOutput->elements.x = reinterpret_cast<float*>(m_data + m_offset);
+        m_offset += sizeof(float) * modelOutput->numElements;
+        modelOutput->elements.y = reinterpret_cast<float*>(m_data + m_offset);
+        m_offset += sizeof(float) * modelOutput->numElements;
+        modelOutput->elements.z = reinterpret_cast<float*>(m_data + m_offset);
+        m_offset += sizeof(float) * modelOutput->numElements;
+        modelOutput->elements.scalar = reinterpret_cast<float*>(m_data + m_offset);
+        m_offset += sizeof(float) * modelOutput->numElements;
+        modelOutput->elements.flags = reinterpret_cast<uint8_t*>(m_data + m_offset);
+        m_offset += sizeof(uint8_t) * modelOutput->numElements;
         // For the contiguous buffer, additional padding bytes are added after the last flags element (just before the
         // auxiliary data struct) to ensure that the structure is aligned to a multiple of 8 bytes.
-        if (offset % 8 != 0)
+        if (m_offset % 8 != 0)
         {
-            offset += 8 - (offset % 8); // This has to be done for reading the auxiliary data from the buffer
+            m_offset += 8 - (m_offset % 8); // This has to be done for reading the auxiliary data from the buffer
         }
         // aux elements
         if (modelOutput->modality == Modality::LIDAR)
@@ -229,15 +229,15 @@ public:
     inline void setLidarAuxiliaryDataPtrs()
     {
         // LidarAuxiliaryData auxData;
-        cudaMemcpyAsync(&m_auxlidar, data + offset, sizeof(LidarAuxiliaryData), kind);
-        LidarAuxiliaryData* auxData = &m_auxlidar;
-        GenericModelOutput* modelOutput{ &m_gmo };
+        cudaMemcpyAsync(&mAuxlidar, m_data + m_offset, sizeof(LidarAuxiliaryData), m_kind);
+        LidarAuxiliaryData* auxData = &mAuxlidar;
+        GenericModelOutput* modelOutput{ &mGmo };
         modelOutput->auxiliaryData = reinterpret_cast<void*>(auxData);
-        offset += sizeof(LidarAuxiliaryData);
+        m_offset += sizeof(LidarAuxiliaryData);
         if ((auxData->filledAuxMembers & LidarAuxHas::EMITTER_ID) == LidarAuxHas::EMITTER_ID)
         {
-            auxData->emitterId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
+            auxData->emitterId = reinterpret_cast<uint32_t*>(m_data + m_offset);
+            m_offset += sizeof(uint32_t) * modelOutput->numElements;
         }
         else
         {
@@ -246,8 +246,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::CHANNEL_ID) == LidarAuxHas::CHANNEL_ID)
         {
-            auxData->channelId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
+            auxData->channelId = reinterpret_cast<uint32_t*>(m_data + m_offset);
+            m_offset += sizeof(uint32_t) * modelOutput->numElements;
         }
         else
         {
@@ -256,8 +256,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::MAT_ID) == LidarAuxHas::MAT_ID)
         {
-            auxData->matId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
+            auxData->matId = reinterpret_cast<uint32_t*>(m_data + m_offset);
+            m_offset += sizeof(uint32_t) * modelOutput->numElements;
         }
         else
         {
@@ -266,8 +266,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::TICK_ID) == LidarAuxHas::TICK_ID)
         {
-            auxData->tickId = reinterpret_cast<uint32_t*>(data + offset);
-            offset += sizeof(uint32_t) * modelOutput->numElements;
+            auxData->tickId = reinterpret_cast<uint32_t*>(m_data + m_offset);
+            m_offset += sizeof(uint32_t) * modelOutput->numElements;
         }
         else
         {
@@ -276,8 +276,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::HIT_NORMALS) == LidarAuxHas::HIT_NORMALS)
         {
-            auxData->hitNormals = reinterpret_cast<float*>(data + offset);
-            offset += sizeof(float) * modelOutput->numElements * 3;
+            auxData->hitNormals = reinterpret_cast<float*>(m_data + m_offset);
+            m_offset += sizeof(float) * modelOutput->numElements * 3;
         }
         else
         {
@@ -285,8 +285,8 @@ public:
         }
         if ((auxData->filledAuxMembers & LidarAuxHas::VELOCITIES) == LidarAuxHas::VELOCITIES)
         {
-            auxData->velocities = reinterpret_cast<float*>(data + offset);
-            offset += sizeof(float) * modelOutput->numElements * 3;
+            auxData->velocities = reinterpret_cast<float*>(m_data + m_offset);
+            m_offset += sizeof(float) * modelOutput->numElements * 3;
         }
         else
         {
@@ -295,8 +295,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::OBJ_ID) == LidarAuxHas::OBJ_ID)
         {
-            auxData->objId = reinterpret_cast<uint8_t*>(data + offset);
-            offset += sizeof(uint8_t) * modelOutput->numElements;
+            auxData->objId = reinterpret_cast<uint8_t*>(m_data + m_offset);
+            m_offset += sizeof(uint8_t) * modelOutput->numElements;
         }
         else
         {
@@ -305,8 +305,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::ECHO_ID) == LidarAuxHas::ECHO_ID)
         {
-            auxData->echoId = reinterpret_cast<uint8_t*>(data + offset);
-            offset += sizeof(uint8_t) * modelOutput->numElements;
+            auxData->echoId = reinterpret_cast<uint8_t*>(m_data + m_offset);
+            m_offset += sizeof(uint8_t) * modelOutput->numElements;
         }
         else
         {
@@ -315,8 +315,8 @@ public:
 
         if ((auxData->filledAuxMembers & LidarAuxHas::TICK_STATES) == LidarAuxHas::TICK_STATES)
         {
-            auxData->tickStates = reinterpret_cast<uint8_t*>(data + offset);
-            offset += sizeof(uint8_t) * modelOutput->numElements;
+            auxData->tickStates = reinterpret_cast<uint8_t*>(m_data + m_offset);
+            m_offset += sizeof(uint8_t) * modelOutput->numElements;
         }
         else
         {
@@ -330,11 +330,11 @@ public:
     inline void setUSSAuxiliaryDataPtrs()
     {
         // USSAuxiliaryData auxData;
-        cudaMemcpyAsync(&m_auxUltrasonic, data + offset, sizeof(USSAuxiliaryData), kind);
-        USSAuxiliaryData* auxData = &m_auxUltrasonic;
-        GenericModelOutput* modelOutput{ &m_gmo };
+        cudaMemcpyAsync(&mAuxUltrasonic, m_data + m_offset, sizeof(USSAuxiliaryData), m_kind);
+        USSAuxiliaryData* auxData = &mAuxUltrasonic;
+        GenericModelOutput* modelOutput{ &mGmo };
         modelOutput->auxiliaryData = reinterpret_cast<void*>(auxData);
-        offset += sizeof(USSAuxiliaryData);
+        m_offset += sizeof(USSAuxiliaryData);
     }
     /**
      * @brief Sets up pointers for radar auxiliary data
@@ -342,14 +342,14 @@ public:
      */
     inline void setRadarAuxiliaryDataPtrs()
     {
-        cudaMemcpyAsync(&m_auxRadar, data + offset, sizeof(RadarAuxiliaryData), kind);
-        RadarAuxiliaryData* auxData = &m_auxRadar;
-        GenericModelOutput* modelOutput{ &m_gmo };
+        cudaMemcpyAsync(&mAuxRadar, m_data + m_offset, sizeof(RadarAuxiliaryData), m_kind);
+        RadarAuxiliaryData* auxData = &mAuxRadar;
+        GenericModelOutput* modelOutput{ &mGmo };
         modelOutput->auxiliaryData = reinterpret_cast<void*>(auxData);
-        offset += sizeof(RadarAuxiliaryData);
+        m_offset += sizeof(RadarAuxiliaryData);
 
-        auxData->rv_ms = reinterpret_cast<float*>(data + offset);
-        offset += sizeof(float) * modelOutput->numElements;
+        auxData->rv_ms = reinterpret_cast<float*>(m_data + m_offset);
+        m_offset += sizeof(float) * modelOutput->numElements;
     }
 };
 

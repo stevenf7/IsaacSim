@@ -36,7 +36,7 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnIsaacRealTimeFactorDatabase::sPerInstanceState<OgnIsaacRealTimeFactor>(nodeObj, instanceId);
-        state.mCoreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
     }
 
     static bool compute(OgnIsaacRealTimeFactorDatabase& db)
@@ -44,47 +44,47 @@ public:
         auto& state = db.perInstanceState<OgnIsaacRealTimeFactor>();
 
         // Return immediately after first frame to get accurate measurement next frame
-        if (state.mResetTimes)
+        if (state.m_resetTimes)
         {
-            state.mRealStartTime = std::chrono::steady_clock::now();
-            state.mSimStartTime = state.mCoreNodeFramework->getSimTimeMonotonic();
-            state.mResetTimes = false;
+            state.m_realStartTime = std::chrono::steady_clock::now();
+            state.m_simStartTime = state.m_coreNodeFramework->getSimTimeMonotonic();
+            state.m_resetTimes = false;
             return false;
         }
 
-        double real_time_elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
-                                       std::chrono::steady_clock::now() - state.mRealStartTime)
-                                       .count();
+        double realTimeElapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
+                                     std::chrono::steady_clock::now() - state.m_realStartTime)
+                                     .count();
 
-        double sim_time_elapsed = state.mCoreNodeFramework->getSimTimeMonotonic() - state.mSimStartTime;
+        double simTimeElapsed = state.m_coreNodeFramework->getSimTimeMonotonic() - state.m_simStartTime;
 
-        if (sim_time_elapsed == 0.0)
+        if (simTimeElapsed == 0.0)
         {
             return false;
         }
 
-        float rtf = static_cast<float>(sim_time_elapsed / real_time_elapsed);
+        float rtf = static_cast<float>(simTimeElapsed / realTimeElapsed);
 
         db.outputs.rtf() = rtf;
-        state.mRealStartTime = std::chrono::steady_clock::now();
-        state.mSimStartTime = state.mCoreNodeFramework->getSimTimeMonotonic();
+        state.m_realStartTime = std::chrono::steady_clock::now();
+        state.m_simStartTime = state.m_coreNodeFramework->getSimTimeMonotonic();
 
         return true;
     }
 
     virtual void reset()
     {
-        mResetTimes = true;
+        m_resetTimes = true;
     }
 
 private:
-    std::chrono::steady_clock::time_point mRealStartTime;
-    double mSimStartTime;
-    bool mResetTimes = true;
-    uint64_t mFrames = 0;
-    uint64_t mStep = 1;
+    std::chrono::steady_clock::time_point m_realStartTime;
+    double m_simStartTime;
+    bool m_resetTimes = true;
+    uint64_t m_frames = 0;
+    uint64_t m_step = 1;
 
-    isaacsim::core::nodes::CoreNodes* mCoreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

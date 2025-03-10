@@ -37,7 +37,7 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnIsaacReadSystemTimeDatabase::sPerInstanceState<OgnIsaacReadSystemTime>(nodeObj, instanceId);
-        state.mCoreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
     }
 
     static bool compute(OgnIsaacReadSystemTimeDatabase& db)
@@ -46,18 +46,18 @@ public:
 
         if (db.inputs.swhFrameNumber() > 0)
         {
-            db.outputs.systemTime() = state.mCoreNodeFramework->getSystemTimeAtSwhFrame(db.inputs.swhFrameNumber());
+            db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTimeAtSwhFrame(db.inputs.swhFrameNumber());
         }
         else
         {
-            db.outputs.systemTime() = state.mCoreNodeFramework->getSystemTime();
+            db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTime();
         }
         return true;
     }
 
 
 private:
-    isaacsim::core::nodes::CoreNodes* mCoreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

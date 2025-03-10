@@ -258,8 +258,8 @@ inline carb::Float3 normalize(const carb::Float3& q)
  */
 inline carb::Float3 rotate(const carb::Float4& q, const carb::Float3 x)
 {
-    const carb::Float3 v_q = carb::Float3{ q.x, q.y, q.z };
-    return x * (2.0f * q.w * q.w - 1.0f) + cross(v_q, x) * q.w * 2.0f + v_q * dot(v_q, x) * 2.0f;
+    const carb::Float3 vQ = carb::Float3{ q.x, q.y, q.z };
+    return x * (2.0f * q.w * q.w - 1.0f) + cross(vQ, x) * q.w * 2.0f + vQ * dot(vQ, x) * 2.0f;
 }
 
 /**
@@ -332,12 +332,12 @@ inline omni::isaac::dynamic_control::DcTransform transformInv(const omni::isaac:
     qv.z = b.p.z - a.p.z;
 
     carb::Float4 result = (qconj * (qv * qinv));
-    carb::Float4 res_quat = (b.r * qconj);
+    carb::Float4 resQuat = (b.r * qconj);
     omni::isaac::dynamic_control::DcTransform res;
     res.p.x = result.x;
     res.p.y = result.y;
     res.p.z = result.z;
-    res.r = res_quat;
+    res.r = resQuat;
     return res;
 }
 
@@ -462,27 +462,27 @@ inline carb::Float4 lerp(const carb::Float4& start, const carb::Float4& end, con
  */
 inline carb::Float4 slerp(const carb::Float4& start, const carb::Float4& end, const float t)
 {
-    float dot_value = dot(start, end);
+    float dotValue = dot(start, end);
     carb::Float4 s{ start.x, start.y, start.z, start.w };
-    if (dot_value < 0)
+    if (dotValue < 0)
     {
         s = start * -1.0f;
-        dot_value = -dot_value;
+        dotValue = -dotValue;
     }
 
-    if (dot_value > 0.9995)
+    if (dotValue > 0.9995)
     {
         return lerp(s, end, t);
     }
 
-    float theta_0 = acos(dot_value);
-    float s_t_0 = sin(theta_0);
+    float theta0 = acos(dotValue);
+    float sT0 = sin(theta0);
 
-    float theta = theta_0 * t;
-    float s_t = sin(theta);
+    float theta = theta0 * t;
+    float sT = sin(theta);
 
-    float s1 = s_t / s_t_0;
-    float s0 = cos(theta) - dot_value * s1;
+    float s1 = sT / sT0;
+    float s0 = cos(theta) - dotValue * s1;
 
     return (s * s0) + (end * s1);
 }
@@ -538,32 +538,32 @@ inline omni::isaac::dynamic_control::DcTransform slerp(const omni::isaac::dynami
  */
 inline pxr::GfQuatf lookAt(const pxr::GfVec3f& camera, const pxr::GfVec3f& target, const pxr::GfVec3f& up)
 {
-    pxr::GfVec3f F = (target - camera).GetNormalized();
-    pxr::GfVec3f R = pxr::GfCross(F, up).GetNormalized();
-    pxr::GfVec3f U = pxr::GfCross(R, F);
+    pxr::GfVec3f f = (target - camera).GetNormalized();
+    pxr::GfVec3f r = pxr::GfCross(f, up).GetNormalized();
+    pxr::GfVec3f u = pxr::GfCross(r, f);
 
-    float trace = R[0] + U[1] + F[2];
+    float trace = r[0] + u[1] + f[2];
     if (trace > 0.0f)
     {
         float s = 0.5f / sqrtf(trace + 1.0f);
-        return pxr::GfQuatf(0.25f / s, pxr::GfVec3f((U[2] - F[1]) * s, (F[0] - R[2]) * s, (R[1] - U[0]) * s));
+        return pxr::GfQuatf(0.25f / s, pxr::GfVec3f((u[2] - f[1]) * s, (f[0] - r[2]) * s, (r[1] - u[0]) * s));
     }
     else
     {
-        if (R[0] > U[1] and R[0] > F[2])
+        if (r[0] > u[1] and r[0] > f[2])
         {
-            float s = 2.0f * sqrtf(1.0f + R[0] - U[1] - F[2]);
-            return pxr::GfQuatf((U[2] - F[1]) / s, pxr::GfVec3f(0.25f * s, (U[0] + R[1]) / s, (F[0] + R[2]) / s));
+            float s = 2.0f * sqrtf(1.0f + r[0] - u[1] - f[2]);
+            return pxr::GfQuatf((u[2] - f[1]) / s, pxr::GfVec3f(0.25f * s, (u[0] + r[1]) / s, (f[0] + r[2]) / s));
         }
-        else if (U[1] > F[2])
+        else if (u[1] > f[2])
         {
-            float s = 2.0f * sqrtf(1.0f + U[1] - R[0] - F[2]);
-            return pxr::GfQuatf((F[0] - R[2]) / s, pxr::GfVec3f((U[0] + R[1]) / s, 0.25f * s, (F[1] + U[2]) / s));
+            float s = 2.0f * sqrtf(1.0f + u[1] - r[0] - f[2]);
+            return pxr::GfQuatf((f[0] - r[2]) / s, pxr::GfVec3f((u[0] + r[1]) / s, 0.25f * s, (f[1] + u[2]) / s));
         }
         else
         {
-            float s = 2.0f * sqrtf(1.0f + F[2] - R[0] - U[1]);
-            return pxr::GfQuatf((R[1] - U[0]) / s, pxr::GfVec3f((F[0] + R[2]) / s, (F[1] + U[2]) / s, 0.25f * s));
+            float s = 2.0f * sqrtf(1.0f + f[2] - r[0] - u[1]);
+            return pxr::GfQuatf((r[1] - u[0]) / s, pxr::GfVec3f((f[0] + r[2]) / s, (f[1] + u[2]) / s, 0.25f * s));
         }
     }
 }

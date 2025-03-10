@@ -109,7 +109,7 @@ public:
     virtual void onComponentChange()
     {
         // base sensor on component change
-        isaacsim::core::includes::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetEnabledAttr(), this->m_enabled);
     }
 
     /**
@@ -153,7 +153,7 @@ public:
      */
     pxr::UsdPrim getParentPrim()
     {
-        return mParentPrim;
+        return m_parentPrim;
     }
 
 protected:
@@ -161,7 +161,7 @@ protected:
      * @brief USD prim that is the parent of this sensor.
      * @details Stores a reference to the parent USD prim that contains this sensor.
      */
-    pxr::UsdPrim mParentPrim;
+    pxr::UsdPrim m_parentPrim;
 };
 
 /**
@@ -170,7 +170,7 @@ protected:
  * @details Defines a commonly used specialization of IsaacSensorComponentBase using
  *          the IsaacBaseSensor prim type for basic sensor functionality.
  */
-typedef IsaacSensorComponentBase<pxr::IsaacSensorIsaacBaseSensor> IsaacBaseSensorComponent;
+using IsaacBaseSensorComponent = IsaacSensorComponentBase<pxr::IsaacSensorIsaacBaseSensor>;
 
 }
 }

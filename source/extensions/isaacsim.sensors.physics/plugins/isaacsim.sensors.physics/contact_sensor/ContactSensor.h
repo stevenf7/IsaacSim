@@ -45,13 +45,13 @@ class ContactSensor : public IsaacBaseSensorComponent
 public:
     /**
      * @brief Constructor for ContactSensor.
-     * @param[in] PhysXInterface Pointer to the PhysX interface.
+     * @param[in] physXInterface Pointer to the PhysX interface.
      * @param[in] contactManager Pointer to the contact manager instance.
      */
-    ContactSensor(omni::physx::IPhysx* PhysXInterface, ContactManager* contactManager) : IsaacBaseSensorComponent()
+    ContactSensor(omni::physx::IPhysx* physXInterface, ContactManager* contactManager) : IsaacBaseSensorComponent()
     {
-        mPhysXInterfacePtr = PhysXInterface;
-        mContactManagerPtr = contactManager;
+        m_physXInterfacePtr = physXInterface;
+        m_contactManagerPtr = contactManager;
     }
 
     /**
@@ -135,40 +135,40 @@ public:
 
 private:
     /** @brief Color for visualization (RGBA). */
-    pxr::GfVec4f mColor = pxr::GfVec4f(1.0f, 1.0f, 1.0f, 1.0f);
+    pxr::GfVec4f m_color = pxr::GfVec4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     /** @brief Sensor properties configuration. */
-    CsProperties mProps;
+    CsProperties m_props;
 
     /** @brief Number of contact data points. */
-    size_t mSize;
+    size_t m_size;
 
     /** @brief Array of two readings for interpolation (current and previous). */
-    CsReading mReadingPair[2]; // Data obtained on simulation timestamp
+    CsReading m_readingPair[2]; // Data obtained on simulation timestamp
 
     /** @brief Latest processed sensor reading. */
-    CsReading mSensorReading;
+    CsReading m_sensorReading;
 
     /** @brief Raw contact data from physics simulation. */
-    CsRawData* mContactsRawData = nullptr;
+    CsRawData* m_contactsRawData = nullptr;
 
     /** @brief Pointer to the contact manager instance. */
-    ContactManager* mContactManagerPtr = nullptr;
+    ContactManager* m_contactManagerPtr = nullptr;
 
     /** @brief Pointer to the PhysX interface. */
-    omni::physx::IPhysx* mPhysXInterfacePtr = nullptr;
+    omni::physx::IPhysx* m_physXInterfacePtr = nullptr;
 
     /** @brief Flag indicating which reading in the pair is current. */
-    bool mCurrent{ 0 };
+    bool m_current{ 0 };
 
     /** @brief Previous enabled state of the sensor. */
-    bool mPreviousEnabled{ true };
+    bool m_previousEnabled{ true };
 
     /** @brief Current simulation time. */
-    float mCurrentTime{ 0 };
+    float m_currentTime{ 0 };
 
     /** @brief Last sensor reading time. */
-    float mSensorTime{ 0 };
+    float m_sensorTime{ 0 };
 };
 }
 }

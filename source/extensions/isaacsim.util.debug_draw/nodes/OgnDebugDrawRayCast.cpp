@@ -36,7 +36,7 @@ class OgnDebugDrawRayCast : public isaacsim::core::includes::BaseResetNode
 public:
     static void setLineDrawing(isaacsim::util::debug_draw::OgnDebugDrawRayCast& state)
     {
-        state.mLineDrawing = std::make_shared<drawing::PrimitiveDrawingHelper>(
+        state.m_lineDrawing = std::make_shared<drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(), drawing::PrimitiveDrawingHelper::RenderingMode::eLines,
             true /*World Coords*/);
     }
@@ -53,14 +53,14 @@ public:
         CARB_PROFILE_ZONE(0, "Debug Draw Ray Cast");
 
         auto& state = db.perInstanceState<OgnDebugDrawRayCast>();
-        if (!state.mLineDrawing.get())
+        if (!state.m_lineDrawing.get())
         {
             setLineDrawing(state);
         }
         // Clear vectors and line drawing
-        state.mLineDrawing->clear();
-        state.mStartPoints.clear();
-        state.mEndPoints.clear();
+        state.m_lineDrawing->clear();
+        state.m_startPoints.clear();
+        state.m_endPoints.clear();
 
         // get inputs
         const carb::ColorRgba* color = (const carb::ColorRgba*)db.inputs.color().data();
@@ -78,14 +78,14 @@ public:
         {
             auto beamOrigin = isaacsim::core::includes::conversions::asCarbFloat3(beamOrigins[i]);
             auto beamEndPoint = isaacsim::core::includes::conversions::asCarbFloat3(beamEndPoints[i]);
-            state.mStartPoints.push_back(beamOrigin);
-            state.mEndPoints.push_back(beamEndPoint);
+            state.m_startPoints.push_back(beamOrigin);
+            state.m_endPoints.push_back(beamEndPoint);
         }
 
         for (int i = 0; i < numRays; i++)
         {
-            state.mLineDrawing->addVertex(state.mStartPoints[i], *color, width);
-            state.mLineDrawing->addVertex(state.mEndPoints[i], *color, width);
+            state.m_lineDrawing->addVertex(state.m_startPoints[i], *color, width);
+            state.m_lineDrawing->addVertex(state.m_endPoints[i], *color, width);
         }
 
         // if there is no transform input, then don't use it.
@@ -93,25 +93,25 @@ public:
         const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, inputs::transform.m_token);
         if (db.inputs.doTransform() && attr.iAttribute->getUpstreamConnectionCount(attr))
         {
-            state.mLineDrawing->transformVertices(db.inputs.transform().data());
+            state.m_lineDrawing->transformVertices(db.inputs.transform().data());
         }
-        state.mLineDrawing->draw();
+        state.m_lineDrawing->draw();
         return true;
     }
 
     virtual void reset()
     {
-        if (mLineDrawing)
+        if (m_lineDrawing)
         {
-            mLineDrawing->clear();
-            mLineDrawing->draw();
+            m_lineDrawing->clear();
+            m_lineDrawing->draw();
         }
     }
 
 private:
-    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing{ nullptr };
-    std::vector<carb::Float3> mStartPoints;
-    std::vector<carb::Float3> mEndPoints;
+    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> m_lineDrawing{ nullptr };
+    std::vector<carb::Float3> m_startPoints;
+    std::vector<carb::Float3> m_endPoints;
 };
 
 REGISTER_OGN_NODE()

@@ -430,10 +430,10 @@ Ros2NitrosBridgeImageMessageImpl::~Ros2NitrosBridgeImageMessageImpl()
 struct Bbox2DData
 {
     uint32_t semanticId;
-    int32_t x_min;
-    int32_t y_min;
-    int32_t x_max;
-    int32_t y_max;
+    int32_t xMin;
+    int32_t yMin;
+    int32_t xMax;
+    int32_t yMax;
     float occlusionRatio;
 };
 
@@ -477,10 +477,10 @@ void Ros2BoundingBox2DMessageImpl::writeBboxData(const void* bboxArray, const si
         const Bbox2DData& box = bboxData[i];
 
         detectionMsg->detections.data[i].bbox.center.theta = 0;
-        detectionMsg->detections.data[i].bbox.center.position.x = (box.x_max + box.x_min) / 2.0;
-        detectionMsg->detections.data[i].bbox.center.position.y = (box.y_max + box.y_min) / 2.0;
-        detectionMsg->detections.data[i].bbox.size_x = box.x_max - box.x_min;
-        detectionMsg->detections.data[i].bbox.size_y = box.y_max - box.y_min;
+        detectionMsg->detections.data[i].bbox.center.position.x = (box.xMax + box.xMin) / 2.0;
+        detectionMsg->detections.data[i].bbox.center.position.y = (box.yMax + box.yMin) / 2.0;
+        detectionMsg->detections.data[i].bbox.size_x = box.xMax - box.xMin;
+        detectionMsg->detections.data[i].bbox.size_y = box.yMax - box.yMin;
         // TODO: Detection sub message header for all detections
         // detectionMsg->detections.data[i].header
 
@@ -506,12 +506,12 @@ Ros2BoundingBox2DMessageImpl::~Ros2BoundingBox2DMessageImpl()
 struct Bbox3DData
 {
     uint32_t semanticId;
-    float x_min;
-    float y_min;
-    float z_min;
-    float x_max;
-    float y_max;
-    float z_max;
+    float xMin;
+    float yMin;
+    float zMin;
+    float xMax;
+    float yMax;
+    float zMax;
     pxr::GfMatrix4f transform;
     float occlusionRatio;
 };
@@ -574,9 +574,9 @@ void Ros2BoundingBox3DMessageImpl::writeBboxData(const void* bboxArray, size_t n
         detectionMsg->detections.data[i].bbox.center.orientation.z = imag[2];
         detectionMsg->detections.data[i].bbox.center.orientation.w = rot.GetReal();
 
-        detectionMsg->detections.data[i].bbox.size.x = (box.x_max - box.x_min) * scale[0];
-        detectionMsg->detections.data[i].bbox.size.y = (box.y_max - box.y_min) * scale[1];
-        detectionMsg->detections.data[i].bbox.size.z = (box.z_max - box.z_min) * scale[2];
+        detectionMsg->detections.data[i].bbox.size.x = (box.xMax - box.xMin) * scale[0];
+        detectionMsg->detections.data[i].bbox.size.y = (box.yMax - box.yMin) * scale[1];
+        detectionMsg->detections.data[i].bbox.size.z = (box.zMax - box.zMin) * scale[2];
 
 
         m_generatorLibrary->callSymbolWithArg<void>(
@@ -810,15 +810,15 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
     sensor_msgs__msg__JointState* jointStateMsg = static_cast<sensor_msgs__msg__JointState*>(m_msg);
     Ros2MessageInterfaceImpl::writeRosHeader("", static_cast<int64_t>(timeStamp * 1e9), jointStateMsg->header);
 
-    uint32_t num_dofs = articulation->getMaxDofs();
+    uint32_t numDofs = articulation->getMaxDofs();
     omni::physics::tensors::TensorDesc positionTensor;
     omni::physics::tensors::TensorDesc velocityTensor;
     omni::physics::tensors::TensorDesc effortTensor;
     omni::physics::tensors::TensorDesc dofTypeTensor;
-    createTensorDesc(positionTensor, jointPositions, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
-    createTensorDesc(velocityTensor, jointVelocities, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
-    createTensorDesc(effortTensor, jointEfforts, num_dofs, omni::physics::tensors::TensorDataType::eFloat32);
-    createTensorDesc(dofTypeTensor, dofTypes, num_dofs, omni::physics::tensors::TensorDataType::eUint8);
+    createTensorDesc(positionTensor, jointPositions, numDofs, omni::physics::tensors::TensorDataType::eFloat32);
+    createTensorDesc(velocityTensor, jointVelocities, numDofs, omni::physics::tensors::TensorDataType::eFloat32);
+    createTensorDesc(effortTensor, jointEfforts, numDofs, omni::physics::tensors::TensorDataType::eFloat32);
+    createTensorDesc(dofTypeTensor, dofTypes, numDofs, omni::physics::tensors::TensorDataType::eUint8);
     bool hasDofStates = true;
     if (!articulation->getDofPositions(&positionTensor))
     {
@@ -841,20 +841,20 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
         hasDofStates = false;
     }
 
-    rosidl_runtime_c__String__Sequence__init(&jointStateMsg->name, num_dofs);
-    rosidl_runtime_c__double__Sequence__init(&jointStateMsg->position, num_dofs);
-    rosidl_runtime_c__double__Sequence__init(&jointStateMsg->velocity, num_dofs);
-    rosidl_runtime_c__double__Sequence__init(&jointStateMsg->effort, num_dofs);
+    rosidl_runtime_c__String__Sequence__init(&jointStateMsg->name, numDofs);
+    rosidl_runtime_c__double__Sequence__init(&jointStateMsg->position, numDofs);
+    rosidl_runtime_c__double__Sequence__init(&jointStateMsg->velocity, numDofs);
+    rosidl_runtime_c__double__Sequence__init(&jointStateMsg->effort, numDofs);
 
     if (hasDofStates)
     {
-        for (uint32_t j = 0; j < num_dofs; j++)
+        for (uint32_t j = 0; j < numDofs; j++)
         {
             const char* jointPath = articulation->getUsdDofPath(0, j);
             if (jointPath)
             {
                 Ros2MessageInterfaceImpl::writeRosString(
-                    isaacsim::core::includes::GetName(stage->GetPrimAtPath(pxr::SdfPath(jointPath))),
+                    isaacsim::core::includes::getName(stage->GetPrimAtPath(pxr::SdfPath(jointPath))),
                     jointStateMsg->name.data[j]);
             }
             if (static_cast<omni::physics::tensors::DofType>(dofTypes[j]) == omni::physics::tensors::DofType::eTranslation)
@@ -896,10 +896,10 @@ bool Ros2JointStateMessageImpl::checkValid()
         return false;
     }
     sensor_msgs__msg__JointState* jointStateMsg = static_cast<sensor_msgs__msg__JointState*>(m_msg);
-    const size_t num_actuators = jointStateMsg->name.size;
+    const size_t numActuators = jointStateMsg->name.size;
 
-    if (jointStateMsg->position.size != num_actuators && jointStateMsg->velocity.size != num_actuators &&
-        jointStateMsg->effort.size != num_actuators)
+    if (jointStateMsg->position.size != numActuators && jointStateMsg->velocity.size != numActuators &&
+        jointStateMsg->effort.size != numActuators)
     {
         return false;
     }
@@ -917,52 +917,52 @@ void Ros2JointStateMessageImpl::readData(std::vector<char*>& jointNames,
         return;
     }
     sensor_msgs__msg__JointState* jointStateMsg = static_cast<sensor_msgs__msg__JointState*>(m_msg);
-    const size_t num_actuators = jointStateMsg->name.size;
+    const size_t numActuators = jointStateMsg->name.size;
 
-    if (num_actuators == 0)
+    if (numActuators == 0)
     {
         return;
     }
 
     jointNames.clear(); // Make sure vector is reset before filling in names
-    for (size_t i = 0; i < num_actuators; i++)
+    for (size_t i = 0; i < numActuators; i++)
     {
         char* name = jointStateMsg->name.data[i].data;
         jointNames.push_back(name);
     }
     // Resize for the array was called before writeData in the subscriber callback
-    if (jointStateMsg->position.size == num_actuators)
+    if (jointStateMsg->position.size == numActuators)
     {
-        std::memcpy(jointPositions, jointStateMsg->position.data, num_actuators * sizeof(double));
+        std::memcpy(jointPositions, jointStateMsg->position.data, numActuators * sizeof(double));
     }
     else if (jointPositions)
     {
         // Set to some sentinel value to indicate no data
-        for (size_t i = 0; i < num_actuators; i++)
+        for (size_t i = 0; i < numActuators; i++)
         {
             jointPositions[i] = std::numeric_limits<double>::quiet_NaN();
         }
     }
     // Resize for the array was called before writeData in the subscriber callback
-    if (jointStateMsg->velocity.size == num_actuators)
+    if (jointStateMsg->velocity.size == numActuators)
     {
-        std::memcpy(jointVelocities, jointStateMsg->velocity.data, num_actuators * sizeof(double));
+        std::memcpy(jointVelocities, jointStateMsg->velocity.data, numActuators * sizeof(double));
     }
     else if (jointVelocities)
     {
-        for (size_t i = 0; i < num_actuators; i++)
+        for (size_t i = 0; i < numActuators; i++)
         {
             jointVelocities[i] = std::numeric_limits<double>::quiet_NaN();
         }
     }
     // Resize for the array was called before writeData in the subscriber callback
-    if (jointStateMsg->effort.size == num_actuators)
+    if (jointStateMsg->effort.size == numActuators)
     {
-        std::memcpy(jointEfforts, jointStateMsg->effort.data, num_actuators * sizeof(double));
+        std::memcpy(jointEfforts, jointStateMsg->effort.data, numActuators * sizeof(double));
     }
     else if (jointEfforts)
     {
-        for (size_t i = 0; i < num_actuators; i++)
+        for (size_t i = 0; i < numActuators; i++)
         {
             jointEfforts[i] = std::numeric_limits<double>::quiet_NaN();
         }
@@ -1077,11 +1077,11 @@ void Ros2LaserScanMessageImpl::writeData(const double& timeStamp,
         return;
     }
     sensor_msgs__msg__LaserScan* laserScanMsg = static_cast<sensor_msgs__msg__LaserScan*>(m_msg);
-    float DEG_TO_RAD_f = static_cast<float>(M_PI / 180.0f);
+    float degToRadF = static_cast<float>(M_PI / 180.0f);
 
     Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), laserScanMsg->header);
-    laserScanMsg->angle_min = azimuthRange[0] * DEG_TO_RAD_f;
-    laserScanMsg->angle_max = azimuthRange[1] * DEG_TO_RAD_f;
+    laserScanMsg->angle_min = azimuthRange[0] * degToRadF;
+    laserScanMsg->angle_max = azimuthRange[1] * degToRadF;
 
     laserScanMsg->scan_time = rotationRate ? 1.0f / rotationRate : 0.0f;
     laserScanMsg->range_min = depthRange[0];
@@ -1095,7 +1095,7 @@ void Ros2LaserScanMessageImpl::writeData(const double& timeStamp,
     laserScanMsg->intensities.capacity = buffSize;
     laserScanMsg->intensities.data = intensitiesData;
 
-    laserScanMsg->angle_increment = horizontalResolution * DEG_TO_RAD_f;
+    laserScanMsg->angle_increment = horizontalResolution * degToRadF;
     laserScanMsg->time_increment = (horizontalFov / 360.0f * laserScanMsg->scan_time) / laserScanMsg->ranges.size;
 }
 
@@ -1142,14 +1142,14 @@ void Ros2TfTreeMessageImpl::writeData(const double& timeStamp, std::vector<TfTra
             transforms[i].parentFrame, static_cast<int64_t>(timeStamp * 1e9), tfMsg->transforms.data[i].header);
         Ros2MessageInterfaceImpl::writeRosString(transforms[i].childFrame, tfMsg->transforms.data[i].child_frame_id);
 
-        tfMsg->transforms.data[i].transform.translation.x = transforms[i].translation_x;
-        tfMsg->transforms.data[i].transform.translation.y = transforms[i].translation_y;
-        tfMsg->transforms.data[i].transform.translation.z = transforms[i].translation_z;
+        tfMsg->transforms.data[i].transform.translation.x = transforms[i].translationX;
+        tfMsg->transforms.data[i].transform.translation.y = transforms[i].translationY;
+        tfMsg->transforms.data[i].transform.translation.z = transforms[i].translationZ;
 
-        tfMsg->transforms.data[i].transform.rotation.x = transforms[i].rotation_x;
-        tfMsg->transforms.data[i].transform.rotation.y = transforms[i].rotation_y;
-        tfMsg->transforms.data[i].transform.rotation.z = transforms[i].rotation_z;
-        tfMsg->transforms.data[i].transform.rotation.w = transforms[i].rotation_w;
+        tfMsg->transforms.data[i].transform.rotation.x = transforms[i].rotationX;
+        tfMsg->transforms.data[i].transform.rotation.y = transforms[i].rotationY;
+        tfMsg->transforms.data[i].transform.rotation.z = transforms[i].rotationZ;
+        tfMsg->transforms.data[i].transform.rotation.w = transforms[i].rotationW;
     }
 }
 
@@ -1168,14 +1168,14 @@ void Ros2TfTreeMessageImpl::readData(std::vector<TfTransformStamped>& transforms
         transforms[i].parentFrame = std::string(tfMsg->transforms.data[i].header.frame_id.data);
         transforms[i].childFrame = std::string(tfMsg->transforms.data[i].child_frame_id.data);
 
-        transforms[i].translation_x = tfMsg->transforms.data[i].transform.translation.x;
-        transforms[i].translation_y = tfMsg->transforms.data[i].transform.translation.y;
-        transforms[i].translation_z = tfMsg->transforms.data[i].transform.translation.z;
+        transforms[i].translationX = tfMsg->transforms.data[i].transform.translation.x;
+        transforms[i].translationY = tfMsg->transforms.data[i].transform.translation.y;
+        transforms[i].translationZ = tfMsg->transforms.data[i].transform.translation.z;
 
-        transforms[i].rotation_x = tfMsg->transforms.data[i].transform.rotation.x;
-        transforms[i].rotation_y = tfMsg->transforms.data[i].transform.rotation.y;
-        transforms[i].rotation_z = tfMsg->transforms.data[i].transform.rotation.z;
-        transforms[i].rotation_w = tfMsg->transforms.data[i].transform.rotation.w;
+        transforms[i].rotationX = tfMsg->transforms.data[i].transform.rotation.x;
+        transforms[i].rotationY = tfMsg->transforms.data[i].transform.rotation.y;
+        transforms[i].rotationZ = tfMsg->transforms.data[i].transform.rotation.z;
+        transforms[i].rotationW = tfMsg->transforms.data[i].transform.rotation.w;
     }
 }
 

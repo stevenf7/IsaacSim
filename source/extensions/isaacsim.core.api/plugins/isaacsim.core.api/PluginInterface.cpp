@@ -22,9 +22,9 @@ public:
 };
 }
 
-const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.core.api.plugin", "Core interface to Isaac sim", "NVIDIA",
-                                                  carb::PluginHotReload::eEnabled, "dev" };
-CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::core::api::CoreExt)
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.api.plugin", "Core interface to Isaac sim", "NVIDIA",
+                                                    carb::PluginHotReload::eEnabled, "dev" };
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::core::api::CoreExt)
 
 void addCrashreporterMetadata()
 {

@@ -7,32 +7,80 @@ Checks: >
     readability-braces-around-statements,
     readability-container-size-empty,
     cert-err60-cpp,
-    misc-include-cleaner
+    misc-include-cleaner,
+    modernize-use-nullptr,
+    readability-redundant-member-init,
+    modernize-use-bool-literals,
+    modernize-use-using,
+    readability-redundant-access-specifiers
     
 CheckOptions:
+  # Classes, structs, and enum classes use PascalCase
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+  
+  # Files use PascalCase
+  - key: readability-identifier-naming.FileCase
+    value: CamelCase
+  
+  # Namespaces use snake_case
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  
+  # Functions
   - key: readability-identifier-naming.FunctionCase
     value: camelBack
+  - key: readability-identifier-naming.PrivateFunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateFunctionPrefix
+    value: _
+  - key: readability-identifier-naming.ProtectedFunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedFunctionPrefix
+    value: _
+  
+  # Variables
   - key: readability-identifier-naming.VariableCase
     value: camelBack
-  - key: readability-identifier-naming.ConstantVariableCase
+  - key: readability-identifier-naming.ParameterCase
     value: camelBack
-  - key: readability-identifier-naming.ConstantVariablePrefix
-    value: k
+  
+  # Class members
+  - key: readability-identifier-naming.PublicMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix
     value: m_
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: camelBack
   - key: readability-identifier-naming.ProtectedMemberPrefix
     value: m_
-  - key: readability-identifier-naming.StaticConstantMemberPrefix
-    value: s_
+  
+  # Special cases
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
   - key: readability-identifier-naming.GlobalConstantPrefix
+    value: g_k
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.GlobalVariablePrefix
     value: g_
+  - key: readability-identifier-naming.StaticConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.StaticConstantPrefix
+    value: s_k
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
   - key: readability-identifier-naming.EnumConstantPrefix
     value: e
+  
+  # Macros
   - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE

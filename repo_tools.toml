@@ -95,12 +95,12 @@ command = "edit_sysconfig"
 entry_point = "${config_root}/tools/isaac/edit_sysconfig.py:setup_repo_tool"
 
 ########################################################################################################################
-# Update extscache
+# Clang-Tidy
 ########################################################################################################################
 
-[update_extscache]
-command = "update_extscache"
-entry_point = "${config_root}/tools/isaac/update_extscache.py:setup_repo_tool"
+[clang_tidy]
+command = "clang_tidy"
+entry_point = "${config_root}/tools/isaac/clang_tidy.py:setup_repo_tool"
 
 ########################################################################################################################
 # Find duplicate files

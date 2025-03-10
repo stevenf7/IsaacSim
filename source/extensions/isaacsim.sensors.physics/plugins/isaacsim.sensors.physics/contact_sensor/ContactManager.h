@@ -156,11 +156,11 @@ public:
      * @brief Processes a contact event from the physics engine.
      * @param[in] c Contact event header.
      * @param[in] contactDataBuffer Buffer containing contact data.
-     * @param[in,out] data_idx Index into the contact data buffer.
+     * @param[in,out] dataIdx Index into the contact data buffer.
      */
     void processContact(const omni::physx::ContactEventHeader c,
                         const omni::physx::ContactData* contactDataBuffer,
-                        uint32_t& data_idx);
+                        uint32_t& dataIdx);
 
     /**
      * @brief Gets raw contact data for a specific USD path.
@@ -199,25 +199,25 @@ public:
 
 private:
     /** @brief Vector of raw contact data. */
-    std::vector<CsRawData> mContactRaw;
+    std::vector<CsRawData> m_contactRaw;
 
     /** @brief Map of body tokens to their raw contact data. */
-    std::map<uint64_t, std::vector<CsRawData>> mContactRawMap;
+    std::map<uint64_t, std::vector<CsRawData>> m_contactRawMap;
 
     /** @brief Subscription to contact event callbacks. */
-    carb::events::ISubscriptionPtr mContactCallbackPtr;
+    carb::events::ISubscriptionPtr m_contactCallbackPtr;
 
     /** @brief Number of contacts waiting to be processed. */
-    size_t mContactsToProcess{ 0 };
+    size_t m_contactsToProcess{ 0 };
 
     /** @brief Number of contacts that have been processed. */
-    size_t mContactsProcessed{ 0 };
+    size_t m_contactsProcessed{ 0 };
 
     /** @brief Current simulation time. */
-    float mCurrentTime{ 0.0f };
+    float m_currentTime{ 0.0f };
 
     /** @brief Current simulation time step. */
-    float mCurrentDt{ 0.0f };
+    float m_currentDt{ 0.0f };
 };
 }
 }

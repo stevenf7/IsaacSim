@@ -35,21 +35,21 @@ namespace nodes
 {
 
 
-omni::graph::core::INode* gINode;
-omni::physx::IPhysx* gPhysXInterface;
+omni::graph::core::INode* g_iNode;
+omni::physx::IPhysx* g_physXInterface;
 struct PhysicsStepData
 {
     std::vector<NodeHandle> nodes;
     omni::physx::SubscriptionId stepSubscription;
 };
-struct handleIDPair
+struct HandleIdPair
 {
     GraphHandle graphHandle;
     GraphInstanceID instanceId;
 };
 namespace
 {
-std::map<GraphHandle, PhysicsStepData> gGraphsWithPhysxStepNode;
+std::map<GraphHandle, PhysicsStepData> g_graphsWithPhysxStepNode;
 }
 class OgnOnPhysicsStep
 {
@@ -61,40 +61,40 @@ public:
     static void start(const NodeObj& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
-        auto graphObj = gINode->getGraph(nodeObj);
+        auto graphObj = g_iNode->getGraph(nodeObj);
         auto pipelineStage = graphObj.iGraph->getPipelineStage(graphObj);
-        if (pipelineStage != kGraphPipelineStage_OnDemand && state.mInitialized)
+        if (pipelineStage != kGraphPipelineStage_OnDemand && state.m_initialized)
         {
             // NodeGraph changed from on-demand since last execution - unsubscribe node from step events
             unsubscribe(nodeObj);
         }
-        else if (!state.mInitialized)
+        else if (!state.m_initialized)
         {
             initialize(nodeObj, instanceId);
         }
 
-        state.mStartTime = std::chrono::high_resolution_clock::now();
+        state.m_startTime = std::chrono::high_resolution_clock::now();
     }
     static void initialize(const NodeObj& nodeObj, GraphInstanceID instanceId)
     {
         // Acquire All interfaces
-        if (!gPhysXInterface)
+        if (!g_physXInterface)
         {
-            gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
+            g_physXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
         }
-        if (!gINode)
+        if (!g_iNode)
         {
-            gINode = carb::getCachedInterface<omni::graph::core::INode>();
+            g_iNode = carb::getCachedInterface<omni::graph::core::INode>();
         }
         // Get information on the graph the node was inserted
-        auto graphObj = gINode->getGraph(nodeObj);
+        auto graphObj = g_iNode->getGraph(nodeObj);
         auto pipelineStage = graphObj.iGraph->getPipelineStage(graphObj);
         auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
-        if (!state.mTimelineEventSub)
+        if (!state.m_timelineEventSub)
         {
-            state.mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
-            state.mTimelineEventSub = carb::events::createSubscriptionToPopByType(
-                state.mTimeline->getTimeline()->getTimelineEventStream(),
+            state.m_timeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+            state.m_timelineEventSub = carb::events::createSubscriptionToPopByType(
+                state.m_timeline->getTimeline()->getTimelineEventStream(),
                 static_cast<carb::events::EventType>(omni::timeline::TimelineEventType::ePlay),
                 [nodeObj, instanceId](carb::events::IEvent* e) { start(nodeObj, instanceId); }, 0,
                 "IsaacSimOGNPhysicStepsTimelineEventHandler");
@@ -103,23 +103,23 @@ public:
         {
             CARB_LOG_ERROR(
                 "Physics OnSimulationStep node detected in a non on-demand Graph. Node will only trigger events if the parent Graph is set to compute on-demand. (%s))",
-                gINode->getPrimPath(nodeObj));
+                g_iNode->getPrimPath(nodeObj));
             // graphObj.iGraph->changePipelineStage(graphObj, kGraphPipelineStage_OnDemand);
         }
         else
         {
             // Check if another Step node was already inserted before subscribing
 
-            if (gGraphsWithPhysxStepNode.find(graphObj.graphHandle) == gGraphsWithPhysxStepNode.end())
+            if (g_graphsWithPhysxStepNode.find(graphObj.graphHandle) == g_graphsWithPhysxStepNode.end())
             {
-                gGraphsWithPhysxStepNode[graphObj.graphHandle] = PhysicsStepData();
-                state.mGraphHandlePair = handleIDPair{ graphObj.graphHandle, instanceId };
-                gGraphsWithPhysxStepNode[graphObj.graphHandle].stepSubscription =
-                    gPhysXInterface->subscribePhysicsOnStepEvents(
-                        false, 0, onPhysicsStep, reinterpret_cast<void*>(&state.mGraphHandlePair));
+                g_graphsWithPhysxStepNode[graphObj.graphHandle] = PhysicsStepData();
+                state.m_graphHandlePair = HandleIdPair{ graphObj.graphHandle, instanceId };
+                g_graphsWithPhysxStepNode[graphObj.graphHandle].stepSubscription =
+                    g_physXInterface->subscribePhysicsOnStepEvents(
+                        false, 0, onPhysicsStep, reinterpret_cast<void*>(&state.m_graphHandlePair));
             }
-            gGraphsWithPhysxStepNode[graphObj.graphHandle].nodes.push_back(nodeObj.nodeHandle);
-            state.mInitialized = true;
+            g_graphsWithPhysxStepNode[graphObj.graphHandle].nodes.push_back(nodeObj.nodeHandle);
+            state.m_initialized = true;
         }
     }
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
@@ -135,57 +135,57 @@ public:
         {
             return;
         }
-        auto graphObj = gINode->getGraph(nodeObj);
-        auto graphData = gGraphsWithPhysxStepNode.find(graphObj.graphHandle);
+        auto graphObj = g_iNode->getGraph(nodeObj);
+        auto graphData = g_graphsWithPhysxStepNode.find(graphObj.graphHandle);
 
         // Sanity check if graph still exists
-        if (graphData != gGraphsWithPhysxStepNode.end())
+        if (graphData != g_graphsWithPhysxStepNode.end())
         {
             // Remove node from list of nodes on this graph
             graphData->second.nodes.erase(
                 std::remove(graphData->second.nodes.begin(), graphData->second.nodes.end(), nodeObj.nodeHandle),
                 graphData->second.nodes.end());
             // If No more step nodes are present, remove graph from map
-            if (graphData->second.nodes.size() == 0)
+            if (graphData->second.nodes.empty())
             {
-                gPhysXInterface->unsubscribePhysicsOnStepEvents(graphData->second.stepSubscription);
-                gGraphsWithPhysxStepNode.erase(graphData);
+                g_physXInterface->unsubscribePhysicsOnStepEvents(graphData->second.stepSubscription);
+                g_graphsWithPhysxStepNode.erase(graphData);
             }
         }
         auto& state = OgnOnPhysicsStepDatabase::sSharedState<OgnOnPhysicsStep>(nodeObj);
-        state.mInitialized = false;
+        state.m_initialized = false;
     }
 
     static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         unsubscribe(nodeObj);
         auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(nodeObj, instanceId);
-        state.mTimelineEventSub->unsubscribe();
+        state.m_timelineEventSub->unsubscribe();
     }
 
 
     static void onPhysicsStep(float timeElapsed, void* userData)
     {
         CARB_PROFILE_ZONE(0, "OgnOnPysicsStep::onPhysicsStep");
-        handleIDPair* idpair = reinterpret_cast<handleIDPair*>(userData);
+        HandleIdPair* idpair = reinterpret_cast<HandleIdPair*>(userData);
         auto graphHandle = idpair->graphHandle;
         auto instanceId = idpair->instanceId;
-        auto graphData = gGraphsWithPhysxStepNode.find(graphHandle);
+        auto graphData = g_graphsWithPhysxStepNode.find(graphHandle);
         // Sanity check if graph exists
-        if (graphData != gGraphsWithPhysxStepNode.end())
+        if (graphData != g_graphsWithPhysxStepNode.end())
         {
             // Double sanity check if there are step nodes in this graph
             if (graphData->second.nodes.size() > 0)
             {
-                NodeObj node = gINode->getNodeFromHandle(graphData->second.nodes[0]);
-                auto graphObj = gINode->getGraph(node);
+                NodeObj node = g_iNode->getNodeFromHandle(graphData->second.nodes[0]);
+                auto graphObj = g_iNode->getGraph(node);
                 // Iterate over all step nodes enabling them to receive the evaluate input
                 for (auto handle : graphData->second.nodes)
                 {
-                    NodeObj node = gINode->getNodeFromHandle(handle);
+                    NodeObj node = g_iNode->getNodeFromHandle(handle);
                     auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(node, instanceId);
-                    state.mDt = timeElapsed;
-                    state.mIsSet = true;
+                    state.m_dt = timeElapsed;
+                    state.m_isSet = true;
                 }
 
                 graphObj.iGraph->evaluate(graphObj);
@@ -197,33 +197,33 @@ public:
     {
         auto& state = db.perInstanceState<OgnOnPhysicsStep>();
         // Update node with trigger event
-        if (state.mIsSet)
+        if (state.m_isSet)
         {
-            state.mIsSet = false;
-            db.outputs.deltaSimulationTime() = state.mDt;
+            state.m_isSet = false;
+            db.outputs.deltaSimulationTime() = state.m_dt;
             db.outputs.step() = kExecutionAttributeStateEnabled;
             auto end = std::chrono::high_resolution_clock::now();
             db.outputs.deltaSystemTime() =
-                std::chrono::duration_cast<std::chrono::microseconds>(end - state.mStartTime).count() * 1.0e-6f;
-            state.mStartTime = end;
+                std::chrono::duration_cast<std::chrono::microseconds>(end - state.m_startTime).count() * 1.0e-6f;
+            state.m_startTime = end;
         }
         else
         {
             CARB_LOG_INFO("Graph evaluated outside physics step. A step will not be triggered this time.(%s))",
-                          gINode->getPrimPath(db.abi_node()));
+                          g_iNode->getPrimPath(db.abi_node()));
         }
         return true;
     }
 
 
 private:
-    float mDt = 0.0f;
-    bool mInitialized = false;
-    bool mIsSet = false;
-    std::chrono::time_point<std::chrono::high_resolution_clock> mStartTime;
-    handleIDPair mGraphHandlePair;
-    carb::events::ISubscriptionPtr mTimelineEventSub = nullptr;
-    omni::timeline::ITimeline* mTimeline = nullptr;
+    float m_dt = 0.0f;
+    bool m_initialized = false;
+    bool m_isSet = false;
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
+    HandleIdPair m_graphHandlePair;
+    carb::events::ISubscriptionPtr m_timelineEventSub = nullptr;
+    omni::timeline::ITimeline* m_timeline = nullptr;
 };
 
 REGISTER_OGN_NODE()

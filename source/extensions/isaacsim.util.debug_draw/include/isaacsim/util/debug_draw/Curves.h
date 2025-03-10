@@ -25,43 +25,43 @@ namespace curves
 /**
  * @brief Enumeration of supported basis curve types
  */
-enum class eBasisCurveType
+enum class BasisCurveType
 {
     /**
      * @brief Bezier curve type using Bernstein polynomials
      */
-    Bezier = 0,
+    eBezier = 0,
 
     /**
      * @brief Catmull-Rom spline curve type
      */
-    CatmullRom = 1,
+    eCatmullRom = 1,
 
     /**
      * @brief B-spline curve type
      */
-    BSpline = 2
+    eBSpline = 2
 };
 
 /**
  * @brief Enumeration of curve wrapping modes
  */
-enum class eBasisCurveWrap
+enum class BasisCurveWrap
 {
     /**
      * @brief Curve wraps around to form a closed loop
      */
-    Periodic = 0,
+    ePeriodic = 0,
 
     /**
      * @brief Curve has distinct start and end points
      */
-    NonPeriodic = 1,
+    eNonPeriodic = 1,
 
     /**
      * @brief Curve is pinned at endpoints with special handling
      */
-    Pinned = 2
+    ePinned = 2
 };
 
 /**
@@ -69,7 +69,7 @@ enum class eBasisCurveWrap
  * @details Contains the basis function coefficients and tangent basis coefficients
  *          used in spline curve calculations
  */
-struct coeff
+struct Coeff
 {
     /**
      * @brief Basis function coefficients for curve position calculation
@@ -96,14 +96,14 @@ public:
      * @details Controls the density of points generated during curve tessellation.
      *          Smaller values create smoother curves with more points.
      */
-    float m_stepSize = 0.1f;
+    float mStepSize = 0.1f;
 
     /**
      * @brief Constructs a SplineCurve with specified wrap mode and vertex step
      * @param[in] wrapMode The wrapping behavior of the curve
      * @param[in] vstep Number of control points to step between curve segments
      */
-    SplineCurve(eBasisCurveWrap wrapMode, uint32_t vstep) : m_wrapMode(wrapMode), m_vstep(vstep)
+    SplineCurve(BasisCurveWrap wrapMode, uint32_t vstep) : m_wrapMode(wrapMode), m_vstep(vstep)
     {
     }
     virtual ~SplineCurve() = default;
@@ -140,7 +140,7 @@ public:
 
         size_t curveSegments = (numControlPoints - 4) / m_vstep + 1;
 
-        if (m_wrapMode == eBasisCurveWrap::Pinned)
+        if (m_wrapMode == BasisCurveWrap::ePinned)
         {
             injectTessellatedSegment(controlPoints, tessellatedPoints, tessellatedTangents, 0);
         }
@@ -152,7 +152,7 @@ public:
             controlPointIndex += m_vstep;
         }
 
-        if (m_wrapMode == eBasisCurveWrap::Pinned)
+        if (m_wrapMode == BasisCurveWrap::ePinned)
         {
             injectTessellatedSegment(controlPoints, tessellatedPoints, tessellatedTangents, numControlPoints);
         }
@@ -168,7 +168,7 @@ protected:
      * @param[in] u3 The cube of the parameter value (u^3)
      * @return Coefficients for curve position and tangent calculation
      */
-    virtual coeff evalBasis(float u, float u2, float u3) = 0;
+    virtual Coeff evalBasis(float u, float u2, float u3) = 0;
 
     /**
      * @brief Evaluates a segment of the curve
@@ -195,11 +195,11 @@ protected:
         pxr::GfVec4f p3 = pxr::GfVec4f(cp[0], cp[1], cp[2], 1);
 
         float t = 0.0;
-        float tStep = m_stepSize;
+        float tStep = mStepSize;
         while (t < 1.0)
         {
             float u = 1.0f - t;
-            coeff cf = evalBasis(u, u * u, u * u * u);
+            Coeff cf = evalBasis(u, u * u, u * u * u);
             t += tStep;
             tessellatedPoints.push_back(
                 static_cast<pxr::GfVec4f>(p0 * cf.basis[0] + p1 * cf.basis[1] + p2 * cf.basis[2] + p3 * cf.basis[3]));
@@ -256,11 +256,11 @@ protected:
         }
 
         float t = 0.0;
-        float tStep = m_stepSize;
+        float tStep = mStepSize;
         while (t < 1.0)
         {
             float u = 1.0f - t;
-            coeff cf = evalBasis(u, u * u, u * u * u);
+            Coeff cf = evalBasis(u, u * u, u * u * u);
             t += tStep;
             tessellatedPoints.push_back(
                 static_cast<pxr::GfVec4f>(p0 * cf.basis[0] + p1 * cf.basis[1] + p2 * cf.basis[2] + p3 * cf.basis[3]));
@@ -272,7 +272,7 @@ protected:
     /**
      * @brief The wrapping behavior of the curve
      */
-    eBasisCurveWrap m_wrapMode;
+    BasisCurveWrap m_wrapMode;
 
     /**
      * @brief Number of control points to step between curve segments
@@ -294,7 +294,7 @@ public:
      * @param[in] wrapMode The wrapping behavior of the curve
      * @param[in] vstep Number of control points to step between curve segments
      */
-    CatmullRom(eBasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
+    CatmullRom(BasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
     {
     }
     ~CatmullRom() override = default;
@@ -310,9 +310,9 @@ protected:
      * @param[in] u3 The cube of the parameter value (u^3)
      * @return Coefficients for curve position and tangent calculation
      */
-    coeff evalBasis(float u, float u2, float u3) override
+    Coeff evalBasis(float u, float u2, float u3) override
     {
-        coeff cf;
+        Coeff cf;
         cf.basis = pxr::GfVec4f(0.5f * u3 - 0.5f * u2, -1.5f * u3 + 2.0f * u2 + 0.5f * u, 1.5f * u3 - 2.5f * u2 + 1.0f,
                                 -0.5f * u3 + u2 - 0.5f * u);
         cf.tangentBasis = pxr::GfVec4f(
@@ -336,7 +336,7 @@ public:
      * @param[in] wrapMode The wrapping behavior of the curve
      * @param[in] vstep Number of control points to step between curve segments
      */
-    BSpline(eBasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
+    BSpline(BasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
     {
     }
     ~BSpline() override = default;
@@ -352,9 +352,9 @@ protected:
      * @param[in] u3 The cube of the parameter value (u^3)
      * @return Coefficients for curve position and tangent calculation
      */
-    coeff evalBasis(float u, float u2, float u3) override
+    Coeff evalBasis(float u, float u2, float u3) override
     {
-        coeff cf;
+        Coeff cf;
         cf.basis =
             pxr::GfVec4f((1.0f / 6.0f) * u3, -0.5f * u3 + 0.5f * u2 + 0.5f * u + (1.0f / 6.0f),
                          0.5f * u3 - u2 + (2.0f / 3.0f), -(1.0f / 6.0f) * u3 + 0.5f * u2 - 0.5f * u + (1.0f / 6.0f));
@@ -378,7 +378,7 @@ public:
      * @param[in] wrapMode The wrapping behavior of the curve
      * @param[in] vstep Number of control points to step between curve segments
      */
-    Bezier(eBasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
+    Bezier(BasisCurveWrap wrapMode, uint32_t vstep) : SplineCurve(wrapMode, vstep)
     {
     }
     ~Bezier() override = default;
@@ -394,9 +394,9 @@ protected:
      * @param[in] u3 The cube of the parameter value (u^3)
      * @return Coefficients for curve position and tangent calculation
      */
-    coeff evalBasis(float u, float u2, float u3) override
+    Coeff evalBasis(float u, float u2, float u3) override
     {
-        coeff cf;
+        Coeff cf;
         cf.basis = pxr::GfVec4f(
             u3, -3.0f * u3 + 3.0f * u2, 3.0f * u3 - 6.0f * u2 + 3.0f * u, -1.0f * u3 + 3.0f * u2 - 3.0f * u + 1.0f);
         cf.tangentBasis =
@@ -406,8 +406,8 @@ protected:
     }
 };
 
-const pxr::TfToken CurveBasisPrimToken("basis");
-const pxr::TfToken UVToken("primvars:st");
+const pxr::TfToken g_kCurveBasisPrimToken("basis");
+const pxr::TfToken g_kUvToken("primvars:st");
 
 /*
  *  Exposed class to Python
@@ -459,7 +459,7 @@ public:
             pxr::UsdPrim prim = m_stage->GetPrimAtPath(pxr::SdfPath(primPath));
             pxr::UsdPrim meshPrim = m_stage->GetPrimAtPath(pxr::SdfPath(meshPrimPath));
 
-            if (prim.IsValid() && meshPrim.IsValid() && prim.HasAttribute(CurveBasisPrimToken))
+            if (prim.IsValid() && meshPrim.IsValid() && prim.HasAttribute(g_kCurveBasisPrimToken))
             {
                 m_primCurve = pxr::UsdGeomBasisCurves(prim);
                 m_mesh = pxr::UsdGeomMesh(meshPrim);
@@ -468,23 +468,23 @@ public:
                 pxr::TfToken wrap;
                 m_primCurve.GetWrapAttr().Get(&wrap);
 
-                eBasisCurveType curveType = stringToCurveType(type.GetString());
-                eBasisCurveWrap wrapMode = stringToWrapType(wrap.GetString());
-                if (curveType == eBasisCurveType::Bezier)
+                BasisCurveType curveType = stringToCurveType(type.GetString());
+                BasisCurveWrap wrapMode = stringToWrapType(wrap.GetString());
+                if (curveType == BasisCurveType::eBezier)
                 {
                     m_curve = new Bezier(wrapMode, 3);
                 }
-                else if (curveType == eBasisCurveType::CatmullRom)
+                else if (curveType == BasisCurveType::eCatmullRom)
                 {
                     // force pinned for this type of curve
-                    wrapMode = eBasisCurveWrap::Pinned;
+                    wrapMode = BasisCurveWrap::ePinned;
                     m_curve = new CatmullRom(wrapMode, 1);
                 }
-                else if (curveType == eBasisCurveType::BSpline)
+                else if (curveType == BasisCurveType::eBSpline)
                 {
                     m_curve = new BSpline(wrapMode, 1);
                 }
-                m_curve->m_stepSize = stepSize;
+                m_curve->mStepSize = stepSize;
             }
             else
             {
@@ -648,14 +648,14 @@ public:
 
             // Indices
             int top = i - 1;
-            int top_left = top * 2;
-            int top_right = top * 2 + 1;
-            int bottom_left = i * 2;
-            int bottom_right = i * 2 + 1;
-            meshIndices.push_back(top_left);
-            meshIndices.push_back(top_right);
-            meshIndices.push_back(bottom_right);
-            meshIndices.push_back(bottom_left);
+            int topLeft = top * 2;
+            int topRight = top * 2 + 1;
+            int bottomLeft = i * 2;
+            int bottomRight = i * 2 + 1;
+            meshIndices.push_back(topLeft);
+            meshIndices.push_back(topRight);
+            meshIndices.push_back(bottomRight);
+            meshIndices.push_back(bottomLeft);
             // new quad
             meshFaceCount.push_back(4);
         }
@@ -667,7 +667,7 @@ public:
         m_mesh.CreateFaceVertexCountsAttr().Set(meshFaceCount);
         pxr::UsdGeomPrimvarsAPI primvarsAPI(m_mesh);
         pxr::UsdGeomPrimvar uvPrimvar =
-            primvarsAPI.CreatePrimvar(UVToken, pxr::SdfValueTypeNames->Float2Array, pxr::UsdGeomTokens->faceVarying);
+            primvarsAPI.CreatePrimvar(g_kUvToken, pxr::SdfValueTypeNames->Float2Array, pxr::UsdGeomTokens->faceVarying);
         if (uvPrimvar)
         {
             uvPrimvar.Set(meshTexCoords);
@@ -676,39 +676,39 @@ public:
     }
 
 private:
-    static eBasisCurveType stringToCurveType(const std::string& type)
+    static BasisCurveType stringToCurveType(const std::string& type)
     {
-        eBasisCurveType enumType = eBasisCurveType::CatmullRom;
+        BasisCurveType enumType = BasisCurveType::eCatmullRom;
         if (type == std::string("bezier"))
         {
-            enumType = eBasisCurveType::Bezier;
+            enumType = BasisCurveType::eBezier;
         }
         else if (type == std::string("catmullrom"))
         {
-            enumType = eBasisCurveType::CatmullRom;
+            enumType = BasisCurveType::eCatmullRom;
         }
         else if (type == std::string("bspline"))
         {
-            enumType = eBasisCurveType::BSpline;
+            enumType = BasisCurveType::eBSpline;
         }
 
         return enumType;
     }
 
-    static eBasisCurveWrap stringToWrapType(const std::string& type)
+    static BasisCurveWrap stringToWrapType(const std::string& type)
     {
-        eBasisCurveWrap enumType = eBasisCurveWrap::NonPeriodic;
+        BasisCurveWrap enumType = BasisCurveWrap::eNonPeriodic;
         if (type == std::string("periodic"))
         {
-            enumType = eBasisCurveWrap::Periodic;
+            enumType = BasisCurveWrap::ePeriodic;
         }
         else if (type == std::string("nonperiodic"))
         {
-            enumType = eBasisCurveWrap::NonPeriodic;
+            enumType = BasisCurveWrap::eNonPeriodic;
         }
         else if (type == std::string("pinned"))
         {
-            enumType = eBasisCurveWrap::Pinned;
+            enumType = BasisCurveWrap::ePinned;
         }
 
         return enumType;

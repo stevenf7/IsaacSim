@@ -51,30 +51,30 @@ public:
 
             if (useDomainIDEnvVar)
             {
-                char* domain_id_str = nullptr;
+                char* domainIdStr = nullptr;
 
 #ifdef _MSC_VER
 
                 size_t sz = 0;
-                _dupenv_s(&domain_id_str, &sz, "ROS_DOMAIN_ID");
+                _dupenv_s(&domainIdStr, &sz, "ROS_DOMAIN_ID");
 #else
-                domain_id_str = getenv("ROS_DOMAIN_ID");
+                domainIdStr = getenv("ROS_DOMAIN_ID");
 #endif
 
-                if (domain_id_str != NULL)
+                if (domainIdStr != NULL)
                 {
-                    state.m_domainId = strtoul(domain_id_str, NULL, 0);
+                    state.m_domainId = strtoul(domainIdStr, NULL, 0);
 
                     if (state.m_domainId == (std::numeric_limits<uint32_t>::max)())
                     {
-                        CARB_LOG_INFO("ROS_DOMAIN_ID: %s could not be interpreted as a legal number", domain_id_str);
+                        CARB_LOG_INFO("ROS_DOMAIN_ID: %s could not be interpreted as a legal number", domainIdStr);
 #ifdef _MSC_VER
-                        free(domain_id_str);
+                        free(domainIdStr);
 #endif
                         return false;
                     }
 #ifdef _MSC_VER
-                    free(domain_id_str);
+                    free(domainIdStr);
 #endif
                 }
                 else

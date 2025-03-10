@@ -33,8 +33,8 @@
 
 namespace
 {
-const carb::PluginImplDesc kPluginImpl = { "isaacsim.asset.gen.omap.plugin", "Isaac Motion Planning", "NVIDIA",
-                                           carb::PluginHotReload::eDisabled, "dev" };
+const carb::PluginImplDesc g_kPluginDesc = { "isaacsim.asset.gen.omap.plugin", "Isaac Motion Planning", "NVIDIA",
+                                             carb::PluginHotReload::eDisabled, "dev" };
 
 pxr::UsdStageWeakPtr g_stage = nullptr;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
@@ -51,7 +51,7 @@ std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> g_l
 std::unique_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> g_cellDrawing;
 }
 
-CARB_PLUGIN_IMPL(kPluginImpl, isaacsim::asset::gen::omap::OccupancyMap)
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::asset::gen::omap::OccupancyMap)
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate)
 
 void CARB_ABI generateMap()
@@ -132,7 +132,7 @@ void drawGrid(float lineWidth)
     }
 }
 
-void CARB_ABI Update()
+void CARB_ABI update()
 {
     g_lineDrawing->clear();
     g_cellDrawing->clear();
@@ -328,7 +328,7 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "OccupancyMap";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
@@ -348,7 +348,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 void fillInterface(isaacsim::asset::gen::omap::OccupancyMap& iface)
 {
     iface.generateMap = generateMap;
-    iface.update = Update;
+    iface.update = update;
     iface.setTransform = setTransform;
     iface.setCellSize = setCellSize;
     iface.getOccupiedPositions = getOccupiedPositions;

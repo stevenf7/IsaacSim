@@ -51,20 +51,20 @@ public:
      * @note Device -1 indicates CPU-only mode
      * @warning Ensure CUDA runtime is initialized before using this class
      */
-    ScopedDevice(const int device = -1) : mDevice(device)
+    ScopedDevice(const int device = -1) : m_device(device)
     {
         // if we want cpu or can't get a cuda device, then do nothing.
-        if (device == -1 || cudaGetDevice(&mOldDevice) != cudaError::cudaSuccess)
+        if (device == -1 || cudaGetDevice(&m_oldDevice) != cudaError::cudaSuccess)
         {
-            mOldDevice = mDevice = -1;
+            m_oldDevice = m_device = -1;
             return;
         }
 
         // if we want a device, and its not the current threads host device, then set it.
-        if (mDevice != mOldDevice)
+        if (m_device != m_oldDevice)
         {
-            CUDA_CHECK(cudaSetDevice(mDevice));
-            // NOTE: what do you want to do with an error here?  set mOldDevice to mDevice so you do nothing in dtor?
+            CUDA_CHECK(cudaSetDevice(m_device));
+            // NOTE: what do you want to do with an error here?  set m_oldDevice to m_device so you do nothing in dtor?
         }
     }
 
@@ -77,17 +77,17 @@ public:
     ~ScopedDevice()
     {
         // return device back to what we had before if we set earlier
-        if (mDevice != mOldDevice)
+        if (m_device != m_oldDevice)
         {
-            CUDA_CHECK(cudaSetDevice(mOldDevice));
+            CUDA_CHECK(cudaSetDevice(m_oldDevice));
         }
     }
 
 private:
     /** @brief Target CUDA device ID (or -1 for CPU mode) */
-    int mDevice = 0;
+    int m_device = 0;
     /** @brief Original CUDA device ID before context switch */
-    int mOldDevice = 0;
+    int m_oldDevice = 0;
 };
 
 /**
@@ -106,7 +106,7 @@ private:
 class ScopedCudaTextureObject final
 {
     /** @brief Handle to the CUDA texture object */
-    cudaTextureObject_t _texObj = 0;
+    cudaTextureObject_t m_texObj = 0;
 
 public:
     /**
@@ -147,7 +147,7 @@ public:
         texDesc.filterMode = cudaFilterModePoint;
         texDesc.readMode = cudaReadModeElementType;
         texDesc.normalizedCoords = 1;
-        CUDA_CHECK(cudaCreateTextureObject(&_texObj, &resDesc, &texDesc, nullptr));
+        CUDA_CHECK(cudaCreateTextureObject(&m_texObj, &resDesc, &texDesc, nullptr));
     }
 
     /**
@@ -156,9 +156,9 @@ public:
      */
     ~ScopedCudaTextureObject()
     {
-        if (_texObj)
+        if (m_texObj)
         {
-            CUDA_CHECK(cudaDestroyTextureObject(_texObj));
+            CUDA_CHECK(cudaDestroyTextureObject(m_texObj));
         }
     }
 
@@ -168,7 +168,7 @@ public:
      */
     operator cudaTextureObject_t&()
     {
-        return _texObj;
+        return m_texObj;
     }
 };
 

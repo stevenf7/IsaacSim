@@ -53,13 +53,13 @@ namespace gen
 namespace omap
 {
 #ifdef _MSC_VER
-#    if OMGENERATOREXPORT
-#        define DllExport __declspec(dllexport)
+#    if ISAACSIM_ASSET_GEN_OMAP_EXPORT
+#        define DLL_EXPORT __declspec(dllexport)
 #    else
-#        define DllExport __declspec(dllimport)
+#        define DLL_EXPORT __declspec(dllimport)
 #    endif
 #else
-#    define DllExport
+#    define DLL_EXPORT
 #endif
 
 /**
@@ -72,7 +72,7 @@ namespace omap
  *
  * @note This class requires valid PhysX and USD stage pointers to function properly
  */
-class DllExport MapGenerator
+class DLL_EXPORT MapGenerator
 {
 public:
     /**

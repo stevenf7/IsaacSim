@@ -62,16 +62,16 @@ public:
      */
     RangeSensorComponentBase(omni::physx::IPhysx* physxPtr)
     {
-        mPhysx = physxPtr;
-        mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
-        mTasking = carb::getCachedInterface<carb::tasking::ITasking>();
-        mToken = carb::getCachedInterface<omni::fabric::IToken>();
+        m_physx = physxPtr;
+        m_timeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+        m_tasking = carb::getCachedInterface<carb::tasking::ITasking>();
+        m_token = carb::getCachedInterface<omni::fabric::IToken>();
 
-        mLineDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        m_lineDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(),
             isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
 
-        mPointDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        m_pointDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(),
             isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints);
     }
@@ -82,8 +82,8 @@ public:
      */
     ~RangeSensorComponentBase()
     {
-        mLineDrawing.reset();
-        mPointDrawing.reset();
+        m_lineDrawing.reset();
+        m_pointDrawing.reset();
     }
 
     /**
@@ -95,7 +95,7 @@ public:
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         isaacsim::core::includes::ComponentBase<PrimType>::initialize(prim, stage);
-        this->mRangeSensorPrim = pxr::RangeSensorRangeSensor(this->mPrim);
+        this->m_rangeSensorPrim = pxr::RangeSensorRangeSensor(this->m_prim);
     }
 
     /**
@@ -106,20 +106,20 @@ public:
     {
         onComponentChange();
 
-        pxr::UsdPrimRange range = this->mStage->Traverse();
+        pxr::UsdPrimRange range = this->m_stage->Traverse();
 
         // TODO: move this to the manager and only run once on start for all sensors
-        mPxScene = nullptr;
+        m_pxScene = nullptr;
         for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
         {
             pxr::UsdPrim prim = *iter;
 
             if (prim.IsA<pxr::UsdPhysicsScene>())
             {
-                mPxScene = static_cast<::physx::PxScene*>(
-                    mPhysx->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
+                m_pxScene = static_cast<::physx::PxScene*>(
+                    m_physx->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
 
-                if (mPxScene)
+                if (m_pxScene)
                 {
                     break;
                 }
@@ -153,8 +153,8 @@ public:
      */
     virtual void draw()
     {
-        mLineDrawing->draw();
-        mPointDrawing->draw();
+        m_lineDrawing->draw();
+        m_pointDrawing->draw();
     }
 
     /**
@@ -163,10 +163,10 @@ public:
      */
     virtual void onStop()
     {
-        mLineDrawing->clear();
-        mPointDrawing->clear();
-        mLineDrawing->draw();
-        mPointDrawing->draw();
+        m_lineDrawing->clear();
+        m_pointDrawing->clear();
+        m_lineDrawing->draw();
+        m_pointDrawing->draw();
     };
 
     /**
@@ -176,23 +176,23 @@ public:
      */
     virtual void onComponentChange()
     {
-        isaacsim::core::includes::safeGetAttribute(this->mRangeSensorPrim.GetEnabledAttr(), this->mEnabled);
-        isaacsim::core::includes::safeGetAttribute(this->mRangeSensorPrim.GetMinRangeAttr(), mMinRange);
-        isaacsim::core::includes::safeGetAttribute(this->mRangeSensorPrim.GetMaxRangeAttr(), mMaxRange);
-        isaacsim::core::includes::safeGetAttribute(this->mRangeSensorPrim.GetDrawPointsAttr(), mDrawPoints);
-        isaacsim::core::includes::safeGetAttribute(this->mRangeSensorPrim.GetDrawLinesAttr(), mDrawLines);
+        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetEnabledAttr(), this->m_enabled);
+        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetMinRangeAttr(), m_minRange);
+        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetMaxRangeAttr(), m_maxRange);
+        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetDrawPointsAttr(), m_drawPoints);
+        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetDrawLinesAttr(), m_drawLines);
 
-        mParentPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
-        mMetersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->mStage));
+        m_parentPrim = this->m_stage->GetPrimAtPath(this->m_prim.GetPath()).GetParent();
+        m_metersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->m_stage));
 
-        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
+        if (m_parentPrim.IsA<pxr::UsdGeomXformable>())
         {
             std::vector<double> times;
-            pxr::UsdGeomXformable(mParentPrim).GetTimeSamples(&times);
+            pxr::UsdGeomXformable(m_parentPrim).GetTimeSamples(&times);
 
-            mIsParentPrimTimeSampled = times.size() > 1;
+            m_isParentPrimTimeSampled = times.size() > 1;
         }
-        this->mSequenceNumber = 0;
+        this->m_sequenceNumber = 0;
     }
 
     /**
@@ -205,10 +205,10 @@ public:
     {
         isaacsim::core::includes::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
 
-        mParentPrimTimeCode = pxr::UsdTimeCode::Default();
-        if (mIsParentPrimTimeSampled)
+        m_parentPrimTimeCode = pxr::UsdTimeCode::Default();
+        if (m_isParentPrimTimeSampled)
         {
-            mParentPrimTimeCode = round(mTimeline->getCurrentTime() * this->mStage->GetTimeCodesPerSecond());
+            m_parentPrimTimeCode = round(m_timeline->getCurrentTime() * this->m_stage->GetTimeCodesPerSecond());
         }
     }
 
@@ -218,7 +218,7 @@ public:
      */
     bool getDrawPoints()
     {
-        return mDrawPoints;
+        return m_drawPoints;
     }
 
     /**
@@ -227,7 +227,7 @@ public:
      */
     bool getDrawLines()
     {
-        return mDrawLines;
+        return m_drawLines;
     }
 
     /**
@@ -238,60 +238,60 @@ public:
      */
     std::vector<carb::Float3>& getPointCloud()
     {
-        return mLastHitPos;
+        return m_lastHitPos;
     }
 
 protected:
     /** @brief Flag to enable/disable point visualization */
-    bool mDrawPoints = false;
+    bool m_drawPoints = false;
     /** @brief Flag to enable/disable line visualization */
-    bool mDrawLines = false;
+    bool m_drawLines = false;
     /** @brief Vector storing the most recent hit positions from the sensor */
-    std::vector<carb::Float3> mLastHitPos;
+    std::vector<carb::Float3> m_lastHitPos;
 
     /** @brief Minimum range of the sensor in meters */
-    float mMinRange = 0.4f;
+    float m_minRange = 0.4f;
     /** @brief Maximum range of the sensor in meters */
-    float mMaxRange = 100.0f;
+    float m_maxRange = 100.0f;
 
     /** @brief Conversion factor from scene units to meters */
-    float mMetersPerUnit = 1.0;
+    float m_metersPerUnit = 1.0;
 
     /** @brief Reference to the parent USD prim containing this sensor */
-    pxr::UsdPrim mParentPrim;
+    pxr::UsdPrim m_parentPrim;
 
     /** @brief Pointer to the PhysX interface */
-    omni::physx::IPhysx* mPhysx = nullptr;
+    omni::physx::IPhysx* m_physx = nullptr;
     /** @brief Pointer to the PhysX scene */
-    ::physx::PxScene* mPxScene = nullptr;
+    ::physx::PxScene* m_pxScene = nullptr;
     /** @brief Pointer to the timeline interface */
-    omni::timeline::ITimeline* mTimeline = nullptr;
+    omni::timeline::ITimeline* m_timeline = nullptr;
     /** @brief Pointer to the fabric token interface */
-    omni::fabric::IToken* mToken = nullptr;
+    omni::fabric::IToken* m_token = nullptr;
     /** @brief Pointer to the tasking interface */
-    carb::tasking::ITasking* mTasking = nullptr;
+    carb::tasking::ITasking* m_tasking = nullptr;
     /** @brief Helper for drawing debug lines */
-    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
+    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> m_lineDrawing;
     /** @brief Helper for drawing debug points */
-    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
+    std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> m_pointDrawing;
 
     /** @brief Reference to the range sensor USD prim */
-    pxr::RangeSensorRangeSensor mRangeSensorPrim;
+    pxr::RangeSensorRangeSensor m_rangeSensorPrim;
 
     /** @brief Time code for the parent prim's current state */
-    pxr::UsdTimeCode mParentPrimTimeCode;
+    pxr::UsdTimeCode m_parentPrimTimeCode;
     /** @brief Flag indicating if the parent prim has time-sampled transforms */
-    bool mIsParentPrimTimeSampled = false;
+    bool m_isParentPrimTimeSampled = false;
 
     /** @brief Flag indicating if this is the first frame */
-    bool mFirstFrame = true;
+    bool m_firstFrame = true;
 };
 
 /**
  * @typedef RangeSensorComponent
  * @brief Convenience typedef for a range sensor component using the RangeSensorRangeSensor prim type
  */
-typedef RangeSensorComponentBase<pxr::RangeSensorRangeSensor> RangeSensorComponent;
+using RangeSensorComponent = RangeSensorComponentBase<pxr::RangeSensorRangeSensor>;
 
 }
 }

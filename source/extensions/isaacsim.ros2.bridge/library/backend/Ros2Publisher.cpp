@@ -61,7 +61,7 @@ Ros2PublisherImpl::~Ros2PublisherImpl()
 
 void Ros2PublisherImpl::publish(const void* msg)
 {
-    rcl_ret_t rc = rcl_publish(m_publisher.get(), msg, NULL);
+    rcl_ret_t rc = rcl_publish(m_publisher.get(), msg, nullptr);
     if (rc != RCL_RET_OK)
     {
         RCL_ERROR_MSG(publish, rcl_publish);

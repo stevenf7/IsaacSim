@@ -46,7 +46,7 @@ public:
      * @brief Constructs a new Light Beam Sensor instance
      * @param[in] PhysXInterface Pointer to the PhysX interface for physics simulation
      */
-    LightBeamSensor(omni::physx::IPhysx* PhysXInterface);
+    LightBeamSensor(omni::physx::IPhysx* physXInterface);
 
     /**
      * @brief Virtual destructor for proper cleanup
@@ -95,7 +95,7 @@ public:
      */
     int getNumRays() const
     {
-        return mNumRays;
+        return m_numRays;
     }
 
     /**
@@ -104,7 +104,7 @@ public:
      */
     std::vector<uint8_t>& getBeamHitData()
     {
-        return mBeamHit;
+        return m_beamHit;
     }
 
     /**
@@ -113,7 +113,7 @@ public:
      */
     std::vector<float>& getLinearDepthData()
     {
-        return mLinearDepth;
+        return m_linearDepth;
     }
 
     /**
@@ -122,7 +122,7 @@ public:
      */
     std::vector<carb::Float3>& getHitPosData()
     {
-        return mHitPos;
+        return m_hitPos;
     }
 
     /**
@@ -132,8 +132,8 @@ public:
     void getTransformData(omni::math::linalg::matrix4d& matrixOutput)
     {
         // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
-        omni::math::linalg::vec3d pos{ mWorldTranslation.x, mWorldTranslation.y, mWorldTranslation.z };
-        omni::math::linalg::quatd rot{ mWorldRotation.w, mWorldRotation.x, mWorldRotation.y, mWorldRotation.z };
+        omni::math::linalg::vec3d pos{ m_worldTranslation.x, m_worldTranslation.y, m_worldTranslation.z };
+        omni::math::linalg::quatd rot{ m_worldRotation.w, m_worldRotation.x, m_worldRotation.y, m_worldRotation.z };
         matrixOutput.SetIdentity();
         matrixOutput.SetRotateOnly(rot);
         matrixOutput.SetTranslateOnly(pos);
@@ -145,7 +145,7 @@ public:
      */
     std::vector<carb::Float3>& getBeamOrigins()
     {
-        return mBeamOrigins;
+        return m_beamOrigins;
     }
 
     /**
@@ -154,7 +154,7 @@ public:
      */
     std::vector<carb::Float3>& getBeamEndPoints()
     {
-        return mBeamEndPoints;
+        return m_beamEndPoints;
     }
 
 private:
@@ -170,78 +170,78 @@ private:
     /**
      * @brief Length of the light curtain in world units
      */
-    float mCurtainLength = 0.0f;
+    float m_curtainLength = 0.0f;
 
     /**
      * @brief Number of individual light beams in the curtain
      */
-    int mNumRays = 1;
+    int m_numRays = 1;
 
     /**
      * @brief Forward direction axis of the sensor
      */
-    pxr::GfVec3f mForwardAxis;
+    pxr::GfVec3f m_forwardAxis;
 
     /**
      * @brief Axis along which the light curtain is projected
      */
-    pxr::GfVec3f mCurtainAxis;
+    pxr::GfVec3f m_curtainAxis;
 
     /**
      * @brief Current world position of the sensor
      */
-    ::physx::PxVec3 mWorldTranslation;
+    ::physx::PxVec3 m_worldTranslation;
 
     /**
      * @brief Current world rotation of the sensor
      */
-    ::physx::PxQuat mWorldRotation;
+    ::physx::PxQuat m_worldRotation;
 
     /**
      * @brief Previous enabled state of the sensor
      */
-    bool mPreviousEnabled = true;
+    bool m_previousEnabled = true;
 
     /**
      * @brief Hit status for each beam (0 for no hit, 1 for hit)
      * @note Using uint8_t instead of bool because C++ doesn't support bool* pointer
      */
-    std::vector<uint8_t> mBeamHit;
+    std::vector<uint8_t> m_beamHit;
 
     /**
      * @brief Origin positions of all beams in world space
      */
-    std::vector<carb::Float3> mBeamOrigins;
+    std::vector<carb::Float3> m_beamOrigins;
 
     /**
      * @brief End positions of all beams in world space
      */
-    std::vector<carb::Float3> mBeamEndPoints;
+    std::vector<carb::Float3> m_beamEndPoints;
 
     /**
      * @brief Minimum depth range for ray casting in world units
      */
-    float mMinDepth = 0.0f;
+    float m_minDepth = 0.0f;
 
     /**
      * @brief Maximum depth range for ray casting in world units
      */
-    float mMaxDepth = 1e8;
+    float m_maxDepth = 1e8;
 
     /**
      * @brief Linear depth measurements for each beam in meters
      */
-    std::vector<float> mLinearDepth;
+    std::vector<float> m_linearDepth;
 
     /**
      * @brief Hit positions for each beam in world space
      */
-    std::vector<carb::Float3> mHitPos;
+    std::vector<carb::Float3> m_hitPos;
 
     /**
      * @brief PhysX ray cast hit flags configuration
      */
-    const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
+    const ::physx::PxHitFlags m_hitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
 };
 
 

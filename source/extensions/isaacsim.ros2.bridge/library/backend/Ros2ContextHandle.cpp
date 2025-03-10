@@ -43,7 +43,7 @@ void Ros2ContextHandleImpl::init(int argc, char const* const* argv, bool setDoma
     m_context = std::shared_ptr<rcl_context_t>(new rcl_context_t,
                                                [this](rcl_context_t* context)
                                                {
-                                                   if (NULL != context->impl)
+                                                   if (nullptr != context->impl)
                                                    {
                                                        rcl_ret_t ret;
                                                        if (this->isValid())

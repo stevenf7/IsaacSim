@@ -44,9 +44,9 @@ public:
      * @brief Constructs a new USD notice listener
      * @param[in] manager Pointer to the component manager that will handle notifications
      */
-    UsdNoticeListener(ComponentManager* manager) : mManager(manager)
+    UsdNoticeListener(ComponentManager* manager) : m_manager(manager)
     {
-        mStage = mManager->getStage();
+        m_stage = m_manager->getStage();
     }
 
     /**
@@ -59,7 +59,7 @@ public:
      */
     virtual void handleNotice(const pxr::UsdNotice::ObjectsChanged& objectsChanged) override
     {
-        if (mStage != objectsChanged.GetStage())
+        if (m_stage != objectsChanged.GetStage())
         {
             return;
         }
@@ -72,33 +72,33 @@ public:
                 const auto& primPath = (path == PXR_NS::SdfPath::AbsoluteRootPath() ? path : path.GetPrimPath());
 
                 // If prim is removed, remove it and its descendants from selection.
-                pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+                pxr::UsdPrim prim = m_stage->GetPrimAtPath(primPath);
 
                 // CARB_LOG_INFO("Prim %s valid %d", primPath.GetString().c_str(), prim.IsValid());
                 if (prim.IsValid() == false) // removed prim
                 {
-                    mManager->onComponentRemove(primPath);
+                    m_manager->onComponentRemove(primPath);
                 }
             }
         }
         for (auto& path : objectsChanged.GetChangedInfoOnlyPaths())
         {
             auto primPath =
-                mStage->GetPseudoRoot().GetPath() == path ? mStage->GetPseudoRoot().GetPath() : path.GetPrimPath();
+                m_stage->GetPseudoRoot().GetPath() == path ? m_stage->GetPseudoRoot().GetPath() : path.GetPrimPath();
 
             // Update the component attached to this prim, onComponentChange checks to see if the prim exists in
             // this BridgeApplication
-            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
-            mManager->onComponentChange(prim);
+            pxr::UsdPrim prim = m_stage->GetPrimAtPath(primPath);
+            m_manager->onComponentChange(prim);
         }
     }
 
 private:
     /** @brief Weak pointer to the USD stage being monitored */
-    pxr::UsdStageWeakPtr mStage = nullptr;
+    pxr::UsdStageWeakPtr m_stage = nullptr;
 
     /** @brief Pointer to the component manager handling notifications */
-    ComponentManager* mManager = nullptr;
+    ComponentManager* m_manager = nullptr;
 };
 
 /**
@@ -129,7 +129,7 @@ public:
      */
     ~BridgeApplicationBase()
     {
-        mNoticeListener.reset();
+        m_noticeListener.reset();
         deleteAllComponents();
     }
 
@@ -142,9 +142,9 @@ public:
      */
     virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
-        mStage = stage;
-        mNoticeListener = std::make_unique<UsdNoticeListener>(this);
-        mNoticeListener->registerListener();
+        m_stage = stage;
+        m_noticeListener = std::make_unique<UsdNoticeListener>(this);
+        m_noticeListener->registerListener();
     }
 
     /**
@@ -164,7 +164,7 @@ public:
     virtual void initComponents()
     {
         PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
-        omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(mStage).ToLongInt()) };
+        omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(m_stage).ToLongInt()) };
         omni::fabric::IStageReaderWriter* iStageReaderWriter =
             carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
         omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
@@ -180,7 +180,7 @@ public:
             {
                 const omni::fabric::PathC pathC(usdrtPath);
                 const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
-                pxr::UsdPrim prim = mStage->GetPrimAtPath(usdPath);
+                pxr::UsdPrim prim = m_stage->GetPrimAtPath(usdPath);
 
                 onComponentAdd(prim);
             }
@@ -210,9 +210,9 @@ public:
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
         // update properties of this prim (onComponentChange)
-        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        if (m_components.find(prim.GetPath().GetString()) != m_components.end())
         {
-            mComponents[prim.GetPath().GetString()]->onComponentChange();
+            m_components[prim.GetPath().GetString()]->onComponentChange();
         }
     }
 
@@ -237,9 +237,9 @@ public:
      */
     virtual void onComponentRemove(const pxr::SdfPath& primPath)
     {
-        std::unique_lock<std::mutex> lck(mComponentMtx);
+        std::unique_lock<std::mutex> lck(m_componentMtx);
         // Delete component for any children of this prim
-        for (auto it = mComponents.begin(); it != mComponents.end();)
+        for (auto it = m_components.begin(); it != m_components.end();)
         {
             // CARB_LOG_WARN("Check: Prim %s %s", primPath.GetString().c_str(), it->first.c_str());
             // if ((it->first).find(primPath.GetString()) != std::string::npos)
@@ -247,7 +247,7 @@ public:
             {
                 CARB_LOG_INFO("Delete: Prim %s %s", primPath.GetString().c_str(), it->first.c_str());
                 it->second.reset();
-                it = mComponents.erase(it);
+                it = m_components.erase(it);
             }
             else
             {
@@ -265,23 +265,23 @@ public:
      */
     virtual void deleteAllComponents()
     {
-        std::unique_lock<std::mutex> lck(mComponentMtx);
-        for (auto& component : mComponents)
+        std::unique_lock<std::mutex> lck(m_componentMtx);
+        for (auto& component : m_components)
         {
             component.second.reset();
         }
-        mComponents.clear();
+        m_components.clear();
     }
 
 protected:
     /** @brief Map of component paths to their corresponding component instances */
-    std::unordered_map<std::string, std::unique_ptr<ComponentType>> mComponents;
+    std::unordered_map<std::string, std::unique_ptr<ComponentType>> m_components;
 
     /** @brief USD notice listener for stage changes */
-    std::unique_ptr<UsdNoticeListener> mNoticeListener;
+    std::unique_ptr<UsdNoticeListener> m_noticeListener;
 
     /** @brief Mutex for thread-safe component operations */
-    std::mutex mComponentMtx;
+    std::mutex m_componentMtx;
 };
 
 /**

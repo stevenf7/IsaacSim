@@ -684,7 +684,7 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
             body->pxRigidBody = rd;
             body->path = usdPath;
             auto stage = omni::usd::UsdContext::getContext()->getStage();
-            body->name = isaacsim::core::includes::GetName(stage->GetPrimAtPath(usdPath));
+            body->name = isaacsim::core::includes::getName(stage->GetPrimAtPath(usdPath));
             DcRigidBody* bodyPtr = body.get();
             DcHandle h = addRigidBody(std::move(body), usdPath);
             bodyPtr->handle = h;
@@ -819,7 +819,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         CARB_LOG_INFO("  Link path: %s\n", linkPath.GetString().c_str());
         body->path = linkPath;
         auto stage = omni::usd::UsdContext::getContext()->getStage();
-        body->name = isaacsim::core::includes::GetName(stage->GetPrimAtPath(linkPath));
+        body->name = isaacsim::core::includes::getName(stage->GetPrimAtPath(linkPath));
 
         art->componentPaths.insert(body->path);
 
@@ -848,7 +848,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             joint->art = art.get();
             joint->path = jointPath;
             auto stage = omni::usd::UsdContext::getContext()->getStage();
-            joint->name = isaacsim::core::includes::GetName(stage->GetPrimAtPath(jointPath));
+            joint->name = isaacsim::core::includes::getName(stage->GetPrimAtPath(jointPath));
 
             CARB_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
 

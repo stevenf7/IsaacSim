@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -34,17 +34,17 @@ public:
     {
         auto& state = db.perInstanceState<OgnIsaacGenerate32FC1>();
         size_t numElements = db.inputs.width() * db.inputs.height();
-        state.values.resize(numElements);
+        state.m_values.resize(numElements);
 
-        std::fill_n(state.values.begin(), numElements / 2, db.inputs.value());
+        std::fill_n(state.m_values.begin(), numElements / 2, db.inputs.value());
 
         // Fill second hallf of array with different float value for disparity
-        std::fill_n(state.values.begin() + numElements / 2, numElements / 2, db.inputs.value() / 2);
+        std::fill_n(state.m_values.begin() + numElements / 2, numElements / 2, db.inputs.value() / 2);
 
         size_t buffSize = numElements * sizeof(float);
         db.outputs.data.resize(buffSize);
 
-        memcpy(db.outputs.data().data(), &state.values.data()[0], buffSize);
+        memcpy(db.outputs.data().data(), &state.m_values.data()[0], buffSize);
 
         db.outputs.width() = db.inputs.width();
         db.outputs.height() = db.inputs.height();
@@ -54,7 +54,7 @@ public:
     }
 
 private:
-    std::vector<float> values;
+    std::vector<float> m_values;
 };
 REGISTER_OGN_NODE()
 }

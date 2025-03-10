@@ -42,7 +42,7 @@ extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyE
 
 // uses destination and scrath to compute and store
 // const float elevationDeg{ lidarReturns.elevations[idx] + accuracyErrorElevationDeg };
-// const float elevationRad{ Deg2Rad(elevationDeg) };
+// const float elevationRad{ deg2Rad(elevationDeg) };
 // const float sinElevation{ ::sinf(elevationRad) };
 // const float cosElevation{ ::cosf(elevationRad) };
 // srcDest computes final elevation

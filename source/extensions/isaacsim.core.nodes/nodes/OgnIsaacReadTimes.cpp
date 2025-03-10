@@ -43,13 +43,13 @@ namespace nodes
  */
 class OgnIsaacReadTimes
 {
-    CoreNodes* mCoreNodeFramework = nullptr;
+    CoreNodes* m_coreNodeFramework = nullptr;
 
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnIsaacReadTimesDatabase::sPerInstanceState<OgnIsaacReadTimes>(nodeObj, instanceId);
-        state.mCoreNodeFramework = carb::getCachedInterface<CoreNodes>();
+        state.m_coreNodeFramework = carb::getCachedInterface<CoreNodes>();
     }
 
     static bool compute(OgnIsaacReadTimesDatabase& db)
@@ -57,14 +57,14 @@ public:
         // const auto& contextObj = db.abi_context();
         // const IGraphContext* const iContext = contextObj.iContext;
         auto& state = db.perInstanceState<OgnIsaacReadTimes>();
-        CARB_ASSERT(state.mCoreNodeFramework);
+        CARB_ASSERT(state.m_coreNodeFramework);
 
         auto renderProduct = reinterpret_cast<omni::usd::hydra::HydraRenderProduct*>(db.inputs.renderResults());
         if (!renderProduct || renderProduct->status == omni::usd::hydra::RenderStatus::eFailed)
         {
-            db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTime();
-            db.outputs.simulationTimeMonotonic() = state.mCoreNodeFramework->getSimTimeMonotonic();
-            db.outputs.systemTime() = state.mCoreNodeFramework->getSystemTime();
+            db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTime();
+            db.outputs.simulationTimeMonotonic() = state.m_coreNodeFramework->getSimTimeMonotonic();
+            db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTime();
             db.outputs.swhFrameNumber() = -1;
             db.outputs.rationalTimeOfSimNumerator() = 0;
             db.outputs.rationalTimeOfSimDenominator() = -1;
@@ -138,11 +138,11 @@ public:
             // always valid
             const auto simTime = omni::fabric::RationalTime{ frameIdentifier.rationalTimeOfSimNumerator,
                                                              frameIdentifier.rationalTimeOfSimDenominator };
-            db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTimeAtTime(simTime);
+            db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeAtTime(simTime);
             const auto durationTime = omni::fabric::RationalTime{ renderProduct->renderTime.durationNumerator,
                                                                   renderProduct->renderTime.durationDenominator };
-            db.outputs.simulationTimeMonotonic() = state.mCoreNodeFramework->getSimTimeMonotonicAtTime(durationTime);
-            db.outputs.systemTime() = state.mCoreNodeFramework->getSystemTimeAtTime(durationTime);
+            db.outputs.simulationTimeMonotonic() = state.m_coreNodeFramework->getSimTimeMonotonicAtTime(durationTime);
+            db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTimeAtTime(durationTime);
             // TODO105 The numerator does not reset.. is this really the time we want?
             db.outputs.swhFrameNumber() =
                 int64_t(db.outputs.simulationTime() * double(frameIdentifier.rationalTimeOfSimDenominator));
@@ -163,7 +163,7 @@ public:
                           << db.outputs.systemTime() << ", " << db.outputs.swhFrameNumber() << ", "
                           << db.outputs.rationalTimeOfSimNumerator() << "/" << db.outputs.rationalTimeOfSimDenominator()
                           << ", " << db.outputs.frameNumber() << ", " << db.outputs.durationNumerator() << "/"
-                          << db.outputs.durationDenominator() << ", " << db.outputs.sampleTimeOffsetInSimFrames()
+                          << db.outputs.durationDenominator() << ", " << db.outputs.sampleTimeOffsetInSim_frames()
                           << ", " << db.outputs.externalTimeOfSimNs() << "\n";
 #endif
             if (inPostRenderGraph)

@@ -39,18 +39,18 @@ public:
     {
         auto& state =
             OgnIsaacXPrimRadiusVisualizerDatabase::sPerInstanceState<OgnIsaacXPrimRadiusVisualizer>(nodeObj, instanceId);
-        state.mLineDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
+        state.m_lineDrawing = std::make_shared<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(),
             isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::eLines);
     }
 
     static bool compute(OgnIsaacXPrimRadiusVisualizerDatabase& db)
     {
-        const auto& input_prim = db.inputs.xPrim();
+        const auto& inputPrim = db.inputs.xPrim();
         pxr::SdfPath primPath;
-        if (input_prim.size() > 0)
+        if (inputPrim.size() > 0)
         {
-            primPath = omni::fabric::toSdfPath(input_prim[0]);
+            primPath = omni::fabric::toSdfPath(inputPrim[0]);
         }
         else
         {
@@ -58,52 +58,52 @@ public:
             return false;
         }
         auto& state = db.perInstanceState<OgnIsaacXPrimRadiusVisualizer>();
-        state.mRadius = db.inputs.radius();
-        state.mThickness = db.inputs.thickness();
-        state.mSegments = db.inputs.segments();
-        state.mXAxisColor = (carb::ColorRgba*)db.inputs.xAxisColor().data();
-        state.mYAxisColor = (carb::ColorRgba*)db.inputs.yAxisColor().data();
-        state.mZAxisColor = (carb::ColorRgba*)db.inputs.zAxisColor().data();
-        state.mDrawXAxis = db.inputs.drawXAxis();
-        state.mDrawYAxis = db.inputs.drawYAxis();
-        state.mDrawZAxis = db.inputs.drawZAxis();
+        state.m_radius = db.inputs.radius();
+        state.m_thickness = db.inputs.thickness();
+        state.m_segments = db.inputs.segments();
+        state.m_xAxisColor = (carb::ColorRgba*)db.inputs.xAxisColor().data();
+        state.m_yAxisColor = (carb::ColorRgba*)db.inputs.yAxisColor().data();
+        state.m_zAxisColor = (carb::ColorRgba*)db.inputs.zAxisColor().data();
+        state.m_drawXAxis = db.inputs.drawXAxis();
+        state.m_drawYAxis = db.inputs.drawYAxis();
+        state.m_drawZAxis = db.inputs.drawZAxis();
 
-        if (state.mStage == nullptr)
+        if (state.m_stage == nullptr)
         {
             //  Find our stage
             const GraphContextObj& context = db.abi_context();
-            state.mStageId = context.iContext->getStageId(context);
-            state.mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.mStageId));
+            state.m_stageId = context.iContext->getStageId(context);
+            state.m_stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.m_stageId));
             omni::fabric::IStageReaderWriter* iStageReaderWriter =
                 carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
-            omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(state.mStageId);
-            state.mUsdrtStage = usdrt::UsdStage::Attach(state.mStageId, stageInProgress);
-            if (!state.mStage)
+            omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(state.m_stageId);
+            state.m_usdrtStage = usdrt::UsdStage::Attach(state.m_stageId, stageInProgress);
+            if (!state.m_stage)
             {
-                db.logError("Could not find USD stage %ld", state.mStageId);
+                db.logError("Could not find USD stage %ld", state.m_stageId);
                 return false;
             }
         }
 
-        auto prim = state.mStage->GetPrimAtPath(primPath);
+        auto prim = state.m_stage->GetPrimAtPath(primPath);
 
         if (prim.IsValid() == false)
         {
-            state.mLineDrawing->clear();
-            state.mLineDrawing->draw();
+            state.m_lineDrawing->clear();
+            state.m_lineDrawing->draw();
             db.logError("Could not find USD prim at path: %s", primPath.GetText());
             return false;
         }
 
-        state.mLineDrawing->clear();
+        state.m_lineDrawing->clear();
 
         usdrt::GfMatrix4d usdTransform =
-            isaacsim::core::includes::pose::computeWorldXformNoCache(state.mStage, state.mUsdrtStage, primPath);
+            isaacsim::core::includes::pose::computeWorldXformNoCache(state.m_stage, state.m_usdrtStage, primPath);
 
-        const carb::ColorRgba* color[3] = { state.mXAxisColor, state.mYAxisColor, state.mZAxisColor };
-        const bool drawAxis[3] = { state.mDrawXAxis, state.mDrawYAxis, state.mDrawZAxis };
+        const carb::ColorRgba* color[3] = { state.m_xAxisColor, state.m_yAxisColor, state.m_zAxisColor };
+        const bool drawAxis[3] = { state.m_drawXAxis, state.m_drawYAxis, state.m_drawZAxis };
         return state.drawSphere(
-            primPath, usdTransform, state.mSegments, state.mRadius, state.mThickness, color, drawAxis);
+            primPath, usdTransform, state.m_segments, state.m_radius, state.m_thickness, color, drawAxis);
     }
 
     bool drawSphere(const pxr::SdfPath& primPath,
@@ -143,7 +143,7 @@ public:
                 data.position.z = static_cast<float>(point.GetArray()[2]);
                 data.color = *color[0];
 
-                mLineDrawing->addVertex(data);
+                m_lineDrawing->addVertex(data);
             }
         }
 
@@ -160,7 +160,7 @@ public:
                 data.position.z = static_cast<float>(point.GetArray()[2]);
                 data.color = *color[1];
 
-                mLineDrawing->addVertex(data);
+                m_lineDrawing->addVertex(data);
             }
         }
 
@@ -177,34 +177,34 @@ public:
                 data.position.z = static_cast<float>(point.GetArray()[2]);
                 data.color = *color[2];
 
-                mLineDrawing->addVertex(data);
+                m_lineDrawing->addVertex(data);
             }
         }
 
-        mLineDrawing->draw();
+        m_lineDrawing->draw();
         return true;
     }
 
     virtual void reset()
     {
-        mLineDrawing->clear();
-        mLineDrawing->draw();
+        m_lineDrawing->clear();
+        m_lineDrawing->draw();
     }
 
 private:
-    float mRadius{ 1 };
-    float mThickness{ 1 };
-    int mSegments{ 1 };
-    long mStageId;
-    carb::ColorRgba* mXAxisColor{ nullptr };
-    carb::ColorRgba* mYAxisColor{ nullptr };
-    carb::ColorRgba* mZAxisColor{ nullptr };
-    bool mDrawXAxis{ true };
-    bool mDrawYAxis{ true };
-    bool mDrawZAxis{ true };
-    std::shared_ptr<drawing::PrimitiveDrawingHelper> mLineDrawing{ nullptr };
-    pxr::UsdStageRefPtr mStage{ nullptr };
-    usdrt::UsdStageRefPtr mUsdrtStage{ nullptr };
+    float m_radius{ 1 };
+    float m_thickness{ 1 };
+    int m_segments{ 1 };
+    long m_stageId;
+    carb::ColorRgba* m_xAxisColor{ nullptr };
+    carb::ColorRgba* m_yAxisColor{ nullptr };
+    carb::ColorRgba* m_zAxisColor{ nullptr };
+    bool m_drawXAxis{ true };
+    bool m_drawYAxis{ true };
+    bool m_drawZAxis{ true };
+    std::shared_ptr<drawing::PrimitiveDrawingHelper> m_lineDrawing{ nullptr };
+    pxr::UsdStageRefPtr m_stage{ nullptr };
+    usdrt::UsdStageRefPtr m_usdrtStage{ nullptr };
 };
 
 REGISTER_OGN_NODE()

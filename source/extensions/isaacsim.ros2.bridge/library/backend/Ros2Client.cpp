@@ -104,7 +104,7 @@ bool Ros2ClientImpl::takeResponse(void* responseMsg)
             RCL_ERROR_MSG(sendRequest, rcl_wait_set_clear);
             return false;
         }
-        rc = rcl_wait_set_add_client(&m_waitSet, m_client.get(), NULL);
+        rc = rcl_wait_set_add_client(&m_waitSet, m_client.get(), nullptr);
         if (rc != RCL_RET_OK)
         {
             RCL_ERROR_MSG(sendRequest, rcl_wait_set_add_subscription);

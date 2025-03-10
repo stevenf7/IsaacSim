@@ -37,7 +37,7 @@ PYBIND11_MODULE(_debug_draw, m)
     using namespace carb;
     using namespace isaacsim::util::debug_draw;
     // We use carb data types, must import bindings for them
-    auto carb_module = py::module::import("carb");
+    auto carbModule = py::module::import("carb");
 
     m.doc() =
         R"pbdoc(

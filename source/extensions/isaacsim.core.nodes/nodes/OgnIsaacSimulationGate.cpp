@@ -33,8 +33,8 @@ public:
     {
         auto& state = OgnIsaacSimulationGateDatabase::sPerInstanceState<OgnIsaacSimulationGate>(nodeObj, instanceId);
 
-        state.mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
-        if (!state.mTimeline)
+        state.m_timeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+        if (!state.m_timeline)
         {
             CARB_LOG_ERROR("Failed to acquire timeline interface");
             return;
@@ -46,16 +46,16 @@ public:
         auto& state = db.perInstanceState<OgnIsaacSimulationGate>();
         const auto& inputStep = db.inputs.step();
         // If the timeline is stopped or step is set to zero, skip execution
-        if (state.mTimeline == nullptr)
+        if (state.m_timeline == nullptr)
         {
             return false;
         }
-        else if (state.mTimeline->isPlaying() && inputStep > 0)
+        else if (state.m_timeline->isPlaying() && inputStep > 0)
         {
-            state.mFrame++;
-            if (state.mFrame >= inputStep)
+            state.m_frame++;
+            if (state.m_frame >= inputStep)
             {
-                state.mFrame = 0;
+                state.m_frame = 0;
                 db.outputs.execOut() = kExecutionAttributeStateEnabled;
             }
         }
@@ -63,8 +63,8 @@ public:
     }
 
 private:
-    u_int mFrame = 0;
-    omni::timeline::ITimeline* mTimeline = nullptr;
+    u_int m_frame = 0;
+    omni::timeline::ITimeline* m_timeline = nullptr;
 };
 REGISTER_OGN_NODE()
 }

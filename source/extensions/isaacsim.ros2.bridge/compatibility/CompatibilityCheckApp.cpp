@@ -16,7 +16,7 @@
 
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> lib_list = {
+    std::vector<std::string> libList = {
         "rcutils",
         "rosidl_runtime_c",
         "rmw",
@@ -48,22 +48,22 @@ int main(int argc, char* argv[])
     const auto distro = isaacsim::ros2::bridge::stringToRos2Distro(rosDistro).value();
     if (distro == isaacsim::ros2::bridge::Ros2Distro::eHumble)
     {
-        lib_list.insert(lib_list.begin() + 5, std::string("ament_index_cpp"));
-        lib_list.insert(lib_list.begin() + 8, std::string("rcl_logging_interface"));
-        lib_list.insert(lib_list.end(), std::string("lifecycle_msgs__rosidl_generator_c"));
-        lib_list.insert(lib_list.end(), std::string("lifecycle_msgs__rosidl_typesupport_c"));
-        lib_list.insert(lib_list.end(), std::string("rcl_lifecycle"));
+        libList.insert(libList.begin() + 5, std::string("ament_index_cpp"));
+        libList.insert(libList.begin() + 8, std::string("rcl_logging_interface"));
+        libList.insert(libList.end(), std::string("lifecycle_msgs__rosidl_generator_c"));
+        libList.insert(libList.end(), std::string("lifecycle_msgs__rosidl_typesupport_c"));
+        libList.insert(libList.end(), std::string("rcl_lifecycle"));
     }
 
-    isaacsim::core::includes::MultiLibraryLoader g_backupLibLoader;
+    isaacsim::core::includes::MultiLibraryLoader backupLibLoader;
     std::string path = "";
     if (argc == 2)
     {
         path = argv[1];
     }
-    for (std::string lib : lib_list)
+    for (std::string lib : libList)
     {
-        if (g_backupLibLoader.LoadLibrary(lib, path).get()->loadedLibrary == nullptr)
+        if (backupLibLoader.loadLibrary(lib, path).get()->loadedLibrary == nullptr)
         {
             exit(EXIT_FAILURE);
         }

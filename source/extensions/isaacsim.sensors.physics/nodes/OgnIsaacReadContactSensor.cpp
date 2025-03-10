@@ -34,9 +34,9 @@ public:
         auto& state =
             OgnIsaacReadContactSensorDatabase::sPerInstanceState<OgnIsaacReadContactSensor>(nodeObj, instanceId);
 
-        state.mContactSensorInterface = carb::getCachedInterface<ContactSensorInterface>();
+        state.m_contactSensorInterface = carb::getCachedInterface<ContactSensorInterface>();
 
-        if (!state.mContactSensorInterface)
+        if (!state.m_contactSensorInterface)
         {
             CARB_LOG_ERROR("Failed to acquire isaacsim::sensors::physics interface");
             return;
@@ -67,9 +67,9 @@ public:
             return false;
         }
 
-        CsReading sensorReading = state.mContactSensorInterface->getSensorReading(primPath, db.inputs.useLatestData());
+        CsReading sensorReading = state.m_contactSensorInterface->getSensorReading(primPath, db.inputs.useLatestData());
 
-        if (sensorReading.is_valid)
+        if (sensorReading.isValid)
         {
             inContact = sensorReading.inContact;
             value = sensorReading.value;
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    ContactSensorInterface* mContactSensorInterface = nullptr;
+    ContactSensorInterface* m_contactSensorInterface = nullptr;
 };
 
 

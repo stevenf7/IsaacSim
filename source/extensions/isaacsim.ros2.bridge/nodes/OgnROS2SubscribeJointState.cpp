@@ -99,8 +99,8 @@ public:
 
         if (state.m_subscriber->spin(state.m_message->getPtr()))
         {
-            size_t num_actuators = state.m_message->getNumJoints();
-            if (num_actuators == 0)
+            size_t numActuators = state.m_message->getNumJoints();
+            if (numActuators == 0)
             {
                 db.logWarning("No joints found");
                 return false;
@@ -109,16 +109,16 @@ public:
             // Check if all sub-message size match size of actuators before setting data
             if (state.m_message->checkValid())
             {
-                db.outputs.positionCommand().resize(num_actuators);
-                db.outputs.velocityCommand().resize(num_actuators);
-                db.outputs.effortCommand().resize(num_actuators);
-                db.outputs.jointNames().resize(num_actuators);
+                db.outputs.positionCommand().resize(numActuators);
+                db.outputs.velocityCommand().resize(numActuators);
+                db.outputs.effortCommand().resize(numActuators);
+                db.outputs.jointNames().resize(numActuators);
 
                 state.m_message->readData(m_jointNames, db.outputs.positionCommand().data(),
                                           db.outputs.velocityCommand().data(), db.outputs.effortCommand().data(),
                                           db.outputs.timeStamp());
 
-                for (size_t i = 0; i < num_actuators; i++)
+                for (size_t i = 0; i < numActuators; i++)
                 {
                     db.outputs.jointNames().at(i) = db.stringToToken(m_jointNames[i]);
                 }

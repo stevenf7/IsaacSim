@@ -23,10 +23,10 @@ using namespace isaacsim::ros2::bridge;
 struct Bbox2DData
 {
     uint32_t semanticId;
-    int32_t x_min;
-    int32_t y_min;
-    int32_t x_max;
-    int32_t y_max;
+    int32_t xMin;
+    int32_t yMin;
+    int32_t xMax;
+    int32_t yMax;
     float occlusionRatio;
 };
 

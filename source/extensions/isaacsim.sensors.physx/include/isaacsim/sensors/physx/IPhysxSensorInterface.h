@@ -22,7 +22,7 @@ namespace physx
 {
 
 using RangeSensorHandle = uint64_t;
-constexpr RangeSensorHandle kInvalidHandle = static_cast<RangeSensorHandle>(0);
+constexpr RangeSensorHandle g_kInvalidHandle = static_cast<RangeSensorHandle>(0);
 
 /**
  * @class LidarSensorInterface
@@ -248,9 +248,9 @@ struct GenericSensorInterface
      * @param[in] sample_length Number of rays in the batch.
      */
     void(CARB_ABI* setNextBatchRays)(const char* sensorPath,
-                                     const float* azimuth_angles,
-                                     const float* zenith_angles,
-                                     const int sample_length);
+                                     const float* azimuthAngles,
+                                     const float* zenithAngles,
+                                     const int sampleLength);
 
     /**
      * @brief Sets the origin offsets for the next batch of rays.
@@ -258,7 +258,7 @@ struct GenericSensorInterface
      * @param[in] origin_offsets Array of origin offsets for each ray.
      * @param[in] sample_length Number of rays in the batch.
      */
-    void(CARB_ABI* setNextBatchOffsets)(const char* sensorPath, const float* origin_offsets, const int sample_length);
+    void(CARB_ABI* setNextBatchOffsets)(const char* sensorPath, const float* originOffsets, const int sampleLength);
 };
 
 /**

@@ -187,7 +187,7 @@
 #elif defined(__GNUC__)
 #    pragma GCC diagnostic pop
 #    ifdef OMNI_USD_SUPPRESS_DEPRECATION_WARNINGS
-#        define __DEPRECATED
+#        define DEPRECATED
 #        undef OMNI_USD_SUPPRESS_DEPRECATION_WARNINGS
 #    endif
 #endif

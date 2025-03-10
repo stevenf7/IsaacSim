@@ -45,11 +45,11 @@
 
 #include <IPhysicsSensor.h>
 
-const struct carb::PluginImplDesc kPluginImpl = { "isaacsim.sensors.physics.plugin", "Isaac Sensor", "NVIDIA",
-                                                  carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.physics.plugin", "Isaac Sensor", "NVIDIA",
+                                                    carb::PluginHotReload::eDisabled, "dev" };
 
 
-CARB_PLUGIN_IMPL(kPluginImpl,
+CARB_PLUGIN_IMPL(g_kPluginDesc,
                  isaacsim::sensors::physics::ContactSensorInterface,
                  isaacsim::sensors::physics::ImuSensorInterface)
 
@@ -71,13 +71,13 @@ pxr::UsdStageWeakPtr g_stage = nullptr;
 omni::physics::tensors::TensorApi* g_tensorApi = nullptr;
 omni::physics::tensors::ISimulationView* g_simulationView = nullptr;
 omni::physics::tensors::IRigidBodyView* g_rigidBodyView = nullptr;
-omni::physics::tensors::TensorDesc rigidBodyData;
+omni::physics::tensors::TensorDesc g_rigidBodyData;
 std::vector<std::string> g_rigidBodyPaths;
 carb::settings::ISettings* g_settings = nullptr;
 std::unique_ptr<isaacsim::sensors::physics::IsaacSensorManager> g_isaacSensorManager;
 omni::physx::SubscriptionId g_stepSubscription;
 std::vector<float> g_rigidBodyDataBuffer;
-bool firstFrame = true;
+bool g_firstFrame = true;
 long int g_stageID;
 std::unordered_map<std::string, size_t> g_rigidBodyToDataBufferMap;
 } // end of anonymous namespace
@@ -108,12 +108,12 @@ bool CARB_ABI isContactSensor(const char* primPath)
     }
 }
 
-const char* CARB_ABI CsDecodeBodyName(uint64_t path_token)
+const char* CARB_ABI csDecodeBodyName(uint64_t pathToken)
 {
-    return isaacsim::core::includes::getSdfPathFromUint64(path_token).GetString().c_str();
+    return isaacsim::core::includes::getSdfPathFromUint64(pathToken).GetString().c_str();
 }
 
-isaacsim::sensors::physics::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, size_t& numContacts)
+isaacsim::sensors::physics::CsRawData* CARB_ABI csGetBodyRawData(const char* primPath, size_t& numContacts)
 {
     if (g_stage != nullptr)
     {
@@ -136,7 +136,7 @@ isaacsim::sensors::physics::CsRawData* CARB_ABI CsGetBodyRawData(const char* pri
 }
 
 
-isaacsim::sensors::physics::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath, size_t& numContacts)
+isaacsim::sensors::physics::CsRawData* CARB_ABI csGetSensorRawData(const char* primPath, size_t& numContacts)
 {
     isaacsim::sensors::physics::ContactSensor* sensor =
         g_isaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -149,7 +149,7 @@ isaacsim::sensors::physics::CsRawData* CARB_ABI CsGetSensorRawData(const char* p
     return data;
 }
 
-isaacsim::sensors::physics::CsReading CARB_ABI CsGetSensorReading(const char* primPath, const bool& getLatestValue = false)
+isaacsim::sensors::physics::CsReading CARB_ABI csGetSensorReading(const char* primPath, const bool& getLatestValue = false)
 {
     isaacsim::sensors::physics::ContactSensor* sensor =
         g_isaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
@@ -188,7 +188,7 @@ bool CARB_ABI isImuSensor(const char* primPath)
     }
 }
 
-isaacsim::sensors::physics::IsReading CARB_ABI IsGetSensorReading(
+isaacsim::sensors::physics::IsReading CARB_ABI isGetSensorReading(
     const char* primPath,
     const std::function<isaacsim::sensors::physics::IsReading(std::vector<isaacsim::sensors::physics::IsReading>, float)>&
         interpolateFunction = {},
@@ -281,12 +281,12 @@ void onPlay()
     }
 
     g_rigidBodyDataBuffer.resize(6 * g_rigidBodyPaths.size(), 0);
-    rigidBodyData.dtype = omni::physics::tensors::TensorDataType::eFloat32;
-    rigidBodyData.numDims = 2;
-    rigidBodyData.dims[0] = static_cast<int>(g_rigidBodyPaths.size());
-    rigidBodyData.dims[1] = 6;
-    rigidBodyData.data = g_rigidBodyDataBuffer.data();
-    rigidBodyData.ownData = true;
+    g_rigidBodyData.dtype = omni::physics::tensors::TensorDataType::eFloat32;
+    g_rigidBodyData.numDims = 2;
+    g_rigidBodyData.dims[0] = static_cast<int>(g_rigidBodyPaths.size());
+    g_rigidBodyData.dims[1] = 6;
+    g_rigidBodyData.data = g_rigidBodyDataBuffer.data();
+    g_rigidBodyData.ownData = true;
 
     // pass in the view data and index to the sensor
     for (const usdrt::SdfPath& usdrtPath : imuSensorPaths)
@@ -328,7 +328,7 @@ static void onStop(void* userData)
         g_isaacSensorManager->onStop();
         g_isaacSensorManager->deleteAllComponents();
     }
-    firstFrame = true;
+    g_firstFrame = true;
     if (g_simulationView != nullptr)
     {
         g_simulationView->release(true);
@@ -353,16 +353,16 @@ void onPhysicsStep(float dt, void* userData)
     CARB_PROFILE_ZONE(0, "IsaacSensor::onPhysicsStep");
     if (g_isaacSensorManager)
     {
-        if (firstFrame)
+        if (g_firstFrame)
         {
             CARB_PROFILE_ZONE(0, "IsaacSensor::firstFramePlay");
             onPlay();
-            firstFrame = false;
+            g_firstFrame = false;
         }
 
         if (g_rigidBodyView != nullptr)
         {
-            g_rigidBodyView->getVelocities(&rigidBodyData);
+            g_rigidBodyView->getVelocities(&g_rigidBodyData);
         }
 
         g_isaacSensorManager->onPhysicsStep(static_cast<double>(dt));
@@ -407,8 +407,8 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to acquire Carb Setting interface\n");
         return;
     }
-    static constexpr char setting[] = "/physics/suppressReadback";
-    g_settings->setBool(setting, false);
+    static constexpr char s_kSetting[] = "/physics/suppressReadback";
+    g_settings->setBool(s_kSetting, false);
 
     g_isaacSensorManager = std::make_unique<isaacsim::sensors::physics::IsaacSensorManager>(g_physx);
 
@@ -449,10 +449,10 @@ void fillInterface(isaacsim::sensors::physics::ContactSensorInterface& iface)
     memset(&iface, 0, sizeof(iface));
 
 
-    iface.getSensorRawData = contact_sensor::CsGetSensorRawData;
-    iface.getBodyRawData = contact_sensor::CsGetBodyRawData;
-    iface.getSensorReading = contact_sensor::CsGetSensorReading;
-    iface.decodeBodyName = contact_sensor::CsDecodeBodyName;
+    iface.getSensorRawData = contact_sensor::csGetSensorRawData;
+    iface.getBodyRawData = contact_sensor::csGetBodyRawData;
+    iface.getSensorReading = contact_sensor::csGetSensorReading;
+    iface.decodeBodyName = contact_sensor::csDecodeBodyName;
     iface.isContactSensor = contact_sensor::isContactSensor; // Checks if the path is a contact sensor
 }
 
@@ -462,7 +462,7 @@ void fillInterface(isaacsim::sensors::physics::ImuSensorInterface& iface)
 
     memset(&iface, 0, sizeof(iface));
 
-    iface.getSensorReading = imu_sensor::IsGetSensorReading;
+    iface.getSensorReading = imu_sensor::isGetSensorReading;
     iface.isImuSensor = imu_sensor::isImuSensor;
 }
 

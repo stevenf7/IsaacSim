@@ -65,13 +65,13 @@ public:
     PoseTree(const uint64_t& stageId, omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     {
         // Store the USD and USDRT stage references from the stage ID
-        mUsdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(static_cast<long>(stageId)));
+        m_usdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(static_cast<long>(stageId)));
         omni::fabric::IStageReaderWriter* iStageReaderWriter =
             carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
         omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
-        mUsdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
+        m_usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
 
-        mDynamicControlPtr = dynamicControlPtr;
+        m_dynamicControlPtr = dynamicControlPtr;
     }
 
     /**
@@ -85,8 +85,8 @@ public:
      */
     void setParentPrimPath(const pxr::SdfPath& parentPath, const std::string& parentFrame)
     {
-        mParentPath = parentPath;
-        mParentFrame = parentFrame;
+        m_parentPath = parentPath;
+        m_parentFrame = parentFrame;
     }
 
     /**
@@ -97,7 +97,7 @@ public:
      */
     void setTargetPrimPaths(const pxr::SdfPathVector& targets)
     {
-        mTargets = targets;
+        m_targets = targets;
     }
 
     /**
@@ -123,68 +123,69 @@ public:
         std::function<void(const std::string&, const std::string&, const ::physx::PxTransform&)>& processTransform)
     {
         // If the parent prim path is not empty, get the type of prim and its pose.
-        if (!mParentPath.IsEmpty())
+        if (!m_parentPath.IsEmpty())
         {
             omni::isaac::dynamic_control::DcObjectType type =
-                mDynamicControlPtr->peekObjectType(mParentPath.GetString().c_str());
+                m_dynamicControlPtr->peekObjectType(m_parentPath.GetString().c_str());
             if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
             {
-                mParentPose = getRigidBodyPose(mParentPath);
+                m_parentPose = getRigidBodyPose(m_parentPath);
             }
             else if (type == omni::isaac::dynamic_control::eDcObjectNone ||
                      type == omni::isaac::dynamic_control::eDcObjectArticulation)
             {
-                mParentPose = getXformPose(mParentPath);
+                m_parentPose = getXformPose(m_parentPath);
             }
 
-            mParentFrame = getUniqueFrameName(GetName(mUsdStage->GetPrimAtPath(mParentPath)), mParentPath.GetString());
+            m_parentFrame =
+                getUniqueFrameName(getName(m_usdStage->GetPrimAtPath(m_parentPath)), m_parentPath.GetString());
         }
         // For each target prim determine its type and compute the associated poses
-        for (pxr::SdfPath primPath : mTargets)
+        for (pxr::SdfPath primPath : m_targets)
         {
             omni::isaac::dynamic_control::DcObjectType type =
-                mDynamicControlPtr->peekObjectType(primPath.GetString().c_str());
+                m_dynamicControlPtr->peekObjectType(primPath.GetString().c_str());
             if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
             {
                 omni::isaac::dynamic_control::DcHandle artculationHandle =
-                    mDynamicControlPtr->getArticulation(primPath.GetString().c_str());
+                    m_dynamicControlPtr->getArticulation(primPath.GetString().c_str());
                 omni::isaac::dynamic_control::DcHandle rootBody =
-                    mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-                ::physx::PxTransform body1Pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rootBody));
+                    m_dynamicControlPtr->getArticulationRootBody(artculationHandle);
+                ::physx::PxTransform body1Pose = asPxTransform(m_dynamicControlPtr->getRigidBodyPose(rootBody));
 
-                std::string framePath(mDynamicControlPtr->getRigidBodyPath(rootBody));
-                std::string bodyName = GetName(mUsdStage->GetPrimAtPath(pxr::SdfPath(framePath)));
+                std::string framePath(m_dynamicControlPtr->getRigidBodyPath(rootBody));
+                std::string bodyName = getName(m_usdStage->GetPrimAtPath(pxr::SdfPath(framePath)));
 
-                if (!mParentPath.IsEmpty())
+                if (!m_parentPath.IsEmpty())
                 {
-                    body1Pose = mParentPose.transformInv(body1Pose);
+                    body1Pose = m_parentPose.transformInv(body1Pose);
                 }
                 std::string childFrameId = getUniqueFrameName(bodyName, framePath);
-                if (mParentFrame != childFrameId)
+                if (m_parentFrame != childFrameId)
                 {
                     // articulations always have an extra transform to the base link/rigid body
-                    processTransform(mParentFrame, childFrameId, body1Pose);
+                    processTransform(m_parentFrame, childFrameId, body1Pose);
                 }
-                size_t numDofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
+                size_t numDofs = m_dynamicControlPtr->getArticulationBodyCount(artculationHandle);
                 for (size_t j = 0; j < numDofs; j++)
                 {
                     omni::isaac::dynamic_control::DcHandle parentBody =
-                        mDynamicControlPtr->getArticulationBody(artculationHandle, j);
-                    ::physx::PxTransform body0Pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(parentBody));
-                    std::string parentPath(mDynamicControlPtr->getRigidBodyPath(parentBody));
-                    std::string parentName = GetName(mUsdStage->GetPrimAtPath(pxr::SdfPath(parentPath)));
-                    size_t numJoints = mDynamicControlPtr->getRigidBodyChildJointCount(parentBody);
+                        m_dynamicControlPtr->getArticulationBody(artculationHandle, j);
+                    ::physx::PxTransform body0Pose = asPxTransform(m_dynamicControlPtr->getRigidBodyPose(parentBody));
+                    std::string parentPath(m_dynamicControlPtr->getRigidBodyPath(parentBody));
+                    std::string parentName = getName(m_usdStage->GetPrimAtPath(pxr::SdfPath(parentPath)));
+                    size_t numJoints = m_dynamicControlPtr->getRigidBodyChildJointCount(parentBody);
                     for (size_t k = 0; k < numJoints; k++)
                     {
                         omni::isaac::dynamic_control::DcHandle joint =
-                            mDynamicControlPtr->getRigidBodyChildJoint(parentBody, k);
-                        omni::isaac::dynamic_control::DcHandle child_body = mDynamicControlPtr->getJointChildBody(joint);
+                            m_dynamicControlPtr->getRigidBodyChildJoint(parentBody, k);
+                        omni::isaac::dynamic_control::DcHandle child_body = m_dynamicControlPtr->getJointChildBody(joint);
 
 
-                        ::physx::PxTransform body1Pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
+                        ::physx::PxTransform body1Pose = asPxTransform(m_dynamicControlPtr->getRigidBodyPose(child_body));
                         ::physx::PxTransform body0Tbody1(body0Pose.transformInv(body1Pose));
-                        std::string framePath(mDynamicControlPtr->getRigidBodyPath(child_body));
-                        auto bodyName = GetName(mUsdStage->GetPrimAtPath(pxr::SdfPath(framePath)));
+                        std::string framePath(m_dynamicControlPtr->getRigidBodyPath(child_body));
+                        auto bodyName = getName(m_usdStage->GetPrimAtPath(pxr::SdfPath(framePath)));
 
                         processTransform(getUniqueFrameName(parentName, parentPath),
                                          getUniqueFrameName(bodyName, framePath), body0Tbody1);
@@ -196,21 +197,21 @@ public:
                 ::physx::PxTransform body1Pose = getRigidBodyPose(primPath);
 
                 std::string childFrameId =
-                    getUniqueFrameName(GetName(mUsdStage->GetPrimAtPath(primPath)), primPath.GetString());
-                if (mParentFrame != childFrameId)
+                    getUniqueFrameName(getName(m_usdStage->GetPrimAtPath(primPath)), primPath.GetString());
+                if (m_parentFrame != childFrameId)
                 {
-                    if (!mParentPath.IsEmpty())
+                    if (!m_parentPath.IsEmpty())
                     {
-                        body1Pose = mParentPose.transformInv(body1Pose);
+                        body1Pose = m_parentPose.transformInv(body1Pose);
                     }
 
 
-                    processTransform(mParentFrame, childFrameId, body1Pose);
+                    processTransform(m_parentFrame, childFrameId, body1Pose);
                 }
             }
             else if (type == omni::isaac::dynamic_control::eDcObjectNone)
             {
-                pxr::UsdPrim prim = mUsdStage->GetPrimAtPath(primPath);
+                pxr::UsdPrim prim = m_usdStage->GetPrimAtPath(primPath);
 
                 ::physx::PxTransform body1Pose = getXformPose(primPath);
 
@@ -223,12 +224,12 @@ public:
                     body1Pose = body1Pose * ::physx::PxTransform(omniTCamera);
                 }
 
-                if (!mParentPath.IsEmpty())
+                if (!m_parentPath.IsEmpty())
                 {
-                    body1Pose = mParentPose.transformInv(body1Pose);
+                    body1Pose = m_parentPose.transformInv(body1Pose);
                 }
 
-                processTransform(mParentFrame, getUniqueFrameName(GetName(prim), primPath.GetString()), body1Pose);
+                processTransform(m_parentFrame, getUniqueFrameName(getName(prim), primPath.GetString()), body1Pose);
             }
         }
     }
@@ -245,8 +246,8 @@ public:
     ::physx::PxTransform getRigidBodyPose(const pxr::SdfPath& path)
     {
         omni::isaac::dynamic_control::DcHandle rigidBodyHandle =
-            mDynamicControlPtr->getRigidBody(path.GetString().c_str());
-        return asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
+            m_dynamicControlPtr->getRigidBody(path.GetString().c_str());
+        return asPxTransform(m_dynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
     }
 
     /**
@@ -258,7 +259,7 @@ public:
      */
     ::physx::PxTransform getXformPose(const pxr::SdfPath& path)
     {
-        return asPxTransform(isaacsim::core::includes::pose::computeWorldXformNoCache(mUsdStage, mUsdrtStage, path));
+        return asPxTransform(isaacsim::core::includes::pose::computeWorldXformNoCache(m_usdStage, m_usdrtStage, path));
     }
 
     /**
@@ -279,15 +280,15 @@ public:
     std::string getUniqueFrameName(const std::string& frame, const std::string& path)
     {
         std::string name(frame);
-        if (mRenamedFrames.find(path) != mRenamedFrames.end())
+        if (m_renamedFrames.find(path) != m_renamedFrames.end())
         {
-            mPublishedFrames[frame] = true;
-            return mRenamedFrames[path];
+            m_publishedFrames[frame] = true;
+            return m_renamedFrames[path];
         }
-        else if (mPublishedFrames.find(frame) == mPublishedFrames.end())
+        else if (m_publishedFrames.find(frame) == m_publishedFrames.end())
         {
-            mRenamedFrames[path] = frame;
-            mPublishedFrames[frame] = true;
+            m_renamedFrames[path] = frame;
+            m_publishedFrames[frame] = true;
         }
 
         else
@@ -298,8 +299,8 @@ public:
             CARB_LOG_WARN(
                 "Frame with name %s already exists. Overriding frame name for %s to %s (you can add the attribute isaac:nameOverride to remove this warning)",
                 frame.c_str(), path.c_str(), name.c_str());
-            mRenamedFrames[path] = name;
-            mPublishedFrames[name] = true;
+            m_renamedFrames[path] = name;
+            m_publishedFrames[name] = true;
         }
         return name;
     }
@@ -319,36 +320,36 @@ public:
         {
             path = path.GetParentPath();
         }
-        return asPxTransform(isaacsim::core::includes::pose::computeWorldXformNoCache(mUsdStage, mUsdrtStage, path));
+        return asPxTransform(isaacsim::core::includes::pose::computeWorldXformNoCache(m_usdStage, m_usdrtStage, path));
     }
 
 private:
     /** @brief SDF path to the parent prim */
-    pxr::SdfPath mParentPath;
+    pxr::SdfPath m_parentPath;
 
     /** @brief Name identifier for the parent frame */
-    std::string mParentFrame;
+    std::string m_parentFrame;
 
     /** @brief Vector of target prim paths to process */
-    pxr::SdfPathVector mTargets;
+    pxr::SdfPathVector m_targets;
 
     /** @brief Cached transform of the parent frame */
-    ::physx::PxTransform mParentPose = ::physx::PxTransform(::physx::PxIdentity);
+    ::physx::PxTransform m_parentPose = ::physx::PxTransform(::physx::PxIdentity);
 
     /** @brief Reference to the USD stage */
-    pxr::UsdStageRefPtr mUsdStage;
+    pxr::UsdStageRefPtr m_usdStage;
 
     /** @brief Reference to the USDRT stage */
-    usdrt::UsdStageRefPtr mUsdrtStage;
+    usdrt::UsdStageRefPtr m_usdrtStage;
 
     /** @brief Pointer to the DynamicControl instance */
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
+    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
 
     /** @brief Map of original paths to renamed frames */
-    std::map<std::string, std::string> mRenamedFrames;
+    std::map<std::string, std::string> m_renamedFrames;
 
     /** @brief Set of published frame names */
-    std::map<std::string, bool> mPublishedFrames;
+    std::map<std::string, bool> m_publishedFrames;
 };
 }
 }

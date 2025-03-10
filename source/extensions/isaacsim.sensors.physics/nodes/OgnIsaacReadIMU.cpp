@@ -35,9 +35,9 @@ public:
     {
         auto& state = OgnIsaacReadIMUDatabase::sPerInstanceState<OgnIsaacReadIMU>(nodeObj, instanceId);
 
-        state.mImuSensorInterface = carb::getCachedInterface<ImuSensorInterface>();
+        state.m_imuSensorInterface = carb::getCachedInterface<ImuSensorInterface>();
 
-        if (!state.mImuSensorInterface)
+        if (!state.m_imuSensorInterface)
         {
             CARB_LOG_ERROR("Failed to acquire isaacsim::sensors::physics interface");
             return;
@@ -70,13 +70,13 @@ public:
             return false;
         }
 
-        IsReading sensorReading = state.mImuSensorInterface->getSensorReading(
+        IsReading sensorReading = state.m_imuSensorInterface->getSensorReading(
             primPath, nullptr, db.inputs.useLatestData(), db.inputs.readGravity());
 
-        if (sensorReading.is_valid)
+        if (sensorReading.isValid)
         {
-            linAcc = GfVec3d(sensorReading.lin_acc_x, sensorReading.lin_acc_y, sensorReading.lin_acc_z);
-            angVel = GfVec3d(sensorReading.ang_vel_x, sensorReading.ang_vel_y, sensorReading.ang_vel_z);
+            linAcc = GfVec3d(sensorReading.linAccX, sensorReading.linAccY, sensorReading.linAccZ);
+            angVel = GfVec3d(sensorReading.angVelX, sensorReading.angVelY, sensorReading.angVelZ);
             orientation = GfQuatd(sensorReading.orientation.w, sensorReading.orientation.x, sensorReading.orientation.y,
                                   sensorReading.orientation.z);
             sensorTime = sensorReading.time;
@@ -96,7 +96,7 @@ public:
     }
 
 private:
-    ImuSensorInterface* mImuSensorInterface = nullptr;
+    ImuSensorInterface* m_imuSensorInterface = nullptr;
 };
 
 

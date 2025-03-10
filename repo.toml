@@ -1170,6 +1170,28 @@ files.exclude = [
 sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_x86_64-linux-gnu.py"
 
 ########################################################################################################################
+# Clang-Tidy
+########################################################################################################################
+
+[repo_clang_tidy]
+# Path to the clang-tidy configuration file
+config_file = "${root}/.clang-tidy"
+# Path to the compile_commands.json file
+compile_commands = "${root}/_build/${platform}/${config}/compile_commands.json"
+# Paths to exclude from analysis (glob patterns)
+exclude_paths = [
+  "*/isaac_ros2_messages/*",
+  "*/isaacsim.robot.schema/*"
+]
+# Extra arguments to pass to clang-tidy
+extra_args = [
+  "--extra-arg=-std=c++17",
+  "--extra-arg=-Wno-error",
+  "--quiet",
+  "--warnings-as-errors=-*"
+]
+
+########################################################################################################################
 # Find duplicate files
 ########################################################################################################################
 

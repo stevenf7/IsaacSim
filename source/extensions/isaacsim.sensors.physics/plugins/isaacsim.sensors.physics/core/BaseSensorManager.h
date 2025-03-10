@@ -80,8 +80,8 @@ public:
      */
     IsaacSensorManager(omni::physx::IPhysx* physXInterface)
     {
-        mPhysXInterface = physXInterface;
-        mContactManager = std::make_unique<ContactManager>();
+        m_physXInterface = physXInterface;
+        m_contactManager = std::make_unique<ContactManager>();
     }
 
     /**
@@ -90,8 +90,8 @@ public:
      */
     ~IsaacSensorManager()
     {
-        mComponents.clear();
-        mContactManager.reset();
+        m_components.clear();
+        m_contactManager.reset();
     }
 
     /**
@@ -103,16 +103,16 @@ public:
     void onStop()
     {
         // PxScene can change after stop is pressed so reset mDoStart bool to force OnStart to run
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             component.second->mDoStart = true;
             component.second->onStop();
         }
-        mContactManager->resetSensors();
+        m_contactManager->resetSensors();
 
         // reset timers whenever stopped
-        this->mTimeSeconds = 0;
-        this->mTimeNanoSeconds = 0;
+        this->m_timeSeconds = 0;
+        this->m_timeNanoSeconds = 0;
     }
 
     /**
@@ -128,8 +128,8 @@ public:
         std::unique_ptr<IsaacBaseSensorComponent> component;
         if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
         {
-            component = std::make_unique<ContactSensor>(mPhysXInterface, mContactManager.get());
-            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
+            component = std::make_unique<ContactSensor>(m_physXInterface, m_contactManager.get());
+            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), m_stage);
 
             ContactSensor* contactSensor = dynamic_cast<ContactSensor*>(component.get());
             bool validParentFound = contactSensor->findValidParent();
@@ -143,7 +143,7 @@ public:
         else if (prim.IsA<pxr::IsaacSensorIsaacImuSensor>())
         {
             component = std::make_unique<ImuSensor>();
-            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), mStage);
+            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), m_stage);
 
             ImuSensor* imuSensor = dynamic_cast<ImuSensor*>(component.get());
             bool validParentFound = imuSensor->findValidParent();
@@ -159,7 +159,7 @@ public:
         {
             // CARB_LOG_INFO("Create: Isaac Sensor %s with type: %s", prim.GetPath().GetString().c_str(),
             //                 component->getPrim().GetPrim().GetTypeName().GetString().c_str());
-            mComponents[prim.GetPath().GetString()] = std::move(component);
+            m_components[prim.GetPath().GetString()] = std::move(component);
         }
     }
 
@@ -184,9 +184,9 @@ public:
     {
         isaacsim::core::includes::BridgeApplicationBase<IsaacBaseSensorComponent>::onComponentChange(prim);
         // update properties of this prim (onComponentChange)
-        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+        if (m_components.find(prim.GetPath().GetString()) != m_components.end())
         {
-            mComponents[prim.GetPath().GetString()]->onComponentChange();
+            m_components[prim.GetPath().GetString()]->onComponentChange();
         }
     }
 
@@ -194,14 +194,14 @@ public:
      * @brief Retrieves a sensor component by its path.
      * @details Looks up a sensor component using its USD path string.
      *
-     * @param[in] Path String representation of the sensor's USD path.
+     * @param[in] path String representation of the sensor's USD path.
      * @return Pointer to the sensor component if found, nullptr otherwise.
      */
-    IsaacBaseSensorComponent* getComponent(std::string Path)
+    IsaacBaseSensorComponent* getComponent(std::string path)
     {
-        if (mComponents.find(Path) != mComponents.end())
+        if (m_components.find(path) != m_components.end())
         {
-            return mComponents[Path].get();
+            return m_components[path].get();
         }
         return nullptr;
     }
@@ -217,9 +217,9 @@ public:
     void onPhysicsStep(const double& dt)
     {
 
-        mContactManager->onPhysicsStep(static_cast<float>(mTimeSeconds), static_cast<float>(dt));
+        m_contactManager->onPhysicsStep(static_cast<float>(m_timeSeconds), static_cast<float>(dt));
 
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             if (component.second->mDoStart == true)
             {
@@ -233,12 +233,12 @@ public:
             }
             if (component.second->getEnabled())
             {
-                component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                component.second.get()->updateTimestamp(this->m_timeSeconds, dt, this->m_timeNanoSeconds);
                 component.second->onPhysicsStep();
             }
         }
-        this->mTimeSeconds += dt;
-        this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
+        this->m_timeSeconds += dt;
+        this->m_timeNanoSeconds = static_cast<int64_t>(m_timeSeconds * 1e9);
 
         // update timestep
     }
@@ -253,11 +253,11 @@ public:
      */
     virtual void tick(double dt)
     {
-        if (mComponents.size() == 0)
+        if (m_components.empty())
         {
             return;
         }
-        for (auto& component : mComponents)
+        for (auto& component : m_components)
         {
             if (component.second->mDoStart == true)
             {
@@ -288,9 +288,9 @@ public:
     {
         if (prim)
         {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            if (m_components.find(prim.GetPath().GetString()) != m_components.end())
             {
-                return dynamic_cast<ContactSensor*>(mComponents[prim.GetPath().GetString()].get());
+                return dynamic_cast<ContactSensor*>(m_components[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;
@@ -304,7 +304,7 @@ public:
      */
     ContactManager* getContactManager()
     {
-        return mContactManager.get();
+        return m_contactManager.get();
     }
 
     /**
@@ -318,9 +318,9 @@ public:
     {
         if (prim)
         {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
+            if (m_components.find(prim.GetPath().GetString()) != m_components.end())
             {
-                return dynamic_cast<ImuSensor*>(mComponents[prim.GetPath().GetString()].get());
+                return dynamic_cast<ImuSensor*>(m_components[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;
@@ -331,25 +331,25 @@ private:
      * @brief Pointer to the PhysX interface used for physics simulation.
      * @details Provides access to the PhysX physics engine functionality.
      */
-    omni::physx::IPhysx* mPhysXInterface = nullptr;
+    omni::physx::IPhysx* m_physXInterface = nullptr;
 
     /**
      * @brief Unique pointer to the contact manager instance.
      * @details Manages contact-related functionality for all contact sensors.
      */
-    std::unique_ptr<ContactManager> mContactManager = nullptr;
+    std::unique_ptr<ContactManager> m_contactManager = nullptr;
 
     /**
      * @brief Map of rigid body identifiers to data buffer indices.
      * @details Used to track and access rigid body data in the data buffer.
      */
-    std::unordered_map<std::string, size_t> mRigidBodyToDataBufferMap;
+    std::unordered_map<std::string, size_t> m_rigidBodyToDataBufferMap;
 
     /**
      * @brief Buffer containing rigid body data.
      * @details Stores physics-related data for rigid bodies in the simulation.
      */
-    std::vector<float> mRigidBodyDataBuffer;
+    std::vector<float> m_rigidBodyDataBuffer;
 };
 }
 }

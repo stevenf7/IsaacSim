@@ -32,7 +32,7 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnIsaacReadCameraInfoDatabase::sPerInstanceState<OgnIsaacReadCameraInfo>(nodeObj, instanceId);
-        state.mStage = omni::usd::UsdContext::getContext()->getStage();
+        state.m_stage = omni::usd::UsdContext::getContext()->getStage();
     }
 
     static bool compute(OgnIsaacReadCameraInfoDatabase& db)
@@ -52,7 +52,7 @@ public:
             return false;
         }
 
-        pxr::UsdPrim renderProduct = state.mStage->GetPrimAtPath(pxr::SdfPath(renderProductPath));
+        pxr::UsdPrim renderProduct = state.m_stage->GetPrimAtPath(pxr::SdfPath(renderProductPath));
 
         pxr::GfVec2i resolution;
         renderProduct.GetAttribute(pxr::TfToken("resolution")).Get(&resolution);
@@ -80,19 +80,19 @@ public:
         camera.GetAttribute(pxr::TfToken("horizontalApertureOffset")).Get(&db.outputs.horizontalOffset());
         camera.GetAttribute(pxr::TfToken("verticalApertureOffset")).Get(&db.outputs.verticalOffset());
 
-        pxr::TfToken projection_type;
-        camera.GetAttribute(pxr::TfToken("cameraProjectionType")).Get(&projection_type);
-        if (projection_type.IsEmpty())
+        pxr::TfToken projectionType;
+        camera.GetAttribute(pxr::TfToken("cameraProjectionType")).Get(&projectionType);
+        if (projectionType.IsEmpty())
         {
-            projection_type = pxr::TfToken("pinhole");
+            projectionType = pxr::TfToken("pinhole");
         }
 
-        db.outputs.projectionType() = db.stringToToken(projection_type.GetText());
+        db.outputs.projectionType() = db.stringToToken(projectionType.GetText());
 
 
         omni::graph::core::ogn::array<float>& cameraFisheyeParams = db.outputs.cameraFisheyeParams();
         cameraFisheyeParams.resize(19);
-        if (projection_type.GetString() != "pinhole")
+        if (projectionType.GetString() != "pinhole")
         {
             camera.GetAttribute(pxr::TfToken("fthetaWidth")).Get(&cameraFisheyeParams[0]);
             camera.GetAttribute(pxr::TfToken("fthetaHeight")).Get(&cameraFisheyeParams[1]);
@@ -118,25 +118,25 @@ public:
         db.outputs.cameraFisheyeParams() = cameraFisheyeParams;
 
 
-        std::string physical_distortion;
-        camera.GetAttribute(pxr::TfToken("physicalDistortionModel")).Get(&physical_distortion);
-        if (!physical_distortion.empty())
+        std::string physicalDistortion;
+        camera.GetAttribute(pxr::TfToken("physicalDistortionModel")).Get(&physicalDistortion);
+        if (!physicalDistortion.empty())
         {
-            db.outputs.physicalDistortionModel() = db.stringToToken(physical_distortion.c_str());
+            db.outputs.physicalDistortionModel() = db.stringToToken(physicalDistortion.c_str());
         }
 
-        pxr::VtArray<float> physical_distortion_coefs;
-        camera.GetAttribute(pxr::TfToken("physicalDistortionCoefficients")).Get(&physical_distortion_coefs);
+        pxr::VtArray<float> physicalDistortionCoefs;
+        camera.GetAttribute(pxr::TfToken("physicalDistortionCoefficients")).Get(&physicalDistortionCoefs);
 
 
-        if (!physical_distortion_coefs.empty())
+        if (!physicalDistortionCoefs.empty())
         {
             omni::graph::core::ogn::array<float>& physicalDistortionCoefficients =
                 db.outputs.physicalDistortionCoefficients();
-            physicalDistortionCoefficients.resize(physical_distortion_coefs.size());
+            physicalDistortionCoefficients.resize(physicalDistortionCoefs.size());
             for (size_t i = 0; i < physicalDistortionCoefficients.size(); i++)
             {
-                physicalDistortionCoefficients[i] = physical_distortion_coefs.data()[i];
+                physicalDistortionCoefficients[i] = physicalDistortionCoefs.data()[i];
             }
         }
 
@@ -144,7 +144,7 @@ public:
     }
 
 private:
-    pxr::UsdStageRefPtr mStage = nullptr;
+    pxr::UsdStageRefPtr m_stage = nullptr;
 };
 REGISTER_OGN_NODE()
 }

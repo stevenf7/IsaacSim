@@ -34,7 +34,7 @@ Ros2NodeHandleImpl::Ros2NodeHandleImpl(const char* name, const char* namespaceNa
                                              }
                                              delete node;
                                          });
-    if (m_node != NULL)
+    if (m_node != nullptr)
     {
         (*m_node) = rcl_get_zero_initialized_node();
         rcl_node_options_t nodeOptions = rcl_node_get_default_options();
