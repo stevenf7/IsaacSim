@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.6] - 2025-03-10
+### Fixed
+- Unit test dependencies
+
 ## [2.1.5] - 2025-02-11
 ### Added
 - Added tests for omnigraph shortcuts

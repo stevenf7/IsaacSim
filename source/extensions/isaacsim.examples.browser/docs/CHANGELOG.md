@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.9] - 2025-03-09
+### Fixed
+- fix failing unit tests
+
 ## [0.1.8] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings

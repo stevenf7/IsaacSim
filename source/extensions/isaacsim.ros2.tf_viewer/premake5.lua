@@ -15,7 +15,7 @@ for _, ros_distro in ipairs(ros2_ros_distroributions) do
     pic("On")
     staticruntime("Off")
     defines { "ROS2_BACKEND_" .. string.upper(ros_distro) }
-    add_files("impl", "backend")
+    add_files("impl", "library/backend")
     add_files("iface", "include")
     add_files("source", "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/src/geometry2/tf2/src")
     includedirs {
