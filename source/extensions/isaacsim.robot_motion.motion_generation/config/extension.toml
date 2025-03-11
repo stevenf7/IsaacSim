@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "8.0.7"
+version = "8.0.8"
 category = "Simulation"
 title = "Isaac Sim Motion Generation"
 description = "Extension that provides support for generating motion with Lula-based motion policies and an interface for writing arbitrary motion policies"
@@ -34,7 +34,7 @@ dependencies = [
 args = [
 '--/persistent/simulation/defaultMetersPerUnit = 1.0',
 '--/persistent/app/stage/upAxis = "Z"',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
 
 [[test]]

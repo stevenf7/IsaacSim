@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.8"
+version = "1.0.9"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Behavior Scripts"
 description = "The extension provides various randomization and event scripts for Synthetic Data Generation (SDG) workflows. The scripts can be attached to prims providing modular, persitent, and shareable behaviors. The scripts use exposed variables as custom USD properties which can be modified throught the UI or programmatically."
@@ -36,7 +36,7 @@ dependencies = [
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/omni/replicator/captureOnPlay = true',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 '--/omni/replicator/asyncRendering = false',
 '--/app/file/ignoreUnsavedOnExit = true'
 ]

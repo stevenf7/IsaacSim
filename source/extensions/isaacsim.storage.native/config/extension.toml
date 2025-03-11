@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.7"
+version = "1.0.8"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -26,6 +26,9 @@ name = "isaacsim.storage.native"
 [[python.module]]
 name = "isaacsim.storage.native.tests"
 
+[[python.module]]
+name = "isaacsim.storage.native.tests"
+
 [settings]
 persistent.isaac.asset_root.default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"
 persistent.isaac.asset_root.timeout = 5.0
@@ -38,6 +41,6 @@ dependencies = [
     "omni.kit.test"
 ]
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
 timeout = 900

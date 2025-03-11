@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.2.20"
+version = "4.2.21"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
@@ -59,7 +59,7 @@ stdoutFailPatterns.exclude = [
 
 args = [
     # '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

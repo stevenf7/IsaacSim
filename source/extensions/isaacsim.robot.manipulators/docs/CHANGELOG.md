@@ -1,4 +1,9 @@
 # Changelog
+## [3.0.8] - 2025-03-11
+### Changed
+- Switch asset root for tests to internal nucleus
+
+
 ## [3.0.7] - 2025-03-10
 ### Fixed
 - Unit test failure

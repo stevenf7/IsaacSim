@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "14.1.0"
+version = "14.1.1"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -87,7 +87,7 @@ stdoutFailPatterns.include = [
     "*Could not open asset *exts/isaacsim.sensors.rtx/data/lidar_configs/* for reference*"
 ]
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

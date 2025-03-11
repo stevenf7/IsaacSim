@@ -1,4 +1,9 @@
 # Changelog
+## [2.1.3] - 2025-03-11
+### Changed
+- Switch asset root for tests to internal nucleus
+
+
 ## [2.1.2] - 2025-03-09
 ### Fixed
 - fix failing unit tests

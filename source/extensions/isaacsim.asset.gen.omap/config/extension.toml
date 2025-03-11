@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.14"
+version = "2.0.15"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "The Isaac Sim Occupancy Map extension provides tools to generate occupancy maps for a Scene"
@@ -39,7 +39,7 @@ dependencies = [
 ]
 
 args = [
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
 
 timeout = 900
