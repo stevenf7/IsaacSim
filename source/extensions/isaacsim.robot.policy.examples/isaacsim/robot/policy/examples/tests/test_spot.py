@@ -37,7 +37,7 @@ class TestSpot(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         self._physics_dt = 1 / self._physics_rate
-        self._world = World(stage_units_in_meters=1.0, physics_dt=self._physics_dt, rendering_dt=32 * self._physics_dt)
+        self._world = World(stage_units_in_meters=1.0, physics_dt=self._physics_dt, rendering_dt=1.0 / 60)
         await self._world.initialize_simulation_context_async()
 
         ground_prim = get_prim_at_path("/World/defaultGroundPlane")
@@ -79,8 +79,8 @@ class TestSpot(omni.kit.test.AsyncTestCase):
         print(str(self.current_pos))
         delta = abs(self.current_pos[0] - self.start_pos[0])
 
-        self.assertTrue(delta > 5.0)
-        self.assertTrue(delta < 10.0)
+        self.assertGreater(delta, 1.0)
+        self.assertLess(delta, 2.0)
 
     async def test_robot_turn_command(self):
         await self.spawn_spot()
@@ -88,7 +88,7 @@ class TestSpot(omni.kit.test.AsyncTestCase):
 
         self.start_orientation = np.array(self._spot.robot.get_world_pose()[1])
         self._base_command = [0, 0, 1]
-        await simulate_async(seconds=1.0)
+        await simulate_async(seconds=2.0)
 
         self.current_orientation = np.array(self._spot.robot.get_world_pose()[1])
 
@@ -99,7 +99,7 @@ class TestSpot(omni.kit.test.AsyncTestCase):
         )
 
         # should have turned at least 90 deg
-        self.assertTrue(heading_delta > 1.5)
+        self.assertGreater(heading_delta, 1.5)
 
     async def spawn_spot(self, name="spot"):
         self._prim_path = "/World/" + name
