@@ -15,6 +15,14 @@ import_configs = [
 name = "isaac-sim"
 
 #logging = "warn"
+
+# Specify python executable path for each platform
+python_executable."platform:linux-x86_64".python_executable_path = "python3${exe_ext}"
+python_executable."platform:windows-x86_64".python_executable_path = "python${exe_ext}"
+python_executable.packman_package_name = "python"
+python_executable.packman_package_version = "3.11.11+nv3-${platform}"
+python_executable.packman_link_path = "_repo/python/"
+
 ########################################################################################################################
 # Override VERSION File
 ########################################################################################################################
@@ -350,7 +358,9 @@ doxygen_input = [
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/MapGenerator.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Buffer.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Color.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Conversions.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/LibraryLoader.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Math.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Pose.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PoseTree.h",
@@ -370,7 +380,7 @@ doxygen_input = [
   "source/extensions/isaacsim.robot.wheeled_robots/include/isaacsim/robot/wheeled_robots/IWheeledRobots.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IRos2Bridge.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IpcBufferManager.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/LibraryLoader.h",
+  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Distro.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Factory.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2FactoryImpl.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Macros.h",
@@ -389,7 +399,6 @@ doxygen_input = [
   "source/extensions/isaacsim.sensors.physics/plugins/isaacsim.sensors.physics/core/BaseSensorComponent.h",
   "source/extensions/isaacsim.sensors.physics/plugins/isaacsim.sensors.physics/core/BaseSensorManager.h",
   "source/extensions/isaacsim.sensors.physics/plugins/isaacsim.sensors.physics/imu_sensor/ImuSensor.h",
-  "source/extensions/isaacsim.sensors.physx/include/isaacsim/sensors/physx/Color.h",
   "source/extensions/isaacsim.sensors.physx/include/isaacsim/sensors/physx/IPhysxSensorInterface.h",
   "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/core/RangeSensorComponent.h",
   "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/core/RangeSensorManager.h",
