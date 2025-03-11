@@ -32,8 +32,10 @@ from isaacsim.storage.native import get_assets_root_path
 class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        World.clear_instance()
         self._timeline = omni.timeline.get_timeline_interface()
-        pass
+        await create_new_stage_async()
+        await update_stage_async()
 
     # After running each test
     async def tearDown(self):
@@ -43,8 +45,6 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
         World.clear_instance()
-
-        await create_new_stage_async()
 
     async def _create_window(self, title, width, height):
         window = ui.Window(

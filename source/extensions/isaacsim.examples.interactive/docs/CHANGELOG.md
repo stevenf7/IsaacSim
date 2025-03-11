@@ -1,4 +1,7 @@
 # Changelog
+## [4.4.10] - 2025-03-09
+### Fixed
+- fix failing unit tests
 
 ## [4.4.9] - 2025-02-20
 ### Changed

@@ -34,34 +34,49 @@ public:
         {
         case BaseDataType::eDouble:
         {
-            auto inputTime = inputTimeAttr.get<double>();
+            auto inputTimeData = inputTimeAttr.get<double>();
+            auto inputTime = inputTimeData.vectorized(1)[0];
             timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
             break;
         }
         case BaseDataType::eFloat:
         {
-            auto inputTime = inputTimeAttr.get<float>();
+            auto inputTimeData = inputTimeAttr.get<float>();
+            auto inputTime = inputTimeData.vectorized(1)[0];
             timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
             break;
         }
         case BaseDataType::eHalf:
         {
-            auto inputTime = static_cast<float>(inputTimeAttr.get<pxr::GfHalf>());
+            auto inputTimeData = inputTimeAttr.get<pxr::GfHalf>();
+            auto inputTime = static_cast<float>(inputTimeData.vectorized(1)[0]);
             timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
             break;
         }
         case BaseDataType::eInt:
-            seconds = static_cast<int32_t>(inputTimeAttr.get<int32_t>());
+        {
+            auto inputTimeData = inputTimeAttr.get<int32_t>();
+            seconds = static_cast<int32_t>(inputTimeData.vectorized(1)[0]);
             break;
+        }
         case BaseDataType::eInt64:
-            seconds = static_cast<int32_t>(inputTimeAttr.get<int64_t>());
+        {
+            auto inputTimeData = inputTimeAttr.get<int64_t>();
+            seconds = static_cast<int32_t>(inputTimeData.vectorized(1)[0]);
             break;
+        }
         case BaseDataType::eUInt:
-            seconds = static_cast<int32_t>(inputTimeAttr.get<uint32_t>());
+        {
+            auto inputTimeData = inputTimeAttr.get<uint32_t>();
+            seconds = static_cast<int32_t>(inputTimeData.vectorized(1)[0]);
             break;
+        }
         case BaseDataType::eUInt64:
-            seconds = static_cast<int32_t>(inputTimeAttr.get<uint64_t>());
+        {
+            auto inputTimeData = inputTimeAttr.get<uint64_t>();
+            seconds = static_cast<int32_t>(inputTimeData.vectorized(1)[0]);
             break;
+        }
         default:
             db.logError("Failed to resolve input type (supported types: double, float, half, int, int64, uint, uint64");
             return false;

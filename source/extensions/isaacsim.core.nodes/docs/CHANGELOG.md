@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.4] - 2025-03-09
+### Fixed
+- fix failing unit tests
+
 ## [2.2.3] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines

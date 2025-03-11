@@ -26,7 +26,7 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add_default_ground_plane()
 
     async def test_single_manipulators(self):
-        asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/UR10/ur10.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/UR10")
         gripper_usd = self._assets_root_path + "/Isaac/Robots/UR10/Props/short_gripper.usd"
         add_reference_to_stage(usd_path=gripper_usd, prim_path="/World/UR10/ee_link")
