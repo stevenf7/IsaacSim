@@ -1,4 +1,9 @@
 # Changelog
+## [4.3.3] - 2025-03-11
+### Changed
+- Switch asset root for tests to internal nucleus
+
+
 
 ## [4.3.2] - 2025-03-06
 ### Changed

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.2.4"
+version = "2.2.5"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor Examples"
 description = "Provides example usage and snippets for Isaac Sim PhysX-raycast-based sensors."
@@ -38,7 +38,7 @@ name = "isaacsim.sensors.physx.examples.lightbeam_sensor"
 [[test]]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-'--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+'--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
 
 [[test]]

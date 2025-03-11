@@ -1,4 +1,9 @@
 # Changelog
+## [8.0.8] - 2025-03-11
+### Changed
+- Switch asset root for tests to internal nucleus
+
+
 ## [8.0.7] - 2025-03-04
 ### Changed
 - Update to kit 107.1 and fix build issues

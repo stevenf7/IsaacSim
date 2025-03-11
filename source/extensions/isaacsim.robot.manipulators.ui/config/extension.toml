@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.6"
+version = "2.1.7"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
 description = "Manipulators"
@@ -35,7 +35,7 @@ args = [
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
     '--/persistent/app/stage/upAxis="Z"',
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/simulation/defaultMetersPerUnit=1.0",
     "--/persistent/simulation/minFrameRate=15",

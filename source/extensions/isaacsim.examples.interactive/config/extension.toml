@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.4.10"
+version = "4.4.11"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -102,7 +102,7 @@ stdoutFailPatterns.exclude = [
 
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-    '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

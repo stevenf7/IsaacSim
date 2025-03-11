@@ -1,4 +1,9 @@
 # Changelog
+## [14.1.1] - 2025-03-11
+### Changed
+- Switch asset root for tests to internal nucleus
+
+
 ## [14.1.0] - 2025-03-05
 ### Added
 - OmniLidar USDAs corresponding to vendor-supplied lidar configurations
