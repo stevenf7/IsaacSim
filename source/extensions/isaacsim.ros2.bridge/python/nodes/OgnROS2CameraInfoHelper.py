@@ -17,9 +17,8 @@ import omni
 import omni.replicator.core as rep
 import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
-from isaacsim.core.utils.render_product import get_camera_prim_path, get_resolution
 from isaacsim.ros2.bridge import collect_namespace, compute_relative_pose, read_camera_info
-from pxr import Gf, Usd
+from pxr import Usd
 
 
 class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
@@ -57,7 +56,7 @@ class OgnROS2CameraInfoHelper:
         return OgnROS2CameraInfoHelperInternalState()
 
     @staticmethod
-    def add_camera_info_writer(db, frameId, topicName, camera_info: Dict, render_product_path: str):
+    def add_camera_info_writer(db, frameId, topicName, camera_info, render_product_path: str):
         writer = rep.writers.get(f"ROS2PublishCameraInfo")
         writer.initialize(
             frameId=frameId,
@@ -66,14 +65,14 @@ class OgnROS2CameraInfoHelper:
             topicName=topicName,
             context=db.inputs.context,
             qosProfile=db.inputs.qosProfile,
-            width=camera_info["width"],
-            height=camera_info["height"],
-            projectionType=camera_info["projectionType"],
-            k=camera_info["k"].reshape([1, 9]),
-            r=camera_info["r"].reshape([1, 9]),
-            p=camera_info["p"].reshape([1, 12]),
-            physicalDistortionModel=camera_info["physicalDistortionModel"],
-            physicalDistortionCoefficients=camera_info["physicalDistortionCoefficients"],
+            width=camera_info.width,
+            height=camera_info.height,
+            projectionType=camera_info.distortion_model,
+            k=camera_info.k,
+            r=camera_info.r,
+            p=camera_info.p,
+            physicalDistortionModel=camera_info.distortion_model,
+            physicalDistortionCoefficients=camera_info.d,
         )
         db.per_instance_state.attach_writer(writer, render_product_path)
         return
@@ -105,39 +104,63 @@ class OgnROS2CameraInfoHelper:
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
                 db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
 
-                camera_info_left = read_camera_info(render_product_path=db.inputs.renderProductPath)
+                camera_info_left, camera_left = read_camera_info(render_product_path=db.inputs.renderProductPath)
 
                 if is_stereo:
-                    camera_info_right = read_camera_info(render_product_path=db.inputs.renderProductPathRight)
+                    camera_info_right, camera_right = read_camera_info(
+                        render_product_path=db.inputs.renderProductPathRight
+                    )
 
-                    width_left = camera_info_left["width"]
-                    height_left = camera_info_left["height"]
-                    width_right = camera_info_right["width"]
-                    height_right = camera_info_right["height"]
+                    width_left = camera_info_left.width
+                    height_left = camera_info_left.height
+                    width_right = camera_info_right.width
+                    height_right = camera_info_right.height
                     if width_left != width_right or height_left != height_right:
                         carb.log_warn(
                             f"Mismatched stereo camera resolutions: left = [{width_left}, {height_left}], right = [{width_right}, {height_right}]"
                         )
                         return False
 
+                    distortion_model_left = camera_info_left.distortion_model
+                    distortion_model_right = camera_info_right.distortion_model
+                    if distortion_model_left != distortion_model_right:
+                        carb.log_warn(
+                            f"Mismatched stereo camera distortion models: left = {distortion_model_left}, right = {distortion_model_right}."
+                        )
+                        return False
+
                     translation, orientation = compute_relative_pose(
-                        left_camera_prim=camera_info_left["prim"], right_camera_prim=camera_info_right["prim"]
+                        left_camera_prim=camera_left, right_camera_prim=camera_right
                     )
 
                     # Compute stereo rectification parameters
-                    R1, R2, P1, P2, _, _, _ = cv.stereoRectify(
-                        cameraMatrix1=camera_info_left["k"],
-                        distCoeffs1=np.asarray(camera_info_left["physicalDistortionCoefficients"]),
-                        cameraMatrix2=camera_info_right["k"],
-                        distCoeffs2=np.asarray(camera_info_right["physicalDistortionCoefficients"]),
-                        imageSize=(width_left, height_left),
-                        R=orientation,
-                        T=translation,
-                    )
-                    camera_info_left["r"] = R1
-                    camera_info_right["r"] = R2
-                    camera_info_left["p"] = P1
-                    camera_info_right["p"] = P2
+                    if distortion_model_left == "equidistant":
+                        R1, R2, P1, P2, _, = cv.fisheye.stereoRectify(
+                            K1=np.reshape(camera_info_left.k, [3, 3]),
+                            D1=np.array(camera_info_left.d),
+                            K2=np.reshape(camera_info_right.k, [3, 3]),
+                            D2=np.array(camera_info_right.d),
+                            imageSize=(width_left, height_left),
+                            R=orientation,
+                            tvec=translation,
+                            flags=cv.CALIB_ZERO_DISPARITY,
+                        )
+                    else:
+                        R1, R2, P1, P2, _, _, _ = cv.stereoRectify(
+                            cameraMatrix1=np.reshape(camera_info_left.k, [3, 3]),
+                            distCoeffs1=np.array(camera_info_left.d),
+                            cameraMatrix2=np.reshape(camera_info_right.k, [3, 3]),
+                            distCoeffs2=np.array(camera_info_right.d),
+                            imageSize=(width_left, height_left),
+                            R=orientation,
+                            T=translation,
+                            flags=cv.CALIB_ZERO_DISPARITY,
+                        )
+
+                    camera_info_left.r = R1.ravel().tolist()
+                    camera_info_right.r = R2.ravel().tolist()
+                    camera_info_left.p = P1.ravel().tolist()
+                    camera_info_right.p = P2.ravel().tolist()
 
                     # Create right-side writer
                     db.per_instance_state.rvRight = "PostProcessDispatchRight"

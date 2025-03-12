@@ -113,7 +113,6 @@ public:
         }
         else
         {
-            // TODO: Handle fisheye coefficients?
             std::vector<double> empty;
             state.m_message->writeDistortionParameters(empty, db.tokenToString(db.inputs.projectionType()));
         }

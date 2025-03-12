@@ -69,8 +69,7 @@
                         "semantic_segmentation": "semantic_segmentation",
                         "bbox_2d_tight": "bbox_2d_tight",
                         "bbox_2d_loose": "bbox_2d_loose",
-                        "bbox_3d": "bbox_3d",
-                        "camera_info": "camera_info"
+                        "bbox_3d": "bbox_3d"
                     }
                 },
                 "default": "rgb"

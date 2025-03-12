@@ -1,9 +1,12 @@
 # Changelog
+
+## [0.3.0] - 2025-03-11
+### Changed
+- Deprecate Camera OpenCV-related APIs in favor of native OpenCV camera models.
+
 ## [0.2.12] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
-
 
 ## [0.2.11] - 2025-02-21
 ### Changed

@@ -31,6 +31,31 @@ from isaacsim.core.utils.render_product import get_resolution, set_camera_prim_p
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Sdf, Usd, UsdGeom, Vt
 
+# Map of Camera prim attributes to OpenCV pinhole camera model parameters (p1, p2, k1, k2, k3, k4, k5, k6, s1, s2, s3, s4) by index
+OPENCV_PINHOLE_ATTRIBUTE_MAP = [
+    "omni:lensdistortion:opencvpinhole:k1",
+    "omni:lensdistortion:opencvpinhole:k2",
+    "omni:lensdistortion:opencvpinhole:p1",
+    "omni:lensdistortion:opencvpinhole:p2",
+    "omni:lensdistortion:opencvpinhole:k3",
+    "omni:lensdistortion:opencvpinhole:k4",
+    "omni:lensdistortion:opencvpinhole:k5",
+    "omni:lensdistortion:opencvpinhole:k6",
+    "omni:lensdistortion:opencvpinhole:s1",
+    "omni:lensdistortion:opencvpinhole:s2",
+    "omni:lensdistortion:opencvpinhole:s3",
+    "omni:lensdistortion:opencvpinhole:s4",
+]
+
+# Map of Camera prim attributes to OpenCV fisheye camera model parameters (k0, k1, k2, k3, k4) by index
+OPENCV_FISHEYE_ATTRIBUTE_MAP = [
+    "omni:lensdistortion:opencv:k1",
+    "omni:lensdistortion:opencv:k2",
+    "omni:lensdistortion:opencv:k3",
+    "omni:lensdistortion:opencv:k4",
+]
+
+
 # transforms are read from right to left
 # U_R_TRANSFORM means transformation matrix from R frame to U frame
 # R indicates the ROS camera convention (computer vision community)
@@ -60,7 +85,7 @@ def point_to_theta(camera_matrix, x, y):
 
 
 def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y):
-    """This helper function distorts point(s) using rational polynomial model.
+    """[DEPRECATED] This helper function distorts point(s) using rational polynomial model.
     It should be equivalent to the following reference that uses OpenCV:
 
     def distort_point_rational_polynomial(x, y)
@@ -73,6 +98,10 @@ def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y):
         points, jac = cv2.projectPoints(points3d, rvecs, tvecs, cameraMatrix, distCoeffs)
         return np.array([points[:,0,0], points[:,0,1]])
     """
+    omni.kit.app.log_deprecation(
+        "distort_point_rational_polynomial is deprecated."
+        'Please use the the "opencv" distortion model to directly specify OpenCV distortion parameters.'
+    )
     ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
     K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
     pt_x, pt_y = (x - cx) / fx, (y - cy) / fy
@@ -100,7 +129,7 @@ def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y):
 
 
 def distort_point_kannala_brandt(camera_matrix, distortion_model, x, y):
-    """This helper function distorts point(s) using Kannala Brandt fisheye model.
+    """[DEPRECATED] This helper function distorts point(s) using Kannala Brandt fisheye model.
     It should be equivalent to the following reference that uses OpenCV:
 
     def distort_point_kannala_brandt2(camera_matrix, distortion_model, x, y):
@@ -113,6 +142,10 @@ def distort_point_kannala_brandt(camera_matrix, distortion_model, x, y):
         points, jac = cv2.fisheye.projectPoints(np.expand_dims(points3d, 1), rvecs, tvecs, cameraMatrix, distCoeffs)
         return np.array([points[:,0,0], points[:,0,1]])
     """
+    omni.kit.app.log_deprecation(
+        "distort_point_rational_polynomial is deprecated."
+        'Please use the the "opencv" distortion model to directly specify OpenCV distortion parameters.'
+    )
     ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
     pt_x, pt_y, pt_z = (x - cx) / fx, (y - cy) / fy, 1.0
     r2 = pt_x * pt_x + pt_y * pt_y
@@ -1299,7 +1332,7 @@ class Camera(BaseSensor):
         distortion_model: Sequence[float],
         distortion_fn: Callable,
     ) -> None:
-        """Approximates given distortion with ftheta fisheye polynomial coefficients.
+        """[DEPRECATED] Approximates given distortion with ftheta fisheye polynomial coefficients.
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
@@ -1309,6 +1342,10 @@ class Camera(BaseSensor):
             distortion_model (Sequence[float]): distortion model coefficients
             distortion_fn (Callable): distortion function that takes points and returns distorted points
         """
+        omni.kit.app.log_deprecation(
+            "Camera.set_matching_fisheye_polynomial_properties is deprecated."
+            'Please use the the "opencv" distortion model to directly specify OpenCV distortion parameters.'
+        )
         if "fisheye" not in self.get_projection_type():
             raise Exception(
                 "fisheye projection type is not set to allow use set_matching_fisheye_polynomial_properties method."
@@ -1348,30 +1385,30 @@ class Camera(BaseSensor):
         max_fov: Optional[float],
         distortion_model: Sequence[float],
     ) -> None:
-        """Approximates rational polynomial distortion with ftheta fisheye polynomial coefficients.
+        """[DEPRECATED] Approximates rational polynomial distortion with ftheta fisheye polynomial coefficients.
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
             optical_centre_x (float): Horizontal Render Position (pixels)
             optical_centre_y (float): Vertical Render Position (pixels)
-            max_fov (Optional[float]): maximum field of view (pixels)
-            distortion_model (Sequence[float]): rational polynomial distortion model coefficients (k1, k2, p1, p2, k3, k4, k5, k6)
+            max_fov (Optional[float]): DEPRECATED. maximum field of view (pixels)
+            distortion_model (Sequence[float]): rational polynomial distortion model coefficients (k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4)
         """
-
-        self.set_matching_fisheye_polynomial_properties(
-            nominal_width,
-            nominal_height,
-            optical_centre_x,
-            optical_centre_y,
-            max_fov,
-            distortion_model,
-            distort_point_rational_polynomial,
+        omni.kit.app.log_deprecation(
+            'Camera.set_rational_polynomial_properties is deprecated. Please use the the "pinholeOpenCV" distortion model to directly specify OpenCV pinhole camera model distortion parameters.'
         )
 
-        self.prim.CreateAttribute("physicalDistortionModel", Sdf.ValueTypeNames.String).Set("rationalPolynomial")
-        self.prim.CreateAttribute("physicalDistortionCoefficients", Sdf.ValueTypeNames.FloatArray, False).Set(
-            distortion_model
-        )
+        num_distortion_params = len(distortion_model)
+        if num_distortion_params < 8:
+            carb.log_warn(
+                f"set_rational_polynomial_properties: Insufficient distortion parameters provided ({num_distortion_params}), expecting at least 8 for pinholeOpenCV projection type."
+            )
+            return
+
+        fx = nominal_width * self.get_focal_length() / self.get_horizontal_aperture()
+        fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
+        self.set_opencv_pinhole_properties(optical_centre_x, optical_centre_y, fx, fy, distortion_model)
+
         return
 
     def set_kannala_brandt_properties(
@@ -1383,33 +1420,130 @@ class Camera(BaseSensor):
         max_fov: Optional[float],
         distortion_model: Sequence[float],
     ) -> None:
-        """Approximates kannala brandt distortion with ftheta fisheye polynomial coefficients.
+        """[DEPRECATED] Approximates kannala brandt distortion with ftheta fisheye polynomial coefficients.
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
             optical_centre_x (float): Horizontal Render Position (pixels)
             optical_centre_y (float): Vertical Render Position (pixels)
-            max_fov (Optional[float]): maximum field of view (pixels)
+            max_fov (Optional[float]): DEPRECATED. maximum field of view (pixels)
             distortion_model (Sequence[float]): kannala brandt generic distortion model coefficients (k1, k2, k3, k4)
         """
-
-        self.set_matching_fisheye_polynomial_properties(
-            nominal_width,
-            nominal_height,
-            optical_centre_x,
-            optical_centre_y,
-            max_fov,
-            distortion_model,
-            distort_point_kannala_brandt,
+        omni.kit.app.log_deprecation(
+            'Camera.set_kannala_brandt_properties is deprecated. Please use the the "fisheyeOpenCV" distortion model to directly specify OpenCV fisheye camera model distortion parameters.'
         )
 
-        # Store the original distortion model parameters
-        K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
-        self.prim.CreateAttribute("physicalDistortionModel", Sdf.ValueTypeNames.String).Set("kannalaBrandt")
-        self.prim.CreateAttribute("physicalDistortionCoefficients", Sdf.ValueTypeNames.FloatArray, False).Set(
-            distortion_model
-        )
+        num_distortion_params = len(distortion_model)
+        if num_distortion_params < 4:
+            carb.log_warn(
+                f"set_kannala_brandt_properties: Insufficient distortion parameters provided ({num_distortion_params}), expecting 5 for fisheyeOpenCV projection type."
+            )
+            return
+
+        fx = nominal_width * self.get_focal_length() / self.get_horizontal_aperture()
+        fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
+        self.set_opencv_fisheye_properties(optical_centre_x, optical_centre_y, fx, fy, distortion_model)
+
         return
+
+    def set_opencv_pinhole_properties(
+        self,
+        cx: Optional[float] = None,
+        cy: Optional[float] = None,
+        fx: Optional[float] = None,
+        fy: Optional[float] = None,
+        pinhole: Optional[List[float]] = None,
+    ) -> None:
+        """
+        Args:
+            cx (float): Horizontal Render Position (pixels)
+            cy (float): Vertical Render Position (pixels)
+            fx (float): Horizontal Focal Length (pixels)
+            fy (float): Vertical Focal Length (pixels)
+            pinhole (List[float]): OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4]
+        """
+        self.prim.ApplyAPI("OmniLensDistortionOpenCvPinholeAPI")
+        self.prim.GetAttribute("omni:lensdistortion:model").Set("opencvPinhole")
+        if cx is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cx").Set(cx)
+        if cy is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cy").Set(cy)
+        if fx is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fx").Set(fx)
+        if fy is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fy").Set(fy)
+        if pinhole is not None:
+            for i in range(len(pinhole)):
+                self.prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Set(pinhole[i])
+
+        return
+
+    def get_opencv_pinhole_properties(self) -> Tuple[float, float, float, float, List]:
+        """
+        Returns:
+            Tuple[float, float, float, float, List]: cx, cy, fx, fy, and OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4] respectively.
+        """
+        if self.prim.GetAttribute("omni:lensdistortion:model").Get() != "opencvPinhole":
+            carb.log_error("Camera omni:lensdistortion:model attribute not set to 'opencvPinhole'.")
+            return
+        cx = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cx").Get()
+        cy = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cy").Get()
+        fx = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fx").Get()
+        fy = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fy").Get()
+        pinhole = [None] * 12
+        for i in range(12):
+            pinhole[i] = self.prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Get()
+
+        return cx, cy, fx, fy, pinhole
+
+    def set_opencv_fisheye_properties(
+        self,
+        cx: Optional[float] = None,
+        cy: Optional[float] = None,
+        fx: Optional[float] = None,
+        fy: Optional[float] = None,
+        fisheye: Optional[List[float]] = None,
+    ) -> None:
+        """
+        Args:
+            cx (float): Horizontal Render Position (pixels)
+            cy (float): Vertical Render Position (pixels)
+            fx (float): Horizontal Focal Length (pixels)
+            fy (float): Vertical Focal Length (pixels)
+            fisheye (List[float]): OpenCV fisheye parameters [k1, k2, k3, k4]
+        """
+        self.prim.ApplyAPI("OmniLensDistortionOpenCvFisheyeAPI")
+        self.prim.GetAttribute("omni:lensdistortion:model").Set("opencv")
+        if cx is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencv:cx").Set(cx)
+        if cy is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencv:cy").Set(cy)
+        if fx is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencv:fx").Set(fx)
+        if fy is not None:
+            self.prim.GetAttribute("omni:lensdistortion:opencv:fy").Set(fy)
+        if fisheye is not None:
+            for i in range(len(fisheye)):
+                self.prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Set(fisheye[i])
+
+        return
+
+    def get_opencv_fisheye_properties(self) -> Tuple[float, float, float, float, List]:
+        """
+        Returns:
+            Tuple[float, float, float, float, List]: fx, fy, cx, cy, and OpenCV fisheye parameters [k1, k2, k3, k4] respectively.
+        """
+        if self.prim.GetAttribute("omni:lensdistortion:model").Get() != "opencv":
+            carb.log_error("Camera omni:lensdistortion:model attribute not set to 'opencv'.")
+            return
+        cx = self.prim.GetAttribute("omni:lensdistortion:opencv:cx").Get()
+        cy = self.prim.GetAttribute("omni:lensdistortion:opencv:cy").Get()
+        fx = self.prim.GetAttribute("omni:lensdistortion:opencv:fx").Get()
+        fy = self.prim.GetAttribute("omni:lensdistortion:opencv:fy").Get()
+        fisheye = [None] * 4
+        for i in range(4):
+            fisheye[i] = self.prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Get()
+        return fx, fy, cx, cy, fisheye
 
     def get_fisheye_polynomial_properties(self) -> Tuple[float, float, float, float, float, List]:
         """
