@@ -1,9 +1,13 @@
 # Changelog
+
+## [4.4.0] - 2025-03-11
+### Changed
+- camera_info_utils.read_camera_info works with native OpenCV camera models
+- OgnROS2CameraInfoHelper correctly handles equidistant (OpenCV fisheye) distortion
+
 ## [4.3.3] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
-
 
 ## [4.3.2] - 2025-03-06
 ### Changed

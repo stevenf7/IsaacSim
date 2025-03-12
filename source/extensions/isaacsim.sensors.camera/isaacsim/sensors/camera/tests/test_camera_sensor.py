@@ -220,7 +220,6 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(math.isclose(max_fov, 560, abs_tol=2))
         self.assertTrue(np.isclose(polynomial, [1, 2, 3, 4, 5]).all())
 
-        self.camera.set_projection_type("fisheyePolynomial")
         self.camera.set_rational_polynomial_properties(
             nominal_width=120,
             nominal_height=240,
@@ -229,17 +228,9 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             max_fov=180,
             distortion_model=[7, 5, -0.0002, -0.0001, 0, 7, 8, 2],
         )
-        (
-            nominal_width,
-            nominal_height,
-            optical_centre_x,
-            optical_centre_y,
-            max_fov,
-            polynomial,
-        ) = self.camera.get_fisheye_polynomial_properties()
-        self.assertTrue(np.isclose(polynomial, [0.002848, 0.00105, 5.5919e-06, 0.0, 0.0], atol=0.00001).all())
+        (cx, cy, fx, fy, pinhole) = self.camera.get_opencv_pinhole_properties()
+        self.assertTrue(np.isclose(pinhole[:8], [7, 5, -0.0002, -0.0001, 0, 7, 8, 2], atol=0.00001).all())
 
-        self.camera.set_projection_type("fisheyePolynomial")
         self.camera.set_kannala_brandt_properties(
             nominal_width=120,
             nominal_height=240,
@@ -249,14 +240,13 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             distortion_model=[0.05, 0.01, -0.003, -0.0005],
         )
         (
-            nominal_width,
-            nominal_height,
-            optical_centre_x,
-            optical_centre_y,
-            max_fov,
-            polynomial,
-        ) = self.camera.get_fisheye_polynomial_properties()
-        self.assertTrue(np.isclose(polynomial, [0.002848, 0.00105, 5.65058e-06, 0.0, 0.0], atol=0.00001).all())
+            cx,
+            cy,
+            fx,
+            fy,
+            fisheye,
+        ) = self.camera.get_opencv_fisheye_properties()
+        self.assertTrue(np.isclose(fisheye, [0.05, 0.01, -0.003, -0.0005], atol=0.00001).all())
 
         self.camera.set_shutter_properties(delay_open=2.0, delay_close=3.0)
         delay_open, delay_close = self.camera.get_shutter_properties()

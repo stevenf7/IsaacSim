@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2018-2025, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,7 +9,6 @@
 
 import asyncio
 import gc
-import math
 
 import carb
 import omni.graph.core as og
@@ -29,9 +28,9 @@ from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf, Sdf
+from pxr import Sdf
 
-from .common import add_carter_ros, add_cube, get_qos_profile
+from .common import get_qos_profile
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -108,7 +107,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("Bbox2dTightPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("Bbox2dLoosePublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("Bbox3dPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("CameraInfoPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
@@ -139,14 +137,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
                         ("Bbox3dPublish.inputs:type", "bbox_3d"),
                         ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("CameraInfoPublish.inputs:topicName", "camera_info"),
-                        ("CameraInfoPublish.inputs:type", "camera_info"),
-                        ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "RGBPublish.inputs:execIn"),
-                        ("CreateRenderProduct.outputs:execOut", "CameraInfoPublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "DepthPublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "DepthPclPublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "InstancePublish.inputs:execIn"),
@@ -155,7 +149,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("CreateRenderProduct.outputs:execOut", "Bbox2dLoosePublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "Bbox3dPublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:renderProductPath", "RGBPublish.inputs:renderProductPath"),
-                        ("CreateRenderProduct.outputs:renderProductPath", "CameraInfoPublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "DepthPublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "DepthPclPublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "InstancePublish.inputs:renderProductPath"),
@@ -176,10 +169,9 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             print(e)
         await omni.kit.app.get_app().next_update_async()
 
-        from sensor_msgs.msg import CameraInfo, Image, PointCloud2
+        from sensor_msgs.msg import Image, PointCloud2
         from vision_msgs.msg import Detection2DArray, Detection3DArray
 
-        self._camera_info = None
         self._rgb = None
         self._depth = None
         self._depth_pcl = None
@@ -188,9 +180,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self._bbox_2d_tight = None
         self._bbox_2d_loose = None
         self._bbox_3d = None
-
-        def camera_info_callback(data):
-            self._camera_info = data
 
         def rgb_callback(data):
             self._rgb = data
@@ -217,7 +206,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             self._bbox_3d = data
 
         node = rclpy.create_node("camera_tester")
-        camera_info_sub = node.create_subscription(CameraInfo, "camera_info", camera_info_callback, get_qos_profile())
         rgb_sub = node.create_subscription(Image, "rgb", rgb_callback, get_qos_profile())
         depth_sub = node.create_subscription(Image, "depth", depth_callback, get_qos_profile())
         depth_pcl_sub = node.create_subscription(PointCloud2, "depth_pcl", depth_pcl_callback, get_qos_profile())
@@ -250,131 +238,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         import time
 
-        system_time = time.time()
-
-        for num in range(5):
-            print(f"Play #{num+1}")
-            self._timeline.play()
-            await omni.kit.app.get_app().next_update_async()
-            await simulate_async(1.5, callback=spin)
-            for _ in range(10):
-                if self._camera_info is None:
-                    await simulate_async(1, callback=spin)
-
-            self.assertIsNotNone(self._camera_info)
-            self.assertIsNotNone(self._rgb)
-            self.assertIsNotNone(self._instance_segmentation)
-            self.assertIsNotNone(self._semantic_segmentation)
-            self.assertIsNotNone(self._bbox_2d_tight)
-            self.assertIsNotNone(self._bbox_2d_loose)
-            self.assertIsNotNone(self._bbox_3d)
-            self.assertIsNotNone(self._depth)
-            self.assertIsNotNone(self._depth_pcl)
-
-            self.assertEqual(self._camera_info.width, 800)
-            self.assertEqual(self._camera_info.height, 600)
-            self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
-            self.assertLess(self._camera_info.header.stamp.sec, system_time / 2.0)
-
-            self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
-            self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
-            self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
-            self.assertEqual(self._camera_info.distortion_model, "plumb_bob")
-            self.assertEqual(self._camera_info.d[0], 0.0)
-            self.assertEqual(self._camera_info.d[1], 0.0)
-            self.assertEqual(self._camera_info.d[2], 0.0)
-            self.assertEqual(self._camera_info.d[3], 0.0)
-            # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
-
-            self._timeline.stop()
-
-            # make sure all previous messages are cleared
-            await omni.kit.app.get_app().next_update_async()
-            spin()
-            await omni.kit.app.get_app().next_update_async()
-            self._camera_info = None
-            self._rgb = None
-            self._depth = None
-            self._depth_pcl = None
-            self._instance_segmentation = None
-            self._semantic_segmentation = None
-            self._bbox_2d_tight = None
-            self._bbox_2d_loose = None
-            self._bbox_3d = None
-
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6, prev=0
-        )
-
-        # Square pixels, vertical apertures are computed by the horizontal aperture
-        # omni.kit.commands.execute(
-        #     "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
-        # )
-
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._camera_info is None:
-                await simulate_async(1, callback=spin)
-
-        self.assertIsNotNone(self._camera_info)
-        self.assertIsNotNone(self._rgb)
-        self.assertIsNotNone(self._instance_segmentation)
-        self.assertIsNotNone(self._semantic_segmentation)
-        self.assertIsNotNone(self._bbox_2d_tight)
-        self.assertIsNotNone(self._bbox_2d_loose)
-        self.assertIsNotNone(self._bbox_3d)
-        self.assertIsNotNone(self._depth_pcl)
-        self.assertIsNotNone(self._depth)
-
-        self.assertEqual(self._camera_info.width, 800)
-        self.assertEqual(self._camera_info.height, 600)
-        self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
-        self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
-        self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
-        # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
-
-        self._timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._camera_info is None:
-                await simulate_async(1, callback=spin)
-
-        self.assertAlmostEqual(self._camera_info.p[0], 2419, delta=1)
-        self.assertAlmostEqual(self._camera_info.p[5], 2419, delta=1)
-        self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
-        self.assertLess(self._camera_info.header.stamp.sec, system_time / 2.0)
-
-        self.assertIsNotNone(self._rgb)
-        self.assertIsNotNone(self._depth)
-        self.assertIsNotNone(self._depth_pcl)
-        self.assertIsNotNone(self._instance_segmentation)
-        self.assertIsNotNone(self._semantic_segmentation)
-        self.assertIsNotNone(self._bbox_2d_tight)
-        self.assertIsNotNone(self._bbox_2d_loose)
-        self.assertIsNotNone(self._bbox_3d)
-
-        self._timeline.stop()
-        # make sure all previous messages are cleared
-        await omni.kit.app.get_app().next_update_async()
-        spin()
-        await omni.kit.app.get_app().next_update_async()
-        self._camera_info = None
-        self._rgb = None
-        self._depth = None
-        self._depth_pcl = None
-        self._instance_segmentation = None
-        self._semantic_segmentation = None
-        self._bbox_2d_tight = None
-        self._bbox_2d_loose = None
-        self._bbox_3d = None
-
         # Turn on SystemTime for timestamp of all camera publishers
         og.Controller.attribute("/ActionGraph/RGBPublish" + ".inputs:useSystemTime").set(True)
         og.Controller.attribute("/ActionGraph/DepthPublish" + ".inputs:useSystemTime").set(True)
@@ -384,7 +247,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         og.Controller.attribute("/ActionGraph/Bbox2dTightPublish" + ".inputs:useSystemTime").set(True)
         og.Controller.attribute("/ActionGraph/Bbox2dLoosePublish" + ".inputs:useSystemTime").set(True)
         og.Controller.attribute("/ActionGraph/Bbox3dPublish" + ".inputs:useSystemTime").set(True)
-        og.Controller.attribute("/ActionGraph/CameraInfoPublish" + ".inputs:useSystemTime").set(True)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -395,11 +257,8 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.5, callback=spin)
         for _ in range(10):
-            if self._camera_info is None:
+            if self._rgb is None:
                 await simulate_async(1, callback=spin)
-
-        self.assertAlmostEqual(self._camera_info.p[0], 2419, delta=1)
-        self.assertAlmostEqual(self._camera_info.p[5], 2419, delta=1)
 
         self.assertIsNotNone(self._rgb)
         self.assertIsNotNone(self._instance_segmentation)
@@ -408,7 +267,6 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(self._bbox_2d_loose)
         self.assertIsNotNone(self._bbox_3d)
 
-        self.assertGreaterEqual(self._camera_info.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._rgb.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._depth.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._depth_pcl.header.stamp.sec, system_time)

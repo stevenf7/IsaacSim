@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Dict, Tuple
+from typing import Tuple
 
 import carb
 import cv2 as cv
@@ -16,89 +16,98 @@ import omni
 import omni.syntheticdata
 from isaacsim.core.utils.render_product import get_camera_prim_path, get_resolution
 from isaacsim.core.utils.transformations import get_relative_transform
+from isaacsim.sensors.camera.camera import OPENCV_FISHEYE_ATTRIBUTE_MAP, OPENCV_PINHOLE_ATTRIBUTE_MAP
 from pxr import Gf, Usd
 
 
-def read_camera_info(render_product_path: str) -> Dict:
+def read_camera_info(render_product_path: str) -> Tuple:
     """Reads camera prim attributes given render product path."""
-    camera_info = {}
 
-    # Retrieve and store resolution
-    width, height = get_resolution(render_product_path=render_product_path)
-    camera_info["width"] = width
-    camera_info["height"] = height
+    from sensor_msgs.msg import CameraInfo
+
+    camera_info = CameraInfo()
 
     # Retrieve and store camera prim object
     camera_path = get_camera_prim_path(render_product_path=render_product_path)
-    camera = omni.usd.get_context().get_stage().GetPrimAtPath(camera_path)
-    camera_info["prim"] = camera
+    camera_prim = omni.usd.get_context().get_stage().GetPrimAtPath(camera_path)
 
-    # Retrieve and store camera prim attributes
-    focalLength = camera.GetAttribute("focalLength").Get()
-    horizontalAperture = camera.GetAttribute("horizontalAperture").Get()
-    verticalAperture = horizontalAperture * float(height / width)
-    camera_info["focalLength"] = focalLength
-    camera_info["horizontalAperture"] = horizontalAperture
-    camera_info["verticalAperture"] = verticalAperture
+    # Store CameraInfo distortion model and parameters
+    lens_distortion_model = camera_prim.GetAttribute("omni:lensdistortion:model").Get()
 
-    camera_info["horizontalOffset"] = camera.GetAttribute("horizontalApertureOffset").Get()
-    camera_info["verticalOffset"] = camera.GetAttribute("verticalApertureOffset").Get()
+    if lens_distortion_model == "opencvPinhole":
 
-    projection_type = camera.GetAttribute("cameraProjectionType").Get()
-    if projection_type is None:
-        projection_type = "pinhole"
+        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:imageSize").Get()
+        cx = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:cx").Get()
+        cy = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:cy").Get()
+        fx = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:fx").Get()
+        fy = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:fy").Get()
+        pinhole = [0.0] * 12
+        for i in range(12):
+            pinhole[i] = camera_prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Get()
 
-    camera_info["projectionType"] = projection_type
-    camera_info["cameraFisheyeParams"] = [0.0] * 19
-    if projection_type != "pinhole":
-        camera_info["cameraFisheyeParams"][0] = camera.GetAttribute("fthetaWidth").Get()
-        camera_info["cameraFisheyeParams"][1] = camera.GetAttribute("fthetaHeight").Get()
-        camera_info["cameraFisheyeParams"][2] = camera.GetAttribute("fthetaCx").Get()
-        camera_info["cameraFisheyeParams"][3] = camera.GetAttribute("fthetaCy").Get()
-        camera_info["cameraFisheyeParams"][4] = camera.GetAttribute("fthetaMaxFov").Get()
-        camera_info["cameraFisheyeParams"][5] = camera.GetAttribute("fthetaPolyA").Get()
-        camera_info["cameraFisheyeParams"][6] = camera.GetAttribute("fthetaPolyB").Get()
-        camera_info["cameraFisheyeParams"][7] = camera.GetAttribute("fthetaPolyC").Get()
-        camera_info["cameraFisheyeParams"][8] = camera.GetAttribute("fthetaPolyD").Get()
-        camera_info["cameraFisheyeParams"][9] = camera.GetAttribute("fthetaPolyE").Get()
-        camera_info["cameraFisheyeParams"][10] = camera.GetAttribute("fthetaPolyF").Get()
-        camera_info["cameraFisheyeParams"][11] = camera.GetAttribute("p0").Get()
-        camera_info["cameraFisheyeParams"][12] = camera.GetAttribute("p1").Get()
-        camera_info["cameraFisheyeParams"][13] = camera.GetAttribute("s0").Get()
-        camera_info["cameraFisheyeParams"][14] = camera.GetAttribute("s1").Get()
-        camera_info["cameraFisheyeParams"][15] = camera.GetAttribute("s2").Get()
-        camera_info["cameraFisheyeParams"][16] = camera.GetAttribute("s3").Get()
-        camera_info["cameraFisheyeParams"][17] = camera.GetAttribute("fisheyeResolutionBudget").Get()
-        camera_info["cameraFisheyeParams"][18] = camera.GetAttribute("fisheyeFrontFaceResolutionScale").Get()
-
-    physical_distortion = camera.GetAttribute("physicalDistortionModel").Get()
-    if physical_distortion is not None:
-        camera_info["physicalDistortionModel"] = physical_distortion
+        if pinhole[5:8] == [0.0] * 3:
+            # Zeros provided for k4, k5, k6 coefficients
+            camera_info.distortion_model = "plumb_bob"
+            camera_info.d = pinhole[:5]
+        else:
+            camera_info.distortion_model = "rational_polynomial"
+            camera_info.d = pinhole
+    elif lens_distortion_model == "opencv":
+        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencv:imageSize").Get()
+        cx = camera_prim.GetAttribute("omni:lensdistortion:opencv:cx").Get()
+        cy = camera_prim.GetAttribute("omni:lensdistortion:opencv:cy").Get()
+        fx = camera_prim.GetAttribute("omni:lensdistortion:opencv:fx").Get()
+        fy = camera_prim.GetAttribute("omni:lensdistortion:opencv:fy").Get()
+        fisheye = [0.0] * 4
+        for i in range(4):
+            fisheye[i] = camera_prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Get()
+        camera_info.distortion_model = "equidistant"
+        camera_info.d = fisheye
     else:
-        camera_info["physicalDistortionModel"] = "plumb_bob"
+        carb.log_warn(
+            f"ROS2 CameraInfo support for lens distortion models beyond opencvPinhole and opencvFisheye is deprecated as of Isaac Sim 5.0, and will be removed in a future release."
+        )
 
-    physical_distortion_coefs = camera.GetAttribute("physicalDistortionCoefficients").Get()
-    if camera_info["physicalDistortionModel"] == "plumb_bob":
-        camera_info["physicalDistortionCoefficients"] = np.zeros((1, 5))
-        if physical_distortion_coefs is not None:
+        width, height = get_resolution(render_product_path=render_product_path)
+        focalLength = camera_prim.GetAttribute("focalLength").Get()
+        horizontalAperture = camera_prim.GetAttribute("horizontalAperture").Get()
+        verticalAperture = camera_prim.GetAttribute("verticalAperture").Get()
+
+        fx = width * focalLength / horizontalAperture
+        fy = height * focalLength / verticalAperture
+        cx = width * 0.5
+        cy = height * 0.5
+
+        supported_physical_distortion_models = ["plumb_bob", "rational_polynomial", "equidistant"]
+        physical_distortion = camera_prim.GetAttribute("physicalDistortionModel").Get()
+        physical_distortion_coefs = camera_prim.GetAttribute("physicalDistortionCoefficients").Get()
+
+        # Set default distortion model to plumb_bob without distortion
+        camera_info.distortion_model = "plumb_bob"
+        camera_info.d = [0.0] * 5
+        if physical_distortion not in supported_physical_distortion_models:
             carb.log_warn(
-                f"Overriding existing physical distortion coefficients {physical_distortion_coefs} with [0, 0, 0, 0, 0] for physicalDistortionModel == 'plumb_bob'."
+                f"Unsupported physical distortion model '{physical_distortion}'. Using plumb_bob with default coefficients."
             )
-    elif physical_distortion_coefs is not None:
-        camera_info["physicalDistortionCoefficients"] = np.asarray(physical_distortion_coefs)
-    else:
-        camera_info["physicalDistortionCoefficients"] = np.zeros((1, 5))
+        elif physical_distortion == "plumb_bob" and physical_distortion_coefs != [0.0] * 5:
+            carb.log_warn(
+                f"Setting physical distortion coefficients to [0, 0, 0, 0, 0] for physicalDistortionModel == 'plumb_bob'."
+            )
+        else:
+            camera_info.distortion_model = physical_distortion
+            camera_info.d = list(physical_distortion_coefs)
 
-    # Compute and store camera intrinsics matrix (k)
-    fx = width * focalLength / horizontalAperture
-    fy = height * focalLength / verticalAperture
-    cx = width * 0.5
-    cy = height * 0.5
-    camera_info["k"] = np.asarray([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
-    camera_info["r"] = np.eye(N=3, dtype=float)
-    camera_info["p"] = np.concatenate((camera_info["k"], np.zeros(shape=[3, 1], dtype=float)), axis=1)
+    # Retrieve and store resolution
+    camera_info.width = width
+    camera_info.height = height
+    # Set default intrinsic matrix (k)
+    camera_info.k = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+    # Set default rectification matrix (r)
+    camera_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    # Set default projection matrix (p)
+    camera_info.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
 
-    return camera_info
+    return camera_info, camera_prim
 
 
 def compute_relative_pose(left_camera_prim: Usd.Prim, right_camera_prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:

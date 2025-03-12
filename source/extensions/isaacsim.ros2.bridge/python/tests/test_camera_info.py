@@ -11,6 +11,7 @@ import asyncio
 import gc
 import random
 import sys
+from typing import List, Tuple
 
 import carb
 import cv2
@@ -26,17 +27,14 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
-from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.semantics import add_update_semantics
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf, Sdf, UsdLux
+from pxr import Sdf, UsdLux
 
-from .common import add_carter_ros, add_cube, get_qos_profile
+from .common import get_qos_profile
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -89,30 +87,6 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    # def cvtype2_to_dtype_with_channels(self, cvtype):
-    #     # given CV_8UC3 for RGB8
-    #     #
-    #     CV_CN_SHIFT = 3
-    #     CV_CN_MAX = 512
-    #     CV_MAT_CN_MASK = ((CV_CN_MAX - 1)) << CV_CN_SHIFT
-    #     CV_MAT_CN = ((((flags) & CV_MAT_CN_MASK) >> CV_CN_SHIFT) + 1)
-
-    #     CV_MAT_C
-    #     from cv_bridge.boost.cv_bridge_boost import CV_MAT_CNWrap, CV_MAT_DEPTHWrap
-    #     return self.cvdepth_to_numpy_depth[CV_MAT_DEPTHWrap(cvtype)], CV_MAT_CNWrap(cvtype)
-
-    # def encoding_to_cvtype2(self, encoding):
-    #     # returns CV_8UC3 for RGB8
-    #     from cv_bridge.boost.cv_bridge_boost import getCvType
-
-    #     try:
-    #         return getCvType(encoding)
-    #     except RuntimeError as e:
-    #         raise CvBridgeError(e)
-
-    # def encoding_to_dtype_with_channels(self, encoding):
-    #     return self.cvtype2_to_dtype_with_channels(self.encoding_to_cvtype2(encoding))
-
     def imgmsg_to_cv2(self, img_msg):
         # encoding for RGB images is Type_RGB8 (token = rgb8) by default
         # dtype, n_channels = self.encoding_to_dtype_with_channels(img_msg.encoding)
@@ -147,7 +121,6 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
         camera_path = "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
         add_reference_to_stage(usd_path=self._assets_root_path + camera_path, prim_path="/Hawk")
         import rclpy
-        import usdrt.Sdf
 
         try:
             og.Controller.edit(
@@ -159,7 +132,7 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
                         ("CameraInfoPublish", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/Hawk/left/camera_left")]),
+                        ("CreateRenderProduct.inputs:cameraPrim", [Sdf.Path("/Hawk/left/camera_left")]),
                         ("CreateRenderProduct.inputs:height", 1200),
                         ("CreateRenderProduct.inputs:width", 1920),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
@@ -211,14 +184,6 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
             self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
             self.assertLess(self._camera_info.header.stamp.sec, system_time / 2.0)
 
-            # fx = width * focalLength / horizontalAperture
-            # fy = height * focalLength / verticalAperture
-            # cx = width * 0.5
-            # cy = height * 0.5
-            # camera_info["k"] = np.asarray([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
-            # camera_info["r"] = np.eye(N=3, dtype=float)
-            # camera_info["p"] = np.concatenate((camera_info["k"], np.zeros(shape=[3, 1], dtype=float)), axis=1)
-
             # Test contents of k matrix (function of width, height, focal length, apertures)
             self.assertAlmostEqual(self._camera_info.k[0], 1920.0 * 2.87343 / 5.76, places=2)
             self.assertAlmostEqual(self._camera_info.k[1], 0.0)
@@ -242,7 +207,7 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
                 self.assertAlmostEqual(self._camera_info.p[i * 4 + 3], 0.0)
 
             # Test distortion model and coefficients
-            self.assertAlmostEqual(self._camera_info.distortion_model, "rational_polynomial")
+            self.assertEqual(self._camera_info.distortion_model, "rational_polynomial")
             distortion_coefficients = [0.147811, -0.032313, -0.000194, -0.000035, 0.008823, 0.517913, -0.06708, 0.01695]
             for i in range(len(distortion_coefficients)):
                 self.assertAlmostEqual(self._camera_info.d[i], distortion_coefficients[i])
@@ -254,27 +219,88 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             self._camera_info = None
 
-    async def test_stereo_camera_info(self):
+    def _add_light(self, name: str, position: List[float]) -> None:
+        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))
+        sphereLight.CreateRadiusAttr(6)
+        sphereLight.CreateIntensityAttr(10000)
+        SingleXFormPrim(str(sphereLight.GetPath())).set_world_pose(position)
 
-        camera_path = self._assets_root_path + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
-        add_reference_to_stage(usd_path=camera_path, prim_path="/Hawk")
-
+    def _add_checkerboard(self, position: List[float]) -> None:
         checkerboard_path = self._assets_root_path + "/Isaac/Props/Camera/checkerboard_6x10.usd"
         add_reference_to_stage(usd_path=checkerboard_path, prim_path="/calibration_target")
-        SingleXFormPrim("/calibration_target", name="calibration_target", position=[1.0, -0.075, -0.6])
+        SingleXFormPrim("/calibration_target", name="calibration_target", position=position)
 
-        def add_light(name: str, z: float):
-            sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))
-            sphereLight.CreateRadiusAttr(6)
-            sphereLight.CreateIntensityAttr(10000)
-            SingleXFormPrim(str(sphereLight.GetPath())).set_world_pose([0.5, -0.075, z])
+    def _get_rectified_image(self, image_msg_raw, camera_info_msg, side):
+        # Convert ROS2 image message data buffer to CV2 image
+        image_raw = self.imgmsg_to_cv2(image_msg_raw)
+        if self._visualize:
+            cv2.imwrite(f"{side}_image_raw.png", image_raw)
+        # Initialize the mapping arrays to rectify the raw image
+        k = np.reshape(np.array(camera_info_msg.k), (3, 3))
+        r = np.reshape(np.array(camera_info_msg.r), (3, 3))
+        p = np.reshape(np.array(camera_info_msg.p), (3, 4))
+        if camera_info_msg.distortion_model == "equidistant":
+            map1, map2 = cv2.fisheye.initUndistortRectifyMap(
+                K=k,
+                D=np.array(camera_info_msg.d),
+                R=r,
+                P=p,
+                size=(camera_info_msg.width, camera_info_msg.height),
+                m1type=cv2.CV_32FC1,
+            )
+            return cv2.remap(src=image_raw, map1=map1, map2=map2, interpolation=cv2.INTER_LANCZOS4)
+        else:
+            map1, map2 = cv2.initUndistortRectifyMap(
+                cameraMatrix=k,
+                distCoeffs=np.array(camera_info_msg.d),
+                R=r,
+                newCameraMatrix=p,
+                size=(camera_info_msg.width, camera_info_msg.height),
+                m1type=cv2.CV_32FC1,
+            )
+            return cv2.remap(src=image_raw, map1=map1, map2=map2, interpolation=cv2.INTER_LANCZOS4)
 
-        add_light("top", 12)
-        add_light("bottom", -12)
+    def _prepare_scene_for_stereo_camera(
+        self, baseline: float, resolution: Tuple[int, int], focal_length: float, focus_distance: float
+    ) -> Tuple[Camera, Camera]:
+        """Add a stereo camera, checkerboard, and lights to the scene
 
-        import rclpy
-        import usdrt.Sdf
+        Args:
+            baseline (float): Baseline distance between the two cameras
+            resolution (Tuple[int, int]): Resolution of the cameras
+            focal_length (float): Focal length of the cameras
+            focus_distance (float): Focus distance of the cameras
 
+        Returns:
+            Tuple[Camera, Camera]: The left and right cameras
+        """
+
+        left_camera = Camera(
+            prim_path="/left_camera",
+            name="left_camera",
+            resolution=resolution,
+            position=np.array([0, baseline / 2.0, 0]),
+        )
+        left_camera.set_focal_length(focal_length)
+        left_camera.set_focus_distance(focus_distance)
+
+        right_camera = Camera(
+            prim_path="/right_camera",
+            name="right_camera",
+            resolution=resolution,
+            position=np.array([0, -baseline / 2.0, 0]),
+        )
+        right_camera.set_focal_length(focal_length)
+        right_camera.set_focus_distance(focus_distance)
+
+        # Create a light
+        self._add_light(name="top", position=[0.0, 0.0, 12])
+        self._add_light(name="bottom", position=[0.0, 0.0, -12])
+
+        # Create a checkerboard
+        self._add_checkerboard(position=[1.1, 0.0, -0.6])
+
+        # Add an OmniGraph to publish the camera info and images
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -289,12 +315,12 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
                         ("RGBPublishRight", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("CreateRenderProductLeft.inputs:cameraPrim", [usdrt.Sdf.Path("/Hawk/left/camera_left")]),
-                        ("CreateRenderProductLeft.inputs:height", 1200),
-                        ("CreateRenderProductLeft.inputs:width", 1920),
-                        ("CreateRenderProductRight.inputs:cameraPrim", [usdrt.Sdf.Path("/Hawk/right/camera_right")]),
-                        ("CreateRenderProductRight.inputs:height", 1200),
-                        ("CreateRenderProductRight.inputs:width", 1920),
+                        ("CreateRenderProductLeft.inputs:cameraPrim", [Sdf.Path("/left_camera")]),
+                        ("CreateRenderProductLeft.inputs:height", 1024),
+                        ("CreateRenderProductLeft.inputs:width", 2048),
+                        ("CreateRenderProductRight.inputs:cameraPrim", [Sdf.Path("/right_camera")]),
+                        ("CreateRenderProductRight.inputs:height", 1024),
+                        ("CreateRenderProductRight.inputs:width", 2048),
                         ("CameraInfoPublish.inputs:topicName", "camera_info_left"),
                         ("CameraInfoPublish.inputs:topicNameRight", "camera_info_right"),
                         ("CameraInfoPublish.inputs:frameId", "frame_left"),
@@ -336,202 +362,129 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
-        await omni.kit.app.get_app().next_update_async()
 
+        return left_camera, right_camera
+
+    async def _test_get_stereo_camera_messages(
+        self, opencv_distortion_model: str, ros2_distortion_model: str, distortion_coefficients: List[float]
+    ):
+        """Get the camera info and images from the stereo camera
+
+        Args:
+            opencv_distortion_model (str): OpenCV distortion model to test.
+            ros2_distortion_model (str): ROS2 distortion model to test.
+            distortion_coefficients (List[float]): Distortion coefficients to test.
+        """
+
+        import rclpy
+        from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
         from sensor_msgs.msg import CameraInfo, Image
 
-        self._camera_info_left = None
-        self._image_left = None
-        self._camera_info_right = None
-        self._image_right = None
+        if not rclpy.ok():
+            rclpy.init()
 
-        def camera_info_left_callback(data):
-            self._camera_info_left = data
+        # Create ROS nodes to receive camera data
+        node_left = rclpy.create_node("camera_left_node")
+        node_right = rclpy.create_node("camera_right_node")
 
-        def image_left_callback(data):
-            self._image_left = data
-
-        def camera_info_right_callback(data):
-            self._camera_info_right = data
-
-        def image_right_callback(data):
-            self._image_right = data
-
-        node_left = rclpy.create_node("camera_tester_left")
-        camera_info_sub_left = node_left.create_subscription(
-            CameraInfo, "camera_info_left", camera_info_left_callback, get_qos_profile()
+        # Set up QoS profile matching the publisher
+        cam_info_qos = QoSProfile(
+            reliability=QoSReliabilityPolicy.RELIABLE, history=QoSHistoryPolicy.KEEP_LAST, depth=10
         )
-        rgb_sub_left = node_left.create_subscription(Image, "rgb_left", image_left_callback, get_qos_profile())
 
-        node_right = rclpy.create_node("camera_tester_right")
-        camera_info_sub_right = node_right.create_subscription(
-            CameraInfo, "camera_info_right", camera_info_right_callback, get_qos_profile()
+        # Subscribe to camera topics
+        def camera_info_left_callback(msg):
+            self._camera_info_left = msg
+
+        def camera_info_right_callback(msg):
+            self._camera_info_right = msg
+
+        def image_left_callback(msg):
+            self._image_left = msg
+
+        def image_right_callback(msg):
+            self._image_right = msg
+
+        # Create subscriptions
+        camera_info_left_sub = node_left.create_subscription(
+            CameraInfo, "camera_info_left", camera_info_left_callback, cam_info_qos
         )
-        rgb_sub_right = node_right.create_subscription(Image, "rgb_right", image_right_callback, get_qos_profile())
+        camera_info_right_sub = node_right.create_subscription(
+            CameraInfo, "camera_info_right", camera_info_right_callback, cam_info_qos
+        )
+        image_left_sub = node_left.create_subscription(Image, "rgb_left", image_left_callback, cam_info_qos)
+        image_right_sub = node_right.create_subscription(Image, "rgb_right", image_right_callback, cam_info_qos)
 
-        await omni.kit.app.get_app().next_update_async()
-
+        # Start spinning the nodes
         def spin_left():
             rclpy.spin_once(node_left, timeout_sec=0.1)
 
         def spin_right():
             rclpy.spin_once(node_right, timeout_sec=0.1)
 
-        import time
-
-        system_time = time.time()
-
+        # Wait for camera info and images to be received
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.5, callback=spin_right)
         await simulate_async(1.5, callback=spin_left)
 
-        self.assertIsNotNone(self._camera_info_left)
-        self.assertIsNotNone(self._camera_info_right)
+        self.assertIsNotNone(self._camera_info_left, f"Did not receive left camera_info for {opencv_distortion_model}")
+        self.assertIsNotNone(
+            self._camera_info_right, f"Did not receive right camera_info for {opencv_distortion_model}"
+        )
+        self.assertIsNotNone(self._image_left, f"Did not receive left image for {opencv_distortion_model}")
+        self.assertIsNotNone(self._image_right, f"Did not receive right image for {opencv_distortion_model}")
 
-        self.assertEqual(self._camera_info_left.width, 1920)
-        self.assertEqual(self._camera_info_left.height, 1200)
-        self.assertGreaterEqual(self._camera_info_left.header.stamp.sec, 0)
-        self.assertLess(self._camera_info_left.header.stamp.sec, system_time / 2.0)
-        self.assertEqual(self._camera_info_left.header.frame_id, "frame_left")
-
-        self.assertEqual(self._camera_info_right.width, 1920)
-        self.assertEqual(self._camera_info_right.height, 1200)
-        self.assertGreaterEqual(self._camera_info_right.header.stamp.sec, 0)
-        self.assertLess(self._camera_info_right.header.stamp.sec, system_time / 2.0)
-        self.assertEqual(self._camera_info_right.header.frame_id, "frame_right")
-
-        # Test contents of k matrix (function of width, height, focal length, apertures)
-        self.assertAlmostEqual(self._camera_info_left.k[0], 1920.0 * 2.87343 / 5.76, places=2)
-        self.assertAlmostEqual(self._camera_info_left.k[1], 0.0)
-        self.assertAlmostEqual(self._camera_info_left.k[2], 1920.0 * 0.5)
-        self.assertAlmostEqual(self._camera_info_left.k[3], 0.0)
-        self.assertAlmostEqual(self._camera_info_left.k[4], 1200.0 * 2.87343 / 3.6, places=2)
-        self.assertAlmostEqual(self._camera_info_left.k[5], 1200.0 * 0.5)
-        self.assertAlmostEqual(self._camera_info_left.k[6], 0.0)
-        self.assertAlmostEqual(self._camera_info_left.k[7], 0.0)
-        self.assertAlmostEqual(self._camera_info_left.k[8], 1.0)
-
-        self.assertAlmostEqual(self._camera_info_right.k[0], 1920.0 * 2.87798 / 5.76, places=2)
-        self.assertAlmostEqual(self._camera_info_right.k[1], 0.0)
-        self.assertAlmostEqual(self._camera_info_right.k[2], 1920.0 * 0.5)
-        self.assertAlmostEqual(self._camera_info_right.k[3], 0.0)
-        self.assertAlmostEqual(self._camera_info_right.k[4], 1200.0 * 2.87798 / 3.6, places=2)
-        self.assertAlmostEqual(self._camera_info_right.k[5], 1200.0 * 0.5)
-        self.assertAlmostEqual(self._camera_info_right.k[6], 0.0)
-        self.assertAlmostEqual(self._camera_info_right.k[7], 0.0)
-        self.assertAlmostEqual(self._camera_info_right.k[8], 1.0)
-
-        # Test if r matrix is identity
-        for i in range(3):
-            for j in range(3):
-                self.assertAlmostEqual(self._camera_info_left.r[i * 3 + j], 1.0 if i == j else 0.0)
-                self.assertAlmostEqual(self._camera_info_right.r[i * 3 + j], 1.0 if i == j else 0.0)
-
-        # Test newly-calibrated p matrix (right only)
-        for i in range(12):
-            if i == 2:
-                continue
-            elif i == 3:
-                self.assertAlmostEqual(self._camera_info_left.p[i], 0.0)
-                self.assertAlmostEqual(self._camera_info_right.p[i], -143.7853577)
-            else:
-                self.assertAlmostEqual(self._camera_info_left.p[i], self._camera_info_right.p[i])
-
-        # Test distortion model and coefficients
-        self.assertAlmostEqual(self._camera_info_left.distortion_model, "rational_polynomial")
-        self.assertAlmostEqual(self._camera_info_right.distortion_model, "rational_polynomial")
-        distortion_coefficients_left = [
-            0.147811,
-            -0.032313,
-            -0.000194,
-            -0.000035,
-            0.008823,
-            0.517913,
-            -0.06708,
-            0.01695,
-        ]
-        distortion_coefficients_right = [
-            6.815791,
-            5.172144,
-            -0.000246,
-            -0.000128,
-            0.353267,
-            7.180808,
-            7.640372,
-            1.596375,
-        ]
-        for i in range(len(distortion_coefficients_left)):
-            self.assertAlmostEqual(self._camera_info_left.d[i], distortion_coefficients_left[i], places=6)
-            self.assertAlmostEqual(self._camera_info_right.d[i], distortion_coefficients_right[i], places=6)
-        self._camera_info_left.d = [
-            0.147811,
-            -0.032313,
-            -0.000194,
-            -0.000035,
-            0.008823,
-            0.517913,
-            -0.06708,
-            0.01695,
-        ]
-        self._camera_info_right.d = [
-            6.815791,
-            5.172144,
-            -0.000246,
-            -0.000128,
-            0.353267,
-            7.180808,
-            7.640372,
-            1.596375,
-        ]
-
-        def get_rectified_image(image_msg_raw, camera_info_msg, side):
-            # Convert ROS2 image message data buffer to CV2 image
-            image_raw = self.imgmsg_to_cv2(image_msg_raw)
-            # Initialize the mapping arrays to rectify the raw image
-            k = np.reshape(np.array(camera_info_msg.k), (3, 3))
-            r = np.reshape(np.array(camera_info_msg.r), (3, 3))
-            p = np.reshape(np.array(camera_info_msg.p), (3, 4))
-            map1, map2 = cv2.initUndistortRectifyMap(
-                cameraMatrix=k,
-                distCoeffs=np.array(camera_info_msg.d),
-                R=r,
-                newCameraMatrix=p,
-                size=(camera_info_msg.width, camera_info_msg.height),
-                m1type=cv2.CV_32FC1,
+        # Check CameraInfo distortion model and distortion coefficients
+        self.assertEqual(self._camera_info_left.distortion_model, ros2_distortion_model)
+        self.assertEqual(self._camera_info_right.distortion_model, ros2_distortion_model)
+        for i, (expected, actual_left, actual_right) in enumerate(
+            zip(distortion_coefficients, self._camera_info_left.d, self._camera_info_right.d)
+        ):
+            self.assertAlmostEqual(
+                actual_left, expected, delta=1e-5, msg=f"Left coefficient {i} mismatch for {opencv_distortion_model}"
             )
-            # Return the rectified image
-            cv2.imwrite(f"{side}_image_raw.png", image_raw)
-            return cv2.remap(src=image_raw, map1=map1, map2=map2, interpolation=cv2.INTER_LANCZOS4)
+            self.assertAlmostEqual(
+                actual_right, expected, delta=1e-5, msg=f"Right coefficient {i} mismatch for {opencv_distortion_model}"
+            )
 
-        left_image_rect = get_rectified_image(self._image_left, self._camera_info_left, "left")
-        right_image_rect = get_rectified_image(self._image_right, self._camera_info_right, "right")
+        # Stop timeline
+        self._timeline.stop()
 
-        chessboard_dims = (6, 10)
+    async def _test_stereo_rectification(self, opencv_distortion_model):
+        """Test stereo rectification
 
-        VISUALIZE = False
-        # Comparison logic borrowed from Isaac ROS
-        if VISUALIZE:
-            cv2.imwrite("left_image_rect.png", left_image_rect)
-            cv2.imwrite("right_image_rect.png", right_image_rect)
-        # left_image_rect_gray = cv2.cvtColor(left_image_rect, cv2.COLOR_RGB2GRAY)
-        left_ret, left_corners = cv2.findChessboardCorners(left_image_rect, chessboard_dims, None)
-        self.assertTrue(left_ret, "Couldn't find chessboard corners in output left image!")
-        # right_image_rect_gray = cv2.cvtColor(right_image_rect, cv2.COLOR_RGB2GRAY)
-        right_ret, right_corners = cv2.findChessboardCorners(right_image_rect, chessboard_dims, None)
-        self.assertTrue(right_ret, "Couldn't find chessboard corners in output right image!")
+        Args:
+            opencv_distortion_model (str): OpenCV distortion model to test.
+        """
+        left_image_rect = self._get_rectified_image(self._image_left, self._camera_info_left, "left")
+        right_image_rect = self._get_rectified_image(self._image_right, self._camera_info_right, "right")
+        cv2.imwrite("left_image_rect.png", left_image_rect)
+        cv2.imwrite("right_image_rect.png", right_image_rect)
+
+        # Find checkerboard corners
+        checkerboard_size = (6, 10)  # Internal corners on the checkerboard
+        flags = cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE
+
+        ret_left, corners_left = cv2.findChessboardCorners(left_image_rect, checkerboard_size, flags)
+        ret_right, corners_right = cv2.findChessboardCorners(right_image_rect, checkerboard_size, flags)
+
+        # Verify corners were found in both images
+        self.assertTrue(ret_left, f"Could not find checkerboard corners in left image for {opencv_distortion_model}")
+        self.assertTrue(ret_right, f"Could not find checkerboard corners in right image for {opencv_distortion_model}")
+
         # Extract the x and y coordinates of the corners in left_corners and right_corners
-        x_coords_left = [c[0][0] for c in left_corners]
-        y_coords_left = [c[0][1] for c in left_corners]
-        x_coords_right = [c[0][0] for c in right_corners]
-        y_coords_right = [c[0][1] for c in right_corners]
-        if VISUALIZE:
+        x_coords_left = [c[0][0] for c in corners_left]
+        y_coords_left = [c[0][1] for c in corners_left]
+        x_coords_right = [c[0][0] for c in corners_right]
+        y_coords_right = [c[0][1] for c in corners_right]
+        if self._visualize:
             # Draw lines of the same color at the average row value for all corners
             # in the left and right image
-            cv2.drawChessboardCorners(left_image_rect, chessboard_dims, left_corners, left_ret)
-            cv2.drawChessboardCorners(right_image_rect, chessboard_dims, right_corners, right_ret)
+            cv2.drawChessboardCorners(left_image_rect, checkerboard_size, corners_left, ret_left)
+            cv2.drawChessboardCorners(right_image_rect, checkerboard_size, corners_right, ret_right)
             # Draw randomly colored lines connecting the corresponding corners
-            for i in range(min(len(left_corners), len(right_corners))):
+            for i in range(min(len(corners_left), len(corners_right))):
                 average_y = (y_coords_left[i] + y_coords_right[i]) / 2
                 pt1 = (0, int(average_y))
                 pt2 = (left_image_rect.shape[1], int(average_y))
@@ -541,63 +494,82 @@ class TestRos2CameraInfo(omni.kit.test.AsyncTestCase):
             cv2.imwrite("left_image_rect.png", left_image_rect)
             cv2.imwrite("right_image_rect.png", right_image_rect)
 
-        """
-        Test 1:
-        Check if the row values of the same corners of the chessboard
-        in the left and right images are within threshold
-        """
-        # Compute the differences in row values
+        # Test 1: Check vertical alignment of corresponding corners
+        # Compare row positions
         row_diffs = [
-            abs(y_coords_left[i] - y_coords_right[i]) for i in range(min(len(left_corners), len(right_corners)))
+            abs(y_coords_left[i] - y_coords_right[i]) for i in range(min(len(corners_left), len(corners_right)))
         ]
-        # Allows test pass if same features are within of 4 pixels in both images
+
+        # Allow 4-pixel difference in vertical alignment
         CORNER_ROW_DIFF_THRESHOLD = 4
-        if VISUALIZE:
+        if self._visualize:
             print("CORNER_ROW_DIFF_THRESHOLD :")
             print(CORNER_ROW_DIFF_THRESHOLD)
             print("row_diffs :")
             print(row_diffs)
+
         self.assertFalse(
             any(diff > CORNER_ROW_DIFF_THRESHOLD for diff in row_diffs),
-            "Difference between corners row values in left and right images" "are not within threshold",
+            f"Difference between corners row values in left and right images exceeds threshold for {opencv_distortion_model}",
         )
 
-        """
-        Test 2:
-        Check if the slopes of the lines connecting each corresponding corners in
-        the left and right images are within threshold from the mean.
-        This test checks if these lines(epipolar lines) are parallel
-        """
-        # Compute the slopes of lines between corresponding corners
-        slopes = [
-            (y_coords_right[i] - y_coords_left[i]) / (x_coords_right[i] - x_coords_left[i])
-            for i in range(min(len(left_corners), len(right_corners)))
-        ]
-        s = np.array(slopes)
-        # Create a list of difference betwen the slope and average slope
-        mean_slope_diffs = abs(slopes - (sum(slopes) / len(slopes)))
+        # Test 2: Check if epipolar lines are parallel
         EPIPOLAR_LINES_SLOPE_DIFF_THRESHOLD = 0.005
-        if VISUALIZE:
-            print("EPIPOLAR_LINES_SLOPE_DIFF_THRESHOLD :")
-            print(EPIPOLAR_LINES_SLOPE_DIFF_THRESHOLD)
-            print("mean_slope_diffs :")
-        # TODO: expand test to be any slopes above threshold
+        epipolar_slopes = []
+        for i in range(0, len(y_coords_left), checkerboard_size[0]):
+            epipolar_slopes.append(
+                abs(y_coords_left[i] - y_coords_left[i + 5]) / abs(x_coords_left[i] - x_coords_left[i + 5])
+            )
+            epipolar_slopes.append(
+                abs(y_coords_right[i] - y_coords_right[i + 5]) / abs(x_coords_right[i] - x_coords_right[i + 5])
+            )
+        # Allow at most 2 points to exceed the threshold
         self.assertLessEqual(
-            sum(mean_slope_diffs > EPIPOLAR_LINES_SLOPE_DIFF_THRESHOLD),
+            sum(np.array(epipolar_slopes) > EPIPOLAR_LINES_SLOPE_DIFF_THRESHOLD),
             2,
-            "Epipolar lines are not parallel!",
+            f"Epipolar lines are not parallel for {opencv_distortion_model}!",
         )
 
-        # make sure all previous messages are cleared
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        spin_left()
-        spin_right()
-        await omni.kit.app.get_app().next_update_async()
-        self._camera_info_left = None
-        self._camera_info_right = None
-        self._image_left = None
-        self._image_right = None
+    async def test_stereo_camera_opencv_pinhole(self):
 
-        node_left.destroy_node()
-        node_right.destroy_node()
+        self._visualize = False
+        left_camera, right_camera = self._prepare_scene_for_stereo_camera(
+            baseline=0.15, resolution=(2048, 1024), focal_length=1.8, focus_distance=400
+        )
+
+        # Set distortion parameters
+        pinhole = [0.1, 0.02, 0.01, 0.002, 0.003, 0.0004, 0.00005, 0.00005, 0.01, 0.002, 0.0003, 0.0004]
+        left_camera.set_opencv_pinhole_properties(pinhole=pinhole)
+        right_camera.set_opencv_pinhole_properties(pinhole=pinhole)
+
+        # Retrieve and test basic validity of CameraInfo messages and raw images
+        await self._test_get_stereo_camera_messages(
+            opencv_distortion_model="opencvPinhole",
+            ros2_distortion_model="rational_polynomial",
+            distortion_coefficients=pinhole,
+        )
+
+        # Test stereo rectification
+        await self._test_stereo_rectification(opencv_distortion_model="opencvPinhole")
+
+    async def test_stereo_camera_opencv_fisheye(self):
+
+        self._visualize = False
+        left_camera, right_camera = self._prepare_scene_for_stereo_camera(
+            baseline=0.15, resolution=(2048, 1024), focal_length=1.8, focus_distance=400
+        )
+
+        # Set distortion parameters
+        fisheye = [0.1, 0.02, 0.003, 0.0004]
+        left_camera.set_opencv_fisheye_properties(fisheye=fisheye)
+        right_camera.set_opencv_fisheye_properties(fisheye=fisheye)
+
+        # Retrieve and test basic validity of CameraInfo messages and raw images
+        await self._test_get_stereo_camera_messages(
+            opencv_distortion_model="opencvFisheye",
+            ros2_distortion_model="equidistant",
+            distortion_coefficients=fisheye,
+        )
+
+        # Test stereo rectification
+        await self._test_stereo_rectification(opencv_distortion_model="opencvFisheye")
