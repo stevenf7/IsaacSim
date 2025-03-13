@@ -117,6 +117,11 @@ files_exclude = [
     # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
     ["exts/*/pip_*/**/*.exe"],
     ["extscache/*/pip_*/**/*.exe"],
+    ["extscache/*/pip_*/**/*.exe"],
+    ["kit/python/Lib/site-packages/pip/_vendor/distlib/t64-arm.exe"],
+    ["kit/python/Lib/site-packages/pip/_vendor/distlib/w64-arm.exe"],
+    ["kit/python/Lib/site-packages/setuptools/cli-arm64.exe"],
+    ["kit/python/Lib/site-packages/setuptools/gui-arm64.exe"],
 ]
 
 [isaac-sim-internal-standalone]
