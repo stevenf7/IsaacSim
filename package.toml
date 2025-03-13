@@ -93,6 +93,15 @@ files_exclude = [
 files = [
     ["../../docs/isaac_sim/latest/**", "docs/py/"] # linux ext api docs
 ]
+files_exclude = [
+    ["extscache/omni.services.pip_archive-0.14.2+107.0.2.lx64.cp311/pip_prebundle/setuptools/cli-arm64.exe"],
+    ["extscache/omni.services.pip_archive-0.14.2+107.0.2.lx64.cp311/pip_prebundle/setuptools/gui-arm64.exe"],
+    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/t64-arm.exe"],
+    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/w64-arm.exe"],
+    ["kit/python/lib/python3.11/site-packages/setuptools/cli-arm64.exe"],
+    ["kit/python/lib/python3.11/site-packages/setuptools/gui-arm64.exe"],
+
+]
 files_strip = [
     ["**/*.so"],
 ]
@@ -117,7 +126,6 @@ files_exclude = [
     # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
     ["exts/*/pip_*/**/*.exe"],
     ["extscache/*/pip_*/**/*.exe"],
-    ["extscache/*/pip_*/**/*.exe"],
     ["kit/python/Lib/site-packages/pip/_vendor/distlib/t64-arm.exe"],
     ["kit/python/Lib/site-packages/pip/_vendor/distlib/w64-arm.exe"],
     ["kit/python/Lib/site-packages/setuptools/cli-arm64.exe"],
@@ -132,6 +140,12 @@ files_exclude = [
     ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020
+    ["extscache/omni.services.pip_archive-0.14.2+107.0.2.lx64.cp311/pip_prebundle/setuptools/cli-arm64.exe"],
+    ["extscache/omni.services.pip_archive-0.14.2+107.0.2.lx64.cp311/pip_prebundle/setuptools/gui-arm64.exe"],
+    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/t64-arm.exe"],
+    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/w64-arm.exe"],
+    ["kit/python/lib/python3.11/site-packages/setuptools/cli-arm64.exe"],
+    ["kit/python/lib/python3.11/site-packages/setuptools/gui-arm64.exe"],
 
 ]
 
