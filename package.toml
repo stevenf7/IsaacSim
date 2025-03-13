@@ -115,8 +115,8 @@ files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
     ["exts/isaacsim.asset.exporter.urdf/pip_prebundle/bin/**"], # ISIM-2584 remove because of malware
     # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
-    ["exts/*/pip_*/bin/*.exe"],
-    ["extscache/*/pip_*/bin/*.exe"],
+    ["exts/*/pip_*/**/*.exe"],
+    ["extscache/*/pip_*/**/*.exe"],
 ]
 
 [isaac-sim-internal-standalone]
@@ -203,8 +203,8 @@ files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
     ["exts/isaacsim.asset.exporter.urdf/pip_prebundle/bin/**"], # ISIM-2584 remove because of malware
     # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
-    ["exts/*/pip_*/bin/*.exe"],
-    ["extscache/*/pip_*/bin/*.exe"],
+    ["exts/*/pip_*/**/*.exe"],
+    ["extscache/*/pip_*/**/*.exe"],
 ]
 
 ########################################################################################################################
