@@ -272,8 +272,9 @@ check-python-packages:
         when: always
         expire_in: 2 weeks
         paths:
-          - _build/**/*.gcno # produced by the coverage build
-          - _build/**/*.log
+          # Temporarily disable these artifacts to fix link error when extracting kit-sdk
+          # - _build/**/*.gcno # produced by the coverage build
+          # - _build/**/*.log
           - _build/packages/
           - _repo/repo.log
           - _repo/repolog*.txt
