@@ -148,16 +148,16 @@ public:
 
     /**
      * @brief Sets the next batch of sensor pattern angles
-     * @param[in] azimuth_angles Array of azimuth angles in radians
-     * @param[in] zenith_angles Array of zenith angles in radians
-     * @param[in] sample_length Number of samples in the batch
+     * @param[in] azimuthAngles Array of azimuth angles in radians
+     * @param[in] zenithAngles Array of zenith angles in radians
+     * @param[in] sampleLength Number of samples in the batch
      */
     void setNextBatchRays(const float* azimuthAngles, const float* zenithAngles, const int sampleLength);
 
     /**
      * @brief Sets the origin offsets for each ray in the next batch
-     * @param[in] origin_offsets Array of 3D offset positions for each ray
-     * @param[in] sample_length Number of samples in the batch
+     * @param[in] originOffsets Array of 3D offset positions for each ray
+     * @param[in] sampleLength Number of samples in the batch
      */
     void setNextBatchOffsets(const float* originOffsets, const int sampleLength);
 

@@ -9,8 +9,8 @@
 
 #pragma once
 
+#include "isaacsim/core/includes/Component.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
-#include "omni/isaac/bridge/Component.h"
 
 #include <carb/renderer/Renderer.h>
 

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.0] - 2025-03-17
+### Changed
+- Cleanup and rename BridgeApplication to PrimManager for clarity
+
 ## [1.1.4] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines

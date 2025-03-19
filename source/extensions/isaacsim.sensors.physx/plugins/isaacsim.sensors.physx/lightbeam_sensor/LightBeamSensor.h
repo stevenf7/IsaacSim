@@ -44,7 +44,7 @@ class LightBeamSensor : public RangeSensorComponent
 public:
     /**
      * @brief Constructs a new Light Beam Sensor instance
-     * @param[in] PhysXInterface Pointer to the PhysX interface for physics simulation
+     * @param[in] physXInterface Pointer to the PhysX interface for physics simulation
      */
     LightBeamSensor(omni::physx::IPhysx* physXInterface);
 

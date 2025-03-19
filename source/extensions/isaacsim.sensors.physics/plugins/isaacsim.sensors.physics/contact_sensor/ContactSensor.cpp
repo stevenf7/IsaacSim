@@ -18,8 +18,8 @@
 
 #include "ContactSensor.h"
 
-#include "../core/BaseSensorComponent.h"
-#include "../core/BaseSensorManager.h"
+#include "../core/IsaacSensorComponent.h"
+#include "../core/IsaacSensorManager.h"
 #include "ContactManager.h"
 #include "IPhysicsSensor.h"
 
