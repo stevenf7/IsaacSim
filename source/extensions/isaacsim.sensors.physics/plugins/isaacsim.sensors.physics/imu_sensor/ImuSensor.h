@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../core/BaseSensorComponent.h"
+#include "../core/IsaacSensorComponent.h"
 
 #include <isaacSensorSchema/isaacImuSensor.h>
 #include <omni/physx/IPhysx.h>

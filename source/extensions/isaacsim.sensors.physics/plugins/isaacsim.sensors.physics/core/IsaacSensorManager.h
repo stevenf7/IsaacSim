@@ -12,8 +12,8 @@
 #include "../contact_sensor/ContactManager.h"
 #include "../contact_sensor/ContactSensor.h"
 #include "../imu_sensor/ImuSensor.h"
-#include "BaseSensorComponent.h"
-#include "omni/isaac/bridge/BridgeApplication.h"
+#include "IsaacSensorComponent.h"
+#include "isaacsim/core/includes/PrimManager.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -67,10 +67,10 @@ namespace physics
  * contact sensors and IMU sensors. It handles sensor lifecycle, updates, and provides
  * access to individual sensor components.
  *
- * The manager inherits from BridgeApplicationBase and provides functionality for
+ * The manager inherits from PrimManagerBase and provides functionality for
  * adding, updating, and managing sensor components in the physics simulation.
  */
-class IsaacSensorManager : public isaacsim::core::includes::BridgeApplicationBase<IsaacBaseSensorComponent>
+class IsaacSensorManager : public isaacsim::core::includes::PrimManagerBase<IsaacBaseSensorComponent>
 {
 public:
     /**
@@ -182,7 +182,7 @@ public:
      */
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
-        isaacsim::core::includes::BridgeApplicationBase<IsaacBaseSensorComponent>::onComponentChange(prim);
+        isaacsim::core::includes::PrimManagerBase<IsaacBaseSensorComponent>::onComponentChange(prim);
         // update properties of this prim (onComponentChange)
         if (m_components.find(prim.GetPath().GetString()) != m_components.end())
         {

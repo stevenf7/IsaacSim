@@ -87,7 +87,7 @@ public:
                 m_stage->GetPseudoRoot().GetPath() == path ? m_stage->GetPseudoRoot().GetPath() : path.GetPrimPath();
 
             // Update the component attached to this prim, onComponentChange checks to see if the prim exists in
-            // this BridgeApplication
+            // this PrimManager
             pxr::UsdPrim prim = m_stage->GetPrimAtPath(primPath);
             m_manager->onComponentChange(prim);
         }
@@ -102,7 +102,7 @@ private:
 };
 
 /**
- * @class BridgeApplicationBase
+ * @class PrimManagerBase
  * @brief Base template class for bridge applications managing USD-based components
  * @details
  * Provides core functionality for managing components within a USD stage, including
@@ -115,19 +115,19 @@ private:
  * @warning Derived classes must implement pure virtual functions
  */
 template <class ComponentType>
-class BridgeApplicationBase : public ComponentManager, public pxr::TfWeakBase
+class PrimManagerBase : public ComponentManager, public pxr::TfWeakBase
 {
 public:
     /**
-     * @brief Constructs a new BridgeApplicationBase instance
+     * @brief Constructs a new PrimManagerBase instance
      */
-    BridgeApplicationBase() = default;
+    PrimManagerBase() = default;
 
     /**
      * @brief Destroys the application instance and cleans up resources
      * @details Releases the notice listener and deletes all managed components
      */
-    ~BridgeApplicationBase()
+    ~PrimManagerBase()
     {
         m_noticeListener.reset();
         deleteAllComponents();
@@ -285,10 +285,10 @@ protected:
 };
 
 /**
- * @typedef BridgeApplication
- * @brief Convenience typedef for BridgeApplicationBase specialized with the base Component type
+ * @typedef PrimManager
+ * @brief Convenience typedef for PrimManagerBase specialized with the base Component type
  */
-typedef BridgeApplicationBase<Component> BridgeApplication;
+typedef PrimManagerBase<Component> PrimManager;
 
 }
 }

@@ -13,8 +13,8 @@
 #include "../lidar/LidarSensor.h"
 #include "../lightbeam_sensor/LightBeamSensor.h"
 #include "RangeSensorComponent.h"
+#include "isaacsim/core/includes/PrimManager.h"
 #include "isaacsim/core/includes/ScopedTimer.h"
-#include "omni/isaac/bridge/BridgeApplication.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -54,7 +54,7 @@ namespace physx
  *          The manager supports parallel processing of multiple sensors and ensures proper
  *          synchronization with the physics simulation timeline.
  */
-class RangeSensorManager : public isaacsim::core::includes::BridgeApplicationBase<RangeSensorComponent>
+class RangeSensorManager : public isaacsim::core::includes::PrimManagerBase<RangeSensorComponent>
 {
 public:
     /**
@@ -247,7 +247,7 @@ public:
      */
     virtual void onComponentChange(const pxr::UsdPrim& prim)
     {
-        isaacsim::core::includes::BridgeApplicationBase<RangeSensorComponent>::onComponentChange(prim);
+        isaacsim::core::includes::PrimManagerBase<RangeSensorComponent>::onComponentChange(prim);
         // update properties of this prim (onComponentChange)
         if (m_components.find(prim.GetPath().GetString()) != m_components.end())
         {

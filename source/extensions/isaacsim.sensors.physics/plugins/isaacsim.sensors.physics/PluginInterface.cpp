@@ -17,8 +17,8 @@
 #include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
 
-#include "core/BaseSensorComponent.h"
-#include "core/BaseSensorManager.h"
+#include "core/IsaacSensorComponent.h"
+#include "core/IsaacSensorManager.h"
 #include "imu_sensor/ImuSensor.h"
 #include "contact_sensor/ContactManager.h"
 #include "contact_sensor/ContactSensor.h"

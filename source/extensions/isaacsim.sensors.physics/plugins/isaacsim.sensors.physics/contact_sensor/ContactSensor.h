@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../core/BaseSensorComponent.h"
+#include "../core/IsaacSensorComponent.h"
 #include "ContactManager.h"
 #include "IPhysicsSensor.h"
 
