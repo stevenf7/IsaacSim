@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.9] - 2025-03-18
+### Fixed
+- recursive_list_folders now enforces trailing slashes on paths, preventing path clobber bug
+
 ## [1.0.8] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

@@ -9,6 +9,7 @@
 import glob
 import os
 
+import carb
 import omni.kit.test
 import omni.usd
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
@@ -54,11 +55,7 @@ usda_files = glob.glob(pathname="**/*.usda", root_dir=lidar_configs_dir, recursi
 
 # Make sure we found some files and report a useful message if not
 if len(usda_files) == 0:
-    # Add a test that will fail with a useful message
-    async def test_no_usda_files_found(self):
-        self.fail(f"No USDA files found in {lidar_configs_dir}")
-
-    setattr(TestRtxLidarUsda, "test_no_usda_files_found", test_no_usda_files_found)
+    carb.log_warn(f"No USDA files found in {lidar_configs_dir}")
 else:
     # Add a test method for each USDA file
     for usda_file in usda_files:

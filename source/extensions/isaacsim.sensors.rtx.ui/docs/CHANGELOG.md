@@ -1,4 +1,11 @@
 # Changelog
+## [1.0.0] - 2025-03-18
+### Added
+- Dynamic test generation for RTX Sensor menu items
+### Changed
+- Update RTX Sensor menu to use OmniSensor prims.
+
+
 ## [0.1.3] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

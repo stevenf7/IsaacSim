@@ -277,7 +277,6 @@ class TestMenuAssets(OmniUiTest):
             "Contact",
             "Imu",
             "Camera and Depth Sensors",
-            "RTX",
             "LightBeam",
         ]
 
@@ -331,7 +330,7 @@ class TestMenuAssets(OmniUiTest):
                 elif sensor_test == "Imu" and self.imu_sensor_interface.is_imu_sensor(get_prim_path(prim)):
                     sensor_passed = True
 
-                elif (sensor_test == "Camera and Depth Sensors" or sensor_test == "RTX") and prim.IsA(UsdGeom.Camera):
+                elif sensor_test == "Camera and Depth Sensors" and prim.IsA(UsdGeom.Camera):
                     sensor_passed = True
 
                 elif sensor_test == "LightBeam" and self.lightbeam_sensor_interface.is_lightbeam_sensor(

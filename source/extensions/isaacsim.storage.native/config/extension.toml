@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.8"
+version = "1.0.9"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -22,6 +22,9 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.storage.native"
+
+[[python.module]]
+name = "isaacsim.storage.native.tests"
 
 [[python.module]]
 name = "isaacsim.storage.native.tests"
