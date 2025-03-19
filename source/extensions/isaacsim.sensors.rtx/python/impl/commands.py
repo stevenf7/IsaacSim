@@ -29,6 +29,7 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
         orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
         visibility: Optional[bool] = False,
+        variant: Optional[str] = None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -65,6 +66,13 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
             UsdGeom.Imageable(self._prim).MakeInvisible()
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
+        if self._variant:
+            variant_set = self._prim.GetVariantSet("Sensor")
+            if not variant_set:
+                carb.log_warn(f"Variant set 'Sensor' not found for RTX Lidar at {self._prim_path}.")
+            if not variant_set.SetVariantSelection(self._variant):
+                carb.log_warn(f"Variant '{self._variant}' not found for RTX Lidar at {self._prim_path}.")
+
         if self._prim:
             return self._prim
         else:
@@ -85,6 +93,7 @@ class IsaacSensorCreateRtxIDS(omni.kit.commands.Command):
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
         visibility: bool = False,
+        variant: Optional[str] = None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -110,6 +119,13 @@ class IsaacSensorCreateRtxIDS(omni.kit.commands.Command):
             UsdGeom.Imageable(self._prim).MakeInvisible()
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
+        if self._variant:
+            variant_set = self._prim.GetVariantSet("Sensor")
+            if not variant_set:
+                carb.log_warn(f"Variant set 'Sensor' not found for RTX IDS at {self._prim_path}.")
+            if not variant_set.SetVariantSelection(self._variant):
+                carb.log_warn(f"Variant '{self._variant}' not found for RTX IDS at {self._prim_path}.")
+
         if self._prim:
             return self._prim
         else:
@@ -131,6 +147,7 @@ class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
         translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
         orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
         visibility: Optional[bool] = False,
+        variant: Optional[str] = None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -167,6 +184,13 @@ class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
             UsdGeom.Imageable(self._prim).MakeInvisible()
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
+        if self._variant:
+            variant_set = self._prim.GetVariantSet("Sensor")
+            if not variant_set:
+                carb.log_warn(f"Variant set 'Sensor' not found for RTX Radar at {self._prim_path}.")
+            if not variant_set.SetVariantSelection(self._variant):
+                carb.log_warn(f"Variant '{self._variant}' not found for RTX Radar at {self._prim_path}.")
+
         if self._prim:
             return self._prim
         else:
@@ -188,6 +212,7 @@ class IsaacSensorCreateRtxUltrasonic(omni.kit.commands.Command):
         translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
         orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
         visibility: Optional[bool] = False,
+        variant: Optional[str] = None,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -207,6 +232,13 @@ class IsaacSensorCreateRtxUltrasonic(omni.kit.commands.Command):
         if self._visibility is False:
             UsdGeom.Imageable(self._prim).MakeInvisible()
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
+
+        if self._variant:
+            variant_set = self._prim.GetVariantSet("Sensor")
+            if not variant_set:
+                carb.log_warn(f"Variant set 'Sensor' not found for RTX Ultrasonic at {self._prim_path}.")
+            if not variant_set.SetVariantSelection(self._variant):
+                carb.log_warn(f"Variant '{self._variant}' not found for RTX Ultrasonic at {self._prim_path}.")
 
         if self._prim:
             return self._prim

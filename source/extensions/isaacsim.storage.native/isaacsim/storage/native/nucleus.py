@@ -614,6 +614,8 @@ async def recursive_list_folder(path: str) -> typing.List:
     Returns:
         paths (typing.List): List of path to each file
     """
+    if not path.endswith("/"):
+        path += "/"
     paths = []
     files, dirs = await list_folder(path)
     paths.extend(files)

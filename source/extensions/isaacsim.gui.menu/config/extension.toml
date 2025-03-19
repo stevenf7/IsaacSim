@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.12"
+version = "2.0.13"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -37,7 +37,6 @@ dependencies = [
     "isaacsim.sensors.camera.ui",
     "isaacsim.sensors.physx.ui",
     "isaacsim.sensors.physics.ui",
-    "isaacsim.sensors.rtx.ui",
     "omni.kit.test_helpers_gfx"
 ]
 args = [

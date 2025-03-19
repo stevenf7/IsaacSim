@@ -1,4 +1,9 @@
 # Changelog
+## [2.0.13] - 2025-03-18
+### Removed
+- Dependency on isaacsim.sensors.rtx.ui extension
+- RTX Sensor menu item tests (moved to isaacsim.sensors.rtx.ui extension)
+
 ## [2.0.12] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

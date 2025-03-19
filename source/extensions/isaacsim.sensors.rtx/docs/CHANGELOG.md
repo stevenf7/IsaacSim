@@ -1,4 +1,10 @@
 # Changelog
+## [14.2.0] - 2025-03-18
+### Added
+- Support for USD variant sets to RTX Sensor creation commands
+### Removed
+- OmniLidar USDAs (moved to /Isaac/Sensors)
+
 ## [14.1.1] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
