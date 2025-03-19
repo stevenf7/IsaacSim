@@ -1,8 +1,12 @@
 # Changelog
+
+## [4.0.8] - 2025-03-12
+### Fixed
+- Fix attribute typo when getting wheel velocities
+
 ## [4.0.7] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
 
 ## [4.0.6] - 2025-03-05
 ### Changed

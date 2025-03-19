@@ -141,7 +141,7 @@ class WheeledRobot(Robot):
         """
 
         full_dofs_velocities = self.get_joint_velocities()
-        wheel_dof_velocities = [full_dofs_velocities[i] for i in self._wheel_dof_indicies]
+        wheel_dof_velocities = [full_dofs_velocities[i] for i in self._wheel_dof_indices]
         return wheel_dof_velocities
 
     def set_wheel_velocities(self, velocities) -> None:
