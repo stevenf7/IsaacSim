@@ -42,9 +42,6 @@ namespace core
 namespace simulation_manager
 {
 
-/**
- * Carbonite interface
- */
 struct ISimulationManager
 {
     CARB_PLUGIN_INTERFACE("isaacsim::core::simulation_manager::ISimulationManager", 1, 0);

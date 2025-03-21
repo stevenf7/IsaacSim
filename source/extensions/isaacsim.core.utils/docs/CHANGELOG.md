@@ -3,7 +3,6 @@
 ### Changed
 - Switch asset root for tests to internal nucleus
 
-
 ## [2.2.12] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines

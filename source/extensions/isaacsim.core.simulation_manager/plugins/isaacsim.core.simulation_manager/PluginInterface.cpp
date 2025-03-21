@@ -16,6 +16,10 @@
 
 #include <algorithm>
 
+/**
+ * @brief Plugin descriptor for the simulation manager plugin.
+ * @details Defines the plugin's name, description, author, hot reload capability, and version.
+ */
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.simulation_manager.plugin",
                                                     "Helpful text describing the plugin", "Author",
                                                     carb::PluginHotReload::eEnabled, "dev" };
@@ -27,9 +31,22 @@ namespace core
 namespace simulation_manager
 {
 
+/**
+ * @class SimulationManagerImpl
+ * @brief Implementation of the ISimulationManager interface.
+ * @details
+ * Provides functionality for managing simulation-related events and callbacks.
+ * Handles USD notices and maintains callback registrations for physics scene additions
+ * and deletion events.
+ */
 class SimulationManagerImpl : public ISimulationManager
 {
 public:
+    /**
+     * @brief Constructor for SimulationManagerImpl.
+     * @details
+     * Initializes the USD notice listener and registers it to handle USD notices.
+     */
     SimulationManagerImpl()
     {
         m_usdNoticeListener = new UsdNoticeListener();
@@ -37,11 +54,24 @@ public:
             pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener), &UsdNoticeListener::handle);
     }
 
+    /**
+     * @brief Destructor for SimulationManagerImpl.
+     * @details
+     * Cleans up the USD notice listener.
+     */
     ~SimulationManagerImpl()
     {
         delete m_usdNoticeListener;
     }
 
+    /**
+     * @brief Registers a callback function to be called when an object is deleted.
+     * @details
+     * The callback will be invoked with the path of the deleted object as a parameter.
+     *
+     * @param[in] callback Function to be called when an object is deleted.
+     * @return Unique identifier for the registered callback.
+     */
     int registerDeletionCallback(const std::function<void(std::string)>& callback) override
     {
         int& callbackIter = m_usdNoticeListener->getCallbackIter();
@@ -50,6 +80,14 @@ public:
         return callbackIter - 1;
     }
 
+    /**
+     * @brief Registers a callback function to be called when a physics scene is added.
+     * @details
+     * The callback will be invoked with the path of the added physics scene as a parameter.
+     *
+     * @param[in] callback Function to be called when a physics scene is added.
+     * @return Unique identifier for the registered callback.
+     */
     int registerPhysicsSceneAdditionCallback(const std::function<void(std::string)>& callback) override
     {
         int& callbackIter = m_usdNoticeListener->getCallbackIter();
@@ -58,6 +96,15 @@ public:
         return callbackIter - 1;
     }
 
+    /**
+     * @brief Deregisters a previously registered callback.
+     * @details
+     * Removes a callback from either the physics scene addition callbacks or deletion callbacks
+     * based on the provided callback ID.
+     *
+     * @param[in] callbackId The unique identifier of the callback to deregister.
+     * @return True if the callback was successfully deregistered, false otherwise.
+     */
     bool deregisterCallback(const int& callbackId) override
     {
         std::map<int, std::function<void(const std::string&)>>& physicsSceneCallbacks =
@@ -77,21 +124,52 @@ public:
         return false;
     }
 
+    /**
+     * @brief Gets the current callback iterator value.
+     * @details
+     * This value is used to generate unique identifiers for callbacks.
+     *
+     * @return Reference to the current callback iterator.
+     */
     int& getCallbackIter() override
     {
         return m_usdNoticeListener->getCallbackIter();
     }
 
+    /**
+     * @brief Sets the callback iterator to a specific value.
+     * @details
+     * Allows manual control over the callback identifier generation.
+     *
+     * @param[in] val The value to set the callback iterator to.
+     */
     void setCallbackIter(int const& val) override
     {
         int& callbackIter = m_usdNoticeListener->getCallbackIter();
         callbackIter = val;
     }
+
+    /**
+     * @brief Enables or disables the USD notice handler.
+     * @details
+     * Controls whether USD notices are processed by the notice listener.
+     *
+     * @param[in] flag True to enable the handler, false to disable it.
+     */
     void enableUsdNoticeHandler(bool const& flag) override
     {
         m_usdNoticeListener->enable(flag);
     }
 
+    /**
+     * @brief Enables or disables the Fabric USD notice handler for a specific stage.
+     * @details
+     * Controls whether Fabric USD notices are processed for the specified stage.
+     * If enabled, forces a minimal populate of the Fabric USD.
+     *
+     * @param[in] stageId The ID of the stage to configure.
+     * @param[in] flag True to enable the handler, false to disable it.
+     */
     void enableFabricUsdNoticeHandler(long stageId, bool const& flag) override
     {
         auto iFabricUsd = carb::getCachedInterface<omni::fabric::IFabricUsd>();
@@ -112,6 +190,14 @@ public:
         }
     }
 
+    /**
+     * @brief Checks if the Fabric USD notice handler is enabled for a specific stage.
+     * @details
+     * Determines whether Fabric USD notices are being processed for the specified stage.
+     *
+     * @param[in] stageId The ID of the stage to check.
+     * @return True if the notice handler is enabled, false otherwise.
+     */
     bool isFabricUsdNoticeHandlerEnabled(long stageId) override
     {
         auto iFabricUsd = carb::getCachedInterface<omni::fabric::IFabricUsd>();
@@ -135,6 +221,13 @@ public:
         }
     }
 
+    /**
+     * @brief Resets the simulation manager.
+     * @details
+     * Calls all registered deletion callbacks with a root path ("/"),
+     * clears all registered callbacks, clears the physics scenes list,
+     * and resets the callback iterator to 0.
+     */
     void reset() override
     {
         std::vector<int> deletionKeys;
@@ -153,25 +246,41 @@ public:
     }
 
 private:
+    /**
+     * @brief USD notice listener object that handles USD notices.
+     */
     UsdNoticeListener* m_usdNoticeListener = nullptr;
+
+    /**
+     * @brief Key for the registered USD notice listener.
+     */
     pxr::TfNotice::Key m_usdNoticeListenerKey;
 };
 
 /**
- * The Extension class
+ * @class Extension
+ * @brief Implementation of the IExt interface for the simulation manager extension.
+ * @details
+ * Provides lifecycle management for the simulation manager extension.
  */
 class Extension : public omni::ext::IExt
 {
 public:
     /**
-     * Method called when the extension is loaded/enabled
+     * @brief Method called when the extension is loaded/enabled.
+     * @details
+     * Initializes the extension when it is loaded.
+     *
+     * @param[in] extId The ID of the extension being loaded.
      */
     void onStartup(const char* extId) override
     {
     }
 
     /**
-     * Method called when the extension is disabled
+     * @brief Method called when the extension is disabled.
+     * @details
+     * Cleans up the extension when it is disabled.
      */
     void onShutdown() override
     {
@@ -183,27 +292,50 @@ public:
 } // namespace simulation_manager
 
 /**
- * Optional function (called the first time an interface is acquired from the plugin library)
+ * @brief Optional function called the first time an interface is acquired from the plugin library.
+ * @details
+ * This function is invoked by the Carbonite framework when the plugin is first loaded.
  */
 CARB_EXPORT void carbOnPluginStartup()
 {
 }
 
 /**
- * Optional function (called right before the OS release the plugin library)
+ * @brief Optional function called right before the OS releases the plugin library.
+ * @details
+ * This function is invoked by the Carbonite framework when the plugin is about to be unloaded.
  */
 CARB_EXPORT void carbOnPluginShutdown()
 {
 }
 
+/**
+ * @brief Implements the plugin with the specified simulation manager and extension implementations.
+ * @details
+ * Registers the plugin with the Carbonite framework.
+ */
 CARB_PLUGIN_IMPL(g_kPluginDesc,
                  isaacsim::core::simulation_manager::SimulationManagerImpl,
                  isaacsim::core::simulation_manager::Extension)
 
+/**
+ * @brief Fills the interface for the simulation manager implementation.
+ * @details
+ * This function is called by the Carbonite framework to initialize the interface.
+ *
+ * @param[in,out] iface The interface to fill.
+ */
 void fillInterface(isaacsim::core::simulation_manager::SimulationManagerImpl& iface)
 {
 }
 
+/**
+ * @brief Fills the interface for the extension implementation.
+ * @details
+ * This function is called by the Carbonite framework to initialize the interface.
+ *
+ * @param[in,out] iface The interface to fill.
+ */
 void fillInterface(isaacsim::core::simulation_manager::Extension& iface)
 {
 }

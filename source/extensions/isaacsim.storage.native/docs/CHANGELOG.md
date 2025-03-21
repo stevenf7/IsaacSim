@@ -7,8 +7,6 @@
 ### Changed
 - Switch asset root for tests to internal nucleus
 
-
-
 ## [1.0.7] - 2025-02-25
 ### Changed
 - Removed remaining omni.client._omniclient type hints in favor of public API

@@ -1,8 +1,11 @@
 # Changelog
+## [2.1.4] - 2025-03-20
+### Changed
+- Improve doxygen docstrings
+
 ## [2.1.3] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
 
 ## [2.1.2] - 2025-03-09
 ### Fixed
@@ -11,6 +14,7 @@
 ## [2.1.1] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines
+
 ## [2.1.0] - 2025-03-05
 ### Changed
 - Add support for ROS2 Jazzy

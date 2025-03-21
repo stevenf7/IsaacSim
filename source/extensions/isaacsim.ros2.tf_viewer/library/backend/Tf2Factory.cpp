@@ -15,6 +15,13 @@ namespace ros2
 namespace tf_viewer
 {
 
+/**
+ * @brief Creates a new ROS 2 transform buffer instance.
+ * @details
+ * Factory method implementation that instantiates a concrete Ros2BufferCoreImpl object.
+ *
+ * @return Shared pointer to the newly created buffer instance.
+ */
 std::shared_ptr<Ros2BufferCore> Tf2FactoryImpl::createBuffer()
 {
     return std::make_shared<Ros2BufferCoreImpl>();
@@ -24,6 +31,14 @@ std::shared_ptr<Ros2BufferCore> Tf2FactoryImpl::createBuffer()
 } // namespace ros2
 } // namespace isaacsim
 
+/**
+ * @brief Creates a factory instance for TF2 components.
+ * @details
+ * Global factory function that creates and returns a new Tf2FactoryImpl instance.
+ * This function is exported and can be dynamically loaded by the plugin system.
+ *
+ * @return Pointer to a newly created TF2 factory instance.
+ */
 isaacsim::ros2::tf_viewer::Tf2Factory* createFactory()
 {
     return new isaacsim::ros2::tf_viewer::Tf2FactoryImpl();

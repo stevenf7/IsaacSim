@@ -3,11 +3,9 @@
 ### Changed
 - Cleanup and rename BridgeApplication to PrimManager for clarity
 
-
 ## [0.3.11] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
 
 ## [0.3.10] - 2025-03-05
 ### Changed

@@ -16,6 +16,12 @@
 #include <isaacsim/ros2/tf_viewer/ITransformListener.h>
 #include <isaacsim/ros2/tf_viewer/Tf2Factory.h>
 
+/**
+ * @brief Plugin descriptor for the ROS 2 transform listener plugin.
+ * @details
+ * Defines metadata for the transform listener plugin including name, description,
+ * and hot reload capability.
+ */
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.ros2.tf_viewer.plugin", "Transform Listener", "NVIDIA",
                                                     carb::PluginHotReload::eDisabled, "dev" };
 
@@ -26,9 +32,25 @@ namespace ros2
 namespace tf_viewer
 {
 
+/**
+ * @class TransformListener
+ * @brief Implementation of the ITransformListener interface.
+ * @details
+ * This class provides functionality to listen for ROS 2 transform messages
+ * and maintains a buffer of the transformation data. It inherits from
+ * isaacsim::ros2::bridge::Ros2Node to interact with the ROS 2 system.
+ */
 class TransformListener : public ITransformListener, isaacsim::ros2::bridge::Ros2Node
 {
 public:
+    /**
+     * @brief Initializes the transform listener for a specific ROS 2 distribution.
+     * @details
+     * Loads the distribution-specific library, creates a tf2 factory and buffer.
+     *
+     * @param[in] rosDistro The ROS 2 distribution to use (e.g., "humble", "foxy").
+     * @return True if initialization was successful, false otherwise.
+     */
     bool initialize(const std::string& rosDistro)
     {
         if (!isaacsim::ros2::bridge::isRos2DistroSupported(rosDistro))
@@ -66,6 +88,11 @@ public:
         return true;
     }
 
+    /**
+     * @brief Finalizes the transform listener by releasing ROS 2 resources.
+     * @details
+     * Cleans up subscribers and resets the ROS 2 node.
+     */
     void finalize()
     {
         if (m_subscriberTf)
@@ -81,6 +108,14 @@ public:
         Ros2Node::reset();
     }
 
+    /**
+     * @brief Processes incoming transform messages.
+     * @details
+     * Initializes the ROS 2 node if needed, creates subscribers for transform
+     * topics (/tf and /tf_static), and processes any pending messages.
+     *
+     * @return True if processing was successful, false otherwise.
+     */
     bool spin()
     {
         if (!isInitialized())
@@ -117,6 +152,11 @@ public:
         return status;
     }
 
+    /**
+     * @brief Resets the transform buffer by clearing all stored transforms.
+     * @details
+     * Clears all transformation data stored in the buffer.
+     */
     void reset()
     {
         if (!m_buffer)
@@ -126,6 +166,14 @@ public:
         m_buffer->clear();
     }
 
+    /**
+     * @brief Computes transforms relative to the specified root frame.
+     * @details
+     * Calculates the transformation data for all frames relative to the specified
+     * root frame and populates the internal data structures with the results.
+     *
+     * @param[in] rootFrame The reference frame for all transformations.
+     */
     void computeTransforms(const std::string& rootFrame)
     {
         if (!m_buffer)
@@ -157,14 +205,39 @@ public:
         }
     }
 
+    /**
+     * @brief Gets the list of available frame IDs.
+     * @details
+     * Returns the list of frame IDs that was computed in the most recent call to computeTransforms.
+     *
+     * @return Vector of frame ID strings.
+     */
     const std::vector<std::string>& getFrames()
     {
         return m_frames;
     };
+
+    /**
+     * @brief Gets the parent-child frame relationships.
+     * @details
+     * Returns the list of parent-child relationships between frames that was
+     * computed in the most recent call to computeTransforms.
+     *
+     * @return Vector of tuples containing child-parent frame ID pairs.
+     */
     const std::vector<std::tuple<std::string, std::string>>& getRelations()
     {
         return m_relations;
     };
+
+    /**
+     * @brief Gets the transformation data for all frames.
+     * @details
+     * Returns the map of transforms (translation and rotation) relative to the root
+     * frame that was computed in the most recent call to computeTransforms.
+     *
+     * @return Map of frame IDs to transform data (translation and rotation).
+     */
     const std::unordered_map<std::string,
                              std::tuple<std::tuple<double, double, double>, std::tuple<double, double, double, double>>>&
     getTransforms()
@@ -173,22 +246,46 @@ public:
     };
 
 private:
+    /** @brief Library loader for distribution-specific implementation. */
     std::shared_ptr<isaacsim::core::includes::LibraryLoader> m_libraryLoader = nullptr;
+
+    /** @brief Factory for creating tf2 objects. */
     Tf2Factory* m_tf2Factory = nullptr;
 
+    /** @brief Subscriber for the /tf topic. */
     std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> m_subscriberTf = nullptr;
+
+    /** @brief Subscriber for the /tf_static topic. */
     std::shared_ptr<isaacsim::ros2::bridge::Ros2Subscriber> m_subscriberTfStatic = nullptr;
 
+    /** @brief Message buffer for /tf messages. */
     std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> m_messageTf = nullptr;
+
+    /** @brief Message buffer for /tf_static messages. */
     std::shared_ptr<isaacsim::ros2::bridge::Ros2TfTreeMessage> m_messageTfStatic = nullptr;
 
+    /** @brief Buffer for storing transform data. */
     std::shared_ptr<Ros2BufferCore> m_buffer = nullptr;
 
+    /** @brief List of available frame IDs. */
     std::vector<std::string> m_frames;
+
+    /** @brief List of parent-child frame relationships. */
     std::vector<std::tuple<std::string, std::string>> m_relations;
+
+    /** @brief Map of frame IDs to transformation data. */
     std::unordered_map<std::string, std::tuple<std::tuple<double, double, double>, std::tuple<double, double, double, double>>>
         m_transforms;
 
+    /**
+     * @brief Processes messages from a transform subscriber.
+     * @details
+     * Retrieves transform messages from the specified subscriber and adds them
+     * to the transform buffer.
+     *
+     * @param[in] isStatic Whether to process messages from the static transform subscriber.
+     * @return True if processing was successful, false otherwise.
+     */
     bool subscriberCallback(bool isStatic)
     {
         if (!m_buffer)
@@ -211,6 +308,14 @@ private:
 
 CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::ros2::tf_viewer::TransformListener)
 
+/**
+ * @brief Fills the interface with function pointers.
+ * @details
+ * This function is called by the Carbonite plugin system to initialize
+ * the plugin interface.
+ *
+ * @param[in,out] iface The interface instance to be filled.
+ */
 void fillInterface(isaacsim::ros2::tf_viewer::TransformListener& iface)
 {
 }

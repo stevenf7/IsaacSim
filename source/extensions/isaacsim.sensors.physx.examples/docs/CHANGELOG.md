@@ -3,8 +3,6 @@
 ### Changed
 - Switch asset root for tests to internal nucleus
 
-
-
 ## [2.2.4] - 2025-01-27
 ### Changed
 - Updated docs link

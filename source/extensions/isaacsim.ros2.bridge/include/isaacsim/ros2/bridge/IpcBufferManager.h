@@ -20,6 +20,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+/** @file
+ * @brief Inter-process communication buffer management for CUDA memory
+ * @details
+ * This file provides a class for managing CUDA device memory buffers that can be
+ * shared between processes. It implements a circular buffer pool with POSIX
+ * file descriptor-based IPC to facilitate high-performance data exchange
+ * between different processes in the ROS 2 bridge.
+ */
 #ifndef IPC_BUFFER_MANAGER_HPP
 #define IPC_BUFFER_MANAGER_HPP
 
@@ -132,7 +140,13 @@ public:
         }
     }
 
-    // Destructor, free the alloacted device memory pool
+    /**
+     * @brief Destructor
+     * @details
+     * Frees all allocated device memory and resources when the buffer manager
+     * is destroyed. This includes releasing all CUDA memory allocations and unmapping
+     * virtual address ranges.
+     */
     ~IPCBufferManager()
     {
         for (size_t i = 0; i < m_bufferSize; i++)
@@ -185,13 +199,25 @@ public:
     }
 
 private:
+    /** @brief Number of buffers in the pool */
     size_t m_bufferSize;
+
+    /** @brief Requested size of each buffer in bytes */
     size_t m_bufferStep;
+
+    /** @brief Current buffer index in the circular buffer pool */
     size_t m_currentHandleIndex = 0;
+
+    /** @brief Actual allocation size in bytes (aligned to CUDA memory granularity) */
     size_t m_allocSize;
 
+    /** @brief Vector of shareable handles (process ID + file descriptor pairs) for each buffer */
     std::vector<std::vector<int>> m_shareableHandles;
+
+    /** @brief Vector of CUDA memory allocation handles */
     std::vector<CUmemGenericAllocationHandle> m_genericHandles;
+
+    /** @brief Vector of CUDA device pointers to mapped memory */
     std::vector<CUdeviceptr> m_bufferPtrs;
 };
 
