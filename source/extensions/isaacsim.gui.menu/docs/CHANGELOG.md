@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.0] - 2025-02-14
+### Added
+- Isaac Create Menu in Viewport and Stage Context Menus (right click)
+
 ## [2.0.13] - 2025-03-18
 ### Removed
 - Dependency on isaacsim.sensors.rtx.ui extension

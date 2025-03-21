@@ -37,6 +37,41 @@ class RangeSensorMenu:
         self._menu_items = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Create")
 
+        # add sensor to context menu
+        context_menu_dict = {
+            "name": {
+                "Isaac": [
+                    {
+                        "name": {
+                            "Sensors": [
+                                {
+                                    "name": {
+                                        "PhysX Lidar": [
+                                            {
+                                                "name": "Rotating",
+                                                "onclick_fn": lambda *_: self._add_lidar(),
+                                            },
+                                            {
+                                                "name": "Generic",
+                                                "onclick_fn": lambda *_: self._add_generic(),
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    "name": "LightBeam Sensor",
+                                    "onclick_fn": lambda *_: self._add_lightbeam_sensor(),
+                                },
+                            ],
+                        },
+                        "glyph": sensor_icon_path,
+                    },
+                ],
+            },
+        }
+
+        self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
+
     def _get_stage_and_path(self):
         self._stage = omni.usd.get_context().get_stage()
         selectedPrims = omni.usd.get_context().get_selection().get_selected_prim_paths()

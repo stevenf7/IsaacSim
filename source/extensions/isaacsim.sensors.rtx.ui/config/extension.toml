@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation UI Components"
 description = "Provides UI components for Isaac Sim RTX-based sensor simulation, eg. menu options."
@@ -26,12 +26,14 @@ name = "isaacsim.sensors.rtx.ui"
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.kit.test_helpers_gfx"
+    "omni.kit.test_helpers_gfx",
+    "omni.kit.window.stage",
 ]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
+
 
 [[test]]
 name = "startup"

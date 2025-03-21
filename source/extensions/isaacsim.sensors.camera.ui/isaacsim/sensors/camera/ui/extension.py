@@ -20,194 +20,167 @@ from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str) -> None:
+    # Define sensors data organized by vendor and sensor name
+    SENSORS = {
+        "Intel": {
+            "Intel Realsense D455": {
+                "prim_prefix": "/Realsense",
+                "usd_path": "/Isaac/Sensors/Intel/RealSense/rsd455.usd",
+            }
+        },
+        "Orbbec": {
+            "Orbbec Gemini 2": {
+                "prim_prefix": "/Gemini2",
+                "usd_path": "/Isaac/Sensors/Orbbec/Gemini2/orbbec_gemini2_v1.0.usd",
+            },
+            "Orbbec FemtoMega": {
+                "prim_prefix": "/Femto",
+                "usd_path": "/Isaac/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
+            },
+            "Orbbec Gemini 335": {
+                "prim_prefix": "/Gemini335",
+                "usd_path": "/Isaac/Sensors/Orbbec/Gemini335/orbbec_gemini_335.usd",
+            },
+            "Orbbec Gemini 335L": {
+                "prim_prefix": "/Gemini335L",
+                "usd_path": "/Isaac/Sensors/Orbbec/Gemini335L/orbbec_gemini_335L.usd",
+            },
+        },
+        "Leopard Imaging": {
+            "Hawk": {"prim_prefix": "/Hawk", "usd_path": "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"},
+            "Owl": {"prim_prefix": "/Owl", "usd_path": "/Isaac/Sensors/LeopardImaging/Owl/owl.usd"},
+        },
+        "Sensing": {
+            "Sensing SG2-AR0233C-5200-G2A-H100F1A": {
+                "prim_prefix": "/SG2_AR0233C_5200_G2A_H100F1A",
+                "usd_path": "/Isaac/Sensors/Sensing/SG2/H100F1A/SG2-AR0233C-5200-G2A-H100F1A.usd",
+            },
+            "Sensing SG2-OX03CC-5200-GMSL2-H60YA": {
+                "prim_prefix": "/SG2_OX03CC_5200_GMSL2_H60YA",
+                "usd_path": "/Isaac/Sensors/Sensing/SG2/H60YA/Camera_SG2_OX03CC_5200_GMSL2_H60YA.usd",
+            },
+            "Sensing SG3-ISX031C-GMSL2F-H190XA": {
+                "prim_prefix": "/SG3_ISX031C_GMSL2F_H190XA",
+                "usd_path": "/Isaac/Sensors/Sensing/SG3/H190XA/SG3S-ISX031C-GMSL2F-H190XA.usd",
+            },
+            "Sensing SG5-IMX490C-5300-GMSL2-H110SA": {
+                "prim_prefix": "/SG5_IMX490C_5300_GMSL2_H110SA",
+                "usd_path": "/Isaac/Sensors/Sensing/SG5/H100SA/SG5-IMX490C-5300-GMSL2-H110SA.usd",
+            },
+            "Sensing SG8S-AR0820C-5300-G2A-H120YA": {
+                "prim_prefix": "/SG8_AR0820C_5300_G2A_H120YA",
+                "usd_path": "/Isaac/Sensors/Sensing/SG8/H120YA/SG8S-AR0820C-5300-G2A-H120YA.usd",
+            },
+            "Sensing SG8S-AR0820C-5300-G2A-H30YA": {
+                "prim_prefix": "/SG8_AR0820C_5300_G2A_H30YA",
+                "usd_path": "/Isaac/Sensors/Sensing/SG8/H30YA/SG8S-AR0820C-5300-G2A-H30YA.usd",
+            },
+            "Sensing SG8S-AR0820C-5300-G2A-H60SA": {
+                "prim_prefix": "/SG8_AR0820C_5300_G2A_H60SA",
+                "usd_path": "/Isaac/Sensors/Sensing/SG8/H60SA/SG8S-AR0820C-5300-G2A-H60SA.usd",
+            },
+        },
+        "Stereolabs": {"ZED_X": {"prim_prefix": "/ZED_X", "usd_path": "/Isaac/Sensors/Stereolabs/ZED_X/ZED_X.usd"}},
+    }
 
+    def on_startup(self, ext_id: str) -> None:
         assets_root_path = get_assets_root_path()
-        menu_items = [
-            MenuItemDescription(
-                name="Camera and Depth Sensors",
-                sub_menu=[
-                    MenuItemDescription(
-                        name="Intel",
-                        sub_menu=[
-                            make_menu_item_description(
-                                ext_id,
-                                "Intel Realsense D455",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Realsense", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path + "/Isaac/Sensors/Intel/RealSense/rsd455.usd",
-                                ),
-                            ),
-                        ],
-                    ),
-                    MenuItemDescription(
-                        name="Orbbec",
-                        sub_menu=[
-                            make_menu_item_description(
-                                ext_id,
-                                "Orbbec Gemini 2",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Gemini2", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path + "/Isaac/Sensors/Orbbec/Gemini2/orbbec_gemini2_v1.0.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Orbbec FemtoMega",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Femto", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Orbbec/FemtoMega/orbbec_femtomega_v1.0.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Orbbec Gemini 335",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Gemini335", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path + "/Isaac/Sensors/Orbbec/Gemini335/orbbec_gemini_335.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Orbbec Gemini 335L",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Gemini335L", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Orbbec/Gemini335L/orbbec_gemini_335L.usd",
-                                ),
-                            ),
-                        ],
-                    ),
-                    MenuItemDescription(
-                        name="LeopardImaging",
-                        sub_menu=[
-                            make_menu_item_description(
-                                ext_id,
-                                "Hawk",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Hawk", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Owl",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/Owl", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path + "/Isaac/Sensors/LeopardImaging/Owl/owl.usd",
-                                ),
-                            ),
-                        ],
-                    ),
-                    MenuItemDescription(
-                        name="Sensing",
-                        sub_menu=[
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG2-AR0233C-5200-G2A-H100F1A",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG2_AR0233C_5200_G2A_H100F1A", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG2/H100F1A/SG2-AR0233C-5200-G2A-H100F1A.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG2-OX03CC-5200-GMSL2-H60YA",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG2_OX03CC_5200_GMSL2_H60YA", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG2/H60YA/Camera_SG2_OX03CC_5200_GMSL2_H60YA.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG3-ISX031C-GMSL2F-H190XA",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG3_ISX031C_GMSL2F_H190XA", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG3/H190XA/SG3S-ISX031C-GMSL2F-H190XA.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG5-IMX490C-5300-GMSL2-H110SA",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG5_IMX490C_5300_GMSL2_H110SA", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG5/H100SA/SG5-IMX490C-5300-GMSL2-H110SA.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG8S-AR0820C-5300-G2A-H120YA",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H120YA", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG8/H120YA/SG8S-AR0820C-5300-G2A-H120YA.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG8S-AR0820C-5300-G2A-H30YA",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H30YA", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG8/H30YA/SG8S-AR0820C-5300-G2A-H30YA.usd",
-                                ),
-                            ),
-                            make_menu_item_description(
-                                ext_id,
-                                "Sensing SG8S-AR0820C-5300-G2A-H60SA",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/SG8_AR0820C_5300_G2A_H60SA", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path
-                                    + "/Isaac/Sensors/Sensing/SG8/H60SA/SG8S-AR0820C-5300-G2A-H60SA.usd",
-                                ),
-                            ),
-                        ],
-                    ),
-                    MenuItemDescription(
-                        name="Stereolabs",
-                        sub_menu=[
-                            make_menu_item_description(
-                                ext_id,
-                                "ZED_X",
-                                lambda a=weakref.proxy(self): create_prim(
-                                    prim_path=get_next_free_path("/ZED_X", None),
-                                    prim_type="Xform",
-                                    usd_path=assets_root_path + "/Isaac/Sensors/Stereolabs/ZED_X/ZED_X.usd",
-                                ),
-                            ),
-                        ],
-                    ),
-                ],
-            ),
-        ]
 
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
-        self._menu_items = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=menu_items)]
-        add_menu_items(self._menu_items, "Create")
+
+        # Helper function to create a sensor prim
+        def _add_sensor(prim_prefix, usd_path):
+            return lambda *_: create_prim(
+                prim_path=get_next_free_path(prim_prefix, None),
+                prim_type="Xform",
+                usd_path=assets_root_path + usd_path,
+            )
+
+        # Build menu structure based on SENSORS dictionary
+        vendor_dicts = {}
+        for vendor, sensors in self.SENSORS.items():
+            sensor_items = []
+            for sensor_name, sensor_data in sensors.items():
+                sensor_items.append(
+                    {
+                        "name": sensor_name,
+                        "onclick_fn": _add_sensor(sensor_data["prim_prefix"], sensor_data["usd_path"]),
+                    }
+                )
+
+            vendor_dicts[vendor] = {"name": {vendor: sensor_items}}
+
+        # Create the menu structure
+        camera_and_depth_sensors_dict = {
+            "name": {
+                "Camera and Depth Sensors": [
+                    vendor_dicts.get("Intel", {}),
+                    vendor_dicts.get("Orbbec", {}),
+                    vendor_dicts.get("Leopard Imaging", {}),
+                    vendor_dicts.get("Sensing", {}),
+                    vendor_dicts.get("Stereolabs", {}),
+                ]
+            }
+        }
+
+        sensors_menu_dict = {
+            "name": {
+                "Sensors": [
+                    camera_and_depth_sensors_dict,
+                ]
+            },
+            "glyph": str(Path(icon_dir).joinpath("data/sensor.svg")),
+        }
+
+        def create_submenu(menu_dict):
+            # Handle non-nested menu items
+            if "name" in menu_dict and isinstance(menu_dict["name"], str):
+                return MenuItemDescription(
+                    name=menu_dict["name"],
+                    onclick_fn=menu_dict.get("onclick_fn"),
+                    onclick_action=menu_dict.get("onclick_action"),
+                    glyph=menu_dict.get("glyph"),
+                )
+
+            # Handle nested submenus recursively
+            submenu_name = next(iter(menu_dict["name"]))
+            items = menu_dict["name"][submenu_name]
+            sub_menu_items = []
+            for item in items:
+                if isinstance(item.get("name"), dict):
+                    # Recursively handle nested submenu
+                    sub_menu_items.append(create_submenu(item))
+                else:
+                    # Handle leaf menu item
+                    sub_menu_items.append(
+                        MenuItemDescription(
+                            name=item["name"],
+                            onclick_fn=item.get("onclick_fn"),
+                            onclick_action=item.get("onclick_action"),
+                        )
+                    )
+
+            return MenuItemDescription(name=submenu_name, sub_menu=sub_menu_items, glyph=menu_dict.get("glyph"))
+
+        self._menu_items = create_submenu(sensors_menu_dict)
+        add_menu_items([self._menu_items], "Create")
+
+        # add sensor to context menu
+        context_menu_dict = {
+            "name": {
+                "Isaac": [
+                    sensors_menu_dict,
+                ],
+            },
+            "glyph": str(Path(icon_dir).joinpath("data/robot.svg")),
+        }
+
+        self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Create")
+        self._viewport_create_menu = None
         gc.collect()
 
     def _get_stage_and_path(self):

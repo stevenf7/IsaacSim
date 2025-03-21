@@ -76,6 +76,7 @@ class AssetBrowserExtension(omni.ext.IExt):
                 self._window.set_visibility_changed_fn(self._on_visibility_changed)
             else:
                 self._window.visible = True
+            self._window.focus()
         else:
             self._window.visible = False
 

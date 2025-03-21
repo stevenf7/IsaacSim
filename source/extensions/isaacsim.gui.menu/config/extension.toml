@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.13"
+version = "2.1.0"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -23,6 +23,7 @@ writeTarget.kit = true
 "isaacsim.gui.components" = {}
 "isaacsim.core.utils" = {}
 "omni.kit.window.file" = {}
+"omni.kit.context_menu" = {}
 
 [[python.module]]
 name = "isaacsim.gui.menu"

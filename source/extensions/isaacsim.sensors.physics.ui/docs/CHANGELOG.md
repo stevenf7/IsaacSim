@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2025-02-14
+### Added
+- Add Contact and IMU sensors to Viewport and Stage Context Menus
+
 ## [0.1.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
