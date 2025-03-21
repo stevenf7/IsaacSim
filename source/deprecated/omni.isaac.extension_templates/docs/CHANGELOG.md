@@ -3,8 +3,6 @@
 ### Changed
 - Fix issues with duplicate extension startup from extra imports
 
-
-
 ## [2.0.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
@@ -106,7 +104,6 @@
 - onclick_fn warning when creating UI
 
 ## [0.1.0] - 12-09-2022
-
 ### Added
 
 - Initial version of Extension Template Generator

@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [0.1.11] - 2024-11-22
 ### Fixed
 - menu location
@@ -23,7 +22,7 @@
 
 ## [0.1.7] - 2024-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [0.1.6] - 2023-11-13
 ### Fixed
@@ -42,17 +41,14 @@
 - onclick_fn warning when creating UI
 
 ## [0.1.2] - 2022-02-09
-
 ### Removed
 - Joint Animation UI
 - Moved Gain Tuning UI to separate extension
 
 ## [0.1.1] - 2022-01-25
-
 ### Added
 - New Selection UI and bug fixes
 
 ## [0.1.0] - 2021-12-10
-
 ### Added
 - Initial version

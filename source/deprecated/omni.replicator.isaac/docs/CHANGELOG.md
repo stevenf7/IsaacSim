@@ -12,7 +12,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [2.0.0] - 2024.09.23
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator.
@@ -104,14 +103,11 @@
 ### Changed
 - Improved pytorch writer performance
 
-
 ## [1.9.1] - 2023-08-08
-
 ### Fixed
 - test_pytorch_writer adding the num_frames to run_until_complete_async due to possible off-by-one frame issue
 
 ## [1.9.0] - 2023-07-12
-
 ### Added
 - register_pose_annotator() to DOPEWriter and YCBVideoWriter
 - setup_writer() to DOPEWriter and YCBVideoWriter
@@ -119,13 +115,11 @@
 - Moved into dope_writer.py and ycb_video_writer.py
 
 ## [1.8.1] - 2023-06-14
-
 ### Fixed
 - Fixes for physics APIs
 - Fixes for updated replicator API
 
 ## [1.8.0] - 2023-06-12
-
 ### Changed
 - Update to kit 105.1
 - removed swhFrameNumber from Pose and Dope nodes
@@ -212,9 +206,11 @@
 ## [1.2.4] - 2022-08-05
 ### Added
 - Added documentation and testing for pytorch wrtier
+
 ## [1.2.3] - 2022-08-03
 ### Added
 - Added documentation and example demo script
+
 ### Changed
 - Changed articulation body mass and body intertia randomization to CPU pipeline only
 
@@ -229,14 +225,17 @@
 ## [1.2.0] - 2022-07-27
 ### Added
 - Added simulation context randomization such as gravity
+
 ### Changed
 - Changed the behaviour of on_reset randomization such that on_interval modifies the values set at on_reset instead of initial values
+
 ### Fixed
 - Fixed a bug regarding lower and upper dof limits where randomization would change initial values
 
 ## [1.1.2] - 2022-07-26
 ### Changed
 - Changed articulation tendon properties write nodes to be sequential.
+
 ### Added
 - Added articulation material properties randomization.
 

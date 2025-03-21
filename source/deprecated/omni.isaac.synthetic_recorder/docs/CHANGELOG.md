@@ -8,7 +8,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [2.0.0] - 2024-09-23
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator.synthetic_recorder.
@@ -43,7 +42,7 @@
 - removed overwrite/increment/timestamp options from recorder, it is now handled by the backend which is not exposed
 
 ### Fixed
-- fixed bug if a non valid json file is provided to the custom writer  
+- fixed bug if a non valid json file is provided to the custom writer
 
 ## [1.6.0] - 2023-08-10
 ### Added
@@ -60,7 +59,7 @@
 
 ## [1.5.1] - 2023-07-13
 ### Fixed
-- load_config checks for empty json files 
+- load_config checks for empty json files
 
 ## [1.5.0] - 2023-03-13
 ### Added
@@ -104,7 +103,6 @@
 ### Added
 - Refresh path strings to default
 
-
 ## [1.1.1] - 2022-12-06
 ### Fixed
 - Menu toggle value when user closes the window
@@ -113,7 +111,7 @@
 ### Added
 - Support for loading custom writers
 
-### Changed 
+### Changed
 - renamed extension.py to synthetic_recorder_extension.py
 - renamed extension class from Extension to SyntheticRecorderExtension
 
@@ -129,13 +127,11 @@
 - Fixes for kit 103.5
 
 ## [0.1.1] - 2022-08-02
-
 ### Fixed
 
 - Error message when there was no instance data to write
 
 ## [0.1.0] - 2021-08-11
-
 ### Added
 - Initial version of Isaac Sim Synthetic Data Recorder Extension
 - Records RGB, Depth, Semantic and Instance segmentation, 2D Tight and Loose bounding box

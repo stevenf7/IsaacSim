@@ -8,7 +8,6 @@
 ### Changed
 - Update to kit 107.1 and fix build issues
 
-
 ## [1.3.18] - 2025-02-25
 ### Changed
 - Update style format and naming conventions in c++ code, add doxygen docstrings
@@ -22,7 +21,7 @@
 - Windows signing issue
 
 ## [1.3.15] - 2025-01-26
-### Change
+### Changed
 - Update test settings
 
 ## [1.3.14] - 2025-01-21
@@ -104,10 +103,10 @@
 ## [1.2.3] - 2023-01-21
 ### Fixed
 - Fix when multiple objects shared the same prim name using the isaac:nameOverride attribute for get_name
+
 ## [1.2.2] - 2022-10-20
 ### Fixed
 - test golden values
-
 
 ## [1.2.1] - 2022-10-17
 ### Fixed
@@ -125,39 +124,32 @@
 - Fixes for kit 103.5
 
 ## [1.1.0] - 2022-08-12
-
 ### Added
 - cMassLocalPose to DcRigidBodyProperties
 
 ## [1.0.1] - 2022-08-09
-
 ### Changed
 - Removed simple_articulation.usd, test_articulation_simple uses Nucleus asset
 
 ## [1.0.0] - 2022-05-11
-
 ### Changed
 - non-backwards compatible change: dof indexing matches physx tensor API
 
 ## [0.2.2] - 2022-04-29
-
 ### Fixed
 - Handle physx unwrapped revolute joints
 
 ## [0.2.1] - 2022-02-13
-
 ### Fixed
 - Properly delete handles on prim deletion
 
 ## [0.2.0] - 2022-01-14
-
 ### Fixed
 - Error message when waking up a kinematic rigid body
 - Error message when setting linear velocity on a body with simulation disabled
 - Error message when setting angular velocity on a body with simulation disabled
 
 ## [0.1.8] - 2021-08-16
-
 ### Added
 - get_effort
 - get_articulation_dof_efforts
@@ -174,7 +166,6 @@
 - apply_body_force now has a bool to specify if the force is global or local
 
 ## [0.1.7] - 2021-08-16
-
 ### Added
 - Sleep functions for rigid bodies and articulations
 
@@ -182,7 +173,6 @@
 - return types use size_t instead of int where appropriate
 
 ## [0.1.6] - 2021-08-04
-
 ### Changed
 - DriveMode is now either DRIVE_FORCE or DRIVE_ACCELERATION, default is acceleration
 - Position/Velocity drive is not specified via DriveMode
@@ -218,33 +208,27 @@
 - get_dof_properties works correctly now
 
 ## [0.1.5] - 2021-07-23
-
 ### Added
 - Split samples from extension
 
 ## [0.1.4] - 2021-07-14
-
 ### Added
 - now works when running without editor/timeline and only physx events.
 - fixed crash with setting dof properties
 
 ## [0.1.3] - 2021-05-24
-
 ### Added
 - force and torque sensors
 
 ## [0.1.2] - 2021-02-17
-
 ### Added
 - update to python 3.7
 - update to omni.kit.uiapp
 
 ## [0.1.1] - 2020-12-11
-
 ### Added
 - Add unit tests to extension
 
 ## [0.1.0] - 2020-12-03
-
 ### Added
 - Initial version of Isaac Sim Dynamic Control Extension

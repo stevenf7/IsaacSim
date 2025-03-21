@@ -10,7 +10,7 @@
 
 ## [1.0.0] - 2024-10-03
 ### Deprecated
-- Extension deprecated since Isaac Sim 4.5.0. 
+- Extension deprecated since Isaac Sim 4.5.0.
 
 ## [0.1.3] - 2024-03-04
 ### Changed
@@ -26,6 +26,5 @@
 - make targetPrim on IsaacPickPlaceController node optional
 
 ## [0.1.0] - 2022-11-22
-
 ### Added
 - Initial version
