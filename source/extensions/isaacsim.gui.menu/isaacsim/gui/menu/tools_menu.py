@@ -83,6 +83,7 @@ class ToolsMenuExtension:
                             MenuLayout.Seperator("Manipulation"),
                             MenuLayout.Item("Grasp Editor"),
                             MenuLayout.Item("Lula Robot Description Editor"),
+                            MenuLayout.Item("Lula Test Widget"),
                             MenuLayout.Seperator("Sensors"),
                             MenuLayout.Item("Camera Inspector"),
                         ],

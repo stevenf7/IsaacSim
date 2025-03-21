@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2025-02-14
+### Added
+- sensors to context menu
+
 ## [2.2.1] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings

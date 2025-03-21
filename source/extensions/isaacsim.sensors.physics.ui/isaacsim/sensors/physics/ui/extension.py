@@ -32,6 +32,31 @@ class Extension(omni.ext.IExt):
         self._menu_items = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Create")
 
+        # add sensor to context menu
+        context_menu_dict = {
+            "name": {
+                "Isaac": [
+                    {
+                        "name": {
+                            "Sensors": [
+                                {
+                                    "name": "Contact Sensor",
+                                    "onclick_fn": lambda *_: self._add_contact_sensor(),
+                                },
+                                {
+                                    "name": "Imu Sensor",
+                                    "onclick_fn": lambda *_: self._add_imu_sensor(),
+                                },
+                            ],
+                        },
+                        "glyph": sensor_icon_path,
+                    },
+                ],
+            },
+        }
+
+        self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
+
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Create")
         gc.collect()

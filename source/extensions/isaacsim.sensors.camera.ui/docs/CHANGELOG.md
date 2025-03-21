@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.6] - 2025-03-20
+### Added
+- sensors to context menu
+
 ## [0.1.5] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

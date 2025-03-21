@@ -1,4 +1,10 @@
 # Changelog
+
+
+## [1.0.1] - 2025-02-14
+### Changed
+- Add sensor menu to context menus
+
 ## [1.0.0] - 2025-03-18
 ### Added
 - Dynamic test generation for RTX Sensor menu items

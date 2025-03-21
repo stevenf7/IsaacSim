@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.5"
+version = "0.1.6"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation UI Components"
 description = "Provides UI components for Isaac Sim camera simulation, eg. menu options."
@@ -28,6 +28,7 @@ args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
+
 
 [[test]]
 name = "startup"
