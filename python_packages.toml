@@ -205,7 +205,6 @@ inventory.include = [
     "exts/isaacsim.code_editor.vscode",
     # deprecated extensions
     "extsDeprecated/omni.isaac.jupyter_notebook",
-    "extsDeprecated/omni.isaac.repl",
     "extsDeprecated/omni.isaac.vscode",
 ]
 

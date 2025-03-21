@@ -108,7 +108,6 @@ files_strip_exclude = [
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.repl/pip_prebundle/**"],
     ["exts/omni.pip.cloud/pip_prebundle/**"],
     ["exts/omni.pip.compute/pip_prebundle/**"],
 ]
@@ -177,7 +176,6 @@ files_exclude = [
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.repl/pip_prebundle/**"],
     ["exts/omni.pip.cloud/pip_prebundle/**"],
     ["exts/omni.pip.compute/pip_prebundle/**"],
 ]
@@ -194,7 +192,6 @@ files_strip_exclude = [
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.repl/pip_prebundle/**"],
     ["exts/omni.pip.cloud/pip_prebundle/**"],
     ["exts/omni.pip.compute/pip_prebundle/**"],
 ]
