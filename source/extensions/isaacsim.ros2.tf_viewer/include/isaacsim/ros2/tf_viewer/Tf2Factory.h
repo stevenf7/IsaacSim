@@ -20,29 +20,40 @@ namespace tf_viewer
 {
 
 /**
- * Class that partially implement a tf2 `BufferCore`.
+ * @class Ros2BufferCore
+ * @brief Class that partially implements a tf2 `BufferCore`.
+ * @details
+ * This abstract class provides an interface for tf2 buffer operations such as
+ * setting transforms, retrieving transforms, and querying frame information.
+ * It serves as a compatibility layer for working with ROS 2 tf2 functionality.
  */
 class Ros2BufferCore
 {
 public:
     /**
-     * Add a transform information to the buffer.
+     * @brief Adds a transform information to the buffer.
+     * @details
+     * This function takes a ROS TFMessage and stores the transform information
+     * in the buffer for later retrieval.
      *
-     * @param msg `TFMessage` message pointer.
-     * @param authority The source of the information for the transform.
-     * @param isStatic Wether to record the transform as static (the transform will be good across all time).
-     * @returns Whether the transform has ben added.
+     * @param[in] msg `TFMessage` message pointer.
+     * @param[in] authority The source of the information for the transform.
+     * @param[in] isStatic Whether to record the transform as static (the transform will be good across all time).
+     * @return Whether the transform has been added successfully.
      */
     virtual bool setTransform(void* msg, const std::string& authority, bool isStatic) = 0;
 
     /**
-     * Get the transform between two frames at the ROS zero time.
+     * @brief Gets the transform between two frames at the ROS zero time.
+     * @details
+     * Calculates and retrieves the coordinate transformation between two frames
+     * in the tf tree at the ROS zero time.
      *
-     * @param targetFrame Frame ID to which data should be transformed.
-     * @param sourceFrame Frame ID where the data originated.
-     * @param translation Buffer to store the Cartesian translation. Buffer length should be 3.
-     * @param rotation Buffer to store the rotation (as quaternion: xyzw). Buffer length should be 4.
-     * @returns Whether the transform has ben computed without exceptions.
+     * @param[in] targetFrame Frame ID to which data should be transformed.
+     * @param[in] sourceFrame Frame ID where the data originated.
+     * @param[out] translation Buffer to store the Cartesian translation. Buffer length should be 3.
+     * @param[out] rotation Buffer to store the rotation (as quaternion: xyzw). Buffer length should be 4.
+     * @return Whether the transform has been computed without exceptions.
      */
     virtual bool getTransform(const std::string& targetFrame,
                               const std::string& sourceFrame,
@@ -50,40 +61,55 @@ public:
                               double rotation[]) = 0;
 
     /**
-     * Get the parent frame of the specified frame at the ROS zero time.
+     * @brief Gets the parent frame of the specified frame at the ROS zero time.
+     * @details
+     * Retrieves the parent frame ID for a given frame in the tf tree.
      *
-     * @param frame Frame ID to search for.
-     * @param parentFrame Reference in which the parent frame ID will be stored.
-     * @returns True, unless no parent exists.
+     * @param[in] frame Frame ID to search for.
+     * @param[out] parentFrame Reference in which the parent frame ID will be stored.
+     * @return True if a parent exists, false otherwise.
      */
     virtual bool getParentFrame(const std::string& frame, std::string& parentFrame) = 0;
 
     /**
-     * Get the available frame IDs.
+     * @brief Gets the available frame IDs.
+     * @details
+     * Retrieves a list of all frame IDs currently available in the tf tree.
      *
-     * @returns A list of available frame IDs.
+     * @return A list of available frame IDs.
      */
     virtual std::vector<std::string> getFrames() = 0;
 
     /**
-     * Clear all buffer data.
+     * @brief Clears all buffer data.
+     * @details
+     * Removes all transformations and frames from the buffer.
      */
     virtual void clear() = 0;
 };
 
 
 /**
- * Base class for creating ROS 2 tf2 related functions/objects according to the sourced ROS 2 distribution.
+ * @class Tf2Factory
+ * @brief Base class for creating ROS 2 tf2 related functions/objects according to the sourced ROS 2 distribution.
+ * @details
+ * This abstract factory class provides an interface for creating tf2 related objects
+ * that are compatible with the currently loaded ROS 2 distribution.
  */
 class Tf2Factory
 {
 public:
+    /**
+     * @brief Virtual destructor with default implementation.
+     */
     virtual ~Tf2Factory() = default;
 
     /**
-     * Create a ROS 2 tf2 `BufferCore`.
+     * @brief Creates a ROS 2 tf2 `BufferCore`.
+     * @details
+     * Factory method to instantiate a new buffer appropriate for the ROS 2 distribution.
      *
-     * @returns Pointer to the buffer.
+     * @return Pointer to the newly created buffer.
      */
     virtual std::shared_ptr<Ros2BufferCore> createBuffer() = 0;
 };

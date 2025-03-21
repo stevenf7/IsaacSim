@@ -1,4 +1,7 @@
 # Changelog
+## [1.2.1] - 2025-03-20
+### Changed
+- Improve doxygen docstrings
 
 ## [1.2.0] - 2025-03-17
 ### Changed

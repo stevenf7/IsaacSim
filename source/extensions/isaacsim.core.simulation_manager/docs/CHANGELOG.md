@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.8] - 2025-03-20
+### Changed
+- Improve doxygen docstrings
+
 ## [0.3.7] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines

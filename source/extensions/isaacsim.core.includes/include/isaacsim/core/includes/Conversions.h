@@ -24,19 +24,6 @@ namespace core
 namespace includes
 {
 
-/**
- * @namespace isaacsim::core::includes::conversions
- * @brief Provides type conversion utilities between different geometry and transform representations.
- * @details
- * This namespace contains a comprehensive set of conversion functions between:
- * - Carb types (Float3, Float4)
- * - USD types (GfVec3f/d, GfQuatf/d, GfTransform, GfMatrix4f/d)
- * - PhysX types (PxVec3, PxQuat, PxTransform)
- * - Dynamic Control types (DcTransform)
- *
- * @note All conversion functions are marked inline for performance optimization
- * @warning Care should be taken with precision loss when converting between single and double precision types
- */
 namespace conversions
 {
 /**

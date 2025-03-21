@@ -41,10 +41,18 @@ namespace
 {
 
 /**
- * Finds the PhysX scene associated with the given USD stage
- * @param physXPtr Pointer to the PhysX interface
- * @param stagePtr Pointer to the USD stage
+ * @brief Finds the PhysX scene associated with the given USD stage
+ * @details
+ * Searches through all prims in the stage to find a UsdPhysicsScene prim
+ * and retrieves the associated PhysX scene pointer.
+ *
+ * @param[in] physXPtr Pointer to the PhysX interface
+ * @param[in] stagePtr Pointer to the USD stage
+ *
  * @return Pointer to the PhysX scene, or nullptr if not found
+ *
+ * @pre physXPtr must be a valid pointer to the PhysX interface
+ * @pre stagePtr must be a valid USD stage
  */
 ::physx::PxScene* findPhysxScene(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr)
 {
@@ -72,10 +80,23 @@ namespace
 } // anonymous namespace
 
 /**
- * Constructor for MapGenerator
- * Initializes the octree with default parameters and finds the PhysX scene
- * @param physXPtr Pointer to the PhysX interface
- * @param stagePtr Pointer to the USD stage
+ * @brief Constructs a new MapGenerator instance
+ * @details
+ * Initializes the generator with PhysX interface and USD stage references.
+ * Creates a new octree with the default cell size and configures its parameters.
+ * Then finds the associated PhysX scene from the USD stage.
+ *
+ * @param[in] physXPtr Pointer to the PhysX interface for collision detection
+ * @param[in] stagePtr Pointer to the USD stage containing the scene geometry
+ *
+ * @pre physXPtr must be a valid pointer to the PhysX interface
+ * @pre stagePtr must be a valid USD stage
+ *
+ * @post m_tree will be initialized with a new octree
+ * @post m_physxScenePtr will be set to the PhysX scene if found
+ *
+ * @note The octree is configured with default occupancy threshold (0.5),
+ *       probability hit (0.7), and clamping threshold (0.1)
  */
 MapGenerator::MapGenerator(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr stagePtr)
 {
@@ -93,17 +114,37 @@ MapGenerator::MapGenerator(omni::physx::IPhysx* physXPtr, pxr::UsdStageWeakPtr s
     m_tree->setProbHit(0.7);
     m_tree->setClampingThresMin(0.1);
 }
+
+/**
+ * @brief Destructor for MapGenerator
+ * @details
+ * Cleans up resources used by the generator, specifically
+ * deallocating the octree to prevent memory leaks.
+ *
+ * @post m_tree will be deleted and set to nullptr
+ */
 MapGenerator::~MapGenerator()
 {
     delete m_tree;
 }
 
 /**
- * Updates the octree map settings
- * @param cellSize Size of each cell in the octree (meters)
- * @param occupiedValue Value representing occupied cells
- * @param unoccupiedValue Value representing unoccupied cells
- * @param unknownValue Value representing unknown cells
+ * @brief Updates the octree map settings
+ * @details
+ * Configures the parameters of the occupancy map, including cell size and
+ * the numerical values used to represent different occupancy states.
+ * The cell size determines the resolution of the map and is applied
+ * to the underlying octree structure.
+ *
+ * @param[in] cellSize Size of each cell in the octree (meters)
+ * @param[in] occupiedValue Value representing occupied cells (default: 1.0)
+ * @param[in] unoccupiedValue Value representing unoccupied cells (default: 0.0)
+ * @param[in] unknownValue Value representing unknown cells (default: 0.5)
+ *
+ * @pre cellSize should be positive
+ * @post The octree resolution will be updated to match the new cell size
+ *
+ * @note Smaller cell sizes provide higher resolution but require more memory
  */
 void MapGenerator::updateSettings(const float cellSize,
                                   const float occupiedValue,
@@ -118,10 +159,20 @@ void MapGenerator::updateSettings(const float cellSize,
 }
 
 /**
- * Sets the transform parameters for the map generation
- * @param inputOrigin Origin point of the map in world coordinates
- * @param inputMinPoint Minimum point of the map relative to origin
- * @param inputMaxPoint Maximum point of the map relative to origin
+ * @brief Sets the transform parameters for the map generation
+ * @details
+ * Defines the origin and boundaries of the area to be mapped in world coordinates.
+ * The boundaries are adjusted to align with the cell grid by rounding the min/max
+ * points to the nearest cell boundaries.
+ *
+ * @param[in] inputOrigin Origin point of the map in world coordinates
+ * @param[in] inputMinPoint Minimum point of the map relative to origin
+ * @param[in] inputMaxPoint Maximum point of the map relative to origin
+ *
+ * @post m_inputOrigin, m_inputMinPoint, and m_inputMaxPoint will be updated
+ *
+ * @note The min/max points are adjusted to align with cell boundaries
+ *       by rounding down/up to the nearest cell size multiple
  */
 void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinPoint, carb::Float3 inputMaxPoint)
 {
@@ -143,10 +194,21 @@ void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinP
 }
 
 /**
- * Generates a 2D occupancy map using PhysX overlap queries
- * Performs overlap tests in a 2D grid pattern and updates the octree accordingly.
- * The map is generated by checking for collisions at each cell in the XY plane,
- * using a tall box that extends in the Z direction to detect obstacles.
+ * @brief Generates a 2D occupancy map using PhysX overlap queries
+ * @details
+ * Creates a 2D projection of the occupancy map by performing overlap tests
+ * at each cell in the XY plane. The method uses a tall box that extends
+ * in the Z direction to detect obstacles at any height. The octree is updated
+ * with both occupied and free cells based on the collision test results.
+ *
+ * @pre m_physxScenePtr must be valid
+ * @pre m_tree must be valid
+ *
+ * @post m_tree will be populated with occupancy information
+ * @post The octree's inner nodes will be updated for consistency
+ *
+ * @note This method is more efficient than generate3d() but provides less spatial information
+ * @warning If the PhysX scene or octree is not initialized, the function will return early
  */
 void MapGenerator::generate2d()
 {
@@ -218,10 +280,23 @@ void MapGenerator::generate2d()
 }
 
 /**
- * Generates a 3D occupancy map using PhysX overlap queries
- * Performs overlap tests in a 3D grid pattern and updates the octree accordingly.
- * The map is generated by checking for collisions at each cell in the XYZ volume
- * using a cube-shaped test geometry.
+ * @brief Generates a 3D occupancy map using PhysX overlap queries
+ * @details
+ * Creates a full 3D volumetric representation of the occupancy map by
+ * performing overlap tests at each cell in the XYZ volume. The method uses
+ * a cube-shaped test geometry to detect collisions with scene objects.
+ * The octree is updated with both occupied and free cells based on the
+ * collision test results.
+ *
+ * @pre m_physxScenePtr must be valid
+ * @pre m_tree must be valid
+ *
+ * @post m_tree will be populated with 3D occupancy information
+ * @post The octree's inner nodes will be updated for consistency
+ *
+ * @note This method provides more complete spatial information than generate2d()
+ * @warning This method requires more memory and computation than generate2d()
+ * @warning If the PhysX scene or octree is not initialized, the function will return early
  */
 void MapGenerator::generate3d()
 {
@@ -295,8 +370,18 @@ void MapGenerator::generate3d()
 }
 
 /**
- * Returns the positions of all occupied cells in the octree
- * @return Vector of 3D positions for occupied cells
+ * @brief Returns the positions of all occupied cells in the octree
+ * @details
+ * Iterates through all leaf nodes in the octree and collects the world coordinates
+ * of cells that are marked as occupied. The coordinates represent the center points
+ * of each occupied cell.
+ *
+ * @return Vector of 3D positions (Float3) for occupied cells
+ *
+ * @pre m_tree should be valid
+ *
+ * @note Returns an empty vector if the octree is not initialized
+ * @warning For large maps with small cell sizes, this vector can be very large
  */
 std::vector<carb::Float3> MapGenerator::getOccupiedPositions()
 {
@@ -317,8 +402,18 @@ std::vector<carb::Float3> MapGenerator::getOccupiedPositions()
 }
 
 /**
- * Returns the positions of all unoccupied (free) cells in the octree
- * @return Vector of 3D positions for free cells
+ * @brief Returns the positions of all unoccupied (free) cells in the octree
+ * @details
+ * Iterates through all leaf nodes in the octree and collects the world coordinates
+ * of cells that are marked as unoccupied (free). The coordinates represent the
+ * center points of each free cell.
+ *
+ * @return Vector of 3D positions (Float3) for free cells
+ *
+ * @pre m_tree should be valid
+ *
+ * @note The returned vector may be very large for maps with many free cells
+ * @warning For large maps with small cell sizes, this function may be memory intensive
  */
 std::vector<carb::Float3> MapGenerator::getFreePositions()
 {
@@ -336,8 +431,16 @@ std::vector<carb::Float3> MapGenerator::getFreePositions()
 }
 
 /**
- * Gets the minimum bound of the octree in world coordinates
+ * @brief Gets the minimum bound of the octree in world coordinates
+ * @details
+ * Retrieves the minimum x, y, and z coordinates that define the
+ * bounding box of the octree map in world space.
+ *
  * @return Minimum bound as Float3 (x,y,z)
+ *
+ * @pre m_tree should be valid
+ *
+ * @note Returns (0,0,0) if the octree is not initialized
  */
 carb::Float3 MapGenerator::getMinBound()
 {
@@ -350,8 +453,16 @@ carb::Float3 MapGenerator::getMinBound()
 }
 
 /**
- * Gets the maximum bound of the octree in world coordinates
+ * @brief Gets the maximum bound of the octree in world coordinates
+ * @details
+ * Retrieves the maximum x, y, and z coordinates that define the
+ * bounding box of the octree map in world space.
+ *
  * @return Maximum bound as Float3 (x,y,z)
+ *
+ * @pre m_tree should be valid
+ *
+ * @note Returns (0,0,0) if the octree is not initialized
  */
 carb::Float3 MapGenerator::getMaxBound()
 {
@@ -365,8 +476,16 @@ carb::Float3 MapGenerator::getMaxBound()
 }
 
 /**
- * Calculates the dimensions of the octree in number of cells
+ * @brief Calculates the dimensions of the octree in number of cells
+ * @details
+ * Determines how many cells the occupancy map contains along each axis
+ * by dividing the metric size of the map by the cell size.
+ *
  * @return Number of cells in each dimension as Int3 (x,y,z)
+ *
+ * @pre m_tree should be valid
+ *
+ * @note Returns (0,0,0) if the octree is not initialized
  */
 carb::Int3 MapGenerator::getDimensions()
 {
@@ -391,13 +510,20 @@ int g_row[] = { -1, 0, 1, 0 };
 int g_col[] = { 0, 1, 0, -1 };
 
 /**
- * Checks if a given cell position is valid and matches the target value
- * @param buffer The grid buffer to check
- * @param num_cells Dimensions of the grid (width, height)
- * @param x X coordinate to check
- * @param y Y coordinate to check
- * @param target Value we're looking to match
- * @return true if position is valid and matches target value
+ * @brief Checks if a given cell position is valid and matches the target value
+ * @details
+ * Validates whether a specified position is within the grid boundaries
+ * and whether the cell at that position has the target value.
+ *
+ * @param[in] buffer The grid buffer to check
+ * @param[in] numCells Dimensions of the grid (width, height)
+ * @param[in] x X coordinate to check
+ * @param[in] y Y coordinate to check
+ * @param[in] target Value we're looking to match
+ *
+ * @return true if position is valid and matches target value, false otherwise
+ *
+ * @pre buffer must be a valid pointer to a grid buffer
  */
 bool isSafe(float* buffer, carb::Int2 numCells, int x, int y, float target)
 {
@@ -410,15 +536,22 @@ bool isSafe(float* buffer, carb::Int2 numCells, int x, int y, float target)
 }
 
 /**
- * Performs a flood fill operation using Depth-First Search
+ * @brief Performs a flood fill operation using Depth-First Search
+ * @details
  * Starting from position (sx,sy), replaces all connected cells matching the target value
- * with the replacement value. Uses 4-way connectivity.
+ * with the replacement value. Uses 4-way connectivity (up, right, down, left).
+ * The algorithm uses depth-first search with a stack to avoid recursion stack overflow.
  *
- * @param buffer The grid buffer to modify
- * @param num_cells Dimensions of the grid (width, height)
- * @param sx Starting X coordinate
- * @param sy Starting Y coordinate
- * @param replacement Value to fill connected regions with
+ * @param[in,out] buffer The grid buffer to modify
+ * @param[in] numCells Dimensions of the grid (width, height)
+ * @param[in] sx Starting X coordinate
+ * @param[in] sy Starting Y coordinate
+ * @param[in] replacement Value to fill connected regions with
+ *
+ * @pre buffer must be a valid pointer to a grid buffer
+ * @pre (sx,sy) must be a valid position within the grid
+ *
+ * @post All cells connected to (sx,sy) with the same initial value will be changed to replacement
  */
 void floodfill(float* buffer, carb::Int2 numCells, int sx, int sy, float replacement)
 {
@@ -457,13 +590,22 @@ void floodfill(float* buffer, carb::Int2 numCells, int sx, int sy, float replace
 }
 
 /**
- * Generates a 2D grid representation of the octree map
- * The grid is represented as a 1D vector where each cell contains one of three values:
+ * @brief Generates a 2D grid representation of the octree map
+ * @details
+ * Creates a 2D projection of the occupancy map as a grid of values.
+ * The grid is initialized with unknown values, then occupied cells are marked,
+ * and finally a flood fill is performed from the origin to mark free spaces.
+ * Each cell in the grid contains one of three values:
  * - m_occupiedValue: Cell contains an obstacle
  * - m_unoccupiedValue: Cell is known to be free space
  * - m_unknownValue: Cell state is unknown
  *
- * @return Vector containing the grid representation. Empty if tree is invalid.
+ * @return Vector containing the grid representation as float values
+ *
+ * @pre m_tree should be valid
+ *
+ * @note Returns an empty vector if the octree is not initialized or dimensions are invalid
+ * @note The buffer is stored in row-major order with y as rows and x as columns
  */
 std::vector<float> MapGenerator::getBuffer()
 {
@@ -513,13 +655,24 @@ std::vector<float> MapGenerator::getBuffer()
 }
 
 /**
- * Converts the 2D grid representation into an RGBA color buffer
- * Each cell in the grid is mapped to a color based on its state (occupied, unoccupied, or unknown)
+ * @brief Converts the 2D grid representation into an RGBA color buffer
+ * @details
+ * Creates a visualization of the occupancy map by assigning colors to different cell states.
+ * Each cell is colored according to its occupancy state:
+ * - Occupied cells: Use the occupied color (typically red)
+ * - Unoccupied cells: Use the unoccupied color (typically green or blue)
+ * - Unknown cells: Use the unknown color (typically gray)
  *
- * @param occupied RGBA color values for occupied cells
- * @param unoccupied RGBA color values for unoccupied cells
- * @param unknown RGBA color values for unknown cells
- * @return Vector containing RGBA color values (4 bytes per cell). Empty if tree is invalid.
+ * @param[in] occupied RGBA color values for occupied cells
+ * @param[in] unoccupied RGBA color values for unoccupied cells
+ * @param[in] unknown RGBA color values for unknown cells
+ *
+ * @return Vector containing RGBA color values (4 bytes per cell)
+ *
+ * @pre m_tree should be valid
+ *
+ * @note Returns an empty vector if the octree is not initialized
+ * @note The buffer is stored in row-major order with 4 bytes per cell (RGBA)
  */
 std::vector<char> MapGenerator::getColoredByteBuffer(const carb::Int4& occupied,
                                                      const carb::Int4& unoccupied,

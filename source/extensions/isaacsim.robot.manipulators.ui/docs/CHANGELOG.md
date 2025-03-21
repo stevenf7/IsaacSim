@@ -3,8 +3,6 @@
 ### Changed
 - Switch asset root for tests to internal nucleus
 
-
-
 ## [2.1.6] - 2025-03-10
 ### Fixed
 - Unit test dependencies

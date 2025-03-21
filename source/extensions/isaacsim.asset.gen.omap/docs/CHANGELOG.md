@@ -1,8 +1,11 @@
 # Changelog
+## [2.0.16] - 2025-03-20
+### Changed
+- Improve doxygen docstrings
+
 ## [2.0.15] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
 
 ## [2.0.14] - 2025-03-05
 ### Changed

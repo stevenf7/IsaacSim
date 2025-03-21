@@ -23,20 +23,6 @@ namespace core
 namespace includes
 {
 
-/**
- * @namespace math
- * @brief Mathematical utility functions for 3D graphics and physics calculations.
- * @details
- * This namespace provides a comprehensive set of mathematical operations commonly used in
- * 3D graphics and physics simulations. It includes:
- * - Vector operations (dot product, cross product, normalization)
- * - Quaternion operations (multiplication, inversion, normalization)
- * - Transform operations (composition, inversion)
- * - Interpolation functions (linear and spherical)
- * - Geometric utilities (basis vectors, look-at calculations)
- *
- * All functions are implemented as inline for performance optimization.
- */
 namespace math
 {
 /**

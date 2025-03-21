@@ -7,6 +7,14 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+/** @file
+ * @brief OmniGraph utilities for the ROS 2 bridge
+ * @details
+ * This file provides utility functions for bridging between ROS 2 and OmniGraph data types.
+ * It includes functions for creating OmniGraph attributes from ROS 2 message fields,
+ * reading and writing data between OmniGraph nodes and ROS 2 messages, and
+ * utility functions for handling attributes and data type conversions.
+ */
 #pragma once
 
 #include "isaacsim/core/includes/UsdUtilities.h"
@@ -33,11 +41,30 @@ namespace ros2
 namespace omnigraph_utils
 {
 
+/**
+ * @brief Returns the OmniGraph attribute prefix based on direction
+ * @details
+ * Returns "outputs" for output attributes or "inputs" for input attributes.
+ * Used to construct attribute names in OmniGraph compatible format.
+ *
+ * @param[in] isOutput True for output attributes, false for input attributes
+ * @return std::string Either "outputs" or "inputs" based on direction
+ */
 inline std::string inputOutput(bool isOutput)
 {
     return isOutput ? "outputs" : "inputs";
 };
 
+/**
+ * @brief Verifies that a pointer is not null and logs an error message if it is
+ * @details
+ * Utility function to check for null pointers and log an error message.
+ * Useful for validating data pointers during attribute access operations.
+ *
+ * @param[in] ptr Pointer to check for nullness
+ * @param[in] message Error message to log if pointer is null
+ * @return bool True if the pointer is valid (non-null), false otherwise
+ */
 inline bool checkCondition(const void* ptr, std::string message)
 {
     if (!ptr)
@@ -47,6 +74,17 @@ inline bool checkCondition(const void* ptr, std::string message)
     return ptr;
 }
 
+/**
+ * @brief Gets writable data for a simple attribute
+ * @details
+ * Retrieves a writable pointer to an attribute's data.
+ * Used for modifying attribute values in an OmniGraph node.
+ *
+ * @tparam T Data type of the attribute
+ * @param[in] nodeObj OmniGraph node object containing the attribute
+ * @param[in] attrName Name of the attribute to retrieve
+ * @return T* Writable pointer to the attribute data, or nullptr if not found
+ */
 template <typename T>
 inline T* getAttributeWritableData(const NodeObj& nodeObj, const std::string& attrName)
 {
@@ -58,6 +96,18 @@ inline T* getAttributeWritableData(const NodeObj& nodeObj, const std::string& at
     return value;
 }
 
+/**
+ * @brief Gets writable data for an array attribute with resizing
+ * @details
+ * Retrieves a writable pointer to an array attribute's data, resizing the array to the specified size.
+ * Used for modifying array attribute values in an OmniGraph node.
+ *
+ * @tparam T Data type of the array elements
+ * @param[in] nodeObj OmniGraph node object containing the attribute
+ * @param[in] attrName Name of the attribute to retrieve
+ * @param[in] newCount New size to set for the array
+ * @return T* Writable pointer to the array data, or nullptr if not found
+ */
 template <typename T>
 inline T* getAttributeWritableArrayData(const NodeObj& nodeObj, const std::string& attrName, size_t newCount)
 {
@@ -72,6 +122,17 @@ inline T* getAttributeWritableArrayData(const NodeObj& nodeObj, const std::strin
     return value;
 }
 
+/**
+ * @brief Gets read-only data for a simple attribute
+ * @details
+ * Retrieves a read-only pointer to an attribute's data.
+ * Used for reading attribute values from an OmniGraph node.
+ *
+ * @tparam T Data type of the attribute
+ * @param[in] nodeObj OmniGraph node object containing the attribute
+ * @param[in] attrName Name of the attribute to retrieve
+ * @return T const* Read-only pointer to the attribute data, or nullptr if not found
+ */
 template <typename T>
 inline T const* getAttributeReadableData(const NodeObj& nodeObj, const std::string& attrName)
 {
@@ -83,6 +144,18 @@ inline T const* getAttributeReadableData(const NodeObj& nodeObj, const std::stri
     return value;
 }
 
+/**
+ * @brief Gets read-only data for an array attribute
+ * @details
+ * Retrieves a read-only pointer to an array attribute's data and returns its current size.
+ * Used for reading array attribute values from an OmniGraph node.
+ *
+ * @tparam T Data type of the array elements
+ * @param[in] nodeObj OmniGraph node object containing the attribute
+ * @param[in] attrName Name of the attribute to retrieve
+ * @param[out] newCount Variable to receive the array size
+ * @return T const* Read-only pointer to the array data, or nullptr if not found
+ */
 template <typename T>
 inline T const* getAttributeReadableArrayData(const NodeObj& nodeObj, const std::string& attrName, size_t& newCount)
 {
@@ -95,6 +168,17 @@ inline T const* getAttributeReadableArrayData(const NodeObj& nodeObj, const std:
     return value;
 }
 
+/**
+ * @brief Removes dynamic attributes from a node
+ * @details
+ * Selectively removes dynamic input and/or output attributes from an OmniGraph node.
+ * Useful for resetting a node when reconfiguring its interface based on a new message type.
+ *
+ * @tparam removeInputs Whether to remove dynamic input attributes
+ * @tparam removeOutputs Whether to remove dynamic output attributes
+ * @param[in] nodeObj OmniGraph node object to modify
+ * @return bool True if all requested attributes were successfully removed
+ */
 template <bool removeInputs = false, bool removeOutputs = false>
 inline bool removeDynamicAttributes(const NodeObj& nodeObj)
 {
@@ -139,6 +223,21 @@ inline bool removeDynamicAttributes(const NodeObj& nodeObj)
     return status;
 }
 
+/**
+ * @brief Checks if node attributes match message fields
+ * @details
+ * Verifies if a node's dynamic attributes match the specified message fields in name and type.
+ * Used to determine if a node needs to be reconfigured for a different message type.
+ *
+ * @tparam OgnROS2DatabaseDerivedType Database type for OmniGraph-ROS2 integration
+ * @tparam isOutput Whether to check output (true) or input (false) attributes
+ * @tparam clearExistingAttrs Whether to check all attributes match (true) or just that required ones exist (false)
+ * @param[in] db Database instance
+ * @param[in] nodeObj Node object to check
+ * @param[in] messageFields Vector of message fields to match against node attributes
+ * @param[in] prependStr Optional prefix for attribute names
+ * @return bool True if attributes match message fields according to specified criteria
+ */
 template <class OgnROS2DatabaseDerivedType, bool isOutput, bool clearExistingAttrs>
 inline bool findMatchingAttribute(OgnROS2DatabaseDerivedType& db,
                                   const NodeObj& nodeObj,
@@ -198,6 +297,22 @@ inline bool findMatchingAttribute(OgnROS2DatabaseDerivedType& db,
     return true;
 }
 
+/**
+ * @brief Creates OmniGraph attributes for message fields
+ * @details
+ * Creates dynamic attributes on an OmniGraph node to match the fields of a ROS 2 message.
+ * Optionally clears existing attributes before creating new ones.
+ *
+ * @tparam OgnROS2DatabaseDerivedType Database type for OmniGraph-ROS2 integration
+ * @tparam isOutput Whether to create output (true) or input (false) attributes
+ * @tparam clearExistingAttrs Whether to clear existing attributes before creating new ones
+ * @param[in] db Database instance
+ * @param[in] nodeObj Node object to modify
+ * @param[in] messageFields Vector of message fields to create attributes for
+ * @param[in] prependStr Optional prefix for attribute names
+ * @param[in] messageType Full message type name (for logging)
+ * @return bool True if all attributes were successfully created
+ */
 template <typename OgnROS2DatabaseDerivedType, bool isOutput, bool clearExistingAttrs>
 inline bool createOgAttributesForFields(OgnROS2DatabaseDerivedType& db,
                                         const NodeObj& nodeObj,
@@ -242,6 +357,25 @@ inline bool createOgAttributesForFields(OgnROS2DatabaseDerivedType& db,
     return true;
 }
 
+/**
+ * @brief Creates OmniGraph attributes for a ROS 2 message
+ * @details
+ * Creates dynamic attributes on an OmniGraph node to match the fields of a ROS 2 message.
+ * This is a higher-level function that validates the message type, obtains its fields,
+ * and calls createOgAttributesForFields to create the node attributes.
+ *
+ * @tparam OgnROS2DatabaseDerivedType Database type for OmniGraph-ROS2 integration
+ * @tparam isOutput Whether to create output (true) or input (false) attributes
+ * @tparam clearExistingAttrs Whether to clear existing attributes before creating new ones
+ * @param[in] db Database instance
+ * @param[in] nodeObj Node object to modify
+ * @param[in] messagePackage ROS 2 package containing the message definition
+ * @param[in] messageSubfolder Subfolder within the package (e.g., "msg", "srv")
+ * @param[in] messageName Name of the message type
+ * @param[in] message Shared pointer to the message instance
+ * @param[in] prependStr Optional prefix for attribute names
+ * @return bool True if all attributes were successfully created
+ */
 template <typename OgnROS2DatabaseDerivedType, bool isOutput, bool clearExistingAttrs = true>
 inline bool createOgAttributesForMessage(OgnROS2DatabaseDerivedType& db,
                                          const NodeObj& nodeObj,
@@ -271,6 +405,19 @@ inline bool createOgAttributesForMessage(OgnROS2DatabaseDerivedType& db,
         db, nodeObj, messageFields, prependStr, messageType);
 }
 
+/**
+ * @brief Reads attribute data from an OmniGraph node and writes it to a ROS 2 message
+ * @details
+ * Transfers data from OmniGraph node attributes to a ROS 2 message. This function handles
+ * various data types and their conversion between OmniGraph and ROS 2 representations.
+ * It supports both scalar and array attributes of different primitive types.
+ *
+ * @param[in] db OmniGraph database instance
+ * @param[in,out] message ROS 2 message to be populated with node data
+ * @param[in] prependStr Prefix for attribute names
+ * @param[in] isOutput Whether to read from output (true) or input (false) attributes
+ * @return bool True if data was successfully read from node attributes and written to message
+ */
 inline bool writeMessageDataFromNode(OmniGraphDatabase& db,
                                      std::shared_ptr<Ros2Message> message,
                                      std::string prependStr,
@@ -550,6 +697,19 @@ inline bool writeMessageDataFromNode(OmniGraphDatabase& db,
     return true;
 }
 
+/**
+ * @brief Reads data from a ROS 2 message and writes it to OmniGraph node attributes
+ * @details
+ * Transfers data from a ROS 2 message to OmniGraph node attributes. This function handles
+ * various data types and their conversion between ROS 2 and OmniGraph representations.
+ * It supports both scalar and array values of different primitive types.
+ *
+ * @param[in] db OmniGraph database instance
+ * @param[in] message ROS 2 message to read data from
+ * @param[in] prependStr Prefix for attribute names
+ * @param[in] isOutput Whether to write to output (true) or input (false) attributes
+ * @return bool True if data was successfully read from message and written to node attributes
+ */
 inline bool writeNodeAttributeFromMessage(OmniGraphDatabase& db,
                                           std::shared_ptr<Ros2Message> message,
                                           std::string prependStr,

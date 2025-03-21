@@ -129,6 +129,20 @@ void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
     }
 }
 
+/**
+ * @brief Retrieves the name of a USD prim, with support for custom overrides.
+ * @details
+ * Determines the name of a prim by:
+ * 1. Using the default prim name from USD
+ * 2. Checking for "isaac:nameOverride" attribute to allow custom naming
+ * 3. Using the override value if present
+ *
+ * @param[in] prim USD prim whose name to retrieve
+ * @return std::string Name of the prim, potentially from override attribute
+ *
+ * @see g_kIsaacNameOveride
+ * @see safeGetAttribute
+ */
 inline std::string getName(const pxr::UsdPrim& prim)
 {
     std::string primName = prim.GetName().GetString();

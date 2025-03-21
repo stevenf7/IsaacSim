@@ -3,8 +3,6 @@
 ### Changed
 - Switch asset root for tests to internal nucleus
 
-
-
 ## [1.0.8] - 2025-01-26
 ### Changed
 - Update test settings
@@ -52,4 +50,3 @@
 ## [1.0.0] - 2024-09-29
 ### Added
 - Added initial behavior script based randomizers
-

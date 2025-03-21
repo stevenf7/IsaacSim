@@ -161,6 +161,9 @@ namespace
 
 /**
  * @brief Mapping from string representations to History policy enums
+ * @details
+ * Lookup table for converting string values to Ros2QoSHistoryPolicy enum values.
+ * Used during JSON parsing of QoS configuration.
  */
 const std::map<std::string, Ros2QoSHistoryPolicy> g_kRos2QoSHistoryString2PolicyMap = {
     { "systemDefault", Ros2QoSHistoryPolicy::eSystemDefault },
@@ -171,6 +174,9 @@ const std::map<std::string, Ros2QoSHistoryPolicy> g_kRos2QoSHistoryString2Policy
 
 /**
  * @brief Mapping from string representations to Reliability policy enums
+ * @details
+ * Lookup table for converting string values to Ros2QoSReliabilityPolicy enum values.
+ * Used during JSON parsing of QoS configuration.
  */
 const std::map<std::string, Ros2QoSReliabilityPolicy> g_kRos2QoSReliabilityString2PolicyMap = {
     { "systemDefault", Ros2QoSReliabilityPolicy::eSystemDefault },
@@ -181,6 +187,9 @@ const std::map<std::string, Ros2QoSReliabilityPolicy> g_kRos2QoSReliabilityStrin
 
 /**
  * @brief Mapping from string representations to Durability policy enums
+ * @details
+ * Lookup table for converting string values to Ros2QoSDurabilityPolicy enum values.
+ * Used during JSON parsing of QoS configuration.
  */
 const std::map<std::string, Ros2QoSDurabilityPolicy> g_kRos2QoSDurabilityString2PolicyMap = {
     { "systemDefault", Ros2QoSDurabilityPolicy::eSystemDefault },
@@ -191,6 +200,9 @@ const std::map<std::string, Ros2QoSDurabilityPolicy> g_kRos2QoSDurabilityString2
 
 /**
  * @brief Mapping from string representations to Liveliness policy enums
+ * @details
+ * Lookup table for converting string values to Ros2QoSLivelinessPolicy enum values.
+ * Used during JSON parsing of QoS configuration.
  */
 const std::map<std::string, Ros2QoSLivelinessPolicy> g_kRos2QoSLivelinessString2PolicyMap = {
     { "systemDefault", Ros2QoSLivelinessPolicy::eSystemDefault },
@@ -283,7 +295,15 @@ inline static const bool jsonToRos2QoSProfile(Ros2QoSProfile& qos, const std::st
         return false;
     }
 
-    // Function to create and return a Ros2QoSTime struct from a double representing seconds
+    /**
+     * @brief Lambda function to convert seconds to ROS 2 time format
+     * @details
+     * Creates a Ros2QoSTime struct from a floating-point value representing seconds,
+     * splitting it into seconds and nanoseconds components.
+     *
+     * @param[in] totalSeconds Time in seconds as a floating-point value
+     * @return Ros2QoSTime Struct with separate seconds and nanoseconds components
+     */
     auto createRos2QoSTimeType = [](double totalSeconds) -> Ros2QoSTime
     {
         uint64_t secs = static_cast<uint64_t>(totalSeconds);

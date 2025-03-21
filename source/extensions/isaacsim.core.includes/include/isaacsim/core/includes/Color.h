@@ -18,9 +18,28 @@ namespace core
 {
 namespace includes
 {
+/**
+ * @namespace color
+ * @brief Provides color conversion and gradient utility functions
+ * @details
+ * Contains utility functions for generating color gradients and converting between
+ * different color formats. Useful for data visualization and UI applications.
+ */
 namespace color
 {
 
+/**
+ * @brief Converts a ratio value to a 32-bit RGBA color
+ * @details
+ * Generates a color from the rainbow color spectrum (ROYGBIV) based on the input ratio.
+ * The ratio is mapped to six color regions, creating a smooth gradient transition between them.
+ *
+ * @param[in] ratio A value between 0.0 and 1.0 representing position in the color gradient
+ * @param[in] bigEndian Whether to use big endian byte order for the resulting color
+ * @return 32-bit RGBA color value with an alpha of 255 (fully opaque)
+ *
+ * @note The implementation is adapted from a StackOverflow solution
+ */
 // taken from https://stackoverflow.com/questions/40629345/fill-array-dynamicly-with-gradient-color-c
 static inline uint32_t distToColor(double ratio, bool bigEndian)
 {
@@ -71,6 +90,16 @@ static inline uint32_t distToColor(double ratio, bool bigEndian)
     return blu + (grn << 8) + (red << 16) + (alpha << 24);
 }
 
+/**
+ * @brief Converts a ratio value to a carb::ColorRgba struct
+ * @details
+ * Generates a color from the rainbow color spectrum (ROYGBIV) based on the input ratio.
+ * The ratio is mapped to six color regions, creating a smooth gradient transition between them.
+ * Similar to distToColor() but returns a different format.
+ *
+ * @param[in] ratio A value between 0.0 and 1.0 representing position in the color gradient
+ * @return carb::ColorRgba struct with values normalized to [0.0, 1.0] and alpha set to 1.0
+ */
 static inline carb::ColorRgba distToRgba(double ratio)
 {
     // we want to normalize ratio so that it fits in to 6 regions
