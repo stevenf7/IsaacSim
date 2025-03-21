@@ -322,7 +322,6 @@ sphinx_exclude_patterns = [
   "**/omni.isaac.ml_archive",
   "**/omni.pip.compute",
   "**/omni.pip.cloud",
-  "**/omni.isaac.repl",
   "**/omni.isaac.tests",
   "**/omni.usd.schema.isaac",         #TODO?
   "**/omni.isaac.window.about",
@@ -1078,7 +1077,6 @@ excluded_extensions = [
     "omni.isaac.range_sensor",
     "omni.isaac.range_sensor.examples",
     "omni.isaac.range_sensor.ui",
-    "omni.isaac.repl",
     "omni.isaac.robot_assembler",
     "omni.isaac.robot_description_editor",
     "omni.isaac.ros2_bridge",

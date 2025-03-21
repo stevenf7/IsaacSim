@@ -340,8 +340,6 @@ function include_extensions()
     include("source/extensions/omni.pip.cloud")
     include("source/extensions/omni.pip.compute")
     include("source/extensions/isaacsim.robot.schema")
-    -- Linux Only
-    if os.target() == "linux" then include("source/deprecated/omni.isaac.repl") end
 end
 
 function write_version_file(config)
