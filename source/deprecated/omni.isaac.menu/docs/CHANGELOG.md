@@ -8,7 +8,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-09-30
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.gui.menu
@@ -20,18 +19,21 @@
 ## [0.7.2] - 2024-09-03
 ### Added
 - Missing robots to the menu
+
 ### Fixed
 - some naming to match documentation
 
 ## [0.7.1] - 2024-08-26
 ### Added
 - Missing environments to the menu
+
 ### Fixed
 - Generation of April Tag
 
 ## [0.7.0] - 2024-08-23
 ### Added
 - Several new robots to robot menu
+
 ### Changed
 - Modifies robot menu to have multiple submenus based on robot type
 - Aligns robot menu ordering with documentation
@@ -54,6 +56,7 @@
 ## [0.4.0] - 2024-05-24
 ### Changed
 - Added leatherback
+
 ### Fixed
 - broken USD paths
 

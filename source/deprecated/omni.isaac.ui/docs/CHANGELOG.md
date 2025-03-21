@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [1.0.2] - 2025-01-13
 ### Changed
 - Updated Import source for refactored classes
@@ -40,7 +39,7 @@
 
 ## [0.14.0] - 2024-02-02
 ### Added
-- SelectPrimWidget and ParamWidget to simplify populating a popup dialog for collecting paramaters. 
+- SelectPrimWidget and ParamWidget to simplify populating a popup dialog for collecting paramaters.
 
 ## [0.13.7] - 2024-02-02
 ### Changed
@@ -114,7 +113,6 @@
 - Added get_value() function to CheckBox UIElementWrapper
 
 ## [0.7.0] - 2023-02-28
-
 ### Changed
 - Breaking Change: Removed UIFrameWrapper and replaced with CollapsableFrame UIElementWrapper instance
 - Breaking Change: UIElementWrapper get_ui_element() function replaced with .container_frame property that gives the user a UI frame that contains everything in the UIElementWrapper (label,buttons,fields,etc.)
@@ -128,34 +126,29 @@
 - Added accessors to each UIElementWrapper instance to get each omni.ui.Widget that is used.
 
 ## [0.6.2] - 2023-02-16
-
 ### Added
 - Added detailed docstrings to all omni.isaac.ui.element_wrappers.* __init__ and public member functions
 
 ## [0.6.1] - 2023-02-15
-
 ### Added
 - Added DropDown and FloatField UI wrappers in omni.issac.ui/element_wrappers
 
 ## [0.6.0] - 2023-02-13
-
 ### Added
 - Added omni.isaac.ui/element_wrappers with helpful wrappers around UI elements that simplify button and frame creation and management.
 
 ## [0.5.2] - 2023-01-19
-
 ### Fixed
 - split calback tests to reduce errors
+
 ### Changed
 - rename startup to test_ui
 
 ## [0.5.1] - 2023-01-11
-
 ### Fixed
 - revert to old menu click function to fix hot reload errors
 
 ## [0.5.0] - 2023-01-06
-
 ### Added
 - make_menu_item_description to old menus can use the new action registry
 
@@ -204,6 +197,5 @@
 - General bugfixes
 
 ## [0.1.0] - 2021-07-22
-
 ### Added
 - Initial version of Isaac Sim UI

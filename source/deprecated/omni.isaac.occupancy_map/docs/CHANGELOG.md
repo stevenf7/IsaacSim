@@ -3,18 +3,15 @@
 ### Changed
 - Fix issues with duplicate extension startup from extra imports
 
-
-
 ## [2.0.3] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [2.0.2] - 2025-01-08
 ### Changed
 - Fix extension renaming
 
-## [2.0.1] - 2024-10-24
+## [2.0.1] - 2024-11-24
 ### Changed
 - Updated dependencies and imports after renaming
 
@@ -38,15 +35,14 @@
 ### Changed
 - Refactored into components
 
-## [0.4.2] - 2024-02-07
+## [0.4.3] - 2024-02-07
 ### Changed
 - Updated path to the nucleus extension
 
 ## [0.4.2] - 2024-02-07
 ### Fixed
 - Issues with instanceable assets when using non physx collision mesh option
-- Cell size not updating based on the current stage units. On stage load the cell size is set to 5cm or 0.05m depending on the units. 
-
+- Cell size not updating based on the current stage units. On stage load the cell size is set to 5cm or 0.05m depending on the units.
 
 ## [0.4.1] - 2024-01-18
 ### Changed
@@ -66,7 +62,7 @@
 
 ## [0.3.0] - 2023-07-14
 ### Added
-- Checkbox to use USD triangle geometry instead of physx approx for occupancy map generation. Useful for generating occupancy maps for PhysX vs RTX lidar. 
+- Checkbox to use USD triangle geometry instead of physx approx for occupancy map generation. Useful for generating occupancy maps for PhysX vs RTX lidar.
 
 ## [0.2.8] - 2023-06-12
 ### Changed
@@ -83,28 +79,24 @@
 ## [0.2.5] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
-## [0.2.4] - 2022-05-24
 
+## [0.2.4] - 2022-05-24
 ### Fixed
 - block world default to meters
 
 ## [0.2.3] - 2022-05-16
-
 ### Fixed
 - scale_to_meters parameter
 
 ## [0.2.2] - 2022-05-14
-
 ### Fixed
 - Deadlock when generating data
 
 ## [0.2.1] - 2022-03-16
-
 ### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
 ## [0.2.0] - 2022-03-07
-
 ### Added
 - Add ability to generate 3d occupancy data
 
@@ -112,7 +104,6 @@
 - Api's always return 3d point data
 
 ## [0.1.1] - 2020-09-15
-
 ### Added
 
 - 3D Occupancy Map support that allow 2D maps to be generated from 3D volumes
@@ -125,6 +116,5 @@
 - Added debug visualization
 
 ## [0.1.0] - 2020-07-08
-
 ### Added
 - Initial version of Isaac Sim Occupancy Map Extension

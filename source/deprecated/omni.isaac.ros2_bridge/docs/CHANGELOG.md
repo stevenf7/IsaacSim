@@ -8,7 +8,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [3.0.0] - 2024-09-25
 ### Changed
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.bridge
@@ -84,6 +83,7 @@
 ### Added
 - OgnIsaacROS2CameraInfoHelper node to generate CameraInfo message with correct rectification parameters for stereo cameras
 - camera_info_utils.py module contains utility functions for generating CameraInfo message
+
 ### Changed
 - OgnIsaacROS2CameraHelper:sensor_type == camera_info deprecated in favor of OgnIsaacROS2CameraInfoHelper. This node will use camera_info_utils.py module until the functionality is fully removed in a future release.
 
@@ -94,6 +94,7 @@
 ## [2.28.1] - 2024-06-25
 ### Fixed
 - JointState Subscriber fills in nans when receiving empty arrays for command modes that are not used
+
 ### Added
 - jointstate subscriber test for mixed controls
 
@@ -280,7 +281,7 @@
 ### Added
 - ROS2 Service Prim node to list prims and their attributes, as well as read and write a specific attribute
 
-## [2.13.3] - 2024-04-02
+## [2.13.4] - 2024-04-02
 ### Changed
 - used IsaacCreateRenderProduct for the camera OG shortcuts
 - default to enable semanticlabels for some camera topics
@@ -355,7 +356,6 @@
 ### Added
 - Added Show Debug View flag to RTX Lidar Helper
 
-
 ## [2.8.3] - 2024-02-24
 ### Changed
 - Update source code to run a build clean of warnings
@@ -380,6 +380,7 @@
 ## [2.7.0] - 2024-01-19
 ### Changed
 - Renamed "Isaac Examples > ROS" menu to "Isaac Examples > ROS2"
+
 ## [2.6.2] - 2024-01-18
 ### Changed
 - Changed get_assets_root_path to get_assets_root_path_async for the unit tests
@@ -446,6 +447,7 @@
 ## [2.3.2] - 2023-10-04
 ### Added
 - Tests for JointState Publisher
+
 ### Fixed
 - Carter 1 Unit tests
 - JointState Publisher sign correction when a joint's parents are in reversed order
@@ -453,13 +455,14 @@
 ## [2.3.1] - 2023-10-03
 ### Fixed
 - Windows message for setting PATH
+
 ## [2.3.0] - 2023-09-27
 ### Added
 - Added enable flag for the lidar and camera helper
 - Improved description for the frame ID for the camera and lidar helper
 - Add menu item for Isaac ROS VSLAM tutorial
-## [2.2.3] - 2023-09-27
 
+## [2.2.3] - 2023-09-27
 ### Changed
 - Made several warnings into print and log statements
 
@@ -482,7 +485,6 @@
 - Load internal ROS2 libs when ROS2 is not sourced
 - Print warning telling user how to source ROS2 to use internal libs with rclpy
 
-
 ## [2.1.0] - 2023-09-18
 ### Fixed
 - error when shutting down extension
@@ -499,7 +501,7 @@
 - The ROS_DISTRO env variable is used to determine what ROS backend to use
 - The separate Humble bridge extension has been removed
 
-## [1.13.3] - 2023-08-25
+## [1.13.4] - 2023-08-25
 ### Changed
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
 - Changed test_camera test to expect identical fx and fy as vertical aperture is computed from horizontal aperture.
@@ -507,6 +509,7 @@
 ## [1.13.3] - 2023-08-25
 ### Fixed
 - Add default values for World transform attributes when fetching fabric in computeWorldXformNoCache function used in processAllFrames
+
 ## [1.13.2] - 2023-08-18
 ### Fixed
 - Pixel are square in 105.1 Vertical aperture is not used, and based off of horizontal
@@ -514,6 +517,7 @@
 ## [1.13.1] - 2023-08-10
 ### Changed
 - Changed omnigraph targetPrim types from bundle to target
+
 ## [1.13.0] - 2023-08-03
 ### Changed
 - Image and PCL publishers to use ptrs instead of arrays when possible to reduce memory copies
@@ -533,16 +537,17 @@
 - Bug with RTX Lidar not publishing flatscan correctly
 - invalid json string if semantic message was empty
 
-
 ## [1.12.1] - 2023-03-09
 ### Changed
 - Modified Omnigraph for Moveit example to match tutorials provided by Moveit2
+
 ### Fixed
 - Negative bbox sizes
 
 ## [1.12.0] - 2023-02-28
 ### Fixed
 - Issue where image based messages always used increasing simulation time
+
 ### Added
 - resetSimulationTimeOnStop to Camera Helper node.
 
@@ -558,7 +563,7 @@
 ### Added
 - Fabric support
 
-## [1.10.5] - 2023-01-25
+## [1.10.6] - 2023-01-25
 ### Fixed
 - remove un-needed cpp ogn files from extension
 
@@ -569,6 +574,7 @@
 ## [1.10.4] - 2023-01-20
 ### Fixed
 - Tests use a fixed QOS profile to improve determinism
+
 ## [1.10.3] - 2023-01-09
 ### Fixed
 - Crash when using an old context handle
@@ -578,21 +584,18 @@
 - onclick_fn warning when creating UI
 
 ## [1.10.1] - 2022-12-12
-
 ### Fixed
 - Errors when switching between ROS2 and ROS2 humble bridges
 
 ## [1.10.0] - 2022-12-10
-
 ### Changed
 - Switch publishing nodes to use replicator writer backend
-## [1.9.0] - 2022-11-21
 
+## [1.9.0] - 2022-11-21
 ### Added
 - rtx_lidar_helper Node
 
 ## [1.8.0] - 2022-11-17
-
 ### Added
 - node template for rtx_radar
 
@@ -618,76 +621,64 @@
 - Fixes for kit 103.5
 
 ## [1.6.0] - 2022-08-30
-
 ### Changed
 - Remove direct legacy viewport calls
-## [1.5.0] - 2022-08-15
 
+## [1.5.0] - 2022-08-15
 ### Added
 - ROS2Context node has a useDomainIDEnvVar flag that can be set to true so that the ROS_DOMAIN_ID variable is used
 
 ## [1.4.1] - 2022-08-09
-
 ### Removed
 - Unused carb settings
+
 ### Fixed
 - Activating image publishers should not cause a crash anymore
 - File watcher patterns for extension
 
 ## [1.4.0] - 2022-07-22
-
 ### Added
 - omni.syntheticdata template to publish RTX lidar point cloud
 
 ## [1.3.0] - 2022-07-21
-
 ### Changed
 - Removed articulation control from OgnROS2SubscribeJointState
 - Added JointState message outputs to OgnROS2SubscribeJointState allowing users to connect outputs to articulation controller core_node
 
 ## [1.2.3] - 2022-07-15
-
 ### Changed
 - OgnROS2PublishSemanticLabels to accept string data type
 - Timestamp data now appended to JSON msg output
 
 ## [1.2.2] - 2022-07-13
-
 ### Changed
 - Improved image publisher perf
 
 ## [1.2.1] - 2022-07-06
-
 ### Fixed
 - Quaternion input descriptions
 
 ## [1.2.0] - 2022-06-21
-
 ### Added
 - ROS2 IMU publisher node
 
 ## [1.1.2] - 2022-05-31
-
 ### Fixed
 - Removed Teleport sample from "Isaac Examples" Menu
 
 ## [1.1.1] - 2022-05-26
-
 ### Fixed
 - Crash when switching extension on/off and simulating
 
 ## [1.1.0] - 2022-05-20
-
 ### Added
 - ROS2 examples in "Isaac Examples" Menu
 
 ## [1.0.0] - 2022-05-18
-
 ### Changed
 - Fully switched to OG ROS2 bridge nodes
 
 ## [0.8.3] - 2022-05-18
-
 ### Changed
 - Added 32SC1 image type option to OgnROS2PublishImage
 
@@ -695,34 +686,28 @@
 - Corrected stereoOffset input in OgnROS2CameraHelper
 
 ## [0.8.2] - 2022-05-03
-
 ### Changed
 - Output data types to vectord and quatd in ROS2 Odometry, Raw TF publisher nodes and Twist subscriber node
 - Added dropdown menu and validation for encoding input in ROS2 image publisher node
 
 ## [0.8.1] - 2022-05-02
-
 ### Changed
 - Output data type from float to pointf in ROS2 point cloud publisher node
 
 ## [0.8.0] - 2022-04-29
-
 ### Added
 - ROS2 Image publisher node
 
 ## [0.7.0] - 2022-04-28
-
 ### Added
 - ROS2 Camera Info publisher node
 
 ## [0.6.1] - 2022-04-27
-
 ### Changed
 - ROS2 point cloud publisher node to read generic point cloud buffer
 - ROS2 laser scan publisher node to read generic lidar data buffers
 
 ## [0.6.0] - 2022-04-22
-
 ### Added
 - OG ROS2 Odometry publisher node
 - OG ROS2 Twist subscriber node
@@ -735,40 +720,33 @@
 - OG ROS2 pub/sub clock nodes now able to namespace topic names
 
 ## [0.5.0] - 2022-04-20
-
 ### Added
 - OG ROS2 LaserScan publisher node
 - OG ROS2 PointCloud2 publisher node for lidar
 - Utility method, addTopicPrefix for namespacing ROS2 topics
 
 ## [0.4.0] - 2022-04-13
-
 ### Added
 - ROS2 Context
 - ROS2 pub/sub clock
 
 ## [0.3.0] - 2022-03-18
-
 ### Added
 - Added ROS2 topic name validation
 
 ## [0.2.7] - 2022-03-16
-
 ### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
 ## [0.2.6] - 2022-03-11
-
 ### Changed
 - Removed Cyclone DDS to allow defualt FastRTPS DDS to run instead
 
 ## [0.2.5] - 2022-03-11
-
 ### Fixed
 - Issue with lidar init on first frame
 
 ## [0.2.4] - 2022-02-25
-
 ### Fixed
 - Issue with camera init on first frame
 
@@ -776,7 +754,6 @@
 - ROS2 Bridge to initialize rclcpp in onResume and shutdown rclcpp in onStop
 
 ## [0.2.3] - 2022-02-17
-
 ### Fixed
 - Crash when changing a camera parameter when stopped
 
@@ -784,23 +761,19 @@
 - Switch depth to new eDistanceToPlane sensor
 
 ## [0.2.2] - 2022-02-11
-
 ### Fixed
 - laserScan publisher in RosLidar to be able to synchronize with Lidar sensor after any live user changes to USD properties
 - pointCloud publisher using seperate caching variables from laserScan to prevent accidental overwriting
 
 ## [0.2.1] - 2022-02-08
-
 ### Fixed
 - TF Tree publisher parent frame to include filter for articulation objects, separately from rigid body.
 
 ## [0.2.0] - 2022-02-07
-
 ### Added
 - odometryEnabled setting to toggle both Odometry and TF publishers in differential base components
 
 ## [0.1.1] - 2021-12-08
-
 ### Fixed
 - odometry frame matches robot's starting frame, not the world frame.
 - horizontal and vertical aperture use camera prim values instead of computing vertical aperture
@@ -812,6 +785,5 @@
 - usePhysicsStepSimTime setting and use_physics_step_sim_time to use physics step events to update simulation time
 
 ## [0.1.0] - 2021-04-23
-
 ### Added
 - Initial version of ROS2 Bridge

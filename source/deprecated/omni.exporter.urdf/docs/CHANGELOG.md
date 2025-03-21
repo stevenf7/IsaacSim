@@ -16,27 +16,21 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-09-23
-
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.exporter.urdf.
 
 ## [0.3.2] - 2024-08-28
-
 ### Fixed
 
 - Added missing dependency
 
 ## [0.3.1] - 2024-07-23
-
 ### Fixed
 
 - removed unnecessary dependencies
 
-
 ## [0.3.0] - 2024-04-26
-
 ### Fixed
 
 - Fix cylinder radii check
@@ -53,9 +47,7 @@
 - Add mesh file path char length check
 - Add NodeType.SENSOR and functionality to include sensor frames in the URDF
 
-
 ## [0.2.0] - 2023-12-01
-
 ### Fixed
 
 - Scaling bug when geometry prim is a child of Xform prim with scaling
@@ -73,16 +65,12 @@
 - Ability to set mesh path prefix
 - Optionally setting output to directory (URDF file name automatically set to match USD file name)
 
-
 ## [0.1.1] - 2023-09-19
-
 ### Fixed
 
 - Add missing dependencies and remove unused code
 
-
 ## [0.1.0] - 2023-07-27
-
 ### Added
 
 - Initial version of Isaac Sim URDF exporter

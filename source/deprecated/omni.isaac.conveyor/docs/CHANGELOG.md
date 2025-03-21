@@ -3,12 +3,9 @@
 ### Changed
 - Fix issues with duplicate extension startup from extra imports
 
-
-
 ## [1.0.5] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
-
 
 ## [1.0.4] - 2025-01-08
 ### Changed
@@ -26,14 +23,11 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [1.0.0] - 2024-09-27
-
-### Deprecation
+### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor
 
 ## [0.4.0] - 2024-06-13
-
 ### Changed
 - Updated Physics API to use SurfaceVelocity instead of rigid Body deprecated modified Velocities.
 - Added Velocity Variable in omnigraph to control the conveyor speed
@@ -43,11 +37,13 @@
 - Forcing Kinematics Body on Conveyor Creation
 
 # Changelog
+
 ## [0.3.14] - 2024-05-06
 ### Removed
 - Unused config file
 
 # Changelog
+
 ## [0.3.13] - 2023-11-01
 ### Fixed
 - Error when Node starts for the first time if it doesn't have a Texture translate attribute.
@@ -59,6 +55,7 @@
 ## [0.3.11] - 2023-08-10
 ### Changed
 - Changed conveyor prim node input type from bundle to target
+
 ## [0.3.10] - 2023-06-13
 ### Changed
 - Update to kit 105.1, build system update, omni.usd.utils -> omni.usd, usdPhysics -> pxr/usd/usdPhysics
@@ -88,9 +85,11 @@
 ## [0.3.4] - 2022-12-02
 ### Fixed
 - Adaptive scale for assets not in the same meters per unit than open stage
+
 ## [0.3.3] - 2022-12-01
 ### Fixed
 - CreateConveyorBelt command documentation update
+
 ## [0.3.2] - 2022-12-01
 ### Fixed
 - CreateConveyorBelt command .do() only returns the created prim and not a tuple
@@ -107,6 +106,7 @@
 ### Added
 - Digital Twin Library Conveyor Authoring tool
 - Support for curved conveyors
+
 ### Changed
 - Default path for creating conveyor command is now at prim parent instead of rigid body prim.
 
@@ -115,7 +115,6 @@
 - Fixes for kit 103.5
 
 ## [0.2.0] - 2022-07-22
-
 ### Changed
 - Convert node to cpp backend
 - Conveyor node renamed to IsaacConveyor
@@ -124,10 +123,8 @@
 - Simplified creating multiple conveyors, multiple prims can be selected on creation using menu
 
 ## [0.1.1] - 2022-05-10
-
 ### Changed
 - Change Tests to use meters as distance unit
 
 ## [0.1.0] - 2022-03-30
-
 - First Version

@@ -8,7 +8,6 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [2.0.0] - 2024-10-07
 ### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.test.collection.
@@ -24,6 +23,7 @@
 ## [1.17.0] - 2024-05-23
 ### Added
 - Tests for the Leatherback robot.
+
 ### Fixed
 - O3dyn Tests
 
@@ -45,7 +45,7 @@
 
 ## [1.16.2] - 2024-03-07
 ### Changed
-- Removed the usage of the deprecated dynamic_control extension 
+- Removed the usage of the deprecated dynamic_control extension
 
 ## [1.16.1] - 2024-02-02
 ### Changed
@@ -85,11 +85,11 @@
 
 ## [1.14.2] 2023-11-27
 ### Fixed
-- updated tests to renamed nova carter asset 
+- updated tests to renamed nova carter asset
 
 ## [1.14.1] 2023-11-21
 ### Added
-- Added writers to the 'test_randomizer_snippets.py' isaac replicator randomizers 
+- Added writers to the 'test_randomizer_snippets.py' isaac replicator randomizers
 
 ## [1.14.0] 2023-11-20
 ### Added
@@ -114,12 +114,13 @@
 
 ## [1.11.0] 2023-08-24
 ### Added
-- test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs 
+- test_randomizer_snippets.py containing replicator alternative randomizer examples from the docs
 - Missing utility snippet from the docs
 
 ## [1.10.4] - 2023-08-21
 ### Fixed
 - Fixed drive_goal_carter_v2 tests to use the correct timecode setting
+
 ### Changed
 - Changed test accel, test spin, and test circle thresholds for the carter v1, v2 and jetbot
 
@@ -172,7 +173,7 @@
 ### Added
 - Added Test Cases that cause segfaults in the current build of Isaac Sim
 
-## [1.2.0] - 2022-10-05 
+## [1.2.0] - 2022-10-05
 ### Added
 - Added Test Case to check if Sim will freeze when opening a USD stage 100 times
 
@@ -181,11 +182,9 @@
 - Fixes for kit 103.5
 
 ## [1.1.0] - 2022-07-26
-
 ### Added
 - Differential base robot testcases
 
 ## [1.0.0] - 2022-07-12
-
 ### Added
 - Initial Version

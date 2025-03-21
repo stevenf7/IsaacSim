@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [2.0.3] - 2025-01-08
 ### Changed
 - Fix extension renaming
@@ -17,8 +16,8 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ##  [2.0.0] - 2024-09-27
+
 ### Changed
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui
 
@@ -29,12 +28,11 @@
 ### Changed
 - Moved the assets source to a configurable setting
 - Moved the config path to a configurable setting
-- Moved the Conveyor Track Builder to UI. 
+- Moved the Conveyor Track Builder to UI.
 
 ## [1.0.1] - 2024-05-06
 ### Changed
 - Updated asset path
 
 ## [1.0.0] - 2024-03-20
-
 - First Version

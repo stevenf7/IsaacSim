@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [13.0.2] - 2024-11-22
 ### Fixed
 - Remove import alias of new sample from deprecated sample to prevent sample duplication
@@ -25,6 +24,7 @@
 ### Changed
 - CameraView class to use the tiled RTX sensor instead of the single raycast Tiled Sensor
 - Changed default output annotators to rgb and depth
+
 ### Removed
 - CameraView methods: set_frequency, get_frequency, set_dt, get_dt, get_data (Currently the CameraView class follows the global rendering_dt)
 
@@ -43,6 +43,7 @@
 ## [12.8.4] - 2024-08-20
 ### Added
 - Adds Owl to Create->Sensor menu.
+
 ### Fixed
 - Corrects path manipulations when building menu.
 
@@ -100,6 +101,7 @@
 ### Added
 - Setting the rigid body parent sleep threshold to 0 to prevent physics to go to sleep.
 - Setting the contact reporter threshold to 0 to make sure all contacts are reported.
+
 ### Fixed
 - Performance issue due to CUDA sync in omni::sensors::nv::lidar::LidarRotary::batchEnd
 - Missing omni::sensors:::IProfileReaderFactory v0.1 dependency
@@ -111,6 +113,7 @@
 ## [12.3.0] - 2024-06-14
 ### Added
 - OgnIsaacPrintRTXSensorInfo - uses Python bindings to decompose and print GMO struct
+
 ### Removed
 - OgnIsaacPrintLidarInfo and OgnIsaacPrintRadarInfo - deprecated by OgnIsaacPrintRTXSensorInfo
 
@@ -135,6 +138,7 @@
 ## [11.3.2] - 2024-06-11
 ### Added
 - Unit tests for rotary and solid state lidars evaluating `RtxSensorCpuIsaacComputeRTXLidarPointCloud` and `RtxSensorCpuIsaacComputeRTXLidarFlatScan` annotators
+
 ### Fixed
 - `LidarRTX` no longer causes error when `position` is set in constructor
 - Corrects `OgnIsaacComputeRTXLidarFlatScan` `azimuthRange` output to span true min/max azimuth of scan
@@ -164,8 +168,10 @@
 ## [11.2.3] - 2024-05-08
 ### Added
 - omni.isaac.sensor.gmo_types module, containing `ctypes` structures for `omni.sensors` extension types
+
 ### Changed
 - SICK lidar configs now include rangeOffset parameter
+
 ### Fixed
 - OgnIsaacPrintRTXRadarInfo prints radar info correctly
 
@@ -180,6 +186,7 @@
 ## [11.2.1] - 2024-05-07
 ### Fixed
 - Crash in IsaacComputeRTXRadarPointCloud node
+
 ### Changed
 - Using wpm radar
 - Get radar transform from camera
@@ -230,6 +237,7 @@
 ## [10.1.1] - 2024-04-17
 ### Added
 - Telemetry for writers and annotators
+
 ### Fixed
 - Update IStageUpdate usage to fix deprecation error
 
@@ -237,6 +245,7 @@
 ### Changed
 - omni.sensors backend moved to v1.0.0
 - Includes RTX nonvisual material support
+
 ### Removed
 - up/downElevationDeg and start/endAzimuthDeg because they are no longer used.
 
@@ -313,7 +322,6 @@
 - Added read latest data input flag to the read contact sensor node (default to false)
 - Renamed Isaac Read Contact Sensor to Isaac Read Contact Sensor Node
 
-
 ## [9.12.1] - 2024-01-26
 ### Fixed
 - RTX Lidar config parameter nearRangeM < 0.4 was broken. Added minDistBetweenEchos, which also affects the near hits.
@@ -360,6 +368,7 @@
 ## [9.8.1] - 2023-10-06
 ### Fixed
 - Realsense D455 menu
+
 ### Changed
 - Updated assets to use carter v2.4
 
@@ -375,33 +384,36 @@
 ### Fixed
 - Fixed WriterReadRTXLidarData Synthetic Data writer so it sets the render_product_path correctly.
 
-
 ## [9.7.1] - 2023-09-29
 ### Fixed
 - Fixed elevation output for ComputeRTXLidarPointCloud node.
 
-
 ## [9.7.0] - 2023-09-29
 ### Added
 - numEchos, numChannels, and numTicks output to IsaacReadRTXLidarData
+
 ### Changed
 - changed IU names for CreateRTXLidarScanBuffer outputs to be more user friendly.
 - set default RXT sensor space to be the same as isaac-sim so rotations in IsaacSensorCreateRtxLidar make sense
+
 ### Fixed
 - Fixed bug with ReadRTXLidarData node output when using keepOnlyPositiveDistance.
 
 ## [9.6.3] - 2023-09-29
 ### Fixed
 - Add the allowedToken metadata for the cameraProjectionType attribute in cameras if it wasn't set already.
+
 ## [9.6.2] - 2023-09-27
 ### Changed
 - updated data acquisition callback for Camera objects to be on the next frame event
 - Used frameTime annotator instead of the dispather node inputs for better accuracy in the data acquisition callback
 - Moved initializing render products to the initialize method in Camera to reduce overhead and decoupling the usage of pose utils and render product related methods
+
 ## [9.6.1] - 2023-09-26
 ### Fixed
 - Fixed bug with horizontal resolution divison
 - Fixed contact sensor sample
+
 ## [9.6.0] - 2023-09-25
 ### Added
 - depthRange output to IsaacReadRTXLidarData
@@ -410,6 +422,7 @@
 ## [9.5.1] - 2023-09-20
 ### Fixed
 - ComputeRTXLidarFlatScan now uses lidar config for more accurate output
+
 ### Changed
 - RGBD menu updated to include manufacturer sub-menu
 - Updated usd paths for Sensing assets
@@ -423,6 +436,7 @@
 ## [9.4.1] - 2023-09-19
 ### Changed
 - IsaacComputeRTXLidarFlatScan now works with single emitter lidar configs like RPLIDAR_S2E
+
 ### Fixed
 - IsaacComputeRTXLidarFlatScan range projected to 0 elevation
 - IMU and contact sensor read omnigraph nodes can now support parents from multiple levels up.
@@ -430,6 +444,7 @@
 ## [9.4.0] - 2023-09-18
 ### Added
 - Support, samples for OpenCV calibration models
+
 ### Changed
 - Added Kannala Brandt and Rational Polynomial tests for the camera properties test
 
@@ -443,6 +458,7 @@
 ## [9.2.0] - 2023-09-05
 ### Added
 - Sensing GMSL2 RGBD sensors
+
 ### Fixed
 - Scale issues with Orbbec RGBD sensors
 
@@ -458,24 +474,29 @@
 
 ### Changed
 - The layout of the add sensors menu.
+
 ### Fixed
 - Added force threshold unit test for the contact sensor, now contact forces smaller than the min threshold will be treated as no contact
 
 ## [9.0.0] - 2023-08-29
 ### Added
 - Sick_TiM781 lidar config file.
+
 ### Changed
 - on CreateRTXLidarScanBuffer returnsPerScan output to numReturnsPerScan
+
 ### Fixed
 -  CreateRTXLidarScanBuffer works when input data wraps around the output buffer
 
 ## [8.1.2] - 2023-08-28
 ### Changed
 - Added standard out fail pattern for the expected no prim found edge case for the ogn test
+
 ## [8.1.1] - 2023-08-22
 ### Fixed
 -  CreateRTXLidarScanBuffer works on Solid State Lidar
 - Improved unit test stability
+
 ### Changed
 - Cleaned up IsaacComputeRTXLidarPointCloud, no intended functional changes.
 
@@ -487,12 +508,15 @@
 ### Added
 - testMode to IsaacPrintRTXRadarInfo
 - Writers for radar point cloud node
+
 ### Changed
 - RtxSensorCpuIsaacComputeRTXRadarPointCloud template to Annotator
 - Radar Point Cloud creator now gets transform from render_product
 - changed PrintRTX templates to Writers
+
 ### Removed
 - RtxRadarGetPrimLocalToWorldTransform
+
 ## [7.5.1] - 2023-08-17
 ### Added
 - Effort sensor standalone example
@@ -512,12 +536,15 @@
 ## [7.4.1] - 2023-08-15
 ### Added
 - Changed isaac sensor node prim from bundle to target type
+
 ### Fixed
 - Vertical Aperture used from reading the horizonal aperture usd property and multiplying it by resolution ratio to conform to the square pixels assumption in place. (Camera class)
+
 ## [7.4.0] - 2023-08-15
 ### Changed
 - RTX point cloud node returns width and height of buffer
 - Convert RTX templates to annotators
+
 ### Fixed
 - RTX lidar class not returning data
 
@@ -537,10 +564,12 @@
 - Added Effort Sensor
 - supported_annotators property
 - Add unit tests for Camera class to test get_point_cloud(), get_depth(), get_rgb()
+
 ### Fixed
 - Fixed divisible by zero error in IMU linear interpolation
 - Removed reading pairs from the IMU sensor to use the buffer directly
 - Error when removing an annotator that had not been added yet
+
 ### Changed
 - store and destroy internaly created renderproduct
 
@@ -596,6 +625,7 @@
 - RTX Sensors to Windows
 - WriterIsaacReadRTXLidarData Synthetic Data Writer
 - RtxSensorCpuIsaacReadRTXLidarData Synthetic Data Template
+
 ## [5.11.0] - 2023-07-05
 ### Added
 - Added filter width attributes to the imu sensor for adjusting noise
@@ -621,18 +651,15 @@
 - IsaacPrintRTXLidarInfo node now prints prim paths and return data for first named prim hits.
 
 ## [5.8.1] - 2023-06-22
-
 ### Fixed
 - Bug causing the data frame to stop updating in the camera class over extended periods of time
 
 ## [5.8.0] - 2023-06-21
-
 ### Added
 - Test Mode for PrintRTXLidarInfo node.
 - synthetic data templates for Noop, RtxSensorCpuIsaacPrintRTXLidarInfo, and TestIsaacPrintRTXLidarInfo
 
 ## [5.7.0] - 2023-06-12
-
 ### Added
 - TemplateRtxLidarDebugDrawPointCloud Synthetic Data template that mirrors the RtxLidarDebugDrawPointCloud writer.
 
@@ -644,7 +671,6 @@
 - renamed pxr::IsaacSensorSchemaIsaacBaseSensor to pxr::IsaacSensorIsaacBaseSensor
 - renamed pxr::IsaacSensorSchemaIsaacContactSensor to pxr::IsaacSensorIsaacContactSensor
 - renamed pxr::IsaacSensorSchemaIsaacImuSensor to pxr::IsaacSensorIsaacImuSensor
-
 
 ## [5.6.4] - 2023-05-09
 ### Fixed
@@ -665,9 +691,11 @@
 ## [5.6.0] - 2023-03-01
 ### Added
 - Unlabeled points can be ignored when enabling pointcloud
+
 ### Changed
 - removing an annotator detaches it
 - update rtx lidar on app update
+
 ### Fixed
 - occlusion could not be enabled
 - RTX lidar not returning data
@@ -714,7 +742,6 @@
 - test_rtx_lidar passes now
 
 ## [5.3.0] - 2022-12-11
-
 ### Changed
 - Switch debug draw nodes to use replicator writer backend
 - hide rtx lidar menu from windows as rtx sensor is not supported
@@ -741,27 +768,22 @@
 - IsaacSensorCreateContactSensor, IsaacSensorCreateImuSensor, IsaacSensorCreateRtxLidar and IsaacSensorCreateRtxRadar commands .do() only returns the created prim and not a tuple
 
 ## [5.2.0] - 2022-11-29
-
 ### Added
 - Added contact sensor and IMU sensor wrappers.
 
 ## [5.1.1] - 2022-11-28
-
 ### Fixed
 - crash with Solid State Lidar.
 
 ## [5.1.0] - 2022-11-22
-
 ### Added
 - Added RTX lidar and Rotating physics lidar wrappers.
 
 ## [5.0.0] - 2022-11-21
-
 ### Added
 - Camera class that provides many utilities to interact with a camera prim in stage
 
 ## [4.0.0] - 2022-11-16
-
 ### Added
 - node template for rtx_radar
 - nodes for rtx_radar: PrintRTXRadarInfo, ComputeRTXRadarPointCloud
@@ -775,12 +797,10 @@
 - nvlidar dep to nvsensor and updated version.
 
 ## [3.0.1] - 2022-11-14
-
 ### Fixed
 - Removed extra copy of BaseResetNode and use the one from core_nodes
 
 ## [3.0.0] - 2022-11-01
-
 ### Added
 - IsaacRenderVarToCpuPointer node to replace rtx_lidar need for SdRenderVarToRawArray
 
@@ -791,18 +811,15 @@
 - inputs to ReadRTXLidar[PointCloud|FlatScan] nodes to use IsaacRenderVarToCpuPointer cpuPointer
 
 ## [2.1.0] - 2022-11-01
-
 ### Added
 - ReadRTXRaw node
 - PrintRTXLidarInfo node
 
 ## [2.0.0] - 2022-10-19
-
 ### Changed
 - Extension name to omni.isaac.sensor
 
 ## [1.6.2] - 2022-10-19
-
 ### Changed
 - ReadRTXLidarPointCloud code doc and ignore 0 values.
 
@@ -810,7 +827,6 @@
 - accuracy error calculation in ReadRTXLidarPointCloud
 
 ## [1.6.1] - 2022-10-18
-
 ### Added
 - ReadRTXLidarPointCloud has transform lidarToWorld output
 - ReadRTXLidarPointCloud has output on demand for all possible attributes
@@ -819,17 +835,14 @@
 - ReadRTXLidarPointCloud outputs in lidar coords
 
 ## [1.6.0] - 2022-10-09
-
 ### Added
 - IsaacRtxLidarSensorAPI applied schema to differential regular cameras from RTX lidar cameras
 
 ## [1.5.1] - 2022-10-07
-
 ### Changed
 - Changed the backend contact api to use updated batched update instead of notifications
 
 ## [1.5.0] - 2022-10-06
-
 ### Added
 - keepOnlyPositiveDistance flag to ReadRTXLidarPointCloud Node
 - intensity output to ReadRTXLidarPointCloud Node
@@ -839,15 +852,14 @@
 ### Fixed
 - positions of points in ReadRTXLidarPointCloud
 
-
 ## [1.4.0] - 2022-09-28
-
 ### Added
 - ReadRTXLidarFlatScan Node
 
 ## [1.3.0] - 2022-09-27
 ### Changed
 - tests to use nucleus assets
+
 ### Removed
 - usd files local to extension
 
@@ -856,7 +868,6 @@
 - Fixes for kit 103.5
 
 ## [1.2.0] - 2022-09-02
-
 ### Changed
 - Remove RTX tests from windows
 - Disable failing contact sensor tests from windows
@@ -864,29 +875,25 @@
 - Use xform utilities instead of XformPrim for commands
 
 ## [1.1.1] - 2022-09-01
-
 ### Changed
 - Remove legacy viewport calls from tests
 
 ## [1.1.0] - 2022-08-24
-
 ### Added
 - Lidar Config file location as data/lidar_configs
 
 ## [1.0.2] - 2022-08-09
-
 ### Changed
 - Removed simple_articulation.usd, test_imu_sensor uses Nucleus asset
 
 ## [1.0.1] - 2022-07-29
-
 ### Changed
 - Added an exec out on the ReadContact and ReadIMU nodes
+
 ### Fixed
 - Removed extra print statement
 
 ## [1.0.0] - 2022-07-22
-
 ### Added
 - ReadRTXLidarPointCloud Node
 
@@ -897,12 +904,10 @@
 - Make return values for commands consistent, they now return: command_status, (success, prim)
 
 ## [0.5.1] - 2022-07-15
-
 ### Changed
 - Renamed BindingsContactSensorPython to BindingsIsaacSensorPython
 
 ## [0.5.0] - 2022-07-11
-
 ### Added
 - Read contact sensor omnigraph node and tests
 - Orientation reading to Imu sensor sample
@@ -911,7 +916,6 @@
 - Contact sensor resets on stop/start
 
 ## [0.4.0] - 2022-06-24
-
 ### Added
 - Absolute orientation output to Imu sensor + tests
 - Read Imu node
@@ -920,22 +924,18 @@
 - Imu mRawBuffer resets upon stop/start
 
 ## [0.3.4] - 2022-05-24
-
 ### Fixed
 - Property orientation loading bug
 
 ## [0.3.3] - 2022-04-22
-
 ### Changed
 - Moved sensor data aquisition function from tick to onPhysicsStep
 
 ## [0.3.2] - 2022-04-14
-
 ### Fixed
 - Fixed component visualization
 
 ## [0.3.1] - 2022-04-07
-
 ### Changed
 - Draw function runs onUpdate instead of physics call back
 
@@ -943,7 +943,6 @@
 - Fixed visualization error of the isaac sensors
 
 ## [0.3.0] - 2022-04-04
-
 ### Added
 - Added Imu sensor
 
@@ -953,7 +952,6 @@
 - Updated index.rst documentation for contact sensor and imu sensors
 
 ## [0.2.1] - 2022-03-28
-
 ### Added
 - Add UI element to create contact sensor
 
@@ -962,7 +960,6 @@
 - Modified draw function to use USD util's global pose
 
 ## [0.2.0] - 2022-03-18
-
 ### Changed
 - Converted contact sensors into usdSchemas
 
@@ -970,21 +967,17 @@
 - Enable visualization of contact sensors in the stage
 
 ## [0.1.3] - 2022-03-16
-
 ### Fixed
 - Bugfix for failing tests and missing updates
 
 ## [0.1.2] - 2022-01-26
-
 ### Changed
 - Compatibility for sdk 103
 
 ## [0.1.1] - 2021-07-26
-
 ### Added
 - New UI
 
 ## [0.1.0] - 2021-07-08
-
 ### Added
 - Initial version of Isaac Sim Contact Sensor Extension

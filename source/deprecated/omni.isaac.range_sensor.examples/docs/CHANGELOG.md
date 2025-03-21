@@ -4,7 +4,6 @@
 ### Changed
 - Update extension description and add extension specific test settings
 
-
 ## [2.0.2] - 2024-10-24
 ### Changed
 - Removed aliased imports as they caused extensions to load twice
@@ -22,6 +21,5 @@
 - Disables "Load Lidar" button in Lidar example while stage is clearing
 
 ## [1.0.0] - 2024-03-12
-
 ### Added
 - Initial version of Isaac Sim Range sensor extension examples

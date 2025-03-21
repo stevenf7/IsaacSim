@@ -151,12 +151,12 @@ command = "generate_doxygen_input"
 entry_point = "${config_root}/tools/isaac/generate_doxygen_input.py:setup_repo_tool"
 
 ########################################################################################################################
-# Validate changelogs
+# Update and validate changelogs
 ########################################################################################################################
 
-[validate_changelogs]
-command = "validate_changelogs"
-entry_point = "${config_root}/tools/isaac/validate_changelogs.py:setup_repo_tool"
+[update_changelogs]
+command = "update_changelogs"
+entry_point = "${config_root}/tools/isaac/update_changelogs.py:setup_repo_tool"
 
 ########################################################################################################################
 # Check extension structure

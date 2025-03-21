@@ -1,18 +1,15 @@
 # Changelog
-## [1.1.3] - 2025-03-20
+## [2.1.3] - 2025-03-20
 ### Changed
 - Fix issues with duplicate extension startup from extra imports
 
-
-
-## [1.1.2] - 2025-01-21
+## [2.1.2] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
 
-## [1.1.1] - 2024-10-24
+## [2.1.1] - 2024-10-24
 ### Changed
 - Updated dependencies and imports after renaming
-
 
 ## [2.0.0] - 2024-09-27
 ### Deprecated
@@ -50,6 +47,7 @@
 ## [0.5.1] - 2023-08-25
 ### Changed
 - added stdout fail pattern for the expected no prim found edge case for the ogn test
+
 ## [0.5.0] - 2023-08-22
 ### Changed
 - Added testMode and removed depthTest (it did nothing) from DebugDrawPointCloud node.
@@ -66,6 +64,7 @@
 ### Added
 - xPrim Axis Visualzier node
 - xPrim Radius Visualizer node
+
 ### Changed
 - pass width vector by reference.
 - Simplified DebugDrawPointCloud internals.
@@ -75,21 +74,21 @@
 ## [0.2.3] - 2023-01-19
 ### Fixed
 - crash when trying to draw without a valid renderer
+
 ## [0.2.2] - 2022-12-14
 ### Fixed
 - crash when deleting
 
 ## [0.2.1] - 2022-10-18
-
 ### Changed
 - Debug Draw Point Cloud takes transform
 - PrimitiveDrawingHelper::setVertices with poistion only
 
 ## [0.2.0] - 2022-10-06
-
 ### Added
 - Debug Draw Point Cloud node
 - PrimitiveDrawingHelper::setVertices with constant color and width
+
 ### Changed
 - antialiasingWidth to 1 in PrimitiveDrawingHelper::draw()
 
@@ -102,16 +101,13 @@
 - Fixes for kit 103.5
 
 ## [0.1.2] - 2022-03-07
-
 ### Added
 - Added flag to disable depth check
 
 ## [0.1.1] - 2021-08-20
-
 ### Added
 - world space flag to specify if width value is in world coordinates.
 
 ## [0.1.0] - 2021-07-27
-
 ### Added
 - Initial version of extension

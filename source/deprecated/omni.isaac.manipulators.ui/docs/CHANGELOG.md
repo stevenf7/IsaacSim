@@ -8,9 +8,8 @@
 ### Changed
 - Updated dependencies and imports after renaming
 
-
 ## [2.0.0] - 2024-09-30
-### Deprecation
+### Deprecated
 - Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.manipulators.ui
 
 ## [1.2.2] - 2024-09-13
@@ -30,8 +29,6 @@
 - needed robot root input separately from articulation root for Articulation Position/Velocity controller graphs
 - documentation button for omnigraph shortcuts
 
-
 ## [1.0.0] - 2024-03-20
-
 ### Added
 - created omni.isaac.manipulators.ui
