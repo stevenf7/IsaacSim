@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Simulation"
 title = "Block world extension for Isaac Sim Occupancy Map"
 description = "2D Occupancy Map Generation"

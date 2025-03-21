@@ -1,4 +1,9 @@
 # Changelog
+## [2.0.4] - 2025-03-20
+### Changed
+- Fix issues with duplicate extension startup from extra imports
+
+
 
 ## [2.0.3] - 2025-01-21
 ### Changed
