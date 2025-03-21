@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.7"
+version = "0.1.8"
 category = "Simulation"
 title = "Isaac Sim Physics Inspector"
 description = "Inspect Physics Objects During Simulation"
@@ -17,7 +17,7 @@ preview_image = "data/preview.png"
 writeTarget.kit = true
 
 [deprecation]
-warning = "Extension deprecated since Isaac Sim 4.0.0. Replaced by Physics Visualization tools"
+warning = "Extension deprecated since Isaac Sim 4.2.0. Replaced by Physics Visualization tools"
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}

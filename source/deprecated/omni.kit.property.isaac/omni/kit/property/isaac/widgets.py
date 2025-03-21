@@ -16,5 +16,3 @@ new_extension_name = "isaacsim.gui.property"
 carb.log_warn(
     f"{old_extension_name}.widgets has been deprecated in favor of {new_extension_name}.widgets. Please update your code accordingly."
 )
-
-from isaacsim.gui.property.widgets import *

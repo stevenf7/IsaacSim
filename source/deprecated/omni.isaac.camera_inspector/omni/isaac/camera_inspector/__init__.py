@@ -16,5 +16,3 @@ new_extension_name = "isaacsim.util.camera_inspector"
 carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
-
-from .extension import *

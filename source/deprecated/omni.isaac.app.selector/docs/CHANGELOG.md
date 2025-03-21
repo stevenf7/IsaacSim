@@ -1,4 +1,9 @@
 # Changelog
+## [3.0.3] - 2025-03-20
+### Changed
+- Fix version number for deprecation message
+
+
 
 ## [3.0.2] - 2025-01-21
 ### Changed
