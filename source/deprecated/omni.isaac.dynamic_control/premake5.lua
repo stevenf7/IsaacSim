@@ -21,7 +21,7 @@ includedirs {
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
 }
 libdirs {
-    targetDepsDir .. "/usd/%{cfg.buildcfg}/lib",
+    target_deps .. "/usd/%{cfg.buildcfg}/lib",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }

@@ -27,7 +27,6 @@
 #include <carb/tokens/ITokens.h>
 #include <carb/tokens/TokensUtils.h>
 
-#include <experimental/filesystem>
 #include <isaacsim/core/includes/LibraryLoader.h>
 #include <isaacsim/ros2/bridge/IRos2Bridge.h>
 #include <isaacsim/ros2/bridge/Ros2Distro.h>
@@ -42,6 +41,11 @@
 #include <omni/usd/UsdTypes.h>
 
 #include <DynamicControl.h>
+#if defined(_WIN32)
+#    include <filesystem>
+#else
+#    include <experimental/filesystem>
+#endif
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -208,7 +212,11 @@ CARB_EXPORT void carbOnPluginStartup()
 #endif
 
             carb::tokens::ITokens* tokens = carb::getCachedInterface<carb::tokens::ITokens>();
+#if defined(_WIN32)
+            std::filesystem::path p = carb::tokens::resolveString(tokens, "${app}");
+#else
             std::experimental::filesystem::path p = carb::tokens::resolveString(tokens, "${app}");
+#endif
             g_extensionPath = p.parent_path().string() + "/exts/isaacsim.ros2.bridge/" + std::string(rosDistro) + "/lib/";
 
             // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree.

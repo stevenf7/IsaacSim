@@ -56,9 +56,9 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
         "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         "%{root}/_build/target-deps/omni_client_library/include",
-        "%{root}/_build/target-deps/nv_ros2_"..ros_distro.."/include/type_description_interfaces",
-        "%{root}/_build/target-deps/nv_ros2_"..ros_distro.."/include/service_msgs",
-        "%{root}/_build/target-deps/nv_ros2_"..ros_distro.."/include/rosidl_dynamic_typesupport",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/type_description_interfaces",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/service_msgs",
+        "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_dynamic_typesupport",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -85,7 +85,6 @@ for _, ros_distro in ipairs(ros_distributions) do
         -- "vision_msgs__rosidl_typesupport_c", "vision_msgs__rosidl_generator_c"
         -- "ackermann_msgs__rosidl_typesupport_c", "ackermann_msgs__rosidl_generator_c"
     }
-
 
     extra_usd_libs = { "usdPhysics" }
 

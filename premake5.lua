@@ -10,127 +10,57 @@ deprecated_exts_path = "%{root}/_build/%{platform}/%{config}/extsDeprecated"
 -- Shared build scripts from repo_build package
 no_compile_commands_file = false
 
--- -- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
--- local build_path = root.."/_build/"..os.target().."-x86_64/"
-
--- if os.isfile(build_path.."release/kit/dev/premake5-public.lua") then
---     kit_sdk = build_path.."release/kit"
---     dofile(build_path.."release/kit/dev/premake5-public.lua")
--- else
---     kit_sdk = build_path.."debug/kit"
---     dofile(build_path.."debug/kit/dev/premake5-public.lua")
--- end
-
--- -- Setup where to write generate prebuild.toml file
--- repo_build.set_prebuild_file('_build/generated/prebuild.toml')
-
-function workspace_build_settings()
+function isaacsim_build_settings()
     -- Default compilation settings
-    symbols("On")
     exceptionhandling("On")
     rtti("On")
-    staticruntime("On")
-    flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "NoIncrementalLink" }
-    cppdialect("C++17")
+    defines { "__STDC_VERSION__=0" } -- Define this to zero to prevent errors
 
-    -- Debug configuration settings
-    filter { "configurations:debug" }
-    defines { "_DEBUG" }
-    optimize("Off")
-
-    -- Release configuration settings
-    filter { "configurations:release" }
-    defines { "NDEBUG" }
-    optimize("Speed")
-
-    filter {}
-
-    -- Windows platform settings
     filter { "system:windows" }
-    platforms { "x86_64" }
-    toolset("v142")
-
-    -- Add .editorconfig to all projects so that VS 2017 automatically picks it up
-    files { ".editorconfig" }
-    editandcontinue("Off")
-
-    -- Enable usage of brought up toolchain
-    setup_msvc_toolchain()
-
-    -- All of our source strings and executable strings are utf8
-    buildoptions { "/utf-8", "/bigobj" }
-    buildoptions { "/permissive-", "/Zc:externC-" }
-    -- The /Zc:inline option strips out the "arch_ctor_<name>" symbols, so disable it.
-    -- See https://groups.google.com/g/usd-interest/c/nWm7u3B6CQk/m/OvIkOIyAAwAJ
-    -- NOTE: This will give warnings for this project. According to premake docs, the removeunreferencedcodedata
-    -- command should be used instead, but it doesn't appear until premake5.0.0-alpha16 and even then it doesn't
-    -- work correctly. https://premake.github.io/docs/removeunreferencedcodedata/
-    buildoptions { "/Zc:inline-" }
-
-    -- define this everywhere to prevent 'pyerrors.h' from defining silly things like 'vsnprintf'
-    -- and 'snprintf'.
     defines { "HAVE_SNPRINTF", "HAVE_COPYSIGN", "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS" }
-    undefines { "_copysign" }
-
     -- Linux platform settings
     filter { "system:linux" }
-    platforms { "x86_64" }
-    defaultplatform("x86_64")
     disablewarnings { "error=unused-function" }
-    buildoptions { "-fvisibility=hidden -D_FILE_OFFSET_BITS=64" }
-
-    -- build options needed to build with no-docker
     buildoptions { "-Wno-error" }
-    -- Add library origin directory to dlopen() search path
-    linkoptions { "-Wl,-rpath,'$$ORIGIN' -Wl,--export-dynamic" }
-
-    enablewarnings { "all" }
 
     filter {}
-
-    -- repo_build.enable_sanitizers()
 end
 
-function workspace_kit_settings()
+function isaacsim_kit_settings()
     -- Setup include paths. Add kit SDK include paths too.
+    -- TODO: cleanup once we confirm builds working on windows
     includedirs {
-        targetDepsDir,
-        targetDepsDir .. "/pybind11/include",
-        carbSDKInclude,
-        kit_sdk .. "/include",
-        kit_sdk .. "/_build/target-deps/",
-        kit_dev_dir .. "/include",
-        targetDepsDir .. "/gsl/include",
+        -- targetDepsDir,
+        -- targetDepsDir .. "/pybind11/include",
+        -- carbSDKInclude,
+        -- kit_sdk .. "/include",
+        -- kit_sdk .. "/_build/target-deps/",
+        -- kit_dev_dir .. "/include",
+        "%{root}/_build/target-deps/gsl/include",
     }
 
     -- Carbonite carb lib
     libdirs {
-        carbSDKLibs,
-        carbSDKLibs .. "/scripting-python-3.10",
-        "%{kit_sdk}/plugins",
-        targetDepsDir .. "/usd/%{cfg.buildcfg}/lib",
+        -- carbSDKLibs,
+        -- carbSDKLibs .. "/scripting-python-3.10",
+        -- "%{kit_sdk}/plugins",
+        "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     }
 end
-
-function setup_common_folder_links()
-    -- Generic folder linking and file copy setup:
+-- Common folder links
+function setup_isaacsim_folder_links()
     repo_build.prebuild_link {
         -- Link app configs in target dir for easier edit
-        { "source/apps", bin_dir .. "/apps" },
-
-        -- TODO:
-        -- Link python app sources in target dir for easier edit
-        -- { "source/pythonapps/target", bin_dir.."/pythonapps" },
+        { "%{root}/source/apps", bin_dir .. "/apps" },
     }
 
+    -- Link all licenses (if not present just link empty dir)
+    if not os.isdir(root .. "/_build/PACKAGE-LICENSES") then os.mkdir(root .. "/_build/PACKAGE-LICENSES") end
     repo_build.prebuild_copy {
         -- Copy licenses
         { "tools/internal-licenses/*", bin_dir .. "/PACKAGE-LICENSES" },
         { "_build/PACKAGE-LICENSES", bin_dir .. "/PACKAGE-LICENSES" },
         { "tools/internal-licenses/omniverse-LICENSE.txt", bin_dir .. "/LICENSE.txt" },
-
-        --     -- Copy python app running scripts in target dir
-        --     {"source/pythonapps/runscripts/$config/*$shell_ext", bin_dir}
     }
 
     repo_build.prebuild_link {
@@ -178,191 +108,12 @@ function setup_common_folder_links()
 end
 
 function include_extensions()
-    -- Isaac Extensions
     group("exts")
-
-    -- Windows and Linux
-    include("source/deprecated/omni.exporter.urdf")
-    include("source/deprecated/omni.isaac.app.selector")
-    include("source/deprecated/omni.isaac.app.setup")
-    include("source/deprecated/omni.isaac.articulation_inspector")
-    include("source/deprecated/omni.isaac.asset_browser")
-    include("source/deprecated/omni.isaac.assets_check")
-    include("source/deprecated/omni.isaac.benchmark.services")
-    include("source/deprecated/omni.isaac.benchmarks")
-    include("source/deprecated/omni.isaac.block_world")
-    include("source/deprecated/omni.isaac.camera_inspector")
-    include("source/deprecated/omni.isaac.cloner")
-    include("source/deprecated/omni.isaac.common_includes")
-    include("source/deprecated/omni.isaac.conveyor.ui")
-    include("source/deprecated/omni.isaac.conveyor")
-    include("source/deprecated/omni.isaac.core_nodes")
-    include("source/deprecated/omni.isaac.core")
-    include("source/deprecated/omni.isaac.cortex.sample_behaviors")
-    include("source/deprecated/omni.isaac.cortex")
-    include("source/deprecated/omni.isaac.debug_draw")
-    include("source/deprecated/omni.isaac.doctest")
-    include("source/deprecated/omni.isaac.dynamic_control")
-    include("source/deprecated/omni.isaac.examples_nodes")
-    include("source/deprecated/omni.isaac.examples")
-    include("source/deprecated/omni.isaac.extension_templates")
-    include("source/deprecated/omni.isaac.franka")
-    include("source/deprecated/omni.isaac.gain_tuner")
-    include("source/deprecated/omni.isaac.grasp_editor")
-    include("source/deprecated/omni.isaac.import_wizard")
-    include("source/deprecated/omni.isaac.jupyter_notebook")
-    include("source/deprecated/omni.isaac.kit")
-    include("source/deprecated/omni.isaac.lula_test_widget")
-    include("source/deprecated/omni.isaac.lula")
-    include("source/deprecated/omni.isaac.manipulators.ui")
-    include("source/deprecated/omni.isaac.manipulators")
-    include("source/deprecated/omni.isaac.menu")
-    include("source/deprecated/omni.isaac.merge_mesh")
-    include("source/deprecated/omni.isaac.motion_generation")
-    include("source/deprecated/omni.isaac.nucleus")
-    include("source/deprecated/omni.isaac.occupancy_map.ui")
-    include("source/deprecated/omni.isaac.occupancy_map")
-    include("source/deprecated/omni.isaac.physics_inspector")
-    include("source/deprecated/omni.isaac.physics_utilities")
-    include("source/deprecated/omni.isaac.proximity_sensor")
-    include("source/deprecated/omni.isaac.quadruped")
-    include("source/deprecated/omni.isaac.range_sensor.examples")
-    include("source/deprecated/omni.isaac.range_sensor.ui")
-    include("source/deprecated/omni.isaac.range_sensor")
-    include("source/deprecated/omni.isaac.robot_assembler")
-    include("source/deprecated/omni.isaac.robot_description_editor")
-    include("source/deprecated/omni.isaac.ros2_bridge.robot_description")
-    include("source/deprecated/omni.isaac.ros2_bridge")
-    include("source/deprecated/omni.isaac.scene_blox")
-    include("source/deprecated/omni.isaac.sensor")
-    include("source/deprecated/omni.isaac.surface_gripper.ui")
-    include("source/deprecated/omni.isaac.surface_gripper")
-    include("source/deprecated/omni.isaac.synthetic_recorder")
-    include("source/deprecated/omni.isaac.tests")
-    include("source/deprecated/omni.isaac.tf_viewer")
-    include("source/deprecated/omni.isaac.throttling")
-    include("source/deprecated/omni.isaac.ui_template")
-    include("source/deprecated/omni.isaac.ui")
-    include("source/deprecated/omni.isaac.universal_robots")
-    include("source/deprecated/omni.isaac.utils")
-    include("source/deprecated/omni.isaac.vscode")
-    include("source/deprecated/omni.isaac.version")
-    include("source/deprecated/omni.isaac.wheeled_robots.ui")
-    include("source/deprecated/omni.isaac.wheeled_robots")
-    include("source/deprecated/omni.isaac.window.about")
-    include("source/deprecated/omni.kit.property.isaac")
-    include("source/deprecated/omni.replicator.isaac")
-    include("source/deprecated/omni.usd.schema.isaac")
-    include("source/extensions/isaacsim.app.about")
-    include("source/extensions/isaacsim.app.selector")
-    include("source/extensions/isaacsim.app.setup")
-    include("source/extensions/isaacsim.asset.browser")
-    include("source/extensions/isaacsim.asset.gen.conveyor.ui")
-    include("source/extensions/isaacsim.asset.gen.conveyor")
-    include("source/extensions/isaacsim.asset.exporter.urdf")
-    include("source/extensions/isaacsim.asset.gen.omap.ui")
-    include("source/extensions/isaacsim.asset.gen.omap")
-    include("source/extensions/isaacsim.asset.importer.heightmap")
-    include("source/extensions/isaacsim.benchmark.examples")
-    include("source/extensions/isaacsim.benchmark.services")
-    include("source/extensions/isaacsim.code_editor.jupyter")
-    include("source/extensions/isaacsim.code_editor.vscode")
-    include("source/extensions/isaacsim.core.api")
-    include("source/extensions/isaacsim.core.cloner")
-    include("source/extensions/isaacsim.core.deprecation_manager")
-    include("source/extensions/isaacsim.core.includes")
-    include("source/extensions/isaacsim.core.nodes")
-    include("source/extensions/isaacsim.core.prims")
-    include("source/extensions/isaacsim.core.simulation_manager")
-    include("source/extensions/isaacsim.core.throttling")
-    include("source/extensions/isaacsim.core.utils")
-    include("source/extensions/isaacsim.core.version")
-    include("source/extensions/isaacsim.cortex.behaviors")
-    include("source/extensions/isaacsim.cortex.framework")
-    include("source/extensions/isaacsim.examples.browser")
-    include("source/extensions/isaacsim.examples.extension")
-    include("source/extensions/isaacsim.examples.extension")
-    include("source/extensions/isaacsim.examples.interactive")
-    include("source/extensions/isaacsim.examples.ui")
-    include("source/extensions/isaacsim.gui.components")
-    include("source/extensions/isaacsim.gui.menu")
-    include("source/extensions/isaacsim.gui.property")
-    include("source/extensions/isaacsim.replicator.behavior")
-    include("source/extensions/isaacsim.replicator.behavior.ui")
-    include("source/extensions/isaacsim.replicator.domain_randomization")
-    include("source/extensions/isaacsim.replicator.examples")
-    include("source/extensions/isaacsim.replicator.scene_blox")
-    include("source/extensions/isaacsim.replicator.synthetic_recorder")
-    include("source/extensions/isaacsim.replicator.writers")
-    include("source/extensions/isaacsim.robot_motion.lula_test_widget")
-    include("source/extensions/isaacsim.robot_motion.lula")
-    include("source/extensions/isaacsim.robot_motion.motion_generation")
-    include("source/extensions/isaacsim.robot_setup.assembler")
-    include("source/extensions/isaacsim.robot_setup.gain_tuner")
-    include("source/extensions/isaacsim.robot_setup.grasp_editor")
-    include("source/extensions/isaacsim.robot_setup.import_wizard")
-    include("source/extensions/isaacsim.robot_setup.xrdf_editor")
-    include("source/extensions/isaacsim.robot.manipulators.examples")
-    include("source/extensions/isaacsim.robot.manipulators.ui")
-    include("source/extensions/isaacsim.robot.manipulators")
-    include("source/extensions/isaacsim.robot.policy.examples")
-    include("source/extensions/isaacsim.robot.surface_gripper.ui")
-    include("source/extensions/isaacsim.robot.surface_gripper")
-    include("source/extensions/isaacsim.robot.wheeled_robots.ui")
-    include("source/extensions/isaacsim.robot.wheeled_robots")
-    include("source/extensions/isaacsim.ros2.bridge")
-    include("source/extensions/isaacsim.ros2.tf_viewer")
-    include("source/extensions/isaacsim.ros2.urdf")
-    include("source/extensions/isaacsim.sensors.camera.ui")
-    include("source/extensions/isaacsim.sensors.camera")
-    include("source/extensions/isaacsim.sensors.physics.examples")
-    include("source/extensions/isaacsim.sensors.physics.ui")
-    include("source/extensions/isaacsim.sensors.physics")
-    include("source/extensions/isaacsim.sensors.physx.examples")
-    include("source/extensions/isaacsim.sensors.physx.ui")
-    include("source/extensions/isaacsim.sensors.physx")
-    include("source/extensions/isaacsim.sensors.rtx.ui")
-    include("source/extensions/isaacsim.sensors.rtx")
-    include("source/extensions/isaacsim.simulation_app")
-    include("source/extensions/isaacsim.test.collection")
-    include("source/extensions/isaacsim.test.docstring")
-    include("source/extensions/isaacsim.util.camera_inspector")
-    include("source/extensions/isaacsim.util.clash_detection")
-    include("source/extensions/isaacsim.util.debug_draw")
-    include("source/extensions/isaacsim.util.internal")
-    include("source/extensions/isaacsim.util.merge_mesh")
-    include("source/extensions/isaacsim.util.physics")
-    include("source/extensions/isaacsim.xr.openxr")
-    include("source/extensions/isaacsim.storage.native")
-    include("source/extensions/omni.isaac.core_archive")
-    include("source/extensions/omni.isaac.ml_archive")
-    include("source/extensions/omni.kit.loop-isaac")
-    include("source/extensions/omni.pip.cloud")
-    include("source/extensions/omni.pip.compute")
-    include("source/extensions/isaacsim.robot.schema")
-end
-
-function write_version_file(config)
-    if os.target() == "windows" then
-        local dir = root .. "/_build/windows-x86_64/" .. config
-        if os.isdir(dir) then
-            local file = io.open(root .. "/VERSION", "r")
-            local ver_str = file:read("*a")
-            file:close()
-
-            file = io.open(dir .. "/SHORT_VERSION", "w")
-            file:write(ver_str)
-            file:close()
-
-            local cmd = "repo.bat build_number -o " .. dir .. "/VERSION"
-            os.execute(get_current_lua_file_dir() .. "/" .. cmd)
-        end
-    else
-        local dir = root .. "/_build/linux-x86_64/" .. config
-        if os.isdir(dir) then
-            local cmd = "./repo.sh build_number -o " .. dir .. "/VERSION"
-            os.execute(get_current_lua_file_dir() .. "/" .. cmd)
-        end
+    for _, ext in ipairs(os.matchdirs(root .. "/source/deprecated/*")) do
+        if os.isfile(ext .. "/premake5.lua") then include(ext) end
+    end
+    for _, ext in ipairs(os.matchdirs(root .. "/source/extensions/*")) do
+        if os.isfile(ext .. "/premake5.lua") then include(ext) end
     end
 end
 
@@ -451,617 +202,10 @@ function define_local_experience(app_name, kit_file, extra_args)
     })
 end
 
--- same as above but writes to tests folder
-function define_startup_experience(app_name, kit_file, extra_args)
-    local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
-    local extra_args = extra_args or ""
-    local kit_file = kit_file or app_name
-    define_test_experience(app_name, {
-        config_path = "../apps/" .. kit_file .. ".kit",
-        extra_args = '--ext-folder "' .. script_dir_token .. '/../apps" ' .. extra_args,
-    })
-end
-
-function create_tests()
-    group("startup_tests")
-    -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
-    -- use "--reset-user" to reset user config file
-    define_startup_experience(
-        "tests-startup.main",
-        "isaacsim.exp.full",
-        "--/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1"
-    )
-    define_startup_experience(
-        "tests-startup.streaming",
-        "isaacsim.exp.full.streaming",
-        "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1"
-    )
-    define_startup_experience(
-        "tests-startup.extscache",
-        "isaacsim.exp.full",
-        "--no-window --/app/quitAfter=500 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1"
-    )
-    define_startup_experience(
-        "tests-startup.xr.vr",
-        "isaacsim.exp.base.xr.vr",
-        "--no-window --/app/quitAfter=500 --/app/file/ignoreUnsavedOnExit=1"
-    )
-
-    group("selector_tests")
-    define_startup_experience(
-        "tests-selector.default",
-        "isaacsim.exp.selector",
-        "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=false"
-    )
-    define_startup_experience(
-        "tests-selector.autolaunch_and_persist",
-        "isaacsim.exp.selector",
-        '--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args="--/app/quitAfter=10 --/app/file/ignoreUnsavedOnExit=1"'
-    )
-    define_startup_experience(
-        "tests-selector.no_show_console",
-        "isaacsim.exp.selector",
-        '--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args="--/app/quitAfter=10 --/app/file/ignoreUnsavedOnExit=1"'
-    )
-    define_startup_experience(
-        "tests-selector.persist",
-        "isaacsim.exp.selector",
-        '--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args="--/app/quitAfter=10"'
-    )
-
-    group("python_samples")
-    -- smoke tests for python.sh itself
-    python_script_test("tests-nativepython-pip_list", "-m pip list --")
-    python_script_test(
-        "tests-nativepython-pycocotools",
-        "-m pip install --force pycocotools --no-cache-dir --no-dependencies --"
-    ) -- this test makes sure that pip packages that need Python.h can be installed.
-    -- omni.kit.app
-    python_sample_test(
-        "tests-nativepython-omni.kit.app.app_framework",
-        "standalone_examples/api/omni.kit.app/app_framework.py"
-    )
-    -- isaacsim.simulation_app
-    python_sample_test(
-        "tests-nativepython-isaacsim.simulation_app.hello_world",
-        "standalone_examples/api/isaacsim.simulation_app/hello_world.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.simulation_app.change_resolution",
-        "standalone_examples/api/isaacsim.simulation_app/change_resolution.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.simulation_app.load_stage",
-        "standalone_examples/api/isaacsim.simulation_app/load_stage.py",
-        "--usd_path /Isaac/Environments/Simple_Room/simple_room.usd --test --headless"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_createstage_config",
-        "standalone_examples/testing/isaacsim.simulation_app/test_createstage_config.py"
-    )
-    -- isaacsim.core.cloner
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.cloner.clone_ants",
-        "standalone_examples/api/isaacsim.core.cloner/clone_ants.py"
-    )
-    -- isaacsim.core.api
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.add_cubes",
-        "standalone_examples/api/isaacsim.core.api/add_cubes.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.add_frankas",
-        "standalone_examples/api/isaacsim.core.api/add_frankas.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.data_logging",
-        "standalone_examples/api/isaacsim.core.api/data_logging.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.control_robot",
-        "standalone_examples/api/isaacsim.core.api/control_robot.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.simulate_robot",
-        "standalone_examples/api/isaacsim.core.api/simulate_robot.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.simulation_callbacks",
-        "standalone_examples/api/isaacsim.core.api/simulation_callbacks.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.time_stepping",
-        "standalone_examples/api/isaacsim.core.api/time_stepping.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.visual_materials",
-        "standalone_examples/api/isaacsim.core.api/visual_materials.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.omnigraph_triggers",
-        "standalone_examples/api/isaacsim.core.api/omnigraph_triggers.py"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.cloth",
-        "standalone_examples/api/isaacsim.core.api/cloth.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.rigid_contact_view",
-        "standalone_examples/api/isaacsim.core.api/rigid_contact_view.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.core.api.detailed_contact_data",
-        "standalone_examples/api/isaacsim.core.api/detailed_contact_data.py",
-        "--test"
-    )
-    -- isaacsim.sensors.rtx
-    python_sample_test(
-        "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",
-        "standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py",
-        "--test"
-    )
-    -- isaacsim.sensors.physics
-    python_sample_test(
-        "tests-nativepython-isaacsim.sensors.physx.rotating_lidar_physX",
-        "standalone_examples/api/isaacsim.sensors.physx/rotating_lidar_physX.py",
-        "--test"
-    )
-    -- isaacsim.robot.manipulators
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.manipulators.franka.franka_gripper",
-        "standalone_examples/api/isaacsim.robot.manipulators/franka/franka_gripper.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.manipulators.cobotta_900.follow_target_example",
-        "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/follow_target_example.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.manipulators.cobotta_900.pick_up_example",
-        "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/pick_up_example.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.manipulators.cobotta_900.gripper_control",
-        "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/gripper_control.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.manipulators.franka_pick_up",
-        "standalone_examples/api/isaacsim.robot.manipulators/franka_pick_up.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.manipulators.ur10_pick_up",
-        "standalone_examples/api/isaacsim.robot.manipulators/ur10_pick_up.py",
-        "--test"
-    )
-    -- isaacsim.robot.wheeled_robots.examples
-    python_sample_test(
-        "tests-nativepython-isaacsim.robot.wheeled_robots.examples.jetbot_differential_move",
-        "standalone_examples/api/isaacsim.robot.wheeled_robots.examples/jetbot_differential_move.py",
-        "--test"
-    )
-    -- omni.isaac.dynamic_control
-    python_sample_test(
-        "tests-nativepython-omni.isaac.dynamic_control.franka_articulation",
-        "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py"
-    )
-    -- isaacsim.asset.importer.urdf
-    python_sample_test(
-        "tests-nativepython-isaacsim.asset.importer.urdf.urdf_import",
-        "standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py"
-    )
-    -- Replicator data samples:
-    python_sample_test(
-        "tests-nativepython-replicator.infinigen_sdg_default",
-        "standalone_examples/replicator/infinigen/infinigen_sdg.py",
-        "--close-on-completion"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.infinigen_sdg_config",
-        "standalone_examples/replicator/infinigen/infinigen_sdg.py",
-        "--close-on-completion --config standalone_examples/replicator/infinigen/config/infinigen_multi_writers_pt.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.scene_based_sdg",
-        "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.scene_based_sdg_basic_writer",
-        "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-        "--config standalone_examples/replicator/scene_based_sdg/config/config_basic_writer.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.scene_based_sdg_default_writer",
-        "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-        "--config standalone_examples/replicator/scene_based_sdg/config/config_default_writer.json"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.scene_based_sdg_kitti_writer",
-        "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-        "--config standalone_examples/replicator/scene_based_sdg/config/config_kitti_writer.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.scene_based_sdg_coco_writer",
-        "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-        "--config standalone_examples/replicator/scene_based_sdg/config/config_coco_writer.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.pose_generation",
-        "standalone_examples/replicator/pose_generation/pose_generation.py"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.pose_generation_ycbvideo",
-        "standalone_examples/replicator/pose_generation/pose_generation.py",
-        "--num_mesh 3 --num_dome 3 --writer YCBVideo --output_folder _out_ycb"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.pose_generation_ycbvideo_output_check",
-        "standalone_examples/replicator/pose_generation/pose_generation.py",
-        "--test --writer YCBVideo --output_folder _out_ycb_test"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.pose_generation_dope",
-        "standalone_examples/replicator/pose_generation/pose_generation.py",
-        "--num_mesh 3 --num_dome 3 --writer DOPE --output_folder _out_dope"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.pose_generation_dope_output_check",
-        "standalone_examples/replicator/pose_generation/pose_generation.py",
-        "--test --writer DOPE --output_folder _out_dope_test"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.object_based_sdg",
-        "standalone_examples/replicator/object_based_sdg/object_based_sdg.py"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.object_based_sdg_config",
-        "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
-        "--config standalone_examples/replicator/object_based_sdg/config/object_based_sdg_config.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.object_based_sdg_config_dope",
-        "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
-        "--config standalone_examples/replicator/object_based_sdg/config/object_based_sdg_dope_config.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.object_based_sdg_config_centerpose",
-        "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
-        "--config standalone_examples/replicator/object_based_sdg/config/object_based_sdg_centerpose_config.yaml"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.writer_augmentation_numpy",
-        "standalone_examples/replicator/augmentation/writer_augmentation.py",
-        "--num_frames 1"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.writer_augmentation_warp",
-        "standalone_examples/replicator/augmentation/writer_augmentation.py",
-        "--num_frames 1 --use_warp"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.annotator_augmentation_numpy",
-        "standalone_examples/replicator/augmentation/annotator_augmentation.py",
-        "--num_frames 1"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.annotator_augmentation_warp",
-        "standalone_examples/replicator/augmentation/annotator_augmentation.py",
-        "--num_frames 1 --use_warp"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.amr_navigation",
-        "standalone_examples/replicator/amr_navigation.py",
-        "--num_frames 3 --env_interval 1"
-    )
-    python_sample_test(
-        "tests-nativepython-replicator.amr_navigation_use_temp_rp",
-        "standalone_examples/replicator/amr_navigation.py",
-        "--num_frames 3 --env_interval 1 --use_temp_rp"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.hello_world",
-        "standalone_examples/testing/isaacsim.core.api/hello_world.py",
-        "--test"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_time_stepping",
-        "standalone_examples/testing/isaacsim.core.api/test_time_stepping.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_articulation_root",
-        "standalone_examples/testing/isaacsim.core.api/test_articulation_root.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_fabric_frame_delay",
-        "standalone_examples/testing/isaacsim.simulation_app/test_fabric_frame_delay.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_rendering",
-        "standalone_examples/testing/isaacsim.core.api/test_rendering.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_save_stage",
-        "standalone_examples/testing/isaacsim.core.api/test_save_stage.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_delete_in_contact",
-        "standalone_examples/testing/isaacsim.core.api/test_delete_in_contact.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.test_articulation_determinism",
-        "standalone_examples/testing/isaacsim.core.api/test_articulation_determinism.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-omni.isaac.dynamic_control.test_zero_step",
-        "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.ros2.bridge.enable_extension",
-        "standalone_examples/testing/isaacsim.ros2.bridge/enable_extension.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.ros2.bridge.test_carter_camera_multi_robot_nav",
-        "standalone_examples/testing/isaacsim.ros2.bridge/test_carter_camera_multi_robot_nav.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.ros2.bridge.test_people_sim",
-        "standalone_examples/testing/isaacsim.ros2.bridge/test_people_sim.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_extra_args",
-        "standalone_examples/testing/isaacsim.simulation_app/test_extra_args.py",
-        '--/persistent/isaac/asset_root/default="omniverse://ov-test-this-is-working"'
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_frame_delay_basic",
-        "standalone_examples/testing/isaacsim.simulation_app/test_frame_delay.py",
-        "--/app/renderer/waitIdle=true --/app/hydraEngine/waitIdle=true"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_frame_delay_under_load",
-        "standalone_examples/testing/isaacsim.simulation_app/test_frame_delay.py",
-        "--/app/renderer/waitIdle=true --/app/hydraEngine/waitIdle=true --env-url /Isaac/Environments/Simple_Warehouse/full_warehouse.usd --num-additional-render-products 8"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_ogn",
-        "standalone_examples/testing/isaacsim.simulation_app/test_ogn.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_syntheticdata",
-        "standalone_examples/testing/isaacsim.simulation_app/test_syntheticdata.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_fetch_results",
-        "standalone_examples/testing/isaacsim.simulation_app/test_fetch_results.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_unsaved_on_exit",
-        "standalone_examples/testing/isaacsim.simulation_app/test_unsaved_on_exit.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.benchmark.services.test_no_rendering",
-        "standalone_examples/testing/isaacsim.benchmark.services/test_no_rendering.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.simulation_app.test_external",
-        "standalone_examples/testing/isaacsim.simulation_app/test_external.py",
-        "--enable omni.kit.scripting"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.cortex.framework.bringup",
-        "standalone_examples/testing/isaacsim.cortex.framework/cortex_bringup_test.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.core.api.tensor_api_handles",
-        "standalone_examples/testing/isaacsim.core.api/tensor_api_handles.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.behavior.behaviors",
-        "/standalone_examples/api/isaacsim.replicator.behavior/behaviors.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.custom_event_and_write",
-        "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_short",
-        "/standalone_examples/testing/isaacsim.replicator.examples/motion_blur_short.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.subscribers_and_events",
-        "/standalone_examples/api/isaacsim.replicator.examples/subscribers_and_events.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.custom_fps_writer_annotator",
-        "/standalone_examples/api/isaacsim.replicator.examples/custom_fps_writer_annotator.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_01",
-        "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_01.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_02",
-        "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_02.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_03",
-        "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_03.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_04",
-        "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_04.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.multi_camera",
-        "standalone_examples/api/isaacsim.replicator.examples/multi_camera.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.replicator.examples.simulation_get_data",
-        "standalone_examples/api/isaacsim.replicator.examples/simulation_get_data.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.sensors.physics.contact_sensor",
-        "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.sensors.camera.camera_opencv_fisheye",
-        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.sensors.camera.camera_opencv",
-        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-isaacsim.sensors.camera.camera_view",
-        "standalone_examples/api/isaacsim.sensors.camera/camera_view.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-python_sh.import_torch",
-        "standalone_examples/testing/python_sh/import_torch.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-python_sh.import_scipy",
-        "standalone_examples/testing/python_sh/import_scipy.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-python_sh.path_length",
-        "standalone_examples/testing/python_sh/path_length.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-python_sh.import_sys",
-        "standalone_examples/testing/python_sh/import_sys.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-omni.syntheticdata.test_basic",
-        "standalone_examples/testing/omni.syntheticdata/test_basic.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-omni.replicator.agent.test_scripting",
-        "standalone_examples/testing/omni.replicator.agent/test_scripting.py"
-    )
-    -- tutorials
-    python_sample_test(
-        "tests-nativepython-testing-tutorials-getting_started",
-        "standalone_examples/tutorials/getting_started.py"
-    )
-    python_sample_test(
-        "tests-nativepython-testing-tutorials-getting_started_robot",
-        "standalone_examples/tutorials/getting_started_robot.py"
-    )
-    if os.target() == "linux" then
-        python_sample_test(
-            "tests-nativepython-testing-isaacsim.simulation_app.test_ovd",
-            "standalone_examples/testing/isaacsim.simulation_app/test_ovd.py",
-            '--ovd="/tmp/"'
-        )
-    end
-
-    --     Disabled because fast shutdown causes a hang/crash on exit
-    -- group "jupyter_samples"
-    --     jupyter_sample_test("tests-jupyter-startup", "standalone_examples/testing/notebooks/basic_notebook.ipynb")
-    --     jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
-    --     jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
-
-    group("benchmarks")
-
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_camera",
-        "standalone_examples/benchmarks/benchmark_camera.py",
-        "--num-frames 10 -num-cameras 2"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2",
-        "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py",
-        "--num-frames 10 -num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 "
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_robots_nova_carter",
-        "standalone_examples/benchmarks/benchmark_robots_nova_carter.py",
-        "--num-frames 10 -num-robots 2"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_rtx_lidar_rotary",
-        "standalone_examples/benchmarks/benchmark_rtx_lidar.py",
-        "--num-frames 10 -num-sensors 8 --lidar-type Rotary"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_rtx_lidar_solid_state",
-        "standalone_examples/benchmarks/benchmark_rtx_lidar.py",
-        "--num-frames 10 -num-sensors 8 --lidar-type Solid_State"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_sdg_simple",
-        "standalone_examples/benchmarks/benchmark_sdg.py",
-        "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators rgb distance_to_camera --disable-viewport-rendering --delete-data-when-done --headless --print-results"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_sdg_advanced",
-        "standalone_examples/benchmarks/benchmark_sdg.py",
-        "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators all --disable-viewport-rendering --delete-data-when-done --headless --print-results"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_robots_ur10",
-        "standalone_examples/benchmarks/benchmark_robots_ur10.py",
-        "--num-frames 10 -num-robots 10"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_rtx_radar",
-        "standalone_examples/benchmarks/benchmark_rtx_radar.py",
-        "--num-frames 10 -num-sensors 4"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_physx_lidar",
-        "standalone_examples/benchmarks/benchmark_physx_lidar.py",
-        "--num-frames 10 -num-sensors 4"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_robots_o3dyn",
-        "standalone_examples/benchmarks/benchmark_robots_o3dyn.py",
-        "--num-frames 10 -num-robots 2"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_scene_loading",
-        "standalone_examples/benchmarks/benchmark_scene_loading.py",
-        "--num-frames 10 --env-url /Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
-    )
-    python_sample_test(
-        "tests-standalone_benchmarks-benchmark_robots_evobot",
-        "standalone_examples/benchmarks/benchmark_robots_evobot.py",
-        "--num-frames 10 --num-robots 1 1 1"
-    )
-
-    if os.target() == "linux" then
-        group("docker_tests")
-
-        docker_test("tests-internaldocker-simple", "./dockertests/simple.sh")
-        docker_test("tests-internaldocker-headless", "./isaac-sim.streaming.sh", "--allow-root --/app/quitAfter=10")
-        -- docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.streaming.sh", "--allow-root --/app/quitAfter=10")
-        -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/isaacsim.simulation_app/livestream.py --/app/quitAfter=500")
-        -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
-        docker_test(
-            "tests-internaldocker-python-asset_usd_converter",
-            "./python.sh",
-            "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus"
-        )
-        -- docker_test("tests-internaldocker-python-pose_generation", "./python.sh", "standalone_examples/replicator/pose_generation/pose_generation.py --writer dope --num_dome 5 --num_mesh 5 --no-window")
-    end
-end
-
-function group_apps()
+function group_apps(kit)
     group("apps")
     for _, config in ipairs(ALL_CONFIGS) do
-        -- Direct shortcur to kit executable for convenience:
-        -- create_experience_runner("kit", nil, config, "")
-
-        -- Put build version file into build directories
-        write_version_file(config)
+        kit.write_version_file(config)
     end
 
     define_local_experience("isaac-sim", "isaacsim.exp.full")
@@ -1082,43 +226,35 @@ filter {}
 building_for_isaac_sim = true
 defines { "BUILDING_FOR_ISAAC_SIM" }
 
-kit = require(root .. "/_repo/deps/repo_kit_tools/kit-template/premake5-kit")
-repo_build.setup_options()
--- kit.setup_all()
-kit.include_kit()
--- kit.random_hacks()
-kit.define_workspace() -- creates workspace
+function setup_all(options)
+    kit = require(root .. "/_repo/deps/repo_kit_tools/kit-template/premake5-kit")
+    repo_build.setup_options()
+    kit.include_kit()
+    kit.random_hacks()
+    kit.define_workspace()
 
-targetDepsDir = "%{root}/_build/target-deps"
-hostDepsDir = "%{root}/_build/host-deps"
-carbSDKPath = targetDepsDir .. "/carb_sdk_plugins"
-carbSDKInclude = carbSDKPath .. "/include"
-carbSDKLibs = carbSDKPath .. "/_build/" .. platform .. "/%{config}"
--- Workspace setup
-kit.workspace_basics()
--- objdir ("_build/obj/%{prj.name}")
+    -- Workspace setup
+    kit.workspace_basics()
+    kit.workspace_build_settings(options)
+    kit.workspace_kit_settings()
+    kit.setup_toolchain(options)
 
--- kit.workspace_build_settings()
-workspace_build_settings()
--- kit.workspace_kit_settings()
-workspace_kit_settings()
--- kit.setup_toolchain()
-generate_version_header()
+    -- Skip this because isaac has to copy additional license files
+    -- the below command links rather than copies like we need
+    -- so we run setup_isaacsim_folder_links instead
+    -- kit.setup_common_folder_links()
+    kit.setup_kit_autopull()
 
--- Common settings for kit-based apps and extensions
--- kit.setup_common_folder_links()
-setup_common_folder_links()
-kit.setup_kit_autopull()
+    -- Isaac Sim Specific Setup
+    include("premake5-isaacsim.lua") -- Shared build scripts from isaac sim
+    include("premake5-tests.lua")
+    isaacsim_build_settings()
+    isaacsim_kit_settings()
+    generate_version_header()
+    setup_isaacsim_folder_links()
+    include_extensions()
+    group_apps(kit)
+    create_tests()
+end
 
-include("isaac_sim_premake5.lua") -- Shared build scripts from isaac sim
--- kit.autoinclude_extensions()
-include_extensions()
--- kit.group_apps()
-group_apps()
-create_tests()
-
--- Use the tool to create extra tests if needed.
--- Currently, it only supports creating the launcher startup test.
--- execute_repo_tool("create_extra_test")
-
---
+setup_all { cppdialect = "C++17" }

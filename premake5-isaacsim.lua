@@ -49,24 +49,6 @@ function include_physx()
     }
 end
 
-function get_include_string(includes)
-    cmdString = " "
-    for k, v in ipairs(includes) do
-        cmdString = cmdString .. " -I " .. tostring(v)
-    end
-    return cmdString
-end
-
-function commaficate(options)
-    local result = ""
-    local sep = ""
-    for option in string.gmatch(options, "-%w+") do
-        result = result .. sep .. tostring(option)
-        sep = ","
-    end
-    return result
-end
-
 -- This function binds the runtime and settings to be compatiable with kit. This means
 -- that even though our debug builds
 function setRuntimeToBeKitCompatible()

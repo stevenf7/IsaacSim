@@ -7,7 +7,6 @@ project_ext(ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, ogn.plugin_project)
-cppdialect("C++17")
 
 add_files("impl", "plugins")
 add_files("nodes", ogn.nodes_path)
@@ -23,16 +22,16 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/extensions/isaacsim.sensors.rtx/include",
-    targetDepsDir .. "/generic_model_output/%{platform}/%{config}/include",
-    targetDepsDir .. "/omni_client_library/include",
-    targetDepsDir .. "/python/include",
+    target_deps .. "/generic_model_output/%{platform}/%{config}/include",
+    target_deps .. "/omni_client_library/include",
+    target_deps .. "/python/include",
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     bin_dir .. "/extsbuild/omni.sensors.nv.common/include",
-    targetDepsDir .. "/rtx_plugins/include",
+    target_deps .. "/rtx_plugins/include",
 }
 libdirs {
     extsbuild_dir .. "/omni.usd.core/bin",
-    targetDepsDir .. "/python/lib",
+    target_deps .. "/python/lib",
 }
 
 links {
@@ -47,12 +46,12 @@ add_usd(extra_usd_libs)
 
 filter { "system:linux" }
 includedirs {
-    targetDepsDir .. "/usd/%{cfg.buildcfg}/include/boost",
-    targetDepsDir .. "/python/include/python3.11",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/python/include/python3.11",
 }
 filter { "system:windows" }
 libdirs {
-    targetDepsDir .. "/tbb/lib/intel64/vc14",
+    target_deps .. "/tbb/lib/intel64/vc14",
 }
 filter {}
 
