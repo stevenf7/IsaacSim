@@ -7,7 +7,6 @@ project_ext(ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.sensors.physics.plugin")
-cppdialect("C++17")
 
 dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin" }
 add_files("impl", "plugins")
@@ -20,23 +19,23 @@ add_cuda_dependencies()
 
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    targetDepsDir .. "/usd/%{cfg.buildcfg}/include",
-    targetDepsDir .. "/usd_ext_physics/%{cfg.buildcfg}/include",
-    targetDepsDir .. "/omni_physics/%{config}/include",
-    targetDepsDir .. "/rtx_plugins/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include",
+    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
+    target_deps .. "/omni_physics/%{config}/include",
+    target_deps .. "/rtx_plugins/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
-    targetDepsDir .. "/omni_client_library/include",
-    targetDepsDir .. "/python/include",
+    target_deps .. "/omni_client_library/include",
+    target_deps .. "/python/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/source/extensions/isaacsim.sensors.physics/include",
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
 }
 libdirs {
-    targetDepsDir .. "/python/lib",
-    targetDepsDir .. "/usd/%{cfg.buildcfg}/lib",
-    targetDepsDir .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
+    target_deps .. "/python/lib",
+    target_deps .. "/usd/%{cfg.buildcfg}/lib",
+    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
@@ -54,12 +53,12 @@ add_usd(extra_usd_libs)
 -- End OpenUSD
 filter { "system:linux" }
 includedirs {
-    targetDepsDir .. "/usd/%{cfg.buildcfg}/include/boost",
-    targetDepsDir .. "/python/include/python3.11",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/python/include/python3.11",
 }
 filter { "system:windows" }
 libdirs {
-    targetDepsDir .. "/tbb/lib/intel64/vc14",
+    target_deps .. "/tbb/lib/intel64/vc14",
 }
 filter {}
 
