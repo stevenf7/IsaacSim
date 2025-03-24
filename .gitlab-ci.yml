@@ -1056,7 +1056,7 @@ publish-extensions:
     needs:
       # We set all dependencies as optional just in case a platform is not needed,
       # then the yml file can override both build/test on one platform and deploy will still work.
-      - job: sign-windows-x86_64-release
+      - job: build-windows-x86_64-release
         artifacts: true
         optional: false
       - job: build-linux-x86_64-release
