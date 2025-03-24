@@ -1045,7 +1045,7 @@ verify-publish-extensions:
 publish-extensions:
     extends:
       - .deploy-common
-      - .runner-build-linux-x86_64
+      - .runner-utility-linux-x86_64
     script:
       - ./repo.sh build --fetch-only -rd
       - ./repo.sh publish_exts -a --from-package -c release
