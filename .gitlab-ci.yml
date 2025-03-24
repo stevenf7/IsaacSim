@@ -140,6 +140,12 @@ variables:
     RUN_DOCS_BUILD:
         value: "false"
         description: "Set to true to build omni docs. Only happens on schedule."
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 
+        value: "200Gi"
+        description: "Fix publish extensions"
+    KUBERNETES_EPHEMERAL_STORAGE_LIMIT: 
+        value: "200Gi"
+        description: "Fix publish extensions"
 
 # ==============================================================================================================
 # overrides for compliance/osec job
