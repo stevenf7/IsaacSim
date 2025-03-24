@@ -306,7 +306,11 @@ class ChangelogManager:
                 if changelog_message is not None:
                     new_version = self._update_extension_version(toml_path, rel_toml_path)
                     if new_version:
-                        self._update_changelog_file(changelog_path, rel_changelog_path, new_version, changelog_message)
+                        updated_lines = self._update_changelog_file(
+                            changelog_path, rel_changelog_path, new_version, changelog_message
+                        )
+                        if updated_lines:
+                            validator.lines = updated_lines
                     else:
                         results[extension_name].append(f"Failed to update version in {rel_toml_path}")
 
@@ -412,7 +416,7 @@ class ChangelogManager:
 
     def _update_changelog_file(
         self, changelog_path: str, rel_changelog_path: str, new_version: str, changelog_message: str
-    ) -> None:
+    ) -> List[str]:
         """Add new entry to changelog"""
         try:
             with open(changelog_path, "r") as f:
@@ -428,7 +432,7 @@ class ChangelogManager:
             default_message = "Update extension description and add extension specific test settings"
             message = changelog_message or default_message
 
-            new_entry = f"\n## [{new_version}] - {today}\n" "### Changed\n" f"- {message}\n\n"
+            new_entry = f"\n## [{new_version}] - {today}\n" "### Changed\n" f"- {message}\n"
 
             updated_content = content.replace(changelog_header, f"{changelog_header}{new_entry}", 1)
 
@@ -438,9 +442,13 @@ class ChangelogManager:
             if self.verbose:
                 print(f"  ✅ Changelog updated in {rel_changelog_path} with version {new_version}")
 
+            return updated_content.split("\n")
+
         except Exception as e:
             if self.verbose:
                 print(f"  ❌ Failed to update changelog in {rel_changelog_path}: {str(e)}")
+
+        return None
 
 
 class ChangelogValidator:
