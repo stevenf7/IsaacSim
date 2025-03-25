@@ -171,6 +171,33 @@ function create_tests()
         python_sample_test(test[1], test[2], test[3])
     end
 
+    -- isaacsim.sensors.camera
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera_opencv_fisheye",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py",
+        "--test"
+    )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera_opencv",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv.py",
+        "--test"
+    )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera_ros",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_ros.py",
+        "--test"
+    )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera_view",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_view.py",
+        "--test"
+    )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera",
+        "standalone_examples/api/isaacsim.sensors.camera/camera.py",
+        "--test"
+    )
+
     -- isaacsim.sensors.rtx
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",

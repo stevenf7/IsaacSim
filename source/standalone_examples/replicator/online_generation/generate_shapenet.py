@@ -11,9 +11,9 @@
 """Dataset with online randomized scene generation for Instance Segmentation training.
 
 Use OmniKit to generate a simple scene. At each iteration, the scene is populated by
-adding assets from the user-specified classes with randomized pose and colour. 
+adding assets from the user-specified classes with randomized pose and colour.
 The camera position is also randomized before capturing groundtruth consisting of
-an RGB rendered image, Tight 2D Bounding Boxes and Instance Segmentation masks. 
+an RGB rendered image, Tight 2D Bounding Boxes and Instance Segmentation masks.
 """
 
 
@@ -421,10 +421,7 @@ if __name__ == "__main__":
                 ax.add_patch(box)
                 ax.text(bb[0], bb[1], label, fontdict={"family": "sans-serif", "color": colour, "size": 10})
 
-        # Use plt.pause only if the backend is interactive
-        if matplotlib.get_backend() in ["TkAgg", "nbAgg"]:
-            plt.draw()
-            plt.pause(0.01)
+        plt.draw()
         fig_name = os.path.join(out_dir, f"domain_randomization_test_image_{image_num}.png")
         plt.savefig(fig_name)
         image_num += 1
