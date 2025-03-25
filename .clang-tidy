@@ -12,7 +12,8 @@ Checks: >
     readability-redundant-member-init,
     modernize-use-bool-literals,
     modernize-use-using,
-    readability-redundant-access-specifiers
+    readability-redundant-access-specifiers,
+    misc-unused-using-decls
     
 CheckOptions:
   # Classes, structs, and enum classes use PascalCase

@@ -141,39 +141,39 @@ public:
             memcpy(db_outputs_distances.data(), distances, maxSize * sizeof(float));
             memcpy(db_outputs_intensities.data(), intensities, maxSize * sizeof(float));
             memcpy(db_outputs_flags.data(), helper.mGmo.elements.flags, maxSize * sizeof(uint8_t));
-            if (db_outputs_velocities.size())
+            if (!db_outputs_velocities.empty())
             {
                 memcpy(db_outputs_velocities.data(), auxPoints->velocities, 3 * maxSize * sizeof(float));
             }
-            if (db_outputs_hitPointNormals.size())
+            if (!db_outputs_hitPointNormals.empty())
             {
                 memcpy(db_outputs_hitPointNormals.data(), auxPoints->hitNormals, 3 * maxSize * sizeof(float));
             }
-            if (db_outputs_emitterIds.size())
+            if (!db_outputs_emitterIds.empty())
             {
                 memcpy(db_outputs_emitterIds.data(), auxPoints->emitterId, maxSize * sizeof(uint32_t));
             }
-            if (db_outputs_materialIds.size())
+            if (!db_outputs_materialIds.empty())
             {
                 memcpy(db_outputs_materialIds.data(), auxPoints->matId, maxSize * sizeof(uint32_t));
             }
-            if (db_outputs_objectIds.size())
+            if (!db_outputs_objectIds.empty())
             {
                 memcpy(db_outputs_objectIds.data(), auxPoints->objId, maxSize * sizeof(uint32_t));
             }
-            if (db_outputs_ticks.size())
+            if (!db_outputs_ticks.empty())
             {
                 memcpy(db_outputs_ticks.data(), auxPoints->tickId, maxSize * sizeof(uint32_t));
             }
-            if (db_outputs_tickStates.size())
+            if (!db_outputs_tickStates.empty())
             {
                 memcpy(db_outputs_tickStates.data(), auxPoints->tickStates, maxSize * sizeof(uint8_t));
             }
-            if (db_outputs_channels.size())
+            if (!db_outputs_channels.empty())
             {
                 memcpy(db_outputs_channels.data(), auxPoints->channelId, maxSize * sizeof(uint32_t));
             }
-            if (db_outputs_echos.size())
+            if (!db_outputs_echos.empty())
             {
                 memcpy(db_outputs_echos.data(), auxPoints->echoId, maxSize * sizeof(uint8_t));
             }

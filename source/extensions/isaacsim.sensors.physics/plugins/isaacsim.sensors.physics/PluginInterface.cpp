@@ -412,7 +412,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     g_isaacSensorManager = std::make_unique<isaacsim::sensors::physics::IsaacSensorManager>(g_physx);
 
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "Isaac Sensor Interface";
     desc.onAttach = onAttach;
     desc.onDetach = onStop;

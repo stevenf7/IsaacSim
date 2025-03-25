@@ -240,7 +240,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "IsaacRos2Bridge";
     desc.onResume = onResume;
     desc.onStop = onStop;

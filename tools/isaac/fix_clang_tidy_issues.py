@@ -18,6 +18,7 @@ class ClangTidyFixer:
         # Track different types of issues
         self.identifier_renames = []  # (file_path, old_name, new_name, line_number)
         self.nullptr_replacements = []  # (file_path, line_number)
+        self.container_empty_issues = []  # (file_path, line_num, original, replacement, line_info)
         self.processed_files = set()
         self.error_files = set()
 
@@ -26,6 +27,8 @@ class ClangTidyFixer:
         self.failed_renames = 0
         self.successful_nullptrs = 0
         self.failed_nullptrs = 0
+        self.successful_container_empty = 0
+        self.failed_container_empty = 0
 
     def normalize_path(self, file_path):
         """Normalize file paths from clang-tidy output to match the actual file system."""
@@ -129,8 +132,29 @@ class ClangTidyFixer:
                     issue_file, line_num = nullptr_match.groups()
                     self.nullptr_replacements.append((issue_file, int(line_num)))
 
+                # For container empty issues
+                container_empty_pattern = r"(source/extensions/[^:]+):(\d+):\d+: warning: the 'empty' method should be used to check for emptiness instead of 'size' \[readability-container-size-empty\][^\n]*\n\s+([^\n]+)\n\s+\^[~]*\s*\n\s+([^\n]+)"
+                container_empty_matches = re.finditer(container_empty_pattern, file_content, re.DOTALL)
+
+                for container_match in container_empty_matches:
+                    issue_file, line_num, original, replacement = container_match.groups()
+                    # Store the original line information for reference
+                    line_info = {
+                        "original": original.strip(),
+                        "replacement": replacement.strip(),
+                        "file": issue_file,
+                        "line": int(line_num),
+                    }
+                    self.container_empty_issues.append(
+                        (issue_file, int(line_num), original.strip(), replacement.strip(), line_info)
+                    )
+                    if self.verbose:
+                        print(f"  Found container empty issue in {issue_file}:{line_num}")
+                        print(f"    Replace: '{original.strip()}' -> '{replacement.strip()}'")
+
             print(f"Found {len(self.identifier_renames)} identifier naming issues")
             print(f"Found {len(self.nullptr_replacements)} nullptr issues")
+            print(f"Found {len(self.container_empty_issues)} container empty issues")
             print(f"Total files processed: {len(self.processed_files)}")
             print(f"Files with errors: {len(self.error_files)}")
 
@@ -305,6 +329,129 @@ class ClangTidyFixer:
                 print(f"  Error fixing {file_path}: {e}")
                 self.failed_nullptrs += len(line_nums)
 
+    def fix_container_empty_issues(self):
+        """Fix container empty issues by replacing size() > 0 with !empty()."""
+        print("Fixing container empty issues...")
+
+        file_to_issues = defaultdict(list)
+        for file_path, line_num, original, replacement, line_info in self.container_empty_issues:
+            normalized_path = self.normalize_path(file_path)
+            file_to_issues[normalized_path].append((line_num, original, replacement, line_info))
+
+        for file_path, issues in file_to_issues.items():
+            if not os.path.exists(file_path):
+                print(f"  Warning: File {file_path} does not exist, skipping")
+                self.failed_container_empty += len(issues)
+                continue
+
+            try:
+                with open(file_path, "r") as f:
+                    lines = f.readlines()
+
+                modified = False
+                for line_num, original, replacement, line_info in issues:
+                    if line_num <= 0 or line_num > len(lines):
+                        print(f"  Warning: Line {line_num} out of range in {file_path}")
+                        self.failed_container_empty += 1
+                        continue
+
+                    # Adjust for 0-indexed list
+                    line_idx = line_num - 1
+                    line = lines[line_idx]
+
+                    # Debug output to see what patterns we're working with
+                    if self.verbose:
+                        print(f"  Processing line: '{line.strip()}'")
+                        print(f"  Original pattern: '{original}'")
+                        print(f"  Replacement: '{replacement}'")
+
+                    # Special case for 'if (container.size() > 0)' pattern
+                    if_size_pattern = re.search(r"(if\s*\(\s*)([^.]+)\.size\(\)\s*>\s*0(\s*\))", line)
+                    if if_size_pattern:
+                        container_name = if_size_pattern.group(2)
+                        if_prefix = if_size_pattern.group(1)  # 'if ('
+                        if_suffix = if_size_pattern.group(3)  # ')'
+
+                        # Construct the proper replacement with 'if (!container.empty())'
+                        new_line = line.replace(
+                            if_size_pattern.group(0), f"{if_prefix}!{container_name}.empty(){if_suffix}"
+                        )
+
+                        lines[line_idx] = new_line
+                        modified = True
+                        print(f"  Fixing if-size condition in {file_path}:{line_num}")
+                        print(f"    From: '{if_size_pattern.group(0)}'")
+                        print(f"    To:   '{if_prefix}!{container_name}.empty(){if_suffix}'")
+                        self.successful_container_empty += 1
+                        continue
+
+                    # Fallback: If line contains a if (X.size() > 0) pattern but doesn't match our regex
+                    size_check_pattern = re.search(r"if\s*\([^)]*\.size\(\)[^)]*>\s*0[^)]*\)", line)
+                    if size_check_pattern and not if_size_pattern:
+                        # Try to extract container name using a more lenient pattern
+                        container_match = re.search(r"([a-zA-Z0-9_]+)\.size\(\)", size_check_pattern.group(0))
+                        if container_match:
+                            container_name = container_match.group(1)
+                            # Replace the entire if statement
+                            new_line = line.replace(size_check_pattern.group(0), f"if (!{container_name}.empty())")
+                            lines[line_idx] = new_line
+                            modified = True
+                            print(f"  Fallback fix for if-size in {file_path}:{line_num}")
+                            print(f"    From: '{size_check_pattern.group(0)}'")
+                            print(f"    To:   'if (!{container_name}.empty())'")
+                            self.successful_container_empty += 1
+                            continue
+
+                    # Check for general if statement structure
+                    if_match = re.search(r"(if\s*\()([^)]+)(\))", line)
+                    if if_match and original in if_match.group(2):
+                        # This is an 'if' statement, preserve the structure
+                        prefix = if_match.group(1)  # 'if ('
+                        condition = if_match.group(2)  # 'container.size() > 0'
+                        suffix = if_match.group(3)  # ')'
+
+                        # Replace only the condition part
+                        new_condition = condition.replace(original, replacement)
+                        new_line = line.replace(if_match.group(0), f"{prefix}{new_condition}{suffix}")
+
+                        lines[line_idx] = new_line
+                        modified = True
+                        print(f"  Fixing if condition: '{original}' -> '{replacement}' in {file_path}:{line_num}")
+                        self.successful_container_empty += 1
+                    elif original in line:
+                        # For non-if statements or if the regex didn't match
+                        new_line = line.replace(original, replacement)
+                        lines[line_idx] = new_line
+                        modified = True
+                        print(f"  Replacing '{original}' with '{replacement}' in {file_path}:{line_num}")
+                        self.successful_container_empty += 1
+                    else:
+                        print(f"  Warning: Could not find '{original}' in {file_path}:{line_num}")
+                        if self.verbose:
+                            print(f"    Line content: {line.strip()}")
+
+                        # Last resort fallback: try to directly fix any if(container.size() > 0) pattern
+                        size_check = re.search(r"if\s*\(\s*([a-zA-Z0-9_]+)\.size\(\)\s*>\s*0\s*\)", line)
+                        if size_check:
+                            container_name = size_check.group(1)
+                            new_line = line.replace(size_check.group(0), f"if (!{container_name}.empty())")
+                            lines[line_idx] = new_line
+                            modified = True
+                            print(f"  Last resort fix in {file_path}:{line_num}")
+                            print(f"    From: '{size_check.group(0)}'")
+                            print(f"    To:   'if (!{container_name}.empty())'")
+                            self.successful_container_empty += 1
+                        else:
+                            self.failed_container_empty += 1
+
+                if not self.dry_run and modified:
+                    with open(file_path, "w") as f:
+                        f.writelines(lines)
+                    print(f"  Successfully updated {file_path}")
+            except Exception as e:
+                print(f"  Error fixing {file_path}: {e}")
+                self.failed_container_empty += len(issues)
+
     def run(self):
         """Execute the fixing process."""
         if not os.path.exists(self.input_file):
@@ -318,6 +465,7 @@ class ClangTidyFixer:
 
         self.fix_identifier_naming()
         # self.fix_nullptr_issues()
+        self.fix_container_empty_issues()
 
         print("\nSummary:")
         print(f"  Files processed: {len(self.processed_files)}")
@@ -328,8 +476,11 @@ class ClangTidyFixer:
         print(f"  nullptr issues found: {len(self.nullptr_replacements)}")
         print(f"    - Successfully fixed: {self.successful_nullptrs}")
         print(f"    - Failed to fix: {self.failed_nullptrs}")
+        print(f"  Container empty issues found: {len(self.container_empty_issues)}")
+        print(f"    - Successfully fixed: {self.successful_container_empty}")
+        print(f"    - Failed to fix: {self.failed_container_empty}")
 
-        if self.failed_renames > 0 or self.failed_nullptrs > 0:
+        if self.failed_renames > 0 or self.failed_nullptrs > 0 or self.failed_container_empty > 0:
             print("\nSome changes could not be applied. Possible reasons:")
             print("  1. Files could not be found (check paths)")
             print("  2. Files have already been modified")

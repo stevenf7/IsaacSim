@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2025, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -36,7 +36,7 @@ PYBIND11_MODULE(_loop, m)
     using namespace carb;
     using namespace omni::kit;
     // We use carb data types, must import bindings for them
-    auto carb_module = py::module::import("carb");
+    auto carbModule = py::module::import("carb");
 
     m.doc() = "Isaac loop bindings";
 

@@ -314,7 +314,7 @@ CARB_EXPORT void carbOnPluginStartup()
     g_physXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
     g_simStageWithHistory = carb::getCachedInterface<omni::fabric::ISimStageWithHistory>();
     g_stageAtTimeInterval = carb::getCachedInterface<omni::fabric::IStageAtTimeInterval>();
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "Isaac Core Nodes";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;

@@ -49,7 +49,7 @@ public:
     {
         const auto& inputPrim = db.inputs.xPrim();
         pxr::SdfPath primPath;
-        if (inputPrim.size() > 0)
+        if (!inputPrim.empty())
         {
             primPath = omni::fabric::toSdfPath(inputPrim[0]);
         }

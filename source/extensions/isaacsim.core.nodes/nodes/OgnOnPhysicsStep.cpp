@@ -175,7 +175,7 @@ public:
         if (graphData != g_graphsWithPhysxStepNode.end())
         {
             // Double sanity check if there are step nodes in this graph
-            if (graphData->second.nodes.size() > 0)
+            if (!graphData->second.nodes.empty())
             {
                 NodeObj node = g_iNode->getNodeFromHandle(graphData->second.nodes[0]);
                 auto graphObj = g_iNode->getGraph(node);

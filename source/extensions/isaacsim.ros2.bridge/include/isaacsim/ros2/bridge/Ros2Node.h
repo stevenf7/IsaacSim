@@ -133,7 +133,7 @@ public:
         }
 
         m_namespaceName = trimNonAlnum(namespaceName);
-        if (m_namespaceName.size() > 0)
+        if (!m_namespaceName.empty())
         {
             m_namespaceName = std::string("/") + m_namespaceName;
         }
@@ -224,7 +224,7 @@ public:
                                                const PXR_NS::UsdPrim& startPrim,
                                                const bool tfNode = false)
     {
-        if (namespaceInput.size() > 0)
+        if (!namespaceInput.empty())
         {
             return namespaceInput;
         }
