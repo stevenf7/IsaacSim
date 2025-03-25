@@ -17,20 +17,21 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
+
 [dependencies]
 "omni.physx.stageupdate" = {}
 "omni.physx.tensors" = {}
 "isaacsim.core.utils" = {}
-# define the Python module that the extension provides
 
+# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.core.simulation_manager"
-# define the Python module for tests
 
+# define the Python module for tests
 [[python.module]]
 name = "isaacsim.core.simulation_manager.tests"
-# define the C++ plugins that the extension provides
 
+# define the C++ plugins that the extension provides
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false

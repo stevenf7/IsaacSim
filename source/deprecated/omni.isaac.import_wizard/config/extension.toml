@@ -15,11 +15,14 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
+
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.import_wizard."
 
+
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+
 
 [[python.module]]
 name = "omni.isaac.import_wizard"

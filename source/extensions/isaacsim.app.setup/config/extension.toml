@@ -29,10 +29,8 @@ name = "isaacsim.app.setup"
 
 [settings]
 isaac.startup.create_new_stage = true # create a new stage on startup
-
 [settings."filter:platform"."windows-x86_64"]
 isaac.startup.ros_bridge_extension = ""
-
 [settings."filter:platform"."linux-x86_64"]
 isaac.startup.ros_bridge_extension = ""
 
@@ -40,6 +38,7 @@ isaac.startup.ros_bridge_extension = ""
 dependencies = [
    "omni.rtx.settings.core", "omni.pip.cloud"
 ]
+
 stdoutFailPatterns.exclude = [
     "*[isaacsim.ros2.bridge.plugin]*",
     "*[isaacsim.ros2.bridge.scripts.extension]*",

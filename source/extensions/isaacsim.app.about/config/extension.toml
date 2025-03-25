@@ -2,7 +2,7 @@
 version = "2.0.7"
 category = "Internal"
 title = "Isaac Sim About Window"
-description = "Show application/build information."
+description="Show application/build information."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.app.about"
 keywords = ["isaac", "about"]
@@ -19,3 +19,5 @@ icon = "data/icon.png"
 
 [[python.module]]
 name = "isaacsim.app.about"
+
+

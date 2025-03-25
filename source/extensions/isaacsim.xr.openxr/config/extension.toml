@@ -23,14 +23,15 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.xr.system.openxr" = {}
 "omni.kit.xr.profile.ar" = {}
-# define the Python module that the extension provides
 
+# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.xr.openxr"
-# define the C++ plugins that the extension provides
 
+# define the C++ plugins that the extension provides
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
 # [settings]
 # exts."isaacsim.xr.openxr".timeout = 5

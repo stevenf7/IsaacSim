@@ -2,7 +2,7 @@
 version = "2.0.2"
 category = "Internal"
 title = "Isaac Sim About Window"
-description = "Show application/build information."
+description="Show application/build information."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.window.about"
 keywords = ["isaac", "about"]
