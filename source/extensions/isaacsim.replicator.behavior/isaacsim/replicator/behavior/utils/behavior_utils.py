@@ -214,11 +214,12 @@ async def publish_event_and_wait_for_completion_async(
                 print(f"\tAction not complete, received payload: {payload_dict}, continuing..")
 
     # Start listening to incoming events
-    message_bus = omni.kit.app.get_app().get_message_bus_event_stream()
-    sub_event_type = carb.events.type_from_string(subscribe_event_name)
+    message_bus = carb.eventdispatcher.get_eventdispatcher()
     if verbose:
         print(f"Subscribing to {subscribe_event_name}")
-    sub_pop = message_bus.create_subscription_to_pop_by_type(sub_event_type, on_event_received)
+    sub_pop = message_bus.observe_event(
+        event_name=subscribe_event_name, on_event=on_event_received, observer_name="BehaviorUtils._subscribe_event"
+    )
 
     try:
         # Publish the payload
@@ -226,7 +227,7 @@ async def publish_event_and_wait_for_completion_async(
         if verbose:
             print(f"Publishing payload: {publish_payload}")
             print(f"Waiting for response: {expected_payload}")
-        message_bus.push(pub_event_type, payload=publish_payload)
+        message_bus.dispatch_event(event_name=publish_event_name, payload=publish_payload)
 
         # Wait for action completion
         for i in range(max_wait_updates):

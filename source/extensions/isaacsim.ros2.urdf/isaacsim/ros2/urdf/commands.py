@@ -1,7 +1,13 @@
-import asyncio
-import os
+# Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
 from functools import partial
 
+import carb
 import omni.client
 import omni.kit.commands
 from isaacsim.asset.importer.urdf import _urdf
@@ -27,8 +33,10 @@ class URDFImportFromROS2Node(omni.kit.commands.Command):
         self.robot_definition.description_received_fn = partial(self.on_description_received)
         self.robot_model = None
         self.finished = False
-        self.__subscription = (
-            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self.on_app_update)
+        self.__subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=self.on_app_update,
+            observer_name="isaacsim.ros2.urdf.commands.URDFImportFromROS2Node._on_app_update",
         )
 
     def on_app_update(self, event):

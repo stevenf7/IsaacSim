@@ -24,7 +24,7 @@ class SimulationManager:
     _warm_start_callback = None
     _on_stop_callback = None
     _timeline = omni.timeline.get_timeline_interface()
-    _message_bus = omni.kit.app.get_app().get_message_bus_event_stream()
+    _message_bus = carb.eventdispatcher.get_eventdispatcher()
     _physx_sim_interface = omni.physx.get_physx_simulation_interface()
     _physx_interface = omni.physx.acquire_physx_interface()
     _physics_sim_view = None
@@ -50,8 +50,10 @@ class SimulationManager:
                 int(omni.timeline.TimelineEventType.STOP), SimulationManager._on_stop
             )
         )
-        SimulationManager._post_warm_start_callback = SimulationManager._message_bus.create_subscription_to_pop_by_type(
-            IsaacEvents.PHYSICS_WARMUP.value, SimulationManager._create_simulation_view
+        SimulationManager._post_warm_start_callback = SimulationManager._message_bus.observe_event(
+            event_name=IsaacEvents.PHYSICS_WARMUP.value,
+            on_event=SimulationManager._create_simulation_view,
+            observer_name="SimulationManager._post_warm_start_callback",
         )
         SimulationManager._stage_open_callback = (
             omni.usd.get_context()
@@ -110,7 +112,7 @@ class SimulationManager:
             SimulationManager._physx_interface.start_simulation()
             SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
             SimulationManager._physx_sim_interface.fetch_results()
-            SimulationManager._message_bus.dispatch(IsaacEvents.PHYSICS_WARMUP.value, payload={})
+            SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
             SimulationManager._warmup_needed = False
 
     def _on_stop(event) -> None:
@@ -126,8 +128,8 @@ class SimulationManager:
         SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(SimulationManager._backend)
         SimulationManager._physics_sim_view.set_subspace_roots("/")
         SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
-        SimulationManager._message_bus.dispatch(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
-        SimulationManager._message_bus.dispatch(IsaacEvents.PHYSICS_READY.value, payload={})
+        SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
+        SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})
 
     @classmethod
     def _get_backend_utils(cls) -> str:
@@ -478,15 +480,17 @@ class SimulationManager:
             IsaacEvents.SIMULATION_VIEW_CREATED,
         ]:
             if proxy_needed:
-                SimulationManager._callbacks[
-                    callback_id
-                ] = SimulationManager._message_bus.create_subscription_to_pop_by_type(
-                    event.value, lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event)
+                SimulationManager._callbacks[callback_id] = SimulationManager._message_bus.observe_event(
+                    event_name=event.value,
+                    on_event=lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event),
+                    observer_name=f"SimulationManager._callbacks.{event.value}",
                 )
             else:
-                SimulationManager._callbacks[
-                    callback_id
-                ] = SimulationManager._message_bus.create_subscription_to_pop_by_type(event.value, callback)
+                SimulationManager._callbacks[callback_id] = SimulationManager._message_bus.observe_event(
+                    event_name=event.value,
+                    on_event=callback,
+                    observer_name=f"SimulationManager._callbacks.{event.value}",
+                )
         elif event == IsaacEvents.PRIM_DELETION:
             if proxy_needed:
                 SimulationManager._simulation_manager_interface.register_deletion_callback(

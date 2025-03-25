@@ -155,9 +155,11 @@ class SimulationContext:
                 .get_stage_event_stream()
                 .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
             )
-        self._message_bus = omni.kit.app.get_app().get_message_bus_event_stream()
-        self._on_post_physics_ready_callback = self._message_bus.create_subscription_to_pop_by_type(
-            IsaacEvents.PHYSICS_READY.value, self._on_post_physics_ready
+        self._message_bus = carb.eventdispatcher.get_eventdispatcher()
+        self._on_post_physics_ready_callback = self._message_bus.observe_event(
+            event_name=IsaacEvents.PHYSICS_READY.value,
+            on_event=self._on_post_physics_ready,
+            observer_name="SimulationContext._on_post_physics_ready",
         )
         return
 

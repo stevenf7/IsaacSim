@@ -10,6 +10,7 @@
 import asyncio
 import gc
 
+import carb
 import omni
 import omni.kit.app
 import omni.kit.commands
@@ -78,7 +79,8 @@ class Extension(omni.ext.IExt):
         self._usd_context = omni.usd.get_context()
         self._physxIFace = _physx.acquire_physx_interface()
         self._physx_subscription = None
-        self._update_stream = omni.kit.app.get_app().get_update_event_stream()
+        self._event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
+        # self._update_stream = omni.kit.app.get_app().get_update_event_stream()
         self._render_subscription = None
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()
@@ -144,8 +146,10 @@ class Extension(omni.ext.IExt):
             if not self._physx_subscription:
                 self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
             if not self._render_subscription:
-                self._render_subscription = self._update_stream.create_subscription_to_pop(
-                    self.ui_builder.on_render_step
+                self._render_subscription = self._event_dispatcher.observe_event(
+                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                    on_event=self.ui_builder.on_render_step,
+                    observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_render_step",
                 )
 
     def _on_timeline_event(self, event):
@@ -153,8 +157,10 @@ class Extension(omni.ext.IExt):
             if not self._physx_subscription:
                 self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
             if not self._render_subscription:
-                self._render_subscription = self._update_stream.create_subscription_to_pop(
-                    self.ui_builder.on_render_step
+                self._render_subscription = self._event_dispatcher.observe_event(
+                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                    on_event=self.ui_builder.on_render_step,
+                    observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_render_step",
                 )
         elif event.type == int(omni.timeline.TimelineEventType.STOP):
             self._physx_subscription = None

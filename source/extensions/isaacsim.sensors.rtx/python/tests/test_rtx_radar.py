@@ -86,7 +86,11 @@ class TestRTXRadar(omni.kit.test.AsyncTestCase):
 
             return
 
-        omni.kit.app.get_app_interface().get_update_event_stream().create_subscription_to_pop(data_acquisition_callback)
+        carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=data_acquisition_callback,
+            observer_name="TestRTXRadar.test_rtx_radar_point_cloud.data_acquisition_callback",
+        )
         omni.timeline.get_timeline_interface().play()
         for _ in range(6):
             await omni.kit.app.get_app().next_update_async()

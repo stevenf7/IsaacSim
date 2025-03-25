@@ -14,11 +14,16 @@ __all__ = ["FileMenuDelegate", "FileMenuExtension"]
 import os
 import urllib.parse
 
+import carb
 import carb.input
 import omni.client
 import omni.kit.menu.utils
 import omni.usd
-from omni.kit.helper.file_utils import FILE_EVENT_QUEUE_UPDATED, asset_types, get_latest_urls_from_event_queue
+from omni.kit.helper.file_utils import (
+    FILE_EVENT_QUEUE_UPDATED_GLOBAL_EVENT,
+    asset_types,
+    get_latest_urls_from_event_queue,
+)
 from omni.kit.menu.utils import IconMenuDelegate, LayoutSourceSearch, MenuItemDescription, MenuLayout
 from omni.ui import color as cl
 
@@ -85,9 +90,11 @@ class FileMenuExtension:
         self._recent_menu_list = None
         self._build_file_menu()
 
-        event_stream = omni.kit.app.get_app().get_message_bus_event_stream()
-        self._event_sub = event_stream.create_subscription_to_pop_by_type(
-            FILE_EVENT_QUEUE_UPDATED, lambda _: self._build_recent_menu()
+        event_stream = carb.eventdispatcher.get_eventdispatcher()
+        self._event_sub = event_stream.observe_event(
+            event_name=FILE_EVENT_QUEUE_UPDATED_GLOBAL_EVENT,
+            on_event=self._build_recent_menu,
+            observer_name="isaacsim.gui.menu file event watcher",
         )
 
         events = omni.usd.get_context().get_stage_event_stream()

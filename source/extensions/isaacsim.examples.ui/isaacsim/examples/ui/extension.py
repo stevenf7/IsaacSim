@@ -392,9 +392,14 @@ class Extension(omni.ext.IExt):
         print("You've cliked time_series_plot_data:", val)
         if val:
             if not self._app_event_sub:
-                self._app_event_sub = (
-                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
+                self._app_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                    on_event=self._on_app_step,
+                    observer_name="isaacsim.examples.ui.Extension._on_app_step",
                 )
+                # self._app_event_sub = (
+                #     omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step)
+                # )
             else:
                 self._app_event_sub = None
         else:
@@ -413,9 +418,14 @@ class Extension(omni.ext.IExt):
         print("You've cliked time_series_plot_data:", val)
         if val:
             if not self._app_event_sub:
-                self._app_event_sub = (
-                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step_1)
+                self._app_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                    on_event=self._on_app_step_1,
+                    observer_name="isaacsim.examples.ui.Extension._on_app_step_1",
                 )
+                # self._app_event_sub = (
+                #     omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step_1)
+                # )
             else:
                 self._app_event_sub = None
         else:
@@ -434,8 +444,10 @@ class Extension(omni.ext.IExt):
         print("You've cliked time_series_plot_data:", val)
         if val:
             if not self._app_event_sub:
-                self._app_event_sub = (
-                    omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_app_step_2)
+                self._app_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                    on_event=self._on_app_step_2,
+                    observer_name="isaacsim.examples.ui.Extension._on_app_step_2",
                 )
             else:
                 self._app_event_sub = None

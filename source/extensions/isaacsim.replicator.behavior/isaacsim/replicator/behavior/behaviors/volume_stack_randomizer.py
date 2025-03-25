@@ -157,11 +157,11 @@ class VolumeStackRandomizer(BehaviorScript):
         self._reset_requested = False
 
         # App event stream, used to listen to incoming control events, and to publish the state of the behavior script
-        self._event_stream = omni.kit.app.get_app().get_message_bus_event_stream()
+        self._event_stream = carb.eventdispatcher.get_eventdispatcher()
 
         # Subscribe to the event stream to listen for incoming control events
-        self._event_sub = self._event_stream.create_subscription_to_pop_by_type(
-            carb.events.type_from_string(self.EVENT_NAME_IN), self._on_event
+        self._event_sub = self._event_stream.observe_event(
+            event_name=self.EVENT_NAME_IN, on_event=self._on_event, observer_name="VolumeStackRandomizer._event_sub"
         )
 
         # Expose the variables as USD attributes

@@ -97,8 +97,10 @@ class IsaacUpdateFrametimeCollector:
         self.physics_frametimes_ms: List[float] = []
         self.__last_frametime_timestamp_ns = time.perf_counter_ns()
 
-        self.__subscription = (
-            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self.__update_event_callback)
+        self.__subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=self.__update_event_callback,
+            observer_name="IsaacUpdateFrametimeCollector.__update_event_callback",
         )
 
         self.__physx_subscription = self.__physx_benchmarks_iface.subscribe_profile_stats_events(

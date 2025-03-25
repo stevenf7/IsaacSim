@@ -133,11 +133,16 @@ class LidarRtx(BaseSensor):
 
     def initialize(self, physics_sim_view=None) -> None:
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
-        self._acquisition_callback = (
-            omni.kit.app.get_app_interface()
-            .get_update_event_stream()
-            .create_subscription_to_pop(self._data_acquisition_callback)
+        self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=self._data_acquisition_callback,
+            observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._data_acquisition_callback",
         )
+        # self._acquisition_callback = (
+        #     omni.kit.app.get_app_interface()
+        #     .get_update_event_stream()
+        #     .create_subscription_to_pop(self._data_acquisition_callback)
+        # )
         self._stage_open_callback = (
             omni.usd.get_context()
             .get_stage_event_stream()
@@ -167,11 +172,16 @@ class LidarRtx(BaseSensor):
         return
 
     def resume(self) -> None:
-        self._acquisition_callback = (
-            omni.kit.app.get_app_interface()
-            .get_update_event_stream()
-            .create_subscription_to_pop(self._data_acquisition_callback)
+        self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=self._data_acquisition_callback,
+            observer_name="isaacsim.sensors.rtx.LidarRtx.resume._data_acquisition_callback",
         )
+        # self._acquisition_callback = (
+        #     omni.kit.app.get_app_interface()
+        #     .get_update_event_stream()
+        #     .create_subscription_to_pop(self._data_acquisition_callback)
+        # )
         return
 
     def pause(self) -> None:

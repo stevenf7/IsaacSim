@@ -1,4 +1,8 @@
 # Changelog
+## [14.2.1] - 2025-03-24
+### Changed
+- Migrate to Events 2.0
+
 ## [14.2.0] - 2025-03-18
 ### Added
 - Support for USD variant sets to RTX Sensor creation commands

@@ -8,7 +8,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.8"
+version = "0.3.9"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."

@@ -75,13 +75,13 @@ class BaseWriterNode(BaseResetNode):
     def _append_request(self, request: WriterRequest):
         self._requests.append(request)
         if self._event_stream is None:
-            self._event_stream = (
-                omni.kit.app.get_app()
-                .get_update_event_stream()
-                .create_subscription_to_pop(self._process_acivation_requests)
+            self._event_stream = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                on_event=self._process_activation_requests,
+                observer_name="BaseWriterNode._process_activation_requests",
             )
 
-    def _process_acivation_requests(self, event):
+    def _process_activation_requests(self, event):
         stage = omni.usd.get_context().get_stage()
         if not stage:
             self._event_stream = None

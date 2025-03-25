@@ -14,6 +14,7 @@ simulation_app = SimulationApp({"headless": False})
 import asyncio
 import time
 
+import carb
 import carb.events
 import carb.settings
 import omni.kit.app
@@ -238,7 +239,11 @@ physx_sub = omni.physx.get_physx_interface().subscribe_physics_step_events(on_ph
 stage_render_events = []
 stage_render_sub = omni.usd.get_context().get_rendering_event_stream().create_subscription_to_pop(on_stage_render_event)
 app_update_events = []
-app_sub = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(on_app_update)
+app_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+    on_event=on_app_update,
+    observer_name="subscribers_and_events.on_app_update",
+)
 
 # Keep the simulation running until the duration is passed
 while simulation_app.is_running():
