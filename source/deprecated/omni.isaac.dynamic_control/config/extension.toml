@@ -19,6 +19,7 @@ writeTarget.kit = true
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0."
 
+
 [dependencies]
 "omni.physx" = {}
 "omni.kit.usd.layers" = {}
@@ -29,6 +30,7 @@ warning = "Extension deprecated since Isaac Sim 4.5.0."
 "omni.usd.libs" = {}
 "omni.kit.commands" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
+
 "omni.usd" = {}
 
 [[python.module]]
@@ -36,6 +38,7 @@ name = "omni.isaac.dynamic_control"
 
 [[python.module]]
 name = "omni.isaac.dynamic_control.tests"
+
 
 [[native.plugin]]
 path = "bin/*.plugin"
@@ -48,8 +51,9 @@ dependencies = [
     "omni.kit.test",
     "omni.physx.ui",
 ]
+
 args = [
-    "--/app/file/ignoreUnsavedOnExit = 1",
+    "--/app/file/ignoreUnsavedOnExit=1",
     '--/persistent/simulation/defaultMetersPerUnit = 1.0',
     '--/persistent/app/stage/upAxis = "Z"',
     '--/persistent/isaac/asset_root/default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"',

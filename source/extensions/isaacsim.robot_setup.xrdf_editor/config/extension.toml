@@ -15,12 +15,14 @@ readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 
+
 [dependencies]
 "omni.kit.uiapp" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.robot_motion.lula" = {}
+
 
 [[python.module]]
 name = "isaacsim.robot_setup.xrdf_editor"

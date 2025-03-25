@@ -19,9 +19,11 @@ writeTarget.kit = true
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.manipulators."
 
+
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.robot.manipulators" = {}
+
 
 [[python.module]]
 name = "omni.isaac.manipulators"

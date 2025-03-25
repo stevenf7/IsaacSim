@@ -37,7 +37,9 @@ dependencies = [
     "isaacsim.storage.native",
     "isaacsim.core.utils"
 ]
+
 args = [
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
+
 timeout = 900

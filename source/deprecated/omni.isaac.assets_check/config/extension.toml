@@ -15,6 +15,7 @@ toggleable = false
 [dependencies]
 "omni.usd" = {}
 "omni.ui" = { order = -100 }
+
 # Isaac Sim Core Extensions
 "isaacsim.core.api" = {}
 "isaacsim.asset.browser" = {}
@@ -24,3 +25,5 @@ name = "omni.isaac.assets_check"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."
+
+

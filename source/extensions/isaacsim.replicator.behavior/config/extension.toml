@@ -11,15 +11,17 @@ authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.behavior"
 keywords = ["isaac", "behavior scripts", "replicator", "sdg", "randomization"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme  = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
+
 
 [dependencies]
 "isaacsim.storage.native" = {}
 "omni.kit.scripting" = {}
 "omni.physx" = {}
 "omni.usd" = {}
+
 
 [[python.module]]
 name = "isaacsim.replicator.behavior"
@@ -30,6 +32,7 @@ dependencies = [
     "omni.replicator.core",
     "isaacsim.core.api",
 ]
+
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/omni/replicator/captureOnPlay = true',

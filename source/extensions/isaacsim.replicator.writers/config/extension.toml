@@ -11,11 +11,13 @@ authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.writers"
 keywords = ["Synthetic", "Data", "Generation", "SDG", "Writers"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme  = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
+
 # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 writeTarget.platform = true
+
 
 [dependencies]
 "omni.graph" = {}
@@ -26,8 +28,8 @@ writeTarget.platform = true
 
 [[python.module]]
 name = "isaacsim.replicator.writers"
-# Watch the .ogn files for hot reloading (only works for Python files)
 
+# Watch the .ogn files for hot reloading (only works for Python files)
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]

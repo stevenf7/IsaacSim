@@ -19,5 +19,6 @@ icon = "data/icon.png"
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.robot_setup.assembler" = {}
 
+
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.assembler."

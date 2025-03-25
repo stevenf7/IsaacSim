@@ -24,8 +24,8 @@ writeTarget.platform = true
 "isaacsim.core.api" = {}
 "omni.graph.tools" = {}
 "omni.graph" = {}
-# Watch the .ogn files for hot reloading (only for Python files)
 
+# Watch the .ogn files for hot reloading (only for Python files)
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]

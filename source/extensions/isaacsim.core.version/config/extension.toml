@@ -18,6 +18,7 @@ icon = "data/icon.png"
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 
+
 [[python.module]]
 name = "isaacsim.core.version"
 

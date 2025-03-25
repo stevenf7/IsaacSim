@@ -57,6 +57,7 @@ stdoutFailPatterns.exclude = [
     '*parent prim is missing contact report API*',
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
 ]
+
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',

@@ -16,7 +16,7 @@ icon = "data/icon.png"
 preview_image = "data/preview.png"
 writeTarget.kit = true
 
-[deprecation]
+[deprecation] 
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.manipulators.ui"
 
 [dependencies]
