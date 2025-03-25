@@ -11,6 +11,7 @@ import asyncio
 import time
 import weakref
 
+import carb
 import numpy as np
 import omni
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
@@ -175,8 +176,10 @@ class Extension(omni.ext.IExt):
             # we want to make sure we can see the sensor we made, so we set the camera position and look target
             set_camera_view(eye=[-5.00, 5.00, 5.00], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
 
-            self._editor_event_subscription = (
-                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+            self._editor_event_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                on_event=self._on_editor_step,
+                observer_name="isaacsim.sensors.physx.examples.generic_info.Extension._on_editor_step",
             )
 
     def _on_spawn_generic_button(self):

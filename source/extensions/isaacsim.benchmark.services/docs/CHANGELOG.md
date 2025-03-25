@@ -1,4 +1,8 @@
 # Changelog
+## [2.6.5] - 2025-03-24
+### Changed
+- Migrate to Events 2.0
+
 ## [2.6.4] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

@@ -461,7 +461,7 @@ class World(SimulationContext):
             task.cleanup()
         await SimulationContext.reset_async(self, soft=soft)
         self._scene._finalize(self.physics_sim_view)
-        self._message_bus.dispatch(IsaacEvents.POST_RESET.value, payload={})
+        self._message_bus.dispatch_event(IsaacEvents.POST_RESET.value, payload={})
         self._scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()

@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.7] - 2025-03-24
+### Changed
+- Migrate to Events 2.0
+
 ## [2.2.6] - 2025-03-20
 ### Changed
 - Improve doxygen docstrings

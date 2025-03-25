@@ -139,10 +139,10 @@ class Extension(omni.ext.IExt):
                 self._selected_camera = self._all_cameras[0]
 
             if self._camera_state_subscriber is None:
-                self._camera_state_subscriber = (
-                    omni.kit.app.get_app()
-                    .get_update_event_stream()
-                    .create_subscription_to_pop(self._update_camera_stats_ui)
+                self._camera_state_subscriber = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                    on_event=self._update_camera_stats_ui,
+                    observer_name="CameraInspectorExtension._on_refresh._update_camera_stats_ui",
                 )
 
     def _on_camera_changed_event(self, option):

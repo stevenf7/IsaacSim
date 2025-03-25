@@ -9,14 +9,12 @@
 
 from enum import Enum
 
-import carb
-
 
 class IsaacEvents(Enum):
-    PHYSICS_WARMUP = carb.events.type_from_string("isaac.physics_warmup")
-    SIMULATION_VIEW_CREATED = carb.events.type_from_string("isaac.simulation_view_created")
-    PHYSICS_READY = carb.events.type_from_string("isaac.physics_ready")
-    POST_RESET = carb.events.type_from_string("isaac.post_reset")
-    PRIM_DELETION = carb.events.type_from_string("isaac.prim_deletion")
-    PHYSICS_STEP = carb.events.type_from_string("isaac.physics_step")
-    TIMELINE_STOP = carb.events.type_from_string("isaac.timeline_stop")
+    PHYSICS_WARMUP = "isaac.physics_warmup"
+    SIMULATION_VIEW_CREATED = "isaac.simulation_view_created"
+    PHYSICS_READY = "isaac.physics_ready"
+    POST_RESET = "isaac.post_reset"
+    PRIM_DELETION = "isaac.prim_deletion"
+    PHYSICS_STEP = "isaac.physics_step"
+    TIMELINE_STOP = "isaac.timeline_stop"

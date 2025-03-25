@@ -34,7 +34,11 @@ def update_event_callback(event: carb.events.IEvent):
     last_frametime_timestamp_ns = timestamp_ns
 
 
-omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(update_event_callback)
+carb.eventdispatcher.get_eventdispatcher().observe_event(
+    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+    on_event=update_event_callback,
+    observer_name="constant_fps.update_event_callback",
+)
 
 while simulation_app.is_running():
     # Measure duration of single app update

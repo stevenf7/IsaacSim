@@ -10,6 +10,7 @@
 import asyncio
 import weakref
 
+import carb
 import numpy as np
 import omni
 import omni.ext
@@ -68,8 +69,10 @@ class Extension(omni.ext.IExt):
     def build_ui(self):
         self._usd_context = omni.usd.get_context()
         if self._usd_context is not None:
-            self._stage_event_sub = (
-                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update_ui)
+            self._stage_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                on_event=self._on_update_ui,
+                observer_name="isaacsim.examples.interactive.surface_gripper.Extension._on_update_ui",
             )
 
         with ui.VStack(spacing=5, height=0):

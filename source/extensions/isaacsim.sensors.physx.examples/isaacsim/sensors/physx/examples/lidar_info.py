@@ -9,6 +9,7 @@
 import asyncio
 import weakref
 
+import carb
 import omni
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.ui as ui
@@ -175,9 +176,14 @@ class Extension(omni.ext.IExt):
         # refresh data stream box
         self._info_label.text = ""
 
-        self._editor_event_subscription = (
-            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+        self._editor_event_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=self._on_editor_step,
+            observer_name="isaacsim.sensors.physx.examples.lidar_info.Extension._on_editor_step",
         )
+        # self._editor_event_subscription = (
+        #     omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+        # )
 
     def _on_editor_step(self, step):
         if self._info_cb.get_value_as_bool():
