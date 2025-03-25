@@ -22,12 +22,11 @@ writeTarget.python = true
 [dependencies]
 "omni.kit.pip_archive" = {} # import the base kit python archive
 "omni.isaac.core_archive" = {} # pull in the main isaac sim pip archive
-
-
 # Just importing one will add whole folder (pip_prebundle) to sys.path.
+
 [[python.module]]
 path = "pip_prebundle"
-
 # That is empty module, added here only to make tests discoverable in test run
+
 [[python.module]]
 name = "omni.isaac.ml_archive"

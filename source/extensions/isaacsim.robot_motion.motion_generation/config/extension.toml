@@ -30,7 +30,6 @@ name = "isaacsim.robot_motion.motion_generation.tests"
 timeout = 900
 dependencies = [
 ]
-
 args = [
 '--/persistent/simulation/defaultMetersPerUnit = 1.0',
 '--/persistent/app/stage/upAxis = "Z"',

@@ -33,5 +33,4 @@ name = "isaacsim.asset.exporter.urdf"
 name = "isaacsim.asset.exporter.urdf.tests"
 
 [[test]]
-
 dependencies = []

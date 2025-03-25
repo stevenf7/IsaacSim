@@ -25,22 +25,19 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "omni.kit.menu.utils" = {}
 
-
 [[python.module]]
 name = "isaacsim.robot.wheeled_robots.ui"
-
 
 [[test]]
 dependencies = []
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-    '--/persistent/app/stage/upAxis="Z"',
+    '--/persistent/app/stage/upAxis = "Z"',
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
-    "--/persistent/app/viewport/defaults/tickRate=120",
-    "--/persistent/simulation/defaultMetersPerUnit=1.0",
-    "--/persistent/simulation/minFrameRate=15",
+    "--/persistent/app/viewport/defaults/tickRate = 120",
+    "--/persistent/simulation/defaultMetersPerUnit = 1.0",
+    "--/persistent/simulation/minFrameRate = 15",
 ]
-
 
 [[test]]
 name = "startup"

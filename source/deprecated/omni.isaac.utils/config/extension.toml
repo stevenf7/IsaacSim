@@ -23,6 +23,5 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.utils"
 
-
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.utils."

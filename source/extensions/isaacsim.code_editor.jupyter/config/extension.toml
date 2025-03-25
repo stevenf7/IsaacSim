@@ -36,9 +36,7 @@ exts."isaacsim.code_editor.jupyter".port = 8227
 # Whether to kill applications/processes that use the same ports before enabling the extension.
 # Disable this option if you want to launch multiple applications with this extension enabled.
 exts."isaacsim.code_editor.jupyter".kill_processes_with_port_in_use = false
-
 # jupyter notebook settings
-
 # Whether to use the classic notebook interface. If false, the Jupyter Lab interface is used.
 exts."isaacsim.code_editor.jupyter".classic_notebook_interface = false
 # IP address where the Jupyter server is being started.
@@ -50,7 +48,7 @@ exts."isaacsim.code_editor.jupyter".notebook_token = ""
 # The directory to use for notebooks. If empty, the directory is ``data/notebooks`` within the extension tree.
 exts."isaacsim.code_editor.jupyter".notebook_dir = ""
 # Jupyter server command line options other than ``--ip``, ``--port``, ``--token`` and ``--notebook-dir``.
-exts."isaacsim.code_editor.jupyter".command_line_options = "--allow-root --no-browser --JupyterApp.answer_yes=True"
+exts."isaacsim.code_editor.jupyter".command_line_options = "--allow-root --no-browser --JupyterApp.answer_yes = True"
 
 [[test]]
 name = "startup"

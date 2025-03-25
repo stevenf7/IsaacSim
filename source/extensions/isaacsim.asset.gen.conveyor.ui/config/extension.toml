@@ -2,16 +2,13 @@
 version = "2.1.6"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
-description="UI components for isaacsim.asset.gen.conveyor. It provides menu entries to support UI-based creation of Custom Conveyor Bodies, and a Conveyor Track tool that creates a system of fixed conveyor belts from a dataset."
+description = "UI components for isaacsim.asset.gen.conveyor. It provides menu entries to support UI-based creation of Custom Conveyor Bodies, and a Conveyor Track tool that creates a system of fixed conveyor belts from a dataset."
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.gen.conveyor.ui"
-
 keywords = ["kit", "example", "ui"]
-
-
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
@@ -21,8 +18,8 @@ keywords = ["kit", "example", "ui"]
 "isaacsim.asset.gen.conveyor" = {}
 "isaacsim.storage.native" = {}
 "omni.kit.widget.filebrowser" = {}
-
 # Main module for the Python interface
+
 [[python.module]]
 name = "isaacsim.asset.gen.conveyor.ui"
 
@@ -30,15 +27,12 @@ name = "isaacsim.asset.gen.conveyor.ui"
 name = "isaacsim.asset.gen.conveyor.ui.tests"
 
 [[test]]
-
 dependencies = [
     "omni.kit.ui_test",
 ]
-
 args = [
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
-
 stdoutFailPatterns.exclude = [
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]

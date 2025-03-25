@@ -24,4 +24,3 @@ warning = "Extension deprecated since Isaac Sim 4.2.0. Replaced by Physics Visua
 
 [[python.module]]
 name = "omni.isaac.physics_inspector"
-

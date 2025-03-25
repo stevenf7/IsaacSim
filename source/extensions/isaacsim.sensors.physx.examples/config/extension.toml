@@ -34,7 +34,6 @@ name = "isaacsim.sensors.physx.examples.generic_info"
 [[python.module]]
 name = "isaacsim.sensors.physx.examples.lightbeam_sensor"
 
-
 [[test]]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

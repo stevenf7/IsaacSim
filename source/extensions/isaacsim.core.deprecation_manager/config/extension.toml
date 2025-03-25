@@ -90,5 +90,3 @@ exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.replicator.isaac.OgnDope", new = "isaacsim.replicator.writers.OgnDope" },
     { deprecated = "omni.replicator.isaac.OgnPose", new = "isaacsim.replicator.writers.OgnPose" },
 ]
-
-

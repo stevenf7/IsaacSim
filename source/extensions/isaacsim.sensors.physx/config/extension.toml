@@ -15,7 +15,6 @@ readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 
-
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
@@ -44,17 +43,14 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
-
 stdoutFailPatterns.exclude = [
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLidarBeams: [/TestGraph] no prim path found for the lidar*",
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLidarPointCloud: [/TestGraph] no prim path found for the lidar*",
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLightBeam: [/TestGraph] Invalid Light Beam Sensor prim*",
 ]
-
 dependencies = [
     "omni.kit.hydra_texture"
 ]
-
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',

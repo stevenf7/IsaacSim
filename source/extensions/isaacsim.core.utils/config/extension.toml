@@ -33,14 +33,12 @@ name = "isaacsim.core.utils"
 [[python.module]]
 name = "isaacsim.core.utils.tests"
 
-
 [[test]]
 dependencies = [
     "omni.replicator.core",
     "isaacsim.core.api",
     "isaacsim.sensors.camera",
 ]
-
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',

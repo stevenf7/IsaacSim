@@ -1,7 +1,7 @@
 [core]
 reloadable = true
 order = 0
- 
+
 [package]
 version = "0.1.9"
 category = "GUI"
@@ -16,18 +16,17 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 feature = true
 # writeTarget.kit = true
- 
+
 [dependencies]
 "omni.kit.browser.folder.core" = {}
 "omni.kit.commands" = {}
 "omni.kit.menu.utils" = {}
 "omni.usd" = {}
 "omni.kit.viewport.utility" = { }
-"omni.kit.tool.collect" = { optional=true }
-"omni.kit.menu.stage" = { optional=true }
-"omni.kit.clipboard" = { optional=true }
+"omni.kit.tool.collect" = { optional = true }
+"omni.kit.menu.stage" = { optional = true }
+"omni.kit.clipboard" = { optional = true }
 "omni.kit.pip_archive" = {}
- 
+
 [[python.module]]
 name = "isaacsim.examples.browser"
- 

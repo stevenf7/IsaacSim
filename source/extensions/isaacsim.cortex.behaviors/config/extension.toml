@@ -24,9 +24,7 @@ writeTarget.kit = true
 [[python.module]]
 name = "isaacsim.cortex.behaviors"
 
-
 [[test]]
-
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

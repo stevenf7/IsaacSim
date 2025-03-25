@@ -10,7 +10,6 @@ preview_image = "icons/preview.png"
 icon = "icons/isaacsim.exp.full.png"
 toggleable = false
 
-
 [dependencies]
 "omni.kit.pip_archive" = {} # pulls in pyperclip
 "omni.kit.window.title" = {}
