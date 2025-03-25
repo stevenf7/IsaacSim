@@ -19,6 +19,5 @@ writeTarget.kit = true
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0."
 
-
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}

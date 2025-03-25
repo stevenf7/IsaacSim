@@ -2,20 +2,17 @@
 reloadable = true
 order = 0
 
-
 [package]
 version = "2.0.4"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
-description="UI components for omni.isaac.conveyor"
+description = "UI components for omni.isaac.conveyor"
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 icon = "data/icon.png"
 preview_image = "data/preview.png"
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.conveyor.ui"
-
 keywords = ["kit", "example", "ui"]
-
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}

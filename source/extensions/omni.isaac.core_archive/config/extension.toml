@@ -26,7 +26,7 @@ writeTarget.python = true
 
 [[python.module]]
 path = "pip_prebundle"
-
 # That is empty module, added here only to make tests discoverable in test run
+
 [[python.module]]
 name = "omni.isaac.core_archive"

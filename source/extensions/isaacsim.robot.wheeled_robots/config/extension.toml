@@ -47,10 +47,8 @@ stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
     "*AttributeError: 'NoneType' object has no attribute 'GetPrimAtPath'*", # For ackermann node omnigraph tests
 ]
-
 dependencies = [
 ]
-
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',

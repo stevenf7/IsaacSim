@@ -20,8 +20,8 @@ feature = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.asset.browser" = {}
-
 # Main python module this extension provides, it will be publicly available as "import omni.isaac.asset_browser".
+
 [[python.module]]
 name = "omni.isaac.asset_browser"
 

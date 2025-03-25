@@ -29,6 +29,7 @@ name = "isaacsim.robot_motion.lula"
 
 [[python.module]]
 name = "isaacsim.robot_motion.lula.tests"
+
 [[test]]
 dependencies = [
     "omni.kit.test"

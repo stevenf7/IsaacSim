@@ -31,11 +31,10 @@ name = "isaacsim.util.clash_detection"
 name = "isaacsim.util.clash_detection.tests"
 
 [[test]]
-dependencies=[
+dependencies = [
 "omni.kit.test",
 "omni.kit.property.bundle",
 ]
-
 args = [
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     '--/persistent/simulation/defaultMetersPerUnit = 1.0',

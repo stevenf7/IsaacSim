@@ -37,7 +37,6 @@ name = "isaacsim.gui.components"
 name = "isaacsim.gui.components.tests"
 
 [[test]]
-
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.window",

@@ -23,14 +23,14 @@ feature = true
 "omni.kit.menu.utils" = {}
 "omni.usd" = {}
 "omni.kit.viewport.utility" = { }
-"omni.kit.tool.collect" = { optional=true }
-"omni.kit.menu.stage" = { optional=true }
-"omni.kit.clipboard" = { optional=true }
+"omni.kit.tool.collect" = { optional = true }
+"omni.kit.menu.stage" = { optional = true }
+"omni.kit.clipboard" = { optional = true }
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.utils" = {}
 "omni.pip.cloud" = {}
-
 # Main python module this extension provides, it will be publicly available as "import isaacsim.asset.browser".
+
 [[python.module]]
 name = "isaacsim.asset.browser"
 
@@ -66,7 +66,6 @@ exts."isaacsim.asset.browser".data.hide_file_without_thumbnails = true
 menu.name = "Window/Browsers/Isaac"
 menu.window = "Isaac Sim Assets"
 
-
 [[test]]
 dependencies = [
     "omni.kit.tool.collect",
@@ -74,17 +73,15 @@ dependencies = [
     "omni.kit.ui_test",
     "omni.kit.browser.asset",
 ]
-
 args = [
-    "--/app/window/dpiScaleOverride=1.0",
-    "--/app/window/scaleToMonitor=false",
-    "--/app/menu/legacy_mode=false",
-    "--/exts/omni.kit.browser.asset/folders/0=''",
-    "--/exts/omni.kit.browser.asset/folders/1=''",
-    "--/exts/omni.kit.browser.asset/folders/2=''",
-    "--/exts/omni.kit.browser.asset/visible_after_startup=true",
+    "--/app/window/dpiScaleOverride = 1.0",
+    "--/app/window/scaleToMonitor = false",
+    "--/app/menu/legacy_mode = false",
+    "--/exts/omni.kit.browser.asset/folders/0 = ''",
+    "--/exts/omni.kit.browser.asset/folders/1 = ''",
+    "--/exts/omni.kit.browser.asset/folders/2 = ''",
+    "--/exts/omni.kit.browser.asset/visible_after_startup = true",
 ]
-
 stdoutFailPatterns.exclude = [
     "*unload wait time exceeded limit of*",
 ]

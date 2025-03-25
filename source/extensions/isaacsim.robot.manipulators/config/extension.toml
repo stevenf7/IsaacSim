@@ -33,12 +33,10 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 timeout = 900
-
 stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_robot_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]
-
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',

@@ -15,8 +15,8 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
-
 # Other extensions that must be loaded before this one
+
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "omni.graph" = {}
@@ -33,12 +33,11 @@ name = "isaacsim.util.debug_draw"
 
 [[python.module]]
 name = "isaacsim.util.debug_draw.tests"
-
 # Watch the .ogn files for hot reloading (only for Python files)
+
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
-
 
 [[native.plugin]]
 path = "bin/*.plugin"
@@ -48,5 +47,4 @@ recursive = false
 stdoutFailPatterns.exclude = [
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_util_debug_draw_IsaacXPrimAxisVisualizer: [/TestGraph] Omnigraph Error: no input prim found for visualization*",
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_util_debug_draw_IsaacXPrimRadiusVisualizer: [/TestGraph] Omnigraph Error: no input prim found for visualization*"
-
 ]
