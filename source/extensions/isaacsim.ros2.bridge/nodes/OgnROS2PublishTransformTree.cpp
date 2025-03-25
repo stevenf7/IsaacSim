@@ -82,7 +82,7 @@ public:
 
             //  Finding target prims
             const auto& targetPrims = db.inputs.targetPrims();
-            if (targetPrims.size() > 0)
+            if (!targetPrims.empty())
             {
                 state.m_targets.resize(targetPrims.size());
 
@@ -107,7 +107,7 @@ public:
 
             // Finding Parent Prim
             const auto& parentPrim = db.inputs.parentPrim();
-            if (parentPrim.size() > 0)
+            if (!parentPrim.empty())
             {
                 state.m_parentPath = omni::fabric::toSdfPath(parentPrim[0]);
             }

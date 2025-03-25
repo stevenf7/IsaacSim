@@ -74,7 +74,7 @@ public:
             pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
             const auto& primPath = db.inputs.conveyorPrim();
             UsdPrim conveyorPrim;
-            if (primPath.size() > 0)
+            if (!primPath.empty())
             {
                 conveyorPrim = stage->GetPrimAtPath(omni::fabric::toSdfPath(primPath[0]));
             }

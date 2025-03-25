@@ -280,7 +280,7 @@ CARB_EXPORT void carbOnPluginStartup()
     INITIALIZE_OGN_NODES()
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "Isaac DebugDraw";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;
