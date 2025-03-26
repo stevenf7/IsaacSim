@@ -687,6 +687,12 @@ function create_tests()
         python_sample_test(test[1], test[2], test[3])
     end
 
+    -- depreacated_test
+    python_sample_test(
+        "tests-nativepython-deprecated-test_standalone",
+        "standalone_examples/testing/deprecated/test_standalone.py"
+    )
+
     -- Linux-specific docker tests
     if os.target() == "linux" then
         group("docker_tests")

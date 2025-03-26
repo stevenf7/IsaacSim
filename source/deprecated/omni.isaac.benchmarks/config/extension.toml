@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -23,10 +23,18 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.benchmarks"
 
+
+[[python.module]]
+name = "omni.isaac.benchmarks.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.benchmark.examples."
 
 [[test]]
+dependencies = [
+   "omni.isaac.benchmark.services",
+   "omni.isaac.core",
+   "omni.isaac.sensor",
+]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "Cloner"
@@ -27,3 +27,12 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core
 name = "omni.isaac.cloner"
 
 
+
+[[python.module]]
+name = "omni.isaac.cloner.tests"
+
+
+[[test]]
+dependencies = [
+   "omni.isaac.nucleus",
+]

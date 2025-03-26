@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.2"
+version = "4.0.3"
 category = "Simulation"
 title = "Isaac Sim Range Sensor"
 description = "Range based sensor simulation using physx"
@@ -23,10 +23,16 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.range_sensor"
 
+
+[[python.module]]
+name = "omni.isaac.range_sensor.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.sensors.physx."
 
 [[test]]
+dependencies = [
+   "omni.isaac.core"
+]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

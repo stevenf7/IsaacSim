@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
@@ -32,3 +32,6 @@ name = "startup"
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]
+
+[[python.module]]
+name = "omni.isaac.tf_viewer.tests"

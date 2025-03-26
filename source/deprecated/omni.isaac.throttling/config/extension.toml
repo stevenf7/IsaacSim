@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Other"
 title = "Isaac Sim Throlling"
 description = "Control throttling behaviors for isaac sim"
@@ -22,5 +22,8 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.throttling"
 
+
+[[python.module]]
+name = "omni.isaac.throttling.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.throttling."

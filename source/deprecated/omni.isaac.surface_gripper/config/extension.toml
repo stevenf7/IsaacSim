@@ -4,7 +4,7 @@ order = 0
 
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
@@ -25,10 +25,17 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.surface_gripper"
 
+
+[[python.module]]
+name = "omni.isaac.surface_gripper.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.surface_gripper."
 
 [[test]]
 stdoutFailPatterns.exclude = [
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+]
+[[test]]
+dependencies = [
+   "omni.isaac.core"
 ]

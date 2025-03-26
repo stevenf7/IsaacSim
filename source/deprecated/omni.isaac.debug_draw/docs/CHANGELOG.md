@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.4] - 2025-03-25
+### Changed
+- Add import tests for deprecated extensions
+
 ## [2.1.3] - 2025-03-20
 ### Changed
 - Fix issues with duplicate extension startup from extra imports

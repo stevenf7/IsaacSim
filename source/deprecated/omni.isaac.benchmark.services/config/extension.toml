@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.3"
+version = "2.0.4"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -23,5 +23,14 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.benchmark.services"
 
+
+[[python.module]]
+name = "omni.isaac.benchmark.services.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.benchmark.services."
+
+
+[[test]]
+dependencies = [
+   "omni.isaac.core",
+]

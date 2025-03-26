@@ -3,7 +3,7 @@
 ### Changed
 - Migrate to Events 2.0
 
-## [2.1.0] - 2025-02-14
+## [2.1.0] - 2025-03-20
 ### Added
 - Isaac Create Menu in Viewport and Stage Context Menus (right click)
 

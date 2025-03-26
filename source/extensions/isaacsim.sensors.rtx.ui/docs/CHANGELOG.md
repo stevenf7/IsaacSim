@@ -1,7 +1,6 @@
 # Changelog
 
-
-## [1.0.1] - 2025-02-14
+## [1.0.1] - 2025-03-20
 ### Changed
 - Add sensor menu to context menus
 

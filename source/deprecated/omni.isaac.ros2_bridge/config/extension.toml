@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.0.2"
+version = "3.0.3"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -22,6 +22,9 @@ preview_image = "data/preview.png"
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
 
+
+[[python.module]]
+name = "omni.isaac.ros2_bridge.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.bridge."
 
