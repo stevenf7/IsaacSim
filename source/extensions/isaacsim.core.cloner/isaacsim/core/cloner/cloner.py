@@ -19,7 +19,6 @@ from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt
 
 
 class Cloner:
-
     """This class provides a set of simple APIs to make duplication of objects simple.
     Objects can be cloned using this class to create copies of the same object,
     placed at user-specified locations in the scene.
@@ -50,7 +49,6 @@ class Cloner:
         self._base_env_path = base_env_path
 
     def generate_paths(self, root_path: str, num_paths: int):
-
         """Generates a list of paths under the root path specified.
 
         Args:
@@ -162,7 +160,6 @@ class Cloner:
         unregister_physics_replication: bool = False,
         enable_env_ids: bool = False,
     ):
-
         """Clones a source prim at user-specified destination paths.
             Clones will be placed at user-specified positions and orientations.
 

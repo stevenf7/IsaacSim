@@ -37,6 +37,7 @@ ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
 # Enable scripts
 carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 
+
 # Gaussian noise augmentation on rgba data in numpy (CPU) and warp (GPU)
 def gaussian_noise_rgb_np(data_in, sigma: float, seed: int):
     np.random.seed(seed)

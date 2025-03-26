@@ -1569,7 +1569,7 @@ def build_simple_search(label="", type="search", model=None, delegate=None, tool
                         "TreeView.Item": {"color": 0xFF535354, "font_size": 16},
                         "TreeView.Item:selected": {"color": 0xFF23211F},
                         "TreeView:selected": {"background_color": 0x409D905C},
-                    }
+                    },
                     # name="TreeView",
                     # style_type_name_override="TreeView",
                 )

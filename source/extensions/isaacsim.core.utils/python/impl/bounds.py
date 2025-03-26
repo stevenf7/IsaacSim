@@ -42,6 +42,7 @@ def recompute_extents(
         >>> prim = stage_utils.get_current_stage().GetPrimAtPath("/World/Cube")
         >>> bounds_utils.recompute_extents(prim)
     """
+
     #
     def update_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default()):
         compute_prim = UsdGeom.Boundable(prim)

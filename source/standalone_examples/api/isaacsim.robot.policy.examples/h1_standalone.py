@@ -36,6 +36,7 @@ first_step = True
 reset_needed = False
 robots = []
 
+
 # initialize robot on first step, run robot advance
 def on_physics_step(step_size) -> None:
     global first_step

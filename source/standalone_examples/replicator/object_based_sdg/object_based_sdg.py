@@ -309,6 +309,7 @@ if writer_type is not None and len(render_products) > 0:
     writer.initialize(**writer_kwargs)
     writer.attach(render_products)
 
+
 # RANDOMIZERS
 # Apply a random (mostly) uppwards velocity to the objects overlapping the 'bounce' area
 def on_overlap_hit(hit):

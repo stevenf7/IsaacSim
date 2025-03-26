@@ -36,7 +36,7 @@ class TestTimeSplitter(ogts.OmniGraphTestCase):
 
         # walk through the graph, testing each constant
         graph_count = 0
-        for (node, time, values) in constant_tuples:
+        for node, time, values in constant_tuples:
             with self.subTest(f"{node}-{graph_count}"):
                 graph_count = graph_count + 1
                 controller = og.Controller()

@@ -163,9 +163,9 @@ class SelectorWindow:
 
                     self.env_vars["ROS_DISTRO"] = "humble"
 
-                    self.env_vars[
-                        "PATH"
-                    ] = f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\isaacsim.ros2.bridge\humble\lib"
+                    self.env_vars["PATH"] = (
+                        f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\isaacsim.ros2.bridge\humble\lib"
+                    )
 
                 # Use Internal libs for Jazzy
                 elif internal_libs_selection == 2:
@@ -179,9 +179,9 @@ class SelectorWindow:
 
                     self.env_vars["ROS_DISTRO"] = "jazzy"
 
-                    self.env_vars[
-                        "PATH"
-                    ] = f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\isaacsim.ros2.bridge\jazzy\lib"
+                    self.env_vars["PATH"] = (
+                        f"{'' if os.getenv('PATH') is None else os.getenv('PATH')};{self.package_path}\exts\isaacsim.ros2.bridge\jazzy\lib"
+                    )
         # Linux
         else:
             if ros_bridge_selection == 2:
@@ -208,9 +208,9 @@ class SelectorWindow:
 
                     self.env_vars["ROS_DISTRO"] = "humble"
 
-                    self.env_vars[
-                        "LD_LIBRARY_PATH"
-                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/humble/lib"
+                    self.env_vars["LD_LIBRARY_PATH"] = (
+                        f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/humble/lib"
+                    )
 
                 # Use Internal libs for Jazzy
                 elif internal_libs_selection == 2:
@@ -224,9 +224,9 @@ class SelectorWindow:
 
                     self.env_vars["ROS_DISTRO"] = "jazzy"
 
-                    self.env_vars[
-                        "LD_LIBRARY_PATH"
-                    ] = f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/jazzy/lib"
+                    self.env_vars["LD_LIBRARY_PATH"] = (
+                        f"{'' if os.getenv('LD_LIBRARY_PATH') is None else os.getenv('LD_LIBRARY_PATH')}:{self.package_path}/exts/isaacsim.ros2.bridge/jazzy/lib"
+                    )
 
         self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, ros_bridge_selection)
         self._settings.set(PERSISTENT_ROS_INTERNAL_LIBS_SETTING, internal_libs_selection)

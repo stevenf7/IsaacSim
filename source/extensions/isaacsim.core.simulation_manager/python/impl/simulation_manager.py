@@ -572,9 +572,9 @@ class SimulationManager:
                     lambda step_dt, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(step_dt)
                 )
             else:
-                SimulationManager._callbacks[
-                    callback_id
-                ] = omni.physx.acquire_physx_interface().subscribe_physics_step_events(callback)
+                SimulationManager._callbacks[callback_id] = (
+                    omni.physx.acquire_physx_interface().subscribe_physics_step_events(callback)
+                )
         elif event == IsaacEvents.TIMELINE_STOP:
             if proxy_needed:
                 SimulationManager._callbacks[

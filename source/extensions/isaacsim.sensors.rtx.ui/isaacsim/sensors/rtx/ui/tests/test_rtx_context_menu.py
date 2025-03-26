@@ -93,6 +93,7 @@ class TestRTXContextMenu(OmniUiTest):
         """
         Test the RTX sensors are added to stage context menus correctly.
         """
+
         # find the path to the last layer of the menu by randomly traversing
         def get_random_menu_path(menu_dict):
             current_path = []

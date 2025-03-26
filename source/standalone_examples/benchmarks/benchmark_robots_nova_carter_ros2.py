@@ -77,6 +77,7 @@ benchmark = BaseIsaacBenchmark(
     backend_type=args.backend_type,
 )
 
+
 # Generate Twist message
 def move_cmd_msg(x, y, z, ax, ay, az):
     msg = Twist()

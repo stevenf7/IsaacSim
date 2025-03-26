@@ -3290,20 +3290,26 @@ class Articulation(XFormPrim):
                 kps=self._backend_utils.create_zeros_tensor(
                     shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
                 ),
-                kds=self._default_kds[indices][:, joint_indices]
-                if self._backend != "warp"
-                else self._default_kps.data[indices, joint_indices],
+                kds=(
+                    self._default_kds[indices][:, joint_indices]
+                    if self._backend != "warp"
+                    else self._default_kps.data[indices, joint_indices]
+                ),
                 indices=indices,
                 joint_indices=joint_indices,
             )
         elif mode == "position":
             self.set_gains(
-                kps=self._default_kps[indices][:, joint_indices]
-                if self._backend != "warp"
-                else self._default_kps.data[indices, joint_indices],
-                kds=self._default_kds[indices][:, joint_indices]
-                if self._backend != "warp"
-                else self._default_kds.data[indices, joint_indices],
+                kps=(
+                    self._default_kps[indices][:, joint_indices]
+                    if self._backend != "warp"
+                    else self._default_kps.data[indices, joint_indices]
+                ),
+                kds=(
+                    self._default_kds[indices][:, joint_indices]
+                    if self._backend != "warp"
+                    else self._default_kds.data[indices, joint_indices]
+                ),
                 indices=indices,
                 joint_indices=joint_indices,
             )
@@ -3371,26 +3377,32 @@ class Articulation(XFormPrim):
                 kps=self._backend_utils.create_zeros_tensor(
                     shape=[indices.shape[0], 1], dtype="float32", device=self._device
                 ),
-                kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
-                if self._backend != "warp"
-                else self._default_kds.data[
-                    indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
-                ],
+                kds=(
+                    self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
+                    if self._backend != "warp"
+                    else self._default_kds.data[
+                        indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
+                    ]
+                ),
                 indices=indices,
                 joint_indices=[dof_index],
             )
         elif mode == "position":
             self.set_gains(
-                kps=self._backend_utils.expand_dims(self._default_kps[indices, dof_index], 1)
-                if self._backend != "warp"
-                else self._default_kps.data[
-                    indices, wp.array(dof_index, dtype=wp.int32, device=self._default_kds.device)
-                ],
-                kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
-                if self._backend != "warp"
-                else self._default_kds.data[
-                    indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
-                ],
+                kps=(
+                    self._backend_utils.expand_dims(self._default_kps[indices, dof_index], 1)
+                    if self._backend != "warp"
+                    else self._default_kps.data[
+                        indices, wp.array(dof_index, dtype=wp.int32, device=self._default_kds.device)
+                    ]
+                ),
+                kds=(
+                    self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
+                    if self._backend != "warp"
+                    else self._default_kds.data[
+                        indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
+                    ]
+                ),
                 indices=indices,
                 joint_indices=[dof_index],
             )
@@ -4640,9 +4652,9 @@ class Articulation(XFormPrim):
                         [indices, body_indices, wp.array([0, 1, 2], dtype=wp.int32, device="cpu")],
                     )
                 else:
-                    coms[
-                        self._backend_utils.expand_dims(indices, 1), body_indices, 0:3
-                    ] = self._backend_utils.move_data(positions, device="cpu")
+                    coms[self._backend_utils.expand_dims(indices, 1), body_indices, 0:3] = (
+                        self._backend_utils.move_data(positions, device="cpu")
+                    )
             if orientations is not None:
                 if self._backend == "warp":
                     coms = self._backend_utils.assign(
@@ -4651,9 +4663,9 @@ class Articulation(XFormPrim):
                         [indices, body_indices, wp.array([3, 4, 5, 6], dtype=wp.int32, device="cpu")],
                     )
                 else:
-                    coms[
-                        self._backend_utils.expand_dims(indices, 1), body_indices, 3:7
-                    ] = self._backend_utils.move_data(orientations[:, :, [1, 2, 3, 0]], device="cpu")
+                    coms[self._backend_utils.expand_dims(indices, 1), body_indices, 3:7] = (
+                        self._backend_utils.move_data(orientations[:, :, [1, 2, 3, 0]], device="cpu")
+                    )
             self._physics_view.set_coms(coms, indices)
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use set_body_coms")
