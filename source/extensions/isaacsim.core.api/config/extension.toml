@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.2.22"
+version = "4.2.23"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
@@ -49,7 +49,7 @@ recursive = false
 timeout = 900
 dependencies = [
     "isaacsim.core.cloner",
-    "omni.warp",
+    "omni.kit.renderer.core",
 ]
 
 stdoutFailPatterns.exclude = [

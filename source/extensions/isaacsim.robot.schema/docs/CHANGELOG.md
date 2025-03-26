@@ -1,4 +1,7 @@
 # Changelog
+## [3.2.1] - 2025-03-26
+### Changed
+- Updates to work with Kit 107.2 and ABI=1
 
 ## [3.2.0] - 2025-03-06
 ### Added

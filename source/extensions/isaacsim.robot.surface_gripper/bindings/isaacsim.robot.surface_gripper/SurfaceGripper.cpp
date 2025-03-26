@@ -14,7 +14,12 @@
 
 #include "isaacsim/robot/surface_gripper/SurfaceGripper.h"
 
+#include <carb/Interface.h>
 #include <carb/logging/Log.h>
+
+#include <omni/physx/IPhysx.h>
+
+#include <DynamicControl.h>
 
 namespace isaacsim::robot::surface_gripper
 {

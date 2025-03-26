@@ -1,4 +1,8 @@
 # Changelog
+## [4.4.2] - 2025-03-26
+### Changed
+- Updated OpenCV lens distortion schema attribute names
+
 ## [4.4.1] - 2025-03-20
 ### Changed
 - Improve doxygen docstrings

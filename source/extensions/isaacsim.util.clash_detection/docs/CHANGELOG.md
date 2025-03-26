@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.6] - 2025-03-26
+### Fixed
+- API change for clash detection api adding setting_depth_epsilon
+
 ## [0.1.5] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

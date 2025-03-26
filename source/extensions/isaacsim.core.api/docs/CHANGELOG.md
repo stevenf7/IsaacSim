@@ -1,4 +1,8 @@
 # Changelog
+## [4.2.23] - 2025-03-26
+### Fixed
+- CCD is not supported when using a cuda device, CCD is now automatically disabled if a cuda device is requested. 
+
 ## [4.2.22] - 2025-03-24
 ### Changed
 - Migrate to Events 2.0

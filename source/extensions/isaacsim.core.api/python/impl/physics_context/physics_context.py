@@ -88,6 +88,7 @@ class PhysicsContext(object):
             self.set_broadphase_type("GPU")
             self.enable_gpu_dynamics(flag=True)
             self.enable_fabric(True)
+            self.enable_ccd(flag=False)  # Disable CCD for GPU dynamics as its not supported
         else:
             self.set_broadphase_type("MBP")
             self.enable_gpu_dynamics(flag=False)
@@ -95,11 +96,12 @@ class PhysicsContext(object):
         if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
             self.set_gravity(value=-9.81 / meters_per_unit)
-            self.enable_ccd(flag=True)
             self.enable_stablization(flag=True)
             if self._use_gpu_pipeline:
+                self.enable_ccd(flag=False)
                 self._carb_settings.set_bool("/physics/suppressReadback", True)
             else:
+                self.enable_ccd(flag=True)
                 self._carb_settings.set_bool("/physics/suppressReadback", False)
             self.set_solver_type(solver_type="TGS")
             self.set_physics_dt(dt=1.0 / 60.0)
@@ -289,21 +291,15 @@ class PhysicsContext(object):
 
     def enable_ccd(self, flag: bool) -> None:
         """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling
-           through each other.
+           through each other. If GPU is enabled, CCD is not supported and the request will be ignored. If CCD is enabled and then the GPU pipeline is requested, CCD will be disabled automatically.
 
         Args:
-            flag (bool): enables or disables ccd on the PhysicsScene
+            flag (bool): enables or disables ccd on the PhysicsScene. CCD is not supported on GPU, so the request will be ignored if GPU is enabled.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        if self._physx_scene_api.GetEnableCCDAttr().Get() is None:
-            self._physx_scene_api.CreateEnableCCDAttr(flag)
-        else:
-            self._physx_scene_api.GetEnableCCDAttr().Set(flag)
-        return
+        SimulationManager.enable_ccd(flag=flag)
 
     def enable_residual_reporting(self, flag: bool):
         """Set the physx scene flag to enable/disable solver residual reporting.
@@ -367,9 +363,7 @@ class PhysicsContext(object):
         Returns:
             bool: True if ccd is enabled, otherwise False.
         """
-        if not is_prim_path_valid(self._prim_path):
-            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        return self._physx_scene_api.GetEnableCCDAttr().Get()
+        return SimulationManager.is_ccd_enabled()
 
     def enable_stablization(self, flag: bool) -> None:
         """Enables additional stabilization pass in the solver.

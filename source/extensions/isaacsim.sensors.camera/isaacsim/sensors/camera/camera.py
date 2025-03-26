@@ -33,26 +33,26 @@ from pxr import Sdf, Usd, UsdGeom, Vt
 
 # Map of Camera prim attributes to OpenCV pinhole camera model parameters (p1, p2, k1, k2, k3, k4, k5, k6, s1, s2, s3, s4) by index
 OPENCV_PINHOLE_ATTRIBUTE_MAP = [
-    "omni:lensdistortion:opencvpinhole:k1",
-    "omni:lensdistortion:opencvpinhole:k2",
-    "omni:lensdistortion:opencvpinhole:p1",
-    "omni:lensdistortion:opencvpinhole:p2",
-    "omni:lensdistortion:opencvpinhole:k3",
-    "omni:lensdistortion:opencvpinhole:k4",
-    "omni:lensdistortion:opencvpinhole:k5",
-    "omni:lensdistortion:opencvpinhole:k6",
-    "omni:lensdistortion:opencvpinhole:s1",
-    "omni:lensdistortion:opencvpinhole:s2",
-    "omni:lensdistortion:opencvpinhole:s3",
-    "omni:lensdistortion:opencvpinhole:s4",
+    "omni:lensdistortion:opencvPinhole:k1",
+    "omni:lensdistortion:opencvPinhole:k2",
+    "omni:lensdistortion:opencvPinhole:p1",
+    "omni:lensdistortion:opencvPinhole:p2",
+    "omni:lensdistortion:opencvPinhole:k3",
+    "omni:lensdistortion:opencvPinhole:k4",
+    "omni:lensdistortion:opencvPinhole:k5",
+    "omni:lensdistortion:opencvPinhole:k6",
+    "omni:lensdistortion:opencvPinhole:s1",
+    "omni:lensdistortion:opencvPinhole:s2",
+    "omni:lensdistortion:opencvPinhole:s3",
+    "omni:lensdistortion:opencvPinhole:s4",
 ]
 
 # Map of Camera prim attributes to OpenCV fisheye camera model parameters (k0, k1, k2, k3, k4) by index
 OPENCV_FISHEYE_ATTRIBUTE_MAP = [
-    "omni:lensdistortion:opencv:k1",
-    "omni:lensdistortion:opencv:k2",
-    "omni:lensdistortion:opencv:k3",
-    "omni:lensdistortion:opencv:k4",
+    "omni:lensdistortion:opencvFisheye:k1",
+    "omni:lensdistortion:opencvFisheye:k2",
+    "omni:lensdistortion:opencvFisheye:k3",
+    "omni:lensdistortion:opencvFisheye:k4",
 ]
 
 
@@ -1465,13 +1465,13 @@ class Camera(BaseSensor):
         self.prim.ApplyAPI("OmniLensDistortionOpenCvPinholeAPI")
         self.prim.GetAttribute("omni:lensdistortion:model").Set("opencvPinhole")
         if cx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cx").Set(cx)
+            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cx").Set(cx)
         if cy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cy").Set(cy)
+            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cy").Set(cy)
         if fx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fx").Set(fx)
+            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fx").Set(fx)
         if fy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fy").Set(fy)
+            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fy").Set(fy)
         if pinhole is not None:
             for i in range(len(pinhole)):
                 self.prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Set(pinhole[i])
@@ -1486,10 +1486,10 @@ class Camera(BaseSensor):
         if self.prim.GetAttribute("omni:lensdistortion:model").Get() != "opencvPinhole":
             carb.log_error("Camera omni:lensdistortion:model attribute not set to 'opencvPinhole'.")
             return
-        cx = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cx").Get()
-        cy = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:cy").Get()
-        fx = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fx").Get()
-        fy = self.prim.GetAttribute("omni:lensdistortion:opencvpinhole:fy").Get()
+        cx = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cx").Get()
+        cy = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cy").Get()
+        fx = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fx").Get()
+        fy = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fy").Get()
         pinhole = [None] * 12
         for i in range(12):
             pinhole[i] = self.prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Get()
@@ -1515,13 +1515,13 @@ class Camera(BaseSensor):
         self.prim.ApplyAPI("OmniLensDistortionOpenCvFisheyeAPI")
         self.prim.GetAttribute("omni:lensdistortion:model").Set("opencv")
         if cx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencv:cx").Set(cx)
+            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Set(cx)
         if cy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencv:cy").Set(cy)
+            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Set(cy)
         if fx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencv:fx").Set(fx)
+            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fx").Set(fx)
         if fy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencv:fy").Set(fy)
+            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fy").Set(fy)
         if fisheye is not None:
             for i in range(len(fisheye)):
                 self.prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Set(fisheye[i])
@@ -1536,10 +1536,10 @@ class Camera(BaseSensor):
         if self.prim.GetAttribute("omni:lensdistortion:model").Get() != "opencv":
             carb.log_error("Camera omni:lensdistortion:model attribute not set to 'opencv'.")
             return
-        cx = self.prim.GetAttribute("omni:lensdistortion:opencv:cx").Get()
-        cy = self.prim.GetAttribute("omni:lensdistortion:opencv:cy").Get()
-        fx = self.prim.GetAttribute("omni:lensdistortion:opencv:fx").Get()
-        fy = self.prim.GetAttribute("omni:lensdistortion:opencv:fy").Get()
+        cx = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Get()
+        cy = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Get()
+        fx = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fx").Get()
+        fy = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fy").Get()
         fisheye = [None] * 4
         for i in range(4):
             fisheye[i] = self.prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Get()

@@ -9,12 +9,27 @@
 
 import os
 
+import carb.tokens
 from pxr import Plug
 
+
+def _register_plugin_path(path):
+    result = Plug.Registry().RegisterPlugins(path)
+    if not result:
+        import carb
+
+        carb.log_error(f"No plugins found at path {path}")
+
+
+def _register_plugins(ext_path: str):
+    _register_plugin_path(os.path.join(ext_path, "usd", "schema", "isaac", "robot_schema"))
+
+    plugin_path = os.path.join(ext_path, "plugins", "plugins")
+    _register_plugin_path(os.path.join(plugin_path, "isaacSensorSchema", "resources"))
+    _register_plugin_path(os.path.join(plugin_path, "rangeSensorSchema", "resources"))
+
+
+_register_plugins(carb.tokens.get_tokens_interface().resolve("${isaacsim.robot.schema}"))
+
+
 from . import robot_schema
-
-pluginsRoot = os.path.join(os.path.dirname(__file__), "../../../plugins")
-
-Plug.Registry().RegisterPlugins(pluginsRoot + "/IsaacSensorSchema/resources")
-Plug.Registry().RegisterPlugins(pluginsRoot + "/RangeSensorSchema/resources")
-Plug.Registry().RegisterPlugins(f"{os.path.dirname(__file__)}/robot_schema")

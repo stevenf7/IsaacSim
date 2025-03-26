@@ -1,4 +1,7 @@
 # Changelog
+## [0.3.1] - 2025-03-26
+### Changed
+- Updated OpenCV lens distortion schema attribute names
 
 ## [0.3.0] - 2025-03-11
 ### Changed

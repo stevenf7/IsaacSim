@@ -24,7 +24,7 @@ includedirs {
     target_deps .. "/omni_physics/%{config}/include",
     target_deps .. "/rtx_plugins/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
     target_deps .. "/omni_client_library/include",
     target_deps .. "/python/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
@@ -36,7 +36,7 @@ libdirs {
     target_deps .. "/python/lib",
     target_deps .. "/usd/%{cfg.buildcfg}/lib",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
 

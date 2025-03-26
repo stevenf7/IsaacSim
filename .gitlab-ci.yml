@@ -312,10 +312,11 @@ build-linux-x86_64-release:
       - .build-common
       - .runner-build-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     before_script:
       - set -eu
-      - yum install -y bsdtar
-      - yum install -y rdfind
+      - apt-get install -y libarchive-tools
+      # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh ci build -c release
@@ -326,10 +327,11 @@ build-linux-x86_64-debug:
       - .build-common
       - .runner-build-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     before_script:
       - set -eu
-      - yum install -y bsdtar
-      - yum install -y rdfind
+      - apt-get install -y libarchive-tools
+      # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh ci build -c debug
@@ -1010,6 +1012,7 @@ verify-publish-extensions:
     extends:
       - .deploy-common
       - .runner-utility-linux-x86_64
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     script:
       - ./repo.sh build --fetch-only -rd
       - ./repo.sh publish_exts -a --from-package -c release --verify
@@ -1055,6 +1058,7 @@ publish-extensions:
     extends:
       - .deploy-common
       - .runner-utility-linux-x86_64
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     script:
       - ./repo.sh build --fetch-only -rd
       - ./repo.sh publish_exts -a --from-package -c release
@@ -1357,9 +1361,10 @@ internal-build-linux-x86_64-release:
       - .build-common
       - .runner-build-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     before_script:
       - set -eu
-      - yum install -y bsdtar
+      - apt-get install -y libarchive-tools
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh build -r --no-docker
@@ -1526,9 +1531,10 @@ binaryscan-build-linux-x86_64-release:
       - .build-common
       - .runner-build-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     before_script:
       - set -eu
-      - yum install -y bsdtar
+      - apt-get install -y libarchive-tools
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
       - ./repo.sh build -r --no-docker
