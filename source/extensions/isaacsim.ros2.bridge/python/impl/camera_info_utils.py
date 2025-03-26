@@ -36,11 +36,11 @@ def read_camera_info(render_product_path: str) -> Tuple:
 
     if lens_distortion_model == "opencvPinhole":
 
-        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:imageSize").Get()
-        cx = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:cx").Get()
-        cy = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:cy").Get()
-        fx = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:fx").Get()
-        fy = camera_prim.GetAttribute("omni:lensdistortion:opencvpinhole:fy").Get()
+        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:imageSize").Get()
+        cx = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:cx").Get()
+        cy = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:cy").Get()
+        fx = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:fx").Get()
+        fy = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:fy").Get()
         pinhole = [0.0] * 12
         for i in range(12):
             pinhole[i] = camera_prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Get()
@@ -53,11 +53,11 @@ def read_camera_info(render_product_path: str) -> Tuple:
             camera_info.distortion_model = "rational_polynomial"
             camera_info.d = pinhole
     elif lens_distortion_model == "opencv":
-        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencv:imageSize").Get()
-        cx = camera_prim.GetAttribute("omni:lensdistortion:opencv:cx").Get()
-        cy = camera_prim.GetAttribute("omni:lensdistortion:opencv:cy").Get()
-        fx = camera_prim.GetAttribute("omni:lensdistortion:opencv:fx").Get()
-        fy = camera_prim.GetAttribute("omni:lensdistortion:opencv:fy").Get()
+        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:imageSize").Get()
+        cx = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Get()
+        cy = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Get()
+        fx = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:fx").Get()
+        fy = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:fy").Get()
         fisheye = [0.0] * 4
         for i in range(4):
             fisheye[i] = camera_prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Get()

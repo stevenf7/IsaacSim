@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.13] - 2025-03-26
+### Fixed
+- Fix unit test failure
+
 ## [0.1.12] - 2025-03-25
 ### Changed
 - Add import tests for deprecated extensions

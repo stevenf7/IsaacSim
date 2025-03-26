@@ -1,12 +1,9 @@
 local ext = get_current_extension_info()
 project_ext(ext)
 
-local ros2_ros_distroributions = {
-    "humble",
-    "jazzy",
-}
+local ros_distributions = { "humble", "jazzy" }
 
-for _, ros_distro in ipairs(ros2_ros_distroributions) do
+for _, ros_distro in ipairs(ros_distributions) do
     project_with_location("isaacsim.ros2.tf_viewer." .. ros_distro)
     targetdir(ext.bin_dir)
     kind("SharedLib")

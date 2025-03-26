@@ -697,7 +697,7 @@ const char* CARB_ABI DcGetObjectTypeName(DcHandle handle)
 }
 
 #if 0
-int CARB_ABI DcGetArticulationCount(const auto & ctx)
+int CARB_ABI DcGetArticulationCount(const auto& ctx)
 {
     (void)DC_CHECK_SIMULATING();
 
@@ -724,7 +724,7 @@ int CARB_ABI DcGetArticulationCount(const auto & ctx)
     return 0;
 }
 
-int CARB_ABI DcGetArticulations(auto & ctx, DcArticulation** userBuffer, int bufferSize)
+int CARB_ABI DcGetArticulations(auto& ctx, DcArticulation** userBuffer, int bufferSize)
 {
     (void)DC_CHECK_SIMULATING();
 

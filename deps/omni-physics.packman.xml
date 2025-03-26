@@ -7,7 +7,7 @@
   <!-- Pull those deps of the same version as in Kit SDK. Override linkPath to point correctly, other properties can also be override, including version. -->
   <dependency name="omni_physics_${config}" linkPath="../_build/target-deps/omni_physics/${config}">
     <!-- Uncomment and change the version/path below when using a custom package -->
-    <package name="omni_physics_dev" version="107.0.17-22216786-release_107.0-38b390a0-${platform}-${config}" platforms="windows-x86_64 linux-x86_64 linux-aarch64"/>
+    <package name="omni_physics_dev" version="107.2.1-26017104-release_107.2-521b47ab-${platform_target_abi}-${config}" platforms="windows-x86_64 manylinux_2_35_x86_64 manylinux_2_35_aarch64"/>
     <!-- <source path="/path/to/omni_physics" /> -->
   </dependency>
 </project>

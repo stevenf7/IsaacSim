@@ -34,10 +34,15 @@ version_file = "${root}/VERSION"
 # Build tool setup
 ########################################################################################################################
 
+[repo_build.premake]
+linux_x86_64_cxx_abi=true
+ 
+[repo_build.docker]
+"platform:linux-x86_64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00"
+"platform:linux-aarch64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00"
+
+
 [repo_build]
-
-premake.linux_x86_64_cxx_abi=false
-
 # List of packman projects to pull (in order)
 
 fetch.packman_target_files_to_pull = [
@@ -365,9 +370,9 @@ doxygen_input = [
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Math.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Pose.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PoseTree.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PrimManager.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ScopedCudaDevice.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ScopedTimer.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PrimManager.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Transforms.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/UsdUtilities.h",
   "source/extensions/isaacsim.core.nodes/include/isaacsim/core/nodes/ICoreNodes.h",
@@ -383,9 +388,11 @@ doxygen_input = [
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Factory.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2FactoryImpl.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Macros.h",
+  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Message.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Node.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2OgnUtils.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2QoS.h",
+  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Types.h",
   "source/extensions/isaacsim.ros2.bridge/library/backend/Ros2Impl.h",
   "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/ITransformListener.h",
   "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/Tf2Factory.h",
@@ -485,6 +492,7 @@ ziponly = false
 omniverse_flow_version_scheme = true
 package_per_config = true
 root = "_build/$${platform}/$${config}"
+manylinux_platform = "2_35"
 
 [repo_package.packages.isaac-sim-standalone]
 append_config = true
@@ -494,11 +502,13 @@ replace_authors_in_kit_extensions = true
 root = "_build/$${platform}/$${config}"
 strip_package_infos = true
 windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
+manylinux_platform = "2_35"
 
 [repo_package.packages.isaac-sim-internal-standalone]
 omniverse_flow_version_scheme = true
 package_per_config = true
 root = "_build/$${platform}/$${config}"
+manylinux_platform = "2_35"
 
 [repo_package.packages.isaac-sim-binaryscan]
 append_config = true
@@ -508,12 +518,14 @@ replace_authors_in_kit_extensions = true
 root = "_build/$${platform}/$${config}"
 strip_package_infos = true
 windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
+manylinux_platform = "2_35"
 
 # to generate test runner package for isaac sim
 [repo_package.packages.test_runner]
 archive_format = "zip"
 omniverse_flow_version_scheme = true
 ziponly = true
+manylinux_platform = "2_35"
 
 # to generate launcher images package
 [repo_package.packages.isaac-sim-pipeline-images-beta]
@@ -964,7 +976,7 @@ publish_verification = true
 use_packman_to_upload_archive = true
 
 # When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac-sim-standalone@*${platform_target}.${config}.*"
+archive_pattern = "${root}/_build/packages/isaac-sim-standalone@*${platform_target_abi}.${config}.*"
 
 # ETM (extension test matrix) settings
 enroll_in_etm = false

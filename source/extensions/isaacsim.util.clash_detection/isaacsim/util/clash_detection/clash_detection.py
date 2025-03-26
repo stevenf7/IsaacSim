@@ -384,6 +384,7 @@ class ClashDetector:
             True if fetching overlaps is a success.
         """
         setting_tolerance = clash_query.clash_detect_settings.get(SettingId.SETTING_TOLERANCE.name, 0.0)
+        setting_depth_epsilon = clash_query.clash_detect_settings.get(SettingId.SETTING_DEPTH_EPSILON.name, -1.0)
 
         data = []
 
@@ -391,7 +392,9 @@ class ClashDetector:
         for idx in range(num_overlaps):
             temp_data = []
             progress_update.update(float(idx) / float(num_overlaps))
-            new_clash_info = clash_detect.process_overlap(stage, idx, {}, clash_query.identifier, setting_tolerance)
+            new_clash_info = clash_detect.process_overlap(
+                stage, idx, {}, clash_query.identifier, setting_tolerance, setting_depth_epsilon
+            )
             if new_clash_info:
                 temp_data.append(f"Clash ID: {new_clash_info.overlap_id}")
                 temp_data.append(f"Tolerance: {new_clash_info.tolerance}")

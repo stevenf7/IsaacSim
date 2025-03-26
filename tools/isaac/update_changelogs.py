@@ -340,6 +340,24 @@ class ChangelogManager:
     def _has_git_changes(self, dirpath: str) -> bool:
         """Check if directory has changes against develop branch"""
         try:
+            # First check if develop branch is behind remote
+            status_cmd = subprocess.run(["git", "fetch", "origin", "develop"], capture_output=True, text=True)
+
+            # Check if local develop is behind remote
+            status_cmd = subprocess.run(
+                ["git", "rev-list", "--count", "develop..origin/develop"], capture_output=True, text=True
+            )
+
+            behind_count = status_cmd.stdout.strip()
+            if behind_count and int(behind_count) > 0:
+                error_msg = (
+                    f"Local develop branch is {behind_count} commits behind origin/develop. Please pull latest changes."
+                )
+                if self.verbose:
+                    print(f"  ❌ {error_msg}")
+                raise Exception(error_msg)
+
+            # Continue with original functionality to check for changes
             result = subprocess.run(
                 ["git", "diff", "--quiet", "develop", "--", dirpath], capture_output=True, text=True
             )

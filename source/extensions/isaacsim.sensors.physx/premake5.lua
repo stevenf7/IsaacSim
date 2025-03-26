@@ -17,8 +17,7 @@ includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/include",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/include",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
     "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
     extsbuild_dir .. "/omni.syntheticdata/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
@@ -31,8 +30,7 @@ includedirs {
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/IsaacSensorSchema/lib",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/RangeSensorSchema/lib",
+    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }

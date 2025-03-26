@@ -284,11 +284,67 @@ class SimulationManager:
                 raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
 
     @classmethod
+    def enable_ccd(cls, flag: bool, physics_scene: str = None) -> None:
+        """Enables Continuous Collision Detection (CCD).
+
+        Args:
+            flag (bool): enables or disables CCD on the PhysicsScene.
+            physics_scene (str, optional): physics scene prim path.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+        """
+        if flag and "cuda" in SimulationManager.get_physics_sim_device():
+            carb.log_warning("CCD is not supported on GPU, ignoring request to enable it")
+            return
+        if physics_scene is None:
+            for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if physx_scene_api.GetEnableCCDAttr().Get() is None:
+                    physx_scene_api.CreateEnableCCDAttr(flag)
+                else:
+                    physx_scene_api.GetEnableCCDAttr().Set(flag)
+        else:
+            if physics_scene in SimulationManager._physics_scene_apis:
+                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
+                if physx_scene_api.GetEnableCCDAttr().Get() is None:
+                    physx_scene_api.CreateEnableCCDAttr(flag)
+                else:
+                    physx_scene_api.GetEnableCCDAttr().Set(flag)
+            else:
+                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+
+    @classmethod
+    def is_ccd_enabled(cls, physics_scene: str = None) -> bool:
+        """Checks if Continuous Collision Detection (CCD) is enabled.
+
+        Args:
+            physics_scene (str, optional): physics scene prim path.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+
+        Returns:
+            bool: True if CCD is enabled, otherwise False.
+        """
+        if physics_scene is None:
+            if len(SimulationManager._physics_scene_apis) > 0:
+                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
+                return physx_scene_api.GetEnableCCDAttr().Get()
+            else:
+                return False
+        else:
+            if physics_scene in SimulationManager._physics_scene_apis:
+                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
+                return physx_scene_api.GetEnableCCDAttr().Get()
+            else:
+                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+
+    @classmethod
     def enable_gpu_dynamics(cls, flag: bool, physics_scene: str = None) -> None:
         """Enables gpu dynamics pipeline, required for deformables for instance.
 
         Args:
-            flag (bool): enables or disables gpu dynamics on the PhysicsScene.
+            flag (bool): enables or disables gpu dynamics on the PhysicsScene. If flag is true, CCD is disabled.
             physics_scene (str, optional): physics scene prim path.
 
         Raises:
@@ -300,6 +356,11 @@ class SimulationManager:
                     physx_scene_api.CreateEnableGPUDynamicsAttr(flag)
                 else:
                     physx_scene_api.GetEnableGPUDynamicsAttr().Set(flag)
+                # Disable CCD for GPU dynamics as its not supported
+                if flag:
+                    if SimulationManager.is_ccd_enabled():
+                        carb.log_warn("Disabling CCD for GPU dynamics as its not supported")
+                        SimulationManager.enable_ccd(flag=False)
         else:
             if physics_scene in SimulationManager._physics_scene_apis:
                 physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
@@ -307,6 +368,11 @@ class SimulationManager:
                     physx_scene_api.CreateEnableGPUDynamicsAttr(flag)
                 else:
                     physx_scene_api.GetEnableGPUDynamicsAttr().Set(flag)
+                # Disable CCD for GPU dynamics as its not supported
+                if flag:
+                    if SimulationManager.is_ccd_enabled(physics_scene=physics_scene):
+                        carb.log_warn("Disabling CCD for GPU dynamics as its not supported")
+                        SimulationManager.enable_ccd(flag=False, physics_scene=physics_scene)
             else:
                 raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
 
