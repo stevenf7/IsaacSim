@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.3"
+version = "4.0.4"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -19,6 +19,9 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.examples"
 
+
+[[python.module]]
+name = "omni.isaac.examples.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.examples.interactive"
 
@@ -27,6 +30,9 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.exam
 "isaacsim.examples.interactive" = {}
 
 [[test]]
+dependencies = [
+   "omni.isaac.core",
+]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

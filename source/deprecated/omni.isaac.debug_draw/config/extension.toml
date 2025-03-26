@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.1.3"
+version = "2.1.4"
 category = "Simulation"
 title = "Isaac Sim Debug Drawing"
 description = "Persistent Debug Drawing Helpers"
@@ -25,3 +25,6 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.util
 
 [[python.module]]
 name = "omni.isaac.debug_draw"
+
+[[python.module]]
+name = "omni.isaac.debug_draw.tests"

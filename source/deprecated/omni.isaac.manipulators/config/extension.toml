@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.0.3"
+version = "3.0.4"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
 description = "Manipulators"
@@ -28,6 +28,9 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robo
 [[python.module]]
 name = "omni.isaac.manipulators"
 
+
+[[python.module]]
+name = "omni.isaac.manipulators.tests"
 [[test]]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

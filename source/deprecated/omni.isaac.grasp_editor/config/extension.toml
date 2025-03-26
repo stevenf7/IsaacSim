@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Simulation"
 title = "Grasp Editor"
 description = "Author grasps by hand for a specific robot gripper and USD asset."
@@ -22,3 +22,12 @@ icon = "data/icon.png"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.grasp_editor."
+
+
+[[python.module]]
+name = "omni.isaac.grasp_editor.tests"
+
+[[test]]
+dependencies = [
+   "omni.isaac.core"
+]

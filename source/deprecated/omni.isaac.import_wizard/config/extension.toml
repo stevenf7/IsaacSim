@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Other"
 title = "Isaac Sim Import Wizard [alpha]"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
@@ -26,3 +26,6 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robo
 
 [[python.module]]
 name = "omni.isaac.import_wizard"
+
+[[python.module]]
+name = "omni.isaac.import_wizard.tests"

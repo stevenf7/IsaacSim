@@ -4,7 +4,7 @@ order = 0
 
 
 [package]
-version = "2.0.4"
+version = "2.0.5"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
 description="UI components for omni.isaac.conveyor"
@@ -24,6 +24,9 @@ keywords = ["kit", "example", "ui"]
 [[python.module]]
 name = "omni.isaac.conveyor.ui"
 
+
+[[python.module]]
+name = "omni.isaac.conveyor.ui.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui."
 

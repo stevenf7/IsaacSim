@@ -1,4 +1,7 @@
 # Changelog
+## [0.1.12] - 2025-03-25
+### Changed
+- Add import tests for deprecated extensions
 
 ## [0.1.11] - 2025-01-21
 ### Changed

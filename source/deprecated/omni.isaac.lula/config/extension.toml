@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.2"
+version = "4.0.3"
 category = "Simulation"
 title = "Isaac Sim Lula"
 description = "Extension that provides lula python interface"
@@ -24,5 +24,8 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 [[python.module]]
 name = "omni.isaac.lula"
 
+
+[[python.module]]
+name = "omni.isaac.lula.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_motion.lula."

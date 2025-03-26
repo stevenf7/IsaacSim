@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -23,5 +23,13 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.ui"
 
+
+[[python.module]]
+name = "omni.isaac.ui.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.gui.components."
+
+[[test]]
+dependencies = [
+   "omni.isaac.core_archive"
+]

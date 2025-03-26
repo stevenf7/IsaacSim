@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Internal"
 title = "Isaac Sim DocTest"
 description = "Test interactive Python docstrings examples"
@@ -22,5 +22,8 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.doctest"
 
+
+[[python.module]]
+name = "omni.isaac.doctest.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.test.docstring."

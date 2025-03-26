@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.0.3"
+version = "3.0.4"
 category = "Simulation"
 title = "Wheeled Robots"
 description = "This extension provides wheeled robot utilities"
@@ -23,10 +23,17 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.wheeled_robots"
 
+
+[[python.module]]
+name = "omni.isaac.wheeled_robots.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.wheeled_robots, isaacsim.robot.wheeled_robots.examples."
 
 [[test]]
+dependencies = [
+   "omni.isaac.core_archive",
+   "omni.isaac.core"
+]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

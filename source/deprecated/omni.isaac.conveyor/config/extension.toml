@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.6"
+version = "1.0.7"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility"
 description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
@@ -22,6 +22,9 @@ keywords = ["kit", "example"]
 [[python.module]]
 name = "omni.isaac.conveyor"
 
+
+[[python.module]]
+name = "omni.isaac.conveyor.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui."
 

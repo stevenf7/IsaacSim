@@ -13,4 +13,4 @@ carb.log_warn(
     "omni.isaac.franka has been deprecated in favor of isaacsim.robot.manipulators.examples.franka. Please update your code accordingly."
 )
 
-from isaacsim.robot.manipulators.examples.franka.controllers.stacking import *
+from isaacsim.robot.manipulators.examples.franka.tasks.stacking import *

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.3"
+version = "4.0.4"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -24,5 +24,14 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.core"
 
+
+[[python.module]]
+name = "omni.isaac.core.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.api"
+
+[[test]]
+dependencies = [
+   "omni.replicator.core",
+   "omni.isaac.cloner",
+]

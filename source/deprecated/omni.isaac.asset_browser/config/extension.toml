@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "A browser for Isaac Sim assets"
@@ -25,5 +25,8 @@ feature = true
 [[python.module]]
 name = "omni.isaac.asset_browser"
 
+
+[[python.module]]
+name = "omni.isaac.asset_browser.tests"
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."

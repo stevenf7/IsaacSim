@@ -22,6 +22,7 @@ repo_build.prebuild_link {
     { "python/scripts/materials", ext.target_dir .. "/omni/isaac/core/materials" },
     { "python/scripts/robots", ext.target_dir .. "/omni/isaac/core/robots" },
     { "python/scripts/tasks", ext.target_dir .. "/omni/isaac/core/tasks" },
+    { "python/tests", ext.target_dir .. "/omni/isaac/core/tests" },
 }
 
 repo_build.prebuild_copy {

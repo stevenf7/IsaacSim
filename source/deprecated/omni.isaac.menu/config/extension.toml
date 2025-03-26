@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"
@@ -25,3 +25,12 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.gui.
 
 [[python.module]]
 name = "omni.isaac.menu"
+
+[[python.module]]
+name = "omni.isaac.menu.tests"
+
+[[test]]
+dependencies = [
+   "omni.isaac.core",
+   "omni.isaac.range_sensor",
+]

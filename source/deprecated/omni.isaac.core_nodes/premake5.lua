@@ -11,4 +11,5 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },
     { "python/impl", ext.target_dir .. "/omni/isaac/core_nodes/impl" },
+    { "python/tests", ext.target_dir .. "/omni/isaac/core_nodes/tests" },
 }
