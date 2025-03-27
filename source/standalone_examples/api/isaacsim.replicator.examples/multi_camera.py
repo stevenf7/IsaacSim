@@ -22,6 +22,7 @@ from pxr import Sdf, UsdGeom
 
 NUM_FRAMES = 5
 
+
 # Save rgb image to file
 def save_rgb(rgb_data, file_name):
     rgb_img = Image.fromarray(rgb_data, "RGBA")

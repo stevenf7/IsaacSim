@@ -60,7 +60,7 @@ class LulaWorld(WorldInterface):
 
         if robot_base_moved:
             # update static obstacles
-            for (obstacle_prim, obstacle_handle) in self._static_obstacles.items():
+            for obstacle_prim, obstacle_handle in self._static_obstacles.items():
                 trans, rot = get_prim_pose_in_meters_rel_robot_base(
                     obstacle_prim, self._meters_per_unit, robot_pos, robot_rot
                 )

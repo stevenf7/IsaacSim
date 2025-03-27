@@ -40,7 +40,6 @@ class TestDifferentialRobotGraph(OmniUiTest):
         pass
 
     async def test_basic_graph_creation(self):
-
         """Test creation of basic differential drive graph structure"""
         # Click through the menu to create the graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Differential Controller")
@@ -188,7 +187,6 @@ class TestDifferentialRobotGraph(OmniUiTest):
         self.assertTrue(len(output_ports) > 0, "Tick node is not connected to new nodes")
 
     async def test_keyboard_control(self):
-
         """Test creation of basic differential drive graph structure"""
         # Click through the menu to create the graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Differential Controller")

@@ -144,7 +144,7 @@ def createTetraVoxels(voxel_dim, occupancy_filter_func):
                 else:
                     tet = src_tet
 
-                for (cx, cy, cz) in tet:
+                for cx, cy, cz in tet:
                     # mirror every other cube across all dimensions
                     wx = mx + (1 - 2 * mx) * cx
                     wy = my + (1 - 2 * my) * cy

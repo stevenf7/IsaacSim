@@ -359,7 +359,6 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
 
 
 def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
-
     """Save usd file to path, it will be overwritten with the current stage
 
     Args:

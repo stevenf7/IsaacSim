@@ -78,6 +78,7 @@ rep.AnnotatorRegistry.register_augmentation(
     "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.1, seed=None)
 )
 
+
 # Helper functions for writing images from annotator data
 def write_rgb(data, path):
     rgb_img = Image.fromarray(data, mode="RGBA")

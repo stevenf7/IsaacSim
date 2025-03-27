@@ -21,30 +21,40 @@ def register_writers():
 
     # DataVisualizationWriter
     WriterRegistry.register(DataVisualizationWriter)
-    WriterRegistry._default_writers.append(
-        "DataVisualizationWriter"
-    ) if "DataVisualizationWriter" not in WriterRegistry._default_writers else None
+    (
+        WriterRegistry._default_writers.append("DataVisualizationWriter")
+        if "DataVisualizationWriter" not in WriterRegistry._default_writers
+        else None
+    )
 
     # DOPEWriter
     WriterRegistry.register(DOPEWriter)
-    WriterRegistry._default_writers.append(
-        "DOPEWriter"
-    ) if "DOPEWriter" not in WriterRegistry._default_writers else None
+    (
+        WriterRegistry._default_writers.append("DOPEWriter")
+        if "DOPEWriter" not in WriterRegistry._default_writers
+        else None
+    )
 
     # PoseWriter
     WriterRegistry.register(PoseWriter)
-    WriterRegistry._default_writers.append(
-        "PoseWriter"
-    ) if "PoseWriter" not in WriterRegistry._default_writers else None
+    (
+        WriterRegistry._default_writers.append("PoseWriter")
+        if "PoseWriter" not in WriterRegistry._default_writers
+        else None
+    )
 
     # PytorchWriter
     WriterRegistry.register(PytorchWriter)
-    WriterRegistry._default_writers.append(
-        "PytorchWriter"
-    ) if "PytorchWriter" not in WriterRegistry._default_writers else None
+    (
+        WriterRegistry._default_writers.append("PytorchWriter")
+        if "PytorchWriter" not in WriterRegistry._default_writers
+        else None
+    )
 
     # YCBVideoWriter
     WriterRegistry.register(YCBVideoWriter)
-    WriterRegistry._default_writers.append(
-        "YCBVideoWriter"
-    ) if "YCBVideoWriter" not in WriterRegistry._default_writers else None
+    (
+        WriterRegistry._default_writers.append("YCBVideoWriter")
+        if "YCBVideoWriter" not in WriterRegistry._default_writers
+        else None
+    )

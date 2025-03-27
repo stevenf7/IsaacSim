@@ -32,6 +32,7 @@ ASSET_X_MIRRORED_LOCATIONS = [(0.5, 0, 0.3), (0.3, 0, 0.3), (0.1, 0, 0.3)]
 # Used to calculate how many frames to animate the assets to maintain the same velocity as the physics assets
 ANIMATION_DURATION = 10
 
+
 # Create a new stage with animated and physics-enabled assets with synchronized motion
 def setup_stage():
     # Create new stage

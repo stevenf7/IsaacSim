@@ -25,6 +25,7 @@ EXTENSION_FOLDER_PATH = Path(omni.kit.app.get_app().get_extension_manager().get_
 TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
 SETTINGS_PATH = "/persistent/app/stage/instanceableOnCreatingReference"
 
+
 # pylint: disable=protected-access
 class TestAssetBrowser(OmniUiTest):
     # Before running each test

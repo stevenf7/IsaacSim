@@ -32,9 +32,7 @@ class BaseMultiField:
         item = (
             self._model.get_item(self._index)
             if index is not None
-            else [default for i in range(count)]
-            if count > 1
-            else default
+            else [default for i in range(count)] if count > 1 else default
         )
         self._args = [item[i] for i in range(count)] if count != 1 else [item]
         self._field = field_type(*self._args, h_spacing=5).model

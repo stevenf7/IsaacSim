@@ -172,9 +172,9 @@ class LightBeamSensorDemo(omni.ext.IExt):
                 # Update UI labels with the new data
                 self.beam_hit_labels[i].text = f"beamhit: {beam_hit[i]}"
                 self.linear_depth_labels[i].text = f"linearDepth: {lin_depth[i]}"
-                self.hit_pos_labels[
-                    i
-                ].text = f"hitPos x: {hit_pos[i][0]}, hitPos y: {hit_pos[i][1]}, hitPos z: {hit_pos[i][2]}"
+                self.hit_pos_labels[i].text = (
+                    f"hitPos x: {hit_pos[i][0]}, hitPos y: {hit_pos[i][1]}, hitPos z: {hit_pos[i][2]}"
+                )
 
     async def create_scenario(self):
         self._assets_root_path = get_assets_root_path()

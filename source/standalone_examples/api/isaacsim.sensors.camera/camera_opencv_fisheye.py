@@ -114,6 +114,7 @@ for i in range(100):
 camera.get_current_frame()
 img = Image.fromarray(camera.get_rgba()[:, :, :3])
 
+
 # Optional step, draw the 3D points to the image plane using the OpenCV fisheye model
 def draw_points_opencv_fisheye(points3d):
     import cv2

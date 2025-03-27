@@ -35,6 +35,7 @@ from pxr import UsdGeom, UsdPhysics
 EXTENSION_FOLDER_PATH = Path(omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__))
 TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
 
+
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 # OmniUiTest is derived from omni.kit.test.AsyncTestCase
 class TestMenuAssets(OmniUiTest):

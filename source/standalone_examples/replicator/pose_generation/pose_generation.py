@@ -435,6 +435,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
     def _setup_randomizers(self):
         """Add domain randomization with Replicator Randomizers"""
+
         # Create and randomize sphere lights
         def randomize_sphere_lights():
             lights = rep.create.light(

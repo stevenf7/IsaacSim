@@ -29,6 +29,7 @@ class Attributes(Enum):
     ACCELERATION_LIMIT = (f"{_attr_prefix}:physics:AccelerationLimit", pxr.Sdf.ValueTypeNames.FloatArray)
     JERK_LIMIT = (f"{_attr_prefix}:physics:JerkLimit", pxr.Sdf.ValueTypeNames.FloatArray)
     ACTUATOR = (f"{_attr_prefix}:physics:JerkLimit", pxr.Sdf.ValueTypeNames.BoolArray)
+
     # Custom properties for name and type
     @property
     def name(self):

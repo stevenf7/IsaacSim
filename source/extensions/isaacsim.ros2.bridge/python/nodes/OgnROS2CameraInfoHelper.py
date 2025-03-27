@@ -135,7 +135,13 @@ class OgnROS2CameraInfoHelper:
 
                     # Compute stereo rectification parameters
                     if distortion_model_left == "equidistant":
-                        R1, R2, P1, P2, _, = cv.fisheye.stereoRectify(
+                        (
+                            R1,
+                            R2,
+                            P1,
+                            P2,
+                            _,
+                        ) = cv.fisheye.stereoRectify(
                             K1=np.reshape(camera_info_left.k, [3, 3]),
                             D1=np.array(camera_info_left.d),
                             K2=np.reshape(camera_info_right.k, [3, 3]),

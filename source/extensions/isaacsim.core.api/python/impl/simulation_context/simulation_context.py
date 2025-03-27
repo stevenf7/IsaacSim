@@ -964,9 +964,9 @@ class SimulationContext:
         if callback_name in self._physics_callback_functions:
             carb.log_error(f"Physics callback `{callback_name}` already exists")
             return
-        self._physics_callback_functions[
-            callback_name
-        ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_fn)
+        self._physics_callback_functions[callback_name] = (
+            self._physics_context._physx_interface.subscribe_physics_step_events(callback_fn)
+        )
         self._physics_functions[callback_name] = callback_fn
         return
 
@@ -1125,9 +1125,9 @@ class SimulationContext:
         if callback_name in self._timeline_callback_functions:
             carb.log_error(f"Timeline callback `{callback_name}` already exists")
             return
-        self._timeline_callback_functions[
-            callback_name
-        ] = self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
+        self._timeline_callback_functions[callback_name] = (
+            self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
+        )
         return
 
     def remove_timeline_callback(self, callback_name: str) -> None:
@@ -1387,6 +1387,6 @@ class SimulationContext:
 
     def _on_post_physics_ready(self, event):
         for callback_name, callback_function in self._physics_functions.items():
-            self._physics_callback_functions[
-                callback_name
-            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
+            self._physics_callback_functions[callback_name] = (
+                self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
+            )

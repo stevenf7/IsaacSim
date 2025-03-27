@@ -37,6 +37,7 @@ SEMANTICS_ANNOTATORS = (
     "occlusion",
 )
 
+
 # Possible states of the recorder
 class RecorderState(Enum):
     STOPPED = 0

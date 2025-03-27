@@ -277,7 +277,7 @@ def update_file_versions(file_path, full_content, different_versions, version_lo
         for ext, (old_ver, new_ver) in different_versions.items():
             # Replace the version in the enabled section
             # This pattern looks for the extension name followed by a version
-            pattern = rf"({ext})-{old_ver}"
+            pattern = r"(" + ext + r")-" + re.escape(old_ver)
             updated_enabled_section = re.sub(pattern, f"\\1-{new_ver}", updated_enabled_section)
 
         # Replace the old enabled section with the updated one
@@ -296,7 +296,7 @@ def update_file_versions(file_path, full_content, different_versions, version_lo
 
         for ext, (old_ver, new_ver) in different_versions.items():
             # Replace the version in the exact dependencies section
-            pattern = rf"(#\s*{ext})-{old_ver}"
+            pattern = r"(#\s*" + ext + r")-" + re.escape(old_ver)
             updated_exact_deps_section = re.sub(pattern, f"\\1-{new_ver}", updated_exact_deps_section)
 
         # Replace the old exact deps section with the updated one
@@ -322,12 +322,12 @@ def update_file_versions(file_path, full_content, different_versions, version_lo
     for ext, (old_ver, new_ver) in version_lock_changes.items():
         if old_ver is None:
             # The extension has no version lock in the first file, so we need to add one
-            pattern = rf'"{ext}"\s*=\s*\{{\s*\}}'
+            pattern = r'"' + ext + r'"\s*=\s*\{\s*\}'
             replacement = f'"{ext}" = {{version = "{new_ver}", exact = true}}'
             updated_content = re.sub(pattern, replacement, updated_content)
         else:
             # Update existing version lock
-            pattern = rf'"{ext}"\s*=\s*\{{version\s*=\s*"{old_ver}"'
+            pattern = r'"' + ext + r'"\s*=\s*\{version\s*=\s*"' + re.escape(old_ver) + r'"'
             replacement = f'"{ext}" = {{version = "{new_ver}"'
             updated_content = re.sub(pattern, replacement, updated_content)
 

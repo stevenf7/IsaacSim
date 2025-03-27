@@ -22,6 +22,7 @@ from isaacsim.storage.native import get_assets_root_path
 first_step = True
 reset_needed = False
 
+
 # initialize robot on first step, run robot advance
 def on_physics_step(step_size) -> None:
     global first_step
