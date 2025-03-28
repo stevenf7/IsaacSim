@@ -15,6 +15,7 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
+#include <isaacsim/sensors/physics/IsaacSensorTypes.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/ContactEvent.h>
 #include <omni/physx/IPhysx.h>
@@ -26,7 +27,6 @@
 #include <physxSchema/physxRigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
 
-#include <IsaacSensorTypes.h>
 #include <PxActor.h>
 
 #if defined(_WIN32)

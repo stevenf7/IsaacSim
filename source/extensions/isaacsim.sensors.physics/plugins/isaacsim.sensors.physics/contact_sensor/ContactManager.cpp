@@ -15,7 +15,7 @@
 #include <omni/physx/ContactEvent.h>
 // clang-format on
 
-#include "ContactManager.h"
+#include <isaacsim/sensors/physics/ContactManager.h>
 
 
 namespace isaacsim

@@ -1072,12 +1072,15 @@ class Camera(BaseSensor):
 
     def get_pointcloud(self, world_frame: bool = True) -> np.ndarray:
         """Get a 3D pointcloud from the camera sensor.
+
         Args:
             world_frame (bool, optional): If True, returns points in world frame.
-                                          If False, returns points in camera frame.
+                If False, returns points in camera frame.
+
         Returns:
             np.ndarray: A (N x 3) array of 3D points (X, Y, Z) in either world or camera frame,
-                       where N is the number of points.
+                where N is the number of points.
+
         Note:
             The fallback method uses the depth (distance_to_camera_plane) annotator and
             performs a perspective projection using the camera's intrinsic parameters to generate the pointcloud.

@@ -123,6 +123,33 @@ class ExtensionValidator:
                         f"Expected: {docs_path}/{required_file}"
                     )
 
+            # Check if api.rst is required based on bindings or Python implementation
+            needs_api_rst = False
+            reason = ""
+
+            # Check if bindings folder exists
+            bindings_path = self.extension_path / "bindings"
+            if bindings_path.exists():
+                needs_api_rst = True
+                reason = "contains a bindings folder"
+
+            # Check if python/impl folder contains .py files other than extension.py
+            python_impl_path = self.extension_path / "python" / "impl"
+            if python_impl_path.exists():
+                py_files = [
+                    f for f in python_impl_path.glob("*.py") if f.name != "extension.py" and f.name != "__init__.py"
+                ]
+                if py_files:
+                    needs_api_rst = True
+                    reason = "contains Python implementation files"
+
+            # If api.rst is needed but doesn't exist, add an error
+            if needs_api_rst and not (docs_path / "api.rst").exists():
+                self.errors.append(
+                    f"Missing api.rst file in docs folder for extension that {reason}\n"
+                    f"Expected: {docs_path}/api.rst"
+                )
+
     def validate_include(self):
         include_path = self.extension_path / "include"
         if include_path.exists():

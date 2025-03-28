@@ -17,8 +17,7 @@
 #include <isaacsim/core/includes/Conversions.h>
 #include <isaacsim/core/includes/Math.h>
 #include <isaacsim/core/includes/Transforms.h>
-
-#include <PrimUtils.h>
+#include <isaacsim/core/utils/PrimUtils.h>
 
 CARB_BINDINGS("isaacsim.core.utils.python")
 

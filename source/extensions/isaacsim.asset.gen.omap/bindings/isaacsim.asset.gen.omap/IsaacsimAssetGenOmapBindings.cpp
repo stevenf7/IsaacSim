@@ -50,40 +50,66 @@ PYBIND11_MODULE(_omap, m)
     // We use carb data types, must import bindings for them
     auto carbModule = py::module::import("carb");
 
-    m.doc() = "Isaac Sim Occupany map generator bindings";
+    m.doc() = R"doc(Isaac Sim Occupancy Map Generator.
+
+This module provides functionality for generating 2D and 3D occupancy maps from USD stages.
+It allows for spatial representation of environments for robotics applications such as
+navigation, path planning, and collision avoidance.
+
+Example:
+    >>> import omni
+    >>> from isaacsim.asset.gen.omap import _omap
+    >>> 
+    >>> physx = omni.physx.acquire_physx_interface()
+    >>> stage_id = omni.usd.get_context().get_stage_id()
+    >>> 
+    >>> generator = _omap.Generator(physx, stage_id)
+    >>> # 0.05m cell size, output buffer will have 4 for occupied cells, 
+    >>> # 5 for unoccupied, and 6 for cells that cannot be seen
+    >>> generator.update_settings(.05, 4, 5, 6)
+    >>> # Set location to map from and the min and max bounds to map to
+    >>> generator.set_transform((0, 0, 0), (-2, -2, 0), (2, 2, 0))
+    >>> generator.generate2d()
+    >>> # Get locations of the occupied cells in the stage
+    >>> points = generator.get_occupied_positions()
+    >>> # Get computed 2d occupancy buffer
+    >>> buffer = generator.get_buffer()
+    >>> # Get dimensions for 2d buffer
+    >>> dims = generator.get_dimensions()
+)doc";
 
 
-    py::class_<MapGenerator>(m, "Generator", R"pbdoc(
+    py::class_<MapGenerator>(m, "Generator", R"doc(Generator for creating occupancy maps from USD stages.
 
-        This class is used to generate an occupancy map for a USD stage. 
-        Assuming the stage has collision geometry information, the following code can be used to generate the occupancy map information
-        
-        Example:
-            
-            .. highlight:: python
-            .. code-block:: python
+This class is used to generate an occupancy map for a USD stage.
+Assuming the stage has collision geometry information, it can produce
+2D or 3D representations of the environment's occupied and free space.
 
-                import omni
-                from isaacsim.asset.gen.omap import _omap
+Attributes:
+    None
 
-                physx = omni.physx.acquire_physx_interface()
-                stage_id = omni.usd.get_context().get_stage_id()
-
-                generator = _omap.Generator(physx, stage_id)
-                # 0.05m cell size, output buffer will have 4 for occupied cells, 5 for unoccupied, and 6 for cells that cannot be seen
-                # this assumes your usd stage units are in m, and not cm
-                generator.update_settings(.05, 4, 5, 6)
-                # Set location to map from and the min and max bounds to map to
-                generator.set_transform((0, 0, 0), (-2, -2, 0), (2, 2, 0))
-                generator.generate2d()
-                # Get locations of the occupied cells in the stage
-                points = generator.get_occupied_positions()
-                # Get computed 2d occupancy buffer
-                buffer = generator.get_buffer()
-                # Get dimensions for 2d buffer
-                dims = generator.get_dimensions()
-    
-        )pbdoc")
+Example:
+    >>> import omni
+    >>> from isaacsim.asset.gen.omap import _omap
+    >>> 
+    >>> physx = omni.physx.acquire_physx_interface()
+    >>> stage_id = omni.usd.get_context().get_stage_id()
+    >>> 
+    >>> generator = _omap.Generator(physx, stage_id)
+    >>> # 0.05m cell size, output buffer will have 4 for occupied cells, 
+    >>> # 5 for unoccupied, and 6 for cells that cannot be seen
+    >>> # this assumes your usd stage units are in m, and not cm
+    >>> generator.update_settings(.05, 4, 5, 6)
+    >>> # Set location to map from and the min and max bounds to map to
+    >>> generator.set_transform((0, 0, 0), (-2, -2, 0), (2, 2, 0))
+    >>> generator.generate2d()
+    >>> # Get locations of the occupied cells in the stage
+    >>> points = generator.get_occupied_positions()
+    >>> # Get computed 2d occupancy buffer
+    >>> buffer = generator.get_buffer()
+    >>> # Get dimensions for 2d buffer
+    >>> dims = generator.get_dimensions()
+)doc")
         .def(py::init(
                  [](omni::physx::IPhysx* physXPtr, const long int stageId)
                  {
@@ -91,86 +117,231 @@ PYBIND11_MODULE(_omap, m)
                          pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
                      return new MapGenerator(physXPtr, stage);
                  }),
-             R"pbdoc(
+             R"doc(Initialize a new Generator instance.
 
-                 Args:
-                    arg0 Pointer to PhysX interface
-                    arg1 Stage ID for the USD stage to map
+Args:
+    physx_ptr: Pointer to PhysX interface used for collision detection.
+    stage_id: Stage ID for the USD stage to map.
 
-            )pbdoc")
-        .def("update_settings", &MapGenerator::updateSettings, R"pbdoc(
-                Updates settings used for generating the occupancy map
+Returns:
+    A new Generator instance.
+)doc")
+        .def("update_settings", &MapGenerator::updateSettings,
+             R"doc(Update the settings used for generating the occupancy map.
 
-                Args:
-                    arg0 (:obj:`float`): Size of the cell in stage units, resolution of the grid
-                    arg1 (:obj:`float`): Value used to denote an occupied cell
-                    arg2 (:obj:`float`): Value used to denote an unoccupied cell
-                    arg3 (:obj:`float`): Value used to denote unknown areas that could not be reached from the starting location
+Args:
+    cell_size (float): Size of the cell in stage units, resolution of the grid.
+    occupied_value (float): Value used to denote an occupied cell.
+    unoccupied_value (float): Value used to denote an unoccupied cell.
+    unknown_value (float): Value used to denote unknown areas that could not be reached from the starting location.
 
-            )pbdoc")
-        .def("set_transform", &MapGenerator::setTransform, R"pbdoc(
-                Set origin and bounds for mapping
+Returns:
+    None
+)doc")
+        .def("set_transform", &MapGenerator::setTransform, R"doc(Set origin and bounds for mapping.
 
-                Args:
-                    arg0 (:obj:`carb.Float3`): Origin in stage to start mapping from, must be in unoccupied space
-                    arg1 (:obj:`carb.Float3`): Minimum bound to map up to
-                    arg2 (:obj:`carb.Float3`): Maximum bound to map up to
-        )pbdoc")
-        .def("generate2d", &MapGenerator::generate2d, R"pbdoc(
-                Main function that generates a map based on the settings and transform set. Assumes that a 2d map is generated and flattens the computed data
-        )pbdoc")
-        .def("generate3d", &MapGenerator::generate3d, R"pbdoc(
-                Main function that generates a map based on the settings and transform set. Assumes 3d generation, map is not flattened
-        )pbdoc")
-        .def("get_occupied_positions", &MapGenerator::getOccupiedPositions, R"pbdoc(
+Args:
+    origin (tuple of float): Origin in stage to start mapping from, must be in unoccupied space.
+    min_bound (tuple of float): Minimum bound to map up to.
+    max_bound (tuple of float): Maximum bound to map up to.
 
-                Returns:
-                    :obj:`list` of :obj:`carb.Float3`: List of 3d points in stage coordinates from the generated map, containing occupied locations.
-        )pbdoc")
-        .def("get_free_positions", &MapGenerator::getFreePositions, R"pbdoc(
-                Returns:
-                    :obj:`list` of :obj:`carb.Float3`: List of 3d points in stage coordinates from the generated map, containing free locations.
-        )pbdoc")
-        .def("get_min_bound", &MapGenerator::getMinBound, R"pbdoc(
-                Returns:
-                    :obj:`carb.Float3`: Minimum bound for generated occupancy map instage coordinates
-        )pbdoc")
-        .def("get_max_bound", &MapGenerator::getMaxBound, R"pbdoc(
-                Returns:
-                    :obj:`carb.Float3`: Maximum bound for generated occupancy map instage coordinates
-        )pbdoc")
-        .def("get_dimensions", &MapGenerator::getDimensions, R"pbdoc(
-                Returns:
-                    :obj:`carb.Int3`: Dimensions for output buffer
-        )pbdoc")
-        .def("get_buffer", &MapGenerator::getBuffer, R"pbdoc(
-                Returns:
-                    :obj:`list` of :obj:`float`: 2D array containing values for each cell in the occupancy map. 
-        )pbdoc")
-        .def("get_colored_byte_buffer", &MapGenerator::getColoredByteBuffer, R"pbdoc(
-                Convenience function to generate an image from the occupancy map
+Returns:
+    None
+)doc")
+        .def("generate2d", &MapGenerator::generate2d, R"doc(Generate a 2D occupancy map.
 
-                Args:
-                    arg0 (:obj:`carb.Int4`): RGBA Value used to denote an occupied cell
-                    arg1 (:obj:`carb.Int4`): RGBA Value used to denote an unoccupied cell
-                    arg2 (:obj:`carb.Int4`): RGBA Value used to denote unknown areas that could not be reached from the starting location
-                Returns:
-                    :obj:`list` of :obj:`int`: Flattened buffer containing list of RGBA values for each pixel. Can be used to render as image directly
-        )pbdoc");
+Generates a map based on the settings and transform set. Assumes that 
+a 2D map is generated and flattens the computed data.
+
+Args:
+    None
+
+Returns:
+    None
+)doc")
+        .def("generate3d", &MapGenerator::generate3d, R"doc(Generate a 3D occupancy map.
+
+Generates a map based on the settings and transform set. Creates a full
+3D volumetric representation of the scene's occupancy.
+
+Args:
+    None
+
+Returns:
+    None
+)doc")
+        .def("get_occupied_positions", &MapGenerator::getOccupiedPositions, R"doc(Get positions of all occupied cells.
+
+Returns:
+    list: List of 3D points in stage coordinates from the generated map, 
+          containing occupied locations.
+)doc")
+        .def("get_free_positions", &MapGenerator::getFreePositions, R"doc(Get positions of all free (unoccupied) cells.
+
+Returns:
+    list: List of 3D points in stage coordinates from the generated map, 
+          containing free locations.
+)doc")
+        .def("get_min_bound", &MapGenerator::getMinBound, R"doc(Get the minimum boundary point of the map.
+
+Returns:
+    tuple: Minimum bound for generated occupancy map in stage coordinates.
+)doc")
+        .def("get_max_bound", &MapGenerator::getMaxBound, R"doc(Get the maximum boundary point of the map.
+
+Returns:
+    tuple: Maximum bound for generated occupancy map in stage coordinates.
+)doc")
+        .def("get_dimensions", &MapGenerator::getDimensions, R"doc(Get the dimensions of the map in cell units.
+
+Returns:
+    tuple: Dimensions for output buffer (width, height, depth).
+)doc")
+        .def("get_buffer", &MapGenerator::getBuffer, R"doc(Get the raw occupancy buffer.
+
+Returns:
+    list: 2D array containing values for each cell in the occupancy map.
+        Values correspond to the occupancy state of each cell (occupied,
+        unoccupied, or unknown) as configured in update_settings().
+)doc")
+        .def("get_colored_byte_buffer", &MapGenerator::getColoredByteBuffer, R"doc(Generate a colored visualization buffer.
+
+Creates an RGBA buffer for visualization purposes, where each cell
+is colored according to its occupancy state.
+
+Args:
+    occupied_color (tuple): RGBA Value used to denote an occupied cell.
+    unoccupied_color (tuple): RGBA Value used to denote an unoccupied cell.
+    unknown_color (tuple): RGBA Value used to denote unknown areas that could not be reached.
+
+Returns:
+    list: Flattened buffer containing list of RGBA values for each pixel. 
+          Can be used to render as image directly.
+)doc");
 
 
     defineInterfaceClass<OccupancyMap>(m, "OccupancyMap", "acquire_omap_interface", "release_omap_interface")
 
-        .def("generate", wrapInterfaceFunction(&OccupancyMap::generateMap))
-        .def("update", wrapInterfaceFunction(&OccupancyMap::update))
-        .def("set_transform", wrapInterfaceFunction(&OccupancyMap::setTransform))
-        .def("set_cell_size", wrapInterfaceFunction(&OccupancyMap::setCellSize))
-        .def("get_occupied_positions", wrapInterfaceFunction(&OccupancyMap::getOccupiedPositions))
-        .def("get_free_positions", wrapInterfaceFunction(&OccupancyMap::getFreePositions))
-        .def("get_min_bound", wrapInterfaceFunction(&OccupancyMap::getMinBound))
-        .def("get_max_bound", wrapInterfaceFunction(&OccupancyMap::getMaxBound))
-        .def("get_dimensions", wrapInterfaceFunction(&OccupancyMap::getDimensions))
-        .def("get_buffer", wrapInterfaceFunction(&OccupancyMap::getBuffer))
-        .def("get_colored_byte_buffer", wrapInterfaceFunction(&OccupancyMap::getColoredByteBuffer));
+        .def("generate", wrapInterfaceFunction(&OccupancyMap::generateMap), R"doc(Generate the occupancy map.
+
+Initializes and creates an occupancy map based on the current scene.
+This should be called after setting the transform and cell size parameters.
+
+Args:
+    None
+
+Returns:
+    None
+)doc")
+        .def("update", wrapInterfaceFunction(&OccupancyMap::update), R"doc(Update the visualization.
+
+Refreshes the visual representation of the occupancy map.
+This includes drawing the bounding box, grid, and coordinate axes.
+
+Args:
+    None
+
+Returns:
+    None
+)doc")
+        .def("set_transform", wrapInterfaceFunction(&OccupancyMap::setTransform), R"doc(Set the transform for map generation.
+
+Defines the origin and boundaries for the occupancy map in world coordinates.
+
+Args:
+    origin (tuple): Origin point in world coordinates, serves as the reference point.
+    min_point (tuple): Minimum bounds relative to origin, defines the lower corner of the map volume.
+    max_point (tuple): Maximum bounds relative to origin, defines the upper corner of the map volume.
+
+Returns:
+    None
+)doc")
+        .def("set_cell_size", wrapInterfaceFunction(&OccupancyMap::setCellSize), R"doc(Set the cell size for the map.
+
+Configures the resolution of the occupancy map by setting the size of each cell.
+
+Args:
+    cell_size (float): Size of each cell in meters.
+
+Returns:
+    None
+)doc")
+        .def("get_occupied_positions", wrapInterfaceFunction(&OccupancyMap::getOccupiedPositions),
+             R"doc(Get positions of occupied cells.
+
+Retrieves the world positions of all cells that are marked as occupied.
+
+Args:
+    None
+
+Returns:
+    list: List of 3D positions representing the centers of occupied cells.
+)doc")
+        .def("get_free_positions", wrapInterfaceFunction(&OccupancyMap::getFreePositions), R"doc(Get positions of free cells.
+
+Retrieves the world positions of all cells that are marked as free (unoccupied).
+
+Args:
+    None
+
+Returns:
+    list: List of 3D positions representing the centers of free cells.
+)doc")
+        .def("get_min_bound", wrapInterfaceFunction(&OccupancyMap::getMinBound), R"doc(Get minimum bounds of the map.
+
+Retrieves the minimum coordinate values of the occupancy map's bounding box.
+
+Args:
+    None
+
+Returns:
+    tuple: Minimum bounds as (x, y, z) in world coordinates.
+)doc")
+        .def("get_max_bound", wrapInterfaceFunction(&OccupancyMap::getMaxBound), R"doc(Get maximum bounds of the map.
+
+Retrieves the maximum coordinate values of the occupancy map's bounding box.
+
+Args:
+    None
+
+Returns:
+    tuple: Maximum bounds as (x, y, z) in world coordinates.
+)doc")
+        .def("get_dimensions", wrapInterfaceFunction(&OccupancyMap::getDimensions), R"doc(Get dimensions of the map in cells.
+
+Retrieves the number of cells along each axis of the occupancy map.
+
+Args:
+    None
+
+Returns:
+    tuple: Dimensions as (width, height, depth), where each component represents 
+           the number of cells along that axis.
+)doc")
+        .def("get_buffer", wrapInterfaceFunction(&OccupancyMap::getBuffer), R"doc(Get the occupancy buffer.
+
+Retrieves the raw occupancy values for all cells in the map.
+
+Args:
+    None
+
+Returns:
+    list: Vector of cell values, where each value indicates the occupancy state
+         (typically 1.0 for occupied, 0.0 for free, and 0.5 for unknown).
+)doc")
+        .def("get_colored_byte_buffer", wrapInterfaceFunction(&OccupancyMap::getColoredByteBuffer),
+             R"doc(Get colored byte buffer for visualization.
+
+Generates a buffer of RGBA color values for visualization purposes.
+Each cell in the occupancy map is assigned a color based on its state.
+
+Args:
+    occupied (tuple): Color for occupied cells as RGBA integers (0-255).
+    unoccupied (tuple): Color for unoccupied cells as RGBA integers (0-255).
+    unknown (tuple): Color for unknown cells as RGBA integers (0-255).
+
+Returns:
+    list: Vector of byte values representing RGBA colors for each cell in the map.
+)doc");
 }
 }

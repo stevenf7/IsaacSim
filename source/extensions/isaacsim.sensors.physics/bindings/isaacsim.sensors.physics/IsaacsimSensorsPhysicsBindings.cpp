@@ -12,12 +12,12 @@
 #include <carb/BindingsPythonUtils.h>
 #include <carb/BindingsUtils.h>
 
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <IPhysicsSensor.h>
 #include <string>
 CARB_BINDINGS("isaacsim.sensors.physics.python")
 

@@ -14,11 +14,23 @@
 #include <pxr/base/tf/patternMatcher.h>
 // clang-format on
 
+#include <isaacsim/core/utils/PrimUtils.h>
 #include <pxr/usd/usdPhysics/articulationRootAPI.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
-#include <PrimUtils.h>
-
+/**
+ * @brief Implementation of findMatchingChildren function.
+ * @details
+ * Finds all immediate children of a root prim whose names match the provided pattern.
+ * Uses TfPatternMatcher for pattern matching with case-insensitive and glob-enabled options.
+ *
+ * @param[in] root The parent prim whose children will be searched.
+ * @param[in] pattern The name pattern to match against child prim names.
+ * @param[out] primsRet Vector that will be populated with matching child prims.
+ *
+ * @note If the root prim is invalid, the function returns immediately.
+ * @note This function only searches immediate children, not descendants further down the hierarchy.
+ */
 void isaacsim::core::utils::findMatchingChildren(pxr::UsdPrim root,
                                                  const std::string& pattern,
                                                  std::vector<pxr::UsdPrim>& primsRet)
@@ -39,7 +51,30 @@ void isaacsim::core::utils::findMatchingChildren(pxr::UsdPrim root,
     }
 }
 
-
+/**
+ * @brief Implementation of findMatchingPrimPaths function.
+ * @details
+ * Performs a hierarchical search through a USD stage to find prims matching a path pattern.
+ * The pattern is split into path components, and matching is performed level by level.
+ * Optionally filters results by specified API schemas.
+ *
+ * The algorithm works as follows:
+ * 1. Splits the pattern into path components.
+ * 2. Prepares each component for pattern matching.
+ * 3. Searches the hierarchy level by level, matching each component.
+ * 4. Optionally filters by API schema type.
+ * 5. Returns the paths of matching prims.
+ *
+ * @param[in] pattern Path pattern to match against prim paths.
+ * @param[in] stageId ID of the USD stage to search.
+ * @param[in] api Optional API schema filter. When specified, only returns prims with the given API.
+ *
+ * @return Vector of strings containing paths of matching prims.
+ *
+ * @throws std::invalid_argument If the stage ID is invalid or the API type is not supported.
+ *
+ * @note The pattern supports standard glob-style wildcards for matching path components.
+ */
 std::vector<std::string> isaacsim::core::utils::findMatchingPrimPaths(const std::string& pattern,
                                                                       long int stageId,
                                                                       const std::string& api)

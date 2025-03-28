@@ -70,7 +70,7 @@ project_ext_bindings {
     src = ogn.bindings_path,
     target_subdir = ogn.bindings_target_path,
 }
-add_files("bindings", "bindings")
+add_files("bindings", "bindings/*.*")
 add_files("python", "python/*.py")
 add_files("python/tests", "python/tests/*.py")
 

@@ -20,9 +20,6 @@
 #include <omni/usd/UtilsIncludes.h>
 // clang-format on
 
-#include "ImuSensor.h"
-
-#include "IPhysicsSensor.h"
 #include "isaacsim/core/includes/Pose.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
 
@@ -32,6 +29,8 @@
 #include <carb/logging/Log.h>
 
 #include <isaacsim/core/includes/Conversions.h>
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
+#include <isaacsim/sensors/physics/ImuSensor.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>

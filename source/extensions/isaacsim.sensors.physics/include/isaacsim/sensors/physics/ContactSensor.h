@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include "../core/IsaacSensorComponent.h"
-#include "ContactManager.h"
-#include "IPhysicsSensor.h"
+#include "isaacsim/sensors/physics/ContactManager.h"
+#include "isaacsim/sensors/physics/IsaacSensorComponent.h"
 
 #include <isaacSensorSchema/isaacContactSensor.h>
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>

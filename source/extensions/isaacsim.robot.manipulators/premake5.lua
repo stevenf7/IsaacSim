@@ -7,21 +7,6 @@ add_ogn_dependencies(ogn, { "python/nodes" })
 
 project_ext_ogn(ext, ogn)
 
-project_ext_bindings {
-    ext = ext,
-    project_name = ogn.python_project,
-    module = ogn.bindings_module,
-    src = ogn.bindings_path,
-    target_subdir = ogn.bindings_target_path,
-}
-add_files("python", "python/*.py")
-add_files("python/controllers", "python/controllers/*.py")
-add_files("python/nodes", "python/nodes/*.py")
-add_files("python/manipulators", "python/manipulators/*.py")
-add_files("python/grippers", "python/grippers/*.py")
-add_files("python/tests", "python/tests/*.py")
-add_files("python/impl", "python/impl/*.py")
-
 -- Add the standard dependencies all OGN projects have
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },

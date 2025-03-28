@@ -22,7 +22,22 @@ PYBIND11_MODULE(_isaacsim_asset_gen_conveyor, m)
 {
     using namespace carb;
 
-    m.doc() = "pybind11 isaacsim.asset.gen.conveyor bindings";
+    m.doc() = R"pbdoc(
+        Internal interface that is automatically called when the extension is loaded so that Omnigraph nodes are registered.
+
+        Example:
+
+            # import  isaacsim.asset.gen.conveyor.bindings._isaacsim_asset_gen_conveyor as _isaacsim_asset_gen_conveyor
+
+            # Acquire the interface
+            interface = _isaacsim_asset_gen_conveyor.acquire_interface()
+
+            # Use the interface
+            # ...
+
+            # Release the interface
+            _isaacsim_asset_gen_conveyor.release_interface(interface)
+    )pbdoc";
 
     defineInterfaceClass<isaacsim::asset::gen::conveyor::IOmniIsaacConveyor>(
         m, "IOmniIsaacConveyor", "acquire_interface", "release_interface");

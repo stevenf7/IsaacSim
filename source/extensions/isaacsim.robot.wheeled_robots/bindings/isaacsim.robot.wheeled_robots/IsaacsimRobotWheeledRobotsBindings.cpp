@@ -40,7 +40,22 @@ PYBIND11_MODULE(_isaacsim_robot_wheeled_robots, m)
     using namespace carb;
     using namespace isaacsim::robot::wheeled_robots;
 
-    m.doc() = "pybind11 isaacsim.robot.wheeled_robots bindings";
+    m.doc() = R"pbdoc(
+        Internal interface that is automatically called when the extension is loaded so that Omnigraph nodes are registered.
+
+        Example:
+
+            # import  isaacsim.robot.wheeled_robots.bindings._isaacsim_robot_wheeled_robots as _isaacsim_robot_wheeled_robots
+
+            # Acquire the interface
+            interface = _isaacsim_robot_wheeled_robots.acquire_wheeled_robots_interface()
+
+            # Use the interface
+            # ...
+
+            # Release the interface
+            _isaacsim_robot_wheeled_robots.release_wheeled_robots_interface(interface)
+    )pbdoc";
 
     defineInterfaceClass<IWheeledRobots>(
         m,

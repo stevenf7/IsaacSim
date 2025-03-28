@@ -14,11 +14,11 @@
 
 #include "isaacsim/core/includes/UsdUtilities.h"
 
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <omni/fabric/FabricUSD.h>
 #include <pxr/base/gf/quatd.h>
 #include <pxr/base/gf/vec3d.h>
 
-#include <IPhysicsSensor.h>
 #include <OgnIsaacReadIMUDatabase.h>
 
 
