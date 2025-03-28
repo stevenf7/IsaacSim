@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "4.2.23"
+version = "4.2.24"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.api"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
@@ -19,6 +15,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.prims" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.core.utils" = {}
 "isaacsim.core.version" = {}
 "isaacsim.storage.native" = {}
@@ -33,7 +30,6 @@ writeTarget.kit = true
 "omni.pip.compute" = {} # scipy
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
-"isaacsim.core.simulation_manager" = {}
 
 [[python.module]]
 name = "isaacsim.core.api"

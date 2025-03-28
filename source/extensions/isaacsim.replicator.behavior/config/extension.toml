@@ -1,20 +1,15 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.10"
+version = "1.0.11"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Behavior Scripts"
 description = "The extension provides various randomization and event scripts for Synthetic Data Generation (SDG) workflows. The scripts can be attached to prims providing modular, persitent, and shareable behaviors. The scripts use exposed variables as custom USD properties which can be modified throught the UI or programmatically."
-authors = ["Isaac Sim Team"]
+authors = ["ahaidu@nvidia.com", "hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.behavior"
 keywords = ["isaac", "behavior scripts", "replicator", "sdg", "randomization"]
 changelog = "docs/CHANGELOG.md"
 readme  = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
+icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.storage.native" = {}
@@ -22,15 +17,14 @@ preview_image = "data/preview.png"
 "omni.physx" = {}
 "omni.usd" = {}
 
-
 [[python.module]]
 name = "isaacsim.replicator.behavior"
 
 [[test]]
 dependencies = [
+    "isaacsim.core.api",
     "omni.kit.test",
     "omni.replicator.core",
-    "isaacsim.core.api",
 ]
 
 args = [

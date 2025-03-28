@@ -1,30 +1,26 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.2.13"
+version = "2.2.14"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.utils"
 keywords = ["isaac", "utils"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
 
 [dependencies]
-"omni.physx" = {}
-"omni.usdphysics" = {}
-"omni.isaac.dynamic_control" = {}
-"isaacsim.storage.native" = {}
 "isaacsim.core.deprecation_manager" = {}
-"omni.usd.schema.semantics" = {}
+"isaacsim.storage.native" = {}
+"omni.isaac.dynamic_control" = {}
 "omni.isaac.ml_archive" = {}
+"omni.physx" = {}
+"omni.usd.schema.semantics" = {}
+"omni.usdphysics" = {}
 "omni.warp.core" = {}
 
 [[python.module]]
@@ -33,12 +29,11 @@ name = "isaacsim.core.utils"
 [[python.module]]
 name = "isaacsim.core.utils.tests"
 
-
 [[test]]
 dependencies = [
-    "omni.replicator.core",
     "isaacsim.core.api",
     "isaacsim.sensors.camera",
+    "omni.replicator.core",
 ]
 
 args = [

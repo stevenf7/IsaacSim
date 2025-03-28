@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.tf_viewer"
 keywords = ["isaac", "ROS2", "tf"]
 changelog = "docs/CHANGELOG.md"
@@ -15,12 +11,15 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.tf_viewer."
+
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.ros2.tf_viewer" = {}
 
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.tf_viewer."
+[[python.module]]
+name = "omni.isaac.tf_viewer.tests"
 
 [[test]]
 args = [
@@ -32,6 +31,3 @@ name = "startup"
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]
-
-[[python.module]]
-name = "omni.isaac.tf_viewer.tests"

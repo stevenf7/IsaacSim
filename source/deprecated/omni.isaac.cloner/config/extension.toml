@@ -1,36 +1,29 @@
-[cloner]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "Cloner"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.cloner"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 writeTarget.kit = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.cloner"
 
 [dependencies]
 "isaacsim.core.cloner" = {}
 "isaacsim.core.deprecation_manager" = {}
 
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.cloner"
-
 [[python.module]]
 name = "omni.isaac.cloner"
 
-
-
 [[python.module]]
 name = "omni.isaac.cloner.tests"
-
 
 [[test]]
 dependencies = [

@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.6"
+version = "2.0.7"
 category = "Simulation"
 title = "Isaac Sim Debug Drawing"
 description = "Persistent Debug Drawing Helpers"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.util.debug_draw"
 keywords = ["isaac", "physics", "inspect",]
 changelog = "docs/CHANGELOG.md"
@@ -21,12 +17,10 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-# needed to access drawing interfaces:
-"omni.kit.renderer.core" = {}
 "omni.hydra.rtx" = {}
-# The generated tests will make use of these modules
-"omni.usd" = {}
 "omni.kit.async_engine" = {}
+"omni.kit.renderer.core" = {}
+"omni.usd" = {}
 
 [[python.module]]
 name = "isaacsim.util.debug_draw"
@@ -34,15 +28,14 @@ name = "isaacsim.util.debug_draw"
 [[python.module]]
 name = "isaacsim.util.debug_draw.tests"
 
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
 # Watch the .ogn files for hot reloading (only for Python files)
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
-
-
-[[native.plugin]]
-path = "bin/*.plugin"
-recursive = false
 
 [[test]]
 stdoutFailPatterns.exclude = [

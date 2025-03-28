@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Utility"
 title = "VS Code integration"
 description = "VS Code version of Omniverse's script editor"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.vscode"
 keywords = ["isaac", "python", "vscode", "editor"]
 changelog = "docs/CHANGELOG.md"
@@ -15,9 +11,9 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-[dependencies]
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.code_editor.vscode" = {}
-
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.code_editor.vscode."
+
+[dependencies]
+"isaacsim.code_editor.vscode" = {}
+"isaacsim.core.deprecation_manager" = {}

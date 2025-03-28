@@ -1,24 +1,20 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Scene Blox"
 description = "The extension implements SceneBlox, a rule-based randomized scene generation workflow using the wave function collapse algorithm."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com"]
 keywords = ["isaac", "omniverse", "scene blox"]
 changelog = "docs/CHANGELOG.md"
 readme  = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.storage.native" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.replicator.scene_blox"

@@ -1,20 +1,15 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.2.10"
+version = "2.2.11"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensors"
 description = "Isaac Sim PhysX Sensors extension provides APIs for PhysX-raycast-based lidars and sensors including Proximity Sensor and Lightbeam Sensor."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "adevalla@nvidia.com", "stevfeng@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physx"
 keywords = ["isaac", "lula", "rmp", "physx", "sensor", "lidar"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
+icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.core.api" = {}

@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.9] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [2.1.8] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus

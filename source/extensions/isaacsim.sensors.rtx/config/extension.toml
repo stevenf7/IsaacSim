@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "14.2.1"
+version = "14.2.2"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "adevalla@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.rtx"
 keywords = ["isaac", "physics", "robotics"]
 changelog = "docs/CHANGELOG.md"
@@ -24,8 +20,8 @@ writeTarget.kit = true
 "isaacsim.robot.schema" = {}
 "isaacsim.storage.native" = {}
 "isaacsim.util.debug_draw" = {}
-"omni.graph.action" = {}
 "omni.graph" = {}
+"omni.graph.action" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.replicator.core" = {}
@@ -35,8 +31,8 @@ writeTarget.kit = true
 "omni.sensors.nv.radar" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # Needed for simulation to occur
-"omni.usd.schema.omni_sensors" = {}
 "omni.usd" = {} # needed for call to add aov
+"omni.usd.schema.omni_sensors" = {}
 "usdrt.scenegraph" = {}
 
 [[python.module]]
@@ -62,7 +58,8 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${isaacsim.sensors.rtx}/data/lidar_configs/SLAMTEC/",
     "${isaacsim.sensors.rtx}/data/lidar_configs/Velodyne/",
     "${isaacsim.sensors.rtx}/data/lidar_configs/ZVISION/",
-    "${isaacsim.sensors.rtx}/data/lidar_configs/"]
+    "${isaacsim.sensors.rtx}/data/lidar_configs/"
+]
 
 # app.sensors.nv.lidar.outputBufferOnGPU = true
 app.sensors.nv.lidar.auxOutputType = "EXTRA"

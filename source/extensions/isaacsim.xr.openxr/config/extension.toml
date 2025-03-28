@@ -3,16 +3,14 @@
 # https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
 #
 
-[core]
-reloadable = true
-order = 0
+
 
 [package]
-version = "0.2.8"
+version = "0.2.9"
 category = "other"
 title = "Isaac Sim OpenXR support"
 description = "Additional APIs for integrating Isaac Sim and OpenXR for robotics"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "rwiltz@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.xr.openxr"
 keywords = ["isaac", "xr", "openxr"]
 changelog = "docs/CHANGELOG.md"
@@ -21,10 +19,9 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.xr.system.openxr" = {}
 "omni.kit.xr.profile.ar" = {}
+"omni.kit.xr.system.openxr" = {}
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.xr.openxr"
 

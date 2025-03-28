@@ -1,9 +1,9 @@
 [package]
-version = "2.0.7"
+version = "2.0.8"
 category = "Internal"
 title = "Isaac Sim About Window"
 description="Show application/build information."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.app.about"
 keywords = ["isaac", "about"]
 changelog = "docs/CHANGELOG.md"
@@ -12,12 +12,10 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.client" = {}
-"omni.kit.uiapp" = {}
-"omni.kit.menu.utils" = {}
 "isaacsim.core.version" = {}
+"omni.client" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.app.about"
-
-

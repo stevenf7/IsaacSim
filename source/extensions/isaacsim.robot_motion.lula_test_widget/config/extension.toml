@@ -1,27 +1,22 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.5"
+version = "1.0.6"
 category = "Simulation"
 title = "Lula Test Widget"
 description = "Run Simple Tests Using Lula Algorithms"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "arudich@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_motion.lula_test_widget"
 keywords = ["isaac", "lula"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
+icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.robot_motion.lula" = {}
 "isaacsim.robot_motion.motion_generation" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.robot_motion.lula_test_widget"

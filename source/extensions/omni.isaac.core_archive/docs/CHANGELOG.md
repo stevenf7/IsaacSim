@@ -1,4 +1,8 @@
 # Changelog
+## [2.5.3] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [2.5.2] - 2025-03-04
 ### Changed
 - Update to kit 107.1 and fix build issues

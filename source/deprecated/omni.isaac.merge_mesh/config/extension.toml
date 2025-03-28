@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.4"
+version = "2.0.5"
 category = "Simulation"
 title = "Isaac Sim Merge Mesh"
 description = "Inspect Physics Merge Mesh Utility"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.merge_mesh"
 keywords = ["isaac", "merge", "mesh",]
 changelog = "docs/CHANGELOG.md"
@@ -15,15 +11,15 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-[[python.module]]
-name = "omni.isaac.merge_mesh"
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.util.merge_mesh."
 
-
-[[python.module]]
-name = "omni.isaac.merge_mesh.tests"
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.util.merge_mesh" = {}
 
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.util.merge_mesh."
+[[python.module]]
+name = "omni.isaac.merge_mesh"
+
+[[python.module]]
+name = "omni.isaac.merge_mesh.tests"

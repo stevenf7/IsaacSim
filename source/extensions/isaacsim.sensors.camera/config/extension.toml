@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "0.3.1"
+version = "0.3.2"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation"
 description = "Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com", "adevalla@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.camera"
 keywords = ["isaac", "physics", "robotics"]
 changelog = "docs/CHANGELOG.md"
@@ -27,8 +23,8 @@ writeTarget.kit = true
 "omni.replicator.core" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # Needed for simulation to occur
-"omni.usd.schema.omni_lens_distortion" = {}
 "omni.usd" = {} # needed for call to add aov
+"omni.usd.schema.omni_lens_distortion" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.camera"
@@ -36,8 +32,6 @@ name = "isaacsim.sensors.camera"
 [[python.module]]
 name = "isaacsim.sensors.camera.tests"
 public = false
-
-[settings]
 
 [[test]]
 timeout = 900

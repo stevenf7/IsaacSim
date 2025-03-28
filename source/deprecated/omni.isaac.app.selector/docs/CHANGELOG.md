@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.4] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [3.0.3] - 2025-03-20
 ### Changed
 - Fix version number for deprecation message

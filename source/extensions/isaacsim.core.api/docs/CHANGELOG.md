@@ -1,7 +1,11 @@
 # Changelog
+## [4.2.24] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [4.2.23] - 2025-03-26
 ### Fixed
-- CCD is not supported when using a cuda device, CCD is now automatically disabled if a cuda device is requested. 
+- CCD is not supported when using a cuda device, CCD is now automatically disabled if a cuda device is requested.
 
 ## [4.2.22] - 2025-03-24
 ### Changed

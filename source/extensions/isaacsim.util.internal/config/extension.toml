@@ -1,27 +1,23 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.1.1"
+version = "2.1.2"
 category = "Simulation"
 title = "Isaac Sim Internal Utils"
 description = "Internal Utilities"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.util.internal"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"omni.kit.menu.utils" = {}
-"omni.kit.widget.stage" = {}
-"omni.kit.viewport.window" = {}
 "isaacsim.core.api" = {}
 "isaacsim.gui.components" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.viewport.window" = {}
+"omni.kit.widget.stage" = {}
 
 [[python.module]]
 name = "isaacsim.util.internal"
@@ -30,7 +26,7 @@ name = "isaacsim.util.internal"
 name = "isaacsim.util.internal.tests"
 
 [[test]]
-dependencies = [
-    "isaacsim.storage.native" # test only
-]
 timeout = 900
+dependencies = [
+    "isaacsim.storage.native"
+]

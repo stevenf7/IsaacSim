@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "0.2.2"
+version = "0.2.3"
 category = "Utility"
 title = "Deprecation manager"
 description = "Manage deprecated OmniGraph nodes and app/extension settings"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.deprecation_manager"
 keywords = ["isaacsim", "deprecation", "manager"]
 changelog = "docs/CHANGELOG.md"
@@ -16,15 +12,15 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.usd" = {}
 "omni.graph.core" = { optional = true }
 "omni.kit.notification_manager" = { optional = true }
+"omni.usd" = {}
 
 [[python.module]]
 name = "isaacsim.core.deprecation_manager"
 
 [settings]
-# settings
+# list of deprecated settings and their replacements
 exts."isaacsim.core.deprecation_manager".settings = [
     # omni.isaac.benchmark.services -> isaacsim.benchmark.services
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/metrics_output_folder", new = "/exts/isaacsim.benchmark.services/metrics/metrics_output_folder", update = true },
@@ -55,7 +51,7 @@ exts."isaacsim.core.deprecation_manager".settings = [
     { deprecated = "/exts/omni.isaac.asset_browser/data/timeout", new = "/exts/isaacsim.asset.browser/data/timeout", update = true },
     { deprecated = "/exts/omni.isaac.asset_browser/visible_after_startup", new = "/exts/isaacsim.asset.browser/visible_after_startup", update = true },
 ]
-# OmniGraph nodes
+# List of deprecated OmniGraph nodes and their replacements
 exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.isaac.conveyor", new = "isaacsim.asset.gen.conveyor" },
     { deprecated = "omni.isaac.core_nodes", new = "isaacsim.core.nodes" },
@@ -90,5 +86,3 @@ exts."isaacsim.core.deprecation_manager".omnigraph = [
     { deprecated = "omni.replicator.isaac.OgnDope", new = "isaacsim.replicator.writers.OgnDope" },
     { deprecated = "omni.replicator.isaac.OgnPose", new = "isaacsim.replicator.writers.OgnPose" },
 ]
-
-

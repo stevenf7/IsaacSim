@@ -1,17 +1,12 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.2.1"
+version = "1.2.2"
 category = "Internal"
 title = "Isaac Sim Common Includes"
 description = "Extension containing common isaac sim headers"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.includes"
 keywords = ["isaac", "core", "includes"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
-

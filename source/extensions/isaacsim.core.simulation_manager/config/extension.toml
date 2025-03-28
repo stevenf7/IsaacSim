@@ -3,27 +3,24 @@
 # https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
 #
 
-[core]
-reloadable = true
-order = 0
+
 
 [package]
-version = "0.3.10"
+version = "0.3.11"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
+authors = ["aserranomuno@nvidia.com"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-
 [dependencies]
+"isaacsim.core.utils" = {}
 "omni.physx.stageupdate" = {}
 "omni.physx.tensors" = {}
-"isaacsim.core.utils" = {}
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.core.simulation_manager"
 

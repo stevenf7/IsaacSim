@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "A browser for Isaac Sim assets"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.asset_browser"
 keywords = ["isaac", "browser", "asset"]
 changelog = "docs/CHANGELOG.md"
@@ -17,16 +13,15 @@ icon = "data/icon.svg"
 feature = true
 # writeTarget.kit = true
 
-[dependencies]
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.asset.browser" = {}
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."
 
-# Main python module this extension provides, it will be publicly available as "import omni.isaac.asset_browser".
+[dependencies]
+"isaacsim.asset.browser" = {}
+"isaacsim.core.deprecation_manager" = {}
+
 [[python.module]]
 name = "omni.isaac.asset_browser"
 
-
 [[python.module]]
 name = "omni.isaac.asset_browser.tests"
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."

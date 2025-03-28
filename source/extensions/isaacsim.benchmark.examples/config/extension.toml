@@ -1,34 +1,30 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.1.2"
+version = "1.1.3"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ssulkunte@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.benchmark.examples"
 keywords = ["isaac", "benchmark", "analyze"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
 "isaacsim.benchmark.services" = {}
+"isaacsim.core.api" = {}
+"isaacsim.core.nodes" = {}
+"isaacsim.robot.wheeled_robots" = {}
 "isaacsim.sensors.camera" = {}
 "isaacsim.sensors.physx" = {}
 "isaacsim.sensors.rtx" = {}
+"omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.graph.ui" = {}
-"omni.graph" = {}
 "omni.hydra.rtx"= {}
 "omni.isaac.core_archive" = {} # pulls in nvsmi
-"isaacsim.core.nodes" = {}
-"isaacsim.core.api" = {}
-"isaacsim.robot.wheeled_robots" = {}
 "omni.kit.material.library"= {}
 "omni.kit.primitive.mesh"= {}
 "omni.kit.viewport.utility"= {}
@@ -38,17 +34,15 @@ writeTarget.kit = true
 [[python.module]]
 name = "isaacsim.benchmark.examples"
 
-
 [settings]
 # Whether to add a randomly generated string as a prefix to the output filename to distinguish runs.
 exts."isaacsim.benchmark.examples".num_app_updates = 1
 
 [[test]]
+timeout = 900
 # these are not cached
 dependencies = [
 ]
-
-timeout = 900
 args = [
     "--vulkan",
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
@@ -94,7 +88,6 @@ stdoutFailPatterns.exclude = [
     "*Failed to evaluate DLSS feature*", # Ada multi gpu doesn't support this yet
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
-
 
 [[test]]
 name = "startup"

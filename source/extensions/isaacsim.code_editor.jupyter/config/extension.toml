@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.9"
+version = "1.0.10"
 category = "Utility"
 title = "Jupyter notebook integration"
 description = "Jupyter notebook version of Omniverse's script editor"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.code_editor.jupyter"
 keywords = ["isaac", "python", "jupyter", "notebook"]
 changelog = "docs/CHANGELOG.md"
@@ -16,9 +12,9 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = { optional = true }
-"omni.kit.notification_manager" = { optional = true }
 "isaacsim.core.deprecation_manager" = {}
+"omni.kit.notification_manager" = { optional = true }
+"omni.kit.uiapp" = { optional = true }
 
 [[python.module]]
 name = "isaacsim.code_editor.jupyter"

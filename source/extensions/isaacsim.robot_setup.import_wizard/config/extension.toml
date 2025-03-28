@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.6"
+version = "1.0.7"
 category = "Other"
 title = "Isaac Sim Import Wizard [alpha]"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.import_wizard"
 keywords = ["isaac","wizard","import"]
 changelog = "docs/CHANGELOG.md"

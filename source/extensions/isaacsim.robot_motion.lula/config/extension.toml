@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "4.0.4"
+version = "4.0.5"
 category = "Simulation"
 title = "Isaac Sim Lula"
 description = "Extension that provides lula python interface"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_motion.lula"
 keywords = ["isaac", "lula", "rmp"]
 changelog = "docs/CHANGELOG.md"
@@ -29,6 +25,7 @@ name = "isaacsim.robot_motion.lula"
 
 [[python.module]]
 name = "isaacsim.robot_motion.lula.tests"
+
 [[test]]
 dependencies = [
     "omni.kit.test"

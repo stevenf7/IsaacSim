@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.9] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [0.1.8] - 2025-03-20
 ### Changed
 - Fix issues with duplicate extension startup from extra imports

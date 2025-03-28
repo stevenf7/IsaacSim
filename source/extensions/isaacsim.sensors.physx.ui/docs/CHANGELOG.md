@@ -1,4 +1,7 @@
 # Changelog
+## [2.2.3] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
 
 ## [2.2.2] - 2025-02-14
 ### Added

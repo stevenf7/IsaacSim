@@ -1,22 +1,22 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "4.0.5"
+version = "4.0.6"
 category = "Simulation"
 title = "Reinforcement Learning Inference Example for Robots in Isaac Sim"
 description = "The Policy Based Robot Control Examples extension provides utilities for deploying reinforcement learning policies in Isaac Sim, as well as locomotion examples for humanoid and quadruped robots."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.policy.examples"
 keywords = ["isaac", "robot", "quadruped", "humanoid", "policy", "inference"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.core.api" = {}
-"isaacsim.sensors.physics" = {}
 "isaacsim.core.nodes" = {}
+"isaacsim.sensors.physics" = {}
 "isaacsim.storage.native" = {}
 
 [[python.module]]

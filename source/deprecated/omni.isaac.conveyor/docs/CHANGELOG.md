@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.8] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [1.0.7] - 2025-03-25
 ### Changed
 - Add import tests for deprecated extensions

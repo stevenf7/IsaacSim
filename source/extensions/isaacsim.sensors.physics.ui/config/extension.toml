@@ -1,19 +1,15 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "0.1.3"
+version = "0.1.4"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation UI Components"
 description = "Isaac Sim Physics Sensor Simulation UI Components extension provides UI components for Isaac Sim physics-based sensor simulation, eg. menu options."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "adevalla@nvidia.com", "stevfeng@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physics.ui"
 keywords = ["isaac", "physics", "robotics", "ui"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]

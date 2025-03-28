@@ -1,29 +1,25 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.2"
+version = "2.0.3"
+category = "Simulation"
 title = "Isaac Sim Synthetic Data Recorder"
 description = "Tool to record synthetic data"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.synthetic_recorder"
 keywords = ["isaac", "synthetic", "recorder"]
 changelog = "docs/CHANGELOG.md"
-category = "Simulation"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
-[dependencies]
-"isaacsim.replicator.synthetic_recorder" = {}
-"isaacsim.core.deprecation_manager" = {}
-
-[[python.module]]
-name = "omni.isaac.synthetic_recorder"
+icon = "data/icon.png"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.replicator.synthetic_recorder."
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.replicator.synthetic_recorder" = {}
+
+[[python.module]]
+name = "omni.isaac.synthetic_recorder"
 
 [[test]]
 args = [

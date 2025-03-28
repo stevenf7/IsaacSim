@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.17] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [2.0.16] - 2025-03-20
 ### Changed
 - Improve doxygen docstrings

@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.11] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [2.0.10] - 2025-03-05
 ### Changed
 - Update extension codebase to adhere to isaac sim extension structure and file naming  guidelines

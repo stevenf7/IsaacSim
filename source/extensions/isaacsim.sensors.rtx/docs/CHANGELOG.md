@@ -1,4 +1,8 @@
 # Changelog
+## [14.2.2] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [14.2.1] - 2025-03-24
 ### Changed
 - Migrate to Events 2.0

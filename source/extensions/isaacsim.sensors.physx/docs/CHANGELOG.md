@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.11] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [2.2.10] - 2025-03-17
 ### Changed
 - Cleanup and rename BridgeApplication to PrimManager for clarity

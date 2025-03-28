@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.1.8"
+version = "2.1.9"
 category = "Simulation"
 title = "Wheeled Robots UI"
 description = "This extension provides the UI elements for the wheeled_robots extension"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.wheeled_robots"
 keywords = ["isaac", "physics", "analyze", "tune", "ui"]
 changelog = "docs/CHANGELOG.md"
@@ -18,17 +14,15 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
+"isaacsim.core.deprecation_manager" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.robot.wheeled_robots" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"isaacsim.robot.wheeled_robots" = {}
-"isaacsim.core.deprecation_manager" = {}
 "omni.kit.menu.utils" = {}
-
 
 [[python.module]]
 name = "isaacsim.robot.wheeled_robots.ui"
-
 
 [[test]]
 dependencies = []
@@ -40,7 +34,6 @@ args = [
     "--/persistent/simulation/defaultMetersPerUnit=1.0",
     "--/persistent/simulation/minFrameRate=15",
 ]
-
 
 [[test]]
 name = "startup"
