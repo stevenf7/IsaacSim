@@ -1,34 +1,27 @@
-[core]
-reloadable = true
-order = 0
-
-
 [package]
-version = "2.0.5"
+version = "2.0.6"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
 description="UI components for omni.isaac.conveyor"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.conveyor.ui"
+keywords = ["kit", "example", "ui"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.conveyor.ui"
+icon = "data/icon.png"
 
-keywords = ["kit", "example", "ui"]
-
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui."
 
 [dependencies]
-"isaacsim.core.deprecation_manager" = {}
 "isaacsim.asset.gen.conveyor.ui" = {}
+"isaacsim.core.deprecation_manager" = {}
 
 [[python.module]]
 name = "omni.isaac.conveyor.ui"
 
-
 [[python.module]]
 name = "omni.isaac.conveyor.ui.tests"
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.gen.conveyor.ui."
 
 [[test]]
 dependencies = [

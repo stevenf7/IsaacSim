@@ -1,0 +1,99 @@
+# CODEOWNERS for exp_omni_isaac_sim repository
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# These owners will be the default owners for everything in the repo
+# Unless a later match takes precedence, they will be requested for
+# review when someone opens a pull request.
+* hmazhar@nvidia.com
+
+# All deprecated code is default owned by hmazhar@nvidia.com add owners for specific deperecated extensions as needed
+source/deprecated/ hmazhar@nvidia.com
+# Extension-specific code owners
+# Generated from extension.toml author lists
+
+source/extensions/isaacsim.app.about/ hmazhar@nvidia.com
+source/extensions/isaacsim.app.selector/ hmazhar@nvidia.com sabdulajees@nvidia.com
+source/extensions/isaacsim.app.setup/ hmazhar@nvidia.com
+source/extensions/isaacsim.asset.browser/ hmazhar@nvidia.com qwan@nvidia.com sabdulajees@nvidia.com
+source/extensions/isaacsim.asset.exporter.urdf/ hmazhar@nvidia.com rgasoto@nvidia.com roflaherty@nvidia.com
+source/extensions/isaacsim.asset.gen.conveyor.ui/ rgasoto@nvidia.com
+source/extensions/isaacsim.asset.gen.conveyor/ rgasoto@nvidia.com
+source/extensions/isaacsim.asset.gen.omap.ui/ hmazhar@nvidia.com
+source/extensions/isaacsim.asset.gen.omap/ hmazhar@nvidia.com
+source/extensions/isaacsim.asset.importer.heightmap/ hmazhar@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.benchmark.examples/ hmazhar@nvidia.com ssulkunte@nvidia.com
+source/extensions/isaacsim.benchmark.services/ hmazhar@nvidia.com ssulkunte@nvidia.com
+source/extensions/isaacsim.code_editor.jupyter/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.code_editor.vscode/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.api/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.cloner/ hmazhar@nvidia.com aserranomuno@nvidia.com kellyg@nvidia.com
+source/extensions/isaacsim.core.deprecation_manager/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.includes/ hmazhar@nvidia.com
+source/extensions/isaacsim.core.nodes/ hmazhar@nvidia.com ayushg@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.prims/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.simulation_manager/ aserranomuno@nvidia.com
+source/extensions/isaacsim.core.throttling/ hmazhar@nvidia.com
+source/extensions/isaacsim.core.utils/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.version/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.cortex.behaviors/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.cortex.framework/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.examples.browser/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.examples.extension/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.examples.interactive/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.examples.ui/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.gui.components/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.gui.menu/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.gui.property/ hmazhar@nvidia.com ayushg@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.replicator.behavior.ui/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.replicator.behavior/ ahaidu@nvidia.com hmazhar@nvidia.com
+source/extensions/isaacsim.replicator.domain_randomization/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.replicator.examples/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.replicator.scene_blox/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.replicator.synthetic_recorder/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.replicator.writers/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.robot.manipulators.examples/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot.manipulators.ui/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot.manipulators/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot.policy.examples/ hmazhar@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.robot.schema/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.robot.surface_gripper.ui/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.robot.surface_gripper/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.robot.wheeled_robots.ui/ hmazhar@nvidia.com ayushg@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot.wheeled_robots/ hmazhar@nvidia.com ayushg@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot_motion.lula/ hmazhar@nvidia.com
+source/extensions/isaacsim.robot_motion.lula_test_widget/ hmazhar@nvidia.com arudich@nvidia.com
+source/extensions/isaacsim.robot_motion.motion_generation/ hmazhar@nvidia.com
+source/extensions/isaacsim.robot_setup.assembler/ hmazhar@nvidia.com qwan@nvidia.com arudich@nvidia.com
+source/extensions/isaacsim.robot_setup.gain_tuner/ hmazhar@nvidia.com qwan@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.robot_setup.grasp_editor/ hmazhar@nvidia.com qwan@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.robot_setup.import_wizard/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot_setup.xrdf_editor/ hmazhar@nvidia.com arudich@nvidia.com
+source/extensions/isaacsim.ros2.bridge/ hmazhar@nvidia.com ayushg@nvidia.com
+source/extensions/isaacsim.ros2.tf_viewer/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.ros2.urdf/ hmazhar@nvidia.com rgasoto@nvidia.com ayushg@nvidia.com
+source/extensions/isaacsim.sensors.camera.ui/ hmazhar@nvidia.com stevfeng@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.sensors.camera/ hmazhar@nvidia.com ahaidu@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.sensors.physics.examples/ hmazhar@nvidia.com stevfeng@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.sensors.physics.ui/ hmazhar@nvidia.com adevalla@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.sensors.physics/ hmazhar@nvidia.com stevfeng@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.sensors.physx.examples/ hmazhar@nvidia.com stevfeng@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.sensors.physx.ui/ hmazhar@nvidia.com adevalla@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.sensors.physx/ hmazhar@nvidia.com adevalla@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.sensors.rtx.ui/ hmazhar@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.sensors.rtx/ hmazhar@nvidia.com adevalla@nvidia.com
+source/extensions/isaacsim.simulation_app/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.storage.native/ hmazhar@nvidia.com sabdulajees@nvidia.com
+source/extensions/isaacsim.test.collection/ hmazhar@nvidia.com rgasoto@nvidia.com ayushg@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.test.docstring/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.util.camera_inspector/ hmazhar@nvidia.com ahaidu@nvidia.com
+source/extensions/isaacsim.util.clash_detection/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.util.debug_draw/ hmazhar@nvidia.com
+source/extensions/isaacsim.util.internal/ hmazhar@nvidia.com
+source/extensions/isaacsim.util.merge_mesh/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.util.physics/ hmazhar@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.xr.openxr/ hmazhar@nvidia.com rwiltz@nvidia.com
+source/extensions/omni.isaac.core_archive/ hmazhar@nvidia.com
+source/extensions/omni.isaac.ml_archive/ hmazhar@nvidia.com
+source/extensions/omni.kit.loop-isaac/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/omni.pip.cloud/ hmazhar@nvidia.com
+source/extensions/omni.pip.compute/ hmazhar@nvidia.com

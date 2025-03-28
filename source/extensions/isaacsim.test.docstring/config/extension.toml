@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Internal"
 title = "Isaac Sim DocTest"
 description = "Test interactive Python docstrings examples"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.test.docstring"
 keywords = ["isaac", "test", "doctest", "docstrings"]
 changelog = "docs/CHANGELOG.md"

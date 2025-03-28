@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.1.8"
+version = "2.1.9"
 category = "Simulation"
 title = "Robot Assembler"
 description = "Alpha version of Robot Assembler Extension: Assemble multiple Articulations into a single robot"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "arudich@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.assembler"
 keywords = []
 changelog = "docs/CHANGELOG.md"
@@ -16,10 +12,10 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.robot_setup.assembler"

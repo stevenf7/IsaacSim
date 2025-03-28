@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
 version = "1.0.1"
 category = "Simulation"
 title = "{EXTENSION_TITLE}"
 description = "{EXTENSION_DESCRIPTION}"
-authors = ["Isaac Sim Team"]
+authors = ["Add your name here"]
 repository = "{EXTENSION_REPOSITORY}"
 keywords = []
 changelog = "docs/CHANGELOG.md"
@@ -15,11 +11,10 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
+"isaacsim.gui.components" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "{PYTHON_PACKAGE_NAME}"

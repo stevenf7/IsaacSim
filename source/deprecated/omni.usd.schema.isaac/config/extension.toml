@@ -4,12 +4,12 @@ reloadable = false
 order = -100
 
 [package]
-version = "3.0.2"
+version = "3.0.3"
 category = "Simulation"
-authors = ["Isaac Sim team"]
-repository="https://gitlab-master.nvidia.com/Isaac/omni-isaacsim-schema/-/tree/isaacsim"
 title = "USD Isaac schema"
 description="USD Isaac schema"
+authors = ["hmazhar@nvidia.com"]
+repository="https://gitlab-master.nvidia.com/Isaac/omni-isaacsim-schema/-/tree/isaacsim"
 keywords = ["isaac", "usd", "schema"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -17,8 +17,8 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
 
-[dependencies]
-"omni.usd.libs" = {}
-
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.schema."
+
+[dependencies]
+"omni.usd.libs" = {}

@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "Other"
 title = "Isaac Sim Throlling"
 description = "Control throttling behaviors for isaac sim"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.throttling"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
@@ -25,5 +21,5 @@ name = "isaacsim.core.throttling"
 name = "isaacsim.core.throttling.tests"
 
 [[test]]
-args = ["--/rtx/ecoMode/enabled=True"]
 dependencies = ["omni.kit.test", "omni.timeline"]
+args = ["--/rtx/ecoMode/enabled=True"]

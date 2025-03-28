@@ -1,19 +1,18 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Internal"
 title = "Isaac Sim DocTest"
 description = "Test interactive Python docstrings examples"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.doctest"
 keywords = ["isaac", "test", "doctest", "docstrings"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.test.docstring."
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
@@ -22,8 +21,5 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.doctest"
 
-
 [[python.module]]
 name = "omni.isaac.doctest.tests"
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.test.docstring."

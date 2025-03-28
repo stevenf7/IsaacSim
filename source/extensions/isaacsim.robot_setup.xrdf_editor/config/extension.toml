@@ -1,28 +1,22 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "3.1.5"
+version = "3.1.6"
 category = "Simulation"
 title = "Robot Description Editor"
 description = "Generates and edit Lula robot_description YAML files"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "arudich@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.xrdf_editor"
 keywords = ["isaac", "collision spheres", "lula", "robot description"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
+icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.robot_motion.lula" = {}
-
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.robot_setup.xrdf_editor"

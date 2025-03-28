@@ -1,9 +1,9 @@
 [package]
-version = "2.0.3"
+version = "2.0.4"
 category = "Internal"
 title = "Isaac Sim About Window"
 description="Show application/build information."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.window.about"
 keywords = ["isaac", "about"]
 changelog = "docs/CHANGELOG.md"
@@ -21,9 +21,9 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.app.
 [[python.module]]
 name = "omni.isaac.window.about"
 
-
 [[python.module]]
 name = "omni.isaac.window.about.tests"
+
 [[test]]
 stdoutFailPatterns.exclude = [
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",

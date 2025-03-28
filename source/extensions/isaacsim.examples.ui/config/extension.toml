@@ -1,24 +1,20 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.1.4"
+version = "1.1.5"
 category = "Simulation"
 title = "Isaac Sim UI Example"
 description = "Example with all the Core UI Elements in Isaac Sim"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.examples.ui"
 keywords = ["isaac", "example", "ui",]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.examples.browser" = {}
+"isaacsim.gui.components" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.examples.ui"

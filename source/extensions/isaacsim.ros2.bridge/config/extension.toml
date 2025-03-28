@@ -1,55 +1,42 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "4.4.2"
+version = "4.4.3"
 category = "Simulation"
 title = "ROS 2 Bridge"
 description = "The ROS 2 Bridge extension enables communication between the Isaac Sim and ROS 2 systems. It allows for the publishing and subscribing of ROS 2 topics and services via OmniGraph nodes and Action graphs. ROS 2 publishers, subscribers and services are only active when play is pressed. To enable this extension, ensure ROS 2 libraries are sourced in the terminal before running Isaac Sim or source the lightweight ROS 2 libraries included with Isaac Sim as an alternative."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.bridge"
 keywords = ["isaac", "ROS2"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-writeTarget.platform = true
+icon = "data/icon.png"
 writeTarget.kit = true
+writeTarget.platform = true
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"omni.isaac.dynamic_control" = {}
-"isaacsim.sensors.physx" = {}
 "isaacsim.core.api" = {}
+"isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.nodes" = {}
-"omni.syntheticdata" = {}
-"omni.replicator.core" = {}
+"isaacsim.examples.browser" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
+"isaacsim.sensors.camera" = {}
+"isaacsim.sensors.physics" = {}
+"isaacsim.sensors.physx" = {}
+"isaacsim.sensors.rtx" = {}
+"isaacsim.storage.native" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"isaacsim.sensors.physics" = {}
-"isaacsim.sensors.camera" = {}
-"isaacsim.sensors.rtx" = {}
-"usdrt.scenegraph" = {}
-"isaacsim.storage.native" = {}
-"isaacsim.gui.components" = {}
-"omni.pip.compute" = {}
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.examples.browser" = {}
+"omni.isaac.dynamic_control" = {}
 "omni.kit.menu.utils" = {}
-
-[settings]
-# ROS 2 distributions to fallback onto if none were sourced.
-exts."isaacsim.ros2.bridge".ros_distro = "humble"
-# Whether ROS 2 publishers are allowed to publish even if there is no active subscription for their topics.
-exts."isaacsim.ros2.bridge".publish_without_verification = false
-# Whether to disable multithreading use in the *ROS2PublishImage* OmniGraph node.
-exts."isaacsim.ros2.bridge".publish_multithreading_disabled = false
+"omni.kit.uiapp" = {}
+"omni.pip.compute" = {}
+"omni.replicator.core" = {}
+"omni.syntheticdata" = {}
+"usdrt.scenegraph" = {}
 
 [[python.module]]
 name = "isaacsim.ros2.bridge"
-
 
 [[python.module]]
 name = "isaacsim.ros2.bridge.tests"
@@ -67,19 +54,27 @@ name = "isaacsim.ros2.bridge.impl.samples.ros_moveit_sample"
 [[python.module]]
 name = "isaacsim.ros2.bridge.impl.og_shortcuts.og_shortcut_menu"
 
-[fswatcher.paths]
-exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
+[settings]
+# ROS 2 distributions to fallback onto if none were sourced.
+exts."isaacsim.ros2.bridge".ros_distro = "humble"
+# Whether ROS 2 publishers are allowed to publish even if there is no active subscription for their topics.
+exts."isaacsim.ros2.bridge".publish_without_verification = false
+# Whether to disable multithreading use in the *ROS2PublishImage* OmniGraph node.
+exts."isaacsim.ros2.bridge".publish_multithreading_disabled = false
 
 [fswatcher.patterns]
 include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
 
+[fswatcher.paths]
+exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
+
 [[test]]
 
 timeout = 900
 dependencies = [
-    "omni.graph.ui",
     "isaacsim.robot.wheeled_robots",
+    "omni.graph.ui",
 ]
 
 stdoutFailPatterns.exclude = [

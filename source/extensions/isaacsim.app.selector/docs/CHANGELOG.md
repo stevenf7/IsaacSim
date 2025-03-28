@@ -1,4 +1,8 @@
 # Changelog
+## [2.9.1] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [2.9.0] - 2025-03-05
 ### Changed
 - Add support for ROS2 Jazzy

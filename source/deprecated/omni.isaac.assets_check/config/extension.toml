@@ -1,29 +1,25 @@
 [package]
-version = "0.3.9"
+version = "0.3.10"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.assets_check"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 toggleable = false
-
-[dependencies]
-"omni.usd" = {}
-"omni.ui" = { order = -100 }
-
-# Isaac Sim Core Extensions
-"isaacsim.core.api" = {}
-"isaacsim.asset.browser" = {}
-
-[[python.module]]
-name = "omni.isaac.assets_check"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.asset.browser."
 
+[dependencies]
+"isaacsim.asset.browser" = {}
+"isaacsim.core.api" = {}
+"omni.ui" = { order = -100 }
+"omni.usd" = {}
 
+[[python.module]]
+name = "omni.isaac.assets_check"

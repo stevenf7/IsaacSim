@@ -1,11 +1,11 @@
 [package]
-version = "3.0.3"
+version = "3.0.4"
 category = "Simulation"
 title = "Isaac Sim App Selector"
 description = "Mini Launch Pad app for Isaac Sim Sub Apps"
-authors = ["Isaac Sim Team"]
-readme = "docs/README.md"
+authors = ["hmazhar@nvidia.com"]
 changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/omni.isaac.sim.png"
 toggleable = false

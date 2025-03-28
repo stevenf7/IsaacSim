@@ -1,27 +1,22 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Simulation"
 title = "Isaac Universal Robots"
 description = "Isaac Universal Robots Helper Class"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.universal_robots"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot.manipulators.examples"
 
-
 [dependencies]
-"isaacsim.robot.manipulators.examples" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.robot.manipulators.examples" = {}
 
 [[python.module]]
 name = "omni.isaac.universal_robots"

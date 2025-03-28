@@ -1,34 +1,30 @@
 [package]
-version = "1.0.8"
+version = "1.0.9"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility"
 description="The Conveyor Belt Utility Extension provides an utility to turn Rigid bodies into conveyors in Omniverse Isaac Sim. It provides an Omnigraph Node that support configuring a mesh asset into a conveyor belt Rigid Body in simulation, and commands to create the conveyor belt Omnigraph programatically."
+authors = ["rgasoto@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.gen.conveyor"
+keywords = ["kit", "example"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.gen.conveyor"
-
-keywords = ["kit", "example"]
-
-
+icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"omni.physx"={}
 "omni.graph" = {}
-"omni.graph.core" = {}
 "omni.graph.action" = {}
+"omni.graph.core" = {}
 "omni.graph.nodes" = {}
+"omni.physx"={}
 "omni.usd" = {}
 
-# Main module for the Python interface
 [[python.module]]
 name = "isaacsim.asset.gen.conveyor"
 
 [[python.module]]
 name = "isaacsim.asset.gen.conveyor.tests"
-
 
 [[native.plugin]]
 path = "bin/*.plugin"
@@ -48,4 +44,3 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_asset_gen_conveyor_IsaacConveyor: [/TestGraph] no prim path found for the conveyor*",
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]
-    

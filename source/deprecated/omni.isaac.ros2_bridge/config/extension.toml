@@ -1,19 +1,18 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "3.0.3"
+version = "3.0.4"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.ros2_bridge"
 keywords = ["isaac", "ROS2"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.bridge."
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
@@ -22,11 +21,8 @@ preview_image = "data/preview.png"
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
 
-
 [[python.module]]
 name = "omni.isaac.ros2_bridge.tests"
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.ros2.bridge."
 
 [[test]]
 args = [

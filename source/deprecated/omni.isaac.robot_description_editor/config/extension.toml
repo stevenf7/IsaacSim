@@ -1,24 +1,19 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "3.0.2"
+version = "3.0.3"
 category = "Simulation"
 title = "Robot Description Editor"
 description = "Generates and edit Lula robot_description YAML files"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.robot_description_editor"
 keywords = ["isaac", "collision spheres", "lula", "robot description"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.xrdf_editor."
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.robot_setup.xrdf_editor" = {}
-
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.xrdf_editor."

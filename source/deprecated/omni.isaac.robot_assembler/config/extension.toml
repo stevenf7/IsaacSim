@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.3"
+version = "2.0.4"
 category = "Simulation"
 title = "Robot Assembler"
 description = "Alpha version of Robot Assembler Extension: Assemble multiple Articulations into a single robot"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.robot_assembler"
 keywords = []
 changelog = "docs/CHANGELOG.md"
@@ -15,14 +11,12 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-[dependencies]
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.robot_setup.assembler" = {}
-
-
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_setup.assembler."
 
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.robot_setup.assembler" = {}
 
 [[python.module]]
 name = "omni.isaac.robot_assembler.tests"

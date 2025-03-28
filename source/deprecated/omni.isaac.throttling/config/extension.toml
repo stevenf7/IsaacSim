@@ -1,19 +1,18 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.3"
+version = "2.0.4"
 category = "Other"
 title = "Isaac Sim Throlling"
 description = "Control throttling behaviors for isaac sim"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.throttling"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.throttling."
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
@@ -22,8 +21,5 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.throttling"
 
-
 [[python.module]]
 name = "omni.isaac.throttling.tests"
-[deprecation]
-warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.core.throttling."

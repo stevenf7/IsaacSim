@@ -1,28 +1,21 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.1.6"
+version = "1.1.7"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Examples"
 description="The extension provides various replicator snippets and examples for Synthetic Data Generation (SDG) workflows."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.examples"
 keywords = ["Synthetic", "Data", "Randomization", "SDG", "Examples"]
 changelog = "docs/CHANGELOG.md"
 readme  = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
-# Build separate extensions for Windows and Linux so appropriate libraries are bundled
-writeTarget.platform = true
-
+icon = "data/icon.png"
+writeTarget.platform = true # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 
 [dependencies]
+"isaacsim.replicator.writers" = {}
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
-"isaacsim.replicator.writers" = {}
 
 [[python.module]]
 name = "isaacsim.replicator.examples"

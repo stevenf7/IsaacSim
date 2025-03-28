@@ -1,4 +1,8 @@
 # Changelog
+## [8.0.10] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [8.0.9] - 2025-03-26
 ### Fixed
 - Unit test failure

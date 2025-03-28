@@ -1,16 +1,16 @@
 [package]
 # Semantic Versioning is used: https://semver.org/
-version = "1.2.4"
+version = "1.2.5"
 category = "Internal"
-authors = ["Isaac Sim team"]
 title = "Isaac Loop Runner"
 description = "Custom Loop Runner for Isaac Sim"
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = ""
 keywords = ["isaac", "loop"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 writeTarget.kit = true
 
 [[python.module]]
@@ -20,20 +20,24 @@ name = "omni.kit.loop"
 path = "bin/*.plugin"
 recursive = false
 
-
 [settings]
 # Don't sync threads to the present thread
 app.runLoopsGlobal.syncToPresent = false
-
-# Frequency limit can be enabled per run loop:
+# Set to true to enable rate limiting for the main run loop
 app.runLoops.main.rateLimitEnabled = true
+# Rate limit frequency in Hz for the main run loop
 app.runLoops.main.rateLimitFrequency = 120
+# Set to true to use a busy loop for the main run loop
 app.runLoops.main.rateLimitUseBusyLoop = false
-
+# Set to true to enable rate limiting for the present run loop
 app.runLoops.present.rateLimitEnabled = true
+# Rate limit frequency in Hz for the present run loop
 app.runLoops.present.rateLimitFrequency = 60
+# Set to true to use a busy loop for the present run loop
 app.runLoops.present.rateLimitUseBusyLoop = false
-
+# Set to true to enable rate limiting for the rendering run loop
 app.runLoops.rendering_0.rateLimitEnabled = true
+# Rate limit frequency in Hz for the rendering run loop
 app.runLoops.rendering_0.rateLimitFrequency = 120
+# Set to true to use a busy loop for the rendering run loop
 app.runLoops.rendering_0.rateLimitUseBusyLoop = false

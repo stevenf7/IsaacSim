@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.9"
+version = "1.0.10"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "sabdulajees@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.storage.native"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
@@ -26,24 +22,17 @@ name = "isaacsim.storage.native"
 [[python.module]]
 name = "isaacsim.storage.native.tests"
 
-[[python.module]]
-name = "isaacsim.storage.native.tests"
-
-[[python.module]]
-name = "isaacsim.storage.native.tests"
-
 [settings]
+# Default asset root path for Isaac Sim
 persistent.isaac.asset_root.default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5"
+# Timeout in seconds for asset root path to be resolved
 persistent.isaac.asset_root.timeout = 5.0
 
-[[python.module]]
-name = "isaacsim.storage.native.tests"
-
 [[test]]
+timeout = 900
 dependencies = [
     "omni.kit.test"
 ]
 args = [
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
-timeout = 900

@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.1.4"
+version = "2.1.5"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.tf_viewer"
 keywords = ["isaac", "ROS2", "tf"]
 changelog = "docs/CHANGELOG.md"
@@ -16,11 +12,11 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.ui.scene" = {}
-"omni.kit.uiapp" = {}
-"omni.kit.viewport.utility" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.ros2.bridge" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.viewport.utility" = {}
+"omni.ui.scene" = {}
 
 [[python.module]]
 name = "isaacsim.ros2.tf_viewer"
@@ -34,15 +30,12 @@ exts."isaacsim.ros2.tf_viewer".cpp = true
 exts."isaacsim.ros2.tf_viewer".include_root_frame = true
 
 [[test]]
-
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
-
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
     '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
-
 ]
 
 [[test]]

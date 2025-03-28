@@ -1,14 +1,10 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "8.0.3"
+version = "8.0.4"
 category = "Simulation"
 title = "Isaac Sim Motion Generation"
 description = "Extension that provides support for generating motion with Lula-based motion policies and an interface for writing arbitrary motion policies"
+authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.motion_generation"
-authors = ["Avi Rudich"]
 keywords = ["isaac", "motion generation", "lula", "motion policy"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -19,12 +15,11 @@ icon = "data/icon.png"
 warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robot_motion.motion_generation"
 
 [dependencies]
-"isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.robot_motion.motion_generation" = {}
 
 [[python.module]]
 name = "omni.isaac.motion_generation"
-
 
 [[python.module]]
 name = "omni.isaac.motion_generation.tests"

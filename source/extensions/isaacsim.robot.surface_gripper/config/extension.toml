@@ -1,40 +1,35 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.10"
+version = "2.0.11"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.surface_gripper"
 keywords = ["isaac", "physics", "end-effector",]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
+icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
 
 [dependencies]
-"omni.isaac.dynamic_control" = {}
-"isaacsim.gui.components" = {}
-"isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.api" = {}
-"omni.graph.tools" = {}
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
 "omni.graph" = {}
-
-# Watch the .ogn files for hot reloading (only for Python files)
-[fswatcher.patterns]
-include = ["*.ogn", "*.py"]
-exclude = ["Ogn*Database.py"]
+"omni.graph.tools" = {}
+"omni.isaac.dynamic_control" = {}
 
 [[python.module]]
 name = "isaacsim.robot.surface_gripper"
 
 [[python.module]]
 name = "isaacsim.robot.surface_gripper.tests"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
 
 [[test]]
 dependencies = []

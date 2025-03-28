@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.10] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [1.0.9] - 2025-03-18
 ### Fixed
 - recursive_list_folders now enforces trailing slashes on paths, preventing path clobber bug

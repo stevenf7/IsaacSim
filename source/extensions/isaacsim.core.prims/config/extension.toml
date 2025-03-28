@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "0.3.8"
+version = "0.3.9"
 category = "Simulation"
 title = "Isaac Sim Core API (Prims)"
 description = "The Core Prims extension provides a set of APIs to read and write state information to the different types of prims."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.prims"
 keywords = ["isaacsim", "core", "prims"]
 changelog = "docs/CHANGELOG.md"
@@ -17,16 +13,15 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.simulation_manager" = {}
+"isaacsim.core.utils" = {}
+"omni.isaac.core_archive" = {}
+"omni.isaac.ml_archive" = {}
 "omni.physx.tensors" = {}
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
-"omni.isaac.core_archive" = {}
-"omni.isaac.ml_archive" = {}
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.utils" = {}
-"isaacsim.core.simulation_manager" = {}
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.core.prims"
 
@@ -37,8 +32,8 @@ name = "isaacsim.core.prims.tests"
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.kit.test",
     "isaacsim.core.api",
+    "omni.kit.test",
 ]
 
 args = [

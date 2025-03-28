@@ -1,30 +1,23 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.0.4"
+version = "1.0.5"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Domain Randomization"
 description="The extension provides various Domain Randomization scripts and OmniGraph nodes for randomizing simulation environments."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.domain_randomization"
 keywords = ["Synthetic", "Data", "Randomization", "Generator", "Domain Randomization", "DR"]
 changelog = "docs/CHANGELOG.md"
 readme  = "docs/README.md"
-icon = "data/icon.png"
 preview_image = "data/preview.png"
-
-# Build separate extensions for Windows and Linux so appropriate libraries are bundled
-writeTarget.platform = true
-
+icon = "data/icon.png"
+writeTarget.platform = true # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 
 [dependencies]
+"isaacsim.core.api" = {}
+"isaacsim.core.prims" = {}
 "omni.graph" = {}
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
-"isaacsim.core.api" = {}
-"isaacsim.core.prims" = {}
 
 [[python.module]]
 name = "isaacsim.replicator.domain_randomization"

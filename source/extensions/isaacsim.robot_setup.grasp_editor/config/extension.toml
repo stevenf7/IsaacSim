@@ -1,13 +1,9 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "2.0.7"
+version = "2.0.8"
 category = "Simulation"
 title = "Grasp Editor"
 description = "Author grasps by hand for a specific robot gripper and USD asset."
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.grasp_editor"
 keywords = []
 changelog = "docs/CHANGELOG.md"
@@ -15,21 +11,20 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-
 [dependencies]
-"omni.kit.uiapp" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.robot_setup.grasp_editor"
 
 [[test]]
 dependencies = [
+    "omni.graph.nodes",
     "omni.hydra.rtx",
     "omni.kit.viewport.window",
-    "omni.graph.nodes"
 ]
 
 args = [

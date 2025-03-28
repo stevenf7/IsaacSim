@@ -266,8 +266,12 @@ class ChangelogManager:
 
             try:
                 # Pre-check conditions
-                if not self._should_process_extension(dirpath):
-                    results[extension_name].append("Skipped due to filter conditions")
+                should_process, error_message = self._should_process_extension(dirpath)
+                if not should_process:
+                    if error_message:
+                        results[extension_name].append(error_message)
+                    else:
+                        results[extension_name].append("Skipped due to filter conditions")
                     continue
 
                 # Path validation
@@ -330,15 +334,19 @@ class ChangelogManager:
 
         return results
 
-    def _should_process_extension(self, dirpath: str) -> bool:
+    def _should_process_extension(self, dirpath: str) -> tuple:
         """Check all conditional requirements for processing"""
-        if self.check_modified and not self._has_git_changes(dirpath):
-            return False
+        if self.check_modified:
+            git_status, git_message = self._has_git_changes(dirpath)
+            if not git_status:
+                if git_message and "behind origin/develop" in git_message:
+                    return False, git_message
+                return False, None
         if self.check_cpp and not self._has_cpp_files(dirpath):
-            return False
-        return True
+            return False, None
+        return True, None
 
-    def _has_git_changes(self, dirpath: str) -> bool:
+    def _has_git_changes(self, dirpath: str) -> tuple:
         """Check if directory has changes against develop branch"""
         try:
             # First check if develop branch is behind remote
@@ -356,7 +364,7 @@ class ChangelogManager:
                 )
                 if self.verbose:
                     print(f"  ❌ {error_msg}")
-                raise Exception(error_msg)
+                return False, error_msg
 
             # Continue with original functionality to check for changes
             result = subprocess.run(
@@ -365,12 +373,13 @@ class ChangelogManager:
             if result.returncode == 0:
                 if self.verbose:
                     print(f"  ⏭️  No uncommitted changes vs develop branch")
-                return False
-            return True
+                return False, None
+            return True, None
         except Exception as e:
+            error_msg = f"Git check failed: {str(e)}"
             if self.verbose:
-                print(f"  ❌ Git check failed: {str(e)}")
-            return False
+                print(f"  ❌ {error_msg}")
+            return False, error_msg
 
     def _has_cpp_files(self, dirpath: str) -> bool:
         """Check for C++ source files in directory tree"""

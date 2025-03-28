@@ -1,4 +1,8 @@
 # Changelog
+## [4.4.3] - 2025-03-26
+### Changed
+- Cleanup and standardize extension.toml, update code formatting for all code
+
 ## [4.4.2] - 2025-03-26
 ### Changed
 - Updated OpenCV lens distortion schema attribute names
