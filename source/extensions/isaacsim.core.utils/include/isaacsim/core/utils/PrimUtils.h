@@ -1,0 +1,74 @@
+// SPDX-FileCopyrightText: Copyright (c) 2024-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LicenseRef-NvidiaProprietary
+//
+// NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+// property and proprietary rights in and to this material, related
+// documentation and any modifications thereto. Any use, reproduction,
+// disclosure or distribution of this material and related documentation
+// without an express license agreement from NVIDIA CORPORATION or
+// its affiliates is strictly prohibited.
+
+#pragma once
+
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
+#include <string>
+
+#ifdef _MSC_VER
+#    if ISAACSIM_CORE_UTILS_EXPORT
+#        define DLL_EXPORT __declspec(dllexport)
+#    else
+#        define DLL_EXPORT __declspec(dllimport)
+#    endif
+#else
+#    define DLL_EXPORT
+#endif
+
+namespace isaacsim
+{
+namespace core
+{
+namespace utils
+{
+
+/**
+ * @brief Finds USD prims matching a specified path pattern.
+ * @details
+ * Searches for prims in a USD stage that match the provided path pattern.
+ * The pattern supports wildcard matching for path components.
+ * Optionally filters results by specified API schemas.
+ *
+ * @param[in] pattern Path pattern to match against prim paths.
+ * @param[in] stageId ID of the USD stage to search.
+ * @param[in] api Optional API schema filter. When specified, only returns prims with the given API.
+ *                Current supported values are "articulation" and "rigid_body".
+ *
+ * @return Vector of strings containing paths of matching prims.
+ *
+ * @throws std::invalid_argument If the stage ID is invalid or the API type is not supported.
+ *
+ * @note The pattern supports standard glob-style wildcards for matching.
+ */
+DLL_EXPORT std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,
+                                                          long int stageId,
+                                                          const std::string& api = std::string(""));
+
+/**
+ * @brief Finds child prims matching a specified name pattern.
+ * @details
+ * Searches immediate children of a root prim for names matching the specified pattern.
+ * Uses TfPatternMatcher for name comparison.
+ *
+ * @param[in] root The parent prim whose children will be searched.
+ * @param[in] pattern The name pattern to match against child prim names.
+ * @param[out] primsRet Vector that will be populated with matching child prims.
+ *
+ * @note If the root prim is invalid, the function returns without modifying primsRet.
+ * @note The pattern uses TfPatternMatcher syntax which supports glob-style wildcards.
+ */
+DLL_EXPORT void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
+}
+}
+}

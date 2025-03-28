@@ -115,7 +115,7 @@ project_ext_bindings {
 
 -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
 dependson { "isaacsim.util.debug_draw.primitive_drawing" }
---add_files("bindings", "bindings")
+--add_files("bindings", "bindings/*.*")
 --add_files("python", "python/*.py")
 --add_files("python/tests", "python/tests/*.py")
 include_physx()

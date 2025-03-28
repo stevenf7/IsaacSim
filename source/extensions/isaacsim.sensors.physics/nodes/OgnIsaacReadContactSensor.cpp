@@ -14,9 +14,9 @@
 
 #include "isaacsim/core/includes/UsdUtilities.h"
 
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <omni/fabric/FabricUSD.h>
 
-#include <IPhysicsSensor.h>
 #include <OgnIsaacReadContactSensorDatabase.h>
 
 

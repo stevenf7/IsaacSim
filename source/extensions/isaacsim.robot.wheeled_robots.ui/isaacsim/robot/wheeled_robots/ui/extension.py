@@ -11,10 +11,6 @@
 import gc
 
 import omni.ext
-from isaacsim.robot.wheeled_robots.bindings._isaacsim_robot_wheeled_robots import (
-    acquire_wheeled_robots_interface,
-    release_wheeled_robots_interface,
-)
 from omni.kit.menu.utils import MenuHelperExtensionFull
 
 from .menu_graphs import DifferentialControllerWindow
@@ -22,7 +18,6 @@ from .menu_graphs import DifferentialControllerWindow
 
 class Extension(omni.ext.IExt, MenuHelperExtensionFull):
     def on_startup(self, ext_id: str):
-        self.__interface = acquire_wheeled_robots_interface()
 
         # Create menu using MenuHelperExtensionFull
         self.menu_startup(
@@ -34,5 +29,4 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
 
     def on_shutdown(self):
         self.menu_shutdown()
-        release_wheeled_robots_interface(self.__interface)
         gc.collect()

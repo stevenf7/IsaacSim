@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "../core/IsaacSensorComponent.h"
-
 #include <isaacSensorSchema/isaacImuSensor.h>
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
+#include <isaacsim/sensors/physics/IsaacSensorComponent.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdUtils.h>
@@ -21,7 +21,6 @@
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
 
-#include <IPhysicsSensor.h>
 #include <map>
 #include <memory>
 #include <vector>

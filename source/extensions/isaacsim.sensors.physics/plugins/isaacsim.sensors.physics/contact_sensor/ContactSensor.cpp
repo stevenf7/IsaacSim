@@ -17,14 +17,12 @@
 #include <omni/usd/UtilsIncludes.h>
 // clang-format on
 
-#include "ContactSensor.h"
-
-#include "../core/IsaacSensorComponent.h"
-#include "../core/IsaacSensorManager.h"
-#include "ContactManager.h"
-#include "IPhysicsSensor.h"
-
 #include <isaacsim/core/includes/Pose.h>
+#include <isaacsim/sensors/physics/ContactManager.h>
+#include <isaacsim/sensors/physics/ContactSensor.h>
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
+#include <isaacsim/sensors/physics/IsaacSensorComponent.h>
+#include <isaacsim/sensors/physics/IsaacSensorManager.h>
 
 namespace isaacsim
 {

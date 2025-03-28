@@ -18,11 +18,11 @@
 #include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
 
-#include "core/IsaacSensorComponent.h"
-#include "core/IsaacSensorManager.h"
-#include "imu_sensor/ImuSensor.h"
-#include "contact_sensor/ContactManager.h"
-#include "contact_sensor/ContactSensor.h"
+#include <isaacsim/sensors/physics/IsaacSensorComponent.h>
+#include <isaacsim/sensors/physics/IsaacSensorManager.h>
+#include <isaacsim/sensors/physics/ImuSensor.h>
+#include <isaacsim/sensors/physics/ContactManager.h>
+#include <isaacsim/sensors/physics/ContactSensor.h>
 // clang-format on
 
 #include <carb/Framework.h>
@@ -30,6 +30,7 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <omni/fabric/usd/PathConversion.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
@@ -43,8 +44,6 @@
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdUtils.h>
-
-#include <IPhysicsSensor.h>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.physics.plugin", "Isaac Sensor", "NVIDIA",
                                                     carb::PluginHotReload::eDisabled, "dev" };

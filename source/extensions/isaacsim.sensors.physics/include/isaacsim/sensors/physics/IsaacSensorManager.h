@@ -10,18 +10,18 @@
 
 #pragma once
 
-#include "../contact_sensor/ContactManager.h"
-#include "../contact_sensor/ContactSensor.h"
-#include "../imu_sensor/ImuSensor.h"
-#include "IsaacSensorComponent.h"
-#include "isaacsim/core/includes/PrimManager.h"
-
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
 #include <isaacSensorSchema/isaacContactSensor.h>
+#include <isaacsim/core/includes/PrimManager.h>
+#include <isaacsim/sensors/physics/ContactManager.h>
+#include <isaacsim/sensors/physics/ContactSensor.h>
+#include <isaacsim/sensors/physics/ImuSensor.h>
+#include <isaacsim/sensors/physics/IsaacSensorComponent.h>
+#include <isaacsim/sensors/physics/IsaacSensorTypes.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -30,7 +30,6 @@
 #include <physxSchema/physxContactReportAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
 
-#include <IsaacSensorTypes.h>
 #include <PxActor.h>
 #include <PxArticulationLink.h>
 #include <PxRigidDynamic.h>
