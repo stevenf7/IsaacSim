@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.8] - 2025-03-31
+### Changed
+- added SDG Layout to menu, cleaned up layout folder
+
 ## [1.3.7] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code

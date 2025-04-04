@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.3] - 2025-03-31
+### Changed
+- Layout menu order
+
 ## [2.1.2] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code

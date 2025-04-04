@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.8] - 2025-03-31
+### Changed
+- Added preferred dock location for the browser window for layout purposes
+
 ## [1.3.7] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code

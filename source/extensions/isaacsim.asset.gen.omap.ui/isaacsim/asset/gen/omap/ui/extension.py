@@ -9,11 +9,11 @@
 import asyncio
 import gc
 import os
-import weakref
 
 import carb
 import omni
 import omni.ext
+import omni.kit.app
 import omni.kit.usd.layers
 import omni.ui as ui
 from isaacsim.asset.gen.omap.bindings import _omap
@@ -30,28 +30,90 @@ from isaacsim.gui.components.ui_utils import (
     multi_btn_builder,
     xyz_builder,
 )
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.menu.utils import (
+    MenuHelperExtensionFull,
+    MenuHelperWindow,
+    MenuItemDescription,
+    add_menu_items,
+    remove_menu_items,
+)
 from omni.physx.scripts import utils
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
 
-class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
-        EXTENSION_NAME = "Occupancy Map"
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._window = ScrollingWindow(title=EXTENSION_NAME, width=600, height=400, visible=False)
-        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
-        self._window.set_visibility_changed_fn(self._on_window)
-        menu_entry = [
-            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
-        ]
-        self._menu_items = [MenuItemDescription("Robotics", sub_menu=menu_entry)]
+async def _load_layout(layout_file: str, keep_windows_open=False):
+    try:
+        from omni.kit.quicklayout import QuickLayout
 
-        add_menu_items(self._menu_items, "Tools")
+        # few frames delay to avoid the conflict with the layout of omni.kit.mainwindow
+        for i in range(3):
+            await omni.kit.app.get_app().next_update_async()
+        QuickLayout.load_file(layout_file, keep_windows_open)
+        # few frames delay to load the window first
+        for i in range(3):
+            await omni.kit.app.get_app().next_update_async()
+
+        # make sure viewport 2's camera is "Top View"
+        from omni.kit.viewport.utility import get_viewport_from_window_name
+
+        # Get viewport API for a specific named viewport
+        viewport_api = get_viewport_from_window_name("Viewport 2")  # Replace with your viewport name
+        if viewport_api:
+            viewport_api.camera_path = Sdf.Path("/OmniverseKit_Top")
+
+    except Exception as exc:
+        pass
+
+        QuickLayout.load_file(layout_file)
+
+
+class Extension(omni.ext.IExt, MenuHelperExtensionFull):
+    EXTENSION_NAME = "Occupancy Map"
+
+    def on_startup(self, ext_id: str):
+        # add to menu
+        self.menu_startup(
+            lambda: OccupancyMapWindow(),
+            Extension.EXTENSION_NAME,
+            Extension.EXTENSION_NAME,
+            "Tools/Robotics",
+        )
+
+        # add layout template to Layouts menu
+        self._menu_items = [
+            MenuItemDescription(name="Occupancy Map Generation", onclick_fn=lambda *_: self._open_layout_fn(ext_id))
+        ]
+        add_menu_items(self._menu_items, "Layouts")
+
+    def _open_layout_fn(self, ext_id: str):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        extension_path = ext_manager.get_extension_path(ext_id)
+        layout_file = f"{extension_path}/data/omap.json"
+        if not os.path.exists(layout_file):
+            carb.log_warn(f"Layout file {layout_file} does not exist")
+            return
+
+        return asyncio.ensure_future(_load_layout(layout_file))
+
+    def on_shutdown(self):
+        # remove layout template from Layouts menu
+
+        remove_menu_items(self._menu_items, "Layouts")
+        self.menu_shutdown()
+
+
+class OccupancyMapWindow(MenuHelperWindow):
+    def __init__(self):
+        super().__init__(Extension.EXTENSION_NAME, width=600, height=400, focused=True)
+        self.deferred_dock_in("Console")
+
+        # Initialize variables
+        self._timeline = omni.timeline.get_timeline_interface()
         self._om = _omap.acquire_omap_interface()
         self._layers = omni.kit.usd.layers.get_layers()
         self._filepicker = None
         self._models = {}
+        self._stage_open_callback = None
 
         self.prev_origin = [0, 0]
         self.lower_bound = [-1.00, -1.00]
@@ -60,11 +122,17 @@ class Extension(omni.ext.IExt):
         self.wait_bound_update = False
         self.bound_update_case = 0
 
-        units = 0.05  # default assumes 5cm in meters
+        self.units = 0.05  # default assumes 5cm in meters
         if omni.usd.get_context().get_stage():
-            units = 0.05 / get_stage_units()
+            self.units = 0.05 / get_stage_units()
 
-        with self._window.frame:
+        self.build_ui()
+
+    def build_ui(self):
+        """
+        Build the window UI.
+        """
+        with self.frame:
             with ui.HStack(spacing=10):
                 with ui.VStack(spacing=5, height=0):
                     change_fn = [self.on_update_location, self.on_update_location, self.on_update_location]
@@ -89,7 +157,7 @@ class Extension(omni.ext.IExt):
 
                     self._models["cell_size"] = float_builder(
                         label="Cell Size",
-                        default_val=units,
+                        default_val=self.units,
                         min=0.001,
                         step=0.001,
                         format="%.3f",
@@ -112,23 +180,17 @@ class Extension(omni.ext.IExt):
                     # self.draw_voxel_btn = ui.Button("Draw Voxels", clicked_fn=self._draw_instances)
                     # self.draw_voxel_btn.visible = False
 
-    def _menu_callback(self):
-        self._window.visible = not self._window.visible
-
-    def _on_window(self, visible):
-        if self._window.visible:
-            self._models["cell_size"].set_value(0.05 / get_stage_units())
+        if self.visible:
+            self._models["cell_size"].set_value(self.units)
             self._stage_open_callback = (
                 omni.usd.get_context()
                 .get_stage_event_stream()
                 .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
             )
-        else:
-            self._stage_open_callback = None
 
     def _stage_open_callback_fn(self, event):
-        carb.log_warn(f"New stage opened, setting cell_size to {0.05 / get_stage_units()} to match stage units")
-        self._models["cell_size"].set_value(0.05 / get_stage_units())
+        carb.log_warn(f"New stage opened, setting cell_size to {self.units} to match stage units")
+        self._models["cell_size"].set_value(self.units)
 
     def _on_center_selection(self):
         origin = self.calculate_bounds(True, True)
@@ -498,8 +560,8 @@ class Extension(omni.ext.IExt):
             )
             return
         self._rgb_byte_provider = omni.ui.ByteImageProvider()
-        self._visualize_window = omni.ui.Window("Visualization", width=500, height=600)
-        with self._visualize_window.frame:
+        visualize_window = omni.ui.Window("Visualization", width=500, height=600)
+        with visualize_window.frame:
             with ui.VStack(spacing=5):
                 with ui.VStack(height=0, spacing=5):
                     kwargs = {"label": "Occupied Color", "default_val": [0, 0, 0, 1]}
@@ -527,9 +589,21 @@ class Extension(omni.ext.IExt):
         # generate image imadeately when this window appears
         self._fill_image()
 
-    def on_shutdown(self):
+    def destroy(self):
+        """
+        overwriting the destroy method to clean up the window
+        #"""
         self._stage_open_callback = None
-        if self._filepicker:
+        # Initialize variables
+        self._timeline = None
+        _omap.release_omap_interface(self._om)
+        self._om = None
+        self._layers = None
+        if self._filepicker is not None:
+            self._filepicker.hide()
             self._filepicker = None
-        remove_menu_items(self._menu_items, "Tools")
+        self._models = {}
+        self._image = None
+
+        super().destroy()
         gc.collect()

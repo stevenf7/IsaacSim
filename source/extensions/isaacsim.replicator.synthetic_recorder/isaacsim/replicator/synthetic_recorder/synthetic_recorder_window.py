@@ -16,6 +16,7 @@ import carb
 import omni.kit.app
 import omni.ui as ui
 import omni.usd
+from omni.kit.menu.utils import MenuHelperWindow
 from omni.kit.viewport.utility import get_active_viewport
 from omni.kit.window.extensions.utils import open_file_using_os_default
 
@@ -129,19 +130,17 @@ def _ui_get_reset_glyph():
     return ui.get_custom_glyph_code("${glyphs}/menu_refresh.svg")
 
 
-class SyntheticRecorderWindow(ui.Window):
+class SyntheticRecorderWindow(MenuHelperWindow):
     """Synthetic Recorder UI window."""
 
     def __init__(self, title, ext_id):
-        # Create the window
-        super().__init__(title, dockPreference=ui.DockPreference.RIGHT_BOTTOM)
-        self.deferred_dock_in("Property", ui.DockPolicy.DO_NOTHING)
-        self.set_visibility_changed_fn(self._visibility_changed_fn)
-        self._visiblity_changed_listener = None
-        self._recorder = None
-
-        # Extension id is used to get the config folder path
         self._ext_id = ext_id
+        # Create the window
+        super().__init__(title, verbose=False)
+        self.deferred_dock_in("Property")
+
+        # Recorder
+        self._recorder = None
 
         # UI frame collapsed states
         self._writer_frame_collapsed = False
@@ -235,21 +234,17 @@ class SyntheticRecorderWindow(ui.Window):
         # Subscribe to the recorder state change event to update the buttons state accordingly
         self._recorder.subscribe_state_changed(self._on_state_changed)
 
-    def _visibility_changed_fn(self, visible):
-        """Callback function for visibility change."""
-        if self._visiblity_changed_listener:
-            self._visiblity_changed_listener(visible)
-
-    def set_visibility_changed_listener(self, listener):
-        """Set the visibility changed listener."""
-        self._visiblity_changed_listener = listener
-
     def destroy(self):
-        """Destroy the window, called manually from the extension."""
+        """
+        overwriting the destroy method to clean up the window
+        """
         self._recorder.clear_recorder()
         self._save_config(self._last_config_path)
         self._sub_stage_event = None
         self._sub_shutdown = None
+        self._start_stop_button = None
+        self._pause_resume_button = None
+        self._recorder = None
         super().destroy()
 
     def _on_stage_closing_event(self, e: carb.events.IEvent):
