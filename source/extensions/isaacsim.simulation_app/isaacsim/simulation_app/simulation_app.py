@@ -81,6 +81,7 @@ class SimulationApp:
         "create_new_stage": True,
         "extra_args": [],
         "enable_crashreporter": True,
+        "limit_cpu_threads": 32,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -112,6 +113,7 @@ class SimulationApp:
         create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True
         extra_args: (list): List of extra command line arguments to pass down to the kit process
         enable_crashreporter (bool): Enable crash reporter. Defaults to True
+        limit_cpu_threads (int): Limit the number of CPU threads created to the lesser of cpu core count or specified value. Defaults to 32.
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -344,6 +346,17 @@ class SimulationApp:
             args.append(f'--/physics/cudaDevice={self.config["physics_gpu"]}')
         if self.config.get("max_gpu_count") is not None:
             args.append(f'--/renderer/multiGpu/maxGpuCount={self.config["max_gpu_count"]}')
+
+        # limit the number of CPU threads created to lesser of: num_cpu_cores or config-set limit
+        num_cpu_cores = os.cpu_count()
+        num_threads = min(num_cpu_cores, self.config.get("limit_cpu_threads"))
+        # set env variables to limit threads
+        os.environ["PXR_WORK_THREAD_LIMIT"] = str(num_threads)
+        os.environ["OPENBLAS_NUM_THREADS"] = str(num_threads)
+        # pass to kit args
+        args.append(f"--/plugins/carb.tasking.plugin/threadCount={num_threads}")
+        args.append(f"--/plugins/omni.tbb.globalcontrol/maxThreadCount={num_threads}")
+
         # parse any extra command line args here
         # user script should provide its own help, otherwise we default to printing the kit app help output
         parser = argparse.ArgumentParser(add_help=False)
