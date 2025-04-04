@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.5] - 2025-04-03
+### Changed
+- Version bump to fix pywin32 issues
+
 ## [1.3.4] - 2025-04-02
 ### Changed
 - Version bump to fix pywin32 issues
