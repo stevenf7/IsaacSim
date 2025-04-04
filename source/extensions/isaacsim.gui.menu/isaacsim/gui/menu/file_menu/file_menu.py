@@ -123,6 +123,7 @@ class FileMenuExtension:
                     MenuLayout.Item(name="Import from Onshape", source="File/Import from Onshape"),
                     MenuLayout.Item(name="Import from ROS2 URDF Node", source="File/Import from ROS2 URDF Node"),
                     MenuLayout.Item(name="Export", source="File/Export"),
+                    MenuLayout.Item(name="Export to URDF", source="File/URDF Exporter"),
                     MenuLayout.Seperator(),
                     MenuLayout.Item(name="Add Reference", source="File/Add Reference"),
                     MenuLayout.Item(name="Add Payload", source="File/Add Payload"),
