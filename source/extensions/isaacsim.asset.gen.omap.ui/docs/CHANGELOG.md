@@ -1,7 +1,16 @@
 # Changelog
+
+
+## [2.1.0] - 2025-03-31
+### Changed
+- Menu items were added by MenuHelpers. 
+
 ## [2.0.5] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code
+
+### Added
+- Layout specifically for Occupancy Map was added.
 
 ## [2.0.4] - 2025-01-21
 ### Changed

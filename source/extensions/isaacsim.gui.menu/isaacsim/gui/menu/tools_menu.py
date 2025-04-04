@@ -41,9 +41,7 @@ class ToolsMenuExtension:
                             MenuLayout.Item(
                                 name="Semantics Schema Editor", source="Replicator/Semantics Schema Editor"
                             ),
-                            MenuLayout.Item(
-                                name="Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"
-                            ),
+                            MenuLayout.Item(name="Synthetic Data Recorder"),
                             MenuLayout.Seperator("Orchestrator"),
                             MenuLayout.Item(name="Preview", source="Replicator/Preview"),
                             MenuLayout.Item(name="Start", source="Replicator/Start"),

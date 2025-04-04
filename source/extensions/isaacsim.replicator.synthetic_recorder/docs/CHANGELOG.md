@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.6] - 2025-03-31
+### Changed
+- Window added to menu using MenuHelperWindow
+
 ## [2.2.5] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code

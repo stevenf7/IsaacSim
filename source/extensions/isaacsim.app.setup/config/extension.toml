@@ -1,5 +1,5 @@
 [package]
-version = "1.3.7"
+version = "1.3.8"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -41,7 +41,26 @@ isaac.startup.ros_bridge_extension = ""
 
 [[test]]
 dependencies = [
-    "omni.rtx.settings.core", "omni.pip.cloud",
+   "omni.rtx.settings.core", 
+   "omni.pip.cloud",
+   "omni.graph.window.action",          # window for action graph
+   "isaacsim.asset.gen.omap.ui",            # extension with occupancy map
+   "isaacsim.replicator.synthetic_recorder",    # extension with synthetic_recorder
+   "semantics.schema.editor",            # the extension containing semantics schema editor
+   "omni.kit.window.script_editor",     # window with script editor
+   "omni.kit.viewport.window",                 # viewport
+   "isaacsim.asset.browser",            # isaac sim asset browser
+   "isaacsim.examples.browser",         # robotics examples
+    "omni.kit.window.console",           # console
+    "omni.kit.window.content_browser",     # content browser
+    "omni.kit.window.stage",       # Stage
+    "omni.kit.window.toolbar",     # main tool bar
+   "omni.rtx.settings.core",      # Render Settings window
+   "omni.kit.widget.layers",        # layer window
+]
+
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]
 
 stdoutFailPatterns.exclude = [

@@ -39,6 +39,7 @@ class AssetBrowserWindow(ui.Window):
 
     def __init__(self, visible=True):
         super().__init__(self.WINDOW_TITLE, visible=visible)
+        self.deferred_dock_in("Content")
 
         self._options_menu: Optional[FolderOptionsMenu] = None
 

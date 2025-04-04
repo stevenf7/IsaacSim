@@ -1,5 +1,5 @@
 [package]
-version = "2.2.5"
+version = "2.2.6"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Synthetic Data Recorder"
 description = "The extension provides a UI to record synthetic data using Replicator writers. By default the UI uses the Replicator BasicWriter, it however also supports custom writers with custom parameters loaded through config files as key-value pairs."
@@ -15,6 +15,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.viewport.utility" = {}
 "omni.kit.window.extensions" = {}
+"omni.kit.menu.utils" = {}
 "omni.replicator.core" = {}
 "omni.timeline" = {}
 
