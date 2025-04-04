@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2025-04-02
+### Added
+- URDF Exporter to File menu
+
 ## [2.1.3] - 2025-03-31
 ### Changed
 - Layout menu order
