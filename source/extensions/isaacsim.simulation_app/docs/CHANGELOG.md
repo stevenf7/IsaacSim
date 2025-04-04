@@ -1,4 +1,8 @@
 # Changelog
+## [2.6.0] - 2025-03-31
+### Added
+- Add Kit args to limit cpu thread count to enhance performance by limiting unnecessary context switching
+
 ## [2.5.1] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code
