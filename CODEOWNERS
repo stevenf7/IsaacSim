@@ -31,7 +31,7 @@ source/extensions/isaacsim.core.deprecation_manager/ hmazhar@nvidia.com aserrano
 source/extensions/isaacsim.core.includes/ hmazhar@nvidia.com
 source/extensions/isaacsim.core.nodes/ hmazhar@nvidia.com ayushg@nvidia.com aserranomuno@nvidia.com
 source/extensions/isaacsim.core.prims/ hmazhar@nvidia.com aserranomuno@nvidia.com
-source/extensions/isaacsim.core.simulation_manager/ aserranomuno@nvidia.com
+source/extensions/isaacsim.core.simulation_manager/ hmazhar@nvidia.com aserranomuno@nvidia.com
 source/extensions/isaacsim.core.throttling/ hmazhar@nvidia.com
 source/extensions/isaacsim.core.utils/ hmazhar@nvidia.com aserranomuno@nvidia.com
 source/extensions/isaacsim.core.version/ hmazhar@nvidia.com aserranomuno@nvidia.com
