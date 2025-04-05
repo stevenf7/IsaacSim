@@ -1,4 +1,4 @@
-# Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,15 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
 import carb
 
-old_extension_name = "omni.isaac.occupancy_map"
-new_extension_name = "isaacsim.asset.gen.omap"
+old_extension_name = "omni.isaac.sensor"
 
 # Provide deprecation warning to user
 carb.log_warn(
-    f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
+    f"{old_extension_name}.effort_sensor has been deprecated in favor of isaacsim.sensors.physics.effort_sensor. Please update your code accordingly."
 )
 
-from isaacsim.asset.gen.omap.bindings import _omap as _occupancy_map
-from isaacsim.asset.gen.omap.utils import *
+from isaacsim.sensors.physics import EffortSensor, EsSensorReading

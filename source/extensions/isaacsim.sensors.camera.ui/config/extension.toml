@@ -23,6 +23,9 @@ name = "isaacsim.sensors.camera.ui"
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
+"--/omni/kit/plugin/syncUsdLoads=1",
+"--/rtx/hydra/materialSyncLoads=1",
+"--/rtx/materialDb/syncLoads=1",
 ]
 
 [[test]]

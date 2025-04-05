@@ -34,9 +34,11 @@ class TestImports(omni.kit.test.AsyncTestCase):
         import omni.physx
         import omni.replicator.core as rep
         import omni.usd
-        import rclpy
+
+        # import rclpy
         import usdrt.Sdf
-        from ackermann_msgs.msg import AckermannDriveStamped
+
+        # from ackermann_msgs.msg import AckermannDriveStamped
         from omni.isaac.core import World
         from omni.isaac.core.articulations.articulation import Articulation
         from omni.isaac.core.objects import DynamicCuboid
@@ -64,9 +66,9 @@ class TestImports(omni.kit.test.AsyncTestCase):
         from omni.syntheticdata import helpers
         from omni.usd.commands import DeletePrimsCommand
         from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade, UsdUtils
-        from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
-        from sensor_msgs.msg import Image
 
+        # from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
+        # from sensor_msgs.msg import Image
         from .robot_helpers import init_robot_sim, set_physics_frequency, setup_robot_og
 
         print("All imports successful for extension: omni.isaac.tests")

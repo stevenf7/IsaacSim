@@ -27,5 +27,8 @@ name = "omni.isaac.ui.tests"
 
 [[test]]
 dependencies = [
-   "omni.isaac.core_archive"
+    "isaacsim.examples.extension",
+    "omni.isaac.core",
+    "omni.isaac.core_archive",
+    "omni.isaac.nucleus",
 ]

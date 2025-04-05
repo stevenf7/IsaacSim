@@ -43,13 +43,16 @@ class TestImports(omni.kit.test.AsyncTestCase):
         import omni.usd
         import rclpy
         import std_msgs.msg
-        import trajectory_msgs.msg
+
+        # import trajectory_msgs.msg
         import usdrt.Sdf
-        from ackermann_msgs.msg import AckermannDriveStamped
+
+        # from ackermann_msgs.msg import AckermannDriveStamped
         from builtin_interfaces.msg import Time
-        from cv_bridge.boost.cv_bridge_boost import CV_MAT_CNWrap, CV_MAT_DEPTHWrap, getCvType
-        from geometry_msgs.msg import TransformStamped, Twist
-        from nav_msgs.msg import Odometry
+
+        # from cv_bridge.boost.cv_bridge_boost import CV_MAT_CNWrap, CV_MAT_DEPTHWrap, getCvType
+        # from geometry_msgs.msg import TransformStamped, Twist
+        # from nav_msgs.msg import Odometry
         from omni.isaac.benchmark.services.utils import wait_until_stage_is_fully_loaded_async
         from omni.isaac.core.articulations import Articulation
         from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
@@ -70,14 +73,14 @@ class TestImports(omni.kit.test.AsyncTestCase):
         from omni.kit.viewport.utility import get_active_viewport
         from omni.syntheticdata import sensors
         from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Tf, Usd, UsdGeom, UsdLux, UsdPhysics
-        from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
-        from rosgraph_msgs.msg import Clock
-        from sensor_msgs.msg import CameraInfo, Image, JointState, LaserScan, PointCloud2, PointField
-        from std_msgs.msg import String
-        from tf2_msgs.msg import TFMessage
-        from usd.schema.isaac import ISAAC_NAME_OVERRIDE
-        from vision_msgs.msg import Detection2DArray, Detection3DArray
 
+        # from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
+        # from rosgraph_msgs.msg import Clock
+        # from sensor_msgs.msg import CameraInfo, Image, JointState, LaserScan, PointCloud2, PointField
+        # from std_msgs.msg import String
+        # from tf2_msgs.msg import TFMessage
+        # from usd.schema.isaac import ISAAC_NAME_OVERRIDE
+        # from vision_msgs.msg import Detection2DArray, Detection3DArray
         from .common import (
             add_carter,
             add_carter_ros,

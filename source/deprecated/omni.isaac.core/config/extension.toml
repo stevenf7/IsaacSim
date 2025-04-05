@@ -29,5 +29,10 @@ name = "omni.isaac.core.tests"
 [[test]]
 dependencies = [
     "omni.isaac.cloner",
+    "omni.isaac.nucleus",
+    "omni.isaac.sensor",
     "omni.replicator.core",
+]
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

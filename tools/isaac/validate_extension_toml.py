@@ -18,6 +18,8 @@ This script checks:
 4. Proper spacing between sections (one blank line)
 5. Dependencies in the [dependencies] section are alphabetically sorted
 6. Dependencies in the [[test]] section are alphabetically sorted
+7. (Optional) Required field writeTarget.kit is present and set to true in the [package] section
+   (only when --check-write-target is specified)
 
 When run without arguments, it validates all extension.toml files in the repository
 against all validation rules. It can also fix various issues automatically with the --fix option.
@@ -117,6 +119,7 @@ class ExtensionTomlValidator:
     def __init__(self):
         self.errors = []
         self.fixes_applied = []
+        self._verbose = False  # Add internal flag
 
     def _create_line_mapping(self, content: str) -> Dict[str, int]:
         """
@@ -928,135 +931,179 @@ class ExtensionTomlValidator:
         check_settings_comments: bool = True,
         dry_run: bool = False,
         show_diff: bool = False,
+        check_write_target: bool = False,
+        verbose: bool = False,  # Add verbose parameter
     ) -> List[ValidationError]:
         """
-        Validate a single extension.toml file.
+        Validate a TOML file against the extension.toml style guide.
 
         Args:
-            file_path: Path to the extension.toml file
-            fix_whitespace: Whether to fix missing blank lines between sections
+            file_path: Path to the TOML file
+            fix_whitespace: Whether to fix whitespace issues
             fix_section_order: Whether to fix section order issues
-            fix_package_order: Whether to fix package section field order issues
-            fix_dependencies_order: Whether to fix dependencies alphabetical order issues
-            check_settings_comments: Whether to check if settings have descriptive comments
-            dry_run: If True, don't actually write changes to disk
-            show_diff: If True, generate and show a diff for the fixed file
+            fix_package_order: Whether to fix package field order issues
+            fix_dependencies_order: Whether to fix dependency alphabetical order issues
+            check_settings_comments: Whether to check for missing comments in [settings] section
+            dry_run: Whether to show changes without applying them
+            show_diff: Whether to show diff of changes
+            check_write_target: Whether to check for writeTarget.kit field
+            verbose: Enable verbose output for debugging
 
         Returns:
             List of validation errors
         """
+        self._verbose = verbose  # Store verbose flag for use in other methods
+        if verbose:
+            print(f"DEBUG: Starting validation of {file_path}")
+        if not os.path.exists(file_path):
+            self.errors.append(ValidationError(file_path, "File Not Found", f"File {file_path} does not exist"))
+            return self.errors
+
+        try:
+            with open(file_path, "r") as f:
+                content = f.read()
+        except Exception as e:
+            self.errors.append(ValidationError(file_path, "File Read Error", str(e)))
+            return self.errors
+
+        # Reset the errors list for this file
         self.errors = []
         self.fixes_applied = []
+
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
+            toml_data = toml.loads(content)
+        except Exception as e:
+            self.errors.append(ValidationError(file_path, "TOML Parse Error", str(e)))
+            return self.errors
 
-            # Track line numbers for better error reporting
-            line_mapping = self._create_line_mapping(content)
+        # Create a mapping of section names to line numbers for error reporting
+        line_mapping = self._create_line_mapping(content)
 
-            # Parse TOML
-            try:
-                toml_data = toml.loads(content)
-            except Exception as e:
-                self.errors.append(ValidationError(file_path, "Parse Error", f"Failed to parse TOML: {str(e)}"))
-                return self.errors
+        # If we're using the fix flag, these will be set to true
+        fixed = False
+        fixed_content = content
 
-            # Validate and optionally fix the file
-            fixed_content = content
-            fixed = False
-            whitespace_fixed_by_section_order = False
-
-            # Check section spacing
-            has_spacing_issue = self._check_section_spacing(file_path, content)
-
-            # Check settings comments
-            if check_settings_comments:
-                has_settings_comment_issue = self._validate_settings_comments(file_path, content)
-
-            # Check and fix section order
-            if fix_section_order:
-                sections_order_fixed, fixed_content = self._validate_and_fix_section_order(
-                    file_path, fixed_content, toml_data, line_mapping, True
-                )
-
-                if sections_order_fixed:
-                    fixed = True
-                    whitespace_fixed_by_section_order = True
-                    # Reload line mapping as content has changed
+        # Check for whitespace issues and fix if requested
+        if fix_whitespace:
+            fixed_whitespace = self._fix_whitespace(fixed_content)
+            if fixed_whitespace != fixed_content:
+                fixed_content = fixed_whitespace
+                fixed = True
+                # Reload TOML data and line mapping since content has changed
+                try:
+                    toml_data = toml.loads(fixed_content)
                     line_mapping = self._create_line_mapping(fixed_content)
+                except Exception:
+                    pass
 
-            # Check and fix package section field order
-            if "package" in toml_data and fix_package_order:
+        # Check for section order issues and fix if requested
+        if fix_section_order:
+            sections_fixed, fixed_content = self._validate_and_fix_section_order(
+                file_path, fixed_content, toml_data, line_mapping, True
+            )
+            if sections_fixed:
+                fixed = True
+                # Reload TOML data and line mapping since content has changed
+                try:
+                    toml_data = toml.loads(fixed_content)
+                    line_mapping = self._create_line_mapping(fixed_content)
+                except Exception:
+                    pass
+
+        # Check [package] section
+        if "package" in toml_data:
+            # Check and fix [package] field order
+            if fix_package_order:
                 package_fields_fixed, fixed_content = self._validate_and_fix_package_fields(
                     file_path, fixed_content, toml_data["package"], line_mapping.get("package", 0), True
                 )
-
                 if package_fields_fixed:
                     fixed = True
+                    # Reload TOML data and line mapping since content has changed
+                    try:
+                        toml_data = toml.loads(fixed_content)
+                        line_mapping = self._create_line_mapping(fixed_content)
+                    except Exception:
+                        pass
 
-            # Check and fix test section field order
-            if "test" in toml_data and fix_package_order:  # Reuse fix_package_order flag for test order fixes
-                test_fields_fixed, fixed_content = self._validate_and_fix_test_fields(
+            # Check for appropriate writeTarget.kit presence
+            if check_write_target:
+                write_target_fixed, fixed_content = self._validate_required_write_target_kit(
+                    file_path, fixed_content, toml_data["package"], line_mapping.get("package", 0), True
+                )
+                if write_target_fixed:
+                    fixed = True
+                    # Reload TOML data and line mapping since content has changed
+                    try:
+                        toml_data = toml.loads(fixed_content)
+                        line_mapping = self._create_line_mapping(fixed_content)
+                    except Exception:
+                        pass
+
+        # Check spacing between sections
+        self._check_section_spacing(file_path, fixed_content)
+
+        # Check [settings] section comments
+        if check_settings_comments and "settings" in toml_data:
+            self._validate_settings_comments(file_path, fixed_content)
+
+        # Check and fix test section field order
+        if "test" in toml_data and fix_package_order:  # Reuse fix_package_order flag for test order fixes
+            test_fields_fixed, fixed_content = self._validate_and_fix_test_fields(
+                file_path, fixed_content, toml_data, line_mapping, True
+            )
+
+            if test_fields_fixed:
+                fixed = True
+
+        # Check and fix test section order
+        # print("DEBUG: About to call _validate_test_section_order") # <<< Removed debug print
+        has_multiple_unnamed, has_order_issue = self._validate_test_section_order(file_path, fixed_content)
+        # print(f"DEBUG: _validate_test_section_order returned: multiple_unnamed={has_multiple_unnamed}, order_issue={has_order_issue}") # <<< Removed debug print
+
+        if (has_order_issue or has_multiple_unnamed) and fix_section_order:  # Reuse fix_section_order flag
+            # print("DEBUG: Order issue detected, fixing with _validate_and_fix_test_section_order") # <<< Removed debug print
+            test_order_fixed, fixed_content = self._validate_and_fix_test_section_order(file_path, fixed_content, True)
+            # print(f"DEBUG: _validate_and_fix_test_section_order returned: {test_order_fixed}") # <<< Removed debug print
+            if test_order_fixed:
+                fixed = True
+                # print(f"DEBUG: Fixed content length after test order fix: {len(fixed_content)}") # <<< Removed debug print
+                # Reload TOML data and line mapping since content has changed
+                try:
+                    toml_data = toml.loads(fixed_content)
+                    line_mapping = self._create_line_mapping(fixed_content)
+                except Exception:
+                    pass
+
+        # Check and fix dependencies alphabetical order
+        if fix_dependencies_order:
+            # Fix dependencies section
+            if "dependencies" in toml_data:
+                deps_fixed, fixed_content = self._validate_and_fix_dependencies_order(
                     file_path, fixed_content, toml_data, line_mapping, True
                 )
+                if deps_fixed:
+                    fixed = True
+                    # Reload TOML data and line mapping since content has changed
+                    try:
+                        toml_data = toml.loads(fixed_content)
+                        line_mapping = self._create_line_mapping(fixed_content)
+                    except Exception:
+                        pass
 
-                if test_fields_fixed:
+            # Fix test dependencies
+            if "test" in toml_data:
+                test_deps_fixed, fixed_content = self._validate_and_fix_test_dependencies_order(
+                    file_path, fixed_content, toml_data, line_mapping, True
+                )
+                if test_deps_fixed:
                     fixed = True
 
-            # Check and fix dependencies alphabetical order
-            if fix_dependencies_order:
-                # Fix dependencies section
-                if "dependencies" in toml_data:
-                    deps_fixed, fixed_content = self._validate_and_fix_dependencies_order(
-                        file_path, fixed_content, toml_data, line_mapping, True
-                    )
-                    if deps_fixed:
-                        fixed = True
-                        # Reload TOML data and line mapping since content has changed
-                        try:
-                            toml_data = toml.loads(fixed_content)
-                            line_mapping = self._create_line_mapping(fixed_content)
-                        except Exception:
-                            pass
-
-                # Fix test dependencies
-                if "test" in toml_data:
-                    test_deps_fixed, fixed_content = self._validate_and_fix_test_dependencies_order(
-                        file_path, fixed_content, toml_data, line_mapping, True
-                    )
-                    if test_deps_fixed:
-                        fixed = True
-
-            # Check deprecation section
-            if "deprecation" in toml_data:
-                self._validate_deprecation_section(
-                    file_path, toml_data["deprecation"], line_mapping.get("deprecation", 0)
-                )
-
-            # Fix whitespace issues - only if we haven't already fixed whitespace with section order
-            if fix_whitespace and not whitespace_fixed_by_section_order:
-                # Re-parse TOML to ensure we have the latest structure after other fixes
-                try:
-                    fixed_toml = toml.loads(fixed_content)
-                    # Fix spacing issues
-                    whitespace_fixed_content = self._fix_whitespace(fixed_content)
-                    if whitespace_fixed_content != fixed_content:
-                        fixed_content = whitespace_fixed_content
-                        fixed = True
-                        if not any(fix.startswith("Fix") or fix.startswith("Reduced") for fix in self.fixes_applied):
-                            self.fixes_applied.append("Fixed whitespace between sections")
-                except Exception as e:
-                    self.errors.append(ValidationError(file_path, "Error", f"Error fixing whitespace: {str(e)}"))
-
-            # Write the fixed content back to the file if needed
-            if fixed:
-                if not dry_run:
-                    self._apply_fixes(file_path, fixed_content, toml_data)
-                else:
-                    self._report_fixes(file_path, content, fixed_content, show_diff)
-
-        except Exception as e:
-            self.errors.append(ValidationError(file_path, "Error", f"Unexpected error during validation: {str(e)}"))
+        # If the file was fixed, apply changes
+        if fixed and not dry_run:
+            self._apply_fixes(file_path, fixed_content, toml_data)
+        elif fixed and dry_run:
+            self._report_fixes(file_path, content, fixed_content, show_diff)
 
         return self.errors
 
@@ -1505,7 +1552,7 @@ class ExtensionTomlValidator:
             return False, content
 
         # Extract the test sections - this will automatically filter out empty test sections
-        test_section_lines, array_section_content = self._extract_test_sections(content)
+        test_section_lines, array_section_content, _, _ = self._extract_test_sections(content)  # Fix unpacking
 
         if not test_section_lines or not array_section_content:
             return False, content
@@ -1587,44 +1634,47 @@ class ExtensionTomlValidator:
     def _extract_test_sections(self, content: str) -> Tuple[List[int], List[List[str]]]:
         """
         Extract all [[test]] sections from the content.
+        Also returns the start line of the first test section and end line of the last test section.
 
         Args:
             content: The raw TOML content
 
         Returns:
-            Tuple of (section_line_numbers, section_contents) where section_contents
-            is a list of lists, each containing the lines for a test section
+            Tuple of (section_line_numbers, section_contents, block_start_line, block_end_line)
+            where block_start_line and block_end_line define the contiguous block containing all [[test]] sections.
+            Returns (-1, -1) for block lines if no test sections are found.
         """
         lines = content.split("\n")
         section_line_numbers = []
         section_contents = []
+        block_start_line = -1
+        block_end_line = -1
 
         in_test_section = False
         current_section_lines = []
+        current_section_start_line = -1
 
         for i, line in enumerate(lines):
             line_stripped = line.strip()
 
             # Check for start of test section
             if line_stripped == "[[test]]":
+                # If this is the first test section encountered, mark the block start
+                if block_start_line == -1:
+                    block_start_line = i
+
                 in_test_section = True
 
                 # If we already have a test section started, add it to our list
                 if current_section_lines:
                     # Only add non-empty sections
-                    has_content = False
-                    for section_line in current_section_lines[1:]:  # Skip header
-                        stripped = section_line.strip()
-                        if stripped and not stripped.startswith("#"):
-                            has_content = True
-                            break
-
-                    if has_content:
-                        section_line_numbers.append(i - len(current_section_lines))
+                    if any(l.strip() and not l.strip().startswith("#") for l in current_section_lines[1:]):
+                        section_line_numbers.append(current_section_start_line)
                         section_contents.append(current_section_lines)
 
                 # Start a new section
                 current_section_lines = [line]
+                current_section_start_line = i
             # Check for end of section (next section header)
             elif (
                 in_test_section
@@ -1632,39 +1682,315 @@ class ExtensionTomlValidator:
                 or (line_stripped.startswith("[[") and not line_stripped.startswith("[[test]]"))
             ):
                 in_test_section = False
+                block_end_line = i  # Mark the end of the block
 
-                # Only add non-empty sections
-                has_content = False
-                for section_line in current_section_lines[1:]:  # Skip header
-                    stripped = section_line.strip()
-                    if stripped and not stripped.startswith("#"):
-                        has_content = True
-                        break
-
-                if has_content:
-                    section_line_numbers.append(i - len(current_section_lines))
+                # Add the last test section if it's non-empty
+                if current_section_lines and any(
+                    l.strip() and not l.strip().startswith("#") for l in current_section_lines[1:]
+                ):
+                    section_line_numbers.append(current_section_start_line)
                     section_contents.append(current_section_lines)
 
-                current_section_lines = []
+                current_section_lines = []  # Reset
+                # Since we found the end, break the loop for test sections
+                break
             # Add content lines to current section
             elif in_test_section:
                 current_section_lines.append(line)
 
-        # Add the last section if there is one
-        if current_section_lines:
+        # Add the last section if there is one and we didn't break early
+        if in_test_section and current_section_lines:
+            block_end_line = len(lines)  # Reaches end of file
             # Only add non-empty sections
-            has_content = False
-            for section_line in current_section_lines[1:]:  # Skip header
-                stripped = section_line.strip()
-                if stripped and not stripped.startswith("#"):
-                    has_content = True
-                    break
-
-            if has_content:
-                section_line_numbers.append(len(lines) - len(current_section_lines))
+            if any(l.strip() and not l.strip().startswith("#") for l in current_section_lines[1:]):
+                section_line_numbers.append(current_section_start_line)
                 section_contents.append(current_section_lines)
 
-        return section_line_numbers, section_contents
+        return section_line_numbers, section_contents, block_start_line, block_end_line
+
+    def _validate_test_section_order(self, file_path: str, content: str) -> Tuple[bool, bool]:
+        """
+        Validate that:
+        1. There is only one unnamed test section
+        2. Unnamed test sections appear before named test sections
+
+        Args:
+            file_path: Path to the file being validated
+            content: The file content to check
+
+        Returns:
+            Tuple of (has_multiple_unnamed_sections, has_order_issue)
+        """
+        if self._verbose:
+            print(f"DEBUG: Validating test section order in {file_path}")
+        lines = content.split("\n")
+
+        # Extract all test sections with their names and line numbers
+        test_sections_info = []  # List of tuples: (start_line, has_name)
+        in_test_section = False
+        current_section_start = -1
+        current_section_has_name = False
+
+        # Find all test sections and whether they have a name field
+        for i, line in enumerate(lines):
+            line_stripped = line.strip()
+
+            # Start of a test section
+            if line_stripped == "[[test]]":
+                # If we were already in a section, save the previous one
+                if in_test_section:
+                    test_sections_info.append((current_section_start, current_section_has_name))
+
+                # Start tracking the new section
+                in_test_section = True
+                current_section_start = i
+                current_section_has_name = False
+                # if self._verbose: # <<< Optional: Add verbose check here if needed
+                #     print(f"DEBUG: Found test section at line {i}")
+                continue
+
+            # Process lines within a test section
+            if in_test_section:
+                # Check if the line defines a name
+                if line_stripped.startswith("name") and "=" in line_stripped and not line_stripped.endswith("["):
+                    # if self._verbose: # <<< Optional: Add verbose check here if needed
+                    #     print(f"DEBUG: Found name at line {i}: '{line_stripped}'")
+                    current_section_has_name = True
+                # End of test section block (start of a new, non-test section)
+                elif (line_stripped.startswith("[") and not line_stripped.startswith("[[")) or (
+                    line_stripped.startswith("[[") and not line_stripped.startswith("[[test]]")
+                ):
+                    # if self._verbose: # <<< Optional: Add verbose check here if needed
+                    #     print(f"DEBUG: End of section at line {i}")
+                    # Save the last test section info
+                    test_sections_info.append((current_section_start, current_section_has_name))
+                    in_test_section = False  # Stop processing test sections
+                    break
+
+        # Add the last section if we reached the end of the file while in a test section
+        if in_test_section:
+            test_sections_info.append((current_section_start, current_section_has_name))
+
+        # Now check for issues based on the collected info
+        unnamed_sections = [section for section in test_sections_info if not section[1]]
+        named_sections = [section for section in test_sections_info if section[1]]
+
+        if self._verbose:
+            print(f"DEBUG: test_sections_info = {test_sections_info}")
+            print(f"DEBUG: unnamed_sections = {unnamed_sections}")
+            print(f"DEBUG: named_sections = {named_sections}")
+
+        has_multiple_unnamed_sections = len(unnamed_sections) > 1
+        has_order_issue = False
+
+        # Check if there are multiple unnamed sections
+        if has_multiple_unnamed_sections:
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "Test Section Structure",
+                    f"Found {len(unnamed_sections)} unnamed [[test]] sections. Only one unnamed test section is allowed.",
+                    unnamed_sections[1][0] + 1,  # Report error at the second unnamed section
+                )
+            )
+
+        # Check if unnamed sections come before named sections
+        if unnamed_sections and named_sections:
+            # Find the line number of the last unnamed section
+            max_unnamed_line = max(section[0] for section in unnamed_sections)
+            # Find the line number of the first named section
+            min_named_line = min(section[0] for section in named_sections)
+
+            if self._verbose:
+                print(f"DEBUG: max_unnamed_line={max_unnamed_line}, min_named_line={min_named_line}")
+
+            if max_unnamed_line > min_named_line:
+                has_order_issue = True
+                # Find the first named section that appears before the last unnamed section
+                offending_named_section = min(
+                    (s for s in named_sections if s[0] < max_unnamed_line), key=lambda x: x[0]
+                )
+                self.errors.append(
+                    ValidationError(
+                        file_path,
+                        "Test Section Order",
+                        f"Named [[test]] section at line {offending_named_section[0] + 1} appears before unnamed section at line {max_unnamed_line + 1}. Unnamed section must come first.",
+                        offending_named_section[0] + 1,
+                    )
+                )
+
+        if self._verbose:
+            print(
+                f"DEBUG: has_multiple_unnamed_sections={has_multiple_unnamed_sections}, has_order_issue={has_order_issue}"
+            )
+
+        return has_multiple_unnamed_sections, has_order_issue
+
+    def _validate_and_fix_test_section_order(self, file_path: str, content: str, fix: bool = False) -> Tuple[bool, str]:
+        """
+        Validate and fix the order of test sections:
+        1. Ensure only one unnamed test section (keeps the first one found)
+        2. Ensure the unnamed test section appears before named test sections
+        3. Sort named test sections alphabetically by their 'name' field.
+
+        Args:
+            file_path: Path to the file being validated
+            content: Raw TOML content
+            fix: Whether to fix found issues
+
+        Returns:
+            Tuple of (was_fixed, fixed_content)
+        """
+        has_multiple_unnamed_sections, has_order_issue = self._validate_test_section_order(file_path, content)
+
+        # If there are no issues or we're not fixing, just return
+        if (not has_multiple_unnamed_sections and not has_order_issue) or not fix:
+            return False, content
+
+        if self._verbose:
+            print(f"DEBUG: Fixing issues: multi_unnamed={has_multiple_unnamed_sections}, order_issue={has_order_issue}")
+
+        lines = content.split("\n")
+
+        # Extract all test sections with content, name, and track block boundaries
+        section_lines, section_contents, block_start, block_end = self._extract_test_sections(content)
+
+        # If no test sections found, something is wrong (or file changed)
+        if block_start == -1:
+            return False, content
+
+        unnamed_test_sections = []
+        named_test_sections = []  # List of tuples: (section_content_list, name_value)
+
+        for section_content in section_contents:
+            has_name = False
+            section_name = ""
+            # Check for name field within the section content
+            for line in section_content:
+                line_stripped = line.strip()
+                if line_stripped.startswith("name") and "=" in line_stripped and not line_stripped.endswith("["):
+                    has_name = True
+                    try:
+                        name_value = line_stripped.split("=", 1)[1].strip()
+                        # Remove quotes if present
+                        if name_value.startswith('"') and name_value.endswith('"'):
+                            name_value = name_value[1:-1]
+                        section_name = name_value
+                    except:
+                        pass  # Ignore potential errors in extracting name
+                    break  # Found name, no need to check further lines in this section
+
+            if has_name:
+                if self._verbose:
+                    print(f"DEBUG: Found named section: {section_name}")
+                named_test_sections.append((section_content, section_name))
+            else:
+                if self._verbose:
+                    print(f"DEBUG: Found unnamed section")
+                unnamed_test_sections.append(section_content)
+
+        # Handle multiple unnamed test sections - keep only the first one found
+        kept_unnamed_section = []
+        if unnamed_test_sections:
+            kept_unnamed_section = unnamed_test_sections[0]  # Keep the first one
+            if len(unnamed_test_sections) > 1:
+                self.fixes_applied.append(
+                    f"Removed {len(unnamed_test_sections) - 1} duplicate unnamed test sections, keeping the first."
+                )
+
+        # Sort named test sections alphabetically by name
+        named_test_sections.sort(key=lambda x: x[1])  # Sort by name (index 1)
+
+        # Rebuild the block content
+        reordered_block_lines = []
+
+        # Add the single unnamed section first (if it exists)
+        if kept_unnamed_section:
+            reordered_block_lines.extend(kept_unnamed_section)
+
+        # Add named sections
+        for i, (section_content, _) in enumerate(named_test_sections):
+            # Add a blank line before this named section if it's not the first section in the block
+            # OR if it follows the unnamed section
+            if kept_unnamed_section or i > 0:
+                # Check if the last line added wasn't already blank
+                if reordered_block_lines and reordered_block_lines[-1].strip():
+                    reordered_block_lines.append("")
+            reordered_block_lines.extend(section_content)
+
+        # Combine the parts of the file
+        # Content before the block + reordered block + content after the block
+        fixed_content_lines = lines[:block_start] + reordered_block_lines + lines[block_end:]
+
+        # Add messages about fixes
+        if has_multiple_unnamed_sections:
+            # Message already added when selecting the kept section
+            pass
+        if has_order_issue:
+            self.fixes_applied.append("Reordered [[test]] sections (unnamed first, then named alphabetically)")
+        elif named_test_sections:
+            # Check if the order actually changed
+            original_named_order = [
+                name for _, name in named_test_sections
+            ]  # Original extracted order might not be sorted
+            # Extract names based on original section_contents order
+            original_named_names = []
+            for section_content in section_contents:
+                section_name = None
+                for line in section_content:
+                    line_stripped = line.strip()
+                    if line_stripped.startswith("name") and "=" in line_stripped and not line_stripped.endswith("["):
+                        try:
+                            name_value = line_stripped.split("=", 1)[1].strip().strip('"')
+                            section_name = name_value
+                        except:
+                            pass
+                        break
+                if section_name is not None:
+                    original_named_names.append(section_name)
+
+            sorted_original_names = sorted(original_named_names)
+            if original_named_names != sorted_original_names:
+                self.fixes_applied.append("Sorted named [[test]] sections alphabetically")
+
+        if self._verbose:
+            print(f"DEBUG: Test position: {block_start}")  # Use block_start as test position indicator
+
+        fixed_content = "\n".join(fixed_content_lines)
+
+        # Run whitespace fixer again to ensure proper spacing around the modified block
+        fixed_content = self._fix_whitespace(fixed_content)
+
+        # Remove potential duplicate whitespace messages added by the second call
+        ws_fixes = [
+            "Reduced excessive blank lines between sections to exactly one",
+            "Added required blank lines between sections",
+            "Removed extra empty lines at start and/or end of file",
+            "Standardized lines with only whitespace characters to empty lines",
+            "Fixed spacing between sections (added missing blank lines and reduced excessive blank lines)",
+        ]
+        # Keep only the last instance of each whitespace fix message
+        final_fixes = []
+        seen_ws_fixes = set()
+        for fix_msg in reversed(self.fixes_applied):
+            if fix_msg in ws_fixes:
+                if fix_msg not in seen_ws_fixes:
+                    final_fixes.insert(0, fix_msg)
+                    seen_ws_fixes.add(fix_msg)
+            else:
+                final_fixes.insert(0, fix_msg)
+        self.fixes_applied = final_fixes
+
+        if self._verbose:
+            print(f"DEBUG: Original content length: {len(content)}, Fixed content length: {len(fixed_content)}")
+
+        # Return True if any structural change was made
+        was_fixed = (
+            has_multiple_unnamed_sections
+            or has_order_issue
+            or (named_test_sections and original_named_names != sorted_original_names)
+        )
+        return was_fixed, fixed_content
 
     def _check_test_field_order(self, file_path: str, test_section: Dict, section_line: int) -> bool:
         """
@@ -1894,6 +2220,206 @@ class ExtensionTomlValidator:
                 colored_diff.append(line)
         return "\n".join(colored_diff)
 
+    def _validate_required_write_target_kit(
+        self, file_path: str, content: str, package_data: Dict, section_line: int, fix: bool = False
+    ) -> Tuple[bool, str]:
+        """
+        Validate that the package section contains the required writeTarget.kit = true field.
+        If fix=True, adds the missing field if needed.
+
+        Args:
+            file_path: Path to the TOML file
+            content: Raw TOML content
+            package_data: Parsed data for the [package] section
+            section_line: Line number where the [package] section starts
+            fix: Whether to fix found issues
+
+        Returns:
+            Tuple of (was_fixed, fixed_content)
+        """
+        fixed = False
+        fixed_content = content
+
+        # Check for existing writeTarget.kit in the raw content
+        # This handles cases where the field exists but might not be properly parsed
+        lines = content.split("\n")
+        in_package_section = False
+        field_exists_in_content = False
+
+        for line in lines:
+            line_stripped = line.strip()
+
+            # Find package section boundaries
+            if line_stripped == "[package]":
+                in_package_section = True
+                continue
+            elif in_package_section and line_stripped.startswith("[") and not line_stripped.startswith('["'):
+                # End of package section
+                break
+
+            # Check for writeTarget.kit in the package section
+            if in_package_section and "writeTarget.kit" in line_stripped:
+                field_exists_in_content = True
+                break
+
+        # If the field exists in content but not in parsed data, there might be a TOML parse issue
+        # We should not add a duplicate in this case
+        if field_exists_in_content and "writeTarget.kit" not in package_data:
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "TOML Parse Issue",
+                    "Field 'writeTarget.kit' exists in file but was not properly parsed. Check for duplicate entries or syntax errors.",
+                    section_line,
+                )
+            )
+            return False, content
+
+        # Check if writeTarget.kit exists and is set to true
+        if not field_exists_in_content and "writeTarget.kit" not in package_data:
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "Required Field Missing",
+                    "Required field 'writeTarget.kit = true' is missing in [package] section",
+                    section_line,
+                )
+            )
+
+            # Fix: Add the missing field if fix=True
+            if fix:
+                # Find the [package] section in the content
+                lines = content.split("\n")
+                in_package_section = False
+                package_section_end = 0
+                package_section_start = 0
+
+                for i, line in enumerate(lines):
+                    line_stripped = line.strip()
+
+                    # Find start of package section
+                    if line_stripped == "[package]":
+                        in_package_section = True
+                        package_section_start = i
+                        continue
+
+                    # Find end of package section
+                    if in_package_section and (line_stripped.startswith("[") and not line_stripped.startswith('["')):
+                        package_section_end = i
+                        break
+
+                # If we didn't find the end, it's the last section
+                if package_section_end == 0:
+                    package_section_end = len(lines)
+
+                # Get the package section content
+                package_section_lines = lines[package_section_start + 1 : package_section_end]
+
+                # Find proper position to insert writeTarget.kit
+                # First try to find writeTarget.platform to place it before that
+                insert_index = None
+
+                # Iterate through package section lines to find the best place to insert
+                for i, line in enumerate(package_section_lines):
+                    line_stripped = line.strip()
+                    if "writeTarget.platform" in line_stripped:
+                        # Insert right before writeTarget.platform
+                        insert_index = package_section_start + 1 + i
+                        break
+                    elif "feature" in line_stripped or "deprecation" in line_stripped:
+                        # These typically come after writeTarget fields
+                        insert_index = package_section_start + 1 + i
+                        break
+
+                # If we didn't find a specific place, add it at the end of the section
+                # but before any empty lines that precede the next section
+                if insert_index is None:
+                    # Find the last non-empty line in the package section
+                    last_content_line = package_section_start
+                    for i, line in enumerate(package_section_lines):
+                        if line.strip():
+                            last_content_line = package_section_start + 1 + i
+
+                    # Insert after the last content line
+                    insert_index = last_content_line + 1
+
+                # Add the writeTarget.kit = true field
+                lines.insert(insert_index, "writeTarget.kit = true")
+
+                # Clean up spacing:
+                # 1. Remove any consecutive empty lines in the package section
+                # 2. Ensure exactly one empty line before the next section
+
+                # First recalculate the section end since we inserted a line
+                package_section_end += 1
+
+                # Clean up the spacing at the end of the package section
+                i = insert_index + 1
+                empty_line_count = 0
+
+                # Only process if there are lines after our insert and before the next section
+                if i < package_section_end:
+                    # Count consecutive empty lines after our insertion
+                    while i < package_section_end and not lines[i].strip():
+                        empty_line_count += 1
+                        i += 1
+
+                    # If we're at the end of the file, remove all empty lines
+                    if package_section_end >= len(lines):
+                        if empty_line_count > 0:
+                            lines = lines[: insert_index + 1] + lines[insert_index + 1 + empty_line_count :]
+                    # If there's another section after this, ensure exactly one empty line
+                    elif empty_line_count == 0:
+                        # No empty line, add one
+                        lines.insert(insert_index + 1, "")
+                    elif empty_line_count > 1:
+                        # Too many empty lines, remove extras
+                        lines = lines[: insert_index + 2] + lines[insert_index + 1 + empty_line_count :]
+
+                fixed_content = "\n".join(lines)
+                fixed = True
+                self.fixes_applied.append("Added required 'writeTarget.kit = true' to [package] section")
+
+        elif field_exists_in_content and package_data.get("writeTarget.kit") is not True:
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "Invalid Field Value",
+                    f"Field 'writeTarget.kit' in [package] section must be set to true, found: {package_data['writeTarget.kit']}",
+                    section_line,
+                )
+            )
+
+            # Fix: Correct the field value if fix=True
+            if fix:
+                # Find and replace the incorrect value
+                lines = content.split("\n")
+                in_package_section = False
+
+                for i, line in enumerate(lines):
+                    line_stripped = line.strip()
+
+                    # Find start of package section
+                    if line_stripped == "[package]":
+                        in_package_section = True
+                        continue
+
+                    # Find the writeTarget.kit line and fix it
+                    if in_package_section and "writeTarget.kit" in line_stripped:
+                        # Replace the entire line with the correct value
+                        lines[i] = line.split("=")[0] + "= true"
+                        break
+
+                    # End of package section
+                    if in_package_section and (line_stripped.startswith("[") and not line_stripped.startswith('["')):
+                        break
+
+                fixed_content = "\n".join(lines)
+                fixed = True
+                self.fixes_applied.append("Fixed 'writeTarget.kit' value to true in [package] section")
+
+        return fixed, fixed_content
+
 
 def find_extension_toml_files(root_dir: str, specific_dir: Optional[str] = None) -> List[str]:
     """
@@ -1936,7 +2462,11 @@ def main():
     )
     # Fix options
     fix_group = parser.add_argument_group("fix options")
-    fix_group.add_argument("--fix", action="store_true", help="Automatically fix all issues")
+    fix_group.add_argument(
+        "--fix",
+        action="store_true",
+        help="Automatically fix all issues (spacing, section order, field order, dependencies order, and adds missing writeTarget.kit = true if --check-write-target is specified)",
+    )
     fix_group.add_argument(
         "--fix-whitespace",
         action="store_true",
@@ -1957,6 +2487,11 @@ def main():
         help="Don't show diffs in dry-run mode, only report files that would be changed",
     )
     parser.add_argument("--no-color", action="store_true", help="Disable colored output in diffs")
+    parser.add_argument(
+        "--check-write-target",
+        action="store_true",
+        help="Check for and add the required writeTarget.kit = true field to the [package] section",
+    )
 
     args = parser.parse_args()
 
@@ -1970,13 +2505,14 @@ def main():
     fix_section_order = args.fix or args.fix_section_order
     fix_package_order = args.fix or args.fix_package_order
     fix_dependencies_order = args.fix or args.fix_dependencies_order
+    check_write_target = args.check_write_target
 
     # Settings comments are always checked by default
     check_settings_comments = True
 
-    # Enable verbose output when running without arguments
-    if len(sys.argv) == 1:
-        args.verbose = True
+    # Enable verbose output when running without arguments - Removed this default behavior
+    # if len(sys.argv) == 1:
+    #     args.verbose = True
 
     validator = ExtensionTomlValidator()
     return process_files(
@@ -1987,6 +2523,7 @@ def main():
         fix_package_order,
         fix_dependencies_order,
         check_settings_comments,
+        check_write_target,
     )
 
 
@@ -2048,6 +2585,7 @@ def process_files(
     fix_package_order,
     fix_dependencies_order,
     check_settings_comments,
+    check_write_target,
 ):
     """
     Process files based on the provided arguments.
@@ -2060,6 +2598,7 @@ def process_files(
         fix_package_order: Whether to fix package field order issues
         fix_dependencies_order: Whether to fix dependencies alphabetical order issues
         check_settings_comments: Whether to check for comments above settings
+        check_write_target: Whether to check for and add writeTarget.kit field
 
     Returns:
         Exit code (0 for success, 1 for errors)
@@ -2094,6 +2633,8 @@ def process_files(
             check_settings_comments=check_settings_comments,
             dry_run=args.dry_run,
             show_diff=args.dry_run and not args.no_diff,
+            check_write_target=check_write_target,
+            verbose=args.verbose,  # Pass verbose flag here
         )
         all_errors.extend(errors)
         if validator.fixes_applied:
@@ -2107,7 +2648,8 @@ def process_files(
             print(f"No extension.toml files found to validate.")
             return 1
 
-        if args.verbose or len(sys.argv) == 1:  # No arguments provided, running in default mode
+        # Simplify the check here, just use args.verbose
+        if args.verbose:
             print(f"Found {len(toml_files)} extension.toml files to validate.")
 
         for file_path in toml_files:
@@ -2129,6 +2671,8 @@ def process_files(
                 check_settings_comments=check_settings_comments,
                 dry_run=args.dry_run,
                 show_diff=show_diff,
+                check_write_target=check_write_target,
+                verbose=args.verbose,  # Pass verbose flag here
             )
             all_errors.extend(errors)
             if validator.fixes_applied:

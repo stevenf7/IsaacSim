@@ -28,5 +28,4 @@ name = "omni.isaac.unit_converter"
 
 [[test]]
 dependencies = [
-   "omni.isaac.ui"
 ]

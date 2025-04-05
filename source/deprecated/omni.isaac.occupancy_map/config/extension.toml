@@ -21,3 +21,9 @@ name = "omni.isaac.occupancy_map"
 
 [[python.module]]
 name = "omni.isaac.occupancy_map.tests"
+
+[[test]]
+dependencies = [
+    "omni.isaac.core",
+    "omni.isaac.nucleus",
+]

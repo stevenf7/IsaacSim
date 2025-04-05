@@ -25,6 +25,10 @@ name = "omni.isaac.tests.tests"
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]
+dependencies = [
+    "omni.isaac.core",
+    "omni.isaac.nucleus",
+]
 
 [[test]]
 name = "startup"

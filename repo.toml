@@ -173,7 +173,7 @@ name = "-u"
 ########################################################################################################################
 
 [repo_precache_exts]
-# generated_app_path = ""
+generated_app_path = ""
 enabled = true
 kit_omit_ext_version = false
 # Extra args to pass to kit

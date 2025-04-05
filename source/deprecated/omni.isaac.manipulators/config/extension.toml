@@ -26,6 +26,10 @@ name = "omni.isaac.manipulators"
 name = "omni.isaac.manipulators.tests"
 
 [[test]]
+dependencies = [
+    "omni.isaac.core",
+    "omni.isaac.nucleus",
+]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

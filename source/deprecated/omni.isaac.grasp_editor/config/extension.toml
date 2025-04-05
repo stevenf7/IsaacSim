@@ -23,5 +23,6 @@ name = "omni.isaac.grasp_editor.tests"
 
 [[test]]
 dependencies = [
-   "omni.isaac.core"
+   "omni.isaac.core",
+   "omni.isaac.nucleus"
 ]

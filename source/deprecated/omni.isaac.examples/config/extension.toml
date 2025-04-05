@@ -18,6 +18,7 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.exam
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.examples.interactive" = {}
+"isaacsim.robot.policy.examples" = {}
 
 [[python.module]]
 name = "omni.isaac.examples"

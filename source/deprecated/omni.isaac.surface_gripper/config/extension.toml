@@ -26,11 +26,9 @@ name = "omni.isaac.surface_gripper"
 name = "omni.isaac.surface_gripper.tests"
 
 [[test]]
-stdoutFailPatterns.exclude = [
-    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
-]
-
-[[test]]
 dependencies = [
    "omni.isaac.core"
+]
+stdoutFailPatterns.exclude = [
+    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]

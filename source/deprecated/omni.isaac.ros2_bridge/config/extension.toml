@@ -25,6 +25,13 @@ name = "omni.isaac.ros2_bridge"
 name = "omni.isaac.ros2_bridge.tests"
 
 [[test]]
+dependencies = [
+    "omni.isaac.benchmark.services",
+    "omni.isaac.core",
+    "omni.isaac.core_nodes",
+    "omni.isaac.nucleus",
+    "omni.isaac.sensor",
+]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]
