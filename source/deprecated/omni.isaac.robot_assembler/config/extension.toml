@@ -1,5 +1,5 @@
 [package]
-version = "2.0.4"
+version = "2.0.5"
 category = "Simulation"
 title = "Robot Assembler"
 description = "Alpha version of Robot Assembler Extension: Assemble multiple Articulations into a single robot"
@@ -20,3 +20,9 @@ warning = "Extension deprecated since Isaac Sim 4.5.0. Replaced by isaacsim.robo
 
 [[python.module]]
 name = "omni.isaac.robot_assembler.tests"
+
+[[test]]
+dependencies = [
+    "omni.isaac.core",
+    "omni.isaac.nucleus"
+]

@@ -23,7 +23,6 @@ class TestImports(omni.kit.test.AsyncTestCase):
         from omni.isaac.core.utils.stage import open_stage_async
         from omni.isaac.nucleus import get_assets_root_path_async
         from omni.isaac.range_sensor import _range_sensor
-        from omni.syntheticdata.tests.utils import add_semantics
         from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
 
         print("All imports successful for extension: omni.isaac.range_sensor")

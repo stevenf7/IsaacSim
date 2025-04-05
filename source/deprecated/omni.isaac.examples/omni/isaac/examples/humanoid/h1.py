@@ -13,4 +13,4 @@ carb.log_warn(
     "omni.isaac.examples has been deprecated in favor of isaacsim.examples.interactive. Please update your code accordingly."
 )
 
-from isaacsim.examples.interactive.humanoid.h1 import *
+from isaacsim.robot.policy.examples.robots.h1 import *

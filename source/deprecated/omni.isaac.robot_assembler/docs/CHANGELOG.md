@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.5] - 2025-04-02
+### Fixed
+- Missing unit test directory
+
 ## [2.0.4] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code

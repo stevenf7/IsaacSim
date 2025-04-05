@@ -28,7 +28,7 @@ name = "omni.isaac.wheeled_robots.tests"
 [[test]]
 dependencies = [
     "omni.isaac.core",
-    "omni.isaac.core_archive",
+    "omni.isaac.nucleus",
 ]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

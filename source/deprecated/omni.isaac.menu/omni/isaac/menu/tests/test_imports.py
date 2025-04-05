@@ -28,8 +28,6 @@ class TestImports(omni.kit.test.AsyncTestCase):
         from omni.isaac.range_sensor import _range_sensor
         from omni.isaac.sensor import _sensor
         from omni.kit.mainwindow import get_main_window
-        from omni.kit.viewport.utility import get_active_viewport, get_active_viewport_window
-        from omni.kit.viewport.utility.tests.capture import capture_viewport_and_wait, finalize_capture_and_compare
         from pxr import UsdGeom, UsdPhysics
 
         print("All imports successful for extension: omni.isaac.menu")

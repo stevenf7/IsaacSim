@@ -39,7 +39,8 @@ name = "omni.isaac.sensor.tests"
 
 [[test]]
 dependencies = [
-   "omni.isaac.core"
+   "omni.isaac.core",
+   "omni.isaac.nucleus"
 ]
 args = [
 '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',

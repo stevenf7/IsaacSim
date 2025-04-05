@@ -25,7 +25,6 @@ class TestImports(omni.kit.test.AsyncTestCase):
         from omni.isaac.core.utils.rotations import quat_to_euler_angles
         from omni.isaac.core.utils.stage import create_new_stage_async
         from omni.isaac.quadruped.robots import AnymalFlatTerrainPolicy, SpotFlatTerrainPolicy
-        from omni.isaac.quadruped.utils.rot_utils import get_xyz_euler_from_quaternion
         from pxr import UsdPhysics
 
         print("All imports successful for extension: omni.isaac.quadruped")

@@ -25,7 +25,7 @@ class TestImports(omni.kit.test.AsyncTestCase):
         import omni.physics.tensors
         from omni.isaac.core.prims.rigid_prim import RigidPrim
         from omni.isaac.core.utils.physics import simulate_async
-        from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
+        from omni.isaac.surface_gripper import _surface_gripper
         from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdLux, UsdPhysics
 
         print("All imports successful for extension: omni.isaac.surface_gripper")

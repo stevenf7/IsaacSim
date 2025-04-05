@@ -693,8 +693,8 @@ function create_tests()
 
     -- depreacated_test
     python_sample_test(
-        "tests-nativepython-deprecated-test_standalone",
-        "standalone_examples/testing/deprecated/test_standalone.py"
+        "tests-nativepython-validation-test_deprecated",
+        "standalone_examples/testing/validation/test_deprecated.py"
     )
 
     -- Linux-specific docker tests

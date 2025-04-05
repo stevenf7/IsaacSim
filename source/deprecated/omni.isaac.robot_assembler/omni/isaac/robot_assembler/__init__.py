@@ -9,12 +9,12 @@
 
 import carb
 
-old_extension_name = "omni.isaac.range_sensor"
-new_extension_name = "isaacsim.sensors.physx"
+old_extension_name = "omni.isaac.robot_assembler"
+new_extension_name = "isaacsim.robot_setup.assembler"
 
 # Provide deprecation warning to user
 carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from .commands import *
+from isaacsim.robot_setup.assembler import *

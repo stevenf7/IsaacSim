@@ -21,12 +21,6 @@ writeTarget.kit = true
 name = "isaacsim.robot.manipulators.ui"
 
 [[test]]
-name = "startup"
-args = [
-    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
-]
-
-[[test]]
 dependencies = []
 args = [
     '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
@@ -35,4 +29,13 @@ args = [
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/simulation/defaultMetersPerUnit=1.0",
     "--/persistent/simulation/minFrameRate=15",
+    "--/omni/kit/plugin/syncUsdLoads=1",
+    "--/rtx/hydra/materialSyncLoads=1",
+    "--/rtx/materialDb/syncLoads=1",
+]
+
+[[test]]
+name = "startup"
+args = [
+    '--/app/settings/fabricDefaultStageFrameHistoryCount = 3',
 ]

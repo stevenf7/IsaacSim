@@ -16,6 +16,8 @@ carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of isaacsim.sensors.camera, isaacsim.sensors.physics, isaacsim.sensors.physx, and isaacsim.sensors.rtx. Please update your code accordingly."
 )
 
+from isaacsim.sensors.physics import _sensor
+
 from .camera import *
 from .camera_view import CameraView
 from .commands import *

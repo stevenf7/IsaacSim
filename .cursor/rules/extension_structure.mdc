@@ -1,6 +1,7 @@
 ---
-description: These rules are for the structure of an extension
+description: 
 globs: 
+alwaysApply: false
 ---
 # Isaac Sim Extension Structure Guidelines
 
