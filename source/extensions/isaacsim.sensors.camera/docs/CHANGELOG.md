@@ -1,4 +1,9 @@
 # Changelog
+## [0.4.0] - 2025-03-25
+### Changed
+- Added 'annotator_device' parameter to the camera sensor to support GPU data access
+- Helper functions can return data with the selected backend
+
 ## [0.3.2] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code
