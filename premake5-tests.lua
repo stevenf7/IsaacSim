@@ -554,6 +554,10 @@ function create_tests()
             "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py",
         },
         {
+            "tests-nativepython-testing-isaacsim.sensors.camera.camera_annotator_device",
+            "standalone_examples/api/isaacsim.sensors.camera/camera_annotator_device.py",
+        },
+        {
             "tests-nativepython-testing-isaacsim.sensors.camera.camera_opencv_fisheye",
             "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py",
         },

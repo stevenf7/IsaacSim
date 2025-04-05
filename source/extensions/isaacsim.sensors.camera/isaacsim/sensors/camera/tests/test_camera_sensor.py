@@ -13,6 +13,7 @@ import math
 import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.kit.test
+import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.prims import SingleXFormPrim
@@ -536,6 +537,25 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             np.allclose(pointcloud_data_camera_frame.flatten(), GOLDEN_POINTCLOUD_CAMERA_FRAME.flatten(), atol=1e-5)
         )
 
+    async def test_pointcloud_data_gpu(self):
+        self.camera.set_resolution((3, 3))
+        self.camera.add_pointcloud_to_frame()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+
+        pointcloud_data_world_frame = self.camera.get_pointcloud(device="cuda")
+        self.assertTrue(isinstance(pointcloud_data_world_frame, wp.array))
+        pointcloud_data_world_frame_np = pointcloud_data_world_frame.numpy()
+        self.assertTrue(
+            np.allclose(pointcloud_data_world_frame_np.flatten(), GOLDEN_POINTCLOUD_WORLD_FRAME.flatten(), atol=1e-5)
+        )
+
+        pointcloud_data_camera_frame = self.camera.get_pointcloud(world_frame=False, device="cuda")
+        self.assertTrue(isinstance(pointcloud_data_camera_frame, wp.array))
+        pointcloud_data_camera_frame_np = pointcloud_data_camera_frame.numpy()
+        self.assertTrue(
+            np.allclose(pointcloud_data_camera_frame_np.flatten(), GOLDEN_POINTCLOUD_CAMERA_FRAME.flatten(), atol=1e-5)
+        )
+
     async def test_pointcloud_data_with_depth_fallback(self):
         self.camera.set_resolution((3, 3))
         self.camera.add_distance_to_image_plane_to_frame()
@@ -551,7 +571,26 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             np.allclose(pointcloud_data_camera_frame.flatten(), GOLDEN_POINTCLOUD_CAMERA_FRAME.flatten(), atol=1e-5)
         )
 
-    async def test_pointcloud_data_only_labelled(self):
+    async def test_pointcloud_data_with_depth_fallback_gpu(self):
+        self.camera.set_resolution((3, 3))
+        self.camera.add_distance_to_image_plane_to_frame()
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+
+        pointcloud_data_world_frame = self.camera.get_pointcloud(device="cuda")
+        self.assertTrue(isinstance(pointcloud_data_world_frame, wp.array))
+        pointcloud_data_world_frame_np = pointcloud_data_world_frame.numpy()
+        self.assertTrue(
+            np.allclose(pointcloud_data_world_frame_np.flatten(), GOLDEN_POINTCLOUD_WORLD_FRAME.flatten(), atol=1e-5)
+        )
+
+        pointcloud_data_camera_frame = self.camera.get_pointcloud(world_frame=False, device="cuda")
+        self.assertTrue(isinstance(pointcloud_data_camera_frame, wp.array))
+        pointcloud_data_camera_frame_np = pointcloud_data_camera_frame.numpy()
+        self.assertTrue(
+            np.allclose(pointcloud_data_camera_frame_np.flatten(), GOLDEN_POINTCLOUD_CAMERA_FRAME.flatten(), atol=1e-5)
+        )
+
+    async def test_pointcloud_data_only_labelled(self, device: str = None):
         self.camera.add_pointcloud_to_frame(include_unlabelled=False)
         await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
         pointcloud_data = self.camera.get_pointcloud()
@@ -566,3 +605,22 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(pointcloud_data_camera_frame.shape == (130, 3))
         self.assertFalse(np.isnan(pointcloud_data_camera_frame).any())
         self.assertFalse(np.isinf(pointcloud_data_camera_frame).any())
+
+    async def test_pointcloud_data_only_labelled_gpu(self):
+        self.camera.add_pointcloud_to_frame(include_unlabelled=False)
+        await omni.syntheticdata.sensors.next_render_simulation_async(self.camera.get_render_product_path(), 10)
+        pointcloud_data = self.camera.get_pointcloud(device="cuda")
+        self.assertTrue(isinstance(pointcloud_data, wp.array))
+        pointcloud_data_np = pointcloud_data.numpy()
+        # NOTE: 130 instead of 256*256 because only semantically labelled points are included
+        self.assertTrue(pointcloud_data_np.shape == (130, 3))
+        self.assertFalse(np.isnan(pointcloud_data_np).any())
+        self.assertFalse(np.isinf(pointcloud_data_np).any())
+
+        pointcloud_data_camera_frame = self.camera.get_pointcloud(world_frame=False, device="cuda")
+        self.assertTrue(isinstance(pointcloud_data_camera_frame, wp.array))
+        pointcloud_data_camera_frame_np = pointcloud_data_camera_frame.numpy()
+        # NOTE: 130 instead of 256*256 because only semantically labelled points are included
+        self.assertTrue(pointcloud_data_camera_frame_np.shape == (130, 3))
+        self.assertFalse(np.isnan(pointcloud_data_camera_frame_np).any())
+        self.assertFalse(np.isinf(pointcloud_data_camera_frame_np).any())

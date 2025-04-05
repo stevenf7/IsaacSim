@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,11 +11,16 @@ import math
 from typing import Callable, List, Optional, Sequence, Tuple
 
 import carb
+import isaacsim.core.utils.numpy as np_utils
+import isaacsim.core.utils.torch as torch_utils
+import isaacsim.core.utils.warp as warp_utils
 import numpy as np
 import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as _syntheticdata
+import torch
+import warp as wp
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.core.utils.carb import get_carb_setting
@@ -207,6 +212,7 @@ class Camera(BaseSensor):
         orientation: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         render_product_path: str = None,
+        annotator_device: str = None,
     ) -> None:
         self._frequency = -1
         self._render_product = None
@@ -240,6 +246,7 @@ class Camera(BaseSensor):
         self._render_product_path = render_product_path
         self._resolution = resolution
         self._render_product = None
+        self._annotator_device = annotator_device
         self._rgb_annotator = None
         self._supported_annotators = [
             "normals",
@@ -302,11 +309,18 @@ class Camera(BaseSensor):
             if self.prim.GetAttribute(property_name).Get() is None:
                 self.prim.CreateAttribute(property_name, Sdf.ValueTypeNames.Float)
         self._current_frame = dict()
-        self._current_frame["rgba"] = self._backend_utils.create_zeros_tensor(
-            shape=[resolution[0], resolution[1], 4], dtype="int32", device=self._device
+        # Initialize the first frame with the correct backend (warp or numpy)
+        if self._annotator_device is None:
+            backend_utils = self._backend_utils
+        else:
+            if self._annotator_device.startswith("cuda"):
+                backend_utils = warp_utils
+            else:
+                backend_utils = np_utils
+        self._current_frame["rgba"] = backend_utils.create_zeros_tensor(
+            shape=[resolution[0], resolution[1], 4], dtype="uint8", device=self._annotator_device
         )
         self._pause = False
-        self._current_frame = dict()
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
         self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
@@ -415,7 +429,7 @@ class Camera(BaseSensor):
         else:
             self._render_product = rep.create.render_product(self.prim_path, resolution=self._resolution)
             self._render_product_path = self._render_product.path
-        self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
+        self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb", device=self._annotator_device)
         self._fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
         self._rgb_annotator.attach([self._render_product_path])
         self._fabric_time_annotator.attach([self._render_product_path])
@@ -431,7 +445,7 @@ class Camera(BaseSensor):
         )
         width, height = self.get_resolution()
         self._current_frame["rgba"] = self._backend_utils.create_zeros_tensor(
-            shape=[width, height, 4], dtype="int32", device=self._device
+            shape=[width, height, 4], dtype="uint8", device=self._annotator_device
         )
         self._stage_open_callback = (
             omni.usd.get_context()
@@ -717,7 +731,9 @@ class Camera(BaseSensor):
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#normals
         """
         if self._custom_annotators["normals"] is None:
-            self._custom_annotators["normals"] = rep.AnnotatorRegistry.get_annotator("normals", init_params=init_params)
+            self._custom_annotators["normals"] = rep.AnnotatorRegistry.get_annotator(
+                "normals", device=self._annotator_device, init_params=init_params
+            )
             self._custom_annotators["normals"].attach([self._render_product_path])
         self._current_frame["normals"] = None
         return
@@ -742,7 +758,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["motion_vectors"] is None:
             self._custom_annotators["motion_vectors"] = rep.AnnotatorRegistry.get_annotator(
-                "motion_vectors", init_params=init_params
+                "motion_vectors", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["motion_vectors"].attach([self._render_product_path])
         self._current_frame["motion_vectors"] = None
@@ -766,7 +782,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["occlusion"] is None:
             self._custom_annotators["occlusion"] = rep.AnnotatorRegistry.get_annotator(
-                "occlusion", init_params=init_params
+                "occlusion", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["occlusion"].attach([self._render_product_path])
         self._current_frame["occlusion"] = None
@@ -792,7 +808,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["distance_to_image_plane"] is None:
             self._custom_annotators["distance_to_image_plane"] = rep.AnnotatorRegistry.get_annotator(
-                "distance_to_image_plane", init_params=init_params
+                "distance_to_image_plane", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["distance_to_image_plane"].attach([self._render_product_path])
         self._current_frame["distance_to_image_plane"] = None
@@ -818,7 +834,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["distance_to_camera"] is None:
             self._custom_annotators["distance_to_camera"] = rep.AnnotatorRegistry.get_annotator(
-                "distance_to_camera", init_params=init_params
+                "distance_to_camera", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["distance_to_camera"].attach([self._render_product_path])
         self._current_frame["distance_to_camera"] = None
@@ -937,7 +953,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["semantic_segmentation"] is None:
             self._custom_annotators["semantic_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "semantic_segmentation", init_params=init_params
+                "semantic_segmentation", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["semantic_segmentation"].attach([self._render_product_path])
         self._current_frame["semantic_segmentation"] = None
@@ -964,7 +980,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["instance_id_segmentation"] is None:
             self._custom_annotators["instance_id_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_id_segmentation_fast", init_params=init_params
+                "instance_id_segmentation_fast", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["instance_id_segmentation"].attach([self._render_product_path])
         self._current_frame["instance_id_segmentation"] = None
@@ -991,7 +1007,7 @@ class Camera(BaseSensor):
         """
         if self._custom_annotators["instance_segmentation"] is None:
             self._custom_annotators["instance_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_segmentation_fast", init_params=init_params
+                "instance_segmentation_fast", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["instance_segmentation"].attach([self._render_product_path])
         self._current_frame["instance_segmentation"] = None
@@ -1021,7 +1037,7 @@ class Camera(BaseSensor):
             if "includeUnlabelled" not in init_params:
                 init_params["includeUnlabelled"] = include_unlabelled
             self._custom_annotators["pointcloud"] = rep.AnnotatorRegistry.get_annotator(
-                "pointcloud", init_params=init_params
+                "pointcloud", device=self._annotator_device, init_params=init_params
             )
             self._custom_annotators["pointcloud"].attach([self._render_product_path])
         self._current_frame["pointcloud"] = None
@@ -1033,96 +1049,164 @@ class Camera(BaseSensor):
             self._custom_annotators["pointcloud"] = None
         self._current_frame.pop("pointcloud", None)
 
-    def get_rgba(self) -> np.ndarray:
+    def get_rgba(self, device: str = None) -> np.ndarray | wp.types.array:
         """
+        Args:
+            device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
+                Defaults to None, which uses the device specified on annotator initialization (annotator_device)
+
         Returns:
             rgba (np.ndarray): (N x 4) RGBa color data for each point.
+            wp.types.array: (N x 4) RGBa color data for each point.
         """
-        return self._rgb_annotator.get_data()
+        return self._rgb_annotator.get_data(device=device)
 
-    def get_rgb(self) -> np.ndarray:
+    def get_rgb(self, device: str = None) -> np.ndarray | wp.types.array:
         """
+        Args:
+            device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
+                Defaults to None, which uses the device specified on annotator initialization (annotator_device)
+
         Returns:
             rgb (np.ndarray): (N x 3) RGB color data for each point.
+            wp.types.array: (N x 3) RGB color data for each point.
         """
 
-        data = self._rgb_annotator.get_data()
-        return data[..., :3]
+        return self._rgb_annotator.get_data(device=device)[:, :, :3]
 
-    def get_depth(self) -> np.ndarray:
-        """
+    def get_depth(self, device: str = None) -> np.ndarray | wp.types.array:
+        """Gets the depth data from the camera sensor as distance to image plane.
+        Args:
+            device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
+                Defaults to None, which uses the device specified on annotator initialization (annotator_device)
         Returns:
-            depth (np.ndarray): (n x m x 1) depth data for each point.
+            depth (np.ndarray): (n x m) depth data for each point.
+            wp.types.array: (n x m) depth data for each point.
         """
 
-        data = self.get_current_frame()
-        if "distance_to_image_plane" not in data.keys():
+        if annot := self._custom_annotators.get("distance_to_image_plane"):
+            return annot.get_data(device=device)
+        else:
             carb.log_warn(
-                f"[get_depth][{self.prim_path}] WARNING: Annotator 'distance_to_image_plane' not found. Available annotators: {data.keys()}. Returning None"
+                f"[get_depth][{self.prim_path}] WARNING: Annotator 'distance_to_image_plane' not found. Available annotators: {self.get_current_frame().keys()}. Returning None"
             )
             return None
 
-        depth = data["distance_to_image_plane"]
-        if depth is None:
-            carb.log_warn(
-                f"[get_depth][{self.prim_path}] WARNING: Annotator 'distance_to_image_plane' contains no data. Returning None"
-            )
-            return None
-        return depth
-
-    def get_pointcloud(self, world_frame: bool = True) -> np.ndarray:
+    def get_pointcloud(self, device: str = None, world_frame: bool = True) -> np.ndarray | wp.array:
         """Get a 3D pointcloud from the camera sensor.
 
         Args:
+            device: str, optional, default is None. If None, uses self._annotator_device.
+                Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>']
             world_frame (bool, optional): If True, returns points in world frame.
                 If False, returns points in camera frame.
 
         Returns:
-            np.ndarray: A (N x 3) array of 3D points (X, Y, Z) in either world or camera frame,
-                where N is the number of points.
-
+            np.ndarray | wp.array: A (N x 3) array of 3D points (X, Y, Z) in either world or camera frame,
+                   where N is the number of points.
         Note:
             The fallback method uses the depth (distance_to_camera_plane) annotator and
             performs a perspective projection using the camera's intrinsic parameters to generate the pointcloud.
         """
-        # Check if pointcloud annotator data is available
-        if "pointcloud" in self._current_frame:
-            pointcloud_data = self._current_frame["pointcloud"]["data"]
+        # Use annotator device as fallback if device is None
+        device = self._annotator_device if device is None else device
+
+        # Try to get pointcloud from custom annotator first
+        if annot := self._custom_annotators.get("pointcloud"):
+            pointcloud_data = annot.get_data(device=device).get("data")
+            if pointcloud_data is None:
+                return None
+            if (
+                isinstance(pointcloud_data, wp.types.array)
+                and pointcloud_data.ndim == 3
+                and pointcloud_data.shape[0] == 1
+            ):
+                # Squeeze singleton dimension: shape (1, N, 3) -> (N, 3)
+                pointcloud_data = pointcloud_data.reshape((pointcloud_data.shape[1], pointcloud_data.shape[2]))
             if world_frame:
                 return pointcloud_data
             else:
-                # Transform points from world frame to camera frame using the view matrix
-                homogeneous_points = self._backend_utils.pad(pointcloud_data, ((0, 0), (0, 1)), value=1.0)
-                view_matrix = self.get_view_matrix_ros()
-                points_camera_frame = self._backend_utils.matmul(
-                    view_matrix, self._backend_utils.transpose_2d(homogeneous_points)
-                )
-                return self._backend_utils.transpose_2d(points_camera_frame[:3, :])
+                # For warp arrays, we use torch_utils until warp has feature parity
+                is_warp_array = isinstance(pointcloud_data, wp.types.array)
+                backend_utils = torch_utils if is_warp_array else np_utils
+
+                # If using warp array, convert to torch tensor for processing (zero-copy operation)
+                if is_warp_array:
+                    pointcloud_data = wp.to_torch(pointcloud_data)
+                    pointcloud_data = pointcloud_data.to(device)  # Ensure tensor is on correct device
+
+                # Convert points to homogeneous coordinates by adding a column of ones
+                homogeneous_points = backend_utils.pad(pointcloud_data, ((0, 0), (0, 1)), value=1.0)
+
+                # Get the view matrix that transforms from world to camera coordinates
+                view_matrix = self.get_view_matrix_ros(device=device, backend_utils_cls=backend_utils)
+
+                # Apply the transformation, transpose points to get shape compatible with matrix multiplication
+                transposed_points = backend_utils.transpose_2d(homogeneous_points)
+
+                # Multiply by view matrix
+                transformed_points = backend_utils.matmul(view_matrix, transposed_points)
+                # Take only the first 3 rows (x,y,z) and transpose back
+                points_camera_frame = backend_utils.transpose_2d(transformed_points[:3, :])
+
+                # Convert back to warp if torch was used as alternative backend
+                if is_warp_array:
+                    points_camera_frame = wp.from_torch(points_camera_frame)
+
+                return points_camera_frame
 
         # Pointcloud annotator not available, try depth-based fallback
         carb.log_warn(
             f"[get_pointcloud][{self.prim_path}] WARNING: 'pointcloud' annotator not available, falling back to depth-based calculation"
         )
-        depth = self.get_depth()
+
+        depth = self.get_depth(device=device)
         if depth is None:
             carb.log_warn(
                 f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator not available to get depth data, Returning None"
             )
             return None
 
+        # Determine backend based on device and depth type
+        is_warp_array = isinstance(depth, wp.types.array)
+        backend_utils = torch_utils if is_warp_array else np_utils
+
+        # Convert warp array to torch tensor for calculation
+        if is_warp_array:
+            depth = wp.to_torch(depth)
+            depth = depth.to(device)  # Ensure tensor is on correct device
+
         # Create pixel coordinate grid centered around the image center
         im_height, im_width = depth.shape[0], depth.shape[1]
-        ww = np.linspace(0.5, im_width - 0.5, im_width)  # x-coordinates with half-pixel offset
-        hh = np.linspace(0.5, im_height - 0.5, im_height)  # y-coordinates with half-pixel offset
-        xmap, ymap = np.meshgrid(ww, hh)  # 2D coordinate grid
 
-        # Reshape the pixel coordinates into (N x 2) array of (x,y) points
-        points_2d = np.column_stack((xmap.ravel(), ymap.ravel()))
+        if backend_utils == torch_utils:
+            # Create coordinate grid using torch
+            ww = torch.linspace(0.5, im_width - 0.5, im_width, dtype=torch.float32, device=device)
+            hh = torch.linspace(0.5, im_height - 0.5, im_height, dtype=torch.float32, device=device)
+            xmap, ymap = torch.meshgrid(ww, hh, indexing="xy")
+            points_2d = torch.stack((xmap.flatten(), ymap.flatten()), dim=1)
+        else:
+            # Use numpy for non-warp arrays and CPU
+            ww = np.linspace(0.5, im_width - 0.5, im_width, dtype=np.float32)
+            hh = np.linspace(0.5, im_height - 0.5, im_height, dtype=np.float32)
+            xmap, ymap = np.meshgrid(ww, hh)
+            points_2d = np.column_stack((xmap.ravel(), ymap.ravel()))
+
         # Project 2D pixel coordinates to 3D world points using depth values
         if world_frame:
-            return self.get_world_points_from_image_coords(points_2d, depth.flatten())
+            points_3d = self.get_world_points_from_image_coords(
+                points_2d, depth.flatten(), device=device, backend_utils_cls=backend_utils
+            )
         else:
-            return self.get_camera_points_from_image_coords(points_2d, depth.flatten())
+            points_3d = self.get_camera_points_from_image_coords(
+                points_2d, depth.flatten(), device=device, backend_utils_cls=backend_utils
+            )
+
+        # Convert back to warp array if input was warp array
+        if is_warp_array and not isinstance(points_3d, wp.types.array):
+            points_3d = wp.from_torch(points_3d)
+
+        return points_3d
 
     def get_focal_length(self) -> float:
         """
@@ -1587,43 +1671,85 @@ class Camera(BaseSensor):
         """
         return self.prim.GetAttribute("shutter:open").Get(), self.prim.GetAttribute("shutter:close").Get()
 
-    def get_view_matrix_ros(self):
+    def get_view_matrix_ros(self, device: str = None, backend_utils_cls: type = None):
         """3D points in World Frame -> 3D points in Camera Ros Frame
 
+        Args:
+            device: str, optional, default is None. If None, uses self._device.
+                Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>']
+            backend_utils_cls: type, optional, default is None. If None, the class will be inferred from self._backend_utils.
+                Supported classes are np_utils, torch_utils, and warp_utils.
+
         Returns:
-            np.ndarray: the view matrix that transforms 3d points in the world frame to 3d points in the camera axes
-                        with ros camera convention.
+            The view matrix that transforms 3d points in the world frame to 3d points in the camera axes
+                with ros camera convention.
         """
-        world_w_cam_u_T = self._backend_utils.transpose_2d(
-            self._backend_utils.convert(
+        # Determine backend utilities
+        if backend_utils_cls is None:
+            if device is None:
+                backend_utils = self._backend_utils
+            else:
+                backend_utils = torch_utils if "cuda" in str(device) else np_utils
+        else:
+            backend_utils = backend_utils_cls
+
+        # Use provided device or fall back to self._device
+        device = device if device is not None else self._device
+
+        world_w_cam_u_T = backend_utils.transpose_2d(
+            backend_utils.convert(
                 UsdGeom.Imageable(self.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default()),
                 dtype="float32",
-                device=self._device,
+                device=device,
                 indexed=True,
             )
         )
-        r_u_transform_converted = self._backend_utils.convert(
-            R_U_TRANSFORM, dtype="float32", device=self._device, indexed=True
-        )
-        return self._backend_utils.matmul(r_u_transform_converted, self._backend_utils.inverse(world_w_cam_u_T))
 
-    def get_intrinsics_matrix(self) -> np.ndarray:
-        """
+        r_u_transform_converted = backend_utils.convert(R_U_TRANSFORM, dtype="float32", device=device, indexed=True)
+
+        result = backend_utils.matmul(r_u_transform_converted, backend_utils.inverse(world_w_cam_u_T))
+        return result
+
+    def get_intrinsics_matrix(self, device: str = None, backend_utils_cls: type = None):
+        """Get the intrinsics matrix of the camera.
+
+        Args:
+            device: str, optional, default is None. If None, uses self._device.
+                Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>']
+            backend_utils_cls: type, optional, default is None. If None, the class will be inferred from self._backend_utils.
+                Supported classes are np_utils, torch_utils, and warp_utils.
+
         Returns:
-            np.ndarray: the intrinsics of the camera (used for calibration)
+            np.ndarray | torch.Tensor | wp.array: The intrinsics matrix of the camera (used for calibration)
         """
         if "pinhole" not in self.get_projection_type():
             raise Exception("pinhole projection type is not set to be able to use get_intrinsics_matrix method.")
+
+        # Determine backend utilities
+        if backend_utils_cls is not None:
+            if backend_utils_cls not in (np_utils, torch_utils, warp_utils):
+                raise ValueError(
+                    f"Unsupported backend class: {backend_utils_cls}, supported classes are np_utils, torch_utils, and warp_utils"
+                )
+            backend_utils = backend_utils_cls
+        else:
+            backend_utils = self._backend_utils
+
+        # Use provided device or fall back to self._device
+        device = device if device is not None else self._device
+
+        # Calculate intrinsics parameters
         focal_length = self.get_focal_length()
         horizontal_aperture = self.get_horizontal_aperture()
         vertical_aperture = self.get_vertical_aperture()
-        (width, height) = self.get_resolution()
+        width, height = self.get_resolution()
         fx = width * focal_length / horizontal_aperture
         fy = height * focal_length / vertical_aperture
         cx = width * 0.5
         cy = height * 0.5
-        return self._backend_utils.create_tensor_from_list(
-            [[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]], dtype="float32", device=self._device
+
+        return backend_utils.create_tensor_from_list(
+            [[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]], dtype="float32", device=device
         )
 
     def get_image_coords_from_world_points(self, points_3d: np.ndarray) -> np.ndarray:
@@ -1646,56 +1772,95 @@ class Camera(BaseSensor):
         points[:2, :] /= points[2, :]  # normalize
         return self._backend_utils.transpose_2d(points[:2, :])
 
-    def get_camera_points_from_image_coords(self, points_2d: np.ndarray, depth: np.ndarray):
+    def get_camera_points_from_image_coords(self, points_2d, depth, device: str = None, backend_utils_cls: type = None):
         """Using pinhole perspective projection, this method does the inverse projection given the depth of the
-           pixels to get 3D points in camera frame.
+            pixels to get 3D points in camera frame.
 
         Args:
-            points_2d (np.ndarray): 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
-            depth (np.ndarray): depth corresponds to each of the pixel coords. shape is (n,)
+            points_2d: 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
+            depth: depth corresponds to each of the pixel coords. shape is (n,)
+            device: str, optional, default is None. If None, uses self._device.
+                Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>']
+            backend_utils_cls: type, optional, default is None. If None, the class will be inferred from self._backend_utils.
+                Supported classes are np_utils, torch_utils, and warp_utils.
 
         Returns:
-            np.ndarray: (n, 3) 3d points (X, Y, Z) in camera frame. shape is (n, 3) where n is the number of points.
-                       +Z points forward (optical axis), +X right, +Y down
+            np.ndarray | torch.Tensor | wp.array: (n, 3) 3d points (X, Y, Z) in camera frame.
+                +Z points forward (optical axis), +X right, +Y down
         """
         if "pinhole" not in self.get_projection_type():
             raise Exception(
-                "pinhole projection type is not set to be able to use get_camera_points_from_image_coords method which use pinhole perspective projection."
+                "pinhole projection type is not set to be able to use get_camera_points_from_image_coords method."
             )
+
+        # Determine backend utilities
+        if backend_utils_cls is None:
+            if device is None:
+                backend_utils = self._backend_utils
+            else:
+                backend_utils = torch_utils if "cuda" in str(device) else np_utils
+        else:
+            backend_utils = backend_utils_cls
+
         # Convert image coordinates to homogeneous coordinates
-        homogenous = self._backend_utils.pad(points_2d, ((0, 0), (0, 1)), value=1.0)
-        # Back-project to camera frame using inverse of intrinsics matrix and depth
-        points_in_camera_axes = self._backend_utils.matmul(
-            self._backend_utils.inverse(self.get_intrinsics_matrix()),
-            self._backend_utils.transpose_2d(homogenous) * self._backend_utils.expand_dims(depth, 0),
-        )
-        return self._backend_utils.transpose_2d(points_in_camera_axes)
+        homogenous = backend_utils.pad(points_2d, ((0, 0), (0, 1)), value=1.0)
 
-    def get_world_points_from_image_coords(self, points_2d: np.ndarray, depth: np.ndarray):
+        # Get intrinsics matrix using the same backend and device
+        intrinsics_matrix = self.get_intrinsics_matrix(device=device, backend_utils_cls=backend_utils)
+
+        # Back-project to camera frame using inverse of intrinsics matrix and depth
+        points_in_camera_axes = backend_utils.matmul(
+            backend_utils.inverse(intrinsics_matrix),
+            backend_utils.transpose_2d(homogenous) * backend_utils.expand_dims(depth, 0),
+        )
+        return backend_utils.transpose_2d(points_in_camera_axes)
+
+    def get_world_points_from_image_coords(self, points_2d, depth, device: str = None, backend_utils_cls: type = None):
         """Using pinhole perspective projection, this method does the inverse projection given the depth of the
-           pixels
+            pixels to get 3D points in world frame.
 
         Args:
-            points_2d (np.ndarray): 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
-            depth (np.ndarray): depth corresponds to each of the pixel coords. shape is (n,)
+            points_2d: 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
+            depth: depth corresponds to each of the pixel coords. shape is (n,)
+            device: str, optional, default is None. If None, uses self._device.
+                Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>']
+            backend_utils_cls: type, optional, default is None. If None, the class will be inferred from self._backend_utils.
+                Supported classes are np_utils, torch_utils, and warp_utils.
 
         Returns:
-            np.ndarray: (n, 3) 3d points (X, Y, Z) in world frame. shape is (n, 3) where n is the number of points.
+            np.ndarray | torch.Tensor | wp.array: (n, 3) 3d points (X, Y, Z) in world frame.
         """
         if "pinhole" not in self.get_projection_type():
             raise Exception(
-                "pinhole projection type is not set to be able to use get_world_points_from_image_coords method which use pinhole prespective projection."
+                "pinhole projection type is not set to be able to use get_world_points_from_image_coords method."
             )
-        homogenous = self._backend_utils.pad(points_2d, ((0, 0), (0, 1)), value=1.0)
-        points_in_camera_axes = self._backend_utils.matmul(
-            self._backend_utils.inverse(self.get_intrinsics_matrix()),
-            self._backend_utils.transpose_2d(homogenous) * self._backend_utils.expand_dims(depth, 0),
+
+        # Determine backend utilities
+        if backend_utils_cls is None:
+            if device is None:
+                backend_utils = self._backend_utils
+            else:
+                backend_utils = torch_utils if "cuda" in str(device) else np_utils
+        else:
+            backend_utils = backend_utils_cls
+
+        # First get points in camera frame
+        points_in_camera_frame = self.get_camera_points_from_image_coords(
+            points_2d, depth, device=device, backend_utils_cls=backend_utils
         )
-        points_in_camera_axes_homogenous = self._backend_utils.pad(points_in_camera_axes, ((0, 1), (0, 0)), value=1.0)
-        points_in_world_frame_homogenous = self._backend_utils.matmul(
-            self._backend_utils.inverse(self.get_view_matrix_ros()), points_in_camera_axes_homogenous
+
+        # Convert to homogeneous coordinates
+        points_in_camera_frame_homogenous = backend_utils.pad(points_in_camera_frame, ((0, 0), (0, 1)), value=1.0)
+
+        # Get view matrix using the same backend and device
+        view_matrix_ros = self.get_view_matrix_ros(device=device, backend_utils_cls=backend_utils)
+
+        # Transform to world frame
+        points_in_world_frame_homogenous = backend_utils.matmul(
+            backend_utils.inverse(view_matrix_ros), backend_utils.transpose_2d(points_in_camera_frame_homogenous)
         )
-        return self._backend_utils.transpose_2d(points_in_world_frame_homogenous[:3, :])
+
+        return backend_utils.transpose_2d(points_in_world_frame_homogenous[:3, :])
 
     def get_horizontal_fov(self) -> float:
         """
