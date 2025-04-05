@@ -16,8 +16,8 @@ source/extensions/isaacsim.app.selector/ hmazhar@nvidia.com sabdulajees@nvidia.c
 source/extensions/isaacsim.app.setup/ hmazhar@nvidia.com
 source/extensions/isaacsim.asset.browser/ hmazhar@nvidia.com qwan@nvidia.com sabdulajees@nvidia.com
 source/extensions/isaacsim.asset.exporter.urdf/ hmazhar@nvidia.com rgasoto@nvidia.com roflaherty@nvidia.com
-source/extensions/isaacsim.asset.gen.conveyor.ui/ rgasoto@nvidia.com
-source/extensions/isaacsim.asset.gen.conveyor/ rgasoto@nvidia.com
+source/extensions/isaacsim.asset.gen.conveyor.ui/ hmazhar@nvidia.com rgasoto@nvidia.com
+source/extensions/isaacsim.asset.gen.conveyor/ hmazhar@nvidia.com rgasoto@nvidia.com
 source/extensions/isaacsim.asset.gen.omap.ui/ hmazhar@nvidia.com
 source/extensions/isaacsim.asset.gen.omap/ hmazhar@nvidia.com
 source/extensions/isaacsim.asset.importer.heightmap/ hmazhar@nvidia.com stevfeng@nvidia.com
