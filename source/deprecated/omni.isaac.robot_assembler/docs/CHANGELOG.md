@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.6] - 2025-04-04
+### Changed
+- Version bump to fix extension publishing issues
 
 ## [2.0.5] - 2025-04-02
 ### Fixed

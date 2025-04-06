@@ -1,5 +1,5 @@
 [package]
-version = "1.1.5"
+version = "1.1.6"
 category = "Simulation"
 title = "Isaac Sim UI Example"
 description = "Example with all the Core UI Elements in Isaac Sim"

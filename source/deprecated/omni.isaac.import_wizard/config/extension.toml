@@ -1,5 +1,5 @@
 [package]
-version = "1.0.4"
+version = "1.0.5"
 category = "Other"
 title = "Isaac Sim Import Wizard [alpha]"
 description = "wizard to guide users through importing and configuration tools inside isaac sim"
