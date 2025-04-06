@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.6] - 2025-04-04
+### Changed
+- Version bump to fix extension publishing issues
+
 ## [1.1.5] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code

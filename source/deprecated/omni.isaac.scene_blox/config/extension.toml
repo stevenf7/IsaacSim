@@ -1,5 +1,5 @@
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "Simulation"
 title = "Scene Blox"
 description = "A package to buid scenes for Omniverse"

@@ -1,4 +1,8 @@
 # Changelog
+## [2.6.1] - 2025-04-04
+### Changed
+- Version bump to fix extension publishing issues
+
 ## [2.6.0] - 2025-03-31
 ### Added
 - Add Kit args to limit cpu thread count to enhance performance by limiting unnecessary context switching

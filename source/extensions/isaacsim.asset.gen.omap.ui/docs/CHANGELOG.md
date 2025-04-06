@@ -1,9 +1,11 @@
 # Changelog
-
+## [2.1.1] - 2025-04-04
+### Changed
+- Version bump to fix extension publishing issues
 
 ## [2.1.0] - 2025-03-31
 ### Changed
-- Menu items were added by MenuHelpers. 
+- Menu items were added by MenuHelpers.
 
 ## [2.0.5] - 2025-03-26
 ### Changed

@@ -6,7 +6,7 @@
 
 
 [package]
-version = "0.2.9"
+version = "0.2.10"
 category = "other"
 title = "Isaac Sim OpenXR support"
 description = "Additional APIs for integrating Isaac Sim and OpenXR for robotics"

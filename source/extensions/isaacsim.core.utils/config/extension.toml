@@ -1,5 +1,5 @@
 [package]
-version = "2.2.14"
+version = "2.2.15"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."

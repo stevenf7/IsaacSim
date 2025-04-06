@@ -1,5 +1,5 @@
 [package]
-version = "2.0.3"
+version = "2.0.4"
 category = "Simulation"
 title = "Isaac Cortex Sample Behaviors"
 description = "Sample Behaviors for Isaac Cortex"
