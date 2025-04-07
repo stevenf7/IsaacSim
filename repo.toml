@@ -943,7 +943,6 @@ branch_name = "develop"
 # ./repo.sh publish_exts -c release
 [repo_publish_exts]
 enabled = true
-kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
 
 publish_root = "${root}/_build/$platform/$config"
 

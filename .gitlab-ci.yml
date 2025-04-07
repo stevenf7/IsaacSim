@@ -1059,7 +1059,7 @@ publish-extensions:
       - .runner-utility-linux-x86_64
     image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     script:
-      - ./repo.sh build --fetch-only -rd
+      - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package
     needs:
       # We set all dependencies as optional just in case a platform is not needed,
