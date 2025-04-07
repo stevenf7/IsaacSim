@@ -944,6 +944,12 @@ branch_name = "develop"
 [repo_publish_exts]
 enabled = true
 
+platforms = [
+    "windows-x86_64",
+    "linux-x86_64",
+    # "linux-aarch64"
+]
+
 publish_root = "${root}/_build/$platform/$config"
 
 ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
