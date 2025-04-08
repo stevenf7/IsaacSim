@@ -17,27 +17,40 @@ class Classes(Enum):
     LINK_API = "LinkAPI"
     REFERENCE_POINT_API = "ReferencePointAPI"
     JOINT_API = "JointAPI"
+    SURFACE_GRIPPER = "SurfaceGripper"
+    ATTACHMENT_POINT_API = "AttachmentPointAPI"
 
 
 _attr_prefix = "isaac"
 
 
 class Attributes(Enum):
-    DESCRIPTION = (f"{_attr_prefix}:description", pxr.Sdf.ValueTypeNames.String)
-    NAMESPACE = (f"{_attr_prefix}:namespace", pxr.Sdf.ValueTypeNames.String)
-    INDEX = (f"{_attr_prefix}:physics:index", pxr.Sdf.ValueTypeNames.Int)
-    NAME_OVERRIDE = (f"{_attr_prefix}:nameOverride", pxr.Sdf.ValueTypeNames.String)
-    FORWARD_AXIS = (f"{_attr_prefix}:forwardAxis", pxr.Sdf.ValueTypeNames.Token)
-    JOINT_INDEX = (f"{_attr_prefix}:physics:index", pxr.Sdf.ValueTypeNames.Int)
-    ROT_X_OFFSET = (f"{_attr_prefix}:physics:Rot_X:DofOffset", pxr.Sdf.ValueTypeNames.Int)
-    ROT_Y_OFFSET = (f"{_attr_prefix}:physics:Rot_Y:DofOffset", pxr.Sdf.ValueTypeNames.Int)
-    ROT_Z_OFFSET = (f"{_attr_prefix}:physics:Rot_Z:DofOffset", pxr.Sdf.ValueTypeNames.Int)
-    TR_X_OFFSET = (f"{_attr_prefix}:physics:Tr_X:DofOffset", pxr.Sdf.ValueTypeNames.Int)
-    TR_Y_OFFSET = (f"{_attr_prefix}:physics:Tr_Y:DofOffset", pxr.Sdf.ValueTypeNames.Int)
-    TR_Z_OFFSET = (f"{_attr_prefix}:physics:Tr_Z:DofOffset", pxr.Sdf.ValueTypeNames.Int)
-    ACCELERATION_LIMIT = (f"{_attr_prefix}:physics:AccelerationLimit", pxr.Sdf.ValueTypeNames.FloatArray)
-    JERK_LIMIT = (f"{_attr_prefix}:physics:JerkLimit", pxr.Sdf.ValueTypeNames.FloatArray)
-    ACTUATOR = (f"{_attr_prefix}:physics:JerkLimit", pxr.Sdf.ValueTypeNames.BoolArray)
+    DESCRIPTION = (f"{_attr_prefix}:description", "Description", pxr.Sdf.ValueTypeNames.String)
+    NAMESPACE = (f"{_attr_prefix}:namespace", "Namespace", pxr.Sdf.ValueTypeNames.String)
+    INDEX = (f"{_attr_prefix}:physics:index", "Index", pxr.Sdf.ValueTypeNames.Int)
+    NAME_OVERRIDE = (f"{_attr_prefix}:nameOverride", "Name Override", pxr.Sdf.ValueTypeNames.String)
+    FORWARD_AXIS = (f"{_attr_prefix}:forwardAxis", "Forward Axis", pxr.Sdf.ValueTypeNames.Token)
+    JOINT_INDEX = (f"{_attr_prefix}:physics:index", "Joint Index", pxr.Sdf.ValueTypeNames.Int)
+    ROT_X_OFFSET = (f"{_attr_prefix}:physics:Rot_X:DofOffset", "Rot X Offset", pxr.Sdf.ValueTypeNames.Int)
+    ROT_Y_OFFSET = (f"{_attr_prefix}:physics:Rot_Y:DofOffset", "Rot Y Offset", pxr.Sdf.ValueTypeNames.Int)
+    ROT_Z_OFFSET = (f"{_attr_prefix}:physics:Rot_Z:DofOffset", "Rot Z Offset", pxr.Sdf.ValueTypeNames.Int)
+    TR_X_OFFSET = (f"{_attr_prefix}:physics:Tr_X:DofOffset", "Tr X Offset", pxr.Sdf.ValueTypeNames.Int)
+    TR_Y_OFFSET = (f"{_attr_prefix}:physics:Tr_Y:DofOffset", "Tr Y Offset", pxr.Sdf.ValueTypeNames.Int)
+    TR_Z_OFFSET = (f"{_attr_prefix}:physics:Tr_Z:DofOffset", "Tr Z Offset", pxr.Sdf.ValueTypeNames.Int)
+    RETRY_INTERVAL = (f"{_attr_prefix}:retryInterval", "Retry Interval", pxr.Sdf.ValueTypeNames.Double)
+    ACCELERATION_LIMIT = (
+        f"{_attr_prefix}:physics:AccelerationLimit",
+        "Acceleration Limit",
+        pxr.Sdf.ValueTypeNames.FloatArray,
+    )
+    JERK_LIMIT = (f"{_attr_prefix}:physics:JerkLimit", "Jerk Limit", pxr.Sdf.ValueTypeNames.FloatArray)
+    ACTUATOR = (f"{_attr_prefix}:physics:Actuator", "Actuator", pxr.Sdf.ValueTypeNames.BoolArray)
+    STATUS = (f"{_attr_prefix}:status", "Status", pxr.Sdf.ValueTypeNames.Token)
+    SHEAR_FORCE_LIMIT = (f"{_attr_prefix}:shearForceLimit", "Shear Force Limit", pxr.Sdf.ValueTypeNames.Double)
+    COAXIAL_FORCE_LIMIT = (f"{_attr_prefix}:coaxialForceLimit", "Coaxial Force Limit", pxr.Sdf.ValueTypeNames.Double)
+    MAX_GRIP_DISTANCE = (f"{_attr_prefix}:maxGripDistance", "Max Grip Distance", pxr.Sdf.ValueTypeNames.Double)
+    GRIP_DISTANCE = (f"{_attr_prefix}:gripDistance", "Grip Distance", pxr.Sdf.ValueTypeNames.Double)
+    CLEARANCE_OFFSET = (f"{_attr_prefix}:clearanceOffset", "Clearance Offset", pxr.Sdf.ValueTypeNames.Double)
 
     # Custom properties for name and type
     @property
@@ -45,13 +58,27 @@ class Attributes(Enum):
         return self.value[0]
 
     @property
-    def type(self):
+    def display_name(self):
         return self.value[1]
+
+    @property
+    def type(self):
+        return self.value[2]
 
 
 class Relations(Enum):
-    ROBOT_LINKS = f"{_attr_prefix}:physics:robotLinks"
-    ROBOT_JOINTS = f"{_attr_prefix}:physics:robotjoints"
+    ROBOT_LINKS = (f"{_attr_prefix}:physics:robotLinks", "Robot Links")
+    ROBOT_JOINTS = (f"{_attr_prefix}:physics:robotjoints", "Robot Joints")
+    ATTACHMENT_POINTS = ("attachmentPoints", "Attachment Points")
+    GRIPPED_OBJECTS = ("grippedObjects", "Gripped Objects")
+
+    @property
+    def name(self):
+        return self.value[0]
+
+    @property
+    def display_name(self):
+        return self.value[1]
 
 
 def ApplyRobotAPI(prim: pxr.Usd.Prim):
@@ -88,4 +115,40 @@ def ApplyJointAPI(prim: pxr.Usd.Prim):
         Attributes.ACCELERATION_LIMIT,
         Attributes.JERK_LIMIT,
     ]:
+        prim.CreateAttribute(attr.name, attr.type, True)
+
+
+def CreateSurfaceGripper(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
+    """Creates a Surface Gripper prim with all its attributes and relationships.
+
+    Args:
+        stage: The USD stage to create the prim in
+        prim_path: The path where to create the prim
+
+    Returns:
+        The created Surface Gripper prim
+    """
+    # Create the prim
+    prim = stage.DefinePrim(prim_path, Classes.SURFACE_GRIPPER.value)
+
+    # Create attributes with default values
+    for attr in [
+        Attributes.STATUS,
+        Attributes.SHEAR_FORCE_LIMIT,
+        Attributes.COAXIAL_FORCE_LIMIT,
+        Attributes.MAX_GRIP_DISTANCE,
+        Attributes.GRIP_DISTANCE,
+    ]:
+        prim.CreateAttribute(attr.name, attr.type, True)
+
+    # Create relationships
+    prim.CreateRelationship(Relations.ATTACHMENT_POINTS.name, custom=True)
+    prim.CreateRelationship(Relations.GRIPPED_OBJECTS.name, custom=True)
+
+    return prim
+
+
+def ApplyAttachmentPointAPI(prim: pxr.Usd.Prim):
+    prim.AddAppliedSchema(Classes.ATTACHMENT_POINT_API.value)
+    for attr in [Attributes.FORWARD_AXIS, Attributes.CLEARANCE_OFFSET]:
         prim.CreateAttribute(attr.name, attr.type, True)
