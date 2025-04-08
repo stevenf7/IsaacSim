@@ -1,0 +1,83 @@
+# Extension configuration file.
+# Visit the "Extension configuration file (extension.toml)" section for more details:
+# https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
+#
+
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "other"
+title = "Sensor Icon"
+description = "sensor icon in viewport"
+authors = ["ningl@nvidia.com", "qwan@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.gui.sensors.icon"
+keywords = ["sensor","icon","gui"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.appwindow" = { public = true }
+"omni.usd" = {}
+"omni.kit.viewport.utility" = {}
+"omni.ui.scene" = {}
+"omni.ui" = {}
+"omni.kit.viewport.registry" = {}
+"omni.kit.widget.stage" = {}
+"omni.kit.viewport.menubar.core" = {}
+"omni.kit.viewport.menubar.display" = {}
+"isaacsim.core.utils" = {}
+
+# define the Python module that the extension provides
+[[python.module]]
+name = "isaacsim.gui.sensors.icon"
+
+# define the Python module for tests
+[[python.module]]
+name = "isaacsim.gui.sensors.icon.tests"
+
+[settings]
+# timeout for resolving sensor icon 
+exts."isaacsim.gui.sensors.icon".timeout = 5
+
+# show prim name with the sensor icon, default to false
+exts."omni.kit.prim.sensor".showTitle = false
+
+# disable startup test
+[[test]]
+name = "startup"
+enabled = false
+
+[[test]]
+enabled = true
+dependencies = [
+    "omni.kit.ui_test",
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+]
+args = [
+    "--/renderer/enabled=rtx",               # "--/renderer/enabled=pxr", Can we run and pass with Storm ?
+    "--/renderer/active=rtx",                # "--/renderer/enabled=pxr", Can we run and pass with Storm ?
+    "--/app/asyncRendering=false",
+    "--/app/docks/disabled=true",
+    "--/app/viewport/forceHideFps=true",
+    "--/app/window/hideUi=true",             # Hide all Viewport UI
+    "--/app/window/width=512",               # Be explicit about the Window size
+    "--/app/window/height=512",              # Be explicit about the Window size
+    "--/app/renderer/resolution/width=512",  # Be explicit about the Viewport resolution
+    "--/app/renderer/resolution/height=512", # Be explicit about the Viewport resolution
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+    "--/app/file/ignoreUnsavedOnExit=true",
+    "--no-window"
+]
+
+
+stdoutFailPatterns.exclude = [
+    "*<class 'omni.kit.menu.utils.scripts.utils.MenuUtilsExtension'>: extension object is still alive*", # Leak
+    "*<class 'omni.kit.window.tests.Extension'>: extension object is still alive*", # Leak
+    "*createDLSSContext error: unable to initialize context. Optional DLSS feature is disabled.*",
+]

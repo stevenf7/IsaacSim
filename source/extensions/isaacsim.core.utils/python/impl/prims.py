@@ -49,7 +49,12 @@ def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.P
         >>> prims_utils.get_prim_at_path("/World/Cube")
         Usd.Prim(</World/Cube>)
     """
-    return get_current_stage(fabric=fabric).GetPrimAtPath(prim_path)
+
+    current_stage = get_current_stage(fabric=fabric)
+    if current_stage:
+        return current_stage.GetPrimAtPath(prim_path)
+    else:
+        return None
 
 
 def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
@@ -76,7 +81,11 @@ def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
         >>> prims_utils.is_prim_path_valid("/World/Sphere")  # it doesn't exist
         False
     """
-    return get_prim_at_path(prim_path, fabric=fabric).IsValid()
+    prim = get_prim_at_path(prim_path, fabric=fabric)
+    if prim:
+        return prim.IsValid()
+    else:
+        return False
 
 
 def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> typing.List[str]:
@@ -606,10 +615,13 @@ def get_prim_path(prim: Usd.Prim) -> str:
         >>> prims_utils.get_prim_path(prim)
         /World/Cube
     """
-    if isinstance(prim, Usd.Prim):
-        return prim.GetPath().pathString
+    if prim:
+        if isinstance(prim, Usd.Prim):
+            return prim.GetPath().pathString
+        else:
+            return prim.GetPath()
     else:
-        return prim.GetPath()
+        return None
 
 
 def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
