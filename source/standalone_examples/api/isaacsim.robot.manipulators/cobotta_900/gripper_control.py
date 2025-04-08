@@ -46,7 +46,7 @@ my_denso = my_world.scene.add(
     SingleManipulator(
         prim_path="/World/cobotta",
         name="cobotta_robot",
-        end_effector_prim_name="onrobot_rg6_base_link",
+        end_effector_prim_path="/World/cobotta/onrobot_rg6_base_link",
         gripper=gripper,
     )
 )

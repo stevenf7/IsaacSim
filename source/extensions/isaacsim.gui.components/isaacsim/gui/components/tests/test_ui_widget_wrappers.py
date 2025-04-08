@@ -213,13 +213,13 @@ class TestUI(omni.kit.test.AsyncTestCase):
         self._valid_path_ct = 0
 
         self._robot_path = "/ur10"
-
+        self._root_path = "/ur10/root_joint"
         create_new_stage()
 
         def on_articulation_selected(articulation_path):
             if articulation_path is None:
                 self._no_path_ct += 1
-            elif articulation_path == self._robot_path:
+            elif articulation_path == self._root_path:
                 self._valid_path_ct += 1
             else:
                 self.assertTrue(False, "Invalid Articulation Selection")
@@ -235,7 +235,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
 
         self._timeline = omni.timeline.get_timeline_interface()
 
-        add_reference_to_stage(get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd", self._robot_path)
+        add_reference_to_stage(get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd", self._robot_path)
         # Test that articulations are found both when the timeline is stopped and playing
         dropdown.repopulate()
         self.assertTrue(self._valid_path_ct == 1)

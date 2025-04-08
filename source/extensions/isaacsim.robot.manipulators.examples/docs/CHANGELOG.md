@@ -11,6 +11,11 @@
 ### Changed
 - Switch asset root for tests to internal nucleus
 
+## [1.0.4] - 2025-02-19
+### Changed
+- Updated ur10 class's usd path
+- Using variant for gripper creation
+
 ## [1.0.3] - 2025-01-26
 ### Changed
 - Update test settings

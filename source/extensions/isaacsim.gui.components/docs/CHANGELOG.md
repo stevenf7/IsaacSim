@@ -15,6 +15,10 @@
 ### Changed
 - Update to kit 107.1 and fix build issues
 
+## [1.0.10] - 2025-02-19
+### Changed
+- Updated ur10 path
+
 ## [1.0.9] - 2025-01-27
 ### Removed
 - Remove comments
