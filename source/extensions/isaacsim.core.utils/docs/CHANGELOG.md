@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.16] - 2025-04-07
+### Changed
+- added prim validation check to some functions in prims.py
+
 ## [2.2.15] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
