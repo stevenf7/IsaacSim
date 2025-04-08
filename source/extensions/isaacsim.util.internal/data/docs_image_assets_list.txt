@@ -60,9 +60,6 @@ omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd
 omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd
 omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UniversalRobots/ur20/ur20.usd
 omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UniversalRobots/ur30/ur30.usd
-omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UR10/ur10.usd
-omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UR10/ur10_short_suction.usd
-omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/UR10/ur10_long_suction.usd
 omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/ShadowHand/shadow_hand.usd
 omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/ShadowHand/shadow_hand_instanceable.usd
 omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/AllegroHand/allegro_hand.usd

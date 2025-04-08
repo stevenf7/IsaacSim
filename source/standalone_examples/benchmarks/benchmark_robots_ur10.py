@@ -48,6 +48,7 @@ from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.stage import open_stage_async, update_stage_async
 from isaacsim.core.utils.types import ArticulationActions
+from isaacsim.storage.native import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("isaacsim.benchmark.services")
@@ -139,7 +140,7 @@ benchmark.set_phase("loading", start_recording_frametime=False, start_recording_
 
 get_active_viewport().updates_enabled = visual
 
-robot_usd_path = "omniverse://ov-isaac-dev.nvidia.com/Isaac/Robots/UR10/ur10.usd"
+robot_usd_path = get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
 
 my_world = World(backend="torch", device=device)
 PhysicsContext(physics_dt=1.0 / 60.0)

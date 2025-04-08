@@ -50,7 +50,10 @@ gripper = ParallelGripper(
 )
 my_franka = my_world.scene.add(
     SingleManipulator(
-        prim_path="/World/Franka", name="my_franka", end_effector_prim_name="panda_rightfinger", gripper=gripper
+        prim_path="/World/Franka",
+        name="my_franka",
+        end_effector_prim_path="/World/Franka/panda_rightfinger",
+        gripper=gripper,
     )
 )
 cube = my_world.scene.add(

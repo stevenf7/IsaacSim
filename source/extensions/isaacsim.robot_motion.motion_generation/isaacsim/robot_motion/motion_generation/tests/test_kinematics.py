@@ -106,11 +106,16 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
     async def test_lula_fk_ur10(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/UR10/ur10.usd"  # TODO: change to UniversalRobots/ur10/ur10.usd and update the test
+        usd_path += "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
+        robot_root_path = "/ur10/root_joint"
         trans_dist, rot_dist = await self._test_lula_fk(
-            usd_path, robot_name, robot_prim_path, joint_target=-np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.2])
+            usd_path,
+            robot_name,
+            robot_prim_path,
+            robot_root_path,
+            joint_target=-np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.2]),
         )
         self.assertTrue(np.all(trans_dist < 0.001))
         self.assertTrue(np.all(rot_dist < 0.005))
@@ -138,6 +143,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         usd_path,
         robot_name,
         robot_prim_path,
+        robot_root_path=None,
         joint_target=None,
         base_pose=np.zeros(3),
         base_orient=np.array([1, 0, 0, 0]),
@@ -153,7 +159,10 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
 
-        self._robot = Robot(robot_prim_path)
+        if robot_root_path == None:
+            robot_root_path = robot_prim_path
+
+        self._robot = Robot(robot_root_path)
         await self._prepare_stage(self._robot)
         self._robot.set_world_pose(base_pose, base_orient)
 

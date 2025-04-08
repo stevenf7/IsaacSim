@@ -27,19 +27,13 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add_default_ground_plane()
 
     async def test_single_manipulators(self):
-        asset_path = self._assets_root_path + "/Isaac/Robots/UR10/ur10.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/UR10")
-        gripper_usd = self._assets_root_path + "/Isaac/Robots/UR10/Props/short_gripper.usd"
-        add_reference_to_stage(usd_path=gripper_usd, prim_path="/World/UR10/ee_link")
+        asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+        robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/UR10")
+        robot.GetVariantSet("Gripper").SetVariantSelection("Short_Suction")
         gripper = SurfaceGripper(end_effector_prim_path="/World/UR10/ee_link", translate=0.1611, direction="x")
         ur10 = self._my_world.scene.add(
             SingleManipulator(
                 prim_path="/World/UR10", name="my_ur10", end_effector_prim_path="/World/UR10/ee_link", gripper=gripper
-            )
-        )
-        ur10_2 = self._my_world.scene.add(
-            SingleManipulator(
-                prim_path="/World/UR10", name="my_ur10_2", end_effector_prim_name="ee_link", gripper=gripper
             )
         )
         ur10.set_joints_default_state(

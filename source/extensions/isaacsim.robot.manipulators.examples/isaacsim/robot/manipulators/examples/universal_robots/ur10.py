@@ -53,14 +53,14 @@ class UR10(Robot):
         self._end_effector_prim_name = end_effector_prim_name
         if not prim.IsValid():
             if usd_path:
-                add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+                prim = add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
             else:
                 assets_root_path = get_assets_root_path()
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
                     return
                 usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
-                add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+                prim = add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
             if self._end_effector_prim_name is None:
                 self._end_effector_prim_path = prim_path + "/ee_link"
             else:
@@ -81,8 +81,7 @@ class UR10(Robot):
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
                     return
-                gripper_usd = assets_root_path + "/Isaac/Robots/UR10/Props/short_gripper.usd"
-                add_reference_to_stage(usd_path=gripper_usd, prim_path=self._end_effector_prim_path)
+                prim.GetVariantSet("Gripper").SetVariantSelection("Short_Suction")
                 self._gripper = SurfaceGripper(
                     end_effector_prim_path=self._end_effector_prim_path, translate=0.1611, direction="x"
                 )

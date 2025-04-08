@@ -208,7 +208,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur3/ur3.usd"
         robot_name = "UR3"
-        robot_prim_path = "/ur3"
+        robot_prim_path = "/ur3/root_joint"
 
         await self._simple_robot_rmpflow_test(
             usd_path, robot_prim_path, robot_name, target_pos=np.array([0.3, 0.3, 0.5])
@@ -218,7 +218,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd"
         robot_name = "UR3e"
-        robot_prim_path = "/ur3e"
+        robot_prim_path = "/ur3e/root_joint"
 
         await self._simple_robot_rmpflow_test(
             usd_path, robot_prim_path, robot_name, target_pos=np.array([0.3, 0.3, 0.5])
@@ -228,7 +228,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur5/ur5.usd"
         robot_name = "UR5"
-        robot_prim_path = "/ur5"
+        robot_prim_path = "/ur5/root_joint"
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
@@ -236,7 +236,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd"
         robot_name = "UR5e"
-        robot_prim_path = "/ur5e"
+        robot_prim_path = "/ur5e/root_joint"
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
@@ -244,7 +244,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_name = "UR10"
-        robot_prim_path = "/ur10"
+        robot_prim_path = "/ur10/root_joint"
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
@@ -252,7 +252,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
         robot_name = "UR10e"
-        robot_prim_path = "/ur10e"
+        robot_prim_path = "/ur10e/root_joint"
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
@@ -260,7 +260,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd"
         robot_name = "UR16e"
-        robot_prim_path = "/ur16e"
+        robot_prim_path = "/ur16e/root_joint"
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 

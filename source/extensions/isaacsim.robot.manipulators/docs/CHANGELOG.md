@@ -1,4 +1,13 @@
 # Changelog
+## [3.1.0] - 2025-04-07
+### Updated
+- Removed end_effector_prim_name parameter, end effector prim path is required now
+
+## [3.0.11] - 2025-04-07
+### Updated
+- Updated ur10 path
+- The unit test now use Variant to create the gripper
+
 ## [3.0.10] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

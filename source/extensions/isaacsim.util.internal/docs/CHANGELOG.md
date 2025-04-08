@@ -7,6 +7,10 @@
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code
 
+## [2.1.2] - 2025-02-19
+### Removed
+- Removed unreleased asset list
+
 ## [2.1.1] - 2025-01-21
 ### Changed
 - Update extension description and add extension specific test settings
