@@ -1,0 +1,9 @@
+# Omni Physics updater
+[updater.omni_physics]
+enabled = true
+type = "repo_update"
+schedule = "weekly"
+mr_title = "bump omni_physics_dev"
+repo_update_args = ["omni_physics_dev", "--include-pre-release", "--patch"]
+required_paths = ["deps/omni-physics.packman.xml"]
+dependabot_branch_name = "update-omni-physics"
