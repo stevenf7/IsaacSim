@@ -22,12 +22,15 @@
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/fabric/FabricUSD.h>
+#include <omni/physics/tensors/IArticulationView.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/TensorApi.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
-#include <DynamicControl.h>
 #include <OgnIsaacJointNameResolverDatabase.h>
 #include <unordered_map>
+
 
 namespace isaacsim
 {
@@ -35,6 +38,8 @@ namespace core
 {
 namespace nodes
 {
+
+using namespace omni::physics::tensors;
 
 class OgnIsaacJointNameResolver : public isaacsim::core::includes::BaseResetNode
 {
@@ -44,11 +49,10 @@ public:
         auto& state =
             OgnIsaacJointNameResolverDatabase::sPerInstanceState<OgnIsaacJointNameResolver>(nodeObj, instanceId);
 
-        state.m_dynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-
-        if (!state.m_dynamicControlPtr)
+        state.m_tensorInterface = carb::getCachedInterface<TensorApi>();
+        if (!state.m_tensorInterface)
         {
-            CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
+            CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
             return;
         }
         state.m_robotPath = "";
@@ -93,6 +97,7 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
+            state.m_simView = state.m_tensorInterface->createSimulationView(stageId);
 
             pxr::UsdPrim startPrim = stage->GetPrimAtPath(pxr::SdfPath(state.m_robotPath));
 
@@ -102,21 +107,11 @@ public:
                 return false;
             }
 
-            auto type = state.m_dynamicControlPtr->peekObjectType(state.m_robotPath.c_str());
-
+            IArticulationView* articulation = state.m_simView->createArticulationView(state.m_robotPath.c_str());
             // Checking we have a valid articulation
-            if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
+            if (!articulation)
             {
-                state.m_articulationHandle = state.m_dynamicControlPtr->getArticulation(state.m_robotPath.c_str());
-                if (!state.m_articulationHandle)
-                {
-                    db.logError("Articulation not found for prim %s", state.m_robotPath);
-                    return false;
-                }
-            }
-            else
-            {
-                db.logError("%s prim is not a articulation root", state.m_robotPath);
+                db.logError("Articulation not found for prim %s", state.m_robotPath);
                 return false;
             }
 
@@ -173,11 +168,11 @@ public:
     }
 
 private:
-    omni::isaac::dynamic_control::DcHandle m_articulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
     std::unordered_map<std::string, pxr::UsdPrim> m_nameOverrideMap;
     bool m_firstFrame = true;
     std::string m_robotPath;
-    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
+    TensorApi* m_tensorInterface = nullptr;
+    ISimulationView* m_simView = nullptr;
 };
 
 REGISTER_OGN_NODE()

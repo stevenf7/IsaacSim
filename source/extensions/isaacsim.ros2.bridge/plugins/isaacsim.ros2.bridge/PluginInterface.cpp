@@ -41,7 +41,6 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdTypes.h>
 
-#include <DynamicControl.h>
 #if defined(_WIN32)
 #    include <filesystem>
 #else
@@ -58,7 +57,6 @@ const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.ros2.bridge.plugin
 CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::ros2::bridge::Ros2Bridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
-                      omni::isaac::dynamic_control::DynamicControl,
                       omni::kit::IStageUpdate,
                       omni::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,

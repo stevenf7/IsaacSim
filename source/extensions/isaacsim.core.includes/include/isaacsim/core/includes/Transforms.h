@@ -11,14 +11,18 @@
 #pragma once
 
 // #include <carb/filesystem/IFileSystem.h>
-
-#include <DynamicControl.h>
+#include <omni/physics/tensors/IArticulationView.h>
+#include <omni/physics/tensors/IRigidBodyView.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/TensorApi.h>
 // clang-format off
 #include <omni/usd/UtilsIncludes.h>
 #include <omni/usd/UsdUtils.h>
 // clang-format on
 
 #include <isaacsim/core/includes/Conversions.h>
+
+using namespace omni::physics::tensors;
 
 namespace isaacsim
 {
@@ -43,10 +47,15 @@ namespace includes
  */
 namespace transforms
 {
-
-using omni::isaac::dynamic_control::DcHandle;
-using omni::isaac::dynamic_control::DcObjectType;
-using omni::isaac::dynamic_control::DcTransform;
+static void createTensorDesc(TensorDesc& tensorDesc, void* dataPtr, int numElements, TensorDataType type)
+{
+    tensorDesc.dtype = type;
+    tensorDesc.numDims = 1;
+    tensorDesc.dims[0] = numElements;
+    tensorDesc.data = dataPtr;
+    tensorDesc.ownData = true;
+    tensorDesc.device = -1;
+}
 
 /**
  * @brief Sets the transform (position and rotation) of a USD prim.
@@ -71,47 +80,56 @@ using omni::isaac::dynamic_control::DcTransform;
  * @note For physics objects, this function only works during simulation
  * @warning Resets linear and angular velocities to zero for physics objects
  */
-inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr::GfQuatf pxBodyRotation)
+inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f bodyTranslation, pxr::GfQuatf bodyRotation)
 {
     // TODO: Handle world rotation as well
     // NOTE: reverting this for now, rigid body sink publishes global so teleport should be global too
     // auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr =
-        carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-    omni::isaac::dynamic_control::DcTransform t =
-        isaacsim::core::includes::conversions::asDcTransform(pxBodyTranslation, pxBodyRotation);
-
-    if (mDynamicControlPtr->isSimulating())
+    auto mTensorInterface = carb::getCachedInterface<TensorApi>();
+    if (!mTensorInterface)
     {
-        DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
-        if (primType == omni::isaac::dynamic_control::eDcObjectArticulation)
+        CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+        return;
+    }
+    uint64_t stageId = pxr::UsdUtilsStageCache::Get().GetId(prim.GetStage()).ToLongInt();
+    if (auto mSimView = mTensorInterface->createSimulationView(long(stageId)))
+    {
+
+        TensorDesc xformTensor;
+        TensorDesc velTensor;
+        std::vector<float> xformData(7, 0.0);
+        std::vector<float> velData(6, 0.0);
+        createTensorDesc(xformTensor, (void*)xformData.data(), 7, TensorDataType::eFloat32);
+        createTensorDesc(velTensor, (void*)velData.data(), 6, TensorDataType::eFloat32);
+
+        xformData[0] = bodyTranslation[0];
+        xformData[1] = bodyTranslation[1];
+        xformData[2] = bodyTranslation[2];
+        xformData[3] = bodyRotation.GetImaginary()[0];
+        xformData[4] = bodyRotation.GetImaginary()[1];
+        xformData[5] = bodyRotation.GetImaginary()[2];
+        xformData[6] = bodyRotation.GetReal();
+        // TODO: do we need to wake up articulations?
+        ObjectType objectType = mSimView->getObjectType(prim.GetPath().GetText());
+        if (objectType == ObjectType::eArticulation || objectType == ObjectType::eArticulationRootLink)
         {
-            DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
-            mDynamicControlPtr->wakeUpArticulation(artculationHandle);
-            DcHandle rigidBodyHandle = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-            mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
-            mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
-            mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
-            mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
-            mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
-            mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
-            return;
+            auto articulation = mSimView->createArticulationView(prim.GetPath().GetText());
+            articulation->setRootTransforms(&xformTensor, nullptr);
+            articulation->setRootVelocities(&velTensor, nullptr);
         }
-        else if (primType == omni::isaac::dynamic_control::eDcObjectRigidBody)
+        else if (objectType == ObjectType::eRigidBody || objectType == ObjectType::eArticulationLink)
         {
-            DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
-            mDynamicControlPtr->wakeUpRigidBody(rigidBodyHandle);
-            mDynamicControlPtr->setRigidBodyPose(rigidBodyHandle, t);
-            mDynamicControlPtr->setRigidBodyLinearVelocity(rigidBodyHandle, { 0, 0, 0 });
-            mDynamicControlPtr->setRigidBodyAngularVelocity(rigidBodyHandle, { 0, 0, 0 });
-            return;
+            auto rigidBody = mSimView->createRigidBodyView(prim.GetPath().GetText());
+            rigidBody->setTransforms(&xformTensor, nullptr);
+            rigidBody->setVelocities(&velTensor, nullptr);
         }
     }
-    // In case we are not simulating or the object was a regular prim, go down this path
+    else
     {
+        // In case we are not simulating or the object was a regular prim, go down this path
         pxr::GfTransform usdBodyPose;
-        usdBodyPose.SetTranslation(pxBodyTranslation);
-        usdBodyPose.SetRotation(pxr::GfRotation(pxBodyRotation));
+        usdBodyPose.SetTranslation(bodyTranslation);
+        usdBodyPose.SetRotation(pxr::GfRotation(bodyRotation));
         // Pose is global so offset by parent pose
         pxr::GfMatrix4d parentToWorldMat =
             pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
@@ -135,15 +153,23 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyTranslation, pxr
  */
 inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
 {
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr =
-        carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-    bool doScale = true;
-
-    if (mDynamicControlPtr->isSimulating())
+    auto mTensorInterface = carb::getCachedInterface<TensorApi>();
+    if (!mTensorInterface)
     {
-        DcObjectType primType = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
-        doScale = (primType == omni::isaac::dynamic_control::eDcObjectNone);
+        CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+        return;
     }
+    bool doScale = true;
+    uint64_t stageId = pxr::UsdUtilsStageCache::Get().GetId(prim.GetStage()).ToLongInt();
+    if (auto mSimView = mTensorInterface->createSimulationView(long(stageId)))
+    {
+        auto path = prim.GetPath().GetString().c_str();
+        auto articulation = mSimView->createArticulationView(path);
+        auto rigidBody = mSimView->createRigidBodyView(path);
+        if (articulation or rigidBody)
+            doScale = false;
+    }
+
     if (doScale)
     {
         auto currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);

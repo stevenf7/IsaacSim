@@ -23,7 +23,6 @@
 #include <isaacsim/ros2/bridge/Ros2QoS.h>
 #include <isaacsim/ros2/bridge/Ros2Types.h>
 
-#include <DynamicControl.h>
 #include <memory>
 #include <string>
 #include <vector>
