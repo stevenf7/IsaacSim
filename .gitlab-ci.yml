@@ -273,8 +273,7 @@ check-python-packages:
       - .repo-artifacts
       - .runner-utility-linux-x86_64
     script:
-      - ./repo.sh check_python_package_definitions
-
+      - ./repo.sh check_python_package_definitions --gitlab
 # ==============================================================================================================
 .build-artifacts:
     artifacts:

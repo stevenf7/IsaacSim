@@ -12,6 +12,7 @@ import argparse
 import logging
 import os
 import string
+import subprocess
 import sys
 from typing import Callable, Dict
 from xml.etree import ElementTree
@@ -23,7 +24,9 @@ from omni.repo.man.version import OVFlowBuildIdentifier, PackmanVersion
 logger = logging.getLogger(__name__)
 
 
-def _check_omniverse_kit_version(package_definitions, kit_sdk_packman, omniverse_kit_version, exit_on_error=True):
+def _check_omniverse_kit_version(
+    package_definitions, kit_sdk_packman, omniverse_kit_version, exit_on_error=True, print_errors=True
+):
     def get_by_index_or_default(elems, index, default):
         return elems[index] if len(elems) > index else default
 
@@ -68,13 +71,37 @@ def _check_omniverse_kit_version(package_definitions, kit_sdk_packman, omniverse
         version = package["dependency"].split("==")[-1]
         if target_version != version:
             incompatible_versions.add(version)
-            omni.repo.man.print_log(
-                f"Package {package['name']} has an omniverse-kit version ({version}) incompatible with {target_version}",
-                logging.ERROR,
-            )
+            if print_errors:
+                omni.repo.man.print_log(
+                    f"Package {package['name']} has an omniverse-kit version ({version}) incompatible with {target_version}",
+                    logging.ERROR,
+                )
     if exit_on_error and len(incompatible_versions):
         sys.exit(1)
     return list(incompatible_versions), target_version
+
+
+def _is_dependabot_kit_update():
+    """Check if we're on a dependabot kit-sdk update branch with only kit-sdk.packman.xml changed"""
+    try:
+        # Check the current branch name
+        branch_cmd = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, check=True
+        )
+        branch_name = branch_cmd.stdout.strip()
+
+        if branch_name != "dependabot/update-kit-sdk":
+            return False
+
+        # Check which files are changed in this branch
+        files_cmd = subprocess.run(["git", "diff", "--name-only", "HEAD^"], capture_output=True, text=True, check=True)
+        changed_files = files_cmd.stdout.strip().split("\n")
+
+        # Return True only if kit-sdk.packman.xml is the only file changed
+        return len(changed_files) == 1 and "kit-sdk.packman.xml" in changed_files[0]
+    except subprocess.SubprocessError:
+        # If git commands fail (e.g., not in a git repo), return False
+        return False
 
 
 def _update_omniverse_kit_version(definition_paths, incompatible_versions, target_version):
@@ -139,6 +166,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         action="store_true",
         help="Update the omniverse-kit dependency version to match kit-sdk/kit-kernel one",
     )
+    parser.add_argument(
+        "--gitlab",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Enable GitLab CI mode - ignores errors during dependabot kit-sdk updates",
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         tool_config = config["repo_check_python_package_definitions"]
@@ -155,13 +189,26 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 tool_config["kit_sdk_packman"],
                 tool_config["omniverse_kit_version"],
                 exit_on_error=False,
+                print_errors=False,
             )
             _update_omniverse_kit_version(definition_paths, incompatible_versions, target_version)
             return
 
+        # Check if we're in GitLab mode with dependabot update
+        skip_exit_on_error = options.gitlab and _is_dependabot_kit_update()
+
+        if skip_exit_on_error:
+            omni.repo.man.print_log(
+                "GitLab mode detected with dependabot/update-kit-sdk branch and kit-sdk.packman.xml changes - errors will be reported but not fail the build",
+                logging.INFO,
+            )
+
         # checking
         _check_omniverse_kit_version(
-            package_definitions, tool_config["kit_sdk_packman"], tool_config["omniverse_kit_version"]
+            package_definitions,
+            tool_config["kit_sdk_packman"],
+            tool_config["omniverse_kit_version"],
+            exit_on_error=not skip_exit_on_error,
         )
         _check_extensions(package_definitions, tool_config["extension_folder"], tool_config["excluded_extensions"])
 
