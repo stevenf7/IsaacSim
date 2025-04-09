@@ -1,4 +1,11 @@
 # Changelog
+
+## [3.3.0] - 2025-04-08
+### Changed
+- Updated Robot Schema to include Surface Gripper.
+### Fixed
+- Fixed build for robot schema include file
+
 ## [3.2.3] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
