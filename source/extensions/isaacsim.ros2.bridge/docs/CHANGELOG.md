@@ -1,4 +1,9 @@
 # Changelog
+## [4.4.5] - 2025-04-08
+### Changed
+- Renamed ROS 2 Odometry unit test, functionality remians the same as before
+- Added two more unit test for ROS 2 3D Odometry, focusing on using AMRs to test linear and angular velocities
+
 ## [4.4.4] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
