@@ -36,7 +36,7 @@ version_file = "${root}/VERSION"
 
 [repo_build.premake]
 linux_x86_64_cxx_abi=true
- 
+
 [repo_build.docker]
 "platform:linux-x86_64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00"
 "platform:linux-aarch64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00"
@@ -860,6 +860,41 @@ name = "testing"
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["*"]
 name = "api"
+
+[repo_test.suites.external]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "external",
+]
+
+[[repo_test.suites.external.group]]
+args = [
+  "--portable-root ${test_root}/portable_root",
+  "--reset-user",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+]
+exclude = []
+include = [
+  "tests-external*${shell_ext}",
+]
+stdout_fail_patterns.exclude = [
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
+]
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+tc_report_enabled = false
+timeout = 5000
+
+[[repo_test.suites.external.bucket]]
+include = ["tests-external-ar*${shell_ext}"]
+name = "ar"
 
 # [repo_test.suites.jupytertests]
 # kind = "glob_and_exec"

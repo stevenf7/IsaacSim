@@ -691,6 +691,26 @@ function create_tests()
         python_sample_test(test[1], test[2], test[3])
     end
 
+    -- Nightly tests from external repos
+    group("external")
+
+    local external_tests = {
+        {
+            "tests-external-ar.ar_sdg_test",
+            "tests-external/external_workflow_tests/ar/ar_sdg_test.py",
+            "--scene $SAMPLE_DIR/tests-external/external_workflow_tests/ar/data/physics_GPU.usda --num_datasets 3 --num_frames 3 --windowed --test --output _out_ar_test",
+        },
+        {
+            "tests-external-ar.ar_sdg_benchmark",
+            "tests-external/external_workflow_tests/ar/ar_sdg_benchmark.py",
+            "--scene $SAMPLE_DIR/tests-external/external_workflow_tests/ar/data/physics_GPU.usda  --num_datasets 3 --windowed --output _out_ar_benchmark",
+        },
+    }
+
+    for _, test in ipairs(external_tests) do
+        python_sample_test(test[1], test[2], test[3])
+    end
+
     -- depreacated_test
     python_sample_test(
         "tests-nativepython-validation-test_deprecated",

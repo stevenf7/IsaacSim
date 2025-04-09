@@ -27,7 +27,7 @@ include:
     #   file: 'modules/stage-build.yml'
     # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
     #   file: 'modules/etm.yml'
-    file: 
+    file:
       - 'modules/stage-deploy.yml'
       - 'modules/stage-security.yml'
       - 'modules/sanitizers.yml'
@@ -38,8 +38,10 @@ include:
 # ==============================================================================================================
 stages:
   - check
+  - external-test
   - build
   - test
+  - nightly-test
   - security
   - deploy
   - prod-test
@@ -80,12 +82,12 @@ workflow:
 # More variables can be found in common.yml - here we put the ones controlling the jobs workflow
 variables:
     OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
-    OSEC_CHECKMARX_ENABLED: 'false'
-    OSEC_SONARQUBE_ENABLED: 'true'
-    OSEC_GITLAB_SAST_ENABLED: 'false'
-    OSEC_PULSE_TRUFFLEHOG_ENABLED: 'false'
-    OSEC_OMNI_PULSE_ENABLED: 'false'
-    OSEC_README_ENABLED: 'false' # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
+    OSEC_CHECKMARX_ENABLED: "false"
+    OSEC_SONARQUBE_ENABLED: "true"
+    OSEC_GITLAB_SAST_ENABLED: "false"
+    OSEC_PULSE_TRUFFLEHOG_ENABLED: "false"
+    OSEC_OMNI_PULSE_ENABLED: "false"
+    OSEC_README_ENABLED: "false" # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
     ALLOW_PUBLISH_DOCS:
         value: "false"
         description: "Set to true to publish docs"
@@ -132,7 +134,7 @@ variables:
         value: "false"
         description: "Set to true to run bump version. Only happens on schedule."
     RUN_NIGHTLY_TESTS:
-        value: "false"
+        value: "true"
         description: "Set to true to run nightly tests. Only happens on schedule."
     RUN_DOCS_PUBLISH:
         value: "false"
@@ -140,34 +142,44 @@ variables:
     RUN_DOCS_BUILD:
         value: "false"
         description: "Set to true to build omni docs. Only happens on schedule."
-    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 
+    RUN_CHECKS:
+        value: "true"
+        description: "Set to true to run check stage."
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST:
         value: "200Gi"
         description: "Fix publish extensions"
-    KUBERNETES_EPHEMERAL_STORAGE_LIMIT: 
+    KUBERNETES_EPHEMERAL_STORAGE_LIMIT:
         value: "200Gi"
         description: "Fix publish extensions"
 
 # ==============================================================================================================
 # overrides for compliance/osec job
 osec:sonarqube:
-    stage: deploy
+    stage: security
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
-      SONAR_EXTRA_ARGS: -Dsonar.branch.name=$CI_COMMIT_REF_NAME
-      SONAR_EXCLUSIONS: "\
-        source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopRunner.cpp\
+      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=900 -Dsonar.branch.name=$CI_COMMIT_REF_NAME"
+      SONAR_EXCLUSIONS:  "**/_build/**,**/_repo/**,**/_compiler/**,\
+        \
+        **/*.js,**/*.ts,**/*.css,**/*.html,\
+        \
+        source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopRunner.cpp,\
+        \
+        **/tests/**/*.cpp,\
+        \
         "
     before_script:
       - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
+      # OSEC-1623 (originally OSEC-1511) patch the compile_commands.json sonarqube will use for analysis to include our behaviour changing "SONAR" ifdef
+      # - sed -i -e 's/"g++ /"g++ -DNV_SONAR_BUILD=1 /' $SONAR_CFAMILY_COMPILE_COMMANDS
     rules:
-      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true")
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-        when: never
-      - if: $CI_COMMIT_BRANCH != "develop" && $CI_COMMIT_BRANCH !~ /^release\/.*/
         when: never
       - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
         when: never
+      # - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
 .check-common:
@@ -178,6 +190,8 @@ osec:sonarqube:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
       - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      - if: $RUN_CHECKS == "false"
         when: never
       - !reference [.rules-workflow, rules]
 
@@ -202,7 +216,7 @@ osec:sonarqube:
 .rules-nightly-tests:
     rules:
       # allow schedule pipeline if RUN_NIGHTLY_TESTS is set to "true" and on protected and release/* branches
-      - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+      - if: $CI_PIPELINE_SOURCE == "push" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
         # allow on bump version
         changes:
@@ -227,7 +241,9 @@ osec:sonarqube:
 # Rule for running publisher on push on develop and release branches
 .rules-version-changed:
     rules:
-      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+      - if: $CI_COMMIT_TITLE !~ /^Bumped version/
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
         changes:
           - VERSION.md
           - VERSION
@@ -389,6 +405,34 @@ build-windows-x86_64-debug:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
         when: never
       - !reference [.rules-workflow, rules]
+
+.test-nightly:
+    stage: nightly-test
+    timeout: 3 hour
+    interruptible: true
+    extends:
+      - .test-artifacts
+    allow_failure: true
+    rules:
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS != "true"
+        when: never
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        when: never
+      - !reference [.rules-version-changed, rules]
+
+.test-external:
+    stage: external-test
+    timeout: 3 hour
+    interruptible: true
+    extends:
+      - .test-artifacts
+    allow_failure: true
+    rules:
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS != "true"
+        when: never
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        when: never
+      - !reference [.rules-version-changed, rules]
 
 .test-linux-common:
     after_script:
@@ -609,35 +653,6 @@ test-linux-x86_64-benchmarks-2-gpu:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
 
-test-linux-x86_64-benchmarks-4-gpu:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
-      - .omni_nvks_gpu_4x
-    script:
-      - export ISAAC_TEST_MODE=1
-      - ./repo.sh ci test -- -s benchmarks --generate-report
-    after_script:
-      - !reference [.datadog-test-visibility-linux-x86_64, script]
-    rules:
-      - if: $CI_COMMIT_TITLE =~ /^Bumped version/
-        when: never
-      - !reference [.rules-nightly-tests, rules]
-
-test-linux-x86_64-internalpythontests-1:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
-      - .omni_nvks_gpu
-    script:
-      - ./repo.sh ci test -- -s internalpythontests -b 1
-    rules:
-      - !reference [.rules-nightly-tests, rules]
-
 test-windows-x86_64-startuptests:
     extends:
       - .test-common
@@ -750,45 +765,79 @@ test-windows-x86_64-postinstalltests:
     script:
       - ./repo.bat ci test -- -s postinstalltests
 
+# ==============================================================================================================
+# nightly-tests
+
+test-linux-x86_64-benchmarks-4-gpu:
+    extends:
+      - .test-nightly
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu_4x
+    script:
+      - export ISAAC_TEST_MODE=1
+      - ./repo.sh ci test -- -s benchmarks
+
+test-linux-x86_64-internalpythontests-1:
+    extends:
+      - .test-nightly
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+    script:
+      - ./repo.sh ci test -- -s internalpythontests -b 1
+
 test-windows-x86_64-internalpythontests-1:
     extends:
-      - .test-common
+      - .test-nightly
       - .test-windows-common
       - .runner-test-windows-x86_64-gpu
     script:
       - ./repo.bat ci test -- -s internalpythontests -b 1
-    rules:
-      - !reference [.rules-nightly-tests, rules]
 
 test-windows-x86_64-nativepythontests-api:
     extends:
-      - .test-common
+      - .test-nightly
       - .test-windows-common
       - .runner-test-windows-x86_64-gpu
     script:
-      - ./repo.bat ci test -- -s nativepythontests -b api --generate-report
-    rules:
-      - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+      - ./repo.bat ci test -- -s nativepythontests -b api
 
 test-windows-x86_64-nativepythontests-replicator:
     extends:
-      - .test-common
+      - .test-nightly
       - .test-windows-common
       - .runner-test-windows-x86_64-gpu
     script:
-      - ./repo.bat ci test -- -s nativepythontests -b replicator --generate-report
-    rules:
-      - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+      - ./repo.bat ci test -- -s nativepythontests -b replicator
 
 test-windows-x86_64-nativepythontests-testing:
     extends:
-      - .test-common
+      - .test-nightly
       - .test-windows-common
       - .runner-test-windows-x86_64-gpu
     script:
-      - ./repo.bat ci test -- -s nativepythontests -b testing --generate-report
-    rules:
-      - !reference [.rules-nightly-tests, rules] #only run linux ones per MR and these nightly
+      - ./repo.bat ci test -- -s nativepythontests -b testing
+
+# ==============================================================================================================
+# external-tests
+
+test-linux-x86_64-external-ar:
+    extends:
+      - .test-external
+      - .runner-test-linux-x86_64-gpu
+      - .osec:vault:v3:prod_token_job
+    before_script:
+      - set -eu
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+      - ./build.sh -r --no-docker
+      - git clone --depth=1 -b main --single-branch https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/external_workflow_tests.git _git/external_workflow_tests
+      - mkdir -p _build/linux-x86_64/release/tests-external/external_workflow_tests/ar
+      - cp -r _git/external_workflow_tests/ar _build/linux-x86_64/release/tests-external/external_workflow_tests
+    script:
+      - ./repo.sh test -c release -s external -b ar --generate-report
 
 # ==============================================================================================================
 .deploy-artifacts:
