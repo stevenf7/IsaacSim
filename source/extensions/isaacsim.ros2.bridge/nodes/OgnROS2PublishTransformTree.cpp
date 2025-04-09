@@ -15,16 +15,16 @@
 #include <isaacsim/core/includes/PoseTree.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/TensorApi.h>
 #include <omni/usd/UsdUtils.h>
 
-#include <DynamicControl.h>
 #include <OgnROS2PublishTransformTreeDatabase.h>
 #include <iomanip>
 #include <sstream>
 
 using namespace isaacsim::ros2::bridge;
-using namespace omni::isaac::dynamic_control;
-
+using namespace omni::physics::tensors;
 class OgnROS2PublishTransformTree : public Ros2Node
 {
 public:
@@ -33,10 +33,10 @@ public:
         auto& state =
             OgnROS2PublishTransformTreeDatabase::sPerInstanceState<OgnROS2PublishTransformTree>(nodeObj, instanceId);
 
-        state.m_dynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-        if (!state.m_dynamicControlPtr)
+        state.m_tensorInterface = carb::getCachedInterface<TensorApi>();
+        if (!state.m_tensorInterface)
         {
-            CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
+            CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
             return;
         }
 
@@ -80,6 +80,7 @@ public:
             }
 
             state.m_stageUnits = UsdGeomGetStageMetersPerUnit(state.m_usdStage);
+            state.m_simView = state.m_tensorInterface->createSimulationView(state.m_stageId);
 
             //  Finding target prims
             const auto& targetPrims = db.inputs.targetPrims();
@@ -118,8 +119,8 @@ public:
             }
 
             // Reset this object
-            state.m_poseTree = std::make_unique<isaacsim::core::includes::posetree::PoseTree>(
-                state.m_stageId, state.m_dynamicControlPtr);
+            state.m_poseTree =
+                std::make_unique<isaacsim::core::includes::posetree::PoseTree>(state.m_stageId, state.m_simView);
             state.m_poseTree->setParentPrimPath(state.m_parentPath, "world");
             state.m_poseTree->setTargetPrimPaths(state.m_targets);
 
@@ -252,7 +253,8 @@ private:
 
     bool m_firstIteration = true;
 
-    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
+    TensorApi* m_tensorInterface = nullptr;
+    ISimulationView* m_simView = nullptr;
     double m_stageUnits = 1;
     pxr::SdfPath m_parentPath;
     pxr::SdfPathVector m_targets;

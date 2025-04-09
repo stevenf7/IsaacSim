@@ -247,6 +247,19 @@ inline carb::Float3 asCarbFloat3(const pxr::GfVec3d& v)
     return carb::Float3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
 }
 
+
+/**
+ * @brief convert pxr::GfVec4f to carb::Float4
+ *
+ * @param v
+ * @return carb::Float4
+ */
+inline carb::Float4 asCarbFloat4(const physx::PxQuat& q)
+{
+    return carb::Float4{ q.x, q.y, q.z, q.w };
+}
+
+
 /**
  * @brief Converts pxr::GfQuatf to carb::Float4.
  * @details

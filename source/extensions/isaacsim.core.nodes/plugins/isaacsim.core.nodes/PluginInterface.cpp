@@ -29,7 +29,6 @@
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 
-#include <DynamicControl.h>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.nodes", "Isaac Sim Core OmniGraph Nodes", "NVIDIA",
                                                     carb::PluginHotReload::eEnabled, "dev" };
@@ -41,8 +40,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
                       omni::physx::IPhysx,
                       omni::fabric::IStageReaderWriter,
                       omni::fabric::ISimStageWithHistory,
-                      omni::fabric::IStageAtTimeInterval,
-                      omni::isaac::dynamic_control::DynamicControl)
+                      omni::fabric::IStageAtTimeInterval)
 
 DECLARE_OGN_NODES()
 

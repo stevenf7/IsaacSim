@@ -24,6 +24,7 @@ includedirs {
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/source/extensions/isaacsim.core.utils/include",
     "%{root}/source/extensions/isaacsim.core.utils/plugins",
+    "%{root}/_build/target-deps/omni_physics/%{config}/include",
 }
 
 libdirs {

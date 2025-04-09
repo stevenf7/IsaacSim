@@ -19,6 +19,7 @@ writeTarget.platform = true
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ml_archive" = {}
 "omni.physx" = {}
+"omni.physics.tensors" = {}
 "omni.usd.schema.semantics" = {}
 "omni.usdphysics" = {}
 "omni.warp.core" = {}

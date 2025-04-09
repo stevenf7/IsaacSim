@@ -15,12 +15,17 @@
 
 #include <foundation/PxTransform.h>
 #include <isaacSensorSchema/isaacRtxLidarSensorAPI.h>
+#include <omni/physics/tensors/IArticulationMetatype.h>
+#include <omni/physics/tensors/IArticulationView.h>
+#include <omni/physics/tensors/IRigidBodyView.h>
+#include <omni/physics/tensors/ISimulationView.h>
+#include <omni/physics/tensors/ObjectTypes.h>
+#include <omni/physics/tensors/TensorApi.h>
 #include <omni/usd/UsdUtils.h>
 #include <physx/include/foundation/PxTransform.h>
 #include <usdrt/scenegraph/usd/rt/xformable.h>
 
-#include <DynamicControl.h>
-
+using namespace omni::physics::tensors;
 using namespace isaacsim::core::includes::conversions;
 
 namespace isaacsim
@@ -50,6 +55,16 @@ namespace posetree
  * @warning Frame names must be unique within the tree. Duplicate names will be automatically renamed
  *          with their full path.
  */
+static void createTensorDesc(TensorDesc& tensorDesc, void* dataPtr, int numXforms, TensorDataType type)
+{
+    tensorDesc.dtype = type;
+    tensorDesc.numDims = 1;
+    tensorDesc.dims[0] = numXforms * 7;
+    tensorDesc.data = dataPtr;
+    tensorDesc.ownData = true;
+    tensorDesc.device = -1;
+}
+
 class PoseTree
 {
 public:
@@ -63,7 +78,7 @@ public:
      * @pre stageId must be valid and correspond to an existing USD stage
      * @pre dynamicControlPtr must be a valid pointer to a DynamicControl instance
      */
-    PoseTree(const uint64_t& stageId, omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+    PoseTree(const uint64_t& stageId, ISimulationView* simulationView)
     {
         // Store the USD and USDRT stage references from the stage ID
         m_usdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(static_cast<long>(stageId)));
@@ -71,8 +86,9 @@ public:
             carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
         omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
         m_usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
-
-        m_dynamicControlPtr = dynamicControlPtr;
+        m_simView = simulationView;
+        m_rigidXformData.resize(7);
+        createTensorDesc(m_rigidTransformTensor, (void*)m_rigidXformData.data(), 1, TensorDataType::eFloat32);
     }
 
     /**
@@ -126,15 +142,16 @@ public:
         // If the parent prim path is not empty, get the type of prim and its pose.
         if (!m_parentPath.IsEmpty())
         {
-            omni::isaac::dynamic_control::DcObjectType type =
-                m_dynamicControlPtr->peekObjectType(m_parentPath.GetString().c_str());
-            if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+            ObjectType objectType = m_simView->getObjectType(m_parentPath.GetString().c_str());
+            if (objectType == ObjectType::eArticulationLink || objectType == ObjectType::eArticulationRootLink ||
+                objectType == ObjectType::eRigidBody)
             {
-                m_parentPose = getRigidBodyPose(m_parentPath);
+                IRigidBodyView* rb = m_simView->createRigidBodyView(m_parentPath.GetString().c_str());
+                m_parentPose = getRigidBodyPose(rb);
             }
-            else if (type == omni::isaac::dynamic_control::eDcObjectNone ||
-                     type == omni::isaac::dynamic_control::eDcObjectArticulation)
+            else
             {
+                // TODO: handle non types
                 m_parentPose = getXformPose(m_parentPath);
             }
 
@@ -144,17 +161,37 @@ public:
         // For each target prim determine its type and compute the associated poses
         for (pxr::SdfPath primPath : m_targets)
         {
-            omni::isaac::dynamic_control::DcObjectType type =
-                m_dynamicControlPtr->peekObjectType(primPath.GetString().c_str());
-            if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
+            ObjectType objectType = m_simView->getObjectType(primPath.GetString().c_str());
+            if (objectType == ObjectType::eArticulation || objectType == ObjectType::eArticulationRootLink)
             {
-                omni::isaac::dynamic_control::DcHandle artculationHandle =
-                    m_dynamicControlPtr->getArticulation(primPath.GetString().c_str());
-                omni::isaac::dynamic_control::DcHandle rootBody =
-                    m_dynamicControlPtr->getArticulationRootBody(artculationHandle);
-                ::physx::PxTransform body1Pose = asPxTransform(m_dynamicControlPtr->getRigidBodyPose(rootBody));
+                IArticulationView* articulation = m_simView->createArticulationView(primPath.GetString().c_str());
+                const IArticulationMetatype* mt = articulation->getSharedMetatype();
+                uint32_t linkCount = articulation->getMaxLinks();
+                std::vector<std::string> linkPaths(linkCount);
+                std::vector<std::vector<int>> childLinks(linkCount);
+                for (uint32_t j = 0; j < linkCount; ++j)
+                {
+                    linkPaths[j] = articulation->getUsdLinkPath(0, j);
+                    std::string parentName =
+                        mt->getLinkParentName(j) ? mt->getLinkParentName(j) : ""; // mt->getLinkParentName(j)
+                                                                                  // could be
+                                                                                  // nullptr
+                    int32_t parentIdx = mt->findLinkIndex(mt->getLinkParentName(j));
+                    if (parentIdx >= 0)
+                    {
+                        childLinks[parentIdx].push_back(j);
+                    }
+                }
+                m_linkXformData.resize(7 * linkCount);
+                createTensorDesc(
+                    m_artiTransformTensor, (void*)m_linkXformData.data(), linkCount, TensorDataType::eFloat32);
 
-                std::string framePath(m_dynamicControlPtr->getRigidBodyPath(rootBody));
+                articulation->getLinkTransforms(&m_artiTransformTensor);
+
+                float* data = static_cast<float*>(m_artiTransformTensor.data);
+                ::physx::PxTransform body1Pose = ::physx::PxTransform(
+                    ::physx::PxVec3(data[0], data[1], data[2]), ::physx::PxQuat(data[3], data[4], data[5], data[6]));
+                std::string framePath = linkPaths[0];
                 std::string bodyName = getName(m_usdStage->GetPrimAtPath(pxr::SdfPath(framePath)));
 
                 if (!m_parentPath.IsEmpty())
@@ -167,36 +204,33 @@ public:
                     // articulations always have an extra transform to the base link/rigid body
                     processTransform(m_parentFrame, childFrameId, body1Pose);
                 }
-                size_t numDofs = m_dynamicControlPtr->getArticulationBodyCount(artculationHandle);
-                for (size_t j = 0; j < numDofs; j++)
+                for (size_t j = 0; j < linkCount; j++)
                 {
-                    omni::isaac::dynamic_control::DcHandle parentBody =
-                        m_dynamicControlPtr->getArticulationBody(artculationHandle, j);
-                    ::physx::PxTransform body0Pose = asPxTransform(m_dynamicControlPtr->getRigidBodyPose(parentBody));
-                    std::string parentPath(m_dynamicControlPtr->getRigidBodyPath(parentBody));
+                    ::physx::PxTransform body0Pose(
+                        ::physx::PxVec3(data[7 * j + 0], data[7 * j + 1], data[7 * j + 2]),
+                        ::physx::PxQuat(data[7 * j + 3], data[7 * j + 4], data[7 * j + 5], data[7 * j + 6]));
+                    std::string parentPath = linkPaths[j];
                     std::string parentName = getName(m_usdStage->GetPrimAtPath(pxr::SdfPath(parentPath)));
-                    size_t numJoints = m_dynamicControlPtr->getRigidBodyChildJointCount(parentBody);
-                    for (size_t k = 0; k < numJoints; k++)
+                    size_t num_children = childLinks[j].size();
+                    for (size_t k = 0; k < num_children; k++)
                     {
-                        omni::isaac::dynamic_control::DcHandle joint =
-                            m_dynamicControlPtr->getRigidBodyChildJoint(parentBody, k);
-                        omni::isaac::dynamic_control::DcHandle child_body = m_dynamicControlPtr->getJointChildBody(joint);
-
-
-                        ::physx::PxTransform body1Pose = asPxTransform(m_dynamicControlPtr->getRigidBodyPose(child_body));
+                        size_t childIdx = childLinks[j][k];
+                        ::physx::PxTransform body1Pose(
+                            ::physx::PxVec3(data[7 * childIdx + 0], data[7 * childIdx + 1], data[7 * childIdx + 2]),
+                            ::physx::PxQuat(data[7 * childIdx + 3], data[7 * childIdx + 4], data[7 * childIdx + 5],
+                                            data[7 * childIdx + 6]));
                         ::physx::PxTransform body0Tbody1(body0Pose.transformInv(body1Pose));
-                        std::string framePath(m_dynamicControlPtr->getRigidBodyPath(child_body));
+                        std::string framePath = linkPaths[childIdx];
                         auto bodyName = getName(m_usdStage->GetPrimAtPath(pxr::SdfPath(framePath)));
-
                         processTransform(getUniqueFrameName(parentName, parentPath),
                                          getUniqueFrameName(bodyName, framePath), body0Tbody1);
                     }
                 }
             }
-            else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+            else if (objectType == ObjectType::eArticulationLink || objectType == ObjectType::eRigidBody)
             {
-                ::physx::PxTransform body1Pose = getRigidBodyPose(primPath);
-
+                IRigidBodyView* rigidBody = m_simView->createRigidBodyView(primPath.GetString().c_str());
+                ::physx::PxTransform body1Pose = getRigidBodyPose(rigidBody);
                 std::string childFrameId =
                     getUniqueFrameName(getName(m_usdStage->GetPrimAtPath(primPath)), primPath.GetString());
                 if (m_parentFrame != childFrameId)
@@ -206,11 +240,10 @@ public:
                         body1Pose = m_parentPose.transformInv(body1Pose);
                     }
 
-
                     processTransform(m_parentFrame, childFrameId, body1Pose);
                 }
             }
-            else if (type == omni::isaac::dynamic_control::eDcObjectNone)
+            else
             {
                 pxr::UsdPrim prim = m_usdStage->GetPrimAtPath(primPath);
 
@@ -244,11 +277,20 @@ public:
      *
      * @pre The prim at the specified path must be a valid rigid body
      */
-    ::physx::PxTransform getRigidBodyPose(const pxr::SdfPath& path)
+    ::physx::PxTransform getRigidBodyPose(IRigidBodyView* rb)
     {
-        omni::isaac::dynamic_control::DcHandle rigidBodyHandle =
-            m_dynamicControlPtr->getRigidBody(path.GetString().c_str());
-        return asPxTransform(m_dynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
+        if (rb)
+        {
+            rb->getTransforms(&m_rigidTransformTensor);
+            float* data = static_cast<float*>(m_rigidTransformTensor.data);
+            ::physx::PxTransform trans(
+                ::physx::PxVec3(data[0], data[1], data[2]), ::physx::PxQuat(data[3], data[4], data[5], data[6]));
+            return trans;
+        }
+        else
+        {
+            return ::physx::PxTransform(::physx::PxIdentity);
+        }
     }
 
     /**
@@ -343,14 +385,17 @@ private:
     /** @brief Reference to the USDRT stage */
     usdrt::UsdStageRefPtr m_usdrtStage;
 
-    /** @brief Pointer to the DynamicControl instance */
-    omni::isaac::dynamic_control::DynamicControl* m_dynamicControlPtr = nullptr;
-
     /** @brief Map of original paths to renamed frames */
     std::map<std::string, std::string> m_renamedFrames;
 
     /** @brief Set of published frame names */
     std::map<std::string, bool> m_publishedFrames;
+
+    ISimulationView* m_simView = nullptr;
+    TensorDesc m_rigidTransformTensor;
+    TensorDesc m_artiTransformTensor;
+    std::vector<float> m_rigidXformData;
+    std::vector<float> m_linkXformData;
 };
 }
 }
