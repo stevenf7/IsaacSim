@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.11] - 2025-04-08
+### Changed
+- Update the get_measured_joint_forces method's docstring to clarify which frame the forces and torques are reported in.
+
 ## [0.3.10] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

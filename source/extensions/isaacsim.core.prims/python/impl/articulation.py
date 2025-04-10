@@ -1355,7 +1355,9 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
-        """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads
+        """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads.
+
+        Forces and torques are reported in the local body reference frame (child joint frame of the link's incoming joint).
 
         .. note::
 
