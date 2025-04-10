@@ -10,6 +10,8 @@
 *.sh text eol=lf
 *.usd filter=lfs diff=lfs merge=lfs -text
 *.usda filter=lfs diff=lfs merge=lfs -text
+# Override the default text filter for schema.usda files
+*schema.usda -filter=lfs -diff=lfs -merge=lfs text
 *.dae filter=lfs diff=lfs merge=lfs -text
 *.step filter=lfs diff=lfs merge=lfs -text
 *.stp filter=lfs diff=lfs merge=lfs -text
