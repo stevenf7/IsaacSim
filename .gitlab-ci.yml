@@ -145,12 +145,12 @@ variables:
     RUN_CHECKS:
         value: "true"
         description: "Set to true to run check stage."
-    KUBERNETES_EPHEMERAL_STORAGE_REQUEST:
-        value: "200Gi"
-        description: "Fix publish extensions"
-    KUBERNETES_EPHEMERAL_STORAGE_LIMIT:
-        value: "200Gi"
-        description: "Fix publish extensions"
+    # KUBERNETES_EPHEMERAL_STORAGE_REQUEST:
+    #     value: "200Gi"
+    #     description: "Fix publish extensions"
+    # KUBERNETES_EPHEMERAL_STORAGE_LIMIT:
+    #     value: "200Gi"
+    #     description: "Fix publish extensions"
 
 # ==============================================================================================================
 # overrides for compliance/osec job
@@ -859,6 +859,9 @@ test-linux-x86_64-external-ar:
       - .osec:vault:v3:prod_token_job
     timeout: 3 hour
     interruptible: false
+    variables:
+        KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+        KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
     before_script:
       - set -eu
       - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
