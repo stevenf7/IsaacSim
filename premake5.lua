@@ -212,7 +212,6 @@ function group_apps(kit)
     define_local_experience("isaac-sim.fabric", "isaacsim.exp.full.fabric")
     define_local_experience("isaac-sim.selector", "isaacsim.exp.selector")
     define_local_experience("isaac-sim.streaming", "isaacsim.exp.full.streaming", "--no-window ")
-    define_local_experience("isaac-sim.old_streaming", "isaacsim.exp.full.old_streaming", "--no-window ")
     define_local_experience("isaac-sim.xr.vr", "isaacsim.exp.base.xr.vr")
 end
 

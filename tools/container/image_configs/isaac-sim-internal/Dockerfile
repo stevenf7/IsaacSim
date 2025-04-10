@@ -39,7 +39,7 @@ COPY data/ov_config /root/.nvidia-omniverse/config
 # USER root
 
 # Open ports for live streaming
-EXPOSE 1024-65535/udp \
+EXPOSE 47998/udp \
        49100/tcp
 
 RUN rm /root/.pip/pip.conf

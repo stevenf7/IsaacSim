@@ -32,7 +32,7 @@ from isaacsim.core.utils.extensions import enable_extension
 kit.set_setting("/app/window/drawMouse", True)
 
 # Enable Livestream extension
-enable_extension("omni.kit.livestream.webrtc")
+enable_extension("omni.services.livestream.nvcf")
 
 # Run until closed
 while kit._app.is_running() and not kit.is_exiting():
