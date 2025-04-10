@@ -21,7 +21,6 @@
 #include <isaacsim/core/includes/ScopedCudaDevice.h>
 #include <omni/math/linalg/matrix.h>
 #include <omni/math/linalg/quat.h>
-#include <omni/sensors/lidar/LidarProfileTypes.h>
 #include <thrust/copy.h>
 #include <thrust/device_ptr.h>
 

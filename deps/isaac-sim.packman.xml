@@ -38,4 +38,7 @@
   <dependency name="generic_model_output_${config}" linkPath="../_build/target-deps/generic_model_output/${platform_target}/${config}">
     <package name="generic-model-output" version="107.1.0+master.176407.ea6f0fae.gl.${platform_target}.${config}"/>
   </dependency>
+  <dependency name="rapidjson" linkPath="../_build/target-deps/rapidjson">
+    <package name="rapidjson" version="5.2.1-5-b4cf59b6" />
+  </dependency>
 </project>

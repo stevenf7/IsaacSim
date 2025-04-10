@@ -18,16 +18,14 @@ add_cuda_dependencies()
 
 includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
-    "%{kit_sdk_bin_dir}/dev/internal/include/",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/extensions/isaacsim.sensors.rtx/include",
     target_deps .. "/generic_model_output/%{platform}/%{config}/include",
     target_deps .. "/omni_client_library/include",
     target_deps .. "/python/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-    bin_dir .. "/extsbuild/omni.sensors.nv.common/include",
     target_deps .. "/rtx_plugins/include",
+    target_deps .. "/rapidjson/include",
 }
 libdirs {
     extsbuild_dir .. "/omni.usd.core/bin",

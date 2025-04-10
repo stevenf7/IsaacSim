@@ -23,7 +23,6 @@
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IMinimal.h>
-#include <omni/sensors/IProfileReader.h>
 
 #include <algorithm>
 
@@ -31,10 +30,7 @@ const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.rtx.plugin
                                                     "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
 
 CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::sensors::rtx::IIsaacSimSensorsRtx)
-CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
-                      omni::fabric::IToken,
-                      carb::settings::ISettings,
-                      omni::sensors::IProfileReaderFactory)
+CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry, omni::fabric::IToken, carb::settings::ISettings)
 
 DECLARE_OGN_NODES()
 
