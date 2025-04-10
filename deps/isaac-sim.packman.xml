@@ -12,7 +12,7 @@
         <package name="lula" version="v0.10.1_9817dce.linux-aarc64.release" platforms="manylinux_2_35_aarch64" />
         <package name="lula" version="v0.10.1_build3.windows-x86_64.release" platforms="windows-x86_64"/>
     </dependency>
-    <dependency name="octomap" linkPath="../_build/target-deps/octomap">
+    <dependency name="octomap" linkPath="../_build/target-deps/octomap/${config}">
         <package name="octomap" version="linux-x86_64.${config}.20221128_d417c18" platforms="manylinux_2_35_x86_64" />
         <package name="octomap" version="linux-aarch64.${config}.20250203_d417c18" platforms="manylinux_2_35_aarch64" />
         <package name="octomap" version="windows-x86_64.${config}.20221405_d417c18" platforms="windows-x86_64" />
