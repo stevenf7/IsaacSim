@@ -666,7 +666,9 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def get_measured_joint_forces(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
-        """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads
+        """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads.
+
+        Forces and torques are reported in the local body reference frame (child joint frame of the link's incoming joint).
 
         .. note::
 
