@@ -83,12 +83,11 @@ public:
                 // Find emitter profile for emitter at minimum elevation angle. Ideally this is at 0.0 deg.
                 state.m_emitterToOutput = 0;
                 state.m_inElevationDeg = 91.0;
-                for (size_t s = 0; s < state.profile->emitterStateCount; s++)
+                for (size_t s = 0; s < state.emitterStateCount; s++)
                 {
-                    for (size_t i = 0; i < state.profile->numberOfEmitters; i++)
+                    for (size_t i = 0; i < state.numberOfEmitters; i++)
                     {
-                        float curElevation = ::fabs(
-                            state.profile->emitterProfileSoA.elevationDeg[s * state.profile->numberOfEmitters + i]);
+                        float curElevation = ::fabs(state.emitterStates[s].elevationDeg[i]);
                         if (curElevation < state.m_inElevationDeg)
                         {
                             state.m_inElevationDeg = curElevation;
@@ -101,7 +100,7 @@ public:
                 state.m_horizontalResolution = static_cast<float>(360.0 / state.m_bufferSize);
                 // Populate config-based outputs
                 db.outputs.horizontalFov() = 360.0;
-                db.outputs.rotationRate() = static_cast<float>(state.profile->scanRateBaseHz);
+                db.outputs.rotationRate() = static_cast<float>(state.scanRateBaseHz);
                 db.outputs.azimuthRange() = { -180.0f, 180.0f - state.m_horizontalResolution };
             }
             else if (state.scanType == LidarScanType::kSolidState)
@@ -109,30 +108,29 @@ public:
                 // Find the solid state line with the lowest elevation, and store its start/end azimuth.
                 float endAzimuthDeg = 361.0;
                 state.m_inElevationDeg = 91.0; // 90 is max, so fist emitter state will always at least be picked.
-                for (int s = 0; s < (int)state.profile->emitterStateCount; s++)
+                for (int s = 0; s < (int)state.emitterStateCount; s++)
                 {
                     int emitterToCheck = 0; // first emitter in line
-                    for (int l = 0; l < (int)state.profile->numLines; l++)
+                    for (int l = 0; l < (int)state.numLines; l++)
                     {
-                        float curElevation = ::fabs(state.profile->emitterProfileSoA.elevationDeg[emitterToCheck]);
+                        float curElevation = ::fabs(state.emitterStates[s].elevationDeg[emitterToCheck]);
                         if (curElevation < state.m_inElevationDeg)
                         {
                             state.m_inElevationDeg = curElevation;
                             state.m_emitterToOutput = emitterToCheck;
-                            state.m_numRaysPerLine = state.profile->emitterProfileSoA.numRaysPerLine[l];
-                            state.m_startAzimuthDeg = state.profile->emitterProfileSoA.azimuthDeg[emitterToCheck];
+                            state.m_numRaysPerLine = state.numRaysPerLine[l];
+                            state.m_startAzimuthDeg = state.emitterStates[s].azimuthDeg[emitterToCheck];
                             // with one emitter the start and end are the same. otherwise, assume fixed azimuth
                             // difference between emitters in line
                             state.m_horizontalResolution =
                                 state.m_numRaysPerLine < 2 ?
                                     0 :
-                                    state.profile->emitterProfileSoA.azimuthDeg[emitterToCheck + 1] -
-                                        state.m_startAzimuthDeg;
+                                    state.emitterStates[s].azimuthDeg[emitterToCheck + 1] - state.m_startAzimuthDeg;
                             endAzimuthDeg =
                                 state.m_startAzimuthDeg + state.m_horizontalResolution * (state.m_numRaysPerLine - 1);
                         }
                         // Advance to first emitter in next line
-                        emitterToCheck += state.profile->emitterProfileSoA.numRaysPerLine[l];
+                        emitterToCheck += state.numRaysPerLine[l];
                     }
                 }
                 if (state.m_startAzimuthDeg > endAzimuthDeg)
@@ -151,10 +149,9 @@ public:
                     horizontalFov = 360.0f;
                 }
                 state.m_bufferSize = state.m_numRaysPerLine;
-                state.m_prevIdx =
-                    state.profile->rotationDirection == LidarRotationDirection::CW ? state.m_bufferSize - 1 : 0;
+                state.m_prevIdx = state.rotationDirection == LidarRotationDirection::CW ? state.m_bufferSize - 1 : 0;
                 db.outputs.horizontalFov() = horizontalFov;
-                db.outputs.rotationRate() = static_cast<float>(state.profile->scanRateBaseHz);
+                db.outputs.rotationRate() = static_cast<float>(state.scanRateBaseHz);
                 db.outputs.azimuthRange() = { state.m_startAzimuthDeg, endAzimuthDeg };
             }
             else
@@ -173,7 +170,7 @@ public:
             state.m_intensityBuffer = std::vector<uint8_t>(state.m_bufferSize, 0);
             state.m_timestampBuffer = std::vector<double>(state.m_bufferSize, DBL_MIN);
             // Set outputs common to solid-state and rotary lidars
-            db.outputs.depthRange() = { state.profile->nearRangeM, state.profile->farRangeM };
+            db.outputs.depthRange() = { state.nearRangeM, state.farRangeM };
             db.outputs.horizontalResolution() = state.m_horizontalResolution;
         }
 
@@ -216,9 +213,8 @@ public:
                     {
                         db.outputs.intensitiesData().at(i) = state.m_intensityBuffer[i];
                         db.outputs.linearDepthData().at(i) = state.m_distanceBuffer[i];
-                        size_t inIdx = state.profile->rotationDirection == LidarRotationDirection::CW ?
-                                           state.m_bufferSize - i - 1 :
-                                           i;
+                        size_t inIdx =
+                            state.rotationDirection == LidarRotationDirection::CW ? state.m_bufferSize - i - 1 : i;
                         if (db.outputs.timeStamp() == DBL_MIN && state.m_timestampBuffer[inIdx] != DBL_MIN)
                         {
                             // Set timestamp to first timestamp that's not a sentinel value

@@ -15,7 +15,6 @@
 
 #include <isaacsim/core/includes/Buffer.h>
 #include <omni/math/linalg/matrix.h>
-#include <omni/sensors/lidar/LidarProfileTypes.h>
 
 #include <GenericModelOutput.h>
 
@@ -40,7 +39,6 @@ struct LidarPoint
 };
 inline void convertReturnToPoint(const unsigned int idx,
                                  const omni::sensors::GenericModelOutput& gmo,
-                                 const LidarProfile* profile,
                                  const float accuracyErrorAzimuthDeg,
                                  const float accuracyErrorElevationDeg,
                                  LidarPoint& point)
@@ -63,37 +61,13 @@ inline void convertReturnToPoint(const unsigned int idx,
     const float rayDirectionY{ cosElevation * sinAzimuth };
     const float rayDirectionZ{ sinElevation };
 
-    // Ray origin in meter
-    float3 rayOrigin{ 0, 0, 0 };
-
-    float distanceCorrectionM = 0.0f;
-    float beamOriginMY = 0.0f;
-    float beamOriginMZ = 0.0f;
-    float beamOriginDistM = 0.0f;
-
-    if (gmo.auxType > AuxType::BASIC)
-    {
-        uint32_t emitterId = static_cast<const omni::sensors::LidarAuxiliaryData*>(gmo.auxiliaryData)->emitterId[idx];
-        if (0 <= emitterId && emitterId < profile->emitterStateCount * profile->numberOfEmitters)
-        {
-            distanceCorrectionM = profile->emitterProfileSoA.distanceCorrectionM[emitterId];
-            beamOriginMY = profile->emitterProfileSoA.horOffsetM[emitterId];
-            beamOriginMZ = profile->emitterProfileSoA.vertOffsetM[emitterId];
-            rayOrigin = { -sinAzimuth * beamOriginMY, cosAzimuth * beamOriginMY, beamOriginMZ };
-            beamOriginDistM = beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ;
-            beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
-        }
-    }
-
-    const float distanceM = rawDistanceM + distanceCorrectionM;
-
-    point.x = rayOrigin.x + rayDirectionX * distanceM;
-    point.y = rayOrigin.y + rayDirectionY * distanceM;
-    point.z = rayOrigin.z + rayDirectionZ * distanceM;
+    point.x = rayDirectionX * rawDistanceM;
+    point.y = rayDirectionY * rawDistanceM;
+    point.z = rayDirectionZ * rawDistanceM;
 
     // Add beam origin distance directly? -> see differences in resim
     point.range = rawDistanceM;
-    point.intensity = gmo.elements.scalar[idx] * profile->intensityMapping.intensityScalePercent / 100.f;
+    point.intensity = gmo.elements.scalar[idx];
 
     point.azimuth = azimuthRad;
     point.elevation = elevationRad;
@@ -209,8 +183,7 @@ public:
             {
                 const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
                 LidarPoint p;
-                convertReturnToPoint(
-                    pointIdx, helper.mGmo, state.profile, accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
+                convertReturnToPoint(pointIdx, helper.mGmo, accuracyErrorAzimuthDeg, accuracyErrorElevationDeg, p);
                 p.x += accuracyErrorPosition.x;
                 p.y += accuracyErrorPosition.y;
                 p.z += accuracyErrorPosition.z;

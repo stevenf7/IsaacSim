@@ -10,8 +10,10 @@
 
 #pragma once
 
+#include "rapidjson/document.h"
+
+#include <omni/String.h>
 #include <omni/math/linalg/matrix.h>
-#include <omni/sensors/lidar/LidarProfileTypes.h>
 
 #include <GMOAuxiliaryData.h>
 #include <GenericModelOutputTypes.h>
@@ -49,6 +51,13 @@ void wrapCudaMemcpyAsync(T* dst, const T* src, uint32_t startLoc, uint32_t num, 
 
 void getTransformFromSensorPose(const omni::sensors::FrameAtTime& parm, omni::math::linalg::matrix4d& matrixOutput);
 
+
+enum class LidarScanType
+{
+    kUnknown,
+    kRotary,
+    kSolidState
+};
 /**
  * @class LidarConfigHelper
  * @brief Helper class for managing LiDAR sensor configuration
@@ -62,10 +71,71 @@ public:
     std::string config;
     /** @brief Type of LiDAR scanning pattern */
     LidarScanType scanType{ LidarScanType::kUnknown };
-    /** @brief Pointer to the active LiDAR profile */
-    LidarProfile* profile;
-    /** @brief Buffer storing the raw profile data */
-    std::vector<uint8_t> profileBuffer;
+    // /** @brief Pointer to the active LiDAR profile */
+    // LidarProfile* profile;
+    // /** @brief Buffer storing the raw profile data */
+    // std::vector<uint8_t> profileBuffer;
+
+    struct EmitterState
+    {
+        std::vector<float> elevationDeg{
+            -15.0f,  -14.19f, -13.39f, -12.58f, -11.77f, -10.97f, -10.16f, -9.35f,  -8.55f,  -7.74f,  -6.94f,  -6.13f,
+            -5.32f,  -4.52f,  -3.71f,  -2.9f,   -2.1f,   -1.29f,  -0.48f,  0.32f,   1.13f,   1.94f,   2.74f,   3.55f,
+            4.35f,   5.16f,   5.97f,   6.77f,   7.58f,   8.39f,   9.19f,   10.0f,   -15.0f,  -14.19f, -13.39f, -12.58f,
+            -11.77f, -10.97f, -10.16f, -9.35f,  -8.55f,  -7.74f,  -6.94f,  -6.13f,  -5.32f,  -4.52f,  -3.71f,  -2.9f,
+            -2.1f,   -1.29f,  -0.48f,  0.32f,   1.13f,   1.94f,   2.74f,   3.55f,   4.35f,   5.16f,   5.97f,   6.77f,
+            7.58f,   8.39f,   9.19f,   10.0f,   -15.0f,  -14.19f, -13.39f, -12.58f, -11.77f, -10.97f, -10.16f, -9.35f,
+            -8.55f,  -7.74f,  -6.94f,  -6.13f,  -5.32f,  -4.52f,  -3.71f,  -2.9f,   -2.1f,   -1.29f,  -0.48f,  0.32f,
+            1.13f,   1.94f,   2.74f,   3.55f,   4.35f,   5.16f,   5.97f,   6.77f,   7.58f,   8.39f,   9.19f,   10.0f,
+            -15.0f,  -14.19f, -13.39f, -12.58f, -11.77f, -10.97f, -10.16f, -9.35f,  -8.55f,  -7.74f,  -6.94f,  -6.13f,
+            -5.32f,  -4.52f,  -3.71f,  -2.9f,   -2.1f,   -1.29f,  -0.48f,  0.32f,   1.13f,   1.94f,   2.74f,   3.55f,
+            4.35f,   5.16f,   5.97f,   6.77f,   7.58f,   8.39f,   9.19f,   10.0f
+        };
+        std::vector<float> azimuthDeg{
+            -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f,
+            -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f,
+            -3.0f, -3.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,
+            3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,
+            3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f
+        };
+    };
+    enum class LidarRotationDirection
+    {
+        CW,
+        CCW
+    };
+    /** @brief Minimum range of the LiDAR sensor */
+    float nearRangeM{ 0.3f };
+    /** @brief Maximum range of the LiDAR sensor */
+    float farRangeM{ 200.0f };
+    /** @brief Start azimuth angle of the LiDAR sensor */
+    float azimuthStartDeg{ 0.0f };
+    /** @brief End azimuth angle of the LiDAR sensor */
+    float azimuthEndDeg{ 360.0f };
+    /** @brief Horizontal resolution of the LiDAR sensor */
+    float horizontalResolutionDeg{ 0.1f };
+    /** @brief Report rate base Hz of the LiDAR sensor */
+    uint32_t reportRateBaseHz{ 36000 };
+    /** @brief Rotation rate of the LiDAR sensor */
+    uint32_t scanRateBaseHz{ 10 };
+    /** @brief Number of emitters in the LiDAR sensor */
+    uint32_t numberOfEmitters{ 128 };
+    uint32_t emitterStateCount{ 0 };
+    uint32_t maxReturns{ 2 };
+    std::vector<uint32_t> numRaysPerLine;
+    std::vector<EmitterState> emitterStates;
+    uint32_t numLines{ 1 };
+    LidarRotationDirection rotationDirection{ LidarRotationDirection::CW };
+    /** @brief Whether the LiDAR sensor is 2D */
+    bool is2D{ false };
+
+
+    std::unique_ptr<rapidjson::Document> m_doc{ nullptr };
+
 
     /** @brief Gets the minimum range of the LiDAR sensor */
     float getNearRange() const;
@@ -85,6 +155,24 @@ public:
      * @return True if update was successful, false otherwise
      */
     bool updateLidarConfig(const char* renderProductPath);
+
+    /**
+     * init document
+     * @param json [in] json file name with path
+     */
+    void init(const char* json);
+
+    // TODO: maybe pass in init the profile name as a string and use the getProfile internally
+    // Then, we don't need an extra call to getProfileJsonAtPaths -- but we lose the flexibility to pass just a read
+    // json
+
+    /**
+     * get json from given filename -- looking at internal path or at given paths
+     * @param json [in] json file name with path
+     */
+    omni::string getProfileJsonAtPaths(const char* fileName);
+
+    static std::string ReadWholeTextFile(std::string fullPath);
 };
 
 // GenericModelOutputHelper is used when you want a host side copy of a
