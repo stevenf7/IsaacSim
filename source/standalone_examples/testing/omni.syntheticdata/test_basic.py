@@ -30,7 +30,7 @@ assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     exit()
-robot_usd = assets_root_path + "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
+robot_usd = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd"
 
 # setup high-level robot prim
 prim = stage.DefinePrim("/robot", "Xform")

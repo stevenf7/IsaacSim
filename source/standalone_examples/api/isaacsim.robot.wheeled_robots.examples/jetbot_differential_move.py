@@ -29,7 +29,7 @@ my_world = World(stage_units_in_meters=1.0)
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
-jetbot_asset_path = assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
+jetbot_asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
 my_jetbot = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Jetbot",

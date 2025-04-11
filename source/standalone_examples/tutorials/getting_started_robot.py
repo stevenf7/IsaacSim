@@ -42,7 +42,7 @@ add_reference_to_stage(usd_path=asset_path, prim_path="/World/Arm")  # add robot
 arm = Articulation(prim_paths_expr="/World/Arm", name="my_arm")  # create an articulation object
 
 # Add Carter
-asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
+asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Car")
 car = Articulation(prim_paths_expr="/World/Car", name="my_car")
 

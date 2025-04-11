@@ -25,7 +25,7 @@ my_world = World(stage_units_in_meters=1.0)
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
-kaya_asset_path = assets_root_path + "/Isaac/Robots/Kaya/kaya.usd"
+kaya_asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Kaya/kaya.usd"
 my_kaya = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Kaya",

@@ -30,7 +30,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         self.my_world.scene.add_default_ground_plane()
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
         my_carter = self.my_world.scene.add(
             SingleArticulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))

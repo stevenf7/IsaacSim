@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.4.6] - 2025-04-09
+### Changed
+- Update Isaac Sim NVIDIA robot asset path
+
 ## [4.4.5] - 2025-04-08
 ### Changed
 - Renamed ROS 2 Odometry unit test, functionality remians the same as before

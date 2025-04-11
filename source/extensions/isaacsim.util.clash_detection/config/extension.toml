@@ -1,5 +1,5 @@
 [package]
-version = "0.1.8"
+version = "0.1.9"
 category = "Simulation"
 title = "Isaac Sim Clash Detection"
 description = "Mesh Collision Detection Utility"

@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.2] - 2025-04-09
+### Changed
+- Update Isaac Sim NVIDIA robot asset path
+
 ## [2.2.1] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

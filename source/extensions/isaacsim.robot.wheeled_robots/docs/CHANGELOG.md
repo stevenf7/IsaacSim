@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.12] - 2025-04-09
+### Changed
+- Update Isaac Sim NVIDIA robot asset path
+
 ## [4.0.11] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

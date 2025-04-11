@@ -244,7 +244,8 @@ Args:
 Returns:
     None
 )doc")
-        .def("set_transform", wrapInterfaceFunction(&OccupancyMap::setTransform), R"doc(Set the transform for map generation.
+        .def("set_transform", wrapInterfaceFunction(&OccupancyMap::setTransform),
+             R"doc(Set the transform for map generation.
 
 Defines the origin and boundaries for the occupancy map in world coordinates.
 
@@ -277,7 +278,8 @@ Args:
 Returns:
     list: List of 3D positions representing the centers of occupied cells.
 )doc")
-        .def("get_free_positions", wrapInterfaceFunction(&OccupancyMap::getFreePositions), R"doc(Get positions of free cells.
+        .def("get_free_positions", wrapInterfaceFunction(&OccupancyMap::getFreePositions),
+             R"doc(Get positions of free cells.
 
 Retrieves the world positions of all cells that are marked as free (unoccupied).
 
@@ -307,7 +309,8 @@ Args:
 Returns:
     tuple: Maximum bounds as (x, y, z) in world coordinates.
 )doc")
-        .def("get_dimensions", wrapInterfaceFunction(&OccupancyMap::getDimensions), R"doc(Get dimensions of the map in cells.
+        .def("get_dimensions", wrapInterfaceFunction(&OccupancyMap::getDimensions),
+             R"doc(Get dimensions of the map in cells.
 
 Retrieves the number of cells along each axis of the occupancy map.
 

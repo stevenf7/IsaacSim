@@ -33,7 +33,7 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
+asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
 
 my_carter = my_world.scene.add(Articulation("/World/Carter", name="my_carter", positions=np.array([[0, 0.0, 0.5]])))

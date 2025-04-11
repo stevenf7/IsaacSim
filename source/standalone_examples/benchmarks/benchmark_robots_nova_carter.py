@@ -57,7 +57,7 @@ benchmark = BaseIsaacBenchmark(
 )
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-robot_path = "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
+robot_path = "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 benchmark.fully_load_stage(benchmark.assets_root_path + scene_path)
 stage = omni.usd.get_context().get_stage()

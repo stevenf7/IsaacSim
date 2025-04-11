@@ -45,7 +45,7 @@ class WheeledRobot(Robot):
                                 name = "Jimmy",
                                 wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
                                 create_robot = True,
-                                usd_path = "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd",
+                                usd_path = "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd",
                                 position = np.array([0,1,0])
                             )
 

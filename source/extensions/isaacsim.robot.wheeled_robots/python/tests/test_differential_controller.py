@@ -169,7 +169,7 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd")
+        (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd")
 
         (test_graph, [play_node, diff_node, art_node], _, _) = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
