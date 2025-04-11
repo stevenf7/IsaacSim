@@ -827,8 +827,10 @@ test-windows-x86_64-nativepythontests-testing:
 test-linux-x86_64-external-ar:
     extends:
       - .test-external
+      - .install-linux-test-packages
       - .runner-test-linux-x86_64-gpu
       - .osec:vault:v3:prod_token_job
+      - .omni_nvks_gpu
     before_script:
       - set -eu
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
@@ -837,7 +839,10 @@ test-linux-x86_64-external-ar:
       - mkdir -p _build/linux-x86_64/release/tests-external/external_workflow_tests/ar
       - cp -r _git/external_workflow_tests/ar _build/linux-x86_64/release/tests-external/external_workflow_tests
     script:
-      - ./repo.sh test -c release -s external -b ar --generate-report
+      - ./repo.sh test -c release -s external -b ar
+    after_script:
+      - !reference [.datadog-test-visibility-linux-x86_64, script]
+      - ./repo.sh ci test -- --generate-report
 
 # ==============================================================================================================
 .deploy-artifacts:
