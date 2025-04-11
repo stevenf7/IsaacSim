@@ -17,7 +17,7 @@ includedirs {
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
-    "%{root}/_build/target-deps/octomap/include",
+    "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
 }
 libdirs {
@@ -39,17 +39,18 @@ includedirs {
 }
 buildoptions("-fvisibility=default")
 libdirs {
-    "%{root}/_build/target-deps/octomap/lib64",
+    "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib64",
 }
+filter {}
+
 filter { "system:windows" }
 -- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
-disablewarnings { "4099" }
-disablewarnings { "4251" }
+disablewarnings { "4099", "4251" }
 --  needed to static link against physx
 -- linkoptions { "/ltcg" }
 libdirs {
     "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
-    "%{root}/_build/target-deps/octomap/lib",
+    "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib",
 }
 filter {}
 
@@ -83,25 +84,28 @@ extra_usd_libs = { "usdUtils" }
 add_usd(extra_usd_libs)
 -- End OpenUSD
 
-filter { "system:linux" }
-disablewarnings { "error=pragmas" }
 includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/python/include/python3.11",
 }
+
+filter { "system:linux" }
+disablewarnings { "error=pragmas" }
 libdirs {
-    "%{root}/_build/target-deps/octomap/lib64",
-}
-links { "octomap", "octomath" }
-filter { "system:windows" }
--- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
-disablewarnings { "4099" }
-disablewarnings { "4251" }
-libdirs {
-    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
-    "%{root}/_build/target-deps/octomap/lib",
+    "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib64",
 }
 filter {}
+
+filter { "system:windows" }
+-- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
+disablewarnings { "4099", "4251" }
+libdirs {
+    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
+    "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib",
+}
+filter {}
+
+links { "octomap", "octomath" }
 
 filter { "configurations:debug" }
 defines { "_DEBUG" }
@@ -151,7 +155,7 @@ includedirs {
     "%{root}/_build/target-deps/python/include/python3.11",
 }
 -- libdirs {
---     "%{root}/_build/target-deps/octomap/lib64",
+--     "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib64",
 -- }
 filter { "system:windows" }
 -- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
@@ -179,10 +183,10 @@ repo_build.prebuild_copy {
 
 if os.target() == "linux" then
     -- repo_build.prebuild_copy {
-    --     { "%{root}/_build/target-deps/octomap/lib64/*.so.*", ext.target_dir.."/bin" },
+    --     { "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib64/*.so.*", ext.target_dir.."/bin" },
     -- }
 else
     repo_build.prebuild_copy {
-        { "%{root}/_build/target-deps/octomap/bin/*.dll", ext.target_dir .. "/bin" },
+        { "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/bin/*.dll", ext.target_dir .. "/bin" },
     }
 end
