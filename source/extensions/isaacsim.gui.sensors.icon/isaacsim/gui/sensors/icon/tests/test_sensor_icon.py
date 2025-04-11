@@ -62,7 +62,7 @@ class TestSensorIcon(OmniUiTest):
         self._icon_scene.add_sensor_icon(TEST_OBJECT_PRIM_PATH, str(path))
         await ui_test.wait_n_updates(30)
         model = self._icon_scene.get_model()
-        self.assertAlmostEqual(model.get_world_unit(), 0.1)
+        self.assertAlmostEqual(model.get_world_unit(), 1.0)
         self.assertTrue(TEST_OBJECT_PRIM_PATH in model.get_item("").keys())
         save_path = model.get_icon_url(TEST_OBJECT_PRIM_PATH)
         self.assertEqual(save_path, str(path))

@@ -1,6 +1,8 @@
 # Changelog
-## [1.1.9] - 2025-04-10
+
+## [1.1.9] - 2025-04-09
 ### Changed
+- Update all test args to be consistent
 - SDG palletizing example does not need the custom preview event anymore
 
 ## [1.1.8] - 2025-04-04

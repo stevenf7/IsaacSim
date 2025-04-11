@@ -70,6 +70,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
+
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))

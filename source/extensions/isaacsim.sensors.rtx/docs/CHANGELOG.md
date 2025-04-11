@@ -1,7 +1,12 @@
 # Changelog
+
 ## [14.3.0] - 2025-04-09
 ### Changed
 - Drops dependency on internal sensor headers
+
+## [14.2.4] - 2025-04-09
+### Changed
+- Update all test args to be consistent
 
 ## [14.2.3] - 2025-04-04
 ### Changed

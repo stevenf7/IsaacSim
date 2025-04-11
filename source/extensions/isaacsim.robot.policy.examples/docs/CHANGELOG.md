@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.8] - 2025-04-09
+### Changed
+- Update all test args to be consistent
+
 ## [4.0.7] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

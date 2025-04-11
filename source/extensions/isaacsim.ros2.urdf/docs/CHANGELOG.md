@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.12] - 2025-04-09
+### Changed
+- Update all test args to be consistent
+
 ## [1.1.11] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

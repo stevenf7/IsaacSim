@@ -1,6 +1,7 @@
 # Changelog
 ## [2.1.11] - 2025-04-09
 ### Changed
+- Update all test args to be consistent
 - Update Isaac Sim NVIDIA robot asset path
 
 ## [2.1.10] - 2025-04-04

@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.1] - 2025-04-09
+### Changed
+- Update all test args to be consistent
+
 ## [3.1.0] - 2025-04-07
 ### Updated
 - Removed end_effector_prim_name parameter, end effector prim path is required now
