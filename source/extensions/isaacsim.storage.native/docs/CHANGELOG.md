@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.0] - 2025-04-09
+### Changed
+- Add authentication callback for ETM tests
+
 ## [1.0.12] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
