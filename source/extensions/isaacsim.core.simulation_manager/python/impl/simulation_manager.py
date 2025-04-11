@@ -37,6 +37,7 @@ class SimulationManager:
     _physx_sim_interface = omni.physx.get_physx_simulation_interface()
     _physx_interface = omni.physx.acquire_physx_interface()
     _physics_sim_view = None
+    _physics_sim_view__warp = None
     _post_warm_start_callback = None
     _stage_open_callback = None
     _backend = "numpy"
@@ -76,6 +77,7 @@ class SimulationManager:
         SimulationManager._warm_start_callback = None
         SimulationManager._on_stop_callback = None
         SimulationManager._physics_sim_view = None
+        SimulationManager._physics_sim_view__warp = None
         SimulationManager._post_warm_start_callback = None
         SimulationManager._stage_open_callback = None
         SimulationManager._assets_loading_callback = None
@@ -129,6 +131,9 @@ class SimulationManager:
         if SimulationManager._physics_sim_view:
             SimulationManager._physics_sim_view.invalidate()
             SimulationManager._physics_sim_view = None
+        if SimulationManager._physics_sim_view__warp:
+            SimulationManager._physics_sim_view__warp.invalidate()
+            SimulationManager._physics_sim_view__warp = None
 
     def _create_simulation_view(event) -> None:
         if "cuda" in SimulationManager.get_physics_sim_device() and SimulationManager._backend == "numpy":
@@ -136,6 +141,8 @@ class SimulationManager:
             carb.log_warn("changing backend from numpy to torch since numpy backend cannot be used with GPU piplines")
         SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(SimulationManager._backend)
         SimulationManager._physics_sim_view.set_subspace_roots("/")
+        SimulationManager._physics_sim_view__warp = omni.physics.tensors.create_simulation_view("warp")
+        SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
         SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
         SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
         SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})

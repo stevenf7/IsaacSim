@@ -263,13 +263,13 @@ python_paths = [
 ]
 
 sphinx_conf_py_extra = """
-    autodoc_member_order = 'bysource'
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
     html_favicon = "docs/media/favicon.ico"
     html_static_path += [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
+    autodoc_member_order = 'groupwise'
     autodoc_mock_imports = [
         "carb",
         "omni.appwindow",
