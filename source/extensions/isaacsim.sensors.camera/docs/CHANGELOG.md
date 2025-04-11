@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.1] - 2025-04-09
+### Changed
+- Update all test args to be consistent
+
 ## [0.4.0] - 2025-03-25
 ### Changed
 - Added 'annotator_device' parameter to the camera sensor to support GPU data access

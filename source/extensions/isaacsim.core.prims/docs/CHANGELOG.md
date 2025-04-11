@@ -1,4 +1,7 @@
 # Changelog
+## [0.3.12] - 2025-04-09
+### Changed
+- Update all test args to be consistent
 
 ## [0.3.11] - 2025-04-08
 ### Changed

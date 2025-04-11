@@ -21,6 +21,59 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+
+# Define parse_toml at the module level
+def parse_toml(toml_str):
+    """Very simple TOML parser for basic needs"""
+    result = {}
+    current_section = result
+    section_stack = []
+
+    for line in toml_str.split("\n"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # Handle section headers
+        if line.startswith("[") and line.endswith("]"):
+            section_name = line[1:-1].strip()
+            current_section = result
+
+            # Handle nested sections
+            if "." in section_name:
+                parts = section_name.split(".")
+                for part in parts:
+                    if part not in current_section:
+                        current_section[part] = {}
+                    current_section = current_section[part]
+            else:
+                if section_name not in result:
+                    result[section_name] = {}
+                current_section = result[section_name]
+            continue
+
+        # Handle key-value pairs
+        if "=" in line:
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+
+            # Handle string values
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            # Handle numbers
+            elif value.isdigit():
+                value = int(value)
+            elif value.lower() == "true":
+                value = True
+            elif value.lower() == "false":
+                value = False
+
+            current_section[key] = value
+
+    return result
+
+
 # Try to import required packages with fallbacks
 try:
     import tomli as toml_reader
@@ -29,58 +82,6 @@ except ImportError:
         import tomlkit as toml_reader
     except ImportError:
         print("Warning: Neither tomli nor tomlkit installed. Using built-in fallback for TOML parsing.")
-        # Simple fallback for basic TOML parsing
-        import json
-
-        def parse_toml(toml_str):
-            """Very simple TOML parser for basic needs"""
-            result = {}
-            current_section = result
-            section_stack = []
-
-            for line in toml_str.split("\n"):
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-
-                # Handle section headers
-                if line.startswith("[") and line.endswith("]"):
-                    section_name = line[1:-1].strip()
-                    current_section = result
-
-                    # Handle nested sections
-                    if "." in section_name:
-                        parts = section_name.split(".")
-                        for part in parts:
-                            if part not in current_section:
-                                current_section[part] = {}
-                            current_section = current_section[part]
-                    else:
-                        if section_name not in result:
-                            result[section_name] = {}
-                        current_section = result[section_name]
-                    continue
-
-                # Handle key-value pairs
-                if "=" in line:
-                    key, value = line.split("=", 1)
-                    key = key.strip()
-                    value = value.strip()
-
-                    # Handle string values
-                    if value.startswith('"') and value.endswith('"'):
-                        value = value[1:-1]
-                    # Handle numbers
-                    elif value.isdigit():
-                        value = int(value)
-                    elif value.lower() == "true":
-                        value = True
-                    elif value.lower() == "false":
-                        value = False
-
-                    current_section[key] = value
-
-            return result
 
         class TomliWrapper:
             @staticmethod
@@ -269,18 +270,23 @@ class ChangelogManager:
 
             if self.verbose:
                 print(f"\n📦 Processing extension: {extension_name}")
+            else:
+                print(f"Processing: {extension_name}")
 
             # Initialize results entry
             results[extension_name] = []
+            version_info = None
 
             try:
                 # Pre-check conditions
-                should_process, error_message = self._should_process_extension(dirpath)
+                should_process, error_message = self._should_process_extension(dirpath, extension_name)
                 if not should_process:
                     if error_message:
                         results[extension_name].append(error_message)
+                        print(f"  ⏭️  Skipped {extension_name}: {error_message}")
                     else:
                         results[extension_name].append("Skipped due to filter conditions")
+                        print(f"  ⏭️  Skipped {extension_name} due to filter conditions")
                     continue
 
                 # Path validation
@@ -318,8 +324,10 @@ class ChangelogManager:
 
                 # 2. Update the version and changelog (if requested)
                 if changelog_message is not None:
-                    new_version = self._update_extension_version(toml_path, rel_toml_path)
-                    if new_version:
+                    version_result = self._update_extension_version(toml_path, rel_toml_path)
+                    if version_result:
+                        old_version, new_version = version_result
+                        version_info = (old_version, new_version)
                         updated_lines = self._update_changelog_file(
                             changelog_path, rel_changelog_path, new_version, changelog_message
                         )
@@ -333,29 +341,36 @@ class ChangelogManager:
 
                 if not results[extension_name]:
                     if self.verbose:
-                        print(f"  ✅ Extension {extension_name} processed successfully")
+                        version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
+                        print(f"  ✅ Extension {extension_name} processed successfully{version_display}")
+                    else:
+                        version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
+                        print(f"  ✅ Processed {extension_name} successfully{version_display}")
+                    results[extension_name] = version_info if version_info else []
 
             except Exception as e:
                 error_msg = f"Error processing extension: {str(e)}"
                 results[extension_name].append(error_msg)
                 if self.verbose:
                     print(f"  🚨 {error_msg}")
+                else:
+                    print(f"  ❌ {extension_name}: {error_msg}")
 
         return results
 
-    def _should_process_extension(self, dirpath: str) -> tuple:
+    def _should_process_extension(self, dirpath: str, extension_name: str = None) -> tuple:
         """Check all conditional requirements for processing"""
         if self.check_modified:
-            git_status, git_message = self._has_git_changes(dirpath)
+            git_status, git_message = self._has_git_changes(dirpath, extension_name)
             if not git_status:
                 if git_message and "behind origin/develop" in git_message:
                     return False, git_message
-                return False, None
-        if self.check_cpp and not self._has_cpp_files(dirpath):
-            return False, None
+                return False, "No uncommitted changes vs develop branch"
+        if self.check_cpp and not self._has_cpp_files(dirpath, extension_name):
+            return False, "No C++ files found in extension"
         return True, None
 
-    def _has_git_changes(self, dirpath: str) -> tuple:
+    def _has_git_changes(self, dirpath: str, extension_name: str = None) -> tuple:
         """Check if directory has changes against develop branch"""
         try:
             # First check if develop branch is behind remote
@@ -390,7 +405,7 @@ class ChangelogManager:
                 print(f"  ❌ {error_msg}")
             return False, error_msg
 
-    def _has_cpp_files(self, dirpath: str) -> bool:
+    def _has_cpp_files(self, dirpath: str, extension_name: str = None) -> bool:
         """Check for C++ source files in directory tree"""
         for root, _, files in os.walk(dirpath):
             for file in files:
@@ -412,8 +427,8 @@ class ChangelogManager:
             return False
         return True
 
-    def _update_extension_version(self, toml_path: str, rel_toml_path: str) -> Optional[str]:
-        """Update version in extension.toml and return new version"""
+    def _update_extension_version(self, toml_path: str, rel_toml_path: str) -> Optional[Tuple[str, str]]:
+        """Update version in extension.toml and return old and new versions"""
         try:
             with open(toml_path, "r") as f:
                 data = toml_writer.load(f)
@@ -435,6 +450,7 @@ class ChangelogManager:
                     print(f"  ❌ Invalid version format '{version_str}' in {rel_toml_path}, expected X.Y.Z")
                 return None
 
+            old_version = version_str
             parts[-1] += 1  # Increment patch version
             new_version = ".".join(map(str, parts))
             data["package"]["version"] = new_version
@@ -444,7 +460,7 @@ class ChangelogManager:
 
             if self.verbose:
                 print(f"  ✅ Version updated in {rel_toml_path}: {version_str} → {new_version}")
-            return new_version
+            return (old_version, new_version)
 
         except Exception as e:
             if self.verbose:
@@ -926,15 +942,16 @@ def main():
     print("=" * 60)
 
     for ext_name, errors in all_results.items():
-        if errors:
+        if errors and isinstance(errors, list) and errors:
             print(f"❌ Extension '{ext_name}' had {len(errors)} issues:")
             for error in errors:
                 print(f"  - {error}")
             error_count += len(errors)
         else:
             success_count += 1
-            if args.verbose:
-                print(f"✅ Extension '{ext_name}' processed successfully")
+            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
+            version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
+            print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
 
     print(
         "\nProcessed {0} extensions: {1} successful, {2} with issues".format(
@@ -1079,15 +1096,16 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     print("=" * 60)
 
     for ext_name, errors in all_results.items():
-        if errors:
+        if errors and isinstance(errors, list) and errors:
             print(f"❌ Extension '{ext_name}' had {len(errors)} issues:")
             for error in errors:
                 print(f"  - {error}")
             error_count += len(errors)
         else:
             success_count += 1
-            if args.verbose:
-                print(f"✅ Extension '{ext_name}' processed successfully")
+            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
+            version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
+            print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
 
     print(
         "\nProcessed {0} extensions: {1} successful, {2} with issues".format(

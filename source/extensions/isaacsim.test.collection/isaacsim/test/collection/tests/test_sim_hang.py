@@ -43,11 +43,6 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
 
-        carb.settings.get_settings().set_bool("/app/file/ignoreUnsavedOnExit", True)
-        carb.settings.get_settings().set_bool("/app/settings/persistent", False)
-        carb.settings.get_settings().set_bool("/app/asyncRendering", False)
-        carb.settings.get_settings().set_bool("/app/asyncRenderingLowLatency", False)
-
         pass
 
     # After running each test

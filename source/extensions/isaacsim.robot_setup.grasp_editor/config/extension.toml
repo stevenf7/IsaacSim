@@ -1,5 +1,5 @@
 [package]
-version = "2.0.9"
+version = "2.0.10"
 category = "Simulation"
 title = "Grasp Editor"
 description = "Author grasps by hand for a specific robot gripper and USD asset."
@@ -28,7 +28,6 @@ dependencies = [
 ]
 
 args = [
-'--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",
@@ -41,11 +40,13 @@ args = [
     "--/app/settings/persistent=0",
     "--/app/viewport/createCameraModelRep=0",
     "--/crashreporter/skipOldDumpUpload=1",
+    "--/exts/omni.usd/locking/onClose=0",
     "--/omni/kit/plugin/syncUsdLoads=1",
     "--/omni/replicator/asyncRendering=0",
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
+    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",
@@ -62,10 +63,11 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    '--/exts/omni.usd/locking/onClose=0',
+    "--vulkan",
 ]
 
 [[test]]
 name = "startup"
 args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]
