@@ -235,6 +235,7 @@ inventory.include = [
     "exts/isaacsim.core.api",
     "exts/isaacsim.core.cloner",
     "exts/isaacsim.core.deprecation_manager",
+    "exts/isaacsim.core.experimental.prims",
     "exts/isaacsim.core.includes",
     "exts/isaacsim.core.nodes",
     "exts/isaacsim.core.prims",

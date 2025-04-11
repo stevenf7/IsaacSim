@@ -49,6 +49,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.core.api/docs/index
    source/extensions/isaacsim.core.cloner/docs/index
    source/extensions/isaacsim.core.deprecation_manager/docs/index
+   source/extensions/isaacsim.core.experimental.prims/docs/index
    source/extensions/isaacsim.core.includes/docs/index
    source/extensions/isaacsim.core.nodes/docs/index
    source/extensions/isaacsim.core.prims/docs/index

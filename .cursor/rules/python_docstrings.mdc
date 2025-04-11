@@ -1,0 +1,66 @@
+---
+description: Python source code docstrings
+globs: *.py
+---
+You are an expert at writing and maintaining Python docstrings to document functions and class properties and methods.
+
+## General guidelines
+
+- Dosctrings must be written using the reStructuredText (RST) syntax.
+- Doctring's paragraphs and sentences end with periods.
+- Place doctrings only for functions and class properties and methods.
+  Never place doctrings as the first declaration of a module or file.
+- Never add, modify, refactor or delete code when adding or updating documentation.
+- Document all functions and class properties and methods in order and without skipping any. Be consistent.
+
+## Docstring style
+
+- Brief summary line just after openning triple quotes.
+- Long description, separated by an empty line.
+  The long description should only appear as long as it is worthwhile to add relevant
+  information to clarify complex logic, help explain calling conventions, or edge cases.
+- List of all parameters defined under the 'Args' section. Never include parameter annotation types.
+- Return description defined under the 'Returns' section. Never include return annotation types.
+- List of all raised exception types defined under the 'Raises' section.
+- Usage example, for public functions and class properties and methods, under the 'Example:' section using the `.. code-block:: python` directive.
+  Code must be separated by an empty line from the 'Example:' header.
+  The example must look like interactive Python sessions to check code and run regression tests using the Python doctest module.
+
+The following is an example of the different components of the docstring:
+
+```python
+def function_name(parameter_1, parameter_2) -> ReturnType:
+    """Brief summary of the function.
+
+    Long description of the function (as long as it is worth adding relevant information).
+
+    Args:
+        param parameter_1: Description of parameter 1.
+            If the parameter description is too long, it should be continued on the next indented line.
+        param parameter_2: Description of parameter 2.
+
+    Returns:
+        Description of the return value.
+        If the return description is too long, it should be continued on the next line.
+
+    Raises:
+        ExceptionType: Description of the exception raised.
+            If the exception description is too long, it should be continued on the next indented line.
+
+    Example:
+
+    .. code-block:: python
+
+        # example comment
+        >>> import module
+        >>>
+        >>> output = module.function_name(
+        ...     value_1,
+        ...     value_2,
+        ... )
+        ...
+        >>> output
+        output string representation
+    """
+    pass
+```
