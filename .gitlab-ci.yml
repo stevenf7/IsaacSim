@@ -1143,7 +1143,7 @@ publish-python-packages-linux:
       - .deploy-common
       - .runner-build-linux-x86_64
     script:
-      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.linux-x86_64.release.7z --dst _build/linux-x86_64/release
+      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.release.7z --dst _build/linux-x86_64/release
       - ls _build/linux-x86_64/release
       - ./repo.sh python_package --create
       - ./repo.sh comment_archive_deps
@@ -1169,7 +1169,7 @@ publish-python-packages-windows:
     before_script:
       - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
-      - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.windows-x86_64.release.7z --dst _build/windows-x86_64/release
+      - ./repo.bat unzip_file --file _build/packages/isaac-sim-standalone*.release.7z --dst _build/windows-x86_64/release
       - ls _build/windows-x86_64/release
       - ./repo.bat python_package --create
       - ./repo.bat comment_archive_deps
