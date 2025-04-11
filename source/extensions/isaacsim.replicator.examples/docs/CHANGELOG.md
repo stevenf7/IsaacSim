@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.9] - 2025-04-10
+### Changed
+- SDG palletizing example does not need the custom preview event anymore
+
 ## [1.1.8] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

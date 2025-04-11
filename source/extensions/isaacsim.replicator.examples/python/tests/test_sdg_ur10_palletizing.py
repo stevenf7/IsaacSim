@@ -228,11 +228,6 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 self._switch_to_pathtracing()
                 self._create_bin_flip_graph()
 
-                # Because graphs are constantly created and destroyed during the demo
-                # a delayed preview command is required to guarantee a full generation of the graph
-                EVENT_NAME = carb.events.type_from_string("omni.replicator.core.orchestrator")
-                rep.orchestrator._orchestrator._message_bus.push(EVENT_NAME, payload={"command": "preview"})
-
                 rgb_annot = rep.AnnotatorRegistry.get_annotator("rgb")
                 is_annot = rep.AnnotatorRegistry.get_annotator("instance_segmentation", init_params={"colorize": True})
                 rp = rep.create.render_product(self._rep_camera, (512, 512))
@@ -321,11 +316,6 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                     mesh_to_orig_mats[bin_mesh] = bin_orig_mat
 
                 self._create_bin_and_pallet_graph()
-
-                # Because graphs are constantly created and destroyed during the demo
-                # a delayed preview command is required to guarantee a full generation of the graph
-                EVENT_NAME = carb.events.type_from_string("omni.replicator.core.orchestrator")
-                rep.orchestrator._orchestrator._message_bus.push(EVENT_NAME, payload={"command": "preview"})
 
                 out_dir = os.path.join(self._output_dir, f"writer_bin_{self._bin_counter}", "")
                 writer = rep.WriterRegistry.get("BasicWriter")
