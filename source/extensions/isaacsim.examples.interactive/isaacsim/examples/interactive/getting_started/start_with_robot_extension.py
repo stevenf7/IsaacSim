@@ -181,7 +181,7 @@ class GettingStartedRobotUI(BaseSampleUITemplate):
             assets_root_path = get_assets_root_path()
             if assets_root_path is None:
                 carb.log_error("Could not find Isaac Sim assets folder")
-            usd_path = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
+            usd_path = assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
             prim_path = "/World/Car"
 
             add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)

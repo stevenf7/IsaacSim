@@ -188,7 +188,7 @@ class CreateMenuExtension:
                     {
                         "name": "Nova Carter with Sensors",
                         "onclick_fn": lambda *_: create_asset(
-                            "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd", "/Nova_Carter"
+                            "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd", "/Nova_Carter"
                         ),
                     },
                     {

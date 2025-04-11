@@ -218,7 +218,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
             return
 
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
+            self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd"
         )
         self._stage = omni.usd.get_context().get_stage()
 

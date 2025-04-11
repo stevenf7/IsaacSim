@@ -40,7 +40,7 @@ my_world.add_task(tasks[-1])
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
-kaya_asset_path = assets_root_path + "/Isaac/Robots/Kaya/kaya.usd"
+kaya_asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Kaya/kaya.usd"
 my_kaya = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Kaya",
@@ -51,7 +51,7 @@ my_kaya = my_world.scene.add(
         position=np.array([-1, 0, 0]),
     )
 )
-jetbot_asset_path = assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
+jetbot_asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
 my_jetbot = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Jetbot",

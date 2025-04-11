@@ -39,7 +39,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
             return
 
         # add in jetbot (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
         (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)

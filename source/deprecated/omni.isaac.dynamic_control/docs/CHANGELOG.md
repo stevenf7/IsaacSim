@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.24] - 2025-04-11
+### Changed
+- Update default asset root path
+
 ## [1.3.23] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

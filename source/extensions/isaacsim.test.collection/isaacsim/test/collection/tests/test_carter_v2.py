@@ -55,7 +55,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self._extension_path = get_extension_path_from_name("isaacsim.test.collection")
 
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded

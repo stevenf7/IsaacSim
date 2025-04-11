@@ -51,7 +51,7 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         pass
 
     async def add_carters_view(self):
-        asset_path = self._assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1.usd"
         locations = [0.0, 0.1, 0.4]
         for idx, location in enumerate(locations):
             carter_prim_path = f"/World/Carter_{idx}"

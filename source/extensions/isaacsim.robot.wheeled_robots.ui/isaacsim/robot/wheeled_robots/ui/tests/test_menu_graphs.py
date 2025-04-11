@@ -36,7 +36,7 @@ class TestDifferentialRobotGraph(OmniUiTest):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd")
+        robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd")
         await update_stage_async()
 
     # After running each test

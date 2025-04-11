@@ -42,7 +42,7 @@ parser.add_argument(
 args, unknown = parser.parse_known_args()
 
 ENV_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-CARTER_PATH = "/Isaac/Robots/Carter/carter_v1.usd"
+CARTER_PATH = "/Isaac/Robots/NVIDIA/Carter/carter_v1.usd"
 EXPORT = args.export_json
 EXPORT_PATH = args.export_folder
 

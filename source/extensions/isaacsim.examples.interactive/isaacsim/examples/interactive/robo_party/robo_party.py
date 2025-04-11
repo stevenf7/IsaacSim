@@ -47,7 +47,7 @@ class RoboParty(BaseSample):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        kaya_asset_path = assets_root_path + "/Isaac/Robots/Kaya/kaya.usd"
+        kaya_asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Kaya/kaya.usd"
         world.scene.add(
             WheeledRobot(
                 prim_path="/World/Kaya",
@@ -59,7 +59,7 @@ class RoboParty(BaseSample):
             )
         )
 
-        jetbot_asset_path = assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
+        jetbot_asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
         world.scene.add(
             WheeledRobot(
                 prim_path="/World/Jetbot",

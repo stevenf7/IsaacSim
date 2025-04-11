@@ -60,7 +60,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
         # )
 
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/carter_v1_physx_lidar.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded

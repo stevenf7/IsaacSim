@@ -29,7 +29,7 @@ class KayaGamepad(BaseSample):
             return
 
         # add kaya robot rigged with gamepad controller
-        kaya_ogn_usd = assets_root_path + "/Isaac/Robots/Kaya/kaya_ogn_gamepad.usd"
+        kaya_ogn_usd = assets_root_path + "/Isaac/Robots/NVIDIA/Kaya/kaya_ogn_gamepad.usd"
         stage = omni.usd.get_context().get_stage()
         graph_prim = stage.DefinePrim("/kaya", "Xform")
         graph_prim.GetReferences().AddReference(kaya_ogn_usd)
