@@ -18,6 +18,9 @@
 #include <omni/usd/UsdContext.h>
 ///
 
+#include <carb/eventdispatcher/IEventDispatcher.h>
+#include <carb/events/IEvents.h>
+
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdUtils.h>
 #include <physxSchema/physxSurfaceVelocityAPI.h>
@@ -47,20 +50,32 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
-        state.m_eventSubscription = carb::events::createSubscriptionToPop(
-            omni::usd::UsdContext::getContext()->getStageEventStream().get(),
-            [nodeObj, instanceId](carb::events::IEvent* event)
-            {
-                auto& state = OgnIsaacConveyorDatabase::sPerInstanceState<OgnIsaacConveyor>(nodeObj, instanceId);
-                state.m_onEnd = static_cast<omni::usd::StageEventType>(event->type) ==
-                                omni::usd::StageEventType::eAnimationStopPlay;
-                state.m_onStart = static_cast<omni::usd::StageEventType>(event->type) ==
-                                  omni::usd::StageEventType::eAnimationStartPlay;
-                if (nodeObj.iNode->isValid(nodeObj) && (state.m_onEnd || state.m_onStart))
-                {
-                    nodeObj.iNode->requestCompute(nodeObj);
-                }
-            });
+        auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
+
+        // Create subscriptions to the stage event stream
+        auto usdContext = omni::usd::UsdContext::getContext();
+        state.m_eventSubscription[0] =
+            ed->observeEvent(carb::RStringKey("isaacsim.asset.gen.conveyor/OgnIsaacConveyor/StopPlay"),
+                             carb::eventdispatcher::kDefaultOrder,
+                             usdContext->stageEventName(omni::usd::StageEventType::eAnimationStopPlay),
+                             [nodeObj](const carb::eventdispatcher::Event& e)
+                             {
+                                 if (nodeObj.iNode->isValid(nodeObj))
+                                 {
+                                     nodeObj.iNode->requestCompute(nodeObj);
+                                 }
+                             });
+        state.m_eventSubscription[1] =
+            ed->observeEvent(carb::RStringKey("isaacsim.asset.gen.conveyor/OgnIsaacConveyor/StartPlay"),
+                             carb::eventdispatcher::kDefaultOrder,
+                             usdContext->stageEventName(omni::usd::StageEventType::eAnimationStartPlay),
+                             [nodeObj](const carb::eventdispatcher::Event& e)
+                             {
+                                 if (nodeObj.iNode->isValid(nodeObj))
+                                 {
+                                     nodeObj.iNode->requestCompute(nodeObj);
+                                 }
+                             });
     }
 
     /**
@@ -207,7 +222,7 @@ private:
     bool m_onEnd;
     bool m_onStep;
     bool m_deltaTime;
-    carb::events::ISubscriptionPtr m_eventSubscription;
+    carb::eventdispatcher::ObserverGuard m_eventSubscription[2];
 };
 
 REGISTER_OGN_NODE()
