@@ -1,4 +1,12 @@
 # Changelog
+
+## [1.0.7] - 2025-04-11
+### Fixed
+- Fixed PoseWriter size output from AABB to Oriented Bounding Box
+
+### Added
+- Added PoseWriter test
+
 ## [1.0.6] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

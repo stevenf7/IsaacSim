@@ -236,10 +236,10 @@ class PoseWriter(Writer):
             # Size of the object before scale (NOTE: scale is not applied yet to objects in local frame)
             min_local = np.array([bbox["x_min"], bbox["y_min"], bbox["z_min"], 1])
             max_local = np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1])
-            size_local = np.abs(max_local - min_local)[:3].tolist()
+            size_local = np.abs(max_local - min_local)[:3]
             center_local = min_local + (max_local - min_local) / 2
             if self._write_debug_images:
-                self._debug_frame_data["size_local"].append(size_local)
+                self._debug_frame_data["size_local"].append(size_local.tolist())
                 self._debug_frame_data["center_local"].append(center_local[:3].tolist())
 
             # Cuboid keypoints in local frame
@@ -255,14 +255,15 @@ class PoseWriter(Writer):
                 "RUF": np.array([bbox["x_max"], bbox["y_max"], bbox["z_max"], 1]),  # Right-Up-Front
             }
 
-            # Calculate the (scaled) size of the object from its world bounds (NOTE: scale is applied through the transform)
-            min_world = min_local @ local_to_world_tf
-            max_world = max_local @ local_to_world_tf
-            size_world = np.abs(max_world - min_world)[:3].tolist()
+            # Calculate the oriented bounding box (OBB) size by combining local size with world scale
+            local_to_world_tf_gf = Gf.Transform()
+            local_to_world_tf_gf.SetMatrix(Gf.Matrix4d(local_to_world_tf.tolist()))
+            world_scale = local_to_world_tf_gf.GetScale()
+            size_obb = (size_local * world_scale).tolist()
             if self._format is None:
-                obj["size"] = size_world
+                obj["size"] = size_obb
             elif self._format == "centerpose":
-                obj["scale"] = size_world
+                obj["scale"] = size_obb
 
             # Transform the cuboid keypoints from local to world frame in the given order
             keypoints_world_ordered = [keypoints_local[k] @ local_to_world_tf for k in self._cuboid_keypoints_order]
