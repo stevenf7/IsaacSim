@@ -45,6 +45,7 @@ source/extensions/isaacsim.examples.ui/ hmazhar@nvidia.com qwan@nvidia.com
 source/extensions/isaacsim.gui.components/ hmazhar@nvidia.com qwan@nvidia.com
 source/extensions/isaacsim.gui.menu/ hmazhar@nvidia.com qwan@nvidia.com
 source/extensions/isaacsim.gui.property/ hmazhar@nvidia.com ayushg@nvidia.com stevfeng@nvidia.com
+source/extensions/isaacsim.gui.sensors.icon/ hmazhar@nvidia.com qwan@nvidia.com
 source/extensions/isaacsim.replicator.behavior.ui/ hmazhar@nvidia.com ahaidu@nvidia.com
 source/extensions/isaacsim.replicator.behavior/ ahaidu@nvidia.com hmazhar@nvidia.com
 source/extensions/isaacsim.replicator.domain_randomization/ hmazhar@nvidia.com ahaidu@nvidia.com

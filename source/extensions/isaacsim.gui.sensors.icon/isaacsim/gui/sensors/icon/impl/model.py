@@ -14,7 +14,7 @@ import omni.kit.app
 import omni.usd
 from isaacsim.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
 from omni.ui import scene as sc
-from pxr import Gf, Tf, Usd, UsdGeom
+from pxr import Gf, Tf, Trace, Usd, UsdGeom
 
 ICON_POSITION_ATTR = "xformOp:translate"
 ICON_ORIENTATION_ATTR = "xformOp:orient"
@@ -111,9 +111,17 @@ class IconModel(sc.AbstractManipulatorModel):
             return self._icons[prim_path].icon_url
         return ""
 
+    @Trace.TraceFunction
     def _on_usd_changed(self, notice, stage):
         for path in set(notice.GetResyncedPaths() + notice.GetChangedInfoOnlyPaths()):
             prim_path = path.GetPrimPath() if path.IsPropertyPath() else path
+            # If the prim is not valid, skip
+            if stage and not stage.GetPrimAtPath(prim_path):
+                # If the prim path is in our icons dictionary, remove the sensor icon
+                if prim_path in self._icons:
+                    self.remove_sensor_icon(prim_path)
+                continue
+
             pose_attributes = [ICON_POSITION_ATTR, ICON_ORIENTATION_ATTR, ICON_TRANSFORM_ATTR]
             property_changed = str(path).split(".")[-1] if path.IsPropertyPath() else None
             sensor_predicate = lambda path: (

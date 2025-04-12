@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.2] - 2025-04-11
+### Changed
+- Fix error when usd notice handler handled deleted prims
+
 ## [0.1.1] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
