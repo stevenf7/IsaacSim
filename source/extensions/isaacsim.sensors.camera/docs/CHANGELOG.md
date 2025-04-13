@@ -3,7 +3,7 @@
 ### Changed
 - Update all test args to be consistent
 
-## [0.4.0] - 2025-03-25
+## [0.4.0] - 2025-03-27
 ### Changed
 - Added 'annotator_device' parameter to the camera sensor to support GPU data access
 - Helper functions can return data with the selected backend

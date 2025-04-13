@@ -941,17 +941,31 @@ def main():
     print("SUMMARY")
     print("=" * 60)
 
+    # First show all successful extensions
+    successful_extensions = []
+    extensions_with_errors = []
+
     for ext_name, errors in all_results.items():
-        if errors and isinstance(errors, list) and errors:
+        if not errors or not isinstance(errors, list) or not errors:
+            success_count += 1
+            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
+            successful_extensions.append((ext_name, version_info))
+        else:
+            extensions_with_errors.append((ext_name, errors))
+            error_count += len(errors)
+
+    # Display successful extensions first
+    for ext_name, version_info in successful_extensions:
+        version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
+        print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
+
+    # Then display extensions with errors
+    if extensions_with_errors:
+        print("\nExtensions with issues:")
+        for ext_name, errors in extensions_with_errors:
             print(f"❌ Extension '{ext_name}' had {len(errors)} issues:")
             for error in errors:
                 print(f"  - {error}")
-            error_count += len(errors)
-        else:
-            success_count += 1
-            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
-            version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
-            print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
 
     print(
         "\nProcessed {0} extensions: {1} successful, {2} with issues".format(
@@ -1095,17 +1109,31 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     print("SUMMARY")
     print("=" * 60)
 
+    # First show all successful extensions
+    successful_extensions = []
+    extensions_with_errors = []
+
     for ext_name, errors in all_results.items():
-        if errors and isinstance(errors, list) and errors:
+        if not errors or not isinstance(errors, list) or not errors:
+            success_count += 1
+            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
+            successful_extensions.append((ext_name, version_info))
+        else:
+            extensions_with_errors.append((ext_name, errors))
+            error_count += len(errors)
+
+    # Display successful extensions first
+    for ext_name, version_info in successful_extensions:
+        version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
+        print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
+
+    # Then display extensions with errors
+    if extensions_with_errors:
+        print("\nExtensions with issues:")
+        for ext_name, errors in extensions_with_errors:
             print(f"❌ Extension '{ext_name}' had {len(errors)} issues:")
             for error in errors:
                 print(f"  - {error}")
-            error_count += len(errors)
-        else:
-            success_count += 1
-            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
-            version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
-            print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
 
     print(
         "\nProcessed {0} extensions: {1} successful, {2} with issues".format(

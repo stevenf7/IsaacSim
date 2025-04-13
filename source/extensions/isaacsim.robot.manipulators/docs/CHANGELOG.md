@@ -4,11 +4,11 @@
 - Update all test args to be consistent
 
 ## [3.1.0] - 2025-04-07
-### Updated
+### Changed
 - Removed end_effector_prim_name parameter, end effector prim path is required now
 
 ## [3.0.11] - 2025-04-07
-### Updated
+### Changed
 - Updated ur10 path
 - The unit test now use Variant to create the gripper
 

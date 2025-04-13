@@ -10,9 +10,6 @@
 ## [1.0.5] - 2025-03-26
 ### Changed
 - Cleanup and standardize extension.toml, update code formatting for all code
-
-## [1.0.4] - 2025-03-11
-### Changed
 - Switch asset root for tests to internal nucleus
 
 ## [1.0.4] - 2025-02-19
