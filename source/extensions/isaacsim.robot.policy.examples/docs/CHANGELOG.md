@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.1.0] - 2025-04-13
+### Added
+- Franka open drawer policy class
+
 ## [4.0.8] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
