@@ -14,9 +14,6 @@
 ## [1.0.11] - 2025-03-11
 ### Changed
 - Switch asset root for tests to internal nucleus
-
-## [1.0.10] - 2025-03-04
-### Changed
 - Update to kit 107.1 and fix build issues
 
 ## [1.0.10] - 2025-02-19

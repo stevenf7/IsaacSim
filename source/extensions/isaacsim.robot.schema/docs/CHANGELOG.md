@@ -3,6 +3,7 @@
 ## [3.3.0] - 2025-04-08
 ### Changed
 - Updated Robot Schema to include Surface Gripper.
+
 ### Fixed
 - Fixed build for robot schema include file
 
