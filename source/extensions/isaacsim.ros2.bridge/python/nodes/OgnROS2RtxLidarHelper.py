@@ -73,17 +73,11 @@ class OgnROS2RtxLidarHelper:
                     carb.log_warn("Render product not created yet, retrying on next call")
                     db.per_instance_state.initialized = False
                     return False
-                else:
-                    prim = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
-                    if prim.IsA(UsdGeom.Camera):
-                        if prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI):
-                            db.per_instance_state.render_product_path = render_product_path
-                            db.per_instance_state.sensor = "lidar"
-                        else:
-                            db.per_instance_state.sensor = None
-
-                if db.per_instance_state.sensor is None:
-                    carb.log_warn("Active camera for Render product is not an RTX Lidar")
+                prim = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
+                if not (prim.IsA(UsdGeom.Camera) and prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI)) and not (
+                    prim.IsA("OmniLidar") and prim.HasAPI("OmniSensorGenericLidarCoreAPI")
+                ):
+                    carb.log_warn("Render product not attached to RTX Lidar (Camera or OmniLidar prims are required).")
                     db.per_instance_state.initialized = False
                     return False
 

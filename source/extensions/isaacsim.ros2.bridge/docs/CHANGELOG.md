@@ -1,4 +1,9 @@
 # Changelog
+## [4.4.8] - 2025-04-15
+### Fixed
+- Removes references to "sensor" field in OgnROS2RtxLidarHelper
+- Removes stray print statement in non-test code
+
 ## [4.4.7] - 2025-04-10
 ### Changed
 - Fixed checks for OpenCvFisheye lens distortion model
