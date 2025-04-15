@@ -48,7 +48,6 @@ def read_camera_info(render_product_path: str) -> Tuple:
                 f"omni:lensdistortion:opencvPinhole:{OPENCV_PINHOLE_ATTRIBUTE_MAP[i]}"
             ).Get()
 
-        print(pinhole)
         if pinhole[5:8] == [0.0] * 3:
             # Zeros provided for k4, k5, k6 coefficients
             camera_info.distortion_model = "plumb_bob"
