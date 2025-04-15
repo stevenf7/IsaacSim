@@ -1,4 +1,7 @@
 # Changelog
+## [4.4.7] - 2025-04-10
+### Changed
+- Fixed checks for OpenCvFisheye lens distortion model
 
 ## [4.4.6] - 2025-04-09
 ### Changed

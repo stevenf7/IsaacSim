@@ -38,29 +38,15 @@ from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Sdf, Usd, UsdGeom, Vt
 
 # Map of Camera prim attributes to OpenCV pinhole camera model parameters (p1, p2, k1, k2, k3, k4, k5, k6, s1, s2, s3, s4) by index
-OPENCV_PINHOLE_ATTRIBUTE_MAP = [
-    "omni:lensdistortion:opencvPinhole:k1",
-    "omni:lensdistortion:opencvPinhole:k2",
-    "omni:lensdistortion:opencvPinhole:p1",
-    "omni:lensdistortion:opencvPinhole:p2",
-    "omni:lensdistortion:opencvPinhole:k3",
-    "omni:lensdistortion:opencvPinhole:k4",
-    "omni:lensdistortion:opencvPinhole:k5",
-    "omni:lensdistortion:opencvPinhole:k6",
-    "omni:lensdistortion:opencvPinhole:s1",
-    "omni:lensdistortion:opencvPinhole:s2",
-    "omni:lensdistortion:opencvPinhole:s3",
-    "omni:lensdistortion:opencvPinhole:s4",
-]
+OPENCV_PINHOLE_ATTRIBUTE_MAP = ["k1", "k2", "p1", "p2", "k3", "k4", "k5", "k6", "s1", "s2", "s3", "s4"]
 
 # Map of Camera prim attributes to OpenCV fisheye camera model parameters (k0, k1, k2, k3, k4) by index
-OPENCV_FISHEYE_ATTRIBUTE_MAP = [
-    "omni:lensdistortion:opencvFisheye:k1",
-    "omni:lensdistortion:opencvFisheye:k2",
-    "omni:lensdistortion:opencvFisheye:k3",
-    "omni:lensdistortion:opencvFisheye:k4",
-]
+OPENCV_FISHEYE_ATTRIBUTE_MAP = ["k1", "k2", "k3", "k4"]
 
+# Attribute maps for lens distortion models
+FTHETA_ATTRIBUTE_MAP = ["k0", "k1", "k2", "k3", "k4"]
+KANNALA_BRANDT_K3_ATTRIBUTE_MAP = ["k0", "k1", "k2", "k3"]
+RAD_TAN_THIN_PRISM_ATTRIBUTE_MAP = ["k0", "k1", "k2", "k3", "k4", "k5", "p0", "p1", "s0", "s1", "s2", "s3"]
 
 # transforms are read from right to left
 # U_R_TRANSFORM means transformation matrix from R frame to U frame
@@ -106,7 +92,7 @@ def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y):
     """
     omni.kit.app.log_deprecation(
         "distort_point_rational_polynomial is deprecated."
-        'Please use the the "opencv" distortion model to directly specify OpenCV distortion parameters.'
+        'Please use the the "opencvFisheye" distortion model to directly specify OpenCV distortion parameters.'
     )
     ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
     K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
@@ -150,7 +136,7 @@ def distort_point_kannala_brandt(camera_matrix, distortion_model, x, y):
     """
     omni.kit.app.log_deprecation(
         "distort_point_rational_polynomial is deprecated."
-        'Please use the the "opencv" distortion model to directly specify OpenCV distortion parameters.'
+        'Please use the the "opencvFisheye" distortion model to directly specify OpenCV distortion parameters.'
     )
     ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
     pt_x, pt_y, pt_z = (x - cx) / fx, (y - cy) / fy, 1.0
@@ -309,6 +295,7 @@ class Camera(BaseSensor):
         for property_name in properties:
             if self.prim.GetAttribute(property_name).Get() is None:
                 self.prim.CreateAttribute(property_name, Sdf.ValueTypeNames.Float)
+        self.set_lens_distortion_model(value="OmniLensDistortionFthetaAPI")
         self._current_frame = dict()
         # Initialize the first frame with the correct backend (warp or numpy)
         if self._annotator_device is None:
@@ -1211,64 +1198,66 @@ class Camera(BaseSensor):
 
     def get_focal_length(self) -> float:
         """
+        Gets focal length of camera prim, in stage units. Longer focal length corresponds to narrower FOV, shorter focal length corresponds to wider FOV.
         Returns:
-            float: Longer Lens Lengths Narrower FOV, Shorter Lens Lengths Wider FOV
+            float: Value of camera prim focalLength attribute, converted to stage units.
         """
         return self.prim.GetAttribute("focalLength").Get() / 10.0
 
     def set_focal_length(self, value: float):
-        """
+        """Sets focal length of camera prim, in stage units. Longer focal length corresponds to narrower FOV, shorter focal length corresponds to wider FOV.
         Args:
-            value (float): Longer Lens Lengths Narrower FOV, Shorter Lens Lengths Wider FOV
+            value (float): Desired focal length of camera prim, in stage units.
         """
         self.prim.GetAttribute("focalLength").Set(value * 10.0)
         return
 
     def get_focus_distance(self) -> float:
-        """
+        """Gets distance from the camera to the focus plane (in stage units).
         Returns:
-            float: Distance from the camera to the focus plane (in stage units).
+            float: Value of camera prim focusDistance attribute, measuring distance from the camera to the focus plane (in stage units).
         """
         return self.prim.GetAttribute("focusDistance").Get()
 
     def set_focus_distance(self, value: float):
-        """The distance at which perfect sharpness is achieved.
-
+        """Sets distance from the camera to the focus plane (in stage units).
         Args:
-            value (float): Distance from the camera to the focus plane (in stage units).
+            value (float): Sets value of camera prim focusDistance attribute (in stage units).
         """
         self.prim.GetAttribute("focusDistance").Set(value)
         return
 
     def get_lens_aperture(self) -> float:
-        """
+        """Gets value of camera prim fStop attribute, which controls distance blurring. Lower numbers decrease focus range, larger
+            numbers increase it.
+
         Returns:
-            float: controls lens aperture (i.e focusing). 0 turns off focusing.
+            float: Value of camera prim fStop attribute (in stage units). 0 turns off focusing.
         """
         return self.prim.GetAttribute("fStop").Get()
 
     def set_lens_aperture(self, value: float):
-        """Controls Distance Blurring. Lower Numbers decrease focus range, larger
+        """Sets value of camera prim fStop attribute, which controls distance blurring. Lower numbers decrease focus range, larger
             numbers increase it.
 
         Args:
-            value (float): controls lens aperture (i.e focusing). 0 turns off focusing.
+            value (float): Sets value of camera prim fStop attribute (in stage units). 0 turns off focusing.
         """
         self.prim.GetAttribute("fStop").Set(value)
         return
 
     def get_horizontal_aperture(self) -> float:
-        """_
+        """Gets value of camera prim horizontalAperture attribute, which emulates sensor/film width on a camera.
         Returns:
-            float:  Emulates sensor/film width on a camera
+            float: Value of camera prim horizontalAperture attribute, converted to stage units.
         """
         aperture = self.prim.GetAttribute("horizontalAperture").Get() / 10.0
         return aperture
 
     def set_horizontal_aperture(self, value: float) -> None:
-        """
+        """Sets value of camera prim horizontalAperture attribute, which emulates sensor/film width on a camera, then updates verticalAperture attribute to maintain resolution.
         Args:
-            value (Optional[float], optional): Emulates sensor/film width on a camera. Defaults to None.
+            value (float): Value of camera prim horizontalAperture attribute (in stage units).
         """
         self.prim.GetAttribute("horizontalAperture").Set(value * 10.0)
         (width, height) = self.get_resolution()
@@ -1276,18 +1265,17 @@ class Camera(BaseSensor):
         return
 
     def get_vertical_aperture(self) -> float:
-        """
+        """Gets value of camera prim verticalAperture attribute, which emulates sensor/film height on a camera.
         Returns:
-            float: Emulates sensor/film height on a camera.
+            float: Value of camera prim verticalAperture attribute, converted to stage units.
         """
-        (width, height) = self.get_resolution()
-        aperture = (self.prim.GetAttribute("horizontalAperture").Get() / 10.0) * (float(height) / width)
+        aperture = self.prim.GetAttribute("verticalAperture").Get() / 10.0
         return aperture
 
     def set_vertical_aperture(self, value: float) -> None:
-        """
+        """Sets value of camera prim verticalAperture attribute, which emulates sensor/film height on a camera, then updates horizontalAperture attribute to maintain resolution.
         Args:
-            value (Optional[float], optional): Emulates sensor/film height on a camera. Defaults to None.
+            value (float): Value of camera prim verticalAperture attribute (in stage units).
         """
         self.prim.GetAttribute("verticalAperture").Set(value * 10.0)
         (width, height) = self.get_resolution()
@@ -1295,19 +1283,19 @@ class Camera(BaseSensor):
         return
 
     def get_clipping_range(self) -> Tuple[float, float]:
-        """
+        """Gets near and far clipping distances of camera prim.
         Returns:
-            Tuple[float, float]: near_distance and far_distance respectively.
+            Tuple[float, float]: Near and far clipping distances (in stage units).
         """
         near, far = self.prim.GetAttribute("clippingRange").Get()
         return near, far
 
     def set_clipping_range(self, near_distance: Optional[float] = None, far_distance: Optional[float] = None) -> None:
-        """Clips the view outside of both near and far range values.
+        """Sets near and far clipping distances of camera prim.
 
         Args:
-            near_distance (Optional[float], optional): value to be used for near clipping. Defaults to None.
-            far_distance (Optional[float], optional): value to be used for far clipping. Defaults to None.
+            near_distance (Optional[float], optional): Value to be used for near clipping (in stage units). Defaults to None.
+            far_distance (Optional[float], optional): Value to be used for far clipping (in stage units). Defaults to None.
         """
         near, far = self.prim.GetAttribute("clippingRange").Get()
         if near_distance:
@@ -1319,9 +1307,13 @@ class Camera(BaseSensor):
 
     def get_projection_type(self) -> str:
         """
+        [DEPRECATED] Gets the `cameraProjectionType` property of the camera prim.
         Returns:
-            str: pinhole, fisheyeOrthographic, fisheyeEquidistant, fisheyeEquisolid, fisheyePolynomial or fisheyeSpherical
+            str: omni:lensdistortion:model attribute of camera prim. If unset, returns "pinhole".
         """
+        carb.log_warn(
+            "Camera.get_projection_type is deprecated and will be removed in a future release. Please use Camera.get_lens_distortion_model instead."
+        )
         projection_type = self.prim.GetAttribute("cameraProjectionType").Get()
         if projection_type is None:
             projection_type = "pinhole"
@@ -1329,46 +1321,110 @@ class Camera(BaseSensor):
 
     def set_projection_type(self, value: str) -> None:
         """
+        [DEPRECATED] Sets the `cameraProjectionType` property of the camera prim.
         Args:
-            value (str): pinhole: Standard Camera Projection (Disable Fisheye)
-                         fisheyeOrthographic: Full Frame using Orthographic Correction
-                         fisheyeEquidistant: Full Frame using Equidistant Correction
-                         fisheyeEquisolid: Full Frame using Equisolid Correction
-                         fisheyePolynomial: 360 Degree Spherical Projection
-                         fisheyeSpherical: 360 Degree Full Frame Projection
+            value (str): Name of the projection type to apply, or "pinhole" to remove any distortion schemas and unset `omni:lensdistortion:model`.
         """
-        self.prim.GetAttribute("cameraProjectionType").Set(Vt.Token(value))
+        carb.log_warn(
+            "Camera.set_projection_type is deprecated and will be removed in a future release. Please use Camera.set_lens_distortion_model instead."
+        )
+        if value == "pinhole":
+            self.set_lens_distortion_model(value)
+        elif value == "fisheyePolynomial":
+            carb.log_warn(
+                "Use of 'fisheyePolynomial' in Camera.set_projection_type is deprecated. Please use 'OmniLensDistortionFthetaAPI' instead."
+            )
+            self.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
+        else:
+            carb.log_warn(
+                f"'{value}' is not a supported projection type. Please use a supported OmniLensDistortion*API instead."
+            )
+        self.prim.GetAttribute("cameraProjectionType").Set(value)
+        return
+
+    def get_lens_distortion_model(self) -> str:
+        """
+        Gets the `omni:lensdistortion:model` property of the camera prim.
+        """
+        return self.prim.GetAttribute("omni:lensdistortion:model").Get() or "pinhole"
+
+    def set_lens_distortion_model(self, value: str) -> None:
+        """
+        Sets the `omni:lensdistortion:model` property of the camera prim and applies the corresponding schema.
+        Note: `cameraProjectionType` has been deprecated in favor of `omni:lensdistortion:model`. `fisheyeOrthographic`, `fisheyeEquidistant`, `fisheyeEquisolid`, and `fisheyeSpherical` are no longer supported.
+
+        Args:
+            value (str): Name of the distortion schema to apply, or "pinhole" to remove any distortion schemas and unset `omni:lensdistortion:model`.
+        """
+        if value == "pinhole":
+            for schema in self.prim.GetAppliedSchemas():
+                self.prim.RemoveAppliedSchema(schema)
+                carb.log_info(f"Removed schema {schema} from Camera {self.prim.GetPrimPath()}")
+            if self.prim.HasAttribute("omni:lensdistortion:model"):
+                self.prim.RemoveProperty("omni:lensdistortion:model")
+                carb.log_info(f"Removed property omni:lensdistortion:model from Camera {self.prim.GetPrimPath()}")
+        elif value == "OmniLensDistortionFthetaAPI":
+            self.prim.ApplyAPI("OmniLensDistortionFthetaAPI")
+            self.prim.GetAttribute("omni:lensdistortion:model").Set("ftheta")
+        elif value == "OmniLensDistortionKannalaBrandtK3API":
+            self.prim.ApplyAPI("OmniLensDistortionKannalaBrandtK3API")
+            self.prim.GetAttribute("omni:lensdistortion:model").Set("kannalaBrandtK3")
+        elif value == "OmniLensDistortionRadTanThinPrismAPI":
+            self.prim.ApplyAPI("OmniLensDistortionRadTanThinPrismAPI")
+            self.prim.GetAttribute("omni:lensdistortion:model").Set("radTanThinPrism")
+        elif value == "OmniLensDistortionLutAPI":
+            self.prim.ApplyAPI("OmniLensDistortionLutAPI")
+            self.prim.GetAttribute("omni:lensdistortion:model").Set("lut")
+        elif value == "OmniLensDistortionOpenCvFisheyeAPI":
+            self.prim.ApplyAPI("OmniLensDistortionOpenCvFisheyeAPI")
+            self.prim.GetAttribute("omni:lensdistortion:model").Set("opencvFisheye")
+        elif value == "OmniLensDistortionOpenCvPinholeAPI":
+            self.prim.ApplyAPI("OmniLensDistortionOpenCvPinholeAPI")
+            self.prim.GetAttribute("omni:lensdistortion:model").Set("opencvPinhole")
+        else:
+            carb.log_warn(
+                f"'{value}' is not a supported distortion model. Please use a supported OmniLensDistortion*API instead."
+            )
         return
 
     def get_projection_mode(self) -> str:
         """
+        Gets projection model of the camera prim.
         Returns:
             str: perspective or orthographic.
         """
         return self.prim.GetAttribute("projection").Get()
 
     def set_projection_mode(self, value: str) -> None:
-        """Sets camera to perspective or orthographic mode.
+        """Sets projection model of the camera prim to perspective or orthographic.
 
         Args:
-            value (str): perspective or orthographic.
+            value (str): "perspective" or "orthographic".
 
         """
+        if value not in ["perspective", "orthographic"]:
+            carb.log_warn(f"'{value}' is not a supported projection mode. Please use 'perspective' or 'orthographic'.")
+            return
         self.prim.GetAttribute("projection").Set(value)
         return
 
     def get_stereo_role(self) -> str:
         """
+        Gets stereo role of the camera prim.
         Returns:
-            str: mono, left or right.
+            str: "mono", "left" or "right".
         """
         return self.prim.GetAttribute("stereoRole").Get()
 
     def set_stereo_role(self, value: str) -> None:
         """
+        Sets stereo role of the camera prim to mono, left or right.
         Args:
-            value (str): mono, left or right.
+            value (str): "mono", "left" or "right".
         """
+        if value not in ["mono", "left", "right"]:
+            carb.log_warn(f"'{value}' is not a supported stereo role. Please use 'mono', 'left' or 'right'.")
+            return
         self.prim.GetAttribute("stereoRole").Set(value)
         return
 
@@ -1432,7 +1488,7 @@ class Camera(BaseSensor):
         """
         omni.kit.app.log_deprecation(
             "Camera.set_matching_fisheye_polynomial_properties is deprecated."
-            'Please use the the "opencv" distortion model to directly specify OpenCV distortion parameters.'
+            'Please use the the "opencvFisheye" distortion model to directly specify OpenCV distortion parameters.'
         )
         if "fisheye" not in self.get_projection_type():
             raise Exception(
@@ -1474,6 +1530,10 @@ class Camera(BaseSensor):
         distortion_model: Sequence[float],
     ) -> None:
         """[DEPRECATED] Approximates rational polynomial distortion with ftheta fisheye polynomial coefficients.
+        Note: This method was designed to approximate the OpenCV pinhole distortion model using ftheta fisheye polynomial parameterization.
+        The OpenCV pinhole distortion model is now directly supported, so this method will use that model directly.
+        Args:
+
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
@@ -1495,7 +1555,9 @@ class Camera(BaseSensor):
 
         fx = nominal_width * self.get_focal_length() / self.get_horizontal_aperture()
         fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
-        self.set_opencv_pinhole_properties(optical_centre_x, optical_centre_y, fx, fy, distortion_model)
+        self.set_opencv_pinhole_properties(
+            cx=optical_centre_x, cy=optical_centre_y, fx=fx, fy=fy, pinhole=distortion_model
+        )
 
         return
 
@@ -1509,6 +1571,8 @@ class Camera(BaseSensor):
         distortion_model: Sequence[float],
     ) -> None:
         """[DEPRECATED] Approximates kannala brandt distortion with ftheta fisheye polynomial coefficients.
+        Note: This method was designed to approximate the OpenCV fisheye distortion model using ftheta fisheye polynomial parameterization.
+        The OpenCV fisheye distortion model is now directly supported, so this method will use that model directly.
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
@@ -1530,108 +1594,11 @@ class Camera(BaseSensor):
 
         fx = nominal_width * self.get_focal_length() / self.get_horizontal_aperture()
         fy = nominal_height * self.get_focal_length() / self.get_vertical_aperture()
-        self.set_opencv_fisheye_properties(optical_centre_x, optical_centre_y, fx, fy, distortion_model)
+        self.set_opencv_fisheye_properties(
+            cx=optical_centre_x, cy=optical_centre_y, fx=fx, fy=fy, fisheye=distortion_model
+        )
 
         return
-
-    def set_opencv_pinhole_properties(
-        self,
-        cx: Optional[float] = None,
-        cy: Optional[float] = None,
-        fx: Optional[float] = None,
-        fy: Optional[float] = None,
-        pinhole: Optional[List[float]] = None,
-    ) -> None:
-        """
-        Args:
-            cx (float): Horizontal Render Position (pixels)
-            cy (float): Vertical Render Position (pixels)
-            fx (float): Horizontal Focal Length (pixels)
-            fy (float): Vertical Focal Length (pixels)
-            pinhole (List[float]): OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4]
-        """
-        self.prim.ApplyAPI("OmniLensDistortionOpenCvPinholeAPI")
-        self.prim.GetAttribute("omni:lensdistortion:model").Set("opencvPinhole")
-        if cx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cx").Set(cx)
-        if cy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cy").Set(cy)
-        if fx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fx").Set(fx)
-        if fy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fy").Set(fy)
-        if pinhole is not None:
-            for i in range(len(pinhole)):
-                self.prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Set(pinhole[i])
-
-        return
-
-    def get_opencv_pinhole_properties(self) -> Tuple[float, float, float, float, List]:
-        """
-        Returns:
-            Tuple[float, float, float, float, List]: cx, cy, fx, fy, and OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4] respectively.
-        """
-        if self.prim.GetAttribute("omni:lensdistortion:model").Get() != "opencvPinhole":
-            carb.log_error("Camera omni:lensdistortion:model attribute not set to 'opencvPinhole'.")
-            return
-        cx = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cx").Get()
-        cy = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:cy").Get()
-        fx = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fx").Get()
-        fy = self.prim.GetAttribute("omni:lensdistortion:opencvPinhole:fy").Get()
-        pinhole = [None] * 12
-        for i in range(12):
-            pinhole[i] = self.prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Get()
-
-        return cx, cy, fx, fy, pinhole
-
-    def set_opencv_fisheye_properties(
-        self,
-        cx: Optional[float] = None,
-        cy: Optional[float] = None,
-        fx: Optional[float] = None,
-        fy: Optional[float] = None,
-        fisheye: Optional[List[float]] = None,
-    ) -> None:
-        """
-        Args:
-            cx (float): Horizontal Render Position (pixels)
-            cy (float): Vertical Render Position (pixels)
-            fx (float): Horizontal Focal Length (pixels)
-            fy (float): Vertical Focal Length (pixels)
-            fisheye (List[float]): OpenCV fisheye parameters [k1, k2, k3, k4]
-        """
-        self.prim.ApplyAPI("OmniLensDistortionOpenCvFisheyeAPI")
-        self.prim.GetAttribute("omni:lensdistortion:model").Set("opencv")
-        if cx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Set(cx)
-        if cy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Set(cy)
-        if fx is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fx").Set(fx)
-        if fy is not None:
-            self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fy").Set(fy)
-        if fisheye is not None:
-            for i in range(len(fisheye)):
-                self.prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Set(fisheye[i])
-
-        return
-
-    def get_opencv_fisheye_properties(self) -> Tuple[float, float, float, float, List]:
-        """
-        Returns:
-            Tuple[float, float, float, float, List]: fx, fy, cx, cy, and OpenCV fisheye parameters [k1, k2, k3, k4] respectively.
-        """
-        if self.prim.GetAttribute("omni:lensdistortion:model").Get() != "opencv":
-            carb.log_error("Camera omni:lensdistortion:model attribute not set to 'opencv'.")
-            return
-        cx = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Get()
-        cy = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Get()
-        fx = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fx").Get()
-        fy = self.prim.GetAttribute("omni:lensdistortion:opencvFisheye:fy").Get()
-        fisheye = [None] * 4
-        for i in range(4):
-            fisheye[i] = self.prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Get()
-        return fx, fy, cx, cy, fisheye
 
     def get_fisheye_polynomial_properties(self) -> Tuple[float, float, float, float, float, List]:
         """
@@ -1877,6 +1844,324 @@ class Camera(BaseSensor):
         """
         width, height = self.get_resolution()
         return self.get_horizontal_fov() * (height / float(width))
+
+    def _set_lens_distortion_properties(
+        self,
+        distortion_model: str,
+        distortion_model_attr: str,
+        coefficient_map: List[str],
+        coefficients: List[float],
+        **kwargs,
+    ) -> None:
+        """Sets lens distortion model parameters if camera prim is using lens distortion model."""
+        self.prim.ApplyAPI(f"OmniLensDistortion{distortion_model}API")
+        self.prim.GetAttribute("omni:lensdistortion:model").Set(distortion_model_attr)
+        for coefficient_name, coefficient_value in zip(coefficient_map or [], coefficients or []):
+            if coefficient_value is None:
+                continue
+            self.prim.GetAttribute(f"omni:lensdistortion:{distortion_model_attr}:{coefficient_name}").Set(
+                coefficient_value
+            )
+        for attr_name, attr_value in kwargs.items():
+            if attr_value is None:
+                continue
+            tokens = attr_name.split("_")
+            updated_attr_name = tokens[0]
+            for i in tokens[1:]:
+                updated_attr_name += i.capitalize()
+            self.prim.GetAttribute(f"omni:lensdistortion:{distortion_model_attr}:{updated_attr_name}").Set(attr_value)
+        return
+
+    def _get_lens_distortion_properties(
+        self, distortion_model_attr: str, attr_names: List[str], coefficient_map: List[str]
+    ) -> Tuple[float]:
+        """Gets lens distortion model parameters if camera prim is using lens distortion model.
+        Returns:
+            Tuple[float, float, Tuple[float, float], float, List[float]]:
+                nominal_height, nominal_width, optical_center, max_fov, distortion_coefficients
+                where distortion_coefficients are in order:
+        """
+        if self.prim.GetAttribute("omni:lensdistortion:model").Get() != distortion_model_attr:
+            carb.log_error(f"Camera omni:lensdistortion:model attribute not set to '{distortion_model_attr}'.")
+            return
+        attrs = []
+        for attr_name in attr_names:
+            tokens = attr_name.split("_")
+            updated_attr_name = tokens[0]
+            for i in tokens[1:]:
+                updated_attr_name += i.capitalize()
+            if attr := self.prim.GetAttribute(f"omni:lensdistortion:{distortion_model_attr}:{updated_attr_name}"):
+                attrs.append(attr.Get())
+            else:
+                attrs.append(None)
+        if coefficient_map:
+            attrs.append([])
+            for coefficient_name in coefficient_map:
+                if attr := self.prim.GetAttribute(f"omni:lensdistortion:{distortion_model_attr}:{coefficient_name}"):
+                    attrs[-1].append(attr.Get())
+                else:
+                    attrs[-1].append(None)
+        return tuple(attrs)
+
+    def set_ftheta_properties(
+        self,
+        nominal_height: Optional[float] = None,
+        nominal_width: Optional[float] = None,
+        optical_center: Optional[Tuple[float, float]] = None,
+        max_fov: Optional[float] = None,
+        distortion_coefficients: Optional[Sequence[float]] = None,
+    ) -> None:
+        """Applies F-theta lens distortion model to camera prim, then sets distortion parameters.
+        Args:
+            nominal_height (Optional[float]): Height of the calibrated sensor in pixels
+            nominal_width (Optional[float]): Width of the calibrated sensor in pixels
+            optical_center (Optional[Tuple[float, float]]): Optical center (x, y) in pixels
+            max_fov (Optional[float]): Maximum field of view in degrees
+            distortion_coefficients (Optional[Sequence[float]]): Distortion coefficients in order:
+                [k0, k1, k2, k3, k4] - radial distortion coefficients
+                Missing coefficients default to 0.0
+        """
+        return self._set_lens_distortion_properties(
+            distortion_model="Ftheta",
+            distortion_model_attr="ftheta",
+            coefficient_map=FTHETA_ATTRIBUTE_MAP,
+            coefficients=distortion_coefficients,
+            nominal_height=nominal_height,
+            nominal_width=nominal_width,
+            optical_center=optical_center,
+            max_fov=max_fov,
+        )
+
+    def get_ftheta_properties(self) -> Tuple[float, float, Tuple[float, float], float, List[float]]:
+        """Gets F-theta lens distortion model parameters if camera prim is using F-theta distortion model.
+        Returns:
+            Tuple[float, float, Tuple[float, float], float, List[float]]:
+                nominal_height (pixels), nominal_width (pixels), optical_center (x,y in pixels), max_fov (degrees), distortion_coefficients
+                where distortion_coefficients are in order:
+                [k0, k1, k2, k3, k4] - radial distortion coefficients
+        """
+        return self._get_lens_distortion_properties(
+            distortion_model_attr="ftheta",
+            attr_names=["nominalHeight", "nominalWidth", "opticalCenter", "maxFov"],
+            coefficient_map=FTHETA_ATTRIBUTE_MAP,
+        )
+
+    def set_kannala_brandt_k3_properties(
+        self,
+        nominal_height: Optional[float] = None,
+        nominal_width: Optional[float] = None,
+        optical_center: Optional[Tuple[float, float]] = None,
+        max_fov: Optional[float] = None,
+        distortion_coefficients: Optional[Sequence[float]] = None,
+    ) -> None:
+        """Applies Kannala-Brandt K3 lens distortion model to camera prim, then sets distortion parameters.
+        Args:
+            nominal_height (Optional[float]): Height of the calibrated sensor in pixels
+            nominal_width (Optional[float]): Width of the calibrated sensor in pixels
+            optical_center (Optional[Tuple[float, float]]): Optical center (x, y) in pixels
+            max_fov (Optional[float]): Maximum field of view in degrees
+            distortion_coefficients (Optional[Sequence[float]]): Distortion coefficients in order:
+                [k0, k1, k2, k3] - radial distortion coefficients
+                Missing coefficients default to 0.0
+        """
+        return self._set_lens_distortion_properties(
+            distortion_model="KannalaBrandtK3",
+            distortion_model_attr="kannalaBrandtK3",
+            coefficient_map=KANNALA_BRANDT_K3_ATTRIBUTE_MAP,
+            coefficients=distortion_coefficients,
+            nominal_height=nominal_height,
+            nominal_width=nominal_width,
+            optical_center=optical_center,
+            max_fov=max_fov,
+        )
+
+    def get_kannala_brandt_k3_properties(self) -> Tuple[float, float, Tuple[float, float], float, List[float]]:
+        """Gets Kannala-Brandt K3 lens distortion model parameters if camera prim is using Kannala-Brandt K3 distortion model.
+        Returns:
+            Tuple[float, float, Tuple[float, float], float, List[float]]:
+                nominal_height, nominal_width, optical_center, max_fov, distortion_coefficients
+                where distortion_coefficients are in order:
+                [k0, k1, k2, k3] - radial distortion coefficients
+        """
+        return self._get_lens_distortion_properties(
+            distortion_model_attr="kannalaBrandtK3",
+            attr_names=["nominalHeight", "nominalWidth", "opticalCenter", "maxFov"],
+            coefficient_map=KANNALA_BRANDT_K3_ATTRIBUTE_MAP,
+        )
+
+    def set_rad_tan_thin_prism_properties(
+        self,
+        nominal_height: Optional[float] = None,
+        nominal_width: Optional[float] = None,
+        optical_center: Optional[Tuple[float, float]] = None,
+        max_fov: Optional[float] = None,
+        distortion_coefficients: Optional[Sequence[float]] = None,
+    ) -> None:
+        """Applies Radial-Tangential Thin Prism lens distortion model to camera prim, then sets distortion parameters.
+        Args:
+            nominal_height (Optional[float]): Height of the calibrated sensor
+            nominal_width (Optional[float]): Width of the calibrated sensor
+            optical_center (Optional[Tuple[float, float]]): Optical center (x, y)
+            max_fov (Optional[float]): Maximum field of view in degrees
+            distortion_coefficients (Optional[Sequence[float]]): Distortion coefficients in order:
+                [k0, k1, k2, k3, k4, k5] - radial distortion coefficients
+                [p0, p1] - tangential distortion coefficients
+                [s0, s1, s2, s3] - thin prism distortion coefficients
+                Missing coefficients default to 0.0
+        """
+        return self._set_lens_distortion_properties(
+            distortion_model="RadTanThinPrism",
+            distortion_model_attr="radTanThinPrism",
+            coefficient_map=RAD_TAN_THIN_PRISM_ATTRIBUTE_MAP,
+            coefficients=distortion_coefficients,
+            nominal_height=nominal_height,
+            nominal_width=nominal_width,
+            optical_center=optical_center,
+            max_fov=max_fov,
+        )
+
+    def get_rad_tan_thin_prism_properties(self) -> Tuple[float, float, Tuple[float, float], float, List[float]]:
+        """Gets Radial-Tangential Thin Prism lens distortion model parameters if camera prim is using Radial-Tangential Thin Prism distortion model.
+        Returns:
+            Tuple[float, float, Tuple[float, float], float, List[float]]:
+                nominal_height, nominal_width, optical_center, max_fov, distortion_coefficients
+                where distortion_coefficients are in order:
+                [k0, k1, k2, k3, k4, k5] - radial distortion coefficients
+                [p0, p1] - tangential distortion coefficients
+                [s0, s1, s2, s3] - thin prism distortion coefficients
+        """
+        return self._get_lens_distortion_properties(
+            distortion_model_attr="radTanThinPrism",
+            attr_names=["nominalHeight", "nominalWidth", "opticalCenter", "maxFov"],
+            coefficient_map=RAD_TAN_THIN_PRISM_ATTRIBUTE_MAP,
+        )
+
+    def set_lut_properties(
+        self,
+        nominal_height: Optional[float] = None,
+        nominal_width: Optional[float] = None,
+        optical_center: Optional[Tuple[float, float]] = None,
+        ray_enter_direction_texture: Optional[str] = None,
+        ray_exit_position_texture: Optional[str] = None,
+    ) -> None:
+        """Applies LUT lens distortion model to camera prim, then sets distortion parameters.
+        Args:
+            nominal_height (Optional[float]): Height of the calibrated sensor in pixels
+            nominal_width (Optional[float]): Width of the calibrated sensor in pixels
+            optical_center (Optional[Tuple[float, float]]): Optical center (x, y) in pixels
+            ray_enter_direction_texture (Optional[str]): Path to ray enter direction texture
+            ray_exit_position_texture (Optional[str]): Path to ray exit position texture
+        """
+        return self._set_lens_distortion_properties(
+            distortion_model="Lut",
+            distortion_model_attr="lut",
+            coefficient_map=[],
+            coefficients=[],
+            nominal_height=nominal_height,
+            nominal_width=nominal_width,
+            optical_center=optical_center,
+            ray_enter_direction_texture=ray_enter_direction_texture,
+            ray_exit_position_texture=ray_exit_position_texture,
+        )
+
+    def get_lut_properties(self) -> Tuple[float, float, Tuple[float, float], str, str]:
+        """Gets LUT lens distortion model parameters if camera prim is using LUT distortion model.
+        Returns:
+            Tuple[float, float, Tuple[float, float], str, str]:
+                nominal_height (pixels), nominal_width (pixels), optical_center (x,y in pixels),
+                ray_enter_direction_texture, ray_exit_position_texture
+        """
+        return self._get_lens_distortion_properties(
+            distortion_model_attr="lut",
+            attr_names=[
+                "nominalHeight",
+                "nominalWidth",
+                "opticalCenter",
+                "rayEnterDirectionTexture",
+                "rayExitPositionTexture",
+            ],
+            coefficient_map=None,
+        )
+
+    def set_opencv_pinhole_properties(
+        self,
+        cx: Optional[float] = None,
+        cy: Optional[float] = None,
+        fx: Optional[float] = None,
+        fy: Optional[float] = None,
+        pinhole: Optional[List[float]] = None,
+    ) -> None:
+        """
+        Applies OpenCV pinhole distortion model to camera prim, then sets distortion parameters.
+        Args:
+            cx (float): Horizontal Render Position (pixels)
+            cy (float): Vertical Render Position (pixels)
+            fx (float): Horizontal Focal Length (pixels)
+            fy (float): Vertical Focal Length (pixels)
+            pinhole (List[float]): OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4]
+        """
+        return self._set_lens_distortion_properties(
+            distortion_model="OpenCvPinhole",
+            distortion_model_attr="opencvPinhole",
+            coefficient_map=OPENCV_PINHOLE_ATTRIBUTE_MAP,
+            coefficients=pinhole,
+            cx=cx,
+            cy=cy,
+            fx=fx,
+            fy=fy,
+        )
+
+    def get_opencv_pinhole_properties(self) -> Tuple[float, float, float, float, List]:
+        """
+        If camera prim is using OpenCV pinhole distortion model, returns corresponding distortion parameters.
+        Returns:
+            Tuple[float, float, float, float, List]: cx, cy, fx, fy, and OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4] respectively.
+        """
+        return self._get_lens_distortion_properties(
+            distortion_model_attr="opencvPinhole",
+            attr_names=["cx", "cy", "fx", "fy"],
+            coefficient_map=OPENCV_PINHOLE_ATTRIBUTE_MAP,
+        )
+
+    def set_opencv_fisheye_properties(
+        self,
+        cx: Optional[float] = None,
+        cy: Optional[float] = None,
+        fx: Optional[float] = None,
+        fy: Optional[float] = None,
+        fisheye: Optional[List[float]] = None,
+    ) -> None:
+        """
+        Applies OpenCV fisheye distortion model to camera prim, then sets distortion parameters.
+        Args:
+            cx (float): Horizontal Render Position (pixels)
+            cy (float): Vertical Render Position (pixels)
+            fx (float): Horizontal Focal Length (pixels)
+            fy (float): Vertical Focal Length (pixels)
+            fisheye (List[float]): OpenCV fisheye parameters [k1, k2, k3, k4]
+        """
+        return self._set_lens_distortion_properties(
+            distortion_model="OpenCvFisheye",
+            distortion_model_attr="opencvFisheye",
+            coefficient_map=OPENCV_FISHEYE_ATTRIBUTE_MAP,
+            coefficients=fisheye,
+            cx=cx,
+            cy=cy,
+            fx=fx,
+            fy=fy,
+        )
+
+    def get_opencv_fisheye_properties(self) -> Tuple[float, float, float, float, List]:
+        """
+        If camera prim is using OpenCV fisheye distortion model, returns corresponding distortion parameters.
+        Returns:
+            Tuple[float, float, float, float, List]: cx, cy, fx, fy, and OpenCV fisheye parameters [k1, k2, k3, k4] respectively.
+        """
+        return self._get_lens_distortion_properties(
+            distortion_model_attr="opencvFisheye",
+            attr_names=["cx", "cy", "fx", "fy"],
+            coefficient_map=OPENCV_FISHEYE_ATTRIBUTE_MAP,
+        )
 
 
 def get_all_camera_objects(root_prim: str = "/"):

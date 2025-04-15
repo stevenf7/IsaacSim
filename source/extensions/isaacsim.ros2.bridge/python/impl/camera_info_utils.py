@@ -44,8 +44,11 @@ def read_camera_info(render_product_path: str) -> Tuple:
         fy = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:fy").Get()
         pinhole = [0.0] * 12
         for i in range(12):
-            pinhole[i] = camera_prim.GetAttribute(OPENCV_PINHOLE_ATTRIBUTE_MAP[i]).Get()
+            pinhole[i] = camera_prim.GetAttribute(
+                f"omni:lensdistortion:opencvPinhole:{OPENCV_PINHOLE_ATTRIBUTE_MAP[i]}"
+            ).Get()
 
+        print(pinhole)
         if pinhole[5:8] == [0.0] * 3:
             # Zeros provided for k4, k5, k6 coefficients
             camera_info.distortion_model = "plumb_bob"
@@ -53,7 +56,7 @@ def read_camera_info(render_product_path: str) -> Tuple:
         else:
             camera_info.distortion_model = "rational_polynomial"
             camera_info.d = pinhole
-    elif lens_distortion_model == "opencv":
+    elif lens_distortion_model == "opencvFisheye":
         width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:imageSize").Get()
         cx = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Get()
         cy = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Get()
@@ -61,7 +64,9 @@ def read_camera_info(render_product_path: str) -> Tuple:
         fy = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:fy").Get()
         fisheye = [0.0] * 4
         for i in range(4):
-            fisheye[i] = camera_prim.GetAttribute(OPENCV_FISHEYE_ATTRIBUTE_MAP[i]).Get()
+            fisheye[i] = camera_prim.GetAttribute(
+                f"omni:lensdistortion:opencvFisheye:{OPENCV_FISHEYE_ATTRIBUTE_MAP[i]}"
+            ).Get()
         camera_info.distortion_model = "equidistant"
         camera_info.d = fisheye
     else:
