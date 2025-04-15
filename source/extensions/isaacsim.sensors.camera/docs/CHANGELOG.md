@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.0] - 2025-04-09
+### Changed
+- Updates Camera API to account for new lens distortion schemas
+
 ## [0.4.1] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
