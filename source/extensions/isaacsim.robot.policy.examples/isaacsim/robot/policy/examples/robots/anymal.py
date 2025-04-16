@@ -46,7 +46,7 @@ class AnymalFlatTerrainPolicy(PolicyController):
         """
         assets_root_path = get_assets_root_path()
         if usd_path == None:
-            usd_path = assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd"
+            usd_path = assets_root_path + "/Isaac/Robots/ANYbotics/AnymalC/anymal_c.usd"
 
         super().__init__(name, prim_path, root_path, usd_path, position, orientation)
         self.load_policy(

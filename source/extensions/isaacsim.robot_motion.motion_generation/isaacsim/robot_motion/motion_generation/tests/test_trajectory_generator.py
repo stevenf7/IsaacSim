@@ -112,7 +112,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_c_space_traj_gen_franka(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Franka/franka.usd"
+        usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
 
@@ -279,7 +279,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_task_space_traj_gen_franka(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Franka/franka.usd"
+        usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
 
@@ -397,7 +397,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_task_space_traj_gen_fr3(self):
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Franka/FR3/fr3.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaFR3/fr3.usd"
         robot_name = "FR3"
         robot_prim_path = "/fr3"
         ee_frame = "fr3_hand_tcp"

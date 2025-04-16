@@ -3,6 +3,8 @@
 ## [2.1.5] - 2025-04-09
 ### Changed
 - Update Isaac Sim NVIDIA robot asset path
+- Update Isaac Sim robot asset path
+- Update Isaac Sim robot asset path for the IsaacSim folder
 
 ## [2.1.4] - 2025-04-04
 ### Changed

@@ -143,7 +143,9 @@ class Extension(omni.ext.IExt):
             return
 
         # Add Contact Sensor
-        await omni.usd.get_context().open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/ant.usd")
+        await omni.usd.get_context().open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/IsaacSim/Ant/ant_colored.usd"
+        )
         await omni.kit.app.get_app().next_update_async()
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())

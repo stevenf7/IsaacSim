@@ -31,7 +31,7 @@ my_world.reset()
 
 
 def test_franka_slow_convergence():
-    open_stage(get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd")
+    open_stage(get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd")
     robot_prim_path = "/panda"
 
     # Start Simulation and wait

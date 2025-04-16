@@ -40,7 +40,8 @@ define_prim("/World/envs/env_0")
 # set up the first environment
 DynamicSphere(prim_path="/World/envs/env_0/object", radius=0.1, position=np.array([0.75, 0.0, 0.2]))
 add_reference_to_stage(
-    usd_path=assets_root_path + "/Isaac/Robots/Franka/franka.usd", prim_path="/World/envs/env_0/franka"
+    usd_path=assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
+    prim_path="/World/envs/env_0/franka",
 )
 
 # clone environments

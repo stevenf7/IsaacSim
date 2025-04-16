@@ -14,7 +14,7 @@ import numpy as np
 from isaacsim import SimulationApp
 
 FRANKA_STAGE_PATH = "/Franka"
-FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+FRANKA_USD_PATH = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
 BACKGROUND_STAGE_PATH = "/background"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Room/simple_room.usd"
 

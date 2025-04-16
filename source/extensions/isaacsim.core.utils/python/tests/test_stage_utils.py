@@ -37,7 +37,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         await update_stage_async()
 

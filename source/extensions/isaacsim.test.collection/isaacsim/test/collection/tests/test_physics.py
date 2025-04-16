@@ -217,7 +217,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_reference(self):
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()
 
@@ -279,9 +279,13 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         self._stage = omni.usd.get_context().get_stage()
         await omni.kit.app.get_app().next_update_async()
         prim_a = self._stage.DefinePrim("/World/Franka_1", "Xform")
-        prim_a.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        prim_a.GetReferences().AddReference(
+            self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         prim_b = self._stage.DefinePrim("/World/Franka_2", "Xform")
-        prim_b.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        prim_b.GetReferences().AddReference(
+            self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()

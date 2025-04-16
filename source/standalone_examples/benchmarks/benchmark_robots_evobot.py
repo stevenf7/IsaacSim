@@ -56,7 +56,7 @@ benchmark = BaseIsaacBenchmark(
     },
     backend_type=args.backend_type,
 )
-robot_path = "/Isaac/Robots/Evobot/evobot.usd"
+robot_path = "/Isaac/Robots/Fraunhofer/Evobot/evobot.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 benchmark.fully_load_stage(benchmark.assets_root_path + scene_path)
 stage = omni.usd.get_context().get_stage()

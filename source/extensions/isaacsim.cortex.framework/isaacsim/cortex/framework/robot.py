@@ -315,7 +315,7 @@ class CortexRobot(CommandableArticulation):
     This method can be used to set up a robot's command API procedurally without deriving from this
     class. For instance, we can construct a robot's command API using:
 
-        usd_path = get_assets_root_path_or_die() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = get_assets_root_path_or_die() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 
         robot = CortexRobot("franka", prim_path)
@@ -643,7 +643,7 @@ def add_franka_to_stage(
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
     else:
-        usd_path = get_assets_root_path_or_die() + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = get_assets_root_path_or_die() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 
     return CortexFranka(name, prim_path, position, orientation, use_motion_commander)

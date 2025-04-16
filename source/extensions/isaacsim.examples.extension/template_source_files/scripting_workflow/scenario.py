@@ -42,7 +42,7 @@ class FrankaRmpFlowExampleScript:
         """
 
         robot_prim_path = "/panda"
-        path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
         add_reference_to_stage(path_to_robot_usd, robot_prim_path)
         self._articulation = SingleArticulation(robot_prim_path)

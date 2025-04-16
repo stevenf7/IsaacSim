@@ -35,7 +35,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        prim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        prim.GetReferences().AddReference(
+            self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
 
         dc_utils.set_physics_frequency(60)
         pass
@@ -322,7 +324,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         self._physx_interface.start_simulation()
         self._physx_interface.force_load_physics_from_usd()
         prim = self._stage.DefinePrim("/panda", "Xform")
-        prim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        prim.GetReferences().AddReference(
+            self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         self._physx_interface.force_load_physics_from_usd()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.1] - 2025-04-14
+### Changed
+- Update Isaac Sim robot asset path
+
 ## [4.1.0] - 2025-04-13
 ### Added
 - Franka open drawer policy class

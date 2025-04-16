@@ -241,7 +241,7 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
         >>>
         >>> # load an USD file (franka.usd) to the stage under the path /World/panda
         >>> stage_utils.add_reference_to_stage(
-        ...     usd_path="/home/<user>/Documents/Assets/Robots/Franka/franka.usd",
+        ...     usd_path="/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd",
         ...     prim_path="/World/panda"
         ... )
         Usd.Prim(</World/panda>)
@@ -313,7 +313,7 @@ def open_stage(usd_path: str) -> bool:
 
         >>> import isaacsim.core.utils.stage as stage_utils
         >>>
-        >>> stage_utils.open_stage("/home/<user>/Documents/Assets/Robots/Franka/franka.usd")
+        >>> stage_utils.open_stage("/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd")
         True
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
@@ -346,7 +346,7 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
         >>> from omni.kit.async_engine import run_coroutine
         >>>
         >>> async def task():
-        ...     await stage_utils.open_stage_async("/home/<user>/Documents/Assets/Robots/Franka/franka.usd")
+        ...     await stage_utils.open_stage_async("/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd")
         ...
         >>> run_coroutine(task())
     """

@@ -115,7 +115,7 @@ class Extension(omni.ext.IExt):
         pass
 
     def create_franka(self, stage_path):
-        usd_path = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        usd_path = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         asset_path = self._assets_root_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
         prim.GetReferences().AddReference(asset_path)

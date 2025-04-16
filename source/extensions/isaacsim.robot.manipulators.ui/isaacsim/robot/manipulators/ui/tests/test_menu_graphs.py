@@ -50,7 +50,9 @@ class TestArticulationGraphs(OmniUiTest):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        robot_prim.GetReferences().AddReference(
+            assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         await update_stage_async()
 
         # Create position controller graph
@@ -99,7 +101,9 @@ class TestArticulationGraphs(OmniUiTest):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        robot_prim.GetReferences().AddReference(
+            assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         await update_stage_async()
 
         # First create a base graph with just a tick node
@@ -321,7 +325,9 @@ class TestArticulationGraphs(OmniUiTest):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        robot_prim.GetReferences().AddReference(
+            assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         await update_stage_async()
         # Create gripper controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Open Loop Gripper")
@@ -388,7 +394,9 @@ class TestArticulationGraphs(OmniUiTest):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        robot_prim.GetReferences().AddReference(
+            assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         await update_stage_async()
 
         # First create a base graph with just a tick node

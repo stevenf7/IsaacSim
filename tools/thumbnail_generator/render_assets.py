@@ -79,7 +79,7 @@ parser.add_argument(
 Use the full path of the asset when creating the image and scene filenames.  Used to avoid conflicts when rendering
 multiple assets with an absolute scene or image path.
 For example :
-  asset_path : omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/Franka/franka.usd
+  asset_path : omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd
   with --use-full-path-name :
     image_filename : Isaac_Robots_Franka_franka.usd.png
   without :

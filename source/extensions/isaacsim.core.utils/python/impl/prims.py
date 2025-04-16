@@ -710,7 +710,7 @@ def create_prim(
         >>> prims_utils.create_prim(
         ...     prim_path="/World/panda",
         ...     prim_type="Xform",
-        ...     usd_path="/home/<user>/Documents/Assets/Robots/Franka/franka.usd"
+        ...     usd_path="/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         ... )
         Usd.Prim(</World/panda>)
     """

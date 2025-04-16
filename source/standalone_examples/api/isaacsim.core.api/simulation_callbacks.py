@@ -18,7 +18,7 @@ from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
-asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
 
 simulation_context = SimulationContext()
 add_reference_to_stage(asset_path, "/Franka")

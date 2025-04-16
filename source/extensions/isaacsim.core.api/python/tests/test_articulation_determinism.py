@@ -62,7 +62,9 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
 
     async def _test_franka_slow_convergence(self):
         World.clear_instance()
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        )
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(60))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(60))

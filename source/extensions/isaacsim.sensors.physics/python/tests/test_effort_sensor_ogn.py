@@ -50,7 +50,7 @@ class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
 
         assets_root_path = get_assets_root_path()
 
-        asset_path = assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/Articulation")
         arm_joint = "/Articulation/Arm/RevoluteJoint"
         arm_prim = get_prim_at_path(arm_joint)

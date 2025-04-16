@@ -126,7 +126,7 @@ async def add_franka():
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
-    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd")
 
 
 def get_qos_profile():

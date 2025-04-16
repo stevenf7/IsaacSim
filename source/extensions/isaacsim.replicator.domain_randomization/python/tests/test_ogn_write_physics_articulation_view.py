@@ -54,7 +54,7 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
 
         # fetch franka asset and add to stage
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         franka_path = "/World/Franka"
         add_reference_to_stage(usd_path=asset_path, prim_path=franka_path)
         self._num_dofs = 7 + 2

@@ -63,7 +63,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         robot_prim_path = "/panda"
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Franka/franka.usd"
+        usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         await create_new_stage_async()
 
         await update_stage_async()

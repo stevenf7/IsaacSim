@@ -40,7 +40,7 @@ if assets_root_path is None:
 my_world = World(stage_units_in_meters=1.0, backend="torch", device="cuda:0")
 my_world.scene.add_default_ground_plane()
 
-asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
 # define_prim(prim_path="/World/Frame_1")

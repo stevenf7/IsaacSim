@@ -15,13 +15,14 @@ import usdrt.Sdf
 from isaacsim.core.api import World
 from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
-from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 
 
 class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        await create_new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._assets_root_path = await get_assets_root_path_async()
@@ -29,11 +30,13 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Forklift/forklift_c.usd"
-        (result, _) = await open_stage_async(self.usd_path)
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/ForkliftC/forklift_c.usd"
+        add_reference_to_stage(usd_path=self.usd_path, prim_path="/World/Forklift")
         self.stage = omni.usd.get_context().get_stage()
 
-        self.assertTrue(result)
+        usd_path = self._assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
+        add_reference_to_stage(usd_path=usd_path, prim_path="/World/defaultGroundPlane")
+
         await omni.kit.app.get_app().next_update_async()
 
         self.my_world = World(stage_units_in_meters=1.0)
@@ -71,20 +74,20 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
                     ("LiftPosition.inputs:value", 0.0),
                     (
                         "WritePrimAttributeLeft.inputs:prim",
-                        [usdrt.Sdf.Path("/SM_Forklift_C01_01/left_rotator_joint")],
+                        [usdrt.Sdf.Path("/World/Forklift/left_rotator_joint")],
                     ),
                     ("WritePrimAttributeLeft.inputs:name", "drive:angular:physics:targetPosition"),
                     (
                         "WritePrimAttributeRight.inputs:prim",
-                        [usdrt.Sdf.Path("/SM_Forklift_C01_01/right_rotator_joint")],
+                        [usdrt.Sdf.Path("/World/Forklift/right_rotator_joint")],
                     ),
                     ("WritePrimAttributeRight.inputs:name", "drive:angular:physics:targetPosition"),
                     (
                         "WritePrimAttributeLift.inputs:prim",
-                        [usdrt.Sdf.Path("/SM_Forklift_C01_01/lift_joint")],
+                        [usdrt.Sdf.Path("/World/Forklift/lift_joint")],
                     ),
                     ("WritePrimAttributeLift.inputs:name", "drive:linear:physics:targetPosition"),
-                    ("ArticulationController.inputs:robotPath", "/SM_Forklift_C01_01"),
+                    ("ArticulationController.inputs:robotPath", "/World/Forklift"),
                     ("ArticulationController.inputs:velocityCommand", [0.0, 0.0]),
                     (
                         "ArticulationController.inputs:jointNames",
@@ -109,7 +112,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_forklift_forward(self):
-        body_prim = SingleRigidPrim("/SM_Forklift_C01_01/body")
+        body_prim = SingleRigidPrim("/World/Forklift/body")
 
         og.Controller.attribute(self.graph_path + "/ArticulationController.inputs:velocityCommand").set([5.0, 5.0])
 
@@ -131,7 +134,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_reverse(self):
-        body_prim = SingleRigidPrim("/SM_Forklift_C01_01/body")
+        body_prim = SingleRigidPrim("/World/Forklift/body")
 
         og.Controller.attribute(self.graph_path + "/ArticulationController.inputs:velocityCommand").set([-5.0, -5.0])
 
@@ -153,7 +156,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_reverse_turn(self):
-        body_prim = SingleRigidPrim("/SM_Forklift_C01_01/body")
+        body_prim = SingleRigidPrim("/World/Forklift/body")
 
         og.Controller.attribute(self.graph_path + "/ArticulationController.inputs:velocityCommand").set([-5.0, -5.0])
         og.Controller.attribute(self.graph_path + "/SteeringAngle.inputs:value").set(20.0)
@@ -175,7 +178,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
     async def test_forklift_lift(self):
-        lift_prim = SingleRigidPrim("/SM_Forklift_C01_01/lift")
+        lift_prim = SingleRigidPrim("/World/Forklift/lift")
 
         og.Controller.attribute(self.graph_path + "/LiftPosition.inputs:value").set(1.0)
 

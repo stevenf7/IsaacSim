@@ -51,7 +51,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
 
     async def test_get_applied_action(self, add_view_to_scene=True):
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
@@ -66,7 +66,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
         await self._my_world.initialize_simulation_context_async()
         self._my_world.scene.add_default_ground_plane()
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         my_franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
@@ -81,14 +81,16 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
     async def test_dof_efforts(self, add_view_to_scene=True):
         assets_root_path = await get_assets_root_path_async()
         self._my_world.set_simulation_dt(0.001)
-        asset_path = assets_root_path + "/Isaac/Robots/Cartpole/cartpole.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/Cartpole/cartpole.usd"
         self.stage = get_current_stage()
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/cartpole")
         if self._my_world.get_physics_context()._physx_scene_api.GetSolverTypeAttr().Get() == "TGS":
             articulation_api = PhysxSchema.PhysxArticulationAPI.Apply(self.stage.GetPrimAtPath("/World/cartpole"))
             articulation_api.CreateSolverVelocityIterationCountAttr(0)
             articulation_api.CreateSolverPositionIterationCountAttr(8)
-        robot = self._my_world.scene.add(SingleArticulation(prim_path="/World/cartpole", name="franka"))
+        robot = self._my_world.scene.add(
+            SingleArticulation(prim_path="/World/cartpole", name="cartpole", position=torch.tensor([0, 0, 0.03]))
+        )
         await self._my_world.reset_async()
         efforts = torch.ones((robot.num_dof), device="cpu") * 1000
         robot.set_joint_efforts(efforts)
@@ -101,7 +103,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
 
     async def test_joint_forces(self, add_view_to_scene=True):
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
@@ -115,7 +117,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_joint_signs(self):
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/Simple/articulation_3_joints.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Articulation")
         test_art = self._my_world.scene.add(SingleArticulation(prim_path="/World/Articulation", name="test_art"))
         await self._my_world.reset_async()

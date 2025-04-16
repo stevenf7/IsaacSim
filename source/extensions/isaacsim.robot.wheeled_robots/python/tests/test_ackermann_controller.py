@@ -351,7 +351,7 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
             "/World/Forklift",
             "Xform",
             position=np.array([0, 0, 0.0]),
-            usd_path=self._assets_root_path + "/Isaac/Robots/Forklift/forklift_c.usd",
+            usd_path=self._assets_root_path + "/Isaac/Robots/IsaacSim/ForkliftC/forklift_c.usd",
         )
 
         self._timeline = omni.timeline.get_timeline_interface()
@@ -502,7 +502,7 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
             "/World/Forklift",
             "Xform",
             position=np.array([0, 0, 0.0]),
-            usd_path=self._assets_root_path + "/Isaac/Robots/Forklift/forklift_c.usd",
+            usd_path=self._assets_root_path + "/Isaac/Robots/IsaacSim/ForkliftC/forklift_c.usd",
         )
 
         self._timeline = omni.timeline.get_timeline_interface()
@@ -609,7 +609,7 @@ class TestAckermannControllerOgn(ogts.OmniGraphTestCase):
             "/World/Forklift",
             "Xform",
             position=np.array([0, 0, 0.0]),
-            usd_path=self._assets_root_path + "/Isaac/Robots/Forklift/forklift_c.usd",
+            usd_path=self._assets_root_path + "/Isaac/Robots/IsaacSim/ForkliftC/forklift_c.usd",
         )
 
         self._timeline = omni.timeline.get_timeline_interface()

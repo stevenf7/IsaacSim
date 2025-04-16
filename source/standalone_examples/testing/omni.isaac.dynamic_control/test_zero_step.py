@@ -26,7 +26,7 @@ physx_interface.force_load_physics_from_usd()
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
-asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
 
 prim = stage.DefinePrim("/panda", "Xform")
 prim.GetReferences().AddReference(asset_path)
