@@ -8,7 +8,7 @@
         <package name="nv_ros2" version="jazzy_py_3.11_20250304_9e7d7e8_windows-x86_64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
-        <package name="lula" version="v0.10.1_8bfff40.linux-x86_64.release" platforms="manylinux_2_35_x86_64"/>
+        <package name="lula" version="v0.10.1_f39b9da.linux-x86_64.release" platforms="manylinux_2_35_x86_64"/>
         <package name="lula" version="v0.10.1_9817dce.linux-aarc64.release" platforms="manylinux_2_35_aarch64" />
         <package name="lula" version="v0.10.1_build3.windows-x86_64.release" platforms="windows-x86_64"/>
     </dependency>

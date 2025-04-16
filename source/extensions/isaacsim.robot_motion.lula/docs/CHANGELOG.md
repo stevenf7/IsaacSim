@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.7] - 2025-04-15
+### Changed
+- Update for ABI=1 change
+
 ## [4.0.6] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
