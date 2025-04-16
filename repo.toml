@@ -685,7 +685,7 @@ path = "${test_root}"
 tests_per_process = 1
 
 [[repo_test.suites.postinstalltests.group]]
-include = ["omni.isaac.sim.post.install.run${shell_ext}"]
+include = ["post_install${shell_ext}"]
 timeout = 1500
 
 [repo_test.suites.warmuptests]
