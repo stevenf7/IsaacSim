@@ -40,7 +40,7 @@ my_cloner = Cloner()
 my_world = World(stage_units_in_meters=1.0, backend="torch")
 my_world.scene.add_default_ground_plane()
 
-asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
 
 cube = DynamicCuboid(prim_path="/World/cube_0")
 prim_paths = my_cloner.generate_paths("/World/cube", 3)

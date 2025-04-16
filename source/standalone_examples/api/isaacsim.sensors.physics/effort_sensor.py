@@ -35,7 +35,7 @@ if assets_root_path is None:
 my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / 60, rendering_dt=1.0 / 60)
 my_world.scene.add_default_ground_plane(z_position=-1)
 
-asset_path = assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/Articulation")
 arm_joint = "/Articulation/Arm/RevoluteJoint"
 prim = get_prim_at_path(arm_joint)

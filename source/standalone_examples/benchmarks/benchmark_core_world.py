@@ -81,7 +81,7 @@ def define_environment():
         carb.log_error("Could not find Isaac Sim assets folder")
         simulation_app.close()
         sys.exit()
-    asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+    asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
     add_reference_to_stage(usd_path=asset_path, prim_path="/World/env_0/Franka_1")
     add_reference_to_stage(usd_path=asset_path, prim_path="/World/env_0/Franka_2")
     XFormPrim("/World/env_0/Franka_1", name="my_franka_1", positions=np.array([[0.0, 2.0, 0.0]]))

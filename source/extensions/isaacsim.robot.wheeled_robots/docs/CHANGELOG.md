@@ -3,6 +3,7 @@
 ### Changed
 - Update all test args to be consistent
 - Update Isaac Sim NVIDIA robot asset path
+- Update Isaac Sim robot asset path for the IsaacSim folder
 
 ## [4.0.11] - 2025-04-04
 ### Changed

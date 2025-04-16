@@ -37,7 +37,7 @@ set_camera_view(
 )  # set camera view
 
 # Add Franka
-asset_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Arm")  # add robot to stage
 arm = Articulation(prim_paths_expr="/World/Arm", name="my_arm")  # create an articulation object
 

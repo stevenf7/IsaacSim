@@ -67,7 +67,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
 
-        await omni.usd.get_context().open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/ant.usd")
+        await omni.usd.get_context().open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/IsaacSim/Ant/ant_colored.usd"
+        )
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -85,7 +87,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         # load nucleus asset
         await omni.usd.get_context().open_stage_async(
-            self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+            self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
         )
 
         await omni.kit.app.get_app().next_update_async()

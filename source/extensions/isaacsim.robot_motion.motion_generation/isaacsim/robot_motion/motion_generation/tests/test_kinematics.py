@@ -122,7 +122,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
     async def test_lula_fk_franka(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Franka/franka.usd"
+        usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
         trans_dist, rot_dist = await self._test_lula_fk(
@@ -231,7 +231,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
     async def test_lula_ik_franka(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Franka/franka.usd"
+        usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
         frame = "right_gripper"

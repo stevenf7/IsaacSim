@@ -79,7 +79,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             raise Exception("Asset root path doesn't exist")
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         DynamicCuboid(prim_path="/World/Franka/panda_link1/Cube")
         SingleXFormPrim(prim_path="/World/Franka/panda_link1/test_1")
@@ -109,7 +109,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             raise Exception("Asset root path doesn't exist")
-        asset_path = assets_root_path + "/Isaac/Robots/Humanoid/humanoid.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/Humanoid/humanoid.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path=f"{env_zero_path}/articulation")
         # clone env
         cloner = GridCloner(spacing=1.5)
@@ -140,7 +140,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             raise Exception("Asset root path doesn't exist")
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         SingleXFormPrim(prim_path="/World/Franka_3")

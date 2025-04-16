@@ -1,4 +1,9 @@
 # Changelog
+## [1.2.4] - 2025-04-09
+### Changed
+- Update Isaac Sim robot asset path
+- Update Isaac Sim robot asset path for the IsaacSim folder
+
 ## [1.2.3] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

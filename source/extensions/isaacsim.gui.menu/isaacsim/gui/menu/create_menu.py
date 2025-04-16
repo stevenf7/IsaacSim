@@ -169,7 +169,9 @@ class CreateMenuExtension:
                 "Robots": [
                     {
                         "name": "Ant",
-                        "onclick_fn": lambda *_: create_asset("/Isaac/Robots/Ant/ant_instanceable.usd", "/Ant"),
+                        "onclick_fn": lambda *_: create_asset(
+                            "/Isaac/Robots/IsaacSim/Ant/ant_instanceable.usd", "/Ant"
+                        ),
                     },
                     {
                         "name": "Boston Dynamics Spot (Quadruped)",
@@ -177,12 +179,14 @@ class CreateMenuExtension:
                     },
                     {
                         "name": "Franka Emika Panda Arm",
-                        "onclick_fn": lambda *_: create_asset("/Isaac/Robots/Franka/franka.usd", "/Franka"),
+                        "onclick_fn": lambda *_: create_asset(
+                            "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd", "/Franka"
+                        ),
                     },
                     {
                         "name": "Humanoid",
                         "onclick_fn": lambda *_: create_asset(
-                            "/Isaac/Robots/Humanoid/humanoid_instanceable.usd", "/Humanoid"
+                            "/Isaac/Robots/IsaacSim/Humanoid/humanoid_instanceable.usd", "/Humanoid"
                         ),
                     },
                     {
@@ -193,7 +197,9 @@ class CreateMenuExtension:
                     },
                     {
                         "name": "Quadcopter",
-                        "onclick_fn": lambda *_: create_asset("/Isaac/Robots/Quadcopter/quadcopter.usd", "/Quadcopter"),
+                        "onclick_fn": lambda *_: create_asset(
+                            "/Isaac/Robots/IsaacSim/Quadcopter/quadcopter.usd", "/Quadcopter"
+                        ),
                     },
                     {
                         "name": "Asset Browser",

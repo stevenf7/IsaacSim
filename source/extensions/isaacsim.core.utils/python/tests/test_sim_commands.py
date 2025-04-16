@@ -50,7 +50,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_spawn_command(self):
-        articulation_usd = self._assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         static_usd = self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd"
         physics_usd = self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd"
 
@@ -83,7 +83,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         )
 
     async def test_teleport_command(self):
-        articulation_usd = self._assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
         )
@@ -98,7 +98,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
     async def test_scale(self):
         from pxr import Gf
 
-        articulation_usd = self._assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
         )
@@ -112,7 +112,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         )
 
     async def test_destroy_command(self):
-        articulation_usd = self._assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute("IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka")
         [await omni.kit.app.get_app().next_update_async() for _ in range(10)]
         self.assertIsNotNone(self._stage.GetPrimAtPath("/franka"))

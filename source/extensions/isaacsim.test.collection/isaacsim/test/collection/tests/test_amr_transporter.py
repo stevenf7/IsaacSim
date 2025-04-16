@@ -48,7 +48,7 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
         # (result, error) = await omni.usd.get_context().open_stage_async(self._extension_path + "/data/tests/iw_hub.usd")
 
         # add in carter (from nucleus)
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Idealworks/iw_hub.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Idealworks/iwhub/iw_hub.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded

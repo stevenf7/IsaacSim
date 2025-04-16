@@ -20,7 +20,7 @@ from isaacsim.storage.native import get_assets_root_path
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()
 assets_root_path = get_assets_root_path()
-asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
 articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka", name="my_franka_1"))
 

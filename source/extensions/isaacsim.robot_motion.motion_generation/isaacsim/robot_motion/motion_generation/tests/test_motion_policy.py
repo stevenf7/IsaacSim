@@ -113,7 +113,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_cspace_target(self):
         asset_root_path = await get_assets_root_path_async()
 
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -370,7 +370,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_fr3(self):
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Franka/FR3/fr3.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaFR3/fr3.usd"
         robot_name = "FR3"
         robot_prim_path = "/fr3"
 
@@ -406,7 +406,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_visualization_franka(self):
         asset_root_path = await get_assets_root_path_async()
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -490,7 +490,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_obstacle_adders(self):
         asset_root_path = await get_assets_root_path_async()
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -543,7 +543,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_motion_policy_init_order(self):
         asset_root_path = await get_assets_root_path_async()
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -569,7 +569,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_on_franka(self):
         asset_root_path = await get_assets_root_path_async()
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -633,7 +633,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
 
         asset_root_path = await get_assets_root_path_async()
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -688,7 +688,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
 
         asset_root_path = await get_assets_root_path_async()
-        usd_path = asset_root_path + "/Isaac/Robots/Franka/franka.usd"
+        usd_path = asset_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot_prim_path = "/panda"
         add_reference_to_stage(usd_path, robot_prim_path)
 

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.8] - 2025-04-11
+### Changed
+- Update Isaac Sim robot asset path
+
 ## [1.0.7] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

@@ -32,7 +32,7 @@ my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()
 
 # create initial robot
-asset_path = assets_root_path + "/Isaac/Robots/Ant/ant.usd"
+asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/Ant/ant.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Ants/Ant_0")
 
 # create GridCloner instance

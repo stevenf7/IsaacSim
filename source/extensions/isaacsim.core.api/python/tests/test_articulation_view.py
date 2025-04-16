@@ -68,7 +68,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._my_world._physics_context.enable_residual_reporting(report_residuals)
 
     async def add_frankas(self, backend):
-        asset_path = self._assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         positions = [[0, 0, 0], [0, 2, 0.0]]
@@ -87,7 +87,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
     async def add_humanoids(self, backend):
-        asset_path = self._assets_root_path + "/Isaac/Robots/Humanoid/humanoid_instanceable.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/Humanoid/humanoid_instanceable.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Humanoid_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Humanoid_2")
         positions = [[0, 0, 1.5], [0, 5, 1.5]]
@@ -139,7 +139,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
     async def add_shadow_hands(self, backend, device="cpu"):
-        asset_path = self._assets_root_path + "/Isaac/Robots/ShadowHand/shadow_hand_instanceable.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/ShadowRobot/ShadowHand/shadow_hand_instanceable.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/ShadowHand_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/ShadowHand_2")
         positions = [[0, 0, 0.2], [0, 1, 0.2]]

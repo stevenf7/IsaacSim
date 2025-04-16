@@ -45,7 +45,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         # load nucleus asset
         await omni.usd.get_context().open_stage_async(
-            self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+            self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
         )
 
         await omni.kit.app.get_app().next_update_async()

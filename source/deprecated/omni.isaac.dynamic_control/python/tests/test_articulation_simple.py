@@ -40,7 +40,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # open remote
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
         (result, error) = await open_stage_async(self.usd_path)
 
         await omni.kit.app.get_app().next_update_async()
@@ -666,7 +666,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
 
     # async def test_get_effort(self, gpu=False):
     #     (result, error) = await open_stage_async(
-    #         self._assets_root_path + "/Isaac/Robots/Simple/revolute_articulation.usd"
+    #         self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/revolute_articulation.usd"
     #     )
     #     self.assertTrue(result)  # Make sure the stage loaded
     #     self._stage = omni.usd.get_context().get_stage()

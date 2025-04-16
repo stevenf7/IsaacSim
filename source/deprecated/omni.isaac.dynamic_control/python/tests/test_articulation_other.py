@@ -54,7 +54,9 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_wheeled(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/differential_base.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/IsaacSim/DifferentialBase/differential_base.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -201,7 +203,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_position_str(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Idealworks/iw_hub.usd")
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Idealworks/iwhub/iw_hub.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -222,7 +224,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_revolute_masses(self, gpu=False):
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Isaac/Robots/Simple/revolute_articulation.usd"
+            self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/revolute_articulation.usd"
         )
         # Make sure the stage loaded
         self.assertTrue(result)

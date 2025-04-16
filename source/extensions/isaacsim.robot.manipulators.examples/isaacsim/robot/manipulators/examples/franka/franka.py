@@ -58,7 +58,7 @@ class Franka(Robot):
                 assets_root_path = get_assets_root_path()
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
-                usd_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+                usd_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
             if self._end_effector_prim_name is None:
                 self._end_effector_prim_path = prim_path + "/panda_rightfinger"
