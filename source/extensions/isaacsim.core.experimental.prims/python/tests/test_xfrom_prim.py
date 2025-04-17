@@ -256,5 +256,6 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         event_dispatcher.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})
         event_dispatcher.dispatch_event(IsaacEvents.POST_RESET.value, payload={})
         event_dispatcher.dispatch_event(IsaacEvents.PRIM_DELETION.value, payload={})
-        event_dispatcher.dispatch_event(IsaacEvents.PHYSICS_STEP.value, payload={})
+        event_dispatcher.dispatch_event(IsaacEvents.PRE_PHYSICS_STEP.value, payload={})
+        event_dispatcher.dispatch_event(IsaacEvents.POST_PHYSICS_STEP.value, payload={})
         event_dispatcher.dispatch_event(IsaacEvents.TIMELINE_STOP.value, payload={})

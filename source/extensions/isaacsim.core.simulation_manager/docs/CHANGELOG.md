@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0] - 2025-04-13
+### Added
+- Added get_simulation_time, get_num_physics_steps, step, set_physics_dt, enable_ccd and is_ccd_enabled in SimulationManager
+- Added order and name args to SimulationMangager.register_callback
+- Added POST_PHYSICS_STEP and PRE_PHYSICS_STEP to IsaacEvents
+- Added is_simulating and is_paused apis to SimulationManager
+
+### Removed
+- Removed PHYSICS_STEP from IsaacEvents
+
 ## [0.3.13] - 2025-04-07
 ### Added
 - Instantiate an internal physics simulation view (Warp frontend) for the experimental implementations

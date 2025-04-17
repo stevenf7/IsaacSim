@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.3.0] - 2025-04-15
+### Changed
+- Changed reset fabric selection callback to a post physics step
+
 ## [4.2.27] - 2025-04-11
 ### Changed
 - Update Isaac Sim robot asset path

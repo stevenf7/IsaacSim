@@ -1,4 +1,7 @@
 # Changelog
+## [2.2.19] - 2025-04-15
+### Changed
+- Update to use new apis from SimulationManager
 
 ## [2.2.18] - 2025-04-11
 ### Changed

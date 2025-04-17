@@ -7,13 +7,19 @@
 // disclosure or distribution of this material and related documentation
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
+
 #include <carb/PluginUtils.h>
+#include <carb/events/EventsUtils.h>
 
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <isaacsim/core/simulation_manager/UsdNoticeListener.h>
 #include <omni/ext/IExt.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/fabric/stage/StageReaderWriter.h>
+#include <omni/kit/IMinimal.h>
+#include <omni/kit/IStageUpdate.h>
+#include <omni/physx/IPhysx.h>
+#include <omni/timeline/ITimeline.h>
 
 #include <algorithm>
 
@@ -24,6 +30,22 @@
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.simulation_manager.plugin",
                                                     "Helpful text describing the plugin", "Author",
                                                     carb::PluginHotReload::eEnabled, "dev" };
+
+namespace
+{
+omni::physx::IPhysx* g_physXInterface = nullptr;
+omni::timeline::ITimeline* g_timelineInterface = nullptr;
+omni::physx::SubscriptionId g_physicsOnStepSubscription;
+carb::events::ISubscriptionPtr g_physicsEventSubscription;
+omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
+omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
+double g_simulationTime = 0.0;
+double g_simulationTimeMonotonic = 0.0;
+double g_systemTime = 0.0;
+size_t g_numPhysicsSteps = 0;
+bool g_simulating = false;
+bool g_paused = false;
+}
 
 namespace isaacsim
 {
@@ -151,6 +173,18 @@ public:
     }
 
     /**
+     * @brief Gets the current simulation time.
+     * @details
+     * Returns the current simulation time.
+     *
+     * @return The current simulation time.
+     */
+    double getSimulationTime() override
+    {
+        return g_simulationTime;
+    }
+
+    /**
      * @brief Enables or disables the USD notice handler.
      * @details
      * Controls whether USD notices are processed by the notice listener.
@@ -223,6 +257,43 @@ public:
     }
 
     /**
+     * @brief Gets the current physics step count.
+     * @details
+     * Returns the current physics step count.
+     *
+     * @return The current physics step count.
+     */
+    size_t getNumPhysicsSteps() override
+    {
+        return g_numPhysicsSteps;
+    }
+
+    /**
+     * @brief Gets the current simulation pause state.
+     * @details
+     * Returns the current simulation pause state.
+     *
+     * @return The current simulation pause state.
+     */
+    bool isSimulating() override
+    {
+        return g_simulating;
+    }
+
+    /**
+     * @brief Gets the current simulation pause state.
+     * @details
+     * Returns the current simulation pause state.
+     *
+     * @return The current simulation pause state.
+     */
+    bool isPaused() override
+    {
+        return g_paused;
+    }
+
+
+    /**
      * @brief Resets the simulation manager.
      * @details
      * Calls all registered deletion callbacks with a root path ("/"),
@@ -259,6 +330,49 @@ private:
 };
 
 /**
+ * @brief Callback function for physics step events.
+ * @details
+ * Updates the simulation time and physics step count.
+ *
+ * @param[in] timeElapsed The elapsed time since the last physics step.
+ */
+void onPhysicsStep(float timeElapsed, void* userData)
+{
+    g_simulationTime += timeElapsed;
+    g_simulationTimeMonotonic += timeElapsed;
+    g_numPhysicsSteps += 1;
+    g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+    g_timelineInterface->getTimeline()->setCurrentTime(g_simulationTime);
+    g_timelineInterface->getTimeline()->commitSilently();
+    g_simulating = true;
+}
+/**
+ * @brief Callback function for stop events.
+ * @details
+ * Resets the simulation time and physics step count.
+ *
+ * @param[in] userData User data pointer.
+ */
+void onStop(void* userData)
+{
+    g_simulationTime = 0;
+    g_numPhysicsSteps = 0;
+}
+
+/**
+ * @brief Callback function for stage attach events.
+ * @details
+ * Resets the simulation time and physics step count.
+ *
+ * @param[in] stageId The ID of the stage.
+ */
+void onAttach(long int stageId, double metersPerUnit, void* userData)
+{
+    g_simulationTime = 0;
+    g_numPhysicsSteps = 0;
+}
+
+/**
  * @class Extension
  * @brief Implementation of the IExt interface for the simulation manager extension.
  * @details
@@ -276,6 +390,39 @@ public:
      */
     void onStartup(const char* extId) override
     {
+        // TODO: in case there is more than one physics scene which one is returned?
+        g_physXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
+        g_timelineInterface = carb::getCachedInterface<omni::timeline::ITimeline>();
+        g_physicsOnStepSubscription = g_physXInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep, nullptr);
+        g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+        g_physicsEventSubscription = carb::events::createSubscriptionToPop(
+            g_physXInterface->getSimulationEventStreamV2().get(),
+            [](carb::events::IEvent* e)
+            {
+                if (e->type == omni::physx::SimulationEvent::eStopped)
+                {
+                    g_simulating = false;
+                    g_paused = false;
+                }
+                else if (e->type == omni::physx::SimulationEvent::ePaused)
+                {
+                    g_paused = true;
+                }
+                else if (e->type == omni::physx::SimulationEvent::eResumed)
+                {
+                    g_simulating = true;
+                    g_paused = false;
+                }
+            },
+            0, "IsaacSim.Core.SimulationManager.SimulationEvent");
+
+        g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
+        omni::kit::StageUpdateNodeDesc desc = { 0 };
+        desc.displayName = "Isaac Simulation Manager";
+        desc.onStop = onStop;
+        desc.onAttach = onAttach;
+        g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
     }
 
     /**

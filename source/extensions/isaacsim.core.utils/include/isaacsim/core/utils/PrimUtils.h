@@ -18,12 +18,12 @@
 
 #ifdef _MSC_VER
 #    if ISAACSIM_CORE_UTILS_EXPORT
-#        define DLL_EXPORT __declspec(dllexport)
+#        define PRIMUTILS_DLL_EXPORT __declspec(dllexport)
 #    else
-#        define DLL_EXPORT __declspec(dllimport)
+#        define PRIMUTILS_DLL_EXPORT __declspec(dllimport)
 #    endif
 #else
-#    define DLL_EXPORT
+#    define PRIMUTILS_DLL_EXPORT
 #endif
 
 namespace isaacsim
@@ -51,9 +51,9 @@ namespace utils
  *
  * @note The pattern supports standard glob-style wildcards for matching.
  */
-DLL_EXPORT std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,
-                                                          long int stageId,
-                                                          const std::string& api = std::string(""));
+PRIMUTILS_DLL_EXPORT std::vector<std::string> findMatchingPrimPaths(const std::string& pattern,
+                                                                    long int stageId,
+                                                                    const std::string& api = std::string(""));
 
 /**
  * @brief Finds child prims matching a specified name pattern.
@@ -68,7 +68,9 @@ DLL_EXPORT std::vector<std::string> findMatchingPrimPaths(const std::string& pat
  * @note If the root prim is invalid, the function returns without modifying primsRet.
  * @note The pattern uses TfPatternMatcher syntax which supports glob-style wildcards.
  */
-DLL_EXPORT void findMatchingChildren(pxr::UsdPrim root, const std::string& pattern, std::vector<pxr::UsdPrim>& primsRet);
+PRIMUTILS_DLL_EXPORT void findMatchingChildren(pxr::UsdPrim root,
+                                               const std::string& pattern,
+                                               std::vector<pxr::UsdPrim>& primsRet);
 }
 }
 }
