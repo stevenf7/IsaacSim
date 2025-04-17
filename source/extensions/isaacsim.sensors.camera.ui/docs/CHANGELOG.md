@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.10] - 2025-04-16
+### Changed
+- Assets root path lookup moved to on-click callback, rather than on extension startup
+
 ## [0.1.9] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
