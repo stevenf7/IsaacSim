@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.12] - 2025-04-15
+### Fixed
+- Fix OgnIsaacScaleToGromStageUnit.ogn
+
 ## [2.2.11] - 2025-04-11
 ### Changed
 - Update Isaac Sim robot asset path
