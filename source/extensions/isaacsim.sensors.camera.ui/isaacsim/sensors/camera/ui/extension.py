@@ -85,7 +85,6 @@ class Extension(omni.ext.IExt):
     }
 
     def on_startup(self, ext_id: str) -> None:
-        assets_root_path = get_assets_root_path()
 
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
@@ -95,7 +94,7 @@ class Extension(omni.ext.IExt):
             return lambda *_: create_prim(
                 prim_path=get_next_free_path(prim_prefix, None),
                 prim_type="Xform",
-                usd_path=assets_root_path + usd_path,
+                usd_path=get_assets_root_path() + usd_path,
             )
 
         # Build menu structure based on SENSORS dictionary
