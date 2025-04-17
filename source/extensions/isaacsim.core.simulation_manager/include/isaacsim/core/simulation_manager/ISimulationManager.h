@@ -47,8 +47,6 @@ struct ISimulationManager
 {
     CARB_PLUGIN_INTERFACE("isaacsim::core::simulation_manager::ISimulationManager", 1, 0);
 
-    // ------------------
-    // custom API declaration. E.g.:
     /**
      * @brief Registers a callback function to be called when a deletion event occurs.
      * @param[in] callback Function to be called with the path of the deleted item.
@@ -106,7 +104,30 @@ struct ISimulationManager
      * @return True if the handler is enabled for the stage, false otherwise.
      */
     DLL_EXPORT virtual bool isFabricUsdNoticeHandlerEnabled(long stageId) = 0;
-    // ------------------
+
+    /**
+     * @brief Gets the current simulation time.
+     * @return The current simulation time.
+     */
+    DLL_EXPORT virtual double getSimulationTime() = 0;
+
+    /**
+     * @brief Gets the current physics step count.
+     * @return The current physics step count.
+     */
+    DLL_EXPORT virtual size_t getNumPhysicsSteps() = 0;
+
+    /**
+     * @brief Gets the current simulation time.
+     * @return The current simulation time.
+     */
+    DLL_EXPORT virtual bool isSimulating() = 0;
+
+    /**
+     * @brief Gets the current simulation pause state.
+     * @return The current simulation pause state.
+     */
+    DLL_EXPORT virtual bool isPaused() = 0;
 };
 
 } // namespace isaacsim

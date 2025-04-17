@@ -17,6 +17,7 @@ defines { "ISAACSIM_CORE_UTILS_EXPORT" }
 include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/source/extensions/isaacsim.core.simulation_manager/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_client_library/include",

@@ -1194,7 +1194,7 @@ class XFormPrim(Prim):
         self._fabric_data_dicts["world_orientation"] = wp.zeros([self.count, 4], dtype=wp.float32, device=self._device)
         self._fabric_data_valid["world_orientation"] = False
         self._callbacks.append(
-            SimulationManager.register_callback(self._reset_fabric_selection, event=IsaacEvents.PHYSICS_STEP)
+            SimulationManager.register_callback(self._reset_fabric_selection, event=IsaacEvents.POST_PHYSICS_STEP)
         )
         self._view_in_fabric_prepared = True
 

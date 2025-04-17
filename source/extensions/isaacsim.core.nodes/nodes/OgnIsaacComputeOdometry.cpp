@@ -20,6 +20,7 @@
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/includes/Conversions.h>
 #include <isaacsim/core/nodes/ICoreNodes.h>
+#include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/tensors/IArticulationView.h>
 #include <omni/physics/tensors/IRigidBodyView.h>
@@ -58,13 +59,9 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnIsaacComputeOdometryDatabase::sPerInstanceState<OgnIsaacComputeOdometry>(nodeObj, instanceId);
-        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
-        state.m_tensorInterface = carb::getCachedInterface<TensorApi>();
-        if (!state.m_tensorInterface)
-        {
-            CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
-            return;
-        }
+        state.m_simulationManagerFramework =
+            carb::getCachedInterface<isaacsim::core::simulation_manager::ISimulationManager>();
+
         state.xformData.resize(7);
         state.velData.resize(6);
         createTensorDesc(state.m_xformTensor, (void*)state.xformData.data(), 7, TensorDataType::eFloat32);
@@ -74,14 +71,19 @@ public:
     static bool compute(OgnIsaacComputeOdometryDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
-
         auto& state = db.perInstanceState<OgnIsaacComputeOdometry>();
-        if (state.m_firstFrame)
+        if (state.m_firstFrame && state.m_simulationManagerFramework->isSimulating())
         {
-
             // Find our stage
             long stageId = context.iContext->getStageId(context);
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+            state.m_tensorInterface = carb::getCachedInterface<TensorApi>();
+            if (!state.m_tensorInterface)
+            {
+                CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+                return false;
+            }
+
             state.m_simView = state.m_tensorInterface->createSimulationView(stageId);
 
             if (!stage)
@@ -130,7 +132,7 @@ public:
                 ::physx::PxVec3(state.xformData[0], state.xformData[1], state.xformData[2]),
                 ::physx::PxQuat(state.xformData[3], state.xformData[4], state.xformData[5], state.xformData[6]));
             // get starting pose in the world frame
-            state.m_lastTime = state.m_coreNodeFramework->getSimTime();
+            state.m_lastTime = state.m_simulationManagerFramework->getSimulationTime();
             state.m_firstFrame = false;
         }
 
@@ -170,9 +172,9 @@ public:
                                                linVel.dot(q.rotate(::physx::PxVec3(0, 0, 1))));
         auto bodyAngVel = ::physx::PxVec3(velData[3], velData[4], velData[5]);
 
-        if (m_coreNodeFramework->getSimTime() != m_lastTime)
+        if (m_simulationManagerFramework->getSimulationTime() != m_lastTime)
         {
-            double dt = m_coreNodeFramework->getSimTime() - m_lastTime;
+            double dt = m_simulationManagerFramework->getSimulationTime() - m_lastTime;
             // Local accelerations
             m_linearAcceleration.x = static_cast<float>((bodyLocalLinVel.x - m_prevLinearVelocity.x) / dt);
             m_linearAcceleration.y = static_cast<float>((bodyLocalLinVel.y - m_prevLinearVelocity.y) / dt);
@@ -211,7 +213,7 @@ public:
         m_prevLinearVelocity = bodyLocalLinVel;
         m_prevGlobalLinearVelocity = linVel;
         m_prevAngularVelocity = bodyAngVel;
-        m_lastTime = m_coreNodeFramework->getSimTime();
+        m_lastTime = m_simulationManagerFramework->getSimulationTime();
     }
 
     virtual void reset()
@@ -246,7 +248,7 @@ private:
     ::physx::PxVec3 m_globalLinearAcceleration = { 0, 0, 0 };
     ::physx::PxVec3 m_prevGlobalLinearVelocity = { 0, 0, 0 };
 
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::simulation_manager::ISimulationManager* m_simulationManagerFramework;
 };
 
 REGISTER_OGN_NODE()

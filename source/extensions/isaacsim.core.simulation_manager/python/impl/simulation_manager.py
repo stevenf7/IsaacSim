@@ -45,6 +45,7 @@ class SimulationManager:
     _physics_scene_apis = OrderedDict()
     _callbacks = dict()
     _simulation_manager_interface = None
+    _simulation_view_created = False
     _assets_loaded = True
     _assets_loading_callback = None
 
@@ -131,6 +132,7 @@ class SimulationManager:
         if SimulationManager._physics_sim_view:
             SimulationManager._physics_sim_view.invalidate()
             SimulationManager._physics_sim_view = None
+            SimulationManager._simulation_view_created = False
         if SimulationManager._physics_sim_view__warp:
             SimulationManager._physics_sim_view__warp.invalidate()
             SimulationManager._physics_sim_view__warp = None
@@ -145,6 +147,7 @@ class SimulationManager:
         SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
         SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
         SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
+        SimulationManager._simulation_view_created = True
         SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})
 
     @classmethod
@@ -161,6 +164,22 @@ class SimulationManager:
             )
 
     @classmethod
+    def _get_physics_scene_api(cls, physics_scene: str = None):
+        if physics_scene is None:
+            if len(SimulationManager._physics_scene_apis) > 0:
+                physics_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
+            else:
+                carb.log_warn("Physics scene is not found in stage")
+                return None
+        else:
+            if physics_scene in SimulationManager._physics_scene_apis:
+                physics_scene_api = SimulationManager._physics_scene_apis[physics_scene]
+            else:
+                carb.log_warn("physics scene specified {} doesn't exist".format(physics_scene))
+                return None
+        return physics_scene_api
+
+    @classmethod
     def set_backend(cls, val: str) -> None:
         SimulationManager._backend = val
 
@@ -169,8 +188,35 @@ class SimulationManager:
         return SimulationManager._backend
 
     @classmethod
+    def get_simulation_time(cls):
+        return SimulationManager._simulation_manager_interface.get_simulation_time()
+
+    @classmethod
+    def get_num_physics_steps(cls):
+        return SimulationManager._simulation_manager_interface.get_num_physics_steps()
+
+    @classmethod
+    def is_simulating(cls):
+        return SimulationManager._simulation_manager_interface.is_simulating()
+
+    @classmethod
+    def is_paused(cls):
+        return SimulationManager._simulation_manager_interface.is_paused()
+
+    @classmethod
     def get_physics_sim_view(cls):
         return SimulationManager._physics_sim_view
+
+    @classmethod
+    def step(cls, render: bool = False):
+        if render:
+            raise Exception(
+                "Stepping the renderer is not supported at the moment through SimulationManager, use SimulationContext instead."
+            )
+        SimulationManager._physx_sim_interface.simulate(
+            SimulationManager.get_physics_dt(physics_scene=None), SimulationManager.get_simulation_time()
+        )
+        SimulationManager._physx_sim_interface.fetch_results()
 
     @classmethod
     def set_physics_sim_device(cls, val) -> None:
@@ -211,6 +257,38 @@ class SimulationManager:
         else:
             return "cpu"
 
+    def set_physics_dt(cls, dt: float = 1.0 / 60.0, physics_scene: str = None) -> None:
+        """Sets the physics dt on the physics scene provided.
+
+        Args:
+            dt (float, optional): physics dt. Defaults to 1.0/60.0.
+            physics_scene (str, optional): physics scene prim path. Defaults to first physics scene found in the stage.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+            ValueError: Physics dt must be a >= 0.
+            ValueError: Physics dt must be a <= 1.0.
+        """
+        if physics_scene is None:
+            physics_scene_apis = SimulationManager._physics_scene_apis.values()
+        else:
+            physics_scene_apis = [SimulationManager._get_physics_scene_api(physics_scene=physics_scene)]
+
+        for physics_scene_api in physics_scene_apis:
+            if dt < 0:
+                raise ValueError("physics dt cannot be <0")
+            # if no stage or no change in physics timestep, exit.
+            if omni.usd.get_context().get_stage() is None:
+                return
+            if dt == 0:
+                physics_scene_api.GetTimeStepsPerSecondAttr().Set(0)
+            elif dt > 1.0:
+                raise ValueError("physics dt must be <= 1.0")
+            else:
+                steps_per_second = int(1.0 / dt)
+                physics_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
+        return
+
     @classmethod
     def get_physics_dt(cls, physics_scene: str = None) -> str:
         """
@@ -225,26 +303,14 @@ class SimulationManager:
         Returns:
             float: physics dt.
         """
-        if physics_scene is None:
-            if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
-                physics_hz = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
-                if physics_hz == 0:
-                    return 0.0
-                else:
-                    return 1.0 / physics_hz
-            else:
-                return 1.0 / 60.0
+        physics_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+        if physics_scene_api is None:
+            return 1.0 / 60.0
+        physics_hz = physics_scene_api.GetTimeStepsPerSecondAttr().Get()
+        if physics_hz == 0:
+            return 0.0
         else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                physics_hz = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
-                if physics_hz == 0:
-                    return 0.0
-                else:
-                    return 1.0 / physics_hz
-            else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+            return 1.0 / physics_hz
 
     @classmethod
     def get_broadphase_type(cls, physics_scene: str = None) -> str:
@@ -259,18 +325,8 @@ class SimulationManager:
         Returns:
             str: Broadcast phase algorithm used.
         """
-        if physics_scene is None:
-            if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
-                return physx_scene_api.GetBroadphaseTypeAttr().Get()
-            else:
-                return "MBP"
-        else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                return physx_scene_api.GetBroadphaseTypeAttr().Get()
-            else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+        physics_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+        return physics_scene_api.GetBroadphaseTypeAttr().Get()
 
     @classmethod
     def set_broadphase_type(cls, val: str, physics_scene: str = None) -> None:
@@ -290,14 +346,52 @@ class SimulationManager:
                 else:
                     physx_scene_api.GetBroadphaseTypeAttr().Set(val)
         else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                if physx_scene_api.GetBroadphaseTypeAttr().Get() is None:
-                    physx_scene_api.CreateBroadphaseTypeAttr(val)
-                else:
-                    physx_scene_api.GetBroadphaseTypeAttr().Set(val)
+            physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+            if physx_scene_api.GetBroadphaseTypeAttr().Get() is None:
+                physx_scene_api.CreateBroadphaseTypeAttr(val)
             else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+                physx_scene_api.GetBroadphaseTypeAttr().Set(val)
+
+    @classmethod
+    def enable_ccd(cls, flag: bool, physics_scene: str = None) -> None:
+        """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling
+           through each other.
+
+        Args:
+            flag (bool): enables or disables ccd on the PhysicsScene
+            physics_scene (str, optional): physics scene prim path.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+        """
+        if physics_scene is None:
+            for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if physx_scene_api.GetEnableCCDAttr().Get() is None:
+                    physx_scene_api.CreateEnableCCDAttr(flag)
+                else:
+                    physx_scene_api.GetEnableCCDAttr().Set(flag)
+        else:
+            physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+            if physx_scene_api.GetEnableCCDAttr().Get() is None:
+                physx_scene_api.CreateEnableCCDAttr(flag)
+            else:
+                physx_scene_api.GetEnableCCDAttr().Set(flag)
+
+    @classmethod
+    def is_ccd_enabled(cls, physics_scene: str = None) -> bool:
+        """Checks if ccd is enabled.
+
+        Args:
+            physics_scene (str, optional): physics scene prim path.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+
+        Returns:
+            bool: True if ccd is enabled, otherwise False.
+        """
+        physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+        return physx_scene_api.GetEnableCCDAttr().Get()
 
     @classmethod
     def enable_ccd(cls, flag: bool, physics_scene: str = None) -> None:
@@ -378,19 +472,18 @@ class SimulationManager:
                         carb.log_warn("Disabling CCD for GPU dynamics as its not supported")
                         SimulationManager.enable_ccd(flag=False)
         else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                if physx_scene_api.GetEnableGPUDynamicsAttr().Get() is None:
-                    physx_scene_api.CreateEnableGPUDynamicsAttr(flag)
-                else:
-                    physx_scene_api.GetEnableGPUDynamicsAttr().Set(flag)
-                # Disable CCD for GPU dynamics as its not supported
-                if flag:
-                    if SimulationManager.is_ccd_enabled(physics_scene=physics_scene):
-                        carb.log_warn("Disabling CCD for GPU dynamics as its not supported")
-                        SimulationManager.enable_ccd(flag=False, physics_scene=physics_scene)
+            physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+            if physx_scene_api.GetEnableGPUDynamicsAttr().Get() is None:
+                physx_scene_api.CreateEnableGPUDynamicsAttr(flag)
             else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+                physx_scene_api.GetEnableGPUDynamicsAttr().Set(flag)
+            # Disable CCD for GPU dynamics as its not supported
+            if flag:
+                if SimulationManager.is_ccd_enabled(physics_scene=physics_scene):
+                    carb.log_warn("Disabling CCD for GPU dynamics as its not supported")
+                    SimulationManager.enable_ccd(flag=False, physics_scene=physics_scene)
+            else:
+                physx_scene_api.GetEnableGPUDynamicsAttr().Set(flag)
 
     @classmethod
     def is_gpu_dynamics_enabled(cls, physics_scene: str = None) -> bool:
@@ -405,18 +498,8 @@ class SimulationManager:
         Returns:
             bool: True if Gpu Dynamics is enabled, otherwise False.
         """
-        if physics_scene is None:
-            if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
-                return physx_scene_api.GetEnableGPUDynamicsAttr().Get()
-            else:
-                return False
-        else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                return physx_scene_api.GetEnableGPUDynamicsAttr().Get()
-            else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+        physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+        return physx_scene_api.GetEnableGPUDynamicsAttr().Get()
 
     @classmethod
     def enable_fabric(cls, enable):
@@ -449,25 +532,18 @@ class SimulationManager:
         """
         if solver_type not in ["TGS", "PGS"]:
             raise Exception("Solver type {} is not supported".format(solver_type))
-
         if physics_scene is None:
-            if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
+            for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
                 if physx_scene_api.GetSolverTypeAttr().Get() is None:
                     physx_scene_api.CreateSolverTypeAttr(solver_type)
                 else:
                     physx_scene_api.GetSolverTypeAttr().Set(solver_type)
-            else:
-                raise Exception("No physics scenes in the stage")
         else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                if physx_scene_api.GetSolverTypeAttr().Get() is None:
-                    physx_scene_api.CreateSolverTypeAttr(solver_type)
-                else:
-                    physx_scene_api.GetSolverTypeAttr().Set(solver_type)
+            physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+            if physx_scene_api.GetSolverTypeAttr().Get() is None:
+                physx_scene_api.CreateSolverTypeAttr(solver_type)
             else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+                physx_scene_api.GetSolverTypeAttr().Set(solver_type)
 
     @classmethod
     def get_solver_type(cls, physics_scene: str = None) -> str:
@@ -482,18 +558,8 @@ class SimulationManager:
         Returns:
             str: solver used for simulation.
         """
-        if physics_scene is None:
-            if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
-                return physx_scene_api.GetSolverTypeAttr().Get()
-            else:
-                raise Exception("No physics scenes in the stage")
-        else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                return physx_scene_api.GetSolverTypeAttr().Get()
-            else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+        physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+        return physx_scene_api.GetSolverTypeAttr().Get()
 
     @classmethod
     def enable_stablization(cls, flag: bool, physics_scene: str = None) -> None:
@@ -513,14 +579,11 @@ class SimulationManager:
                 else:
                     physx_scene_api.GetEnableStabilizationAttr().Set(flag)
         else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                if physx_scene_api.GetEnableStabilizationAttr().Get() is None:
-                    physx_scene_api.CreateEnableStabilizationAttr(flag)
-                else:
-                    physx_scene_api.GetEnableStabilizationAttr().Set(flag)
+            physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+            if physx_scene_api.GetEnableStabilizationAttr().Get() is None:
+                physx_scene_api.CreateEnableStabilizationAttr(flag)
             else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+                physx_scene_api.GetEnableStabilizationAttr().Set(flag)
 
     @classmethod
     def is_stablization_enabled(cls, physics_scene: str = None) -> bool:
@@ -535,21 +598,11 @@ class SimulationManager:
         Returns:
             bool: True if stabilization is enabled, otherwise False.
         """
-        if physics_scene is None:
-            if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
-                return physx_scene_api.GetEnableStabilizationAttr().Get()
-            else:
-                return False
-        else:
-            if physics_scene in SimulationManager._physics_scene_apis:
-                physx_scene_api = SimulationManager._physics_scene_apis[physics_scene]
-                return physx_scene_api.GetEnableStabilizationAttr().Get()
-            else:
-                raise Exception("physics scene specified {} doesn't exist".format(physics_scene))
+        physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
+        return physx_scene_api.GetEnableStabilizationAttr().Get()
 
     @classmethod
-    def register_callback(cls, callback: callable, event):
+    def register_callback(cls, callback: callable, event, order: int = 0, name: str = None):
         proxy_needed = False
         if hasattr(callback, "__self__"):
             proxy_needed = True
@@ -564,12 +617,14 @@ class SimulationManager:
             if proxy_needed:
                 SimulationManager._callbacks[callback_id] = SimulationManager._message_bus.observe_event(
                     event_name=event.value,
+                    order=order,
                     on_event=lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event),
                     observer_name=f"SimulationManager._callbacks.{event.value}",
                 )
             else:
                 SimulationManager._callbacks[callback_id] = SimulationManager._message_bus.observe_event(
                     event_name=event.value,
+                    order=order,
                     on_event=callback,
                     observer_name=f"SimulationManager._callbacks.{event.value}",
                 )
@@ -580,16 +635,43 @@ class SimulationManager:
                 )
             else:
                 SimulationManager._simulation_manager_interface.register_deletion_callback(callback)
-        elif event == IsaacEvents.PHYSICS_STEP:
+        elif event == IsaacEvents.POST_PHYSICS_STEP:
             if proxy_needed:
-                SimulationManager._callbacks[
-                    callback_id
-                ] = omni.physx.acquire_physx_interface().subscribe_physics_step_events(
-                    lambda step_dt, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(step_dt)
+                SimulationManager._callbacks[callback_id] = (
+                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
+                        lambda step_dt, obj=weakref.proxy(callback.__self__): (
+                            getattr(obj, callback_name)(step_dt) if SimulationManager._simulation_view_created else None
+                        ),
+                        pre_step=False,
+                        order=order,
+                    )
                 )
             else:
                 SimulationManager._callbacks[callback_id] = (
-                    omni.physx.acquire_physx_interface().subscribe_physics_step_events(callback)
+                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
+                        lambda step_dt: callback(step_dt) if SimulationManager._simulation_view_created else None,
+                        pre_step=False,
+                        order=order,
+                    )
+                )
+        elif event == IsaacEvents.PRE_PHYSICS_STEP:
+            if proxy_needed:
+                SimulationManager._callbacks[callback_id] = (
+                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
+                        lambda step_dt, obj=weakref.proxy(callback.__self__): (
+                            getattr(obj, callback_name)(step_dt) if SimulationManager._simulation_view_created else None
+                        ),
+                        pre_step=True,
+                        order=order,
+                    )
+                )
+            else:
+                SimulationManager._callbacks[callback_id] = (
+                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
+                        lambda step_dt: callback(step_dt) if SimulationManager._simulation_view_created else None,
+                        pre_step=True,
+                        order=order,
+                    )
                 )
         elif event == IsaacEvents.TIMELINE_STOP:
             if proxy_needed:
@@ -598,12 +680,14 @@ class SimulationManager:
                 ] = SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
                     int(omni.timeline.TimelineEventType.STOP),
                     lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event),
+                    order=order,
+                    name=name,
                 )
             else:
                 SimulationManager._callbacks[
                     callback_id
                 ] = SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.STOP), callback
+                    int(omni.timeline.TimelineEventType.STOP), callback, order=order, name=name
                 )
         else:
             raise Exception("{} event doesn't exist for callback registering".format(event))

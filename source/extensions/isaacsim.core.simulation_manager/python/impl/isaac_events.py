@@ -17,5 +17,6 @@ class IsaacEvents(Enum):
     PHYSICS_READY = "isaac.physics_ready"
     POST_RESET = "isaac.post_reset"
     PRIM_DELETION = "isaac.prim_deletion"
-    PHYSICS_STEP = "isaac.physics_step"
+    PRE_PHYSICS_STEP = "isaac.pre_physics_step"
+    POST_PHYSICS_STEP = "isaac.post_physics_step"
     TIMELINE_STOP = "isaac.timeline_stop"

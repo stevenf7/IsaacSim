@@ -92,7 +92,27 @@ Args:
     stage_id: ID of the fabric stage to check.
 
 Returns:
-    bool: True if the handler is enabled for the stage, False otherwise.)");
+    bool: True if the handler is enabled for the stage, False otherwise.)")
+        .def("get_simulation_time", &ISimulationManager::getSimulationTime,
+             R"(Get the current simulation time.
+
+Returns:
+    double: The current simulation time.)")
+        .def("get_num_physics_steps", &ISimulationManager::getNumPhysicsSteps,
+             R"(Get the current physics step count.
+
+Returns:
+    int: The current physics step count.)")
+        .def("is_simulating", &ISimulationManager::isSimulating,
+             R"(Get the current simulation pause state.
+
+Returns:
+    bool: True if the simulation is paused, False otherwise.)")
+        .def("is_paused", &ISimulationManager::isPaused,
+             R"(Get the current simulation pause state.
+
+Returns:
+    bool: True if the simulation is paused, False otherwise.)");
 }
 
 }

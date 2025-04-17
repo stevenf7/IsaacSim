@@ -21,7 +21,7 @@
 // clang-format on
 
 #include <isaacsim/core/includes/Conversions.h>
-
+#include <isaacsim/core/simulation_manager/ISimulationManager.h>
 using namespace omni::physics::tensors;
 
 namespace isaacsim
@@ -85,56 +85,65 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f bodyTranslation, pxr::
     // TODO: Handle world rotation as well
     // NOTE: reverting this for now, rigid body sink publishes global so teleport should be global too
     // auto newTranslation = pxBodyTranslation; // + parentToWorldMat.ExtractTranslation();
-    auto mTensorInterface = carb::getCachedInterface<TensorApi>();
-    if (!mTensorInterface)
+
+    auto mSimulationManagerInterface = carb::getCachedInterface<simulation_manager::ISimulationManager>();
+    if (!mSimulationManagerInterface)
     {
-        CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+        CARB_LOG_ERROR("Failed to acquire Simulation Manager interface\n");
         return;
     }
     uint64_t stageId = pxr::UsdUtilsStageCache::Get().GetId(prim.GetStage()).ToLongInt();
-    if (auto mSimView = mTensorInterface->createSimulationView(long(stageId)))
+
+    if (mSimulationManagerInterface->isSimulating())
     {
-
-        TensorDesc xformTensor;
-        TensorDesc velTensor;
-        std::vector<float> xformData(7, 0.0);
-        std::vector<float> velData(6, 0.0);
-        createTensorDesc(xformTensor, (void*)xformData.data(), 7, TensorDataType::eFloat32);
-        createTensorDesc(velTensor, (void*)velData.data(), 6, TensorDataType::eFloat32);
-
-        xformData[0] = bodyTranslation[0];
-        xformData[1] = bodyTranslation[1];
-        xformData[2] = bodyTranslation[2];
-        xformData[3] = bodyRotation.GetImaginary()[0];
-        xformData[4] = bodyRotation.GetImaginary()[1];
-        xformData[5] = bodyRotation.GetImaginary()[2];
-        xformData[6] = bodyRotation.GetReal();
-        // TODO: do we need to wake up articulations?
-        ObjectType objectType = mSimView->getObjectType(prim.GetPath().GetText());
-        if (objectType == ObjectType::eArticulation || objectType == ObjectType::eArticulationRootLink)
+        auto mTensorInterface = carb::getCachedInterface<TensorApi>();
+        if (!mTensorInterface)
         {
-            auto articulation = mSimView->createArticulationView(prim.GetPath().GetText());
-            articulation->setRootTransforms(&xformTensor, nullptr);
-            articulation->setRootVelocities(&velTensor, nullptr);
+            CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+            return;
         }
-        else if (objectType == ObjectType::eRigidBody || objectType == ObjectType::eArticulationLink)
+        auto mSimView = mTensorInterface->createSimulationView(long(stageId));
+        if (mSimView)
         {
-            auto rigidBody = mSimView->createRigidBodyView(prim.GetPath().GetText());
-            rigidBody->setTransforms(&xformTensor, nullptr);
-            rigidBody->setVelocities(&velTensor, nullptr);
+            TensorDesc xformTensor;
+            TensorDesc velTensor;
+            std::vector<float> xformData(7, 0.0);
+            std::vector<float> velData(6, 0.0);
+            createTensorDesc(xformTensor, (void*)xformData.data(), 7, TensorDataType::eFloat32);
+            createTensorDesc(velTensor, (void*)velData.data(), 6, TensorDataType::eFloat32);
+
+            xformData[0] = bodyTranslation[0];
+            xformData[1] = bodyTranslation[1];
+            xformData[2] = bodyTranslation[2];
+            xformData[3] = bodyRotation.GetImaginary()[0];
+            xformData[4] = bodyRotation.GetImaginary()[1];
+            xformData[5] = bodyRotation.GetImaginary()[2];
+            xformData[6] = bodyRotation.GetReal();
+            // TODO: do we need to wake up articulations?
+            ObjectType objectType = mSimView->getObjectType(prim.GetPath().GetText());
+            if (objectType == ObjectType::eArticulation || objectType == ObjectType::eArticulationRootLink)
+            {
+                auto articulation = mSimView->createArticulationView(prim.GetPath().GetText());
+                articulation->setRootTransforms(&xformTensor, nullptr);
+                articulation->setRootVelocities(&velTensor, nullptr);
+            }
+            else if (objectType == ObjectType::eRigidBody || objectType == ObjectType::eArticulationLink)
+            {
+                auto rigidBody = mSimView->createRigidBodyView(prim.GetPath().GetText());
+                rigidBody->setTransforms(&xformTensor, nullptr);
+                rigidBody->setVelocities(&velTensor, nullptr);
+            }
+            return;
         }
     }
-    else
-    {
-        // In case we are not simulating or the object was a regular prim, go down this path
-        pxr::GfTransform usdBodyPose;
-        usdBodyPose.SetTranslation(bodyTranslation);
-        usdBodyPose.SetRotation(pxr::GfRotation(bodyRotation));
-        // Pose is global so offset by parent pose
-        pxr::GfMatrix4d parentToWorldMat =
-            pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
-        omni::usd::UsdUtils::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix() * parentToWorldMat.GetInverse());
-    }
+    // In case we are not simulating or the object was a regular prim, go down this path
+    pxr::GfTransform usdBodyPose;
+    usdBodyPose.SetTranslation(bodyTranslation);
+    usdBodyPose.SetRotation(pxr::GfRotation(bodyRotation));
+    // Pose is global so offset by parent pose
+    pxr::GfMatrix4d parentToWorldMat =
+        pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
+    omni::usd::UsdUtils::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix() * parentToWorldMat.GetInverse());
 }
 
 /**
@@ -153,21 +162,30 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f bodyTranslation, pxr::
  */
 inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
 {
-    auto mTensorInterface = carb::getCachedInterface<TensorApi>();
-    if (!mTensorInterface)
+    bool doScale = true;
+    auto mSimulationManagerInterface = carb::getCachedInterface<simulation_manager::ISimulationManager>();
+    if (!mSimulationManagerInterface)
     {
-        CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+        CARB_LOG_ERROR("Failed to acquire Simulation Manager interface\n");
         return;
     }
-    bool doScale = true;
-    uint64_t stageId = pxr::UsdUtilsStageCache::Get().GetId(prim.GetStage()).ToLongInt();
-    if (auto mSimView = mTensorInterface->createSimulationView(long(stageId)))
+    if (mSimulationManagerInterface->isSimulating())
     {
-        auto path = prim.GetPath().GetString().c_str();
-        auto articulation = mSimView->createArticulationView(path);
-        auto rigidBody = mSimView->createRigidBodyView(path);
-        if (articulation or rigidBody)
-            doScale = false;
+        auto mTensorInterface = carb::getCachedInterface<TensorApi>();
+        if (!mTensorInterface)
+        {
+            CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
+            return;
+        }
+        uint64_t stageId = pxr::UsdUtilsStageCache::Get().GetId(prim.GetStage()).ToLongInt();
+        if (auto mSimView = mTensorInterface->createSimulationView(long(stageId)))
+        {
+            auto path = prim.GetPath().GetString().c_str();
+            auto articulation = mSimView->createArticulationView(path);
+            auto rigidBody = mSimView->createRigidBodyView(path);
+            if (articulation or rigidBody)
+                doScale = false;
+        }
     }
 
     if (doScale)
