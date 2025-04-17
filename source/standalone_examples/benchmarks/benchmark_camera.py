@@ -40,10 +40,9 @@ TEST_NUM_APP_UPDATES = 60 * 10
 
 import carb
 import omni
+import omni.replicator.core as rep
 from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.stage import is_stage_loading
-from isaacsim.sensors.camera import Camera
 from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("isaacsim.benchmark.services")
@@ -64,31 +63,8 @@ benchmark = BaseIsaacBenchmark(
 )
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 benchmark.fully_load_stage(benchmark.assets_root_path + scene_path)
-
-timeline = omni.timeline.get_timeline_interface()
-timeline.play()
-cameras = []
-
-for i in range(n_camera):
-    render_product_path = None
-    if i == 0:
-        viewport_api = get_active_viewport()
-        render_product_path = viewport_api.get_render_product_path()
-    cameras.append(
-        Camera(
-            prim_path="/Cameras/Camera_" + str(i),
-            position=np.array([-8, 13, 2.0]),
-            resolution=resolution,
-            orientation=euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True),
-            render_product_path=render_product_path,
-        )
-    )
-
-    omni.kit.app.get_app().update()
-    cameras[i].initialize()
 
 # make sure scene is loaded in all viewports
 while is_stage_loading():
@@ -96,13 +72,24 @@ while is_stage_loading():
     omni.kit.app.get_app().update()
 omni.kit.app.get_app().update()
 
+timeline = omni.timeline.get_timeline_interface()
+cameras = []
+for i in range(n_camera):
+    cameras.append(rep.create.camera(name=f"cam_{i}", position=[-8, 13, 2.0], rotation=i * 15))
+render_products = []
+for i, cam in enumerate(cameras):
+    render_products.append(rep.create.render_product(cam, (resolution[0], resolution[1]), name=f"rp_{i}"))
+
+omni.kit.app.get_app().update()
+cameras = rep.create.group(cameras)
+
+rep.orchestrator.preview()
+
 benchmark.store_measurements()
 # perform benchmark
+timeline.play()
 benchmark.set_phase("benchmark")
-
-for _ in range(1, n_frames):
-    omni.kit.app.get_app().update()
-
+rep.orchestrator.run_until_complete(num_frames=n_frames)
 benchmark.store_measurements()
 benchmark.stop()
 
