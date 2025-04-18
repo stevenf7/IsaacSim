@@ -28,6 +28,7 @@ folders = [
 "isaacsim.core.api" = {}
 "isaacsim.core.cloner" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.prims" = {}
 "isaacsim.core.includes" = {}
 "isaacsim.core.nodes" = {}
 "isaacsim.core.prims" = {}
@@ -180,15 +181,15 @@ folders = [
 "omni.replicator.replicator_yaml" = {}
 
 # Isaac Sim Sensors
-"omni.sensors.net" = {}
-"omni.sensors.nv.camera" = {version = "0.21.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.common" = {version = "2.7.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.ids" = {version = "1.5.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.lidar" = {version = "2.7.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.materials" = {version = "1.6.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.radar" = {version = "2.8.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.ultrasonic" = {version = "2.5.0-coreapi+1446e4b1", exact=true}
-"omni.sensors.nv.wpm" = {version = "2.5.0-coreapi+1446e4b1", exact=true}
+"omni.sensors.net" = {version = "0.4.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.camera" = {version = "0.21.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.common" = {version = "2.7.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.ids" = {version = "1.5.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.lidar" = {version = "2.7.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.materials" = {version = "1.6.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.radar" = {version = "2.8.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.ultrasonic" = {version = "2.5.0-coreapi+a64e0341", exact=true}
+"omni.sensors.nv.wpm" = {version = "2.5.0-coreapi+a64e0341", exact=true}
 
 # Isaac Sim Import/Export
 "isaacsim.asset.importer.mjcf" = {}
@@ -291,7 +292,7 @@ folders = [
 "omni.kit.thumbnails.mdl" = {}
 "omni.kit.timeline.minibar" = {}
 "omni.kit.tool.asset_exporter" = {}
-# "omni.kit.tool.asset_importer" = {}
+# "omni.kit.tool.asset_importer" = {} # TODO: Causes extension caching issues
 "omni.kit.tool.collect" = {}
 "omni.kit.tool.measure" = {}
 "omni.kit.tool.remove_unused.controller" = {}
@@ -362,7 +363,7 @@ folders = [
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
 ########################################################################################################################
 
-# Kit SDK Version: 107.3.0+master.185684.eb3c3132.gl
+# Kit SDK Version: 107.3.0+master.187175.a64e0341.gl
 
 # Exact Version dependencies:
 # 	omni.kit.converter.cad-203.0.2
@@ -384,7 +385,7 @@ enabled = [
 	"isaacsim.agent.planner.bridge-0.1.2",
 	"isaacsim.anim.robot-0.0.2",
 	"isaacsim.asset.importer.mjcf-2.3.6",
-	"isaacsim.asset.importer.urdf-2.3.13",
+	"isaacsim.asset.importer.urdf-2.4.0",
 	"isaacsim.replicator.agent.core-0.6.1",
 	"isaacsim.replicator.agent.ui-0.6.1",
 	"isaacsim.replicator.caption.core-0.0.12",
@@ -414,8 +415,8 @@ enabled = [
 	"omni.anim.skelJoint-107.0.17",
 	"omni.anim.timeline-107.0.0",
 	"omni.anim.window.timeline-106.5.0",
-	"omni.asset_validator.core-0.21.0",
-	"omni.asset_validator.ui-0.21.0",
+	"omni.asset_validator.core-0.22.1",
+	"omni.asset_validator.ui-0.22.1",
 	"omni.convexdecomposition-107.3.0",
 	"omni.cuopt.examples-1.2.0",
 	"omni.cuopt.service-1.2.0",
@@ -440,9 +441,9 @@ enabled = [
 	"omni.importer.onshape-0.8.1",
 	"omni.kit.asset_converter-4.0.4",
 	"omni.kit.browser.asset-1.3.12",
-	"omni.kit.browser.core-2.3.12",
-	"omni.kit.browser.folder.core-1.10.3",
-	"omni.kit.browser.material-1.6.1",
+	"omni.kit.browser.core-2.3.13",
+	"omni.kit.browser.folder.core-1.10.4",
+	"omni.kit.browser.material-1.6.2",
 	"omni.kit.browser.sample-1.4.9",
 	"omni.kit.converter.common-506.1.0",
 	"omni.kit.converter.dgn-506.1.0",
@@ -454,8 +455,8 @@ enabled = [
 	"omni.kit.core.collection-0.2.0",
 	"omni.kit.data2ui.core-1.1.0",
 	"omni.kit.data2ui.usd-1.1.0",
-	"omni.kit.environment.core-1.3.17",
-	"omni.kit.extensions.widget.schema_api-1.0.0",
+	"omni.kit.environment.core-1.3.18",
+	"omni.kit.extensions.widget.schema_api-1.0.1",
 	"omni.kit.gfn-107.0.3",
 	"omni.kit.graph.delegate.default-1.2.2",
 	"omni.kit.graph.delegate.modern-1.10.8",
@@ -478,7 +479,7 @@ enabled = [
 	"omni.kit.property.collection-0.2.0",
 	"omni.kit.property.environment-1.2.2",
 	"omni.kit.property.physx-107.3.0",
-	"omni.kit.scripting-107.0.7",
+	"omni.kit.scripting-107.0.8",
 	"omni.kit.search.files-1.0.4",
 	"omni.kit.search.service-0.1.12",
 	"omni.kit.sequencer.core-108.0.0",
@@ -489,7 +490,7 @@ enabled = [
 	"omni.kit.stagerecorder.core-107.0.1",
 	"omni.kit.stagerecorder.ui-107.0.0",
 	"omni.kit.streamsdk.plugins-7.6.3",
-	"omni.kit.thumbnails.mdl-1.0.25",
+	"omni.kit.thumbnails.mdl-1.0.26",
 	"omni.kit.timeline.minibar-1.2.10",
 	"omni.kit.tool.asset_exporter-3.0.3",
 	"omni.kit.tool.asset_importer-4.0.4",
@@ -498,22 +499,22 @@ enabled = [
 	"omni.kit.tool.remove_unused.core-0.1.3",
 	"omni.kit.variant.editor-107.0.0",
 	"omni.kit.variant.presenter-107.0.0",
-	"omni.kit.viewport.menubar.lighting-107.0.2",
+	"omni.kit.viewport.menubar.lighting-107.0.3",
 	"omni.kit.viewport.menubar.waypoint-104.2.16",
 	"omni.kit.waypoint.bundle-1.0.5",
 	"omni.kit.waypoint.core-1.4.58",
 	"omni.kit.waypoint.playlist-1.0.9",
 	"omni.kit.widget.calendar-1.0.9",
-	"omni.kit.widget.collection-0.2.1",
+	"omni.kit.widget.collection-0.2.2",
 	"omni.kit.widget.extended_searchfield-1.0.30",
 	"omni.kit.widget.material_preview-1.0.16",
 	"omni.kit.widget.sliderbar-1.0.12",
 	"omni.kit.widget.timeline-107.0.1",
 	"omni.kit.widget.zoombar-1.0.6",
 	"omni.kit.widgets.custom-1.0.12",
-	"omni.kit.window.collection-0.2.0",
+	"omni.kit.window.collection-0.2.1",
 	"omni.kit.window.material-1.6.3",
-	"omni.kit.window.material_graph-1.8.21",
+	"omni.kit.window.material_graph-1.8.22",
 	"omni.kit.window.movie_capture-2.5.3",
 	"omni.kit.window.quicksearch-2.4.4",
 	"omni.kit.window.section-107.0.3",
@@ -557,9 +558,9 @@ enabled = [
 	"omni.ramp-107.0.1",
 	"omni.replicator.core-1.12.0",
 	"omni.replicator.replicator_yaml-2.0.11",
-	"omni.scene.optimizer.bundle-107.1.3",
-	"omni.scene.optimizer.core-107.1.3",
-	"omni.scene.optimizer.ui-107.1.3",
+	"omni.scene.optimizer.bundle-107.1.4",
+	"omni.scene.optimizer.core-107.1.4",
+	"omni.scene.optimizer.ui-107.1.4",
 	"omni.scene.visualization.bundle-105.1.0",
 	"omni.scene.visualization.core-107.0.2",
 	"omni.scene.visualization.ui-107.0.1",
@@ -577,7 +578,7 @@ enabled = [
 	"omni.services.transport.server.http-1.3.1",
 	"omni.services.transport.server.zeroconf-1.0.9",
 	"omni.services.usd-1.1.0",
-	"omni.simready.explorer-1.1.2",
+	"omni.simready.explorer-1.1.3",
 	"omni.tools.array-107.0.0",
 	"omni.usd.fileformat.e57-1.4.1",
 	"omni.usd.fileformat.pts-107.1.0",

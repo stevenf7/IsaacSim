@@ -67,7 +67,7 @@ class TestRTXSolidStateLidar(omni.kit.test.AsyncTestCase):
 
         config = "Example_Solid_State"
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config=config)
-        texture = rep.create.render_product(sensor.GetPath().pathString, resolution=[1, 1])
+        texture = rep.create.render_product(sensor.GetPath().pathString, resolution=[32, 32])
         render_product_path = texture.path
         rv = "RtxLidar"
         writer = rep.writers.get(rv + "DebugDrawPointCloud")
