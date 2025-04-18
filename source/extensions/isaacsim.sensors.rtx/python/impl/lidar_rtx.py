@@ -68,7 +68,7 @@ class LidarRtx(BaseSensor):
                 "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name, asset_path=asset_path
             )
 
-        self._render_product = rep.create.render_product(prim_path, resolution=(1, 1))
+        self._render_product = rep.create.render_product(prim_path, resolution=(128, 128))
         self._render_product_path = self._render_product.path
         self._point_cloud_node_path = None
         self._flat_scan_node_path = None
