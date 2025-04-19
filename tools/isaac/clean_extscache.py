@@ -129,17 +129,19 @@ def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
         return True
 
 
-def check_version_locks(kit_file, verbose=False, dry_run=False):
+def check_version_locks(kit_file, verbose=False, dry_run=False, update_locks=False):
     """
     Check that any extension with a version lock hash matches the SDK Version hash in the kit file.
+    Optionally update mismatched hashes to match the SDK hash.
 
     Args:
         kit_file (str): Path to the kit file
         verbose (bool): If True, print detailed debug information
         dry_run (bool): If True, don't report errors, just log what would be done
+        update_locks (bool): If True, update any mismatched hashes to match the SDK hash
 
     Returns:
-        bool: True if all version locks match the SDK hash, False otherwise
+        bool: True if all version locks match the SDK hash (or were updated), False otherwise
     """
 
     def log(msg):
@@ -173,6 +175,9 @@ def check_version_locks(kit_file, verbose=False, dry_run=False):
     ext_version_pattern = re.compile(r'["\']([\w\.\-]+)["\'].*?version\s*=\s*["\'](.*?)\+([\w\d]+)["\']')
     locks_mismatched = []
 
+    # If we need to update locks, keep the original content to modify
+    updated_content = content
+
     for match in ext_version_pattern.finditer(content):
         ext_name = match.group(1)
         version = match.group(2)
@@ -184,8 +189,32 @@ def check_version_locks(kit_file, verbose=False, dry_run=False):
             log(f"Extension {ext_name} has lock hash {lock_hash} that doesn't match SDK hash {sdk_hash}")
             locks_mismatched.append((ext_name, version, lock_hash))
 
-    # Report mismatches
-    if locks_mismatched and not dry_run:
+            # If update_locks is True, update the hash in the content
+            if update_locks and not dry_run:
+                # Create the replacement pattern with the new hash
+                old_version = f"{version}+{lock_hash}"
+                new_version = f"{version}+{sdk_hash}"
+                log(f"Updating {ext_name} from {old_version} to {new_version}")
+
+                # Replace all occurrences of this specific version string
+                updated_content = updated_content.replace(f'"{old_version}"', f'"{new_version}"')
+                updated_content = updated_content.replace(f"'{old_version}'", f"'{new_version}'")
+
+    # Write updated content back to file if changes were made
+    if update_locks and locks_mismatched and not dry_run:
+        try:
+            with open(kit_file, "w") as f:
+                f.write(updated_content)
+            print(f"Updated {len(locks_mismatched)} extension version locks to match SDK hash {sdk_hash}:")
+            for ext_name, version, lock_hash in locks_mismatched:
+                print(f"   - {ext_name}: {version}+{lock_hash} → {version}+{sdk_hash}")
+            return True
+        except Exception as e:
+            print(f"Error writing updated kit file: {e}")
+            return False
+
+    # Report mismatches if not updating or in dry_run mode
+    if locks_mismatched and not dry_run and not update_locks:
         print("\nERROR: The following extensions have version locks that don't match the SDK hash:")
         print(f"SDK Version: {sdk_version}.{sdk_hash}.gl (hash: {sdk_hash})")
 
@@ -197,7 +226,12 @@ def check_version_locks(kit_file, verbose=False, dry_run=False):
         print("\nPlease update these extensions to use the correct SDK hash.")
         return False
     elif locks_mismatched and dry_run:
-        log(f"Would report {len(locks_mismatched)} mismatched version locks")
+        if update_locks:
+            print(f"Would update {len(locks_mismatched)} extension version locks to match SDK hash {sdk_hash}:")
+            for ext_name, version, lock_hash in locks_mismatched:
+                print(f"   - {ext_name}: {version}+{lock_hash} → {version}+{sdk_hash}")
+        else:
+            log(f"Would report {len(locks_mismatched)} mismatched version locks")
         return True
     else:
         log("All extension version locks match the SDK hash.")
@@ -214,6 +248,7 @@ def clean_extscache(
     dry_run=False,
     check_deps=True,
     check_locks=True,
+    update_locks=False,
 ):
     """
     Removes extensions from the enabled section in the kit file if they exist in the build directory,
@@ -229,6 +264,7 @@ def clean_extscache(
         dry_run (bool): If True, don't modify the file, just report what would be done
         check_deps (bool): If True, check that all extensions are listed in dependencies
         check_locks (bool): If True, check that version locks match the SDK hash
+        update_locks (bool): If True, update any mismatched version locks to match the SDK hash
 
     Returns:
         bool: True if successful, False otherwise
@@ -535,7 +571,7 @@ def clean_extscache(
 
     # Check version locks if requested
     if check_locks:
-        locks_ok = check_version_locks(kit_file, verbose, dry_run)
+        locks_ok = check_version_locks(kit_file, verbose, dry_run, update_locks)
         if not locks_ok and not dry_run:
             print("WARNING: Some extensions have version locks that don't match the SDK hash.")
 
@@ -553,7 +589,8 @@ Clean the extension cache by removing extensions from the enabled section in the
 This script also checks that all extensions in the build and deprecated directories
 are properly listed in the [dependencies] section.
 
-This script can also verify that extension version locks match the Kit SDK Version hash.
+This script can also verify that extension version locks match the Kit SDK Version hash,
+and optionally update them to match the current SDK hash.
 
 This is useful for development when you want to avoid loading both the built and the prebuilt 
 versions of the same extension, and to ensure deprecated extensions aren't loaded.
@@ -578,6 +615,11 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
     parser.add_argument(
         "--no-locks-check", action="store_true", help="Skip checking if extension version locks match the SDK hash"
     )
+    parser.add_argument(
+        "--update-locks",
+        action="store_true",
+        help="Update extension version locks to match the SDK hash when they don't match",
+    )
 
     args = parser.parse_args()
 
@@ -591,6 +633,7 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         dry_run=args.dry_run,
         check_deps=not args.no_deps_check,
         check_locks=not args.no_locks_check,
+        update_locks=args.update_locks,
     )
 
     if not success:
