@@ -77,7 +77,7 @@ point_instancer = UsdGeom.PointInstancer.Define(my_world.stage, instancer_path)
 point_instancer.CreatePrototypesRel().SetTargets([Sdf.Path(base_cube_path)])
 
 hand_joint_count = int(OpenXRSpec.HandJointEXT.XR_HAND_JOINT_LITTLE_TIP_EXT) + 1
-joint_count = hand_joint_count * 2
+joint_count = hand_joint_count * 2 + 1
 
 # Initially hide all cubes until hands are tracked
 point_instancer.CreateProtoIndicesAttr().Set([1 for _ in range(joint_count)])
@@ -115,23 +115,65 @@ while simulation_app.is_running():
         right_joints = openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_RIGHT_EXT) or [None] * hand_joint_count
         joints = left_joints + right_joints
 
-        for joint_idx in range(joint_count):
-            if tracking_enabled and joints[joint_idx] is not None:
-                location_flags = joints[joint_idx].locationFlags
+        if tracking_enabled:
+            # Update hand joint indicators
+            for joint_idx in range(2 * hand_joint_count):
+                if joints[joint_idx] is not None:
+                    location_flags = joints[joint_idx].locationFlags
 
-                if (
-                    location_flags & OpenXRSpec.XR_SPACE_LOCATION_POSITION_VALID_BIT
-                    and location_flags & OpenXRSpec.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT
-                ):
-                    joint_pos = joints[joint_idx].pose.position
-                    joint_quat = joints[joint_idx].pose.orientation
-                    current_positions[joint_idx] = Gf.Vec3f(joint_pos.x, joint_pos.y, joint_pos.z)
-                    current_orientations[joint_idx] = Gf.Quath(joint_quat.w, joint_quat.x, joint_quat.y, joint_quat.z)
-                    proto_indices[joint_idx] = 0
+                    if (
+                        location_flags & OpenXRSpec.XR_SPACE_LOCATION_POSITION_VALID_BIT
+                        and location_flags & OpenXRSpec.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT
+                    ):
+                        joint_pos = joints[joint_idx].pose.position
+                        joint_quat = joints[joint_idx].pose.orientation
+                        current_positions[joint_idx] = Gf.Vec3f(joint_pos.x, joint_pos.y, joint_pos.z)
+                        current_orientations[joint_idx] = Gf.Quath(
+                            joint_quat.w, joint_quat.x, joint_quat.y, joint_quat.z
+                        )
+                        proto_indices[joint_idx] = 0
+                    else:
+                        proto_indices[joint_idx] = 1
                 else:
                     proto_indices[joint_idx] = 1
+
+            # Get head device
+            head_device = XRCore.get_singleton().get_input_device("displayDevice")
+
+            if head_device:
+                hmd = head_device.get_virtual_world_pose("")
+                position = hmd.ExtractTranslation()
+                quat = hmd.ExtractRotationQuat()
+
+                # Local to world matrix
+                mtx = Gf.Matrix4d()
+                mtx.SetRotate(quat)
+                mtx.SetTranslateOnly(position)
+
+                # Local transform
+                local_transform = Gf.Matrix4d()
+                local_transform.SetTranslate(Gf.Vec3d(0.0, 0.0, -0.5))
+
+                # World transform
+                world_transform = local_transform * mtx
+
+                world_position = world_transform.ExtractTranslation()
+                world_orientation = world_transform.ExtractRotation().GetQuat()
+
+                # Update head indicator
+                current_positions[2 * hand_joint_count] = Gf.Vec3f(
+                    world_position[0], world_position[1], world_position[2]
+                )
+                current_orientations[2 * hand_joint_count] = Gf.Quath(
+                    world_orientation.GetReal(),
+                    world_orientation.GetImaginary()[0],
+                    world_orientation.GetImaginary()[1],
+                    world_orientation.GetImaginary()[2],
+                )
+                proto_indices[2 * hand_joint_count] = 0
             else:
-                proto_indices[joint_idx] = 1
+                # Hide head indicator
+                proto_indices[2 * hand_joint_count] = 1
 
         positions_attr.Set(current_positions)
         orientations_attr.Set(current_orientations)
