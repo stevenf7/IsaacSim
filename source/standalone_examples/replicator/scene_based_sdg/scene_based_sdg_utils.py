@@ -19,7 +19,7 @@ from isaacsim.core.prims import SingleRigidPrim
 from isaacsim.core.utils import prims
 from isaacsim.core.utils.bounds import compute_combined_aabb, compute_obb, create_bbox_cache, get_obb_corners
 from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
-from isaacsim.core.utils.semantics import remove_all_semantics
+from isaacsim.core.utils.semantics import remove_labels
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 
@@ -48,7 +48,7 @@ def add_colliders(root_prim, approx_type="convexHull"):
 def remove_previous_semantics(stage, recursive: bool = False):
     prims = stage.Traverse()
     for prim in prims:
-        remove_all_semantics(prim, recursive)
+        remove_labels(prim, include_descendants=recursive)
 
 
 # Run a simulation

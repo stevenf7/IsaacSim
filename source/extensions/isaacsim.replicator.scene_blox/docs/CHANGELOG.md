@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.5] - 2025-04-17
+### Changed
+- changed add_update_semantics to add_labels
+
 ## [1.0.4] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

@@ -1,4 +1,10 @@
 # Changelog
+## [2.3.0] - 2025-04-17
+### Changed
+- Added semantics util functions to use the new UsdSemantics.LabelsAPI
+- Added deprecation warnings for the old SemanticsAPI
+- changed add_update_semantics to add_labels in utils.prims
+
 ## [2.2.19] - 2025-04-15
 ### Changed
 - Update to use new apis from SimulationManager

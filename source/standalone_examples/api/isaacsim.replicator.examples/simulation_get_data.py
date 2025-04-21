@@ -21,7 +21,7 @@ import omni
 import omni.replicator.core as rep
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from PIL import Image
 
 
@@ -80,7 +80,7 @@ sem_annot.attach(rp)
 # Spawn and drop a few cubes, capture data when they stop moving
 for i in range(5):
     cuboid = world.scene.add(DynamicCuboid(prim_path=f"/World/Cuboid_{i}", name=f"Cuboid_{i}", position=(0, 0, 10 + i)))
-    add_update_semantics(cuboid.prim, "Cuboid")
+    add_labels(cuboid.prim, labels=["Cuboid"], instance_name="class")
 
     for s in range(500):
         world.step(render=False)

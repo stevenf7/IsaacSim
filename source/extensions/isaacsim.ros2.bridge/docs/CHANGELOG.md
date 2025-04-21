@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.4.9] - 2025-04-17
+### Changed
+- changed add_update_semantics to add_labels
+
 ## [4.4.8] - 2025-04-15
 ### Fixed
 - Removes references to "sensor" field in OgnROS2RtxLidarHelper

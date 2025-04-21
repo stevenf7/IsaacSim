@@ -1,5 +1,5 @@
 [package]
-version = "1.0.4"
+version = "1.0.5"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Scene Blox"
 description = "The extension implements SceneBlox, a rule-based randomized scene generation workflow using the wave function collapse algorithm."

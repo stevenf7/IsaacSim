@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.14] - 2025-04-17
+### Changed
+- changed add_update_semantics to add_labels
+
 ## [1.0.13] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

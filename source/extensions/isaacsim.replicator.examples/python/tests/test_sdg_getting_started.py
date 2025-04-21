@@ -16,7 +16,7 @@ import omni.kit
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from omni.replicator.core import Writer
 from pxr import Sdf, UsdGeom, UsdPhysics
 
@@ -55,7 +55,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
         dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
         cube = stage.DefinePrim("/World/Cube", "Cube")
-        add_update_semantics(cube, "MyCube")
+        add_labels(cube, labels=["MyCube"], instance_name="class")
 
         # Create a render product using the viewport perspective camera
         rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
@@ -109,7 +109,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
         dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
         cube = stage.DefinePrim("/World/Cube", "Cube")
-        add_update_semantics(cube, "MyCube")
+        add_labels(cube, labels=["MyCube"], instance_name="class")
 
         # Capture from two perspectives, a custom camera and the viewport perspective camera
         camera = stage.DefinePrim("/World/Camera", "Camera")
@@ -179,7 +179,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         # Setup stage
         stage = omni.usd.get_context().get_stage()
         cube = stage.DefinePrim("/World/Cube", "Cube")
-        add_update_semantics(cube, "MyCube")
+        add_labels(cube, labels=["MyCube"], instance_name="class")
 
         # Create a replicator randomizer with custom event trigger
         with rep.trigger.on_custom_event(event_name="randomize_dome_light_color"):
@@ -248,7 +248,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         if not cube.GetAttribute("xformOp:translate"):
             UsdGeom.Xformable(cube).AddTranslateOp()
         cube.GetAttribute("xformOp:translate").Set((0, 0, 2))
-        add_update_semantics(cube, "MyCube")
+        add_labels(cube, labels=["MyCube"], instance_name="class")
 
         # Createa a sphere with colliders and rigid body dynamics next to the cube
         sphere = stage.DefinePrim("/World/Sphere", "Sphere")
@@ -256,7 +256,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         if not sphere.GetAttribute("xformOp:translate"):
             UsdGeom.Xformable(sphere).AddTranslateOp()
         sphere.GetAttribute("xformOp:translate").Set((-1, -1, 2))
-        add_update_semantics(sphere, "MySphere")
+        add_labels(sphere, labels=["MySphere"], instance_name="class")
 
         # Create a render product using the viewport perspective camera
         rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))

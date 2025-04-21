@@ -18,7 +18,7 @@ import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import Camera
 from omni.kit.viewport.utility import get_active_viewport
@@ -100,8 +100,8 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
                 orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
             )
         )
-        add_update_semantics(self.cube_2.prim, "cube")
-        add_update_semantics(self.cube_3.prim, "cube")
+        add_labels(self.cube_2.prim, labels=["cube"], instance_name="class")
+        add_labels(self.cube_3.prim, labels=["cube"], instance_name="class")
         await update_stage_async()
         await update_stage_async()
         await self.my_world.reset_async()

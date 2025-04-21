@@ -26,7 +26,7 @@ import omni.kit.usd
 import omni.kit.viewport.utility
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native import get_assets_root_path_async
@@ -91,10 +91,10 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
         (result, error) = await open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
         await omni.kit.app.get_app().next_update_async()
         cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
-        add_update_semantics(cube_1.prim, "Cube0")
+        add_labels(cube_1.prim, labels=["Cube0"], instance_name="class")
 
         cube_2 = VisualCuboid("/cube_2", position=[-4, 4, 0], scale=[1.5, 1, 1])
-        add_update_semantics(cube_2.prim, "Cube1")
+        add_labels(cube_2.prim, labels=["Cube1"], instance_name="class")
 
         viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
         try:

@@ -17,7 +17,7 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from pxr import Sdf, UsdGeom, UsdPhysics
 
 
@@ -52,7 +52,7 @@ def run_example():
     if not cube.GetAttribute("xformOp:translate"):
         UsdGeom.Xformable(cube).AddTranslateOp()
     cube.GetAttribute("xformOp:translate").Set((0, 0, 2))
-    add_update_semantics(cube, "MyCube")
+    add_labels(cube, labels=["MyCube"], instance_name="class")
 
     # Createa a sphere with colliders and rigid body dynamics next to the cube
     sphere = stage.DefinePrim("/World/Sphere", "Sphere")
@@ -60,7 +60,7 @@ def run_example():
     if not sphere.GetAttribute("xformOp:translate"):
         UsdGeom.Xformable(sphere).AddTranslateOp()
     sphere.GetAttribute("xformOp:translate").Set((-1, -1, 2))
-    add_update_semantics(sphere, "MySphere")
+    add_labels(sphere, labels=["MySphere"], instance_name="class")
 
     # Create a render product using the viewport perspective camera
     rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))

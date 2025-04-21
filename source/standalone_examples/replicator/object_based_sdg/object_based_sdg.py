@@ -112,7 +112,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 import usdrt
-from isaacsim.core.utils.semantics import add_update_semantics, remove_all_semantics
+from isaacsim.core.utils.semantics import add_labels, remove_labels
 from isaacsim.storage.native import get_assets_root_path
 from omni.physx import get_physx_interface, get_physx_scene_query_interface
 from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
@@ -130,7 +130,7 @@ if env_url:
     stage = omni.usd.get_context().get_stage()
     # Remove any previous semantics in the loaded stage
     for prim in stage.Traverse():
-        remove_all_semantics(prim)
+        remove_labels(prim, include_descendants=True)
 else:
     omni.usd.get_context().new_stage()
     stage = omni.usd.get_context().get_stage()
@@ -187,7 +187,7 @@ for obj in labeled_assets_and_properties:
         object_based_sdg_utils.add_colliders(prim)
         object_based_sdg_utils.add_rigid_body_dynamics(prim, disable_gravity=floating)
         # Label the asset (any previous 'class' label will be overwritten)
-        add_update_semantics(prim, label)
+        add_labels(prim, labels=[label], instance_name="class")
         if floating:
             floating_labeled_prims.append(prim)
         else:
@@ -247,7 +247,7 @@ for i in range(mesh_distactors_num):
         falling_mesh_distractors.append(prim)
     mesh_distractors.append(prim)
     # Remove any previous semantics on the mesh distractor
-    remove_all_semantics(prim, recursive=True)
+    remove_labels(prim, include_descendants=True)
 
 # REPLICATOR
 # Disable capturing every frame (capture will be triggered manually using the step function)
