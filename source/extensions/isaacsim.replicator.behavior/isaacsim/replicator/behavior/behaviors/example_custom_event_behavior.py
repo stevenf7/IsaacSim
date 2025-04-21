@@ -56,7 +56,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
 
     def on_init(self):
         """Called when the script is assigned to a prim."""
-        self._event_type_out = carb.events.type_from_string(self.EVENT_NAME_OUT)
+        self._event_name_out = self.EVENT_NAME_OUT
         self._valid_prims = []
 
         # App event stream, used to listen to incoming control events, and to publish the state of the behavior script
@@ -80,7 +80,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
         # Unsubscribe from the event stream
         self._reset()
 
-        self._event_sub.unsubscribe()
+        self._event_sub.reset()
         self._event_sub = None
 
         # Exposed variables should be removed if the script is no longer assigned to the prim
@@ -91,42 +91,37 @@ class ExampleCustomEventBehavior(BehaviorScript):
     def setup(self):
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] setup()")
         self._setup()
-        self._event_stream.push(
-            self._event_type_out, payload={"prim_path": str(self.prim_path), "function_name": "setup"}
+        self._event_stream.dispatch_event(
+            event_name=self._event_name_out, payload={"prim_path": str(self.prim_path), "function_name": "setup"}
         )
 
     def update(self):
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] update()")
         self._apply_behavior()
-        self._event_stream.push(
-            self._event_type_out, payload={"prim_path": str(self.prim_path), "function_name": "update"}
+        self._event_stream.dispatch_event(
+            event_name=self._event_name_out, payload={"prim_path": str(self.prim_path), "function_name": "update"}
         )
 
     def reset(self):
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] reset()")
         self._reset()
-        self._event_stream.push(
-            self._event_type_out, payload={"prim_path": str(self.prim_path), "function_name": "reset"}
+        self._event_stream.dispatch_event(
+            event_name=self._event_name_out, payload={"prim_path": str(self.prim_path), "function_name": "reset"}
         )
 
     def _on_event(self, event: carb.events.IEvent):
-        payload_dict = event.payload.get_dict()
-
-        # If the prim_path is provided in the payload, check if it matches the prim_path of this script
-        payload_prim_path = payload_dict.get("prim_path")
-        if payload_prim_path and payload_prim_path != self.prim_path:
+        # If the specific prim_path is provided, but does not match the prim_path of this script, return
+        if event.payload.get("prim_path", None) and event.payload.get("prim_path") != self.prim_path:
             return
 
-        # Check if the function_name is valid
-        function_name = payload_dict.get("function_name")
-        if function_name in self.ALLOWED_FUNCTIONS:
+        # Check if the function_name is valid, if so call the function
+        if (function_name := event.payload.get("function_name", None)) and function_name in self.ALLOWED_FUNCTIONS:
             getattr(self, function_name)()
 
     def _setup(self):
         # Fetch the exposed attributes
         self._include_children = self._get_exposed_variable("includeChildren")
-        publish_event_name = self._get_exposed_variable("event:output")
-        self._event_type_out = carb.events.type_from_string(publish_event_name)
+        self._event_name_out = self._get_exposed_variable("event:output")
 
         # Get the prims to apply the behavior to
         if self._include_children:

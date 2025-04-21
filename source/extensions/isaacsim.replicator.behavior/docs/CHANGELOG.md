@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2025-04-21
+### Changed
+- Event 2.0 handling
+- Updated sdg pipeline golden images
+
 ## [1.0.14] - 2025-04-17
 ### Changed
 - changed add_update_semantics to add_labels

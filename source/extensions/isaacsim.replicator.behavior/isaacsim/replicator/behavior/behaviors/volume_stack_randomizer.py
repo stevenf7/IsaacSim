@@ -146,7 +146,7 @@ class VolumeStackRandomizer(BehaviorScript):
     def on_init(self):
         """Called when the script is assigned to a prim."""
         self._state = BehaviorState.INIT
-        self._event_type_out = carb.events.type_from_string(self.EVENT_NAME_OUT)
+        self._event_name_out = self.EVENT_NAME_OUT
         self._drop_height = 2.0
         self._physics_material = None
         self._render_simulation = True
@@ -178,7 +178,7 @@ class VolumeStackRandomizer(BehaviorScript):
     def on_destroy(self):
         """Called when the script is unassigned from a prim."""
         # Unsubscribe from the event stream
-        self._event_sub.unsubscribe()
+        self._event_sub.reset()
         self._event_sub = None
 
         asyncio.ensure_future(self._reset_async())
@@ -189,19 +189,13 @@ class VolumeStackRandomizer(BehaviorScript):
             omni.kit.window.property.get_window().request_rebuild()
 
     def _on_event(self, event: carb.events.IEvent):
-        # Get the payload as a dictionary
-        payload_in = event.payload.get_dict()
-
-        # If the prim_path is provided in the payload, check if it matches the prim_path of this script
-        payload_prim_path = payload_in.get("prim_path")
-        if payload_prim_path and payload_prim_path != self.prim_path:
+        # If the specific prim_path is provided, but does not match the prim_path of this script, return
+        if (prim_path := event.payload.get("prim_path")) and prim_path != self.prim_path:
             return
 
         # Get the action from the payload and call the corresponding function from the mapping
-        action = payload_in.get("action", None)
-        if action and action in self.ACTION_FUNCTION_MAP:
-            function_name = self.ACTION_FUNCTION_MAP.get(action, None)
-            if function_name:
+        if (action := event.payload.get("action", None)) and action in self.ACTION_FUNCTION_MAP:
+            if function_name := self.ACTION_FUNCTION_MAP.get(action, None):
                 try:
                     if action == "reset" and self._state == BehaviorState.RUNNING:
                         self._reset_requested = True
@@ -223,12 +217,12 @@ class VolumeStackRandomizer(BehaviorScript):
             "state_name": self._state.name,
         }
         if self._event_stream:
-            self._event_stream.push(self._event_type_out, payload=payload_out)
+            self._event_stream.dispatch_event(event_name=self._event_name_out, payload=payload_out)
 
     async def _setup_async(self):
         # Fetch the exposed attributes
         include_children = self._get_exposed_variable("includeChildren")
-        publish_event_name = self._get_exposed_variable("event:output")
+        self._event_name_out = self._get_exposed_variable("event:output")
         asset_list = self._get_exposed_variable("assets:assets")
         assets_csv = self._get_exposed_variable("assets:csv")
         num_assets_range = self._get_exposed_variable("assets:numRange")
@@ -236,9 +230,6 @@ class VolumeStackRandomizer(BehaviorScript):
         self._render_simulation = self._get_exposed_variable("renderSimulation")
         self._remove_rigid_body_dynamics = self._get_exposed_variable("removeRigidBodyDynamics")
         self._preserve_simulation_state = self._get_exposed_variable("preserveSimulationState")
-
-        # Get the event type from the event name
-        self._event_type_out = carb.events.type_from_string(publish_event_name)
 
         # Set the simulation delta time
         self._physx_dt = 1 / self.stage.GetTimeCodesPerSecond()
