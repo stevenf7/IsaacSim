@@ -75,7 +75,9 @@ omni.kit.app.get_app().update()
 timeline = omni.timeline.get_timeline_interface()
 cameras = []
 for i in range(n_camera):
-    cameras.append(rep.create.camera(name=f"cam_{i}", position=[-8, 13, 2.0], rotation=i * 15))
+    cameras.append(
+        rep.create.camera(name=f"cam_{i}", position=[-8, 13, 2.0], rotation=[90, 0, 90 + i * 360 / n_camera])
+    )
 render_products = []
 for i, cam in enumerate(cameras):
     render_products.append(rep.create.render_product(cam, (resolution[0], resolution[1]), name=f"rp_{i}"))
