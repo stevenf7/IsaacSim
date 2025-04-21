@@ -6,7 +6,11 @@ import json
 import logging
 import os
 import platform
+import re
+import sys
 from pathlib import Path
+
+import packmanapi
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +21,19 @@ REPO_CACHE_FILE = os.path.join(REPO_ROOT, "repo-cache.json")
 def repoman_bootstrap():
     _path_checks()
     _prep_cache_paths()
+    _pull_optional_deps()
+
+
+def _pull_optional_deps():
+    """
+    Pull optional dependencies if repo-deps-<suffix> exists as determined by _opt_deps_suffix()
+    """
+    OPT_DEPS_FILE = Path(REPO_ROOT, f"deps/repo-deps-{_opt_deps_suffix()}.packman.xml")
+    if OPT_DEPS_FILE.is_file():
+        deps = packmanapi.pull(OPT_DEPS_FILE.as_posix())
+        for dep_path in deps.values():
+            if dep_path not in sys.path:
+                sys.path.append(dep_path)
 
 
 def _path_checks():
@@ -86,3 +103,29 @@ def _prep_cache_paths():
             elif cache == "UV_CACHE_DIR":
                 os.environ["OM_UV_CACHE"] = "1"
                 os.environ["OMNI_REPO_ROOT"] = ""
+
+
+def _opt_deps_suffix():
+    """
+    We want a general ability to specify an optional set of repo-tool dependencies for internal use.
+    Since this config must be checked for before repo_man has been bootstrapped, accessing with toml
+    is not an option. This is invoked on every tool startup, and needs to be fast, so a very simple
+    load-and-search is used. No config-resolution occurs at this point.
+
+    This is only accessed in the repoman.py entrypoint, and should not be used anywhere else.
+
+    If this value is needed later in other contexts, it can instead be gotten from the resolved config.
+    """
+
+    opt_deps_suffix = "nv"
+    repo_toml = Path(REPO_ROOT, "repo.toml")
+    if repo_toml.is_file():
+        with open(repo_toml, "r") as f:
+            for line in f.readlines():
+                line = line.lstrip()
+                if line.startswith("optional_deps_suffix"):
+                    match = re.search(r"""optional_deps_suffix.=.['"](.+?)['"]""", line)
+                    if match:
+                        opt_deps_suffix = match.group(1)
+                        break
+    return opt_deps_suffix
