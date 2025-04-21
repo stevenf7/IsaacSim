@@ -205,15 +205,14 @@ async def publish_event_and_wait_for_completion_async(
     # Callback to listen to incoming events
     def on_event_received(event: carb.events.IEvent) -> None:
         """Checks if the event payload matches the expected key-value pairs."""
-        payload_dict = event.payload.get_dict()
-        if all(item in payload_dict.items() for item in expected_payload.items()):
+        if all(item in event.payload.items() for item in expected_payload.items()):
             if verbose:
-                print(f"\tAction completed, received payload: {payload_dict}")
+                print(f"\tAction completed, received payload: {event.payload}")
             nonlocal is_action_complete
             is_action_complete = True
         else:
             if verbose:
-                print(f"\tAction not complete, received payload: {payload_dict}, continuing..")
+                print(f"\tAction not complete, received payload: {event.payload}, continuing..")
 
     # Start listening to incoming events
     message_bus = carb.eventdispatcher.get_eventdispatcher()
@@ -225,7 +224,6 @@ async def publish_event_and_wait_for_completion_async(
 
     try:
         # Publish the payload
-        pub_event_type = carb.events.type_from_string(publish_event_name)
         if verbose:
             print(f"Publishing payload: {publish_payload}")
             print(f"Waiting for response: {expected_payload}")
@@ -245,6 +243,7 @@ async def publish_event_and_wait_for_completion_async(
         # Unsubscribe from events
         if verbose:
             print(f"Unsubscribing from {subscribe_event_name}")
-        sub_pop.unsubscribe()
+        sub_pop.reset()
+        sub_pop = None
 
     return is_action_complete
