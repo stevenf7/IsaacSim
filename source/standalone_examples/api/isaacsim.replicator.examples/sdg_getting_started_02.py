@@ -16,7 +16,7 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 
 import omni.replicator.core as rep
 import omni.usd
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from omni.replicator.core import Writer
 from pxr import Sdf, UsdGeom
 
@@ -51,7 +51,7 @@ def run_example():
     dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
     dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
     cube = stage.DefinePrim("/World/Cube", "Cube")
-    add_update_semantics(cube, "MyCube")
+    add_labels(cube, labels=["MyCube"], instance_name="class")
 
     # Capture from two perspectives, a custom camera and the viewport perspective camera
     camera = stage.DefinePrim("/World/Camera", "Camera")

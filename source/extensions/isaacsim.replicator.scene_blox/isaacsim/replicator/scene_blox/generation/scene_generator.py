@@ -27,7 +27,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import add_reference_to_stage, save_stage
 from isaacsim.replicator.scene_blox.grid_utils.config import GlobalRNG
 from isaacsim.replicator.scene_blox.grid_utils.grid import Grid
@@ -148,4 +148,4 @@ class SceneGenerator:
                 world.scene.add(prim)
             # Add semantic label if required
             if "semantic" in config:
-                add_update_semantics(fixed_prim, config["semantic"])
+                add_labels(fixed_prim, labels=[config["semantic"]], instance_name="class")

@@ -52,7 +52,7 @@ import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.core.utils.prims import add_update_semantics
+from isaacsim.core.utils.prims import add_labels
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera
 from omni.replicator.core import AnnotatorRegistry, Writer
@@ -193,7 +193,7 @@ cube = world.scene.add(
         color=np.array([255, 0, 0]),
     )
 )
-add_update_semantics(cube.prim, "cube")
+add_labels(cube.prim, labels=["cube"], instance_name="class")
 
 camera = None
 writer = None

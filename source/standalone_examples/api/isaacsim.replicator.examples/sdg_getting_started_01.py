@@ -16,7 +16,7 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 
 import omni.replicator.core as rep
 import omni.usd
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from pxr import Sdf
 
 
@@ -30,7 +30,7 @@ def run_example():
     dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
     dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
     cube = stage.DefinePrim("/World/Cube", "Cube")
-    add_update_semantics(cube, "MyCube")
+    add_labels(cube, labels=["MyCube"], instance_name="class")
 
     # Create a render product using the viewport perspective camera
     rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))

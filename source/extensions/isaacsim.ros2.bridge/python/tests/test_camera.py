@@ -25,7 +25,7 @@ import omni.kit.usd
 import omni.kit.viewport.utility
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native import get_assets_root_path_async
@@ -89,7 +89,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         await open_stage_async(self._assets_root_path + scene_path)
 
         cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
-        add_update_semantics(cube_1.prim, "Cube0")
+        add_labels(cube_1.prim, labels=["Cube0"], instance_name="class")
 
         import rclpy
         import usdrt.Sdf
@@ -284,10 +284,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         cube_2 = VisualCuboid("/cube_2", position=[-1.5, 0, 0], scale=[1, 2, 1])
         cube_3 = VisualCuboid("/cube_3", position=[100, 0, 0], scale=[1, 1, 3])
         cube_4 = VisualCuboid("/cube_4", position=[0, 1, 0], scale=[1, 1, 3])
-        add_update_semantics(cube_1.prim, "Cube0")
-        add_update_semantics(cube_2.prim, "Cube1")
-        add_update_semantics(cube_3.prim, "Cube2")
-        add_update_semantics(cube_4.prim, "Cube3")
+        add_labels(cube_1.prim, labels=["Cube0"], instance_name="class")
+        add_labels(cube_2.prim, labels=["Cube1"], instance_name="class")
+        add_labels(cube_3.prim, labels=["Cube2"], instance_name="class")
+        add_labels(cube_4.prim, labels=["Cube3"], instance_name="class")
         set_camera_view(eye=[0, -6, 0.5], target=[0, 0, 0.5], camera_prim_path="/OmniverseKit_Persp")
         import json
 
@@ -569,7 +569,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
     async def test_empty_semantics(self):
         cube_3 = VisualCuboid("/cube_3", position=[100, 0, 0], scale=[1, 1, 3])
-        add_update_semantics(cube_3.prim, "Cube2")
+        add_labels(cube_3.prim, labels=["Cube2"], instance_name="class")
         set_camera_view(eye=[0, -6, 0.5], target=[0, 0, 0.5], camera_prim_path="/OmniverseKit_Persp")
         import json
 

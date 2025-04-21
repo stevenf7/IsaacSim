@@ -126,7 +126,6 @@ from omni.isaac.core.utils.extensions import disable_extension, enable_extension
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 from omni.isaac.core.utils.prims import (
     add_reference_to_stage,
-    add_update_semantics,
     create_prim,
     define_prim,
     delete_prim,

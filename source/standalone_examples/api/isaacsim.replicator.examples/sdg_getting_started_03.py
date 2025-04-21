@@ -17,7 +17,7 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 
 import omni.replicator.core as rep
 import omni.usd
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from pxr import UsdGeom
 
 
@@ -39,7 +39,7 @@ def run_example():
     # Setup stage
     stage = omni.usd.get_context().get_stage()
     cube = stage.DefinePrim("/World/Cube", "Cube")
-    add_update_semantics(cube, "MyCube")
+    add_labels(cube, labels=["MyCube"], instance_name="class")
 
     # Create a replicator randomizer with custom event trigger
     with rep.trigger.on_custom_event(event_name="randomize_dome_light_color"):

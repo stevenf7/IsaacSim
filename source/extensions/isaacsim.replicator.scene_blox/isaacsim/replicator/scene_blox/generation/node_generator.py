@@ -30,7 +30,7 @@ from isaacsim.core.api.world.world import World
 from isaacsim.core.prims import GeometryPrim, RigidPrim, XFormPrim
 from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.replicator.scene_blox.grid_utils.config import GlobalRNG
 from isaacsim.storage.native import get_full_asset_path
@@ -302,7 +302,7 @@ class NodeGenerator:
         generated = add_reference_to_stage(chosen_usd, target_path)
         # Add semantic if needed
         if "semantic" in prim_config:
-            add_update_semantics(generated, prim_config["semantic"], "class")
+            add_labels(generated, labels=[prim_config["semantic"]], instance_name="class")
         # Select variant if desired
         if "variant" in prim_config:
             variant_config = prim_config["variant"]

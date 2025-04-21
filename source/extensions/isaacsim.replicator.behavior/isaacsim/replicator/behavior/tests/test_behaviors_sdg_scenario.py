@@ -148,7 +148,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         import omni.replicator.core as rep
         import omni.timeline
         import omni.usd
-        from isaacsim.core.utils.semantics import add_update_semantics, remove_all_semantics
+        from isaacsim.core.utils.semantics import add_labels, remove_labels
         from isaacsim.replicator.behavior.behaviors import (
             LightRandomizer,
             LocationRandomizer,
@@ -320,8 +320,8 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             if not target_prim.HasAttribute("xformOp:translate"):
                 UsdGeom.Xformable(target_prim).AddTranslateOp()
             target_prim.GetAttribute("xformOp:translate").Set(TARGET_ASSET_LOCATION)
-            remove_all_semantics(target_prim, recursive=True)
-            add_update_semantics(target_prim, TARGET_ASSET_LABEL)
+            remove_labels(target_prim, include_descendants=True)
+            add_labels(target_prim, labels=[TARGET_ASSET_LABEL], instance_name="class")
 
             # Setup and run the stacking simulation before capturing the data
             await setup_and_run_stacking_simulation_async(pallets_root_prim)

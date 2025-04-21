@@ -91,7 +91,7 @@ import omni.replicator.core as rep
 from isaacsim.core.api import World
 from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 from isaacsim.replicator.writers import PoseWriter, YCBVideoWriter
 from isaacsim.storage.native import get_assets_root_path
 
@@ -425,7 +425,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
                 # Add semantic information
                 mesh_prim = world.stage.GetPrimAtPath(mesh_path)
-                add_update_semantics(mesh_prim, prim_type)
+                add_labels(mesh_prim, labels=[prim_type], instance_name="class")
 
                 train_part_idx += 1
 

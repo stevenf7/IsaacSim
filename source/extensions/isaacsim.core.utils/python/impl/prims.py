@@ -18,7 +18,7 @@ import omni.kit
 import omni.usd
 import usdrt
 from isaacsim.core.utils._isaac_utils import _find_matching_prim_paths
-from isaacsim.core.utils.semantics import add_update_semantics
+from isaacsim.core.utils.semantics import add_labels
 
 # isaacsim
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
@@ -730,7 +730,7 @@ def create_prim(
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
     # add semantic label to prim
     if semantic_label is not None:
-        add_update_semantics(prim, semantic_label, semantic_type)
+        add_labels(prim, labels=[semantic_label], instance_name=semantic_type)
     # apply the transformations
     from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 

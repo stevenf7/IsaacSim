@@ -406,7 +406,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
         ### Code Start
         import omni.usd
-        from isaacsim.core.utils.semantics import add_update_semantics
+        from isaacsim.core.utils.semantics import add_labels
 
         def remove_prefix(name, prefix):
             if name.startswith(prefix):
@@ -429,4 +429,4 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
                 label = remove_prefix(label, "SM_")
                 label = remove_numerical_suffix(label)
                 label = remove_underscores(label)
-                add_update_semantics(prim, semantic_label=label, type_label="class")
+                add_labels(prim, labels=[label], instance_name="class")

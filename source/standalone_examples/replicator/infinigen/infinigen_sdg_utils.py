@@ -20,7 +20,7 @@ import omni.physx
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.semantics import add_update_semantics, remove_all_semantics
+from isaacsim.core.utils.semantics import add_labels, remove_labels
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
@@ -373,7 +373,7 @@ def load_mesh_distractors(mesh_distractors_config: dict) -> tuple[list[Usd.Prim]
         num_meshes, mesh_urls, "/Distractors", mesh_gravity_disabled_chance
     )
     for prim in chain(floating_meshes, falling_meshes):
-        remove_all_semantics(prim, recursive=True)
+        remove_labels(prim, include_descendants=True)
     return floating_meshes, falling_meshes
 
 
@@ -403,8 +403,8 @@ def create_auto_labeled_assets(
             print(f"[SDG-Infinigen] Failed to load mesh distractor reference {asset_url} with exception: {e}")
             continue
         add_colliders_and_rigid_body_dynamics(prim, disable_gravity=disable_gravity)
-        remove_all_semantics(prim, recursive=True)
-        add_update_semantics(prim, label)
+        remove_labels(prim, include_descendants=True)
+        add_labels(prim, labels=[label], instance_name="class")
         (floating_assets if disable_gravity else falling_assets).append(prim)
     return floating_assets, falling_assets
 
@@ -450,8 +450,8 @@ def create_labeled_assets(
 
         prim = add_reference_to_stage(usd_path=asset_url, prim_path=prim_path)
         add_colliders_and_rigid_body_dynamics(prim, disable_gravity=disable_gravity)
-        remove_all_semantics(prim, recursive=True)
-        add_update_semantics(prim, label)
+        remove_labels(prim, include_descendants=True)
+        add_labels(prim, labels=[label], instance_name="class")
         (floating_assets if disable_gravity else falling_assets).append(prim)
     return floating_assets, falling_assets
 

@@ -38,7 +38,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import omni.kit.commands
         import omni.replicator.core as rep
         import omni.usd
-        from isaacsim.core.utils.semantics import add_update_semantics
+        from isaacsim.core.utils.semantics import add_labels
         from pxr import Gf, Sdf, UsdGeom
 
         omni.usd.get_context().new_stage()
@@ -46,11 +46,11 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
 
         sphere = stage.DefinePrim("/World/Sphere", "Sphere")
         UsdGeom.Xformable(sphere).AddTranslateOp().Set((0.0, 1.0, 1.0))
-        add_update_semantics(sphere, "sphere", "class")
+        add_labels(sphere, labels=["sphere"], instance_name="class")
 
         cube = stage.DefinePrim("/World/Cube", "Cube")
         UsdGeom.Xformable(cube).AddTranslateOp().Set((0.0, -2.0, 2.0))
-        add_update_semantics(cube, "cube", "class")
+        add_labels(cube, labels=["cube"], instance_name="class")
 
         plane_path = "/World/Plane"
         omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_path=plane_path, prim_type="Plane")
@@ -119,7 +119,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import numpy as np
         import omni.replicator.core as rep
         import omni.usd
-        from isaacsim.core.utils.semantics import add_update_semantics, get_semantics
+        from isaacsim.core.utils.semantics import add_labels, get_labels
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Gf, Sdf, UsdGeom, UsdShade
 
@@ -130,7 +130,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
 
         sphere = stage.DefinePrim("/World/Sphere", "Sphere")
         UsdGeom.Xformable(sphere).AddTranslateOp().Set((0.0, 0.0, 1.0))
-        add_update_semantics(sphere, "sphere", "class")
+        add_labels(sphere, labels=["sphere"], instance_name="class")
 
         num_cubes = 10
         for _ in range(num_cubes):
@@ -142,7 +142,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
             )
             scale_rand = np.random.uniform(0.25, 0.5)
             UsdGeom.Xformable(cube).AddScaleOp().Set((scale_rand, scale_rand, scale_rand))
-            add_update_semantics(cube, "cube", "class")
+            add_labels(cube, labels=["cube"], instance_name="class")
 
         plane_path = "/World/Plane"
         omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_path=plane_path, prim_type="Plane")
@@ -153,7 +153,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
             stage = omni.usd.get_context().get_stage()
             shapes = []
             for prim in stage.Traverse():
-                sem_dict = get_semantics(prim)
+                sem_dict = get_labels(prim)
                 sem_values = sem_dict.values()
                 if ("class", "cube") in sem_values or ("class", "sphere") in sem_values:
                     shapes.append(prim)
