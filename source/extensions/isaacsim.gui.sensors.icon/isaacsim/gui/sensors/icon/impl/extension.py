@@ -27,7 +27,7 @@ class SensorIconExtension(omni.ext.IExt):
 
         # register sensor icon to stage widget
         self._sensor_icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
-        self._sensor_icon_path = str(Path(self._sensor_icon_dir).joinpath("icons/sensor.svg"))
+        self._sensor_icon_path = str(Path(self._sensor_icon_dir).joinpath("icons/icoSensors.svg"))
 
         self._sensor_tpye = IconModel.SENSOR_TYPES
         self._stage_icons = omni.kit.widget.stage.StageIcons()

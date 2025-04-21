@@ -46,7 +46,7 @@ class IconModel(sc.AbstractManipulatorModel):
         # this should re-create when open stage
         super().__init__()
         self._sensor_icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
-        self._sensor_icon_path = str(Path(self._sensor_icon_dir).joinpath("icons/sensor.svg"))
+        self._sensor_icon_path = str(Path(self._sensor_icon_dir).joinpath("icons/icoSensors.svg"))
         self._usd_context = omni.usd.get_context()
         stage = self._usd_context.get_stage()
         self._world_unit = 0.0

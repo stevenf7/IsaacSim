@@ -8,7 +8,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.2"
+version = "0.1.3"
 category = "other"
 title = "Sensor Icon"
 description = "sensor icon in viewport"
