@@ -171,7 +171,7 @@
 
 ## [0.6.1] - 2023-02-15
 ### Added
-- Added DropDown and FloatField UI wrappers in omni.issac.ui/element_wrappers
+- Added DropDown and FloatField UI wrappers in omni.isaac.ui/element_wrappers
 
 ## [0.6.0] - 2023-02-13
 ### Added
