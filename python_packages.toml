@@ -317,6 +317,7 @@ inventory.include = [
     "exts/isaacsim.gui.menu",
     "exts/isaacsim.gui.property",
     "exts/isaacsim.gui.sensors.icon",
+    "exts/isaacsim.gui.content_browser",
     # deprecated extensions
     "extsDeprecated/omni.isaac.menu",
     "extsDeprecated/omni.isaac.ui",
