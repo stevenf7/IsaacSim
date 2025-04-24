@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.3] - 2025-04-24
+### Fixed
+- fixed _build_recent_menu bug
+
 ## [2.2.2] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

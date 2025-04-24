@@ -220,7 +220,7 @@ class FileMenuExtension:
         self._build_sample_menu()
         omni.kit.menu.utils.add_menu_items(self._file_menu_list, "File", -10, delegate=self._file_delegate)
 
-    def _build_recent_menu(self):
+    def _build_recent_menu(self, event: carb.events.IEvent = None):
         recent_files = get_latest_urls_from_event_queue(self._max_recent_files, asset_type=asset_types.ASSET_TYPE_USD)
         sub_menu = []
         # add reopen
