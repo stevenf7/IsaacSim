@@ -45,7 +45,7 @@ class FollowTarget(tasks.FollowTarget):
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             raise Exception("Could not find Isaac Sim assets folder")
-        asset_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/cobotta")
         gripper = ParallelGripper(
             end_effector_prim_path="/World/cobotta/onrobot_rg6_base_link",

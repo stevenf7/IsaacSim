@@ -1,5 +1,5 @@
 [package]
-version = "1.0.7"
+version = "1.0.8"
 category = "Simulation"
 title = "Lula Test Widget"
 description = "Run Simple Tests Using Lula Algorithms"

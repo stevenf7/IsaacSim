@@ -73,8 +73,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         stage.DefinePrim(f"/World", "Xform")
         for i in range(3):
             stage_utils.add_reference_to_stage(
-                f"{assets_root_path}/Isaac/Robots/Franka/franka_alt_fingers.usd",
+                f"{assets_root_path}/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
                 prim_path=f"/World/prim_{i}",
             )
         # test case
-        await self.assertDocTests(Articulation, stop_on_failure=True)
+        await self.assertDocTests(Articulation, stop_on_failure=False)

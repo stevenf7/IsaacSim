@@ -46,7 +46,7 @@ parser.add_argument(
 parser.add_argument(
     "--usd-path",
     type=str,
-    default="/Isaac/Robots/Denso/cobotta_pro_900.usd",
+    default="/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd",
     help="Path to supported robot on Nucleus Server",
 )
 parser.add_argument("--add-orientation-target", action="store_true", default=False, help="Add orientation target")

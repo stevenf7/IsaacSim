@@ -147,7 +147,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_c_space_traj_gen_cobotta(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path += "/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
 
@@ -327,7 +327,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_task_space_traj_gen_cobotta_900(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path += "/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
         ee_frame = "gripper_center"
@@ -346,7 +346,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def test_lula_task_space_traj_gen_cobotta_1300(self):
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Denso/CobottaPro1300/cobotta_pro_1300.usd"
         robot_name = "Cobotta_Pro_1300"
         robot_prim_path = "/cobotta_pro_1300"
         ee_frame = "gripper_center"

@@ -25,7 +25,7 @@ def parametrize(
     amounts: list[str],
     max_num_prims: int = 5,
     articulation_kwargs: dict = {},
-    partial_usd_path: str = "Isaac/Robots/Simple/simple_articulation.usd",
+    partial_usd_path: str = "Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd",
 ):
     def decorator(func):
         async def wrapper(self):
@@ -752,7 +752,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         backends=["tensor"],
         amounts=["many"],
         articulation_kwargs={"positions": [[x, 0, 0] for x in range(5)], "reset_xform_op_properties": True},
-        partial_usd_path="Isaac/Robots/ShadowHand/shadow_hand.usd",
+        partial_usd_path="Isaac/Robots/ShadowRobot/ShadowHand/shadow_hand.usd",
     )
     async def test_fixed_tendons_properties(self, prim, num_prims, device, backend):
         def _check(input, expected_output, output, count, num_tendons):
