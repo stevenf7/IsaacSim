@@ -1,4 +1,8 @@
-# Changelog
+
+## [4.3.1] - 2025-04-21
+### Changed
+- Update Cartpole USD path
+- Update articulation view tests boundary and infeasible states
 
 ## [4.3.0] - 2025-04-15
 ### Changed

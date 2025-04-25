@@ -190,7 +190,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_cobotta_900(self):
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
 
@@ -198,7 +198,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_cobotta_1300(self):
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Denso/CobottaPro1300/cobotta_pro_1300.usd"
         robot_name = "Cobotta_Pro_1300"
         robot_prim_path = "/cobotta_pro_1300"
 

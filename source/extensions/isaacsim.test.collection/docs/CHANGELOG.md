@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.11] - 2025-04-21
+### Changed
+- Update Denso robot USD path
+
 ## [2.0.10] - 2025-04-17
 ### Changed
 - changed add_update_semantics to add_labels

@@ -436,7 +436,7 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> prims.num_shapes
-            17
+            25
         """
         assert self._physics_tensor_entity_initialized, _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED
         return self._num_shapes
@@ -2349,7 +2349,7 @@ class Articulation(XformPrim):
 
         Returns:
             The drive types. Possible values are ``acceleration`` or ``force`` (shape ``(N, D)``).
-
+            If the drive type is not set, ``None`` is returned.
         Raises:
             AssertionError: Wrapped prims are not valid.
 
@@ -2360,7 +2360,7 @@ class Articulation(XformPrim):
             >>> # get the drive types of the first prim
             >>> drive_types = prims.get_dof_drive_types(indices=[0])
             >>> print(drive_types)
-            [['force', 'force', 'force', 'force', 'force', 'force', 'force', 'force', 'force']]
+            [['force', 'force', 'force', 'force', 'force', 'force', 'force', 'force', 'none']]
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
@@ -2410,10 +2410,11 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> # set the DOF drive types for all prims to 'acceleration'
-            >>> prims.set_dof_drive_types("acceleration")
+            >>> # note that dof indices 8 is a mimic joint, it does not have a DOF drive
+            >>> prims.set_dof_drive_types("acceleration", dof_indices=[0, 1, 2, 3, 4, 5, 6, 7])
             >>>
             >>> # set the drive types for the all prims' finger DOFs to 'force'
-            >>> prims.set_dof_drive_types("force", dof_indices=[7, 8])
+            >>> prims.set_dof_drive_types("force", dof_indices=[7])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API

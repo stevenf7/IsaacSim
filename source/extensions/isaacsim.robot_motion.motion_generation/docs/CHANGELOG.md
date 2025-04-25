@@ -1,5 +1,9 @@
 # Changelog
 
+## [8.0.14] - 2025-04-21
+### Changed
+- Update Denso robots paths
+
 ## [8.0.13] - 2025-04-11
 ### Changed
 - Update Isaac Sim robot asset path

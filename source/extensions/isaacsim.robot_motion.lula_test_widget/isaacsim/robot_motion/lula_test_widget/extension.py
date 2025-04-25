@@ -696,10 +696,6 @@ class Extension(omni.ext.IExt):
                 }
                 self._models["input_rmp_config_file"] = str_builder(**kwargs)
                 self._models["input_rmp_config_file"].add_value_changed_fn(check_file_type)
-                # TODO: remove hard coded line below
-                # self._rmpflow_config_yaml = (
-                #     "/home/arudich/Desktop/Denso/Cobotta_Pro_900_Assets/cobotta_rmpflow_config_final.yaml"
-                # )
 
                 def toggle_rmpflow_debug_mode(model=None):
                     self._test_scenarios.toggle_rmpflow_debug_mode()

@@ -43,7 +43,7 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
 
     async def test_simulation_context_crash(self):
         usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        usd_path += "/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd"
         robot_prim_path = "/cobotta_pro_900"
 
         add_reference_to_stage(usd_path, robot_prim_path)

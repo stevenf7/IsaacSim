@@ -34,8 +34,8 @@ USD_PATH = [True, False]
 BACKEND = ["torch", "numpy", "warp"]
 template_cartpole_position_configs = {
     "feasible states": torch.Tensor([[2, 3.1415 / 2], [2, 3.1415 / 2]]),
-    "boundary states": torch.Tensor([[3, 3.1415 / 2], [3, 3.1415 / 2]]),
-    "infeasible states": torch.Tensor([[4, 3.1415 / 2], [4, 3.1415 / 2]]),
+    "boundary states": torch.Tensor([[4, 3.1415 / 2], [4, 3.1415 / 2]]),
+    "infeasible states": torch.Tensor([[5, 3.1415 / 2], [5, 3.1415 / 2]]),
 }
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -105,7 +105,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
     async def add_cartpoles(self, backend, report_residuals=False, add_blocker=False):
-        asset_path = self._assets_root_path + "/Isaac/Robots/Cartpole/cartpole.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/Cartpole/cartpole.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Cartpole_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Cartpole_2")
         positions = [[0, 0, 2.0], [5, 0, 2.0]]
@@ -183,6 +183,8 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 await self.add_cartpoles(backend="torch", report_residuals=True, add_blocker=add_blocker)
                 pre_value = self._cartpoles_view.get_joint_positions()
                 self._cartpoles_view.set_body_masses(torch.tile(torch.Tensor([1, 1, 1]), (2, 1)))
+                self._cartpoles_view.set_solver_position_iteration_counts(torch.tensor([4, 4]))
+                self._cartpoles_view.set_solver_velocity_iteration_counts(torch.tensor([0, 0]))
                 for i in range(60):
                     await omni.kit.app.get_app().next_update_async()
                     self._cartpoles_view.set_gains(stiffness, damping, save_to_usd=True)
@@ -207,6 +209,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     position,
                     "\nFinal positions:\n",
                     value,
+                    "\npos tol:\n",
+                    pos_tol,
+                    "\nres tol:\n",
+                    res_tol,
                 )
                 if indexed:
                     assertion_function(np.isclose(position[1, 0].cpu(), value[0].cpu(), atol=pos_tol).all())
@@ -252,7 +258,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             {
                 "assertion": self.assertFalse,
                 "pos_tol": 0.1,
-                "res_tol": 0.1,
+                "res_tol": 0.06,
             },  # overshoots, expecting large large residuals
             {
                 "assertion": self.assertFalse,
