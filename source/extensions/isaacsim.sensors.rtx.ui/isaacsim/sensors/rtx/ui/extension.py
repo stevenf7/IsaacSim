@@ -15,7 +15,7 @@ import carb
 import omni.ext
 import omni.kit.commands
 from isaacsim.core.utils.prims import create_prim, set_prim_visibility
-from isaacsim.core.utils.stage import get_next_free_path
+from isaacsim.core.utils.stage import add_reference_to_stage, get_next_free_path
 from isaacsim.storage.native import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf, Tf
@@ -24,11 +24,23 @@ from pxr import Gf, Tf
 class Extension(omni.ext.IExt):
     HESAI = [{"name": "XT-32 10hz", "filepath": "/Isaac/Sensors/HESAI/XT-32.usd"}]
     NVIDIA = [
-        {"name": "Debug Rotary", "filepath": "/Isaac/Sensors/NVIDIA/Debug_Rotary.usda"},
-        {"name": "Example Rotary 2D", "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda"},
-        {"name": "Example Rotary Beams", "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda"},
-        {"name": "Example Rotary", "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary.usda"},
-        {"name": "Simple Example Solid State", "filepath": "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda"},
+        {"name": "Debug Rotary", "filepath": "/Isaac/Sensors/NVIDIA/Debug_Rotary.usda", "prim_type": "OmniLidar"},
+        {
+            "name": "Example Rotary 2D",
+            "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda",
+            "prim_type": "OmniLidar",
+        },
+        {
+            "name": "Example Rotary Beams",
+            "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda",
+            "prim_type": "OmniLidar",
+        },
+        {"name": "Example Rotary", "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary.usda", "prim_type": "OmniLidar"},
+        {
+            "name": "Simple Example Solid State",
+            "filepath": "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
+            "prim_type": "OmniLidar",
+        },
     ]
     OUSTER = [
         {"name": "OS0", "filepath": "/Isaac/Sensors/Ouster/OS0/OS0.usd"},
@@ -49,8 +61,8 @@ class Extension(omni.ext.IExt):
         {"name": "VLS 128", "filepath": "/Isaac/Sensors/Velodyne/vls-128/vls_128.usd"},
     ]
     ZVISION = [
-        {"name": "ML305", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda"},
-        {"name": "MLXS", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda"},
+        {"name": "ML305", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda", "prim_type": "OmniLidar"},
+        {"name": "MLXS", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda", "prim_type": "OmniLidar"},
     ]
 
     LIDAR_DICT = {
@@ -74,13 +86,14 @@ class Extension(omni.ext.IExt):
             for sensor in sensors:
                 sensor_name = sensor["name"]
                 sensor_filepath = sensor["filepath"]
+                sensor_prim_type = sensor.get("prim_type", "Xform")
                 # Create a menu item with an onclick function that creates the sensor prim
                 vendor_menu_items.append(
                     {
                         "name": sensor_name,
                         "onclick_fn": (
-                            lambda *_, sensor_name=sensor_name, sensor_filepath=sensor_filepath: self._create_sensor(
-                                sensor_name, sensor_filepath
+                            lambda *_, sensor_name=sensor_name, sensor_filepath=sensor_filepath, sensor_prim_type=sensor_prim_type: self._create_sensor(
+                                sensor_name, sensor_filepath, sensor_prim_type
                             )
                         ),
                     }
@@ -156,9 +169,9 @@ class Extension(omni.ext.IExt):
             curr_prim = None
         return curr_prim
 
-    def _create_sensor(self, sensor_name, sensor_filepath):
-        create_prim(
-            prim_path=get_next_free_path("/" + Tf.MakeValidIdentifier(sensor_name), None),
-            prim_type="Xform",
+    def _create_sensor(self, sensor_name, sensor_filepath, sensor_prim_type):
+        add_reference_to_stage(
             usd_path=get_assets_root_path() + sensor_filepath,
+            prim_path=get_next_free_path("/" + Tf.MakeValidIdentifier(sensor_name), None),
+            prim_type=sensor_prim_type,
         )

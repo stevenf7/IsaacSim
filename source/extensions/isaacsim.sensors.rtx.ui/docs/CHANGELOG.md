@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.5] - 2025-04-28
+### Fixed
+- Correctly set prim TypeName to "OmniLidar" for Lidars specified as USDAs
+
 ## [1.0.4] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
