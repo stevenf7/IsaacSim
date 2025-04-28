@@ -58,7 +58,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         return window
 
-    async def testLoadButton(self):
+    async def test_load_button(self):
         window_title = "UI_Widget_Wrapper_Test_Window_LoadButton_Test"
         width = 500
         height = 200
@@ -106,7 +106,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         self.assertTrue(self.setup_scene_called)
         self.assertTrue(self.setup_post_load_called)
 
-    async def testResetButton(self):
+    async def test_reset_button(self):
         window_title = "UI_Widget_Wrapper_Test_Window_ResetButton_Test"
         width = 500
         height = 200

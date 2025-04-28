@@ -12,6 +12,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import carb
 import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import warp as wp
@@ -22,11 +23,11 @@ from isaacsim.sensors.camera import Camera
 def test_camera_annotator_data(test_name, data, expected_class, expected_dtype, expected_shape):
     print(f"{test_name}: data.shape: {data.shape}; dtype: {data.dtype}; type: {type(data)}")
     if not isinstance(data, expected_class):
-        raise Exception(f"Data is {type(data)} but expected {expected_class}")
+        carb.log_error(f"Data is {type(data)} but expected {expected_class}")
     if data.dtype != expected_dtype:
-        raise Exception(f"Data dtype is {data.dtype} but expected {expected_dtype}")
+        carb.log_error(f"Data dtype is {data.dtype} but expected {expected_dtype}")
     if data.shape != expected_shape:
-        raise Exception(f"Data shape is {data.shape} but expected {expected_shape}")
+        carb.log_error(f"Data shape is {data.shape} but expected {expected_shape}")
 
 
 my_world = World(stage_units_in_meters=1.0)

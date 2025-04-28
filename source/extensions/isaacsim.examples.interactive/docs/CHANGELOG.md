@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.1] - 2025-04-27
+### Fixed
+- rename ui unit tests and add ui related test settings
+
 ## [4.5.0] - 2025-04-13
 ### Added
 - Franka open drawer policy inference example
