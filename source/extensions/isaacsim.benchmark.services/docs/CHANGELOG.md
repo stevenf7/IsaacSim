@@ -1,4 +1,9 @@
 # Changelog
+## [2.7.0] - 2025-04-25
+### Added
+- Added callback for render thread when async rendering is enabled
+- Added new field: Rendering FPS for async rendering cases
+
 ## [2.6.8] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

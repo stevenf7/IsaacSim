@@ -60,6 +60,7 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         frametime_stats.app_frametime_samples = self.frametime_collector.app_frametimes_ms
         frametime_stats.physics_frametime_samples = self.frametime_collector.physics_frametimes_ms
         frametime_stats.gpu_frametime_samples = self.frametime_collector.gpu_frametimes_ms
+        frametime_stats.renderer_frametime_samples = self.frametime_collector.render_frametimes_ms
         frametime_stats.calc_stats()
 
         measurements_out = []
@@ -157,6 +158,43 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         measurements_out.append(
             measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
         )
+
+        if frametime_stats.renderer_stats["mean"]:
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Mean Render Frametime",
+                    value=frametime_stats.renderer_stats["mean"],
+                    unit="ms",
+                )
+            )
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Stdev Render Frametime",
+                    value=frametime_stats.renderer_stats["stdev"],
+                    unit="ms",
+                )
+            )
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Min Render Frametime",
+                    value=frametime_stats.renderer_stats["min"],
+                    unit="ms",
+                )
+            )
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Max Render Frametime",
+                    value=frametime_stats.renderer_stats["max"],
+                    unit="ms",
+                )
+            )
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Rendering FPS",
+                    value=round(1000 / (frametime_stats.renderer_stats["mean"]), 3),
+                    unit="FPS",
+                )
+            )
 
         if frametime_stats.app_stats["mean"]:
             # Scripts which don't trigger app update will have empty app stats, so app_stars["mean"] will never
