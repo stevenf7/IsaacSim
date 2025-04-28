@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2] - 2025-04-27
+### Fixed
+- Added extension specific unit test settings to fix broken tests
+
 ## [0.1.1] - 2025-04-21
 ### Changed
 - Update Isaac Sim robot asset path

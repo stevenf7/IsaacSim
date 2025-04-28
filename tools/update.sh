@@ -8,6 +8,19 @@ set -e
 # Disable filename expansion (globbing)
 set -f
 
+# Help function
+print_help() {
+  echo "Usage: $0 [options]"
+  echo ""
+  echo "Options:"
+  echo "  -h, --help     Show this help message and exit"
+  echo "  --repo         Run repo update"
+  echo "  --packman      Run packman update"
+  echo "  --extscache    Run build and clean extscache"
+  echo ""
+  exit 0
+}
+
 # Default values for command line options
 RUN_REPO_UPDATE=false
 RUN_PACKMAN_UPDATE=false
@@ -16,6 +29,9 @@ RUN_EXTSCACHE=false
 # Parse command line arguments
 for arg in "$@"; do
   case $arg in
+    -h|--help)
+      print_help
+      ;;
     --repo)
       RUN_REPO_UPDATE=true
       shift
@@ -51,7 +67,7 @@ if [ "$RUN_EXTSCACHE" = true ]; then
   ../repo.sh build -u
 
   # Cleanup
-  python3 isaac/clean_extscache.py --update-locks
+  python3 isaac/clean_extscache.py --update-locks --kit-file="../source/apps/isaacsim.exp.extscache.kit"
 fi
 
 if [ "$RUN_REPO_UPDATE" = true ]; then
