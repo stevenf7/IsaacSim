@@ -25,6 +25,7 @@ logger = utils.set_up_logging(__name__)
 class FrametimeStats:
     app_frametime_samples: List[float] = field(default_factory=list)
     gpu_frametime_samples: List[float] = field(default_factory=list)
+    render_frametimes_ms: List[float] = field(default_factory=list)
 
     app_stats = {}
     physics_stats = {}
@@ -103,3 +104,4 @@ class FrametimeStats:
         self.app_stats = self.stats_helper(self.app_frametime_samples)
         self.physics_stats = self.stats_helper(self.physics_frametime_samples)
         self.gpu_stats = self.stats_helper(self.gpu_frametime_samples)
+        self.renderer_stats = self.stats_helper(self.renderer_frametime_samples)
