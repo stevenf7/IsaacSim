@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.13] - 2025-04-29
+### Fixed
+- prim validation in OgnIsaacComputeOdometry node
+
 ## [2.2.12] - 2025-04-15
 ### Changed
 - Use SimulationManager APIs to get time and simulation state

@@ -95,7 +95,7 @@ public:
                     {
                         db.logError(
                             "The prim %s is not valid. Please specify at least one valid target prim for the ROS pose tree component",
-                            targetPrims[i]);
+                            omni::fabric::toSdfPath(targetPrims[i]).GetText());
                         return false;
                     }
                     state.m_targets[i] = omni::fabric::toSdfPath(targetPrims[i]);
