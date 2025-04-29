@@ -98,7 +98,8 @@ public:
             {
                 if (!stage->GetPrimAtPath(omni::fabric::toSdfPath(prim[0])))
                 {
-                    db.logError("The prim %s is not valid. Please specify at least one valid chassis prim", prim[0]);
+                    db.logError("The prim %s is not valid. Please specify at least one valid chassis prim",
+                                omni::fabric::toSdfPath(prim[0]).GetText());
                     return false;
                 }
                 primPath = omni::fabric::toSdfPath(prim[0]).GetText();
