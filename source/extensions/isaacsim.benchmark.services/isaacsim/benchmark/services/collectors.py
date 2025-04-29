@@ -48,13 +48,17 @@ class IsaacUpdateFrametimeCollector:
 
     """
 
-    def __init__(self, usd_context_name="", hydra_engine="rtx") -> None:
-        try:
-            from omni.hydra.engine.stats import HydraEngineStats
+    def __init__(self, usd_context_name="", hydra_engine="rtx", gpu_frametime: bool = True) -> None:
+        self.gpu_frametime = gpu_frametime
+        self.hydra_engine_stats = None
+        if self.gpu_frametime:
+            try:
+                from omni.hydra.engine.stats import HydraEngineStats
 
-            self.hydra_engine_stats = HydraEngineStats(usd_context_name, hydra_engine)
-        except:
-            self.hydra_engine_stats = None
+                self.hydra_engine_stats = HydraEngineStats(usd_context_name, hydra_engine)
+            except Exception as e:
+                carb.log_warn(f"Failed to initialize HydraEngineStats, GPU frametimes will not be measured: {e}")
+                self.hydra_engine_stats = None
 
         try:
             import omni.physx
@@ -81,10 +85,10 @@ class IsaacUpdateFrametimeCollector:
         timestamp_ns = time.perf_counter_ns()
         app_update_time_ms = round((timestamp_ns - self.__last_main_frametime_timestamp_ns) / 1000 / 1000, 6)
         self.__last_main_frametime_timestamp_ns = timestamp_ns
-        gpu_frametime_ms = get_last_gpu_time_ms(self.hydra_engine_stats)
-        # print(app_update_time_ms, gpu_frametime_ms)
+        if self.gpu_frametime:
+            gpu_frametime_ms = get_last_gpu_time_ms(self.hydra_engine_stats)
+            self.gpu_frametimes_ms.append(gpu_frametime_ms)
         self.app_frametimes_ms.append(app_update_time_ms)
-        self.gpu_frametimes_ms.append(gpu_frametime_ms)
         self.elapsed_sim_time += event.payload["dt"]
 
     def __render_update_event_callback(self, event: carb.events.IEvent):

@@ -1,4 +1,8 @@
 # Changelog
+## [2.8.0] - 2025-04-28
+### Changed
+- GPU frametime collection is off by default, enabled by config in base_isaac_benchmark
+
 ## [2.7.0] - 2025-04-25
 ### Added
 - Added callback for render thread when async rendering is enabled
