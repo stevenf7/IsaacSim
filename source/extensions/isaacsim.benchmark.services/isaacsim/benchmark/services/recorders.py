@@ -30,11 +30,13 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
         context: Optional[interface.InputContext] = None,
         root_dir: Optional[Path] = None,
         benchmark_settings: Optional["BenchmarkSettings"] = None,
+        gpu_frametime: Optional[bool] = False,
     ):
         self.context = context
         self.root_dir = root_dir
         self.benchmark_settings = benchmark_settings
-        self.frametime_collector = IsaacUpdateFrametimeCollector()
+        self.gpu_frametime = gpu_frametime
+        self.frametime_collector = IsaacUpdateFrametimeCollector(gpu_frametime=self.gpu_frametime)
         self.phase = None
 
         self.real_time_start = None
@@ -135,29 +137,34 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
             )
         )
 
-        measurements_out.append(
-            measurements.SingleMeasurement(
-                name=f"Mean GPU Frametime", value=frametime_stats.gpu_stats["mean"], unit="ms"
+        if self.gpu_frametime:
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Mean GPU Frametime", value=frametime_stats.gpu_stats["mean"], unit="ms"
+                )
             )
-        )
 
-        measurements_out.append(
-            measurements.SingleMeasurement(
-                name=f"Stdev GPU Frametime", value=frametime_stats.gpu_stats["stdev"], unit="ms"
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Stdev GPU Frametime", value=frametime_stats.gpu_stats["stdev"], unit="ms"
+                )
             )
-        )
 
-        measurements_out.append(
-            measurements.SingleMeasurement(name=f"Min GPU Frametime", value=frametime_stats.gpu_stats["min"], unit="ms")
-        )
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Min GPU Frametime", value=frametime_stats.gpu_stats["min"], unit="ms"
+                )
+            )
 
-        measurements_out.append(
-            measurements.SingleMeasurement(name=f"Max GPU Frametime", value=frametime_stats.gpu_stats["max"], unit="ms")
-        )
+            measurements_out.append(
+                measurements.SingleMeasurement(
+                    name=f"Max GPU Frametime", value=frametime_stats.gpu_stats["max"], unit="ms"
+                )
+            )
 
-        measurements_out.append(
-            measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
-        )
+            measurements_out.append(
+                measurements.ListMeasurement(name=f"GPU Frametime Samples", value=frametime_stats.gpu_frametime_samples)
+            )
 
         if frametime_stats.renderer_stats["mean"]:
             measurements_out.append(

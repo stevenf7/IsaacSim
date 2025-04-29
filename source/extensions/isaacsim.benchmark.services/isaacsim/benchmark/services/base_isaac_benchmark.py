@@ -65,6 +65,7 @@ class BaseIsaacBenchmark:
         backend_type: str = "OmniPerfKPIFile",
         report_generation: bool = True,
         workflow_metadata: dict = {},
+        gpu_frametime: bool = False,
     ):
         """
 
@@ -78,6 +79,7 @@ class BaseIsaacBenchmark:
             workflow_metadata (dict, optional): Metadata describing benchmark (eg. number of GPUs, number of cameras,
                 etc.) Most useful for OsmoKPIFile backend. Expected as JSON-style input - nested dictionary of
                 {"metadata": [{"name": <name>, "data": <value>}, ...]}. Defaults to {}.
+            gpu_frametime (bool, optional): Whether to collect GPU frametime. Defaults to False.
         """
         self.benchmark_name = benchmark_name
         self.report = report_generation
@@ -98,7 +100,7 @@ class BaseIsaacBenchmark:
             phase="benchmark",
         )
 
-        self.frametime_recorder = IsaacFrameTimeRecorder(self.context)
+        self.frametime_recorder = IsaacFrameTimeRecorder(self.context, gpu_frametime=gpu_frametime)
         self.runtime_recorder = IsaacRuntimeRecorder(self.context)
         self.recorders = [
             IsaacMemoryRecorder(self.context),
