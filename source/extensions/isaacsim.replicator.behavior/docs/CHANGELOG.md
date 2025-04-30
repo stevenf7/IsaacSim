@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2025-04-26
+### Changed
+- SDG pipeline: Increased rgb mean diff tolerance and included depth comparison with small mean diff tolerance
+- SDG pipeline: Split into linux and windows golden images
+
 ## [1.1.0] - 2025-04-21
 ### Changed
 - Event 2.0 handling

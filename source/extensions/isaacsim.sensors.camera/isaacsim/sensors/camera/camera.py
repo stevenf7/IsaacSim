@@ -1104,13 +1104,6 @@ class Camera(BaseSensor):
             pointcloud_data = annot.get_data(device=device).get("data")
             if pointcloud_data is None:
                 return None
-            if (
-                isinstance(pointcloud_data, wp.types.array)
-                and pointcloud_data.ndim == 3
-                and pointcloud_data.shape[0] == 1
-            ):
-                # Squeeze singleton dimension: shape (1, N, 3) -> (N, 3)
-                pointcloud_data = pointcloud_data.reshape((pointcloud_data.shape[1], pointcloud_data.shape[2]))
             if world_frame:
                 return pointcloud_data
             else:

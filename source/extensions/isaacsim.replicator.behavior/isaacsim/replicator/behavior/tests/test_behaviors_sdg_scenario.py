@@ -15,7 +15,6 @@ import numpy as np
 import omni.kit.app
 import omni.kit.test
 import omni.usd
-from isaacsim.storage.native import get_assets_root_path_async
 from PIL import Image
 
 
@@ -24,13 +23,29 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
     SDG pipeline test using behavior scripts and comparing to the golden data
     """
 
-    RGB_MEAN_DIFF_TOLERANCE = 100
+    RGB_MEAN_DIFF_TOLERANCE = 150
+    DEPTH_MEAN_DIFF_TOLERANCE = 1
+    DEPTH_RTOL = 1.0e-4
+    DEPTH_ATOL = 1.0e-3
+    RANDOM_SEED = 10
 
     async def setUp(self):
         pass
 
     async def tearDown(self):
         pass
+
+    # Helper function to print numpy histogram data
+    def print_diff_histogram(self, diff_array, num_bins=10):
+        print(f"\t\tDiff histogram ({num_bins} bins):")
+        hist_counts, bin_edges = np.histogram(diff_array, bins=num_bins)
+        if np.any(hist_counts):
+            for i in range(len(hist_counts)):
+                bin_start = bin_edges[i]
+                bin_end = bin_edges[i + 1]
+                print(f"\t\t  [{bin_start:6.1f} - {bin_end:6.1f}): {hist_counts[i]}")
+        else:
+            print("\t\t  No differences")
 
     # Compare PNG files with the specified prefix using mean pixel difference
     def compare_images_with_mean_diff(self, golden_dir, test_dir, prefix, tolerance):
@@ -63,10 +78,14 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
                 f"Image shapes do not match for {file_name}: expected {golden_array.shape}, got {test_array.shape}.",
             )
 
-            # Calculate mean difference
+            # Calculate diff stats
             diff_array = np.abs(golden_array - test_array)
             mean_diff = np.mean(diff_array)
-            print(f"\t'{file_name}': mean_diff={mean_diff}")
+            max_diff = np.max(diff_array)
+            print(f"\t'{file_name}': mean_diff={mean_diff}, max_diff={max_diff}")
+
+            # Generate and print histogram of differences
+            self.print_diff_histogram(diff_array, num_bins=10)
 
             self.assertTrue(
                 mean_diff < tolerance,
@@ -105,8 +124,15 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             )
 
     # Compare .npy files with the specified prefix
-    def compare_npy_files(self, golden_dir, test_dir, prefix):
-        print(f"Comparing {prefix} npy files")
+    def compare_npy_files(self, golden_dir, test_dir, prefix, mean_diff_tolerance=None, rtol=1.0e-5, atol=1.0e-8):
+        comparison_method = "mean_diff" if mean_diff_tolerance is not None else "allclose"
+        tolerance_str = (
+            f"mean_diff_tolerance: {mean_diff_tolerance}"
+            if mean_diff_tolerance is not None
+            else f"rtol: {rtol}, atol: {atol}"
+        )
+        print(f"Comparing {prefix} npy files using {comparison_method} with {tolerance_str}")
+
         # Get the list of .npy files matching the prefix
         golden_files = sorted([f for f in os.listdir(golden_dir) if f.startswith(prefix) and f.endswith(".npy")])
         test_files = sorted([f for f in os.listdir(test_dir) if f.startswith(prefix) and f.endswith(".npy")])
@@ -127,16 +153,35 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             golden_data = np.load(golden_file_path)
             test_data = np.load(test_file_path)
 
-            print(f"'{file_name}' shape, dtype:")
-            print(f"\tgolden: shape={golden_data.shape}, dtype={golden_data.dtype}")
-            print(f"\ttest: shape={test_data.shape}, dtype={test_data.dtype}")
-
-            # Compare the structure and content
-            is_array_equal = np.array_equal(golden_data, test_data)
+            # Ensure shapes match
             self.assertTrue(
-                is_array_equal,
-                f"Content mismatch in file {file_name}: {golden_file_path} vs {test_file_path}.",
+                golden_data.shape == test_data.shape,
+                f"Data shapes do not match for {file_name}: expected {golden_data.shape}, got {test_data.shape}.",
             )
+
+            # Calculate and print difference statistics
+            diff_array = np.abs(golden_data - test_data)
+            mean_diff = np.mean(diff_array)
+            max_diff = np.max(diff_array)
+            print(f"\t'{file_name}': mean_diff={mean_diff}, max_diff={max_diff}")
+
+            # Generate and print histogram of differences (condensed)
+            self.print_diff_histogram(diff_array, num_bins=10)
+
+            # Compare using either mean difference or np.allclose based on provided parameters
+            if mean_diff_tolerance is not None:
+                # Use mean difference comparison
+                self.assertTrue(
+                    mean_diff <= mean_diff_tolerance,
+                    f"Mean difference ({mean_diff}) exceeds tolerance ({mean_diff_tolerance}) in file {file_name}: {golden_file_path} vs {test_file_path}.",
+                )
+            else:
+                # Use np.allclose comparison
+                is_array_equal = np.allclose(golden_data, test_data, rtol=rtol, atol=atol)
+                self.assertTrue(
+                    is_array_equal,
+                    f"Content mismatch in file {file_name}: {golden_file_path} vs {test_file_path}.",
+                )
 
     async def setup_and_run_behaviors_sdg(self):
         import asyncio
@@ -260,7 +305,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             writer = rep.writers.get("BasicWriter")
             output_directory = os.getcwd() + "/out_behaviors_sdg"
             print(f"output_directory: {output_directory}")
-            writer.initialize(output_dir=output_directory, rgb=True)
+            writer.initialize(output_dir=output_directory, rgb=True, distance_to_image_plane=True, colorize_depth=True)
             writer.attach(rp)
 
             # Disable capture on play, data is captured manually using the step function
@@ -306,6 +351,9 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             await omni.usd.get_context().open_stage_async(assets_root_path + STAGE_URL)
             stage = omni.usd.get_context().get_stage()
 
+            random.seed(self.RANDOM_SEED)
+            rep.set_global_seed(self.RANDOM_SEED)
+
             # Check if all required prims exist in the stage
             pallets_root_prim = stage.GetPrimAtPath(PALLETS_ROOT_PATH)
             lights_root_prim = stage.GetPrimAtPath(LIGHTS_ROOT_PATH)
@@ -341,23 +389,30 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             # Setup the writer and capture the data, behavior scripts are triggered by running the timeline
             await setup_writer_and_capture_data_async(camera_path=camera_prim.GetPath(), num_captures=6)
 
-        random.seed(10)
-        rep.set_global_seed(10)
-
         await run_example_async()
 
     async def test_behavior_sdg_pipeline_warehouse(self):
         print(f"Starting the behaviors SDG pipeline")
         await self.setup_and_run_behaviors_sdg()
 
-        print(f"Comparing the results against the golden images")
-        golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "out_behaviors_sdg")
+        # Get the platform subfolder (linux or windows)
+        platform_subfolder = "linux" if os.name == "posix" else "windows"
+        golden_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "data", "golden", "out_behaviors_sdg", platform_subfolder
+        )
         test_dir = os.path.join(os.getcwd(), "out_behaviors_sdg")
+        print(f"Golden directory: {golden_dir}")
+        print(f"Test directory: {test_dir}")
 
-        # Compare the rgb data
+        # Compare the rgb data (larger tolerance due to denoising differences)
         self.compare_images_with_mean_diff(golden_dir, test_dir, "rgb", self.RGB_MEAN_DIFF_TOLERANCE)
 
-        ## Compare the bounding box 3d data
-        # self.compare_json_files(golden_dir, test_dir, "bounding_box_3d_labels")
-        # self.compare_json_files(golden_dir, test_dir, "bounding_box_3d_paths")
-        # self.compare_npy_files(golden_dir, test_dir, "bounding_box_3d")
+        # Compare the depth data (smaller tolerance since it is not influenced by denoising)
+        self.compare_images_with_mean_diff(
+            golden_dir, test_dir, "distance_to_image_plane", self.DEPTH_MEAN_DIFF_TOLERANCE
+        )
+
+        # Compare the distance to image plane data (smaller tolerance since it is not influenced by denoising)
+        self.compare_npy_files(
+            golden_dir, test_dir, "distance_to_image_plane", atol=self.DEPTH_ATOL, rtol=self.DEPTH_RTOL
+        )

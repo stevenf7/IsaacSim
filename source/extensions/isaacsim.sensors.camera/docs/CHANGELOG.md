@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2025-04-29
+### Changed
+- [OMPE-45288] Removed pointcloud cuda singleton data squeeze (1, N, 3) -> (N, 3) 
+
 ## [1.0.1] - 2025-04-17
 ### Changed
 - changed add_update_semantics to add_labels
