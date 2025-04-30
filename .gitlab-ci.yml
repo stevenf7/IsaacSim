@@ -1746,3 +1746,37 @@ publish-to-packman:
         when: never
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
+
+# ==============================================================================================================
+
+.check_externals_base:
+  extends: 
+    - .repo-artifacts
+    - .check-common
+  stage: check
+  allow_failure: true
+  artifacts:
+    paths:
+      - packman_verification_results.json
+    expire_in: 1 week
+
+check_externals_linux:
+  extends:
+    - .check_externals_base
+    - .runner-utility-linux-x86_64
+  script:
+    - ./build.sh --generate -rd --no-docker
+    - ./tools/packman/python.sh tools/check_externals/check_externals.py
+
+check_externals_windows:
+  extends:
+    - .check_externals_base
+    - .runner-utility-windows-x86_64
+  script:
+    - ./build.bat --generate -rd
+    - ./tools/packman/python.bat tools/check_externals/check_externals.py
+
+
+
+
+

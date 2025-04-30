@@ -144,3 +144,6 @@ Temp_Config*.json
 
 .nvcode/
 .nvcode.json
+
+# Ignore packman verification results
+packman_verification_results.json
