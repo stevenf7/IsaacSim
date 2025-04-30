@@ -8,5 +8,4 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-from .test_behaviors_basic import *
-from .test_behaviors_sdg_scenario import *
+scan_for_test_modules = True
