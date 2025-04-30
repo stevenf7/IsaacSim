@@ -58,7 +58,7 @@ class RobotView(Articulation):
         >>> from isaacsim.core.api.robots import RobotView
         >>> from pxr import UsdGeom
         >>>
-        >>> usd_path = "/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        >>> usd_path = "/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/frankas.usd"
         >>> env_zero_path = "/World/envs/env_0"
         >>> num_envs = 5
         >>>

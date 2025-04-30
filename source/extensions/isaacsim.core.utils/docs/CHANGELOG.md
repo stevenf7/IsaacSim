@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.1] - 2025-04-21
+### Changed
+- Updated unit test to use franka.usd instead of franka_alt_finger.usd
+
 ## [2.3.0] - 2025-04-17
 ### Changed
 - Added semantics util functions to use the new UsdSemantics.LabelsAPI

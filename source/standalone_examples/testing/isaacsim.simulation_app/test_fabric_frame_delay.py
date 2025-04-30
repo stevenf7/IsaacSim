@@ -37,7 +37,7 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
 
 def main():

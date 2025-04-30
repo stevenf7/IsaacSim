@@ -35,7 +35,7 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCase):
         self._my_world = World()
         await self._my_world.initialize_simulation_context_async()
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         define_prim(prim_path="/World/Frame_1")

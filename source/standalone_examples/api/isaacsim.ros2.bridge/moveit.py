@@ -14,7 +14,7 @@ import numpy as np
 from isaacsim import SimulationApp
 
 FRANKA_STAGE_PATH = "/Franka"
-FRANKA_USD_PATH = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+FRANKA_USD_PATH = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 BACKGROUND_STAGE_PATH = "/background"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Room/simple_room.usd"
 
@@ -52,13 +52,17 @@ viewports.set_camera_view(eye=np.array([1.2, 1.2, 0.8]), target=np.array([0, 0, 
 stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 # Loading the franka robot USD
-prims.create_prim(
+robot = prims.create_prim(
     FRANKA_STAGE_PATH,
     "Xform",
     position=np.array([0, -0.64, 0]),
     orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)),
     usd_path=assets_root_path + FRANKA_USD_PATH,
 )
+
+# Set variant selections for the Franka robot
+robot.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+robot.GetVariantSet("Mesh").SetVariantSelection("Quality")
 
 simulation_app.update()
 

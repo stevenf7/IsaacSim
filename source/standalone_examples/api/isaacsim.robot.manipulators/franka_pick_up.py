@@ -39,8 +39,10 @@ if assets_root_path is None:
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()
 
-asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
-add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+robot.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+robot.GetVariantSet("Mesh").SetVariantSelection("Quality")
 gripper = ParallelGripper(
     end_effector_prim_path="/World/Franka/panda_rightfinger",
     joint_prim_names=["panda_finger_joint1", "panda_finger_joint2"],

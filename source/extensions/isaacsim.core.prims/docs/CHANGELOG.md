@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.14] - 2025-04-21
+### Changed
+- Updated franka robot example code
+
 ## [0.3.13] - 2025-04-14
 ### Changed
 - Update Isaac Sim robot asset path

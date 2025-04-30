@@ -115,10 +115,14 @@ class Extension(omni.ext.IExt):
         pass
 
     def create_franka(self, stage_path):
-        usd_path = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        usd_path = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         asset_path = self._assets_root_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
         prim.GetReferences().AddReference(asset_path)
+
+        prim.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+        prim.GetVariantSet("Mesh").SetVariantSelection("Quality")
+
         rot_mat = Gf.Matrix3d(Gf.Rotation((0, 0, 1), 90))
         omni.kit.commands.execute(
             "TransformPrimCommand",

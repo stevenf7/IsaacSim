@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.3.2] - 2025-04-29
+### Changed
+- Updated Franka alt finger to Franka robot
+
 ## [4.3.1] - 2025-04-21
 ### Changed
 - Update Cartpole USD path
