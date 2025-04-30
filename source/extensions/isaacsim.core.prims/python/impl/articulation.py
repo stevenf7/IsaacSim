@@ -90,7 +90,7 @@ class Articulation(XFormPrim):
         >>> from isaacsim.core.prims import Articulation
         >>> from pxr import UsdGeom
         >>>
-        >>> usd_path = "/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        >>> usd_path = "/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         >>> env_zero_path = "/World/envs/env_0"
         >>> num_envs = 5
         >>>

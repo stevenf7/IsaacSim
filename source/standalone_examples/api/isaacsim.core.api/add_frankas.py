@@ -36,9 +36,13 @@ if assets_root_path is None:
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()
 
-asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
-add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
-add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
+asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+robot1 = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
+robot1.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+robot1.GetVariantSet("Mesh").SetVariantSelection("Quality")
+robot2 = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
+robot2.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+robot2.GetVariantSet("Mesh").SetVariantSelection("Quality")
 articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka_1", name="my_franka_1"))
 articulated_system_2 = my_world.scene.add(Robot(prim_path="/World/Franka_2", name="my_franka_2"))
 

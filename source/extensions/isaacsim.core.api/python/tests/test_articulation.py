@@ -51,7 +51,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
 
     async def test_get_applied_action(self, add_view_to_scene=True):
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
@@ -66,7 +66,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
         await self._my_world.initialize_simulation_context_async()
         self._my_world.scene.add_default_ground_plane()
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         my_franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()
@@ -103,7 +103,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
 
     async def test_joint_forces(self, add_view_to_scene=True):
         assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         franka = self._my_world.scene.add(SingleArticulation(prim_path="/World/Franka", name="franka"))
         await self._my_world.reset_async()

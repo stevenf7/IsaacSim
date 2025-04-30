@@ -48,7 +48,7 @@ class Robot(SingleArticulation):
         >>> import isaacsim.core.utils.stage as stage_utils
         >>> from isaacsim.core.api.robots import Robot
         >>>
-        >>> usd_path = "/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
+        >>> usd_path = "/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         >>> prim_path = "/World/envs/env_0/panda"
         >>>
         >>> # load the Franka Panda robot USD file

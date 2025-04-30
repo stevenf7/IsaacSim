@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.9] - 2025-04-21
+### Changed
+- Update Franka USD path to use variants
+
 ## [2.1.8] - 2025-04-11
 ### Changed
 - Update Isaac Sim robot asset path

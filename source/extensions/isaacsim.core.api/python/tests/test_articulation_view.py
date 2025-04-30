@@ -68,9 +68,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._my_world._physics_context.enable_residual_reporting(report_residuals)
 
     async def add_frankas(self, backend):
-        asset_path = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
+
+        asset_path = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        robot1 = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
+        robot1.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+        robot1.GetVariantSet("Mesh").SetVariantSelection("Quality")
+        robot2 = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
+        robot2.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+        robot2.GetVariantSet("Mesh").SetVariantSelection("Quality")
+
         positions = [[0, 0, 0], [0, 2, 0.0]]
         if backend == "numpy":
             positions = np.array(positions)

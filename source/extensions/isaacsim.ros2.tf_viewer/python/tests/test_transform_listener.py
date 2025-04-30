@@ -37,8 +37,10 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka_alt_fingers.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda")
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda")
+        robot.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+        robot.GetVariantSet("Mesh").SetVariantSelection("Quality")
 
         # define graph to publish /tf
         (test_graph, new_nodes, _, _) = og.Controller.edit(

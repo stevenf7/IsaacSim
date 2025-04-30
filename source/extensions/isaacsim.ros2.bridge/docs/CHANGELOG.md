@@ -1,8 +1,13 @@
 # Changelog
 
+## [4.4.11] - 2025-04-30
+### Changed
+- Updated franka_alt_finger.usd to franka.usd and use variants
+
 ## [4.4.10] - 2025-04-29
 ### Fixed
 - prim validation in OgnROS2PublishJointState and OgnROS2PublishTransformTree nodes
+
 
 ## [4.4.9] - 2025-04-17
 ### Changed
