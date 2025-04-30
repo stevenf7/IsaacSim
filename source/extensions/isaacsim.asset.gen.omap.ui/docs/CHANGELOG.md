@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.0] - 2025-04-28
+### Changed
+- Updated image visualization window to show ROS yaml file and 180 degree rotation as default config for image generation
+
 ## [2.1.1] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
