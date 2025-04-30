@@ -428,30 +428,35 @@ class OccupancyMapWindow(MenuHelperWindow):
             carb.log_warn("Cell size is less than or equal to 0. A value of 0.01 meters will be used instead.")
             scale = 0.01
         # Clockwise rotation
-        rotate_image_angle = 0
+        rotate_image_angle = 180
         current_image_rotation_index = self._models["rotation"].get_item_value_model().as_int
-        if current_image_rotation_index == 0:
+        if current_image_rotation_index == 0:  # 180 degrees
             top_left, top_right, bottom_left, bottom_right, image_coords = compute_coordinates(self._om, scale)
-        elif current_image_rotation_index == 1:  # -90 degrees
+            rotate_image_angle = 180
+        elif current_image_rotation_index == 1:  # 0 degrees
+            top_right, bottom_right, top_left, bottom_left, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = 0
+        elif current_image_rotation_index == 2:  # -90 degrees
             top_right, bottom_right, top_left, bottom_left, image_coords = compute_coordinates(self._om, scale)
             rotate_image_angle = -90
-        elif current_image_rotation_index == 2:  # 90 degrees
+        elif current_image_rotation_index == 3:  # 90 degrees
             bottom_left, top_left, bottom_right, top_right, image_coords = compute_coordinates(self._om, scale)
             rotate_image_angle = 90
-        elif current_image_rotation_index == 3:  # 180 degrees
+
+        rotate_image_angle = 180
+        current_image_rotation_index = self._models["rotation"].get_item_value_model().as_int
+        if current_image_rotation_index == 0:  # 180 degrees
             bottom_right, bottom_left, top_right, top_left, image_coords = compute_coordinates(self._om, scale)
             rotate_image_angle = 180
-
-        # print("World coordinates for image in stage units:")
-        # print("Top left: ", top_left)
-        # print("Top right: ", top_right)
-
-        # print("Bottom left: ", bottom_left)
-        # print("Bottom right: ", bottom_right)
-
-        # print(
-        #     f"Coordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
-        # )
+        elif current_image_rotation_index == 1:  # 0 degrees
+            top_left, top_right, bottom_left, bottom_right, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = 0
+        elif current_image_rotation_index == 2:  # -90 degrees
+            top_right, bottom_right, top_left, bottom_left, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = -90
+        elif current_image_rotation_index == 3:  # 90 degrees
+            bottom_left, top_left, bottom_right, top_right, image_coords = compute_coordinates(self._om, scale)
+            rotate_image_angle = 90
 
         occupied_col = []
         for item in self._models["occupied_color"].get_item_children():
@@ -509,9 +514,9 @@ class OccupancyMapWindow(MenuHelperWindow):
 
         current_data_output_index = self._models["config_type"].get_item_value_model().as_int
         if current_data_output_index == 0:
-            self._models["config_data"].set_value(image_details_text)
-        elif current_data_output_index == 1:
             self._models["config_data"].set_value(ros_yaml_file_text)
+        elif current_data_output_index == 1:
+            self._models["config_data"].set_value(image_details_text)
 
     def save_image(self, file, folder):
         from PIL import Image
@@ -561,8 +566,8 @@ class OccupancyMapWindow(MenuHelperWindow):
             )
             return
         self._rgb_byte_provider = omni.ui.ByteImageProvider()
-        visualize_window = omni.ui.Window("Visualization", width=500, height=600)
-        with visualize_window.frame:
+        self.visualize_window = omni.ui.Window("Visualization", width=500, height=600)
+        with self.visualize_window.frame:
             with ui.VStack(spacing=5):
                 with ui.VStack(height=0, spacing=5):
                     kwargs = {"label": "Occupied Color", "default_val": [0, 0, 0, 1]}
@@ -573,12 +578,12 @@ class OccupancyMapWindow(MenuHelperWindow):
                     self._models["unknown_color"] = color_picker_builder(**kwargs)
                     self._models["rotation"] = dropdown_builder(
                         label="Rotate Image",
-                        items=["0", "-90", "90", "180"],
+                        items=["180", "0", "-90", "90"],
                         tooltip="Clockwise rotation of image in degrees",
                     )
                     self._models["config_type"] = dropdown_builder(
                         label="Coordinate Type",
-                        items=["Coordinates in Stage Space", "ROS Occupancy Map Parameters File (YAML)"],
+                        items=["ROS Occupancy Map Parameters File (YAML)", "Coordinates in Stage Space"],
                         tooltip="Type of config output generated",
                     )
                     self._models["generate"] = btn_builder(
