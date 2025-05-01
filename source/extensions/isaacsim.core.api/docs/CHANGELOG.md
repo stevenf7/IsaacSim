@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.3.3] - 2025-04-30
+### Fixed
+- Reduced gains for cartpole to prevent tunneling
+
 ## [4.3.2] - 2025-04-29
 ### Changed
 - Updated Franka alt finger to Franka robot

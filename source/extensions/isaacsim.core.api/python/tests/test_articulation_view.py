@@ -303,8 +303,8 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             )
 
     async def test_joint_residuals_critically_damped_gains_with_cart_blocker(self):
-        stiffness = torch.tile(torch.Tensor([[500.0, 180 / 3.1415 * 500.0]]), (2, 1))
-        damping = torch.tile(torch.Tensor([[20.0, 180 / 3.1415 * 50.0]]), (2, 1))
+        stiffness = torch.tile(torch.Tensor([[50.0, 180 / 3.1415 * 50.0]]), (2, 1))
+        damping = torch.tile(torch.Tensor([[2.0, 180 / 3.1415 * 5.0]]), (2, 1))
         convergence_criteria = [
             {
                 "assertion": self.assertFalse,
@@ -335,8 +335,8 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
             )
 
     async def test_joint_residuals_critically_damped_gains_with_pole_blocker(self):
-        stiffness = torch.tile(torch.Tensor([[500.0, 180 / 3.1415 * 500.0]]), (2, 1))
-        damping = torch.tile(torch.Tensor([[20.0, 180 / 3.1415 * 50.0]]), (2, 1))
+        stiffness = torch.tile(torch.Tensor([[50.0, 180 / 3.1415 * 50.0]]), (2, 1))
+        damping = torch.tile(torch.Tensor([[2.0, 180 / 3.1415 * 5.0]]), (2, 1))
         convergence_criteria = [
             {
                 "assertion": self.assertFalse,
