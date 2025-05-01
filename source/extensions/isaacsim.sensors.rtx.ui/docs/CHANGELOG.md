@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.6] - 2025-04-28
+### Fixed
+- Add settings to fix dpi for gui based tests
+
 ## [1.0.5] - 2025-04-28
 ### Fixed
 - Correctly set prim TypeName to "OmniLidar" for Lidars specified as USDAs
