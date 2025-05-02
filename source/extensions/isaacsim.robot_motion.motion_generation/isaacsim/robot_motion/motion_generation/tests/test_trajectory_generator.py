@@ -432,7 +432,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
-        ee_frame = "tool0"
+        ee_frame = "ee_link"
 
         path, pos_targets, orient_targets = await self._build_rect_path(offset=np.array([0.0, 0, 0]))
 
