@@ -1,5 +1,5 @@
 [package]
-version = "0.2.4"
+version = "0.2.5"
 category = "Utility"
 title = "Deprecation manager"
 description = "Manage deprecated OmniGraph nodes and app/extension settings"
@@ -53,6 +53,7 @@ exts."isaacsim.core.deprecation_manager".settings = [
 ]
 # List of deprecated OmniGraph nodes and their replacements
 exts."isaacsim.core.deprecation_manager".omnigraph = [
+    { deprecated = "omni.isaac.isaac_sensor", new = "isaacsim.sensors.rtx" },
     { deprecated = "omni.isaac.conveyor", new = "isaacsim.asset.gen.conveyor" },
     { deprecated = "omni.isaac.core_nodes", new = "isaacsim.core.nodes" },
     { deprecated = "omni.isaac.debug_draw", new = "isaacsim.util.debug_draw" },

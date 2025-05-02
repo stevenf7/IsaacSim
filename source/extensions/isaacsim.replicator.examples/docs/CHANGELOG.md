@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.11] - 2025-04-30
+### Changed
+- Update event subscriptions to Event 2.0 system
 
 ## [1.1.10] - 2025-04-17
 ### Changed

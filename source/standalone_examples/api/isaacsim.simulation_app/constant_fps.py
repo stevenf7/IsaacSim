@@ -35,7 +35,7 @@ def update_event_callback(event: carb.events.IEvent):
     last_frametime_timestamp_ns = timestamp_ns
 
 
-carb.eventdispatcher.get_eventdispatcher().observe_event(
+update_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
     event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
     on_event=update_event_callback,
     observer_name="constant_fps.update_event_callback",

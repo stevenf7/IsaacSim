@@ -48,6 +48,7 @@ class SimulationManager:
     _simulation_view_created = False
     _assets_loaded = True
     _assets_loading_callback = None
+    _assets_loaded_callback = None
 
     @classmethod
     def _initialize(cls) -> None:
@@ -66,10 +67,10 @@ class SimulationManager:
             on_event=SimulationManager._create_simulation_view,
             observer_name="SimulationManager._post_warm_start_callback",
         )
-        SimulationManager._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), SimulationManager._post_stage_open)
+        SimulationManager._stage_open_callback = SimulationManager._message_bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+            on_event=SimulationManager._post_stage_open,
+            observer_name="SimulationManager._stage_open_callback",
         )
         SimulationManager._track_physics_scenes()
 
@@ -82,6 +83,7 @@ class SimulationManager:
         SimulationManager._post_warm_start_callback = None
         SimulationManager._stage_open_callback = None
         SimulationManager._assets_loading_callback = None
+        SimulationManager._assets_loaded_callback = None
         SimulationManager._simulation_manager_interface.reset()
         SimulationManager._physics_scene_apis.clear()
         SimulationManager._callbacks.clear()
@@ -93,15 +95,24 @@ class SimulationManager:
         SimulationManager._track_physics_scenes()
         SimulationManager._assets_loaded = True
         SimulationManager._assets_loading_callback = None
+        SimulationManager._assets_loaded_callback = None
 
-        def on_stage_event(event: omni.usd.StageEventType):
-            if event.type == int(omni.usd.StageEventType.ASSETS_LOADING):
-                SimulationManager._assets_loaded = False
-            elif event.type == int(omni.usd.StageEventType.ASSETS_LOADED):
-                SimulationManager._assets_loaded = True
+        def _assets_loading(event):
+            SimulationManager._assets_loaded = False
 
-        SimulationManager._assets_loading_callback = (
-            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(on_stage_event)
+        def _assets_loaded(event):
+            SimulationManager._assets_loaded = True
+
+        SimulationManager._assets_loading_callback = SimulationManager._message_bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.ASSETS_LOADING),
+            on_event=_assets_loading,
+            observer_name="SimulationManager._assets_loading_callback",
+        )
+
+        SimulationManager._assets_loaded_callback = SimulationManager._message_bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.ASSETS_LOADED),
+            on_event=_assets_loaded,
+            observer_name="SimulationManager._assets_loaded_callback",
         )
 
     def _track_physics_scenes() -> None:

@@ -135,7 +135,6 @@ def on_app_update(event: carb.events.IEvent):
 
     if elapsed_wall_time > MAX_DURATION:
         if app_sub is not None:
-            app_sub.unsubscribe()
             app_sub = None
         num_events = len(app_update_events)
         fps = num_events / MAX_DURATION

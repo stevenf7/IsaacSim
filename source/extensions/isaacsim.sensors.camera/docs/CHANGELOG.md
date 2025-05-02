@@ -1,8 +1,11 @@
 # Changelog
+## [1.0.3] - 2025-04-30
+### Changed
+- Update event subscriptions to Event 2.0 system
 
 ## [1.0.2] - 2025-04-29
 ### Changed
-- [OMPE-45288] Removed pointcloud cuda singleton data squeeze (1, N, 3) -> (N, 3) 
+- [OMPE-45288] Removed pointcloud cuda singleton data squeeze (1, N, 3) -> (N, 3)
 
 ## [1.0.1] - 2025-04-17
 ### Changed

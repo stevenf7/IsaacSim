@@ -270,7 +270,6 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
             if elapsed_wall_time > MAX_DURATION:
                 if app_sub is not None:
-                    app_sub.unsubscribe()
                     app_sub = None
                 num_events = len(app_update_events)
                 fps = num_events / MAX_DURATION
