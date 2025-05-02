@@ -8,7 +8,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.3"
+version = "1.0.0"
 category = "other"
 title = "Sensor Icon"
 description = "sensor icon in viewport"
@@ -31,6 +31,7 @@ icon = "data/icon.png"
 "omni.kit.viewport.menubar.core" = {}
 "omni.kit.viewport.menubar.display" = {}
 "isaacsim.core.utils" = {}
+"usdrt.scenegraph" = {}
 
 # define the Python module that the extension provides
 [[python.module]]
