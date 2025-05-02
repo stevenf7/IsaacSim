@@ -148,7 +148,6 @@ includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/python/include",
     "%{root}/_build/target-deps/rtx_plugins/include",
@@ -167,7 +166,6 @@ includedirs {
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/lib",
 }

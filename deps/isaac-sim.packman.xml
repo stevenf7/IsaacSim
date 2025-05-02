@@ -22,9 +22,6 @@
         <package name="tinyxml2" version="linux_aarch64_20250203_2c5a6bf" platforms="manylinux_2_35_aarch64" />
         <package name="tinyxml2" version="win_x64_20200824_2c5a6bf" platforms="windows-x86_64" />
     </dependency>
-    <dependency name="doctest" linkPath="../_build/target-deps/doctest">
-        <package name="doctest" version="2.4.5+nv4-0.7z" />
-    </dependency>
     <dependency name="openssl" linkPath="../_build/target-deps/openssl">
         <package name="openssl" version="1.1.1m+nv1-${platform_target}" platforms="manylinux_2_35_x86_64 windows-x86_64"/>
         <package name="openssl" version="1.1.1m+nv1-linux-aarch64" platforms="manylinux_2_35_aarch64" />

@@ -9,7 +9,6 @@
     <filter include="python" />
     <filter include="fmt" />
     <filter include="nvtx" />
-    <filter include="usd_audio_schema_${config}" />
     <filter include="gsl" />
     <filter include="carb_sdk_plugins" />
     <filter include="usd-${config}" />
@@ -47,7 +46,6 @@
   <dependency name="fmt" linkPath="../_build/target-deps/fmt" />
   <dependency name="python" linkPath="../_build/target-deps/python" />
   <dependency name="nvtx" linkPath="../_build/target-deps/nvtx" />
-  <dependency name="usd_audio_schema_${config}" linkPath="../_build/target-deps/usd_audio_schema/${config}" />
 
   <dependency name="pxshared" linkPath="../_build/target-deps/pxshared"/>
   <dependency name="physx" linkPath="../_build/target-deps/physx" />
