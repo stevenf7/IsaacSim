@@ -89,5 +89,5 @@ body_collision_controllers:
     radius: .04
   - name: wrist_3_link
     radius: .04
-  - name: tool0
+  - name: ee_link
     radius: .04

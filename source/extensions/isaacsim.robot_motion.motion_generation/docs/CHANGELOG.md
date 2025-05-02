@@ -1,5 +1,10 @@
 # Changelog
 
+## [8.0.15] - 2025-05-01
+### Changed
+- Update UR10 robot description to use ee_link as the end effector link
+- Update UR10 kinematics limits to match the USD
+
 ## [8.0.14] - 2025-04-21
 ### Changed
 - Update Denso robots paths

@@ -419,7 +419,9 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(pos_lim[1], [6.2831, 6.2831, 3.1415, 6.2831, 6.2831, 6.2831], 0.0001))
 
         vel_lim = lk.get_cspace_velocity_limits()
-        self.assertTrue(np.allclose(vel_lim, [2.16, 2.16, 3.15, 3.2, 3.2, 3.2], 0.0001))
+        self.assertTrue(
+            np.allclose(vel_lim, [2.0943951, 2.0943951, 3.1415927, 3.1415927, 3.1415927, 3.1415927], 0.0001)
+        )
 
         self.assertTrue(np.alltrue(lk.get_cspace_acceleration_limits() == [40.0] * 6))
         self.assertTrue(np.alltrue(lk.get_cspace_jerk_limits() == [10000.0] * 6))
