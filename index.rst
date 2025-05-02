@@ -90,6 +90,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.replicator.behavior.ui/docs/index
    source/extensions/isaacsim.replicator.domain_randomization/docs/index
    source/extensions/isaacsim.replicator.examples/docs/index
+   source/extensions/isaacsim.replicator.mobility_gen/docs/index
    source/extensions/isaacsim.replicator.scene_blox/docs/index
    source/extensions/isaacsim.replicator.synthetic_recorder/docs/index
    source/extensions/isaacsim.replicator.writers/docs/index

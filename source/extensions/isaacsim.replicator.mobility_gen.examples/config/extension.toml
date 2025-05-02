@@ -1,42 +1,34 @@
 [package]
-version = "2.4.0"
+version = "0.1.0"
 category = "Simulation"
-title = "Isaac Sim Utilities"
-description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
-authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.utils"
-keywords = ["isaac", "utils"]
+title = "MobilityGen Examples"
+description = "Example robot and scenario implementations for MobilityGen"
+authors = ["jwelsh@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.mobility_gen.examples"
+keywords = ["isaac", "mobility"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
-writeTarget.platform = true
 
 [dependencies]
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.storage.native" = {}
-"omni.isaac.dynamic_control" = {}
-"omni.isaac.ml_archive" = {}
-"omni.physx" = {}
-"omni.physics.tensors" = {}
-"omni.usd.schema.semantics" = {}
-"omni.usdphysics" = {}
-"omni.warp.core" = {}
+"isaacsim.core.api" = {}
+"isaacsim.core.prims" = {}
+"isaacsim.core.utils" = {}
+"isaacsim.replicator.mobility_gen" = {}
+"isaacsim.robot.policy.examples" = {}
+"isaacsim.robot.wheeled_robots" = {}
+"omni.kit.pip_archive" = {}
+"omni.kit.uiapp" = {}
 
 [[python.module]]
-name = "isaacsim.core.utils"
+name = "isaacsim.replicator.mobility_gen.examples"
 
 [[python.module]]
-name = "isaacsim.core.utils.tests"
+name = "isaacsim.replicator.mobility_gen.examples.tests"
 
 [[test]]
-dependencies = [
-    "isaacsim.core.api",
-    "isaacsim.sensors.camera",
-    "omni.replicator.core",
-]
-
 args = [
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
@@ -74,4 +66,10 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+]
+
+[[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]
