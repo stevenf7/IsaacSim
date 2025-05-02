@@ -8,7 +8,6 @@
 ### Fixed
 - prim validation in OgnROS2PublishJointState and OgnROS2PublishTransformTree nodes
 
-
 ## [4.4.9] - 2025-04-17
 ### Changed
 - changed add_update_semantics to add_labels

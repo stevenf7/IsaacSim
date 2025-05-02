@@ -499,3 +499,21 @@ def create_viewport_for_camera(
         f"[ui_utils/create_viewport_for_camera] Added new viewport '{ viewport_name }' for camera '{ camera_prim_path }'"
     )
     return viewport_window
+
+
+def set_active_viewport_camera(camera_prim_path: str):
+    """Sets the camera for the active viewport.
+
+    This method sets the active viewport to display the camera at the specified prim path.
+
+    Args:
+        camera_prim_path (str): name of the prim path of the camera
+    """
+    try:
+        from omni.kit.viewport.utility import get_active_viewport
+
+        viewport = get_active_viewport()
+        viewport.camera_path = camera_prim_path
+    except ImportError:
+        carb.log_warn("omni.kit.viewport.utility needs to be enabled before using this function")
+        return

@@ -1,0 +1,46 @@
+local ext = get_current_extension_info()
+local ogn = get_ogn_project_information(
+    ext, 
+    "isaacsim/replicator/mobility_gen"
+)
+
+project_ext(ext)
+
+project_ext_bindings {
+    ext = ext,
+    project_name = "isaacsim.replicator.mobility_gen",
+    module = "_path_planner",
+    src = ogn.bindings_path,
+    target_subdir = ogn.bindings_target_path,
+}
+
+add_files("bindings", "bindings/*.*")
+
+filter { "system:linux" }
+links { "tbb", "pthread" }
+buildoptions { "-pthread" }
+includedirs {
+    "%{root}/_build/target-deps/python/include/python3.11",
+}
+
+filter { "system:windows" }
+-- Warning C4099: 'omni::physx::IPhysx': type name first seen using 'class' now seen using 'struct'
+disablewarnings { "4099" }
+disablewarnings { "4251" }
+-- link_boost_for_windows({"boost_python310"})
+
+libdirs {
+    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
+}
+filter {}
+
+repo_build.prebuild_link {
+    { "python/impl", ogn.python_target_path .. "/impl" },
+    { "python/tests", ogn.python_target_path .. "/tests" },
+    { "docs", ext.target_dir .. "/docs" },
+    { "data", ext.target_dir .. "/data" },
+}
+
+repo_build.prebuild_copy {
+    { "python/*.py", ogn.python_target_path },
+}

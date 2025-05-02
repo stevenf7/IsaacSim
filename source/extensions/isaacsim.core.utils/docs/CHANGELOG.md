@@ -1,4 +1,7 @@
 # Changelog
+## [2.4.0] - 2025-04-29
+### Changed
+- Added set_active_viewport_camera method to viewports utilities
 
 ## [2.3.1] - 2025-04-21
 ### Changed
