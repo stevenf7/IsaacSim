@@ -87,7 +87,7 @@ class TestRTXRadar(omni.kit.test.AsyncTestCase):
 
             return
 
-        carb.eventdispatcher.get_eventdispatcher().observe_event(
+        sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
             on_event=data_acquisition_callback,
             observer_name="TestRTXRadar.test_rtx_radar_point_cloud.data_acquisition_callback",

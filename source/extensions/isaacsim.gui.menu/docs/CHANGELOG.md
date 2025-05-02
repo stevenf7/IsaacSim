@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.4] - 2025-04-30
+### Changed
+- Update event subscriptions to Event 2.0 system
+
 ## [2.2.3] - 2025-04-24
 ### Fixed
 - fixed _build_recent_menu bug

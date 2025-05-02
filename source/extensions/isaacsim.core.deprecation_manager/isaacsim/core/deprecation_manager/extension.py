@@ -26,10 +26,10 @@ class Extension(omni.ext.IExt):
         # subscribe to stage event to update OmniGraph nodes
         self._stage_event_subscription = None
         if self._omnigraph_entries:
-            self._stage_event_subscription = (
-                omni.usd.get_context()
-                .get_stage_event_stream()
-                .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._on_stage_event)
+            self._stage_event_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+                on_event=self._on_stage_event,
+                observer_name="isaacsim.core.deprecation_manager._stage_event_subscription",
             )
 
     def on_shutdown(self):

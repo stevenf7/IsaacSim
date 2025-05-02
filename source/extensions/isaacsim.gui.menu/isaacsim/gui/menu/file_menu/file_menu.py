@@ -98,9 +98,10 @@ class FileMenuExtension:
             observer_name="isaacsim.gui.menu file event watcher",
         )
 
-        events = omni.usd.get_context().get_stage_event_stream()
-        self._stage_event_subscription = events.create_subscription_to_pop(
-            self._on_stage_event, name="isaacsim.gui.menu stage watcher"
+        self._stage_event_subscription = event_stream.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.CLOSED),
+            on_event=self._on_stage_event,
+            observer_name="isaacsim.gui.menu stage watcher",
         )
 
         self.__menu_layout = [
@@ -151,8 +152,7 @@ class FileMenuExtension:
         self._event_sub = None
 
     def _on_stage_event(self, event):
-        if event.type == int(omni.usd.StageEventType.CLOSED):
-            self._build_file_menu()
+        self._build_file_menu()
 
     def _build_file_menu(self):
         # setup menu

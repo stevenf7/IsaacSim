@@ -233,16 +233,12 @@ class ChangelogManager:
     def __init__(
         self,
         verbose: bool = True,
-        check_cpp: bool = False,
         check_modified: bool = False,
         require_unreleased: bool = True,
-        require_references: bool = True,
     ):
         self.verbose = verbose
-        self.check_cpp = check_cpp
         self.check_modified = check_modified
         self.require_unreleased = require_unreleased
-        self.require_references = require_references
 
         # Standard sections in a Keep a Changelog file - with proper capitalization
         self.valid_sections = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"]
@@ -311,7 +307,6 @@ class ChangelogManager:
                     rel_changelog_path=rel_changelog_path,
                     rel_extension_toml_path=rel_toml_path,
                     require_unreleased=self.require_unreleased,
-                    require_references=self.require_references,
                     valid_sections=self.valid_sections,
                     verbose=self.verbose,
                 )
@@ -366,8 +361,6 @@ class ChangelogManager:
                 if git_message and "behind origin/develop" in git_message:
                     return False, git_message
                 return False, "No uncommitted changes vs develop branch"
-        if self.check_cpp and not self._has_cpp_files(dirpath, extension_name):
-            return False, "No C++ files found in extension"
         return True, None
 
     def _has_git_changes(self, dirpath: str, extension_name: str = None) -> tuple:
@@ -405,16 +398,6 @@ class ChangelogManager:
                 print(f"  ❌ {error_msg}")
             return False, error_msg
 
-    def _has_cpp_files(self, dirpath: str, extension_name: str = None) -> bool:
-        """Check for C++ source files in directory tree"""
-        for root, _, files in os.walk(dirpath):
-            for file in files:
-                if file.endswith((".cpp", ".hpp", ".h", ".cxx")):
-                    return True
-        if self.verbose:
-            print(f"  ⏭️  No C++ files found in extension")
-        return False
-
     def _validate_paths(self, toml_path: str, changelog_path: str, rel_toml_path: str, rel_changelog_path: str) -> bool:
         """Validate required files exist"""
         if not os.path.exists(toml_path):
@@ -430,8 +413,13 @@ class ChangelogManager:
     def _update_extension_version(self, toml_path: str, rel_toml_path: str) -> Optional[Tuple[str, str]]:
         """Update version in extension.toml and return old and new versions"""
         try:
+            # First read the file to get the current version
             with open(toml_path, "r") as f:
-                data = toml_writer.load(f)
+                content = f.read()
+
+            # Load TOML data to extract the current version
+            with open(toml_path, "rb") as f:
+                data = toml_reader.load(f)
 
             package = data.get("package", {})
             version_str = package.get("version", "")
@@ -453,10 +441,24 @@ class ChangelogManager:
             old_version = version_str
             parts[-1] += 1  # Increment patch version
             new_version = ".".join(map(str, parts))
-            data["package"]["version"] = new_version
 
+            # Update only the version line directly in the file content
+            # Look for the version pattern in package section
+            version_pattern = re.compile(r'(version\s*=\s*")([^"]+)(")')
+
+            # Find the pattern within the file content
+            match = version_pattern.search(content)
+            if not match:
+                if self.verbose:
+                    print(f"  ❌ Could not find version pattern in {rel_toml_path}")
+                return None
+
+            # Replace only the version part
+            updated_content = content[: match.start(2)] + new_version + content[match.end(2) :]
+
+            # Write the updated content back
             with open(toml_path, "w") as f:
-                toml_writer.dump(data, f)
+                f.write(updated_content)
 
             if self.verbose:
                 print(f"  ✅ Version updated in {rel_toml_path}: {version_str} → {new_version}")
@@ -510,22 +512,20 @@ class ChangelogValidator:
     def __init__(
         self,
         file_path: str,
-        extension_toml_path: Optional[str] = None,
-        rel_changelog_path: Optional[str] = None,
-        rel_extension_toml_path: Optional[str] = None,
+        extension_toml_path: str,
+        rel_changelog_path: str,
+        rel_extension_toml_path: str,
         require_unreleased: bool = True,
-        require_references: bool = True,
         valid_sections: Optional[List[str]] = None,
         verbose: bool = False,
     ):
         self.file_path = file_path
         self.extension_toml_path = extension_toml_path
-        self.rel_changelog_path = rel_changelog_path or file_path
-        self.rel_extension_toml_path = rel_extension_toml_path or extension_toml_path
+        self.rel_changelog_path = rel_changelog_path
+        self.rel_extension_toml_path = rel_extension_toml_path
         self.lines = []
         self.errors = []
         self.require_unreleased = require_unreleased
-        self.require_references = require_references
         self.valid_sections = valid_sections or ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"]
         self.verbose = verbose
 
@@ -563,28 +563,6 @@ class ChangelogValidator:
 
         if not self.lines[0].strip().startswith("# Changelog"):
             self.errors.append(f"File {self.rel_changelog_path} should start with '# Changelog'")
-
-        # Only check for references if required
-        if self.require_references:
-            # Check for Keep a Changelog reference
-            found_format_reference = False
-            for i, line in enumerate(self.lines[:10]):  # Check first 10 lines
-                if "keepachangelog.com" in line.lower():
-                    found_format_reference = True
-                    break
-
-            if not found_format_reference:
-                self.errors.append(f"Missing reference to Keep a Changelog format in {self.rel_changelog_path}")
-
-            # Check for Semantic Versioning reference
-            found_semver_reference = False
-            for i, line in enumerate(self.lines[:10]):  # Check first 10 lines
-                if "semver" in line.lower() or "semantic versioning" in line.lower():
-                    found_semver_reference = True
-                    break
-
-            if not found_semver_reference:
-                self.errors.append(f"Missing reference to Semantic Versioning in {self.rel_changelog_path}")
 
     def extract_versions_and_dates(self) -> List[Tuple[str, Optional[datetime.date]]]:
         """Extract version numbers and dates from the changelog."""
@@ -839,181 +817,38 @@ class ChangelogValidator:
             return False
 
 
-def main():
-    """Main function to parse arguments and run the tool."""
-    parser = argparse.ArgumentParser(
-        description="Update and validate changelogs across extensions.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-
-    # Root directory
-    parser.add_argument(
-        "root", nargs="?", default=os.getcwd(), help="Root directory to process (default: current directory)"
-    )
-
-    # Mode options
-    mode_group = parser.add_argument_group("Operation Mode")
-    mode_group.add_argument("--validate", action="store_true", help="Validate changelogs without updating versions")
-    mode_group.add_argument("--format", action="store_true", help="Format changelog files (fix spacing, etc.)")
-    mode_group.add_argument(
-        "--update", action="store_true", help="Update versions and changelogs (default if no mode specified)"
-    )
-
-    # Update options
-    update_group = parser.add_argument_group("Update Options")
-    update_group.add_argument(
-        "--message",
-        "-m",
-        help="Custom changelog message (default: Update extension description and add extension specific test settings)",
-    )
-    update_group.add_argument("--check-cpp", action="store_true", help="Only update extensions with C++ source files")
-    update_group.add_argument(
-        "--check-modified", action="store_true", help="Only update extensions with changes vs develop branch"
-    )
-
-    # Validation options
-    validation_group = parser.add_argument_group("Validation Options")
-    validation_group.add_argument(
-        "--check-unreleased", action="store_true", help="Check if changelog has an Unreleased section"
-    )
-    validation_group.add_argument(
-        "--check-references", action="store_true", help="Check for Keep a Changelog and Semantic Versioning references"
-    )
-    validation_group.add_argument("--check-all", action="store_true", help="Enable all validation checks")
-
-    # Output options
-    output_group = parser.add_argument_group("Output Options")
-    output_group.add_argument("--quiet", action="store_false", dest="verbose", help="Disable verbose output")
-
-    # Directory options
-    directory_group = parser.add_argument_group("Directory Options")
-    directory_group.add_argument(
-        "--extensions-dir",
-        action="append",
-        default=["source/extensions"],
-        help="Directory containing extensions (can be specified multiple times)",
-    )
-
-    args = parser.parse_args()
-
-    # Default to update mode if no mode specified
-    if not (args.validate or args.format or args.update):
-        args.update = True
-
-    # Set validation options based on check-all
-    if args.check_all:
-        args.check_unreleased = True
-        args.check_references = True
-
-    # Create changelog manager
-    manager = ChangelogManager(
-        verbose=args.verbose,
-        check_cpp=args.check_cpp,
-        check_modified=args.check_modified,
-        require_unreleased=args.check_unreleased,
-        require_references=args.check_references,
-    )
-
-    # Process each extensions directory
-    error_count = 0
-    success_count = 0
-    all_results = {}
-
-    for extensions_dir in args.extensions_dir:
-        # Get the full path to extensions directory
-        full_extensions_dir = os.path.join(args.root, extensions_dir)
-
-        if args.verbose:
-            print(f"\n💼 Processing extensions in: {full_extensions_dir}")
-
-        # Process extensions based on mode
-        if args.update:
-            results = manager.process_extensions(full_extensions_dir, args.message)
-        else:
-            # For validation or formatting only, pass None as changelog_message
-            results = manager.process_extensions(full_extensions_dir, None)
-
-        # Add to combined results
-        all_results.update(results)
-
-    # Print summary
-    print("\n" + "=" * 60)
-    print("SUMMARY")
-    print("=" * 60)
-
-    # First show all successful extensions
-    successful_extensions = []
-    extensions_with_errors = []
-
-    for ext_name, errors in all_results.items():
-        if not errors or not isinstance(errors, list) or not errors:
-            success_count += 1
-            version_info = errors if isinstance(errors, tuple) and len(errors) == 2 else None
-            successful_extensions.append((ext_name, version_info))
-        else:
-            extensions_with_errors.append((ext_name, errors))
-            error_count += len(errors)
-
-    # Display successful extensions first
-    for ext_name, version_info in successful_extensions:
-        version_display = f" ({version_info[0]} → {version_info[1]})" if version_info else ""
-        print(f"✅ Extension '{ext_name}' processed successfully{version_display}")
-
-    # Then display extensions with errors
-    if extensions_with_errors:
-        print("\nExtensions with issues:")
-        for ext_name, errors in extensions_with_errors:
-            print(f"❌ Extension '{ext_name}' had {len(errors)} issues:")
-            for error in errors:
-                print(f"  - {error}")
-
-    print(
-        "\nProcessed {0} extensions: {1} successful, {2} with issues".format(
-            len(all_results), success_count, len(all_results) - success_count
-        )
-    )
-
-    if error_count > 0:
-        print(f"Found {error_count} total issues")
-        return 1
-    else:
-        print("All operations completed successfully!")
-        return 0
-
-
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> callable:
     """Setup function for the repo tool."""
     # Get default values from config
     tool_config = config.get("repo_update_changelogs", {})
 
     # Mode options
+    mode_group = parser.add_argument_group("Operation Mode")
     parser.add_argument(
         "--validate",
         action="store_true",
-        default=not tool_config.get("update", False),
+        default=tool_config.get("validate", False),
         help="Validate changelogs without updating versions",
     )
     parser.add_argument(
         "--format",
         action="store_true",
-        default=tool_config.get("format", True),
+        default=tool_config.get("format", False),
         help="Format changelog files (fix spacing, etc.)",
     )
     parser.add_argument(
-        "--update", action="store_true", default=tool_config.get("update", False), help="Update versions and changelogs"
+        "--update",
+        action="store_true",
+        default=tool_config.get("update", False),
+        help="Update versions and changelogs (default if no mode specified)",
     )
 
     # Update options
+    update_group = parser.add_argument_group("Update Options")
     parser.add_argument(
         "--message",
         "-m",
         help="Custom changelog message (default: Update extension description and add extension specific test settings)",
-    )
-    parser.add_argument(
-        "--check-cpp",
-        action="store_true",
-        default=tool_config.get("check_cpp", False),
-        help="Only update extensions with C++ source files",
     )
     parser.add_argument(
         "--check-modified",
@@ -1023,31 +858,19 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     )
 
     # Validation options
-    # --check-version is removed as it's always enabled
+    validation_group = parser.add_argument_group("Validation Options")
     parser.add_argument(
         "--check-unreleased",
         action="store_true",
         default=tool_config.get("check_unreleased", False),
         help="Check if changelog has an Unreleased section",
     )
-    parser.add_argument(
-        "--check-references",
-        action="store_true",
-        default=tool_config.get("check_references", False),
-        help="Check for Keep a Changelog and Semantic Versioning references",
-    )
-    parser.add_argument(
-        "--check-all",
-        action="store_true",
-        default=tool_config.get("check_all", False),
-        help="Enable all validation checks",
-    )
 
     # Output options
+    output_group = parser.add_argument_group("Output Options")
     parser.add_argument(
         "--verbose", "-v", action="store_true", default=tool_config.get("verbose", False), help="Enable verbose output"
     )
-    parser.add_argument("--quiet", action="store_false", dest="verbose", help="Disable verbose output")
 
     # Directory options
     extensions_dirs = tool_config.get("extensions_dir", ["source/extensions"])
@@ -1068,18 +891,17 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
 
 def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     """Run the changelog update and validation tool in repo mode."""
-    # Set the check_all fields if requested
-    if args.check_all:
-        args.check_unreleased = True
-        args.check_references = True
+    # Default to update mode if no mode specified (this should have been handled in __main__ already,
+    # but we add it here as a fallback)
+    if not (args.validate or args.format or args.update):
+        print("No mode specified, defaulting to update mode")
+        args.update = True
 
     # Create changelog manager
     manager = ChangelogManager(
         verbose=args.verbose,
-        check_cpp=args.check_cpp,
         check_modified=args.check_modified,
         require_unreleased=args.check_unreleased,
-        require_references=args.check_references,
     )
 
     # Process each extensions directory
@@ -1096,6 +918,12 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
 
         # Process extensions based on mode
         if args.update:
+            # Update mode - process with message
+            results = manager.process_extensions(full_extensions_dir, args.message)
+        elif args.message:
+            # If a message is provided, force update even in other modes
+            print(f"Message provided with -m, forcing update mode")
+            args.update = True
             results = manager.process_extensions(full_extensions_dir, args.message)
         else:
             # For validation or formatting only, pass None as changelog_message
@@ -1150,4 +978,24 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    parser = argparse.ArgumentParser(
+        description="Update and validate changelogs across extensions.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # Setup repo tool will add all the arguments
+    run_tool = setup_repo_tool(parser, {"root": os.getcwd()})
+
+    # Parse arguments and run the tool
+    args = parser.parse_args()
+
+    # Default to update mode if no mode specified
+    if not (args.validate or args.format or args.update):
+        print("No mode specified, defaulting to update mode")
+        args.update = True
+
+    # Debug output to help diagnose issues
+    print(f"Mode flags: validate={args.validate}, format={args.format}, update={args.update}")
+    print(f"Other flags: check_modified={args.check_modified}, message={args.message}")
+
+    sys.exit(run_tool(args, {"root": os.getcwd()}))

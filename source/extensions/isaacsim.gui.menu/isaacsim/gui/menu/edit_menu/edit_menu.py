@@ -495,19 +495,18 @@ class EditMenuExtension:
 
         omni.kit.menu.utils.add_menu_items(self._edit_menu_list, "Edit", -9)
 
-        self._stage_event_sub = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop(self._on_stage_event, name="omni.usd.menu.edit")
+        event_stream = carb.eventdispatcher.get_eventdispatcher()
+        self._stage_event_sub = event_stream.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.SELECTION_CHANGED),
+            on_event=self._on_stage_event,
+            observer_name="isaacsim.gui.menu stage watcher",
         )
 
     def _on_stage_event(self, event):
-        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+        async def refresh_menu_items():
+            omni.kit.menu.utils.refresh_menu_items("Edit")
 
-            async def refresh_menu_items():
-                omni.kit.menu.utils.refresh_menu_items("Edit")
-
-            asyncio.ensure_future(refresh_menu_items())
+        asyncio.ensure_future(refresh_menu_items())
 
     def _register_context_menu(self):
         import omni.kit.context_menu

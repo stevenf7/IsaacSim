@@ -40,25 +40,6 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_warn(f"Could not register node templates {e}")
 
-        def _on_pre_load_file(event):
-            # Rename all nodes from omni.isaac.isaac_sensor to isaacsim.sensors.rtx
-            for prim in traverse_stage():
-                if prim.HasAttribute("node:type"):
-                    type_attr = prim.GetAttribute("node:type")
-                    value = type_attr.Get()
-                    if "omni.isaac.isaac_sensor" in value:
-                        carb.log_warn(
-                            f"Updating node type from omni.isaac.isaac_sensor to isaacsim.sensors.rtx for {str(prim.GetPath())}. Please save and reload the asset, The omni.isaac.isaac_sensor extension was renamed to isaacsim.sensors.rtx "
-                        )
-                        value = value.replace("omni.isaac.isaac_sensor", "isaacsim.sensors.rtx")
-                        type_attr.Set(value)
-
-        self._on_stage_load_sub = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), _on_pre_load_file)
-        )
-
     def on_shutdown(self):
 
         _release(self.__interface)
@@ -68,8 +49,6 @@ class Extension(omni.ext.IExt):
             self.unregister_nodes()
         except Exception as e:
             carb.log_warn(f"Could not unregister node templates {e}")
-
-        self._on_stage_load_sub = None
         gc.collect()
 
     def register_nodes(self):
