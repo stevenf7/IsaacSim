@@ -9,6 +9,8 @@
 # its affiliates is strictly prohibited.
 
 import builtins
+import contextlib
+import threading
 
 # python
 import typing
@@ -22,7 +24,48 @@ import usdrt
 from isaacsim.core.utils.constants import AXES_TOKEN
 from omni.kit.usd import layers
 from omni.usd.commands import DeletePrimsCommand
-from pxr import Sdf, Usd, UsdGeom
+from pxr import Sdf, Usd, UsdGeom, UsdUtils
+
+_context = threading.local()  # thread-local storage to handle nested contexts and concurrent access
+
+
+@contextlib.contextmanager
+def use_stage(stage: Usd.Stage) -> None:
+    """Context manager that sets a thread-local stage.
+
+    Args:
+        stage: The stage to set in the context.
+
+    Raises:
+        AssertionError: If the stage is not a USD stage instance.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from pxr import Usd
+        >>> import isaacsim.core.utils.stage as stage_utils
+        >>>
+        >>> stage_in_memory = Usd.Stage.CreateInMemory()
+        >>> with stage_utils.use_stage(stage_in_memory):
+        ...    # operate on the specified stage
+        ...    pass
+        >>> # operate on the default stage attached to the USD context
+    """
+    # check stage
+    assert isinstance(stage, Usd.Stage), f"Expected a USD stage instance, got: {type(stage)}"
+    # store previous context value if it exists
+    previous_stage = getattr(_context, "stage", None)
+    # set new context value
+    try:
+        _context.stage = stage
+        yield
+    # remove context value or restore previous one if it exists
+    finally:
+        if previous_stage is None:
+            delattr(_context, "stage")
+        else:
+            _context.stage = previous_stage
 
 
 def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd._Usd.Stage]:
@@ -45,12 +88,14 @@ def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd
                         sessionLayer=Sdf.Find('anon:0x7fba6c01c5c0:World7-session.usda'),
                         pathResolverContext=<invalid repr>)
     """
+    stage = getattr(_context, "stage", omni.usd.get_context().get_stage())
     if fabric:
-        stage_id = omni.usd.get_context().get_stage_id()
-        stage = usdrt.Usd.Stage.Attach(stage_id)
-        return stage
-    else:
-        return omni.usd.get_context().get_stage()
+        stage_cache = UsdUtils.StageCache.Get()
+        stage_id = stage_cache.GetId(stage).ToLongInt()
+        if stage_id < 0:
+            stage_id = stage_cache.Insert(stage).ToLongInt()
+        return usdrt.Usd.Stage.Attach(stage_id)
+    return stage
 
 
 def update_stage() -> None:
@@ -387,7 +432,7 @@ def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
         result = omni.usd.get_context().save_as_stage(usd_path)
     else:
         layer = Sdf.Layer.CreateNew(usd_path)
-        root_layer = omni.usd.get_context().get_stage().GetRootLayer()
+        root_layer = get_current_stage().GetRootLayer()
         layer.TransferContent(root_layer)
         result = layer.Save()
     return result

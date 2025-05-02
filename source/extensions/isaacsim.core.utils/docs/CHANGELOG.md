@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.5.0] - 2025-05-01
+### Added
+- Implement a Python context manager to set and use a thread-local USD stage
+
 ## [2.4.0] - 2025-04-29
 ### Changed
 - Added set_active_viewport_camera method to viewports utilities
