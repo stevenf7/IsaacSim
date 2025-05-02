@@ -12,9 +12,18 @@ import asyncio
 
 import carb
 import omni.kit.test
+import usdrt
 from isaacsim.core.utils.prims import define_prim
-from isaacsim.core.utils.stage import add_reference_to_stage, clear_stage, create_new_stage_async, update_stage_async
+from isaacsim.core.utils.stage import (
+    add_reference_to_stage,
+    clear_stage,
+    create_new_stage_async,
+    get_current_stage,
+    update_stage_async,
+    use_stage,
+)
 from isaacsim.storage.native import get_assets_root_path_async
+from pxr import Usd
 
 
 class TestStage(omni.kit.test.AsyncTestCase):
@@ -47,3 +56,18 @@ class TestStage(omni.kit.test.AsyncTestCase):
         self.assertFalse(prim.IsValid())
         self.assertFalse(robot.IsValid())
         pass
+
+    async def test_context_manager(self):
+        await create_new_stage_async()
+        stage_in_memory = Usd.Stage.CreateInMemory()
+        default_stage = omni.usd.get_context().get_stage()
+        self.assertIs(get_current_stage(), default_stage)
+        # - USD stage
+        with use_stage(stage_in_memory):
+            self.assertIs(get_current_stage(), stage_in_memory)
+            self.assertIsNot(get_current_stage(), default_stage)
+        self.assertIs(get_current_stage(), default_stage)
+        # - get Fabric stage
+        with use_stage(stage_in_memory):
+            self.assertIsInstance(get_current_stage(fabric=True), usdrt.Usd.Stage)
+        self.assertIsInstance(get_current_stage(fabric=True), usdrt.Usd.Stage)
