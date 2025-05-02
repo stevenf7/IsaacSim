@@ -42,7 +42,6 @@ includedirs {
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
 
