@@ -23,7 +23,7 @@ from isaacsim.core.utils.stage import (
     use_stage,
 )
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Usd
+from pxr import Usd, UsdGeom
 
 
 class TestStage(omni.kit.test.AsyncTestCase):
@@ -56,6 +56,49 @@ class TestStage(omni.kit.test.AsyncTestCase):
         self.assertFalse(prim.IsValid())
         self.assertFalse(robot.IsValid())
         pass
+
+    async def test_add_reference_to_stage_units(self):
+        from isaacsim.core.utils.stage import clear_stage
+
+        clear_stage()
+
+        # setup different units
+        stage = omni.usd.get_context().get_stage()
+        UsdGeom.SetStageMetersPerUnit(stage, 0.01)
+
+        assets_root_path = await get_assets_root_path_async()
+        if assets_root_path is None:
+            raise Exception("Asset root path doesn't exist")
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+
+        xform_ref = stage.GetPrimAtPath("/World/Franka")
+        self.assertEqual(xform_ref.GetAttribute("xformOp:scale").Get(), [1.0, 1.0, 1.0])
+        scale_attr = xform_ref.GetAttribute("xformOp:scale:unitsResolve")
+        self.assertTrue(not scale_attr)
+
+        clear_stage()
+
+        # enable omni.usd.metrics.assembler.ui
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.ui", True)
+        ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.physics", False)
+
+        # setup different units
+        stage = omni.usd.get_context().get_stage()
+        UsdGeom.SetStageMetersPerUnit(stage, 0.01)
+
+        assets_root_path = await get_assets_root_path_async()
+        if assets_root_path is None:
+            raise Exception("Asset root path doesn't exist")
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+
+        xform_ref = stage.GetPrimAtPath("/World/Franka")
+        self.assertEqual(xform_ref.GetAttribute("xformOp:scale:unitsResolve").Get(), [100.0, 100.0, 100.0])
+
+        ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.physics", True)
+        ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.ui", False)
 
     async def test_context_manager(self):
         await create_new_stage_async()
