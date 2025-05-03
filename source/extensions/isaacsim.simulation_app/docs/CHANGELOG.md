@@ -1,4 +1,8 @@
 # Changelog
+## [2.7.0] - 2025-05-02
+### Added
+- Add option to disable viewport updates when running in headless mode
+
 ## [2.6.1] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
