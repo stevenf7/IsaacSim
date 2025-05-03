@@ -441,6 +441,11 @@ function create_tests()
             "tests-nativepython-testing-isaacsim.ros2.bridge.test_people_sim",
             "standalone_examples/testing/isaacsim.ros2.bridge/test_people_sim.py",
         },
+        {
+            "tests-nativepython-testing-isaacsim.ros2.bridge.test_camera_tf_delay",
+            "standalone_examples/testing/isaacsim.ros2.bridge/test_camera_tf_delay.py",
+            "--test-steps=50",
+        },
     }
 
     for _, test in ipairs(ros2_bridge_tests) do
