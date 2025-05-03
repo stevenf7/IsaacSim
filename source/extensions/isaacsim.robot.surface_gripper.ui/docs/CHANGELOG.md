@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.0] - 2025-04-08
+### Changed
+- Property panel for new Surface Gripper component.
+
 ## [2.1.3] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

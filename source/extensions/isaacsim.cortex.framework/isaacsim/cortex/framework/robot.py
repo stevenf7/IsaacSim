@@ -686,7 +686,8 @@ class CortexUr10(MotionCommandedRobot):
 
         self._end_effector_prim_path = prim_path + "/ee_link"
         self.suction_gripper = SurfaceGripper(
-            end_effector_prim_path=self._end_effector_prim_path, translate=0.162, direction="x"
+            end_effector_prim_path=self._end_effector_prim_path,
+            surface_gripper_path=self._end_effector_prim_path + "/SurfaceGripper",
         )
 
     def initialize(self, physics_sim_view=None):

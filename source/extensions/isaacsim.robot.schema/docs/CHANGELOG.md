@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.2] - 2025-04-18
+### Changed
+- Updates to surface gripper schema
+
 ## [3.3.1] - 2025-04-09
 ### Changed
 - Update Isaac Sim robot asset path for the IsaacSim folder

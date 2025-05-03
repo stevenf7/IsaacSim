@@ -197,7 +197,7 @@ inline pxr::UsdPrim CreateSurfaceGripper(pxr::UsdStagePtr stage, const std::stri
 
     // Create attributes with default values
     for (const auto& attr : { Attributes::STATUS, Attributes::SHEAR_FORCE_LIMIT, Attributes::COAXIAL_FORCE_LIMIT,
-                              Attributes::MAX_GRIP_DISTANCE, Attributes::GRIP_DISTANCE })
+                              Attributes::MAX_GRIP_DISTANCE, Attributes::GRIP_DISTANCE, Attributes::RETRY_INTERVAL })
     {
         prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
     }

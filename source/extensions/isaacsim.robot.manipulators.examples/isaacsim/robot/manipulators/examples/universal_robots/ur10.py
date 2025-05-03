@@ -83,12 +83,14 @@ class UR10(Robot):
                     return
                 prim.GetVariantSet("Gripper").SetVariantSelection("Short_Suction")
                 self._gripper = SurfaceGripper(
-                    end_effector_prim_path=self._end_effector_prim_path, translate=0.1611, direction="x"
+                    end_effector_prim_path=self._end_effector_prim_path,
+                    surface_gripper_path=self._end_effector_prim_path + "/SurfaceGripper",
                 )
             elif gripper_usd is None:
                 carb.log_warn("Not adding a gripper usd, the gripper already exists in the ur10 asset")
                 self._gripper = SurfaceGripper(
-                    end_effector_prim_path=self._end_effector_prim_path, translate=0.1611, direction="x"
+                    end_effector_prim_path=self._end_effector_prim_path,
+                    surface_gripper_path=self._end_effector_prim_path + "/SurfaceGripper",
                 )
             else:
                 raise NotImplementedError

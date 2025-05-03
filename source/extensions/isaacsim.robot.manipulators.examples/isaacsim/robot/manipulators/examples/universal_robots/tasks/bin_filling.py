@@ -70,13 +70,9 @@ class BinFilling(BaseTask):
         self._ur10_robot = scene.add(
             UR10(prim_path="/World/Scene/ur10", name="my_ur10", gripper_usd=None, attach_gripper=True)
         )
-        self._ur10_robot.gripper.set_translate(value=0.162)
         self._ur10_robot.set_joints_default_state(
             positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
         )
-        self._ur10_robot.gripper.set_direction(value="x")
-        self._ur10_robot.gripper.set_force_limit(value=8.0e1)
-        self._ur10_robot.gripper.set_torque_limit(value=10.0e0)
         self._packing_bin = scene.add(
             SingleRigidPrim(
                 prim_path="/World/Scene/bin",
@@ -130,7 +126,6 @@ class BinFilling(BaseTask):
             simulation_time (float): Current simulation time.
         """
         BaseTask.pre_step(self, time_step_index=time_step_index, simulation_time=simulation_time)
-        self._ur10_robot.gripper.update()
         if self._screws_to_add > 0 and len(self._screws) < self._max_screws and time_step_index % 30 == 0:
             self._add_screw()
         return

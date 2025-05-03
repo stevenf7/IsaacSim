@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.0] - 2025-05-03
+### Changed
+- Updated Surface Gripper Example
+
 ## [4.5.1] - 2025-04-27
 ### Fixed
 - rename ui unit tests and add ui related test settings

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.6] - 2025-04-22
+### Changed
+- Update to new Surface Gripper
+
 ## [1.0.5] - 2025-04-09
 ### Changed
 - Update Isaac Sim robot asset path

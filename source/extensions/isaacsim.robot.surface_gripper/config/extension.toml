@@ -1,5 +1,5 @@
 [package]
-version = "2.0.13"
+version = "3.0.0"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
@@ -13,10 +13,12 @@ icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
 
+
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.robot.schema" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.isaac.dynamic_control" = {}
@@ -30,6 +32,12 @@ name = "isaacsim.robot.surface_gripper.tests"
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
+# Ensure the plugin path and dependencies are correctly specified
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
 
 [[test]]
 dependencies = []

@@ -14,10 +14,11 @@ from pathlib import Path
 
 import carb
 import omni.kit.menu.utils
+import usd.schema.isaac.robot_schema
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.storage.native.nucleus import get_assets_root_path
-from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items
+from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items, remove_menu_items
 
 
 # -----------------------------------------------------------------------------
@@ -77,6 +78,7 @@ def create_apriltag(usd_path, shader_name, stage_path, tag_path):
 # -----------------------------------------------------------------------------
 class CreateMenuExtension:
     def __init__(self, ext_id):
+        self._ext_id = ext_id
         self.__menu_layout = [
             MenuLayout.Menu(
                 "Create",
@@ -97,6 +99,8 @@ class CreateMenuExtension:
                         "Robots",
                         [
                             MenuLayout.Item("Asset Browser"),
+                            MenuLayout.Seperator("Actuators"),
+                            MenuLayout.Item("Surface Gripper"),
                             MenuLayout.Seperator("Examples"),
                         ],
                     ),
@@ -319,5 +323,12 @@ class CreateMenuExtension:
 
     def __del__(self):
         omni.kit.menu.utils.remove_layout(self.__menu_layout)
+        remove_menu_items(self._menu_items, "Create")
+
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(
+            self._ext_id,
+            "isaac_create_apriltag",
+        )
         # remove_context_menus
         self._viewport_create_menu = None

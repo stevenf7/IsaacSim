@@ -97,7 +97,7 @@ class "SurfaceGripper"
 )
 
 {
-    rel isaac:physics:attachmentPoints (
+    rel isaac:attachmentPoints (
         doc = """
         List of D6 Joints to be used as components of the Surface Gripper.
         These joints represent the contact points where the gripper can attach to objects.
@@ -108,13 +108,6 @@ class "SurfaceGripper"
         displayName = "Max Grip Distance"
         doc = """
         Maximum distance the gripper can check to grab an object, measured in meters.
-        """
-    )
-
-    float isaac:gripDistance = 0.001 (
-        displayName = "Grip Distance"
-        doc = """
-        Distance the gripper locks in to the object, measured in meters.
         """
     )
 
@@ -132,7 +125,7 @@ class "SurfaceGripper"
         """
     )
 
-    rel isaac:physics:grippedObjects (
+    rel isaac:grippedObjects (
         displayName = "Gripped Objects"
         doc = """
         List of objects currently being gripped. This relationship is updated at runtime
@@ -140,7 +133,7 @@ class "SurfaceGripper"
         """
     )
 
-    float isaac:physics:shearForceLimit = -1 (
+    float isaac:shearForceLimit = -1 (
         displayName = "Shear Force Limit"
         doc = """
         Maximum allowable shear force per attachment point, measured in Newtons.
@@ -148,7 +141,7 @@ class "SurfaceGripper"
         """
     )
 
-    float isaac:physics:coaxialForceLimit = -1 (
+    float isaac:coaxialForceLimit = -1 (
         displayName = "Coaxial Force Limit"
         doc = """
         Maximum allowable coaxial force per attachment point, measured in Newtons.
@@ -165,7 +158,7 @@ inherits = </APISchemaBase>
     }
 )
 {
-        uniform token isaac:forwardAxis = "X" (
+    uniform token isaac:forwardAxis = "X" (
         displayName = "Forward Axis"
         allowedTokens = ["X", "Y", "Z"]
         doc = """
