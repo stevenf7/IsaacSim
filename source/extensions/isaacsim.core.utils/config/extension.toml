@@ -1,5 +1,5 @@
 [package]
-version = "2.5.0"
+version = "2.6.0"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
@@ -23,6 +23,9 @@ writeTarget.platform = true
 "omni.usd.schema.semantics" = {}
 "omni.usdphysics" = {}
 "omni.warp.core" = {}
+"omni.usd.metrics.assembler" = {}
+"omni.usd.metrics.assembler.physics" = {}
+
 
 [[python.module]]
 name = "isaacsim.core.utils"

@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.0] - 2025-05-02
+### Added
+- add_reference_to_stage will now check if the units of the stage being referenced match the current stage. 
+
+
 ## [2.5.0] - 2025-05-01
 ### Added
 - Implement a Python context manager to set and use a thread-local USD stage

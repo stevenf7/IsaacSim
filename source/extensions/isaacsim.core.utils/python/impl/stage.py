@@ -23,6 +23,7 @@ import usdrt
 # isaacsim
 from isaacsim.core.utils.constants import AXES_TOKEN
 from omni.kit.usd import layers
+from omni.metrics.assembler.core import get_metrics_assembler_interface
 from omni.usd.commands import DeletePrimsCommand
 from pxr import Sdf, Usd, UsdGeom, UsdUtils
 
@@ -267,16 +268,20 @@ def print_stage_prim_paths(fabric: bool = False) -> None:
 def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
     """Add USD reference to the opened stage at specified prim path.
 
-    Args:
-        usd_path (str): The path to USD file.
-        prim_path (str): The prim path to attach reference.
-        prim_type (str, optional): The type of prim. Defaults to "Xform".
+    Adds a reference to an external USD file at the specified prim path on the current stage.
+    If the prim does not exist, it will be created with the specified type.
+    This function also handles stage units verification to ensure compatibility.
 
-    Raises:
-        FileNotFoundError: When input USD file is found at specified path.
+    Args:
+        usd_path: The path to USD file to reference.
+        prim_path: The prim path where the reference will be attached.
+        prim_type: The type of prim to create if it doesn't exist. Defaults to "Xform".
 
     Returns:
-        Usd.Prim: The USD prim at specified prim path.
+        The USD prim at the specified prim path.
+
+    Raises:
+        FileNotFoundError: When the input USD file is not found at the specified path.
 
     Example:
 
@@ -285,10 +290,11 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
         >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # load an USD file (franka.usd) to the stage under the path /World/panda
-        >>> stage_utils.add_reference_to_stage(
+        >>> prim = stage_utils.add_reference_to_stage(
         ...     usd_path="/home/<user>/Documents/Assets/Robots/FrankaRobotics/FrankaPanda/franka.usd",
         ...     prim_path="/World/panda"
         ... )
+        >>> prim
         Usd.Prim(</World/panda>)
     """
     stage = get_current_stage()
@@ -296,9 +302,33 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
     if not prim.IsValid():
         prim = stage.DefinePrim(prim_path, prim_type)
     carb.log_info("Loading Asset from path {} ".format(usd_path))
-    success_bool = prim.GetReferences().AddReference(usd_path)
-    if not success_bool:
-        raise FileNotFoundError("The usd file at path {} provided wasn't found".format(usd_path))
+    # Handle units
+    sdf_layer = Sdf.Layer.FindOrOpen(usd_path)
+    if not sdf_layer:
+        carb.log_info(f"Could not get Sdf layer for {usd_path}")
+    else:
+        stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
+        ret_val = get_metrics_assembler_interface().check_layers(
+            stage.GetRootLayer().identifier, sdf_layer.identifier, stage_id
+        )
+        if ret_val["ret_val"]:
+            try:
+                import omni.metrics.assembler.ui
+
+                payref = Sdf.Reference(usd_path)
+                omni.kit.commands.execute("AddReference", stage=stage, prim_path=prim.GetPath(), reference=payref)
+            except Exception as exc:
+                carb.log_warn(
+                    f"The USD file {usd_path} used for a reference does have divergent units, please either enable omni.usd.metrics.assembler.ui or convert the file into right units."
+                )
+                success_bool = prim.GetReferences().AddReference(usd_path)
+                if not success_bool:
+                    raise FileNotFoundError("The usd file at path {} provided wasn't found".format(usd_path))
+        else:
+            success_bool = prim.GetReferences().AddReference(usd_path)
+            if not success_bool:
+                raise FileNotFoundError("The usd file at path {} provided wasn't found".format(usd_path))
+
     return prim
 
 
