@@ -52,7 +52,7 @@ class FrankaOpenDrawerPolicy(PolicyController):
 
         policy_path = assets_root_path + "/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/"
         if usd_path == None:
-            usd_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
+            usd_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
         super().__init__(name, prim_path, root_path, usd_path, position, orientation)
 
