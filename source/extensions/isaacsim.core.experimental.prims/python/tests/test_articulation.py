@@ -495,27 +495,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             check_array(velocity_residuals, shape=(expected_count, 1), dtype=wp.float32, device=device)
 
     @parametrize(devices=["cpu", "cuda"], backends=["tensor", "usd"], amounts=["one", "many"])
-    async def test_dof_friction_coefficients(self, prim, num_prims, device, backend):
-        def _check(input, expected_output, output, count, num_dofs):
-            check_array(output, shape=(count, num_dofs), dtype=wp.float32, device=device)
-            check_allclose(expected_output, output.numpy(), msg=f"Friction coefficients ({type(input)})\n{input}")
-
-        # check backend
-        self.check_backend(backend, prim)
-        # test cases
-        for indices, expected_count in draw_indices(count=num_prims, step=2):
-            print(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
-            for dof_indices, expected_dof_count in draw_indices(count=prim.num_dofs, step=2):
-                print(f"  |    |    |-- dof_indices: {type(dof_indices).__name__}, count: {expected_dof_count}")
-                for coefficients, expected_coefficients in draw_sample(
-                    shape=(expected_count, expected_dof_count), dtype=wp.float32
-                ):
-                    with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
-                        prim.set_dof_friction_coefficients(coefficients, indices=indices, dof_indices=dof_indices)
-                        output = prim.get_dof_friction_coefficients(indices=indices, dof_indices=dof_indices)
-                    _check(coefficients, expected_coefficients, output, expected_count, expected_dof_count)
-
-    @parametrize(devices=["cpu", "cuda"], backends=["tensor", "usd"], amounts=["one", "many"])
     async def test_dof_armatures(self, prim, num_prims, device, backend):
         def _check(input, expected_output, output, count, num_dofs):
             check_array(output, shape=(count, num_dofs), dtype=wp.float32, device=device)
@@ -746,6 +725,72 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                         prim.set_dof_limits(lower, upper, indices=indices, dof_indices=dof_indices)
                         output = prim.get_dof_limits(indices=indices, dof_indices=dof_indices)
                     _check((lower, upper), (expected_lower, expected_upper), output, expected_count, expected_dof_count)
+
+    @parametrize(devices=["cpu", "cuda"], backends=["tensor", "usd"], amounts=["one", "many"])
+    async def test_dof_friction_properties(self, prim, num_prims, device, backend):
+        def _check(input, expected_output, output, count, num_dofs):
+            check_array(output[0], shape=(count, num_dofs), dtype=wp.float32, device=device)
+            check_array(output[1], shape=(count, num_dofs), dtype=wp.float32, device=device)
+            check_array(output[2], shape=(count, num_dofs), dtype=wp.float32, device=device)
+            check_allclose(expected_output[0], output[0].numpy(), msg=f"v0 ({type(input[0])})\n{input[0]}")
+            check_allclose(expected_output[1], output[1].numpy(), msg=f"v1 ({type(input[1])})\n{input[1]}")
+            check_allclose(expected_output[2], output[2].numpy(), msg=f"v2 ({type(input[2])})\n{input[2]}")
+
+        # check backend
+        self.check_backend(backend, prim)
+        # test cases
+        for indices, expected_count in draw_indices(count=num_prims, step=2):
+            print(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
+            for dof_indices, expected_dof_count in draw_indices(count=prim.num_dofs, step=2):
+                print(f"  |    |    |-- dof_indices: {type(dof_indices).__name__}, count: {expected_dof_count}")
+                for (v0, expected_v0), (v1, expected_v1), (v2, expected_v2) in zip(
+                    draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32, low=0.51),
+                    draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32, high=0.49),
+                    draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32),
+                ):
+                    with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
+                        prim.set_dof_friction_properties(v0, v1, v2, indices=indices, dof_indices=dof_indices)
+                        output = prim.get_dof_friction_properties(indices=indices, dof_indices=dof_indices)
+                    _check(
+                        (v0, v1, v2),
+                        (expected_v0, expected_v1, expected_v2),
+                        output,
+                        expected_count,
+                        expected_dof_count,
+                    )
+
+    @parametrize(devices=["cpu", "cuda"], backends=["tensor", "usd"], amounts=["one", "many"])
+    async def test_dof_drive_model_properties(self, prim, num_prims, device, backend):
+        def _check(input, expected_output, output, count, num_dofs):
+            check_array(output[0], shape=(count, num_dofs), dtype=wp.float32, device=device)
+            check_array(output[1], shape=(count, num_dofs), dtype=wp.float32, device=device)
+            check_array(output[2], shape=(count, num_dofs), dtype=wp.float32, device=device)
+            check_allclose(expected_output[0], output[0].numpy(), msg=f"v0 ({type(input[0])})\n{input[0]}")
+            check_allclose(expected_output[1], output[1].numpy(), msg=f"v1 ({type(input[1])})\n{input[1]}")
+            check_allclose(expected_output[2], output[2].numpy(), msg=f"v2 ({type(input[2])})\n{input[2]}")
+
+        # check backend
+        self.check_backend(backend, prim)
+        # test cases
+        for indices, expected_count in draw_indices(count=num_prims, step=2):
+            print(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
+            for dof_indices, expected_dof_count in draw_indices(count=prim.num_dofs, step=2):
+                print(f"  |    |    |-- dof_indices: {type(dof_indices).__name__}, count: {expected_dof_count}")
+                for (v0, expected_v0), (v1, expected_v1), (v2, expected_v2) in zip(
+                    draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32),
+                    draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32),
+                    draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32),
+                ):
+                    with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
+                        prim.set_dof_drive_model_properties(v0, v1, v2, indices=indices, dof_indices=dof_indices)
+                        output = prim.get_dof_drive_model_properties(indices=indices, dof_indices=dof_indices)
+                    _check(
+                        (v0, v1, v2),
+                        (expected_v0, expected_v1, expected_v2),
+                        output,
+                        expected_count,
+                        expected_dof_count,
+                    )
 
     @parametrize(
         devices=["cpu", "cuda"],
