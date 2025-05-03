@@ -30,7 +30,9 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/UR10")
         robot.GetVariantSet("Gripper").SetVariantSelection("Short_Suction")
-        gripper = SurfaceGripper(end_effector_prim_path="/World/UR10/ee_link", translate=0.1611, direction="x")
+        gripper = SurfaceGripper(
+            end_effector_prim_path="/World/UR10/ee_link", surface_gripper_path="/World/UR10/ee_link/SurfaceGripper"
+        )
         ur10 = self._my_world.scene.add(
             SingleManipulator(
                 prim_path="/World/UR10", name="my_ur10", end_effector_prim_path="/World/UR10/ee_link", gripper=gripper

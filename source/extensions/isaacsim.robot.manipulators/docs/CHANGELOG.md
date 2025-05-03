@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.0] - 2025-04-22
+### Changed
+- Update to new Surface Gripper
+
 ## [3.1.1] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

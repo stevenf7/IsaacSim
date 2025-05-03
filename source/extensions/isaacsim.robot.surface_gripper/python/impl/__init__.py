@@ -9,4 +9,4 @@
 # its affiliates is strictly prohibited.
 
 from .commands import *
-from .surface_gripper import SurfaceGripper
+from .extension import *

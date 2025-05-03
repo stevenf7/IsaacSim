@@ -77,8 +77,12 @@ class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCase):
         if my_ur10.gripper.is_closed():
             bin.set_linear_velocity(np.array([0.0, 0.0, -15.0]))
 
+        self.assertTrue(my_ur10.gripper.is_closed())
+
+        my_ur10.gripper.open()
         for i in range(100):
             await update_stage_async()
+
         self.assertTrue(not my_ur10.gripper.is_closed())
         self.assertLess(bin.get_world_pose()[0][-1], 0.15)
         pass

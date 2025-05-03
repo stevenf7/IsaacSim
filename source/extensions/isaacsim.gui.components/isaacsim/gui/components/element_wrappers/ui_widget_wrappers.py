@@ -438,6 +438,7 @@ class FloatField(UIWidgetWrapper):
         lower_limit: float = None,
         upper_limit: float = None,
         on_value_changed_fn: Callable = None,
+        on_end_edit_fn: Callable = None,
     ):
         self._lower_limit = float(lower_limit) if lower_limit is not None else None
         self._upper_limit = float(upper_limit) if upper_limit is not None else None
@@ -445,6 +446,7 @@ class FloatField(UIWidgetWrapper):
         self._default_value = float(default_value)
 
         self._on_value_changed_fn = on_value_changed_fn
+        self._on_end_edit_fn = on_end_edit_fn
 
         float_field_frame = self._create_ui_widget(label, tooltip, self._default_value, step, format)
 
@@ -535,6 +537,15 @@ class FloatField(UIWidgetWrapper):
         """
         self._on_value_changed_fn = on_value_changed_fn
 
+    def set_on_end_edit_fn(self, on_end_edit_fn: Callable):
+        """Set function that is called when the user finishes editing the FloatField
+
+        Args:
+            on_end_edit_fn (Callable): Function that is called when the user finishes editing the FloatField.
+                Function should take a float as the argument. The return value will not be used.
+        """
+        self._on_end_edit_fn = on_end_edit_fn
+
     def _on_value_changed_fn_wrapper(self, model):
         # Enforces upper and lower limits on value change
         model.set_max(self.get_upper_limit())
@@ -549,7 +560,9 @@ class FloatField(UIWidgetWrapper):
             model.set_value(float(val - 1))
             return
 
-        if self._on_value_changed_fn is not None:
+        if self._on_end_edit_fn is not None:
+            self._on_end_edit_fn(val)
+        elif self._on_value_changed_fn is not None:
             self._on_value_changed_fn(val)
 
     def _create_ui_widget(self, label, tooltip, default_value, step, format):
@@ -572,7 +585,11 @@ class FloatField(UIWidgetWrapper):
                 self.float_field.model.set_value(default_value)
                 add_line_rect_flourish(False)
 
-            self.float_field.model.add_value_changed_fn(self._on_value_changed_fn_wrapper)
+            if self._on_end_edit_fn is None:
+                self.float_field.model.add_value_changed_fn(self._on_value_changed_fn_wrapper)
+            else:
+                self.float_field.model.add_end_edit_fn(self._on_value_changed_fn_wrapper)
+
         return containing_frame
 
 

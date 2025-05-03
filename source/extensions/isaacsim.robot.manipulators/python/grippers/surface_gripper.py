@@ -8,11 +8,11 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 import carb
+import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import numpy as np
 import omni.kit.app
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
-from isaacsim.robot.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 
 
 class SurfaceGripper(Gripper):
@@ -35,28 +35,11 @@ class SurfaceGripper(Gripper):
     def __init__(
         self,
         end_effector_prim_path: str,
-        translate: float = 0,
-        direction: str = "x",
-        grip_threshold: float = 0.01,
-        force_limit: float = 1.0e6,
-        torque_limit: float = 1.0e4,
-        bend_angle: float = np.pi / 24,
-        kp: float = 1.0e2,
-        kd: float = 1.0e2,
-        disable_gravity: bool = True,
+        surface_gripper_path: str,
     ) -> None:
         Gripper.__init__(self, end_effector_prim_path=end_effector_prim_path)
-        self._translate = translate
-        self._direction = direction
-        self._grip_threshold = grip_threshold
-        self._force_limit = force_limit
-        self._torque_limit = torque_limit
-        self._bend_angle = bend_angle
-        self._kp = kp
-        self._kd = kd
-        self._disable_gravity = disable_gravity
-        self._virtual_gripper = None
-        self._articulation_num_dofs = None
+        self._surface_gripper_interface = surface_gripper.acquire_surface_gripper_interface()
+        self._surface_gripper_path = surface_gripper_path
         return
 
     def initialize(
@@ -72,29 +55,7 @@ class SurfaceGripper(Gripper):
         """
         Gripper.initialize(self, physics_sim_view=physics_sim_view)
         self._articulation_num_dofs = articulation_num_dofs
-        virtual_gripper_props = Surface_Gripper_Properties()
-        virtual_gripper_props.parentPath = self._end_effector_prim_path
-        virtual_gripper_props.d6JointPath = virtual_gripper_props.parentPath + "/d6FixedJoint"
-        virtual_gripper_props.gripThreshold = self._grip_threshold
-        virtual_gripper_props.forceLimit = self._force_limit
-        virtual_gripper_props.torqueLimit = self._torque_limit
-        virtual_gripper_props.bendAngle = self._bend_angle
-        virtual_gripper_props.stiffness = self._kp
-        virtual_gripper_props.damping = self._kd
-        virtual_gripper_props.disableGravity = self._disable_gravity
-        tr = omni.physics.tensors.Transform()
-        if self._direction == "x":
-            tr.p.x = self._translate
-        elif self._direction == "y":
-            tr.p.y = self._translate
-        elif self._direction == "z":
-            tr.p.z = self._translate
-        else:
-            carb.log_error("Direction specified for the surface gripper doesn't exist")
-        virtual_gripper_props.offset = tr
-        virtual_gripper = Surface_Gripper()
-        virtual_gripper.initialize(virtual_gripper_props)
-        self._virtual_gripper = virtual_gripper
+
         if self._default_state is None:
             self._default_state = not self.is_closed()
         return
@@ -102,41 +63,28 @@ class SurfaceGripper(Gripper):
     def close(self) -> None:
         """Applies actions to the articulation that closes the gripper (ex: to hold an object)."""
         if not self.is_closed():
-            self._virtual_gripper.close()
+            self._surface_gripper_interface.close_gripper(self._surface_gripper_path)
         if not self.is_closed():
             carb.log_warn("gripper didn't close successfully")
         return
 
     def open(self) -> None:
         """Applies actions to the articulation that opens the gripper (ex: to release an object held)."""
-        result = self._virtual_gripper.open()
-        if not result:
+        self._surface_gripper_interface.open_gripper(self._surface_gripper_path)
+        if not self.is_open():
             carb.log_warn("gripper didn't open successfully")
 
         return
 
     def update(self) -> None:
-        self._virtual_gripper.update()
+        # self._virtual_gripper.update()
         return
 
     def is_closed(self) -> bool:
-        return self._virtual_gripper.is_closed()
+        return self._surface_gripper_interface.get_gripper_status(self._surface_gripper_path) == "Closed"
 
-    def set_translate(self, value: float) -> None:
-        self._translate = value
-        return
-
-    def set_direction(self, value: float) -> None:
-        self._direction = value
-        return
-
-    def set_force_limit(self, value: float) -> None:
-        self._force_limit = value
-        return
-
-    def set_torque_limit(self, value: float) -> None:
-        self._torque_limit = value
-        return
+    def is_open(self) -> bool:
+        return self._surface_gripper_interface.get_gripper_status(self._surface_gripper_path) == "Open"
 
     def set_default_state(self, opened: bool):
         """Sets the default state of the gripper

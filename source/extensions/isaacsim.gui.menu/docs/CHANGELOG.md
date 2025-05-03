@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.0] - 2025-05-01
+### Added
+- Create Robot / Surface Gripper
+
 ## [2.2.4] - 2025-04-30
 ### Changed
 - Update event subscriptions to Event 2.0 system

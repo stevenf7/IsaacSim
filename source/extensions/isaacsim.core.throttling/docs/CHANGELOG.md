@@ -3,6 +3,7 @@
 ## [2.1.0] - 2025-05-02
 ### Added
 - Add setting to disable legacy gizmos during runtime
+
 ### Changed
 - Eco mode is always enabled on stop
 

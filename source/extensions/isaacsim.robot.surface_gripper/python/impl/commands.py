@@ -13,6 +13,7 @@ import omni.graph.core as og
 import omni.kit.commands
 import pxr
 from pxr import Usd, UsdGeom, UsdPhysics
+from usd.schema.isaac import robot_schema
 
 
 class CreateSurfaceGripper(omni.kit.commands.Command):
@@ -24,12 +25,11 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
 
         result, prim  = omni.kit.commands.execute(
                 "CreateSurfaceGripper",
-                prim_name="SurfaceGripperActionGraph",
-                conveyor_prim="/SurfaceGripperRigidBody"
+                prim_path="/SurfaceGripper",
             )
     """
 
-    def __init__(self, prim_name: str = "SurfaceGripperActionGraph", surface_gripper_prim=None):
+    def __init__(self, prim_path: str = ""):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -37,61 +37,24 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
         self._prim = None
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = None
-        self._surface_gripper_prim_selected = surface_gripper_prim is not None
+        stage = omni.usd.get_context().get_stage()
+        if prim_path == "":
+            selection = omni.usd.get_context().get_selection()
+            paths = selection.get_selected_prim_paths()
+            if paths:
+                prim_path = paths[0]
+            else:
+                default_prim = stage.GetDefaultPrim()
+                if default_prim is None:
+                    # If no default prim, create at root level
+                    prim_path = "/"
+                else:
+                    prim_path = str(default_prim.GetPath())
+        self._prim_path = omni.usd.get_stage_next_free_path(stage, prim_path + "/SurfaceGripper", False)
         pass
 
     def do(self):
-        if self._surface_gripper_prim is None:
-            _selection = omni.usd.get_context().get_selection()
-            selected_paths = _selection.get_selected_prim_paths()
-            self._surface_gripper_prim = self._stage.GetDefaultPrim()
-            self._surface_gripper_prim_selected = False
-            if selected_paths:
-                self._surface_gripper_prim_selected = True
-                self._surface_gripper_prim = self._stage.GetPrimAtPath(selected_paths[0])
-                if not UsdPhysics.RigidBodyAPI(self._surface_gripper_prim):
-                    carb.log_warn("Selected prim is not a rigid body. ignoring selection.")
-                    self._surface_gripper_prim_selected = False
-                    # alt = self._surface_gripper_prim.GetParent()
-                    # while alt:
-                    #     if UsdPhysics.RigidBodyAPI(alt):
-                    #         self._surface_gripper_prim = alt
-                    #         break
-                    #     alt = alt.GetParent()
-                    # if not alt:
-                    #     UsdPhysics.RigidBodyAPI.Apply(self._surface_gripper_prim)
-                    #     UsdPhysics.CollisionAPI.Apply(self._surface_gripper_prim)
-        self._prim_path = omni.usd.get_stage_next_free_path(
-            self._stage,
-            self._surface_gripper_prim.GetPath().AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)),
-            True,
-        )
-        keys = og.Controller.Keys
-        og.Controller.edit(
-            {"graph_path": self._prim_path, "evaluator_name": "execution"},
-            {
-                keys.CREATE_NODES: [
-                    ("impulse_monitor", "omni.graph.action.OnImpulseEvent"),
-                    ("SurfaceGripperNode", "isaacsim.robot.surface_gripper.SurfaceGripper"),
-                ],
-                keys.SET_VALUES: [],
-                keys.CONNECT: [("impulse_monitor.outputs:execOut", "SurfaceGripperNode.inputs:onStep")],
-            },
-        )
-        if self._surface_gripper_prim_selected:
-            surface_gripper_node = self._stage.GetPrimAtPath(self._prim_path + "/SurfaceGripperNode")
-            surface_gripper_offset = UsdGeom.Xform.Define(self._stage, self._prim_path + "/SurfaceGripperOffset")
-            surface_gripper_offset.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
-            surface_gripper_offset.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
-            surface_gripper_offset_prim = surface_gripper_offset.GetPrim()
-            input_rel = surface_gripper_node.GetRelationship("inputs:ParentRigidBody")
-            if not input_rel:
-                input_rel = surface_gripper_node.CreateRelationship("inputs:ParentRigidBody")
-            input_rel.SetTargets([self._surface_gripper_prim.GetPath()])
-            input_rel = surface_gripper_node.GetRelationship("inputs:GripPosition")
-            input_rel.SetTargets([surface_gripper_offset_prim.GetPath()])
-
-        self._prim = self._stage.GetPrimAtPath(self._prim_path)
+        self._prim = robot_schema.CreateSurfaceGripper(self._stage, self._prim_path)
         return self._prim
 
     def undo(self):

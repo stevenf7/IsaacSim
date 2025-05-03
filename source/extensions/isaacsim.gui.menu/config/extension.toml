@@ -1,5 +1,5 @@
 [package]
-version = "2.2.4"
+version = "2.3.0"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Menus specific to Isaac Sim"
@@ -16,6 +16,7 @@ writeTarget.kit = true
 "isaacsim.core.api" = {}
 "isaacsim.core.utils" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.robot.schema" = {}
 "omni.kit.context_menu" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.selection" = {}

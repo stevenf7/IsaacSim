@@ -1,28 +1,84 @@
 local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "isaacsim/robot/surface_gripper")
+local hostDepsDir = "%{root}/_build/host-deps"
 
-project_ext_ogn(ext, ogn)
-project_ext(ext, { generate_ext_project = true })
 
-add_files("python", "*.py")
-add_files("python/nodes", "python/nodes/**.py")
-add_files("python/impl", "python/impl/**.py")
+
+-- Then define the main extension project
+project_ext(ext)
+
+-- C++ Carbonite plugin
+project_ext_plugin(ext, "isaacsim.robot.surface_gripper.plugin")
+cppdialect("C++17")
+
+-- Specify clear dependencies without circular references
+dependson { 
+    "prebuild",
+    "carb.physics-usd.plugin",
+     "omni.physx.plugin" ,
+}
+
+add_files("impl", "plugins")
+add_files("ogn", ogn.nodes_path)
 
 add_ogn_dependencies(ogn, { "python/nodes" })
 
-repo_build.prebuild_link {
-    { "python/impl", ogn.python_target_path .. "/impl" },
-    { "python/tests", ogn.python_target_path .. "/tests" },
-    { "docs", ext.target_dir .. "/docs" },
-    { "data", ext.target_dir .. "/data" },
-    { "include", ext.target_dir .. "/include" },
+include_physx()
+add_cuda_dependencies()
+
+includedirs {
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/source/extensions/isaacsim.core.utils/include",
+    "%{root}/source/extensions/isaacsim.robot.surface_gripper/include",
+    "%{root}/source/extensions/isaacsim.core.nodes/include",
+    "%{root}/source/extensions/isaacsim.robot.schema/include",
+    extsbuild_dir .. "/usdrt.scenegraph/include",
+    target_deps .. "/omni_client_library/include",
+    target_deps .. "/rtx_plugins/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",    
+    target_deps .. "/omni_physics/%{config}/include",
+    target_deps .. "/python/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 
-repo_build.prebuild_copy {
-    { "python/__init__.py", ogn.python_target_path },
+libdirs {
+    target_deps .. "/python/lib",
+    target_deps .. "/usd/%{cfg.buildcfg}/lib",
+    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
+    extsbuild_dir .. "/omni.usd.core/bin",
 }
 
--- Python Bindings for Carobnite Plugin
+links {
+    "physxSchema",
+}
+
+extra_usd_libs = { "usdGeom", "usdPhysics", "usdUtils" }
+add_usd(extra_usd_libs)
+
+-- Platform specific configurations
+filter { "system:linux" }
+includedirs {
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/python/include/python3.11",
+}
+filter { "system:windows" }
+libdirs {
+    target_deps .. "/tbb/lib/intel64/vc14",
+}
+filter {}
+
+filter { "configurations:debug" }
+defines { "_DEBUG" }
+filter { "configurations:release" }
+defines { "NDEBUG" }
+filter {}
+
+-- First define the OGN project
+project_ext_ogn(ext, ogn)
+
+-- Python Bindings (make sure it depends on the plugin)
 project_ext_bindings {
     ext = ext,
     project_name = "isaacsim.robot.surface_gripper.python",
@@ -31,37 +87,26 @@ project_ext_bindings {
     target_subdir = "isaacsim/robot/surface_gripper",
 }
 
-include_physx()
 includedirs {
-    "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include",
+    target_deps .. "/rtx_plugins/include",
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
+    "%{root}/source/extensions/isaacsim.core.utils/include",
+    "%{root}/source/extensions/isaacsim.robot.schema/include",
     "%{root}/source/extensions/isaacsim.robot.surface_gripper/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
-    "%{root}/_build/target-deps/omni_physics/%{config}/include",
 }
 
-libdirs {
-    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/nv_usd/release/lib",
+-- File operations at the end
+repo_build.prebuild_link {
+    { "python/impl", ext.target_dir .. "/isaacsim/robot/surface_gripper/impl" },
+    { "python/tests", ext.target_dir .. "/isaacsim/robot/surface_gripper/tests" },
+    { "data", ext.target_dir .. "/data" },
+    { "docs", ext.target_dir .. "/docs" },
+    { "include", ext.target_dir .. "/include" },
 }
 
-extra_usd_libs = {}
-
--- Begin OpenUSD
-add_usd(extra_usd_libs)
--- End OpenUSD
-
-filter { "system:windows", "platforms:x86_64" }
--- link_boost_for_windows({"boost_python310"})
-filter {}
-
-filter { "system:linux", "platforms:x86_64" }
-links { "tbb" }
-filter {}
-
-filter { "configurations:debug" }
-defines { "_DEBUG" }
-filter { "configurations:release" }
-defines { "NDEBUG" }
-filter {}
+repo_build.prebuild_copy {
+    { "python/*.py", ext.target_dir .. "/isaacsim/robot/surface_gripper" },
+}

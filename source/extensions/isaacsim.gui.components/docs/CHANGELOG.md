@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.0] - 2025-05-03
+### Changed
+- add an optional set_on_end_edit_fn callback for float fields
+
 ## [1.0.14] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
