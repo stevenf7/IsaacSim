@@ -1,4 +1,11 @@
 # Changelog
+
+## [2.1.0] - 2025-05-02
+### Added
+- Add setting to disable legacy gizmos during runtime
+### Changed
+- Eco mode is always enabled on stop
+
 ## [2.0.5] - 2025-04-09
 ### Changed
 - Update all test args to be consistent
