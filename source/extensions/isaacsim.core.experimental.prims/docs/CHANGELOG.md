@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2025-04-29
+### Added
+- Add support for articulation actuator modeling: advanced joint properties and drive envelope
+
 ## [0.1.2] - 2025-04-27
 ### Fixed
 - Added extension specific unit test settings to fix broken tests

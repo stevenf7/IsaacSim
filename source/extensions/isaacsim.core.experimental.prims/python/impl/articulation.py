@@ -833,84 +833,23 @@ class Articulation(XformPrim):
                             upper_limit = np.rad2deg(upper_limit)
                         joint_api.GetUpperLimitAttr().Set(upper_limit.item())
 
-    def set_dof_friction_coefficients(
-        self,
-        coefficients: list | np.ndarray | wp.array,
-        *,
-        indices: list | np.ndarray | wp.array | None = None,
-        dof_indices: list | np.ndarray | wp.array | None = None,
-    ) -> None:
-        """Set the friction coefficients of the degrees of freedom (DOFs) of the prims.
-
-        Backends: :guilabel:`tensor`, :guilabel:`usd`.
-
-        Search for *Articulation Joint Friction* in |physx_docs| for more details.
-
-        Args:
-            coefficients: Friction coefficients (shape ``(N, D)``).
-                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
-            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
-            dof_indices: Indices of DOFs to process (shape ``(D,)``). If not defined, all DOFs are processed.
-
-        Raises:
-            AssertionError: Wrapped prims are not valid.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> # set the DOF friction coefficients for all prims
-            >>> prims.set_dof_friction_coefficients([0.5])
-            >>>
-            >>> # set the friction coefficients for the first and last prims' finger DOFs
-            >>> prims.set_dof_friction_coefficients([1.5], indices=[0, 2], dof_indices=[7, 8])
-        """
-        assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
-        # Tensor API
-        if backend == "tensor":
-            data = self._physics_articulation_view.get_dof_friction_coefficients()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            coefficients = _ops.broadcast_to(
-                coefficients, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
-            )
-            wp.copy(data[indices, dof_indices], coefficients)
-            self._physics_articulation_view.set_dof_friction_coefficients(data, indices)
-        # USD API
-        else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            coefficients = _ops.broadcast_to(
-                coefficients,
-                shape=(indices.shape[0], dof_indices.shape[0]),
-                dtype=wp.float32,
-                device=self._device,
-            ).numpy()
-            for i, index in enumerate(indices.numpy()):
-                for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
-                    physx_joint_api = Articulation.ensure_api([dof_prim], PhysxSchema.PhysxJointAPI)[0]
-                    physx_joint_api.GetJointFrictionAttr().Set(float(coefficients[i][j].item()))
-
-    def get_dof_friction_coefficients(
+    def get_dof_friction_properties(
         self,
         *,
         indices: list | np.ndarray | wp.array | None = None,
         dof_indices: list | np.ndarray | wp.array | None = None,
-    ) -> wp.array:
-        """Get the friction coefficients of the degrees of freedom (DOFs) of the prims.
+    ) -> tuple[wp.array, wp.array, wp.array]:
+        """Get the friction properties of the degrees of freedom (DOFs) of the prims.
 
         Backends: :guilabel:`tensor`, :guilabel:`usd`.
-
-        Search for *Articulation Joint Friction* in |physx_docs| for more details.
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
             dof_indices: Indices of DOFs to process (shape ``(D,)``). If not defined, all DOFs are processed.
 
         Returns:
-            Friction coefficients (shape ``(N, D)``).
+            Three-element tuple. 1) Static friction efforts (shape ``(N, D)``).
+            2) Dynamic friction efforts (shape ``(N, D)``). 3) Viscous friction coefficients (shape ``(N, D)``).
 
         Raises:
             AssertionError: Wrapped prims are not valid.
@@ -919,35 +858,419 @@ class Articulation(XformPrim):
 
         .. code-block:: python
 
-            >>> # get the DOF friction coefficients of all prims
-            >>> friction_coefficients = prims.get_dof_friction_coefficients()
-            >>> friction_coefficients.shape
-            (3, 9)
+            >>> # get the DOF friction properties of all prims
+            >>> static_frictions, dynamic_frictions, viscous_frictions = prims.get_dof_friction_properties()
+            >>> static_frictions.shape, dynamic_frictions.shape, viscous_frictions.shape
+            ((3, 9), (3, 9), (3, 9))
             >>>
-            >>> # get the DOF friction coefficients of the first and last prims' finger DOFs
-            >>> friction_coefficients = prims.get_dof_friction_coefficients(indices=[0, 2], dof_indices=[7, 8])
-            >>> friction_coefficients.shape
-            (2, 2)
+            >>> # get the DOF friction properties of the first and last prims
+            >>> static_frictions, dynamic_frictions, viscous_frictions = prims.get_dof_friction_properties(indices=[0, 2])
+            >>> static_frictions.shape, dynamic_frictions.shape, viscous_frictions.shape
+            ((2, 9), (2, 9), (2, 9))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
-            data = self._physics_articulation_view.get_dof_friction_coefficients()  # shape: (N, max_dofs)
+            data = self._physics_articulation_view.get_dof_friction_properties()  # shape: (N, max_dofs, 3)
             indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
             dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            return data[indices, dof_indices].contiguous().to(self._device)
+            return (
+                data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)]
+                .contiguous()
+                .reshape((indices.shape[0], dof_indices.shape[0]))
+                .to(self._device),
+                data[indices, dof_indices, wp.array([1], dtype=wp.int32, device=data.device)]
+                .contiguous()
+                .reshape((indices.shape[0], dof_indices.shape[0]))
+                .to(self._device),
+                data[indices, dof_indices, wp.array([2], dtype=wp.int32, device=data.device)]
+                .contiguous()
+                .reshape((indices.shape[0], dof_indices.shape[0]))
+                .to(self._device),
+            )
         # USD API
         else:
             indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
             dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            data = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            static_frictions = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            dynamic_frictions = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            viscous_frictions = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
                     dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
-                    physx_joint_api = Articulation.ensure_api([dof_prim], PhysxSchema.PhysxJointAPI)[0]
-                    data[i][j] = physx_joint_api.GetJointFrictionAttr().Get()
-            return _ops.place(data, device=self._device)
+                    _, drive_type = self._get_drive_api_and_type(index, dof_index)
+                    dof_prim.ApplyAPI("PhysxJointAxisAPI", drive_type)
+                    static_frictions[i][j] = dof_prim.GetAttribute(
+                        f"physxJointAxis:{drive_type}:staticFrictionEffort"
+                    ).Get()
+                    dynamic_frictions[i][j] = dof_prim.GetAttribute(
+                        f"physxJointAxis:{drive_type}:dynamicFrictionEffort"
+                    ).Get()
+                    viscous_friction = dof_prim.GetAttribute(
+                        f"physxJointAxis:{drive_type}:viscousFrictionCoefficient"
+                    ).Get()
+                    if drive_type == "angular":
+                        viscous_friction = np.rad2deg(viscous_friction)
+                    viscous_frictions[i][j] = viscous_friction
+            return (
+                _ops.place(static_frictions, device=self._device),
+                _ops.place(dynamic_frictions, device=self._device),
+                _ops.place(viscous_frictions, device=self._device),
+            )
+
+    def set_dof_friction_properties(
+        self,
+        static_frictions: list | np.ndarray | wp.array | None = None,
+        dynamic_frictions: list | np.ndarray | wp.array | None = None,
+        viscous_frictions: list | np.ndarray | wp.array | None = None,
+        *,
+        indices: list | np.ndarray | wp.array | None = None,
+        dof_indices: list | np.ndarray | wp.array | None = None,
+    ) -> None:
+        """Set the friction properties of the degrees of freedom (DOFs) of the prims.
+
+        Backends: :guilabel:`tensor`, :guilabel:`usd`.
+
+        .. warning::
+
+            The ``static_frictions`` must be greater than or equal to the ``dynamic_frictions``.
+
+        Args:
+            static_frictions: Static friction efforts (shape ``(N, D)``).
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            dynamic_frictions: Dynamic friction efforts (shape ``(N, D)``).
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            viscous_frictions: Viscous friction coefficients (shape ``(N, D)``).
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            dof_indices: Indices of DOFs to process (shape ``(D,)``). If not defined, all DOFs are processed.
+
+        Raises:
+            AssertionError: If neither static_frictions, dynamic_frictions, or viscous_frictions are specified.
+            AssertionError: Wrapped prims are not valid.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # set the DOF friction properties for all prims
+            >>> prims.set_dof_friction_properties(static_frictions=[0.5], dynamic_frictions=[0.2], viscous_frictions=[0.1])
+        """
+        assert (
+            static_frictions is not None or dynamic_frictions is not None or viscous_frictions is not None
+        ), "All 'static_frictions', 'dynamic_frictions', and 'viscous_frictions' are not defined. Define at least one of them"
+        assert self.valid, _MSG_PRIM_NOT_VALID
+        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        # Tensor API
+        if backend == "tensor":
+            data = self._physics_articulation_view.get_dof_friction_properties()  # shape: (N, max_dofs, 3)
+            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            if static_frictions is not None:
+                static_frictions = _ops.broadcast_to(
+                    static_frictions,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=data.device,
+                ).reshape((indices.shape[0], dof_indices.shape[0], 1))
+                wp.copy(data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)], static_frictions)
+            if dynamic_frictions is not None:
+                dynamic_frictions = _ops.broadcast_to(
+                    dynamic_frictions,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=data.device,
+                ).reshape((indices.shape[0], dof_indices.shape[0], 1))
+                wp.copy(
+                    data[indices, dof_indices, wp.array([1], dtype=wp.int32, device=data.device)], dynamic_frictions
+                )
+            if viscous_frictions is not None:
+                viscous_frictions = _ops.broadcast_to(
+                    viscous_frictions,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=data.device,
+                ).reshape((indices.shape[0], dof_indices.shape[0], 1))
+                wp.copy(
+                    data[indices, dof_indices, wp.array([2], dtype=wp.int32, device=data.device)], viscous_frictions
+                )
+            self._physics_articulation_view.set_dof_friction_properties(data, indices)
+        # USD API
+        else:
+            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            if static_frictions is not None:
+                static_frictions = _ops.broadcast_to(
+                    static_frictions,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=self._device,
+                ).numpy()
+            if dynamic_frictions is not None:
+                dynamic_frictions = _ops.broadcast_to(
+                    dynamic_frictions,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=self._device,
+                ).numpy()
+            if viscous_frictions is not None:
+                viscous_frictions = _ops.broadcast_to(
+                    viscous_frictions,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=self._device,
+                ).numpy()
+            for i, index in enumerate(indices.numpy()):
+                for j, dof_index in enumerate(dof_indices.numpy()):
+                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    _, drive_type = self._get_drive_api_and_type(index, dof_index)
+                    dof_prim.ApplyAPI("PhysxJointAxisAPI", drive_type)
+                    if static_frictions is not None:
+                        dof_prim.GetAttribute(f"physxJointAxis:{drive_type}:staticFrictionEffort").Set(
+                            static_frictions[i][j].item()
+                        )
+                    if dynamic_frictions is not None:
+                        dof_prim.GetAttribute(f"physxJointAxis:{drive_type}:dynamicFrictionEffort").Set(
+                            dynamic_frictions[i][j].item()
+                        )
+                    if viscous_frictions is not None:
+                        viscous_friction = viscous_frictions[i][j].item()
+                        if drive_type == "angular":
+                            viscous_friction = np.deg2rad(viscous_friction)
+                        dof_prim.GetAttribute(f"physxJointAxis:{drive_type}:viscousFrictionCoefficient").Set(
+                            viscous_friction
+                        )
+
+    def get_dof_drive_model_properties(
+        self,
+        *,
+        indices: list | np.ndarray | wp.array | None = None,
+        dof_indices: list | np.ndarray | wp.array | None = None,
+    ) -> tuple[wp.array, wp.array, wp.array]:
+        """Get the drive model properties of the degrees of freedom (DOFs) of the prims.
+
+        Backends: :guilabel:`tensor`, :guilabel:`usd`.
+
+        Args:
+            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            dof_indices: Indices of DOFs to process (shape ``(D,)``). If not defined, all DOFs are processed.
+
+        Returns:
+            Three-element tuple. 1) Speed effort gradients (shape ``(N, D)``).
+            2) Maximum actuator velocities (shape ``(N, D)``). 3) Velocity-dependent resistances (shape ``(N, D)``).
+
+        Raises:
+            AssertionError: Wrapped prims are not valid.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # get the DOF drive model properties of all prims
+            >>> speed_effort_gradients, maximum_actuator_velocities, velocity_dependent_resistances = prims.get_dof_drive_model_properties()
+            >>> speed_effort_gradients.shape, maximum_actuator_velocities.shape, velocity_dependent_resistances.shape
+            ((3, 9), (3, 9), (3, 9))
+            >>>
+            >>> # get the DOF drive model properties of the first and last prims
+            >>> speed_effort_gradients, maximum_actuator_velocities, velocity_dependent_resistances = prims.get_dof_drive_model_properties(indices=[0, 2])
+            >>> speed_effort_gradients.shape, maximum_actuator_velocities.shape, velocity_dependent_resistances.shape
+            ((2, 9), (2, 9), (2, 9))
+        """
+        assert self.valid, _MSG_PRIM_NOT_VALID
+        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        # Tensor API
+        if backend == "tensor":
+            data = self._physics_articulation_view.get_dof_drive_model_properties()  # shape: (N, max_dofs, 3)
+            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            return (
+                data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)]
+                .contiguous()
+                .reshape((indices.shape[0], dof_indices.shape[0]))
+                .to(self._device),
+                data[indices, dof_indices, wp.array([1], dtype=wp.int32, device=data.device)]
+                .contiguous()
+                .reshape((indices.shape[0], dof_indices.shape[0]))
+                .to(self._device),
+                data[indices, dof_indices, wp.array([2], dtype=wp.int32, device=data.device)]
+                .contiguous()
+                .reshape((indices.shape[0], dof_indices.shape[0]))
+                .to(self._device),
+            )
+        # USD API
+        else:
+            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            speed_effort_gradients = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            maximum_actuator_velocities = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            velocity_dependent_resistances = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            for i, index in enumerate(indices.numpy()):
+                for j, dof_index in enumerate(dof_indices.numpy()):
+                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    _, drive_type = self._get_drive_api_and_type(index, dof_index)
+                    dof_prim.ApplyAPI("PhysxDrivePerformanceEnvelopeAPI", drive_type)
+                    speed_effort_gradient = dof_prim.GetAttribute(
+                        f"physxDrivePerformanceEnvelope:{drive_type}:speedEffortGradient"
+                    ).Get()
+                    maximum_actuator_velocity = dof_prim.GetAttribute(
+                        f"physxDrivePerformanceEnvelope:{drive_type}:maxActuatorVelocity"
+                    ).Get()
+                    velocity_dependent_resistance = dof_prim.GetAttribute(
+                        f"physxDrivePerformanceEnvelope:{drive_type}:velocityDependentResistance"
+                    ).Get()
+                    if drive_type == "angular":
+                        speed_effort_gradient = np.deg2rad(speed_effort_gradient)
+                        maximum_actuator_velocity = np.deg2rad(maximum_actuator_velocity)
+                        velocity_dependent_resistance = np.rad2deg(velocity_dependent_resistance)
+                    speed_effort_gradients[i][j] = speed_effort_gradient
+                    maximum_actuator_velocities[i][j] = maximum_actuator_velocity
+                    velocity_dependent_resistances[i][j] = velocity_dependent_resistance
+            return (
+                _ops.place(speed_effort_gradients, device=self._device),
+                _ops.place(maximum_actuator_velocities, device=self._device),
+                _ops.place(velocity_dependent_resistances, device=self._device),
+            )
+
+    def set_dof_drive_model_properties(
+        self,
+        speed_effort_gradients: list | np.ndarray | wp.array | None = None,
+        maximum_actuator_velocities: list | np.ndarray | wp.array | None = None,
+        velocity_dependent_resistances: list | np.ndarray | wp.array | None = None,
+        *,
+        indices: list | np.ndarray | wp.array | None = None,
+        dof_indices: list | np.ndarray | wp.array | None = None,
+    ) -> None:
+        """Set the drive model properties of the degrees of freedom (DOFs) of the prims.
+
+        Backends: :guilabel:`tensor`, :guilabel:`usd`.
+
+        Args:
+            speed_effort_gradients: Speed effort gradients (shape ``(N, D)``).
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            maximum_actuator_velocities: Maximum actuator velocities (shape ``(N, D)``).
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            velocity_dependent_resistances: Velocity-dependent resistances (shape ``(N, D)``).
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            dof_indices: Indices of DOFs to process (shape ``(D,)``). If not defined, all DOFs are processed.
+
+        Raises:
+            AssertionError: If neither speed_effort_gradients, maximum_actuator_velocities,
+                or velocity_dependent_resistances are specified.
+            AssertionError: Wrapped prims are not valid.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # set the DOF drive model properties for all prims
+            >>> prims.set_dof_drive_model_properties(
+            ...     speed_effort_gradients=[2.0],
+            ...     maximum_actuator_velocities=[1.0],
+            ...     velocity_dependent_resistances=[1.5],
+            ... )
+        """
+        assert (
+            speed_effort_gradients is not None
+            or maximum_actuator_velocities is not None
+            or velocity_dependent_resistances is not None
+        ), (
+            "All 'speed_effort_gradients', 'maximum_actuator_velocities', and 'velocity_dependent_resistances' are not defined. "
+            "Define at least one of them"
+        )
+        assert self.valid, _MSG_PRIM_NOT_VALID
+        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        # Tensor API
+        if backend == "tensor":
+            data = self._physics_articulation_view.get_dof_drive_model_properties()  # shape: (N, max_dofs, 3)
+            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            if speed_effort_gradients is not None:
+                speed_effort_gradients = _ops.broadcast_to(
+                    speed_effort_gradients,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=data.device,
+                ).reshape((indices.shape[0], dof_indices.shape[0], 1))
+                wp.copy(
+                    data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)],
+                    speed_effort_gradients,
+                )
+            if maximum_actuator_velocities is not None:
+                maximum_actuator_velocities = _ops.broadcast_to(
+                    maximum_actuator_velocities,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=data.device,
+                ).reshape((indices.shape[0], dof_indices.shape[0], 1))
+                wp.copy(
+                    data[indices, dof_indices, wp.array([1], dtype=wp.int32, device=data.device)],
+                    maximum_actuator_velocities,
+                )
+            if velocity_dependent_resistances is not None:
+                velocity_dependent_resistances = _ops.broadcast_to(
+                    velocity_dependent_resistances,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=data.device,
+                ).reshape((indices.shape[0], dof_indices.shape[0], 1))
+                wp.copy(
+                    data[indices, dof_indices, wp.array([2], dtype=wp.int32, device=data.device)],
+                    velocity_dependent_resistances,
+                )
+            self._physics_articulation_view.set_dof_drive_model_properties(data, indices)
+        # USD API
+        else:
+            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            if speed_effort_gradients is not None:
+                speed_effort_gradients = _ops.broadcast_to(
+                    speed_effort_gradients,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=self._device,
+                ).numpy()
+            if maximum_actuator_velocities is not None:
+                maximum_actuator_velocities = _ops.broadcast_to(
+                    maximum_actuator_velocities,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=self._device,
+                ).numpy()
+            if velocity_dependent_resistances is not None:
+                velocity_dependent_resistances = _ops.broadcast_to(
+                    velocity_dependent_resistances,
+                    shape=(indices.shape[0], dof_indices.shape[0]),
+                    dtype=wp.float32,
+                    device=self._device,
+                ).numpy()
+            for i, index in enumerate(indices.numpy()):
+                for j, dof_index in enumerate(dof_indices.numpy()):
+                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    _, drive_type = self._get_drive_api_and_type(index, dof_index)
+                    dof_prim.ApplyAPI("PhysxDrivePerformanceEnvelopeAPI", drive_type)
+                    if speed_effort_gradients is not None:
+                        speed_effort_gradient = speed_effort_gradients[i][j].item()
+                        if drive_type == "angular":
+                            speed_effort_gradient = np.rad2deg(speed_effort_gradient)
+                        dof_prim.GetAttribute(f"physxDrivePerformanceEnvelope:{drive_type}:speedEffortGradient").Set(
+                            speed_effort_gradient
+                        )
+                    if maximum_actuator_velocities is not None:
+                        maximum_actuator_velocity = maximum_actuator_velocities[i][j].item()
+                        if drive_type == "angular":
+                            maximum_actuator_velocity = np.rad2deg(maximum_actuator_velocity)
+                        dof_prim.GetAttribute(f"physxDrivePerformanceEnvelope:{drive_type}:maxActuatorVelocity").Set(
+                            maximum_actuator_velocity
+                        )
+                    if velocity_dependent_resistances is not None:
+                        velocity_dependent_resistance = velocity_dependent_resistances[i][j].item()
+                        if drive_type == "angular":
+                            velocity_dependent_resistance = np.deg2rad(velocity_dependent_resistance)
+                        dof_prim.GetAttribute(
+                            f"physxDrivePerformanceEnvelope:{drive_type}:velocityDependentResistance"
+                        ).Set(velocity_dependent_resistance)
 
     def set_dof_armatures(
         self,
