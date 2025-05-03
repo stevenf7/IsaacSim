@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.2] - 2025-05-02
+### Changed
+- Update Franka and Anymal USD paths
+
 ## [4.1.1] - 2025-04-14
 ### Changed
 - Update Isaac Sim robot asset path

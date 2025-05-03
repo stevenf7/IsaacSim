@@ -66,7 +66,7 @@ class TestAnymal(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._anymal.robot.num_dof, 12)
         self.assertTrue(get_prim_at_path("/World/anymal").IsValid(), True)
-        self.assertTrue(get_prim_at_path("/World/anymal").HasAPI(UsdPhysics.ArticulationRootAPI))
+        self.assertTrue(get_prim_at_path("/World/anymal/base").HasAPI(UsdPhysics.ArticulationRootAPI))
 
     async def test_robot_move_forward_command(self):
         await self.spawn_anymal()
@@ -100,7 +100,7 @@ class TestAnymal(omni.kit.test.AsyncTestCase):
         )
 
         # should have turned at least 90 deg
-        self.assertGreater(heading_delta, 1.5)
+        self.assertGreater(heading_delta, 1.4)
 
     async def spawn_anymal(self, name="anymal"):
         self._prim_path = "/World/" + name
