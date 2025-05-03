@@ -83,6 +83,7 @@ class SimulationApp:
         "extra_args": [],
         "enable_crashreporter": True,
         "limit_cpu_threads": 32,
+        "disable_viewport_updates": False,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -115,6 +116,7 @@ class SimulationApp:
         extra_args: (list): List of extra command line arguments to pass down to the kit process
         enable_crashreporter (bool): Enable crash reporter. Defaults to True
         limit_cpu_threads (int): Limit the number of CPU threads created to the lesser of cpu core count or specified value. Defaults to 32.
+        disable_viewport_updates (bool): Disable viewport updates to improve performance. Defaults to False.
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -277,6 +279,19 @@ class SimulationApp:
             pass
 
         self._wait_for_viewport()
+
+        if self.config["disable_viewport_updates"] and self.config["headless"]:
+            try:
+                from omni.kit.viewport.utility import get_active_viewport
+
+                viewport = get_active_viewport()
+                if viewport:
+                    viewport.updates_enabled = False
+                    self.app.print_and_log("Viewport updates disabled")
+                else:
+                    self.app.print_and_log("Unable to disable viewport updates, no viewports found")
+            except Exception as e:
+                self.app.print_and_log(f"Error disabling default viewport: {e}")
 
         # Notify toolkit is running
         self._app.print_and_log("Simulation App Startup Complete")
