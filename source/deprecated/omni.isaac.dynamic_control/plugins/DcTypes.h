@@ -21,9 +21,9 @@
 #    pragma GCC diagnostic pop
 #endif
 
+#include <omni/isaac/dynamic_control/DynamicControlTypes.h>
 #include <pxr/usd/sdf/path.h>
 
-#include <DynamicControlTypes.h>
 #include <PxActor.h>
 #include <PxArticulationJointReducedCoordinate.h>
 #include <PxArticulationLink.h>

@@ -30,7 +30,6 @@ includedirs {
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/rtx_plugins/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     extsbuild_dir .. "/omni.syntheticdata/include",

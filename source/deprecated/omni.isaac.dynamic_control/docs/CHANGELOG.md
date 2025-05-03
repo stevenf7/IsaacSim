@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.0] - 2025-05-02
+### Changed
+- Move all dynamic control related header/utilities/bindings to this extension from isaacsim.core.includes and isaacsim.core.utils
 
 ## [1.3.24] - 2025-04-11
 ### Changed

@@ -80,7 +80,6 @@ includedirs {
     "%{root}/source/extensions/isaacsim.ros2.bridge",
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/source/extensions/isaacsim.ros2.tf_viewer/include",
 }
 libdirs {

@@ -8,14 +8,18 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
+// clang-format off
+#include <pch/UsdPCH.h>
+// clang-format on
+
 #include <carb/BindingsUtils.h>
 
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/dynamic_control/Math.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <DynamicControl.h>
 
 #ifdef _WIN32
 typedef SSIZE_T ssize_t;
@@ -1092,5 +1096,87 @@ PYBIND11_MODULE(_dynamic_control, m)
              "Offset origin for a rigid body")
 
         ;
+
+    using omni::isaac::dynamic_control::math::operator*;
+    auto math = m.def_submodule("math");
+
+    math.def(
+        "mul", [](const DcTransform& a, DcTransform& x) { return a * x; }, py::is_operator(),
+        R"pbdoc( Performs a Forward Transform multiplication between the transforms
+        
+        Args:
+            arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): First Transform
+
+            arg1 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Second Transform
+
+        Returns:
+
+            :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: ``arg0 * arg1``
+        )pbdoc");
+
+    math.def("inverse", py::overload_cast<const DcTransform&>(&omni::isaac::dynamic_control::math::inverse),
+             R"pbdoc(Gets Inverse Transform
+             Args:
+
+                 arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+
+             Returns:
+
+                 :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: The inverse Inverse Transform
+
+             )pbdoc");
+    math.def("transform_inv",
+             py::overload_cast<const DcTransform&, const DcTransform&>(&omni::isaac::dynamic_control::math::transformInv),
+             R"pbdoc(
+                Computes local Transform of arg1 with respect to arg0: `inv(arg0)*arg1`
+
+                Args:
+                
+                    arg0 (`omni.isaac.dynamic_control._dynamic_control.Transform`): origin Transform
+
+                    arg1 (`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+
+                Returns:
+
+                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: resulting transform of ``inv(arg0)*arg1``
+                )pbdoc");
+    math.def(
+        "lerp",
+        py::overload_cast<const DcTransform&, const DcTransform&, const float>(&omni::isaac::dynamic_control::math::lerp),
+        R"pbdoc(
+                Performs Linear interpolation between points arg0 and arg1
+
+                Args:
+
+                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+
+                    arg1 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+
+                    arg2 (:obj:`float`): distance from 0 to 1, where 0 is closest to arg0, and 1 is closest to arg1
+
+                Returns:
+
+                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: Interpolated transform
+                    
+                )pbdoc");
+    math.def("slerp",
+             py::overload_cast<const DcTransform&, const DcTransform&, const float>(
+                 &omni::isaac::dynamic_control::math::slerp),
+             R"pbdoc(
+                Performs Spherical Linear interpolation between points arg0 and arg1
+
+                Args:
+
+                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+
+                    arg1 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
+
+                    arg2 (:obj:`float`): distance from 0 to 1, where 0 is closest to arg0, and 1 is closest to arg1
+
+                Returns:
+
+                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: Interpolated transform
+                    
+                )pbdoc");
 }
 }
