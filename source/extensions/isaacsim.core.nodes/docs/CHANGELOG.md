@@ -1,4 +1,7 @@
 # Changelog
+## [2.2.14] - 2025-05-02
+### Changed
+- Remove all Dynamic control compile time dependencies
 
 ## [2.2.13] - 2025-04-29
 ### Fixed

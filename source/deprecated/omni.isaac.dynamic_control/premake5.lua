@@ -61,10 +61,43 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "omni/isaac/dynamic_control",
 }
+staticruntime("Off")
 
 includedirs {
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
 }
+
+libdirs {
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
+    "%{root}/_build/target-deps/nv_usd/release/lib",
+    extsbuild_dir .. "/omni.usd.core/bin",
+}
+
+extra_usd_libs = {}
+
+-- Begin OpenUSD
+add_usd(extra_usd_libs)
+-- End OpenUSD
+
+
+filter { "system:linux", "platforms:x86_64" }
+links { "tbb" }
+filter {}
+
+filter { "system:windows", "platforms:x86_64" }
+-- link_boost_for_windows({"boost_python310"})
+libdirs {
+    "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
+}
+filter {}
+
+filter { "configurations:debug" }
+defines { "_DEBUG" }
+filter { "configurations:release" }
+defines { "NDEBUG" }
+filter {}
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir .. "/omni/isaac/dynamic_control/scripts" },

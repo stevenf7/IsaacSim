@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.16] - 2025-05-02
+### Changed
+- Remove all Dynamic control compile time dependencies
+
 ## [0.3.15] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

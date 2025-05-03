@@ -25,7 +25,6 @@ includedirs {
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/_build/target-deps/python/include",
     "%{root}/source/extensions/isaacsim.sensors.physx/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/source/extensions/isaacsim.util.debug_draw/include",
 }
 libdirs {

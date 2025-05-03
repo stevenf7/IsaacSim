@@ -19,12 +19,14 @@
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
 
+#include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/dynamic_control/Math.h>
 #include <omni/physx/IPhysx.h>
 
-#include <DynamicControl.h>
 
 namespace isaacsim::robot::surface_gripper
 {
+using omni::isaac::dynamic_control::math::operator*;
 
 SurfaceGripper::SurfaceGripper()
 {
@@ -178,7 +180,8 @@ bool SurfaceGripper::attemptClose(float additionalOffset)
             }
             CARB_LOG_INFO("Gripping prim %s at distance %f with parent %s",
                           intToPath(result.rigidBody).GetString().c_str(), result.distance, m_props.parentPath.c_str());
-            DcTransform targetTransform = inverse(m_dc->getRigidBodyPose(targetBody)) * adjustedTransform;
+            DcTransform targetTransform =
+                omni::isaac::dynamic_control::math::inverse(m_dc->getRigidBodyPose(targetBody)) * adjustedTransform;
 
             m_jointProperties.body0 = parentBody;
             m_jointProperties.body1 = targetBody;

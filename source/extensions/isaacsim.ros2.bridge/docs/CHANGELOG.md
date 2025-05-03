@@ -1,4 +1,7 @@
 # Changelog
+## [4.4.12] - 2025-05-02
+### Changed
+- Remove all Dynamic control compile time dependencies
 
 ## [4.4.11] - 2025-04-30
 ### Changed

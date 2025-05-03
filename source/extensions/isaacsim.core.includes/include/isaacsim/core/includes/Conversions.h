@@ -15,7 +15,6 @@
 #include <usdrt/gf/quat.h>
 #include <usdrt/gf/vec.h>
 
-#include <DynamicControl.h>
 #include <PxActor.h>
 
 namespace isaacsim
@@ -108,26 +107,6 @@ inline pxr::GfRotation asGfRotation(const carb::Float4& q)
     return pxr::GfRotation(asGfQuatd(q));
 }
 
-/**
- * @brief Converts a DcTransform into a pxr::GfTransform.
- * @details
- * Creates a complete transform from a Dynamic Control transform:
- * 1. Sets rotation using quaternion conversion
- * 2. Sets translation using vector conversion
- *
- * @param[in] pose Input transform in Dynamic Control format
- * @return pxr::GfTransform Equivalent transform in USD format
- *
- * @see asGfRotation
- * @see asGfVec3d
- */
-inline pxr::GfTransform asGfTransform(const omni::isaac::dynamic_control::DcTransform& pose)
-{
-    pxr::GfTransform trans;
-    trans.SetRotation(asGfRotation(pose.r));
-    trans.SetTranslation(asGfVec3d(pose.p));
-    return trans;
-}
 
 /**
  * @brief Converts position and rotation into a pxr::GfTransform.
@@ -151,70 +130,6 @@ inline pxr::GfTransform asGfTransform(const carb::Float3& p, const carb::Float4&
     return trans;
 }
 
-/**
- * @brief Converts a DcTransform to a GfMatrix4f.
- * @details
- * Creates a 4x4 transformation matrix in single precision:
- * 1. Sets translation component from position
- * 2. Sets rotation component from quaternion
- *
- * @param[in] input Input transform in Dynamic Control format
- * @return pxr::GfMatrix4f Equivalent transform matrix in USD format
- *
- * @note Uses single precision floating point
- * @see asGfVec3f
- * @see asGfQuatf
- */
-inline pxr::GfMatrix4f asGfMatrix4f(const omni::isaac::dynamic_control::DcTransform& input)
-{
-    pxr::GfMatrix4f mat;
-    mat.SetTranslateOnly(asGfVec3f(input.p));
-    mat.SetRotateOnly(pxr::GfMatrix3f(asGfQuatf(input.r)));
-    return mat;
-}
-
-/**
- * @brief Converts a DcTransform to a transposed GfMatrix4f.
- * @details
- * Creates a transposed 4x4 transformation matrix:
- * 1. Sets translation and rotation components
- * 2. Transposes the resulting matrix
- *
- * @param[in] input Input transform in Dynamic Control format
- * @return pxr::GfMatrix4f Transposed transform matrix in USD format
- *
- * @note Useful for operations requiring column-major matrix format
- * @see asGfMatrix4f
- */
-inline pxr::GfMatrix4f asGfMatrix4fT(const omni::isaac::dynamic_control::DcTransform& input)
-{
-    pxr::GfMatrix4f mat;
-    mat.SetTranslateOnly(asGfVec3f(input.p));
-    mat.SetRotateOnly(pxr::GfMatrix3f(asGfQuatf(input.r)));
-    return mat.GetTranspose();
-}
-
-/**
- * @brief Converts a DcTransform to a GfMatrix4d.
- * @details
- * Creates a 4x4 transformation matrix in double precision:
- * 1. Sets translation component with precision promotion
- * 2. Sets rotation component with precision promotion
- *
- * @param[in] input Input transform in Dynamic Control format
- * @return pxr::GfMatrix4d Equivalent transform matrix in USD format
- *
- * @note Promotes single precision components to double precision
- * @see asGfVec3d
- * @see asGfQuatd
- */
-inline pxr::GfMatrix4d asGfMatrix4d(const omni::isaac::dynamic_control::DcTransform& input)
-{
-    pxr::GfMatrix4d mat;
-    mat.SetTranslateOnly(asGfVec3d(input.p));
-    mat.SetRotateOnly(pxr::GfMatrix3d(asGfQuatd(input.r)));
-    return mat;
-}
 
 /**
  * @brief Converts pxr::GfVec3f to carb::Float3.
@@ -466,24 +381,6 @@ inline ::physx::PxQuat asPxQuat(const usdrt::GfQuatd& v)
                             static_cast<float>(v.GetReal()) };
 }
 
-/**
- * @brief Converts DcTransform into PhysX transform.
- * @details
- * Creates a complete PhysX transform from Dynamic Control transform:
- * 1. Converts position to PxVec3
- * 2. Converts rotation to PxQuat
- *
- * @param[in] pose Input transform in Dynamic Control format
- * @return PxTransform Equivalent transform in PhysX format
- *
- * @note No precision loss as both formats use single precision
- * @see asPxVec3
- * @see asPxQuat
- */
-inline ::physx::PxTransform asPxTransform(const omni::isaac::dynamic_control::DcTransform& pose)
-{
-    return ::physx::PxTransform{ asPxVec3(pose.p), asPxQuat(pose.r) };
-}
 
 /**
  * @brief Converts USD transform into PhysX transform.
@@ -575,51 +472,6 @@ inline ::physx::PxTransform asPxTransform(const usdrt::GfVec3d& translation, con
     return p;
 }
 
-/**
- * @brief Converts USD position and orientation into Dynamic Control transform.
- * @details
- * Creates a Dynamic Control transform from separate components:
- * 1. Converts position vector to Float3
- * 2. Converts orientation quaternion to Float4
- *
- * @param[in] p Position vector in USD format
- * @param[in] q Rotation quaternion in USD format
- * @return omni::isaac::dynamic_control::DcTransform Equivalent transform in Dynamic Control format
- *
- * @note No precision loss when using single precision USD types
- * @see asCarbFloat3
- * @see asCarbFloat4
- */
-inline omni::isaac::dynamic_control::DcTransform asDcTransform(const pxr::GfVec3f& p, const pxr::GfQuatf& q)
-{
-    omni::isaac::dynamic_control::DcTransform pose;
-    pose.p = asCarbFloat3(p);
-    pose.r = asCarbFloat4(q);
-    return pose;
-}
-
-/**
- * @brief Converts USD double precision position and orientation into Dynamic Control transform.
- * @details
- * Creates a Dynamic Control transform from separate components with precision demotion:
- * 1. Converts double precision position to Float3
- * 2. Converts double precision orientation to Float4
- *
- * @param[in] p Position vector in USD format (double precision)
- * @param[in] q Rotation quaternion in USD format (double precision)
- * @return omni::isaac::dynamic_control::DcTransform Equivalent transform in Dynamic Control format
- *
- * @warning Potential precision loss during double to float conversion
- * @see asCarbFloat3
- * @see asCarbFloat4
- */
-inline omni::isaac::dynamic_control::DcTransform asDcTransform(const pxr::GfVec3d& p, const pxr::GfQuatd& q)
-{
-    omni::isaac::dynamic_control::DcTransform pose;
-    pose.p = asCarbFloat3(p);
-    pose.r = asCarbFloat4(q);
-    return pose;
-}
 }
 }
 }

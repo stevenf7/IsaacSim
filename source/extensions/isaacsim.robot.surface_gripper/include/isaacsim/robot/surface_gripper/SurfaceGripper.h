@@ -12,10 +12,9 @@
 
 #include "isaacsim/core/includes/Math.h"
 
+#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/physics/tensors/BodyTypes.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-
-#include <DynamicControl.h>
 
 namespace isaacsim
 {

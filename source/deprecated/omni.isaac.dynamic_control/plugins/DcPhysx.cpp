@@ -22,12 +22,11 @@
 #include <carb/logging/Log.h>
 
 #include <extensions/PxRigidBodyExt.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UtilsIncludes.h>
-
-#include <DynamicControl.h>
 //
 #include <omni/usd/UsdUtils.h>
 

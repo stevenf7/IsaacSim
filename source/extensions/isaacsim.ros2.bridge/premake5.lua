@@ -54,7 +54,6 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/_build/target-deps/nlohmann_json/include",
         "%{root}/source/extensions/isaacsim.ros2.bridge",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
-        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/type_description_interfaces",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/service_msgs",
@@ -160,7 +159,6 @@ includedirs {
     "%{root}/_build/target-deps/nlohmann_json/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",
 }
 libdirs {

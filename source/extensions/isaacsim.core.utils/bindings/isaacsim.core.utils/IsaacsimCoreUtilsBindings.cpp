@@ -18,6 +18,7 @@
 #include <isaacsim/core/includes/Math.h>
 #include <isaacsim/core/includes/Transforms.h>
 #include <isaacsim/core/utils/PrimUtils.h>
+#include <omni/isaac/dynamic_control/DynamicControlTypes.h>
 
 CARB_BINDINGS("isaacsim.core.utils.python")
 
@@ -94,26 +95,14 @@ PYBIND11_MODULE(_isaac_utils, m)
         Returns:
             :obj:`carb.Float4`: rotated 4D quaternion vector.
         )pbdoc");
-    math.def(
-        "mul", [](const DcTransform& a, DcTransform& x) { return a * x; }, py::is_operator(),
-        R"pbdoc( Performs a Forward Transform multiplication between the transforms
-        
-        Args:
-            arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): First Transform
 
-            arg1 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Second Transform
-
-        Returns:
-
-            :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: ``arg0 * arg1``
-        )pbdoc");
     math.def(
         "add", [](const carb::Float3& a, carb::Float3& x) { return a + x; }, py::is_operator(),
-        R"pbdoc( 
+        R"pbdoc( Adds two 3D vectors
         Args:
-            arg0 (:obj:`carb.Float3`): 3D vector
+            arg0 (:obj:`carb.Float3`): First 3D vector
 
-            arg1 (:obj:`carb.Float3`): 3D vector
+            arg1 (:obj:`carb.Float3`): Second 3D vector
 
         Returns:
 
@@ -169,17 +158,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                  :obj:`carb.Float4`: The inverse quaternion
 
              )pbdoc");
-    math.def("inverse", py::overload_cast<const DcTransform&>(&isaacsim::core::includes::math::inverse),
-             R"pbdoc(Gets Inverse Transform
-             Args:
 
-                 arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
-
-             Returns:
-
-                 :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: The inverse Inverse Transform
-
-             )pbdoc");
     math.def("normalize", py::overload_cast<const carb::Float3&>(&isaacsim::core::includes::math::normalize),
              R"pbdoc(
                 Gets normalized 3D vector
@@ -218,21 +197,7 @@ PYBIND11_MODULE(_isaac_utils, m)
 
                     :obj:`carb.Float3`: Rotated 3D Vector
                 )pbdoc");
-    math.def("transform_inv",
-             py::overload_cast<const DcTransform&, const DcTransform&>(&isaacsim::core::includes::math::transformInv),
-             R"pbdoc(
-                Computes local Transform of arg1 with respect to arg0: `inv(arg0)*arg1`
 
-                Args:
-                
-                    arg0 (`omni.isaac.dynamic_control._dynamic_control.Transform`): origin Transform
-
-                    arg1 (`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
-
-                Returns:
-
-                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: resulting transform of ``inv(arg0)*arg1``
-                )pbdoc");
     math.def("transform_inv",
              py::overload_cast<const pxr::GfTransform&, const pxr::GfTransform&>(
                  &isaacsim::core::includes::math::transformInv),
@@ -330,25 +295,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`carb.Float4`: Interpolated quaternion
                     
                 )pbdoc");
-    math.def(
-        "lerp",
-        py::overload_cast<const DcTransform&, const DcTransform&, const float>(&isaacsim::core::includes::math::lerp),
-        R"pbdoc(
-                Performs Linear interpolation between points arg0 and arg1
 
-                Args:
-
-                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
-
-                    arg1 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
-
-                    arg2 (:obj:`float`): distance from 0 to 1, where 0 is closest to arg0, and 1 is closest to arg1
-
-                Returns:
-
-                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: Interpolated transform
-                    
-                )pbdoc");
     math.def(
         "slerp",
         py::overload_cast<const carb::Float4&, const carb::Float4&, const float>(&isaacsim::core::includes::math::slerp),
@@ -368,25 +315,7 @@ PYBIND11_MODULE(_isaac_utils, m)
                     :obj:`carb.Float4`: Interpolated quaternion
                     
                 )pbdoc");
-    math.def(
-        "slerp",
-        py::overload_cast<const DcTransform&, const DcTransform&, const float>(&isaacsim::core::includes::math::slerp),
-        R"pbdoc(
-                Performs Spherical Linear interpolation between points arg0 and arg1
 
-                Args:
-
-                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
-
-                    arg1 (:obj:`omni.isaac.dynamic_control._dynamic_control.Transform`): Transform
-
-                    arg2 (:obj:`float`): distance from 0 to 1, where 0 is closest to arg0, and 1 is closest to arg1
-
-                Returns:
-
-                    :obj:`omni.isaac.dynamic_control._dynamic_control.Transform`: Interpolated transform
-                    
-                )pbdoc");
     auto transforms = m.def_submodule("transforms");
 
     transforms.def(
@@ -416,12 +345,13 @@ PYBIND11_MODULE(_isaac_utils, m)
 
                 Args:
 
-                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control`): handle to dynamic control api
-
-                    arg1 (:obj:`int`): Stage ID
-
-                    arg2 (:obj:`carb::Float3`): translation
-                    arg2 (:obj:`carb::Float4`): rotation
+                    stageId (:obj:`int`): Stage ID
+                    
+                    primPath (:obj:`str`): Path to the prim
+                    
+                    translation (:obj:`carb.Float3`): Translation vector
+                    
+                    rotation (:obj:`carb.Float4`): Rotation quaternion
                     
                 )pbdoc");
 
@@ -453,28 +383,12 @@ PYBIND11_MODULE(_isaac_utils, m)
 
                 Args:
 
-                    arg0 (:obj:`omni.isaac.dynamic_control._dynamic_control`): handle to dynamic control api
-
-                    arg1 (:obj:`int`): Stage ID
-
-                    arg2 (:obj:`carb::Float3`): scale
+                    stageId (:obj:`int`): Stage ID
+                    
+                    primPath (:obj:`str`): Path to the prim
+                    
+                    scale (:obj:`carb.Float3`): Scale vector
                     
                 )pbdoc");
-
-    // {
-    //     using namespace isaacsim::core::includes::conversions;
-    //     math.def("look_at", [](const carb::Float3& a, carb::Float3& b, carb::Float3& c) {
-    //         return asCarbFloat4(isaacsim::core::includes::math::lookAt(asGfVec3f(a), asGfVec3f(b), asGfVec3f(c)));
-    //     });
-    // }
-    // Conversion functions
-    // {
-    //     using namespace isaacsim::core::includes::conversions;
-    //     auto convert = m.def_submodule("convert");
-    //     convert.def("as_gf_transform", py::overload_cast<const DcTransform&>(&asGfTransform));
-    //     convert.def("as_gf_transform", py::overload_cast<const carb::Float3&, const carb::Float4&>(&asGfTransform));
-    //     convert.def("as_gf_matrix", &asGfMatrix4f);
-    //     convert.def("as_gf_matrix_t", &asGfMatrix4fT);
-    // }
 }
 }

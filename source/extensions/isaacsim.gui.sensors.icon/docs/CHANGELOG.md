@@ -3,6 +3,7 @@
 ## [1.0.0] - 2025-04-29
 ### Changed
 - Reworked to usdrt implementation to eliminate performance impact
+
 ### Added
 - usdrt dependency
 

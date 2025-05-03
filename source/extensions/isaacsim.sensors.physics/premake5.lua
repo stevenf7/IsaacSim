@@ -30,7 +30,6 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/source/extensions/isaacsim.sensors.physics/include",
-    "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
 }
 libdirs {
     target_deps .. "/python/lib",

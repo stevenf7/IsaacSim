@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.0] - 2025-05-02
+### Changed
+- Remove all Dynamic control compile time dependencies and move all related headers to the includes/omni/isaac/dynamic_control in the dynamic control extension
+
 ## [1.2.4] - 2025-04-09
 ### Changed
 - Update Isaac Sim robot asset path

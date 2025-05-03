@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include <DynamicControlTypes.h>
+#include <omni/isaac/dynamic_control/DynamicControlTypes.h>
+
 #include <memory>
 #include <unordered_map>
 
