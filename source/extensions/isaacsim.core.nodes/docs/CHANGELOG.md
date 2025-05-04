@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.15] - 2025-05-02
+### Fixed
+- Fix issues where name override was incorrectly used if set to empty string
+
 ## [2.2.14] - 2025-05-02
 ### Changed
 - Remove all Dynamic control compile time dependencies

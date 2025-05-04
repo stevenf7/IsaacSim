@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.11] - 2025-05-03
+### Fixed
+- Missing console bridge symbol
+
 ## [2.1.10] - 2025-05-02
 ### Changed
 - Remove all Dynamic control compile time dependencies

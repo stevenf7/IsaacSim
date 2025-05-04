@@ -58,10 +58,8 @@ class TestStage(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_add_reference_to_stage_units(self):
-        from isaacsim.core.utils.stage import clear_stage
-
+        await create_new_stage_async()
         clear_stage()
-
         # setup different units
         stage = omni.usd.get_context().get_stage()
         UsdGeom.SetStageMetersPerUnit(stage, 0.01)
@@ -82,7 +80,6 @@ class TestStage(omni.kit.test.AsyncTestCase):
         # enable omni.usd.metrics.assembler.ui
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.ui", True)
-        ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.physics", False)
 
         # setup different units
         stage = omni.usd.get_context().get_stage()
@@ -97,7 +94,6 @@ class TestStage(omni.kit.test.AsyncTestCase):
         xform_ref = stage.GetPrimAtPath("/World/Franka")
         self.assertEqual(xform_ref.GetAttribute("xformOp:scale:unitsResolve").Get(), [100.0, 100.0, 100.0])
 
-        ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.physics", True)
         ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.ui", False)
 
     async def test_context_manager(self):
