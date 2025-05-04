@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.11] - 2025-05-03
+### Changed
+- Add ui specific test args
+
 ## [2.1.10] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

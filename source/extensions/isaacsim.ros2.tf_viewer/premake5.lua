@@ -28,6 +28,12 @@ for _, ros_distro in ipairs(ros_distributions) do
         "rcutils",
     }
 
+    if ros_distro == "humble" then
+        links {
+            "console_bridge",
+        }
+    end
+
     filter { "system:linux" }
     disablewarnings { "error=pragmas" }
     buildoptions("-fvisibility=default")
@@ -44,9 +50,6 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2_msgs",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
-    }
-    links {
-        "console_bridge",
     }
     -- avoid inconsistent dll linkage
     defines { "TF2__VISIBILITY_CONTROL_H_" }

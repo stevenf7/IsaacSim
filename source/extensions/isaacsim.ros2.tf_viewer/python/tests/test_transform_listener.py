@@ -39,8 +39,8 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
             return
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda")
-        robot.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
-        robot.GetVariantSet("Mesh").SetVariantSelection("Quality")
+        robot.GetVariantSet("Gripper").SetVariantSelection("Default")
+        robot.GetVariantSet("Mesh").SetVariantSelection("Performance")
 
         # define graph to publish /tf
         (test_graph, new_nodes, _, _) = og.Controller.edit(

@@ -11,6 +11,7 @@
 
 import carb
 import omni.ext
+import omni.timeline
 
 
 class Extension(omni.ext.IExt):

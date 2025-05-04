@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.1] - 2025-05-03
+### Added
+- Add missing omni.timeline dependency
+
 ## [2.1.0] - 2025-05-02
 ### Added
 - Add setting to disable legacy gizmos during runtime

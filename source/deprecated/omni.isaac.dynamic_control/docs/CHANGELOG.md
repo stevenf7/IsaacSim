@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.1] - 2025-05-03
+### Fixed
+- Fix issues where name override was incorrectly used if set to empty string
+
 ## [2.0.0] - 2025-05-02
 ### Changed
 - Move all dynamic control related header/utilities/bindings to this extension from isaacsim.core.includes and isaacsim.core.utils

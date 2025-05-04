@@ -1,5 +1,5 @@
 [package]
-version = "2.1.0"
+version = "2.1.1"
 category = "Other"
 title = "Isaac Sim Throlling"
 description = "Control throttling behaviors for isaac sim"
@@ -13,6 +13,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.window.preferences" = {}
+"omni.timeline" = {}
 
 [[python.module]]
 name = "isaacsim.core.throttling"
@@ -21,7 +22,7 @@ name = "isaacsim.core.throttling"
 name = "isaacsim.core.throttling.tests"
 
 [[test]]
-dependencies = ["omni.kit.test", "omni.timeline"]
+dependencies = ["omni.kit.test"]
 args = [
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",

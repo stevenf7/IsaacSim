@@ -1,5 +1,5 @@
 [package]
-version = "2.1.10"
+version = "2.1.11"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
 description = "Manipulators"
@@ -59,6 +59,9 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
 ]
 
 [[test]]

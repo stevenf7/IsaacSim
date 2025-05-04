@@ -1,5 +1,5 @@
 [package]
-version = "2.2.14"
+version = "2.2.15"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Common Isaac Sim OmniGraph nodes"

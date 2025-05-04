@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.1] - 2025-05-03
+### Changed
+- Make omni.usd.metrics.assembler.physics dependency optional
+
 ## [3.0.0] - 2025-05-02
 ### Changed
 - Remove all Dynamic control compile time dependencies

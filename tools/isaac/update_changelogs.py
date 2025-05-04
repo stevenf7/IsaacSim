@@ -544,6 +544,7 @@ class ChangelogValidator:
         if not self.read_file():
             return False
 
+        # First run all validation checks
         self.validate_header()
         self.validate_versions_and_dates()
         self.validate_sections()
@@ -567,13 +568,22 @@ class ChangelogValidator:
     def extract_versions_and_dates(self) -> List[Tuple[str, Optional[datetime.date]]]:
         """Extract version numbers and dates from the changelog."""
         versions_and_dates = []
-        version_pattern = re.compile(r"## \[([^\]]+)\](?: - (\d{4}-\d{2}-\d{2}))?")
+        # This pattern now captures any separator character between the version and date
+        version_pattern = re.compile(r"## \[([^\]]+)\](?:[ ]([^\w\s])[ ](\d{4}-\d{2}-\d{2}))?")
 
         for line in self.lines:
             match = version_pattern.match(line.strip())
             if match:
                 version_str = match.group(1)
-                date_str = match.group(2)
+                separator = match.group(2)  # Will be None if there's no date
+                date_str = match.group(3)  # Will be None if there's no date
+
+                # Check for invalid separator
+                if separator and separator != "-":
+                    self.errors.append(
+                        f"Invalid separator '{separator}' in {self.rel_changelog_path}: '{line.strip()}'. "
+                        f"Use a hyphen (-) between version and date."
+                    )
 
                 date_obj = None
                 if date_str:
@@ -657,6 +667,7 @@ class ChangelogValidator:
         in_version = False
         in_section = False
 
+        # Use a more generic version pattern to match both correct and incorrect formats
         version_pattern = re.compile(r"## \[([^\]]+)\]")
         section_pattern = re.compile(r"### (\w+)")
 
@@ -802,6 +813,10 @@ class ChangelogValidator:
 
     def format_and_save(self) -> bool:
         """Format the changelog file and save it."""
+        # First fix any incorrect version formats
+        self.fix_version_format()
+
+        # Then format the file
         formatted_lines = self.format_changelog()
 
         if not formatted_lines:
@@ -815,6 +830,25 @@ class ChangelogValidator:
             if self.verbose:
                 print(f"Error writing to file {self.rel_changelog_path}: {e}")
             return False
+
+    def fix_version_format(self) -> None:
+        """Fix incorrect version format in changelog lines, such as replacing '=' with '-'."""
+        # This pattern captures any separator character between the version and date
+        version_pattern = re.compile(r"(## \[([^\]]+)\])[ ]([^\w\s])[ ](\d{4}-\d{2}-\d{2})")
+
+        for i, line in enumerate(self.lines):
+            match = version_pattern.match(line.strip())
+            if match and match.group(3) != "-":
+                # Replace the incorrect separator with a hyphen
+                version_header = match.group(1)
+                date = match.group(4)
+                corrected_line = f"{version_header} - {date}"
+
+                if self.verbose:
+                    print(f"  ✅ Fixed version format in line {i+1}: '{line.strip()}' -> '{corrected_line}'")
+
+                # Update the line in the list
+                self.lines[i] = corrected_line + "\n" if line.endswith("\n") else corrected_line
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> callable:
