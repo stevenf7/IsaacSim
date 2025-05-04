@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1] - 2025-05-03
+### Changed
+- Updated unit tests with new paths
+### Added
+- Error handling for extension restarts
+
 ## [1.0.0] - 2025-04-29
 ### Changed
 - Reworked to usdrt implementation to eliminate performance impact

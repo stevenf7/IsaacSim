@@ -92,6 +92,9 @@ class SensorIcon:
         self.toggle_all_fn = []
 
     def _on_visible_changed(self, *args):
+        if not self.model:
+            return
+
         visible = self._settings.get(VISIBLE_SETTING)
         if visible:
             self.model.show_all()
