@@ -14,6 +14,7 @@ from ..impl.scene import SensorIcon
 
 CURRENT_PATH = Path(__file__).parent
 TEST_DATA_PATH = CURRENT_PATH.parent.parent.parent.parent.parent.joinpath("data").joinpath("tests")
+TEST_DATA_PATH_ICON = CURRENT_PATH.parent.parent.parent.parent.parent.joinpath("icons")
 TEST_OBJECT_PRIM_PATH = "/test_obj"
 
 
@@ -58,12 +59,12 @@ class TestSensorIcon(OmniUiTest):
         self._settings.set(SHOW_TITLE_PATH, True)
         await ui_test.human_delay()
         await ui_test.wait_n_updates(30)
-        path = TEST_DATA_PATH.absolute().joinpath("sensoricon.png")
+        path = TEST_DATA_PATH_ICON.absolute().joinpath("icoSensors.svg")
         self._icon_scene.add_sensor_icon(TEST_OBJECT_PRIM_PATH, str(path))
         await ui_test.wait_n_updates(30)
         model = self._icon_scene.get_model()
         self.assertAlmostEqual(model.get_world_unit(), 1.0)
-        self.assertTrue(TEST_OBJECT_PRIM_PATH in model.get_item("").keys())
+        self.assertTrue(TEST_OBJECT_PRIM_PATH in model.get_prim_paths())
         save_path = model.get_icon_url(TEST_OBJECT_PRIM_PATH)
         self.assertEqual(save_path, str(path))
         pos = model.get_position(TEST_OBJECT_PRIM_PATH)
@@ -71,10 +72,13 @@ class TestSensorIcon(OmniUiTest):
 
         pos = self._icon_scene.show_sensor_icon(TEST_OBJECT_PRIM_PATH)
         await ui_test.wait_n_updates(30)
-        self.assertTrue(model._icons[TEST_OBJECT_PRIM_PATH].visible)
+        sdf_path = Sdf.Path(TEST_OBJECT_PRIM_PATH)
+        sensor_item = model._icons.get(sdf_path)
+        self.assertTrue(sensor_item.visible)
         pos = self._icon_scene.hide_sensor_icon(TEST_OBJECT_PRIM_PATH)
         await ui_test.wait_n_updates(30)
-        self.assertFalse(model._icons[TEST_OBJECT_PRIM_PATH].visible)
+        sensor_item = model._icons.get(sdf_path)
+        self.assertFalse(sensor_item.visible)
 
         def click_fn(*_):
             pass
@@ -88,7 +92,7 @@ class TestSensorIcon(OmniUiTest):
         await ui_test.wait_n_updates(30)
 
 
-def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="Cube", attrs=None):
+def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="Generic", attrs=None):
     kwargs = {"prim_type": prim_type, "prim_path": prim_path}
     if attrs:
         kwargs["attributes"] = attrs
