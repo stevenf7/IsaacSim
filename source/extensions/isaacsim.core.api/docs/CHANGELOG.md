@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.3.4] - 2025-05-04
+### Changed
+- Update stage event handlers to new event system
+
 ## [4.3.3] - 2025-04-30
 ### Fixed
 - Reduced gains for cartpole to prevent tunneling

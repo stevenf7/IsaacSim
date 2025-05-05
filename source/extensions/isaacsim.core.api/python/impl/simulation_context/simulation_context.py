@@ -151,10 +151,10 @@ class SimulationContext:
                 device=device,
             )
             self._setup_default_callback_fns()
-            self._stage_open_callback = (
-                omni.usd.get_context()
-                .get_stage_event_stream()
-                .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+            self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+                on_event=self._stage_open_callback_fn,
+                observer_name="isaacsim.core.api.SimulationContext._stage_open_callback",
             )
         self._message_bus = carb.eventdispatcher.get_eventdispatcher()
         self._on_post_physics_ready_callback = self._message_bus.observe_event(
@@ -555,10 +555,10 @@ class SimulationContext:
             device=self._device,
         )
         await omni.kit.app.get_app().next_update_async()
-        self._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+        self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+            on_event=self._stage_open_callback_fn,
+            observer_name="isaacsim.core.api.SimulationContext._stage_open_callback",
         )
         await omni.kit.app.get_app().next_update_async()
         self._setup_default_callback_fns()
