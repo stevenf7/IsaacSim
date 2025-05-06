@@ -1758,6 +1758,7 @@ publish-to-packman:
   artifacts:
     paths:
       - packman_verification_results.json
+      - packman_full_results.json
     expire_in: 1 week
 
 check_externals_linux:
