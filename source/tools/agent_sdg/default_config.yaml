@@ -1,5 +1,5 @@
 isaacsim.replicator.agent:
-  version: 0.5.0
+  version: 0.7.0
   global:
     seed: 123456
     simulation_length: 1800
@@ -8,12 +8,11 @@ isaacsim.replicator.agent:
   character:
     asset_path:
     command_file: default_command.txt
-    filters:
     num: 8
   robot:
     command_file: default_robot_command.txt
     nova_carter_num: 0
-    transporter_num: 0
+    iw_hub_num: 0
     write_data: false
   replicator:
     writer: IRABasicWriter
