@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.5] - 2025-05-06
+### Changed
+- Annotator device is taken into account in initialize() method as well of Camera sensor
+
 ## [1.0.4] - 2025-05-05
 ### Changed
 - Fix API docs.

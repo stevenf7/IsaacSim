@@ -433,8 +433,16 @@ class Camera(BaseSensor):
                 order=1000,
             )
         )
+        # If no annotator device is specified, use the default backend utils
+        if self._annotator_device is None:
+            backend_utils = self._backend_utils
+        else:
+            if self._annotator_device.startswith("cuda"):
+                backend_utils = warp_utils
+            else:
+                backend_utils = np_utils
         width, height = self.get_resolution()
-        self._current_frame["rgba"] = self._backend_utils.create_zeros_tensor(
+        self._current_frame["rgba"] = backend_utils.create_zeros_tensor(
             shape=[width, height, 4], dtype="uint8", device=self._annotator_device
         )
         self._stage_open_callback = (
