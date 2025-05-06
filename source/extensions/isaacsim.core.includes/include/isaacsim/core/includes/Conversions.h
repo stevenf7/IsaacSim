@@ -164,10 +164,12 @@ inline carb::Float3 asCarbFloat3(const pxr::GfVec3d& v)
 
 
 /**
- * @brief convert pxr::GfVec4f to carb::Float4
+ * @brief convert physx::PxQuat to carb::Float4
  *
- * @param v
- * @return carb::Float4
+ * @param[in] q Input quaternion in PhysX format
+ * @return carb::Float4 Equivalent quaternion in Carb format
+ *
+ * @note Component order is adjusted during conversion
  */
 inline carb::Float4 asCarbFloat4(const physx::PxQuat& q)
 {

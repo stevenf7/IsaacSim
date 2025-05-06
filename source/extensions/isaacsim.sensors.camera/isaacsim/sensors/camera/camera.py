@@ -7,6 +7,8 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+from __future__ import annotations
+
 import copy
 import math
 from typing import Callable, List, Optional, Sequence, Tuple
@@ -1064,6 +1066,7 @@ class Camera(BaseSensor):
 
     def get_depth(self, device: str = None) -> np.ndarray | wp.types.array:
         """Gets the depth data from the camera sensor as distance to image plane.
+
         Args:
             device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
                 Defaults to None, which uses the device specified on annotator initialization (annotator_device)
@@ -1192,6 +1195,7 @@ class Camera(BaseSensor):
     def get_focal_length(self) -> float:
         """
         Gets focal length of camera prim, in stage units. Longer focal length corresponds to narrower FOV, shorter focal length corresponds to wider FOV.
+
         Returns:
             float: Value of camera prim focalLength attribute, converted to stage units.
         """
@@ -1199,6 +1203,7 @@ class Camera(BaseSensor):
 
     def set_focal_length(self, value: float):
         """Sets focal length of camera prim, in stage units. Longer focal length corresponds to narrower FOV, shorter focal length corresponds to wider FOV.
+
         Args:
             value (float): Desired focal length of camera prim, in stage units.
         """
@@ -1207,6 +1212,7 @@ class Camera(BaseSensor):
 
     def get_focus_distance(self) -> float:
         """Gets distance from the camera to the focus plane (in stage units).
+
         Returns:
             float: Value of camera prim focusDistance attribute, measuring distance from the camera to the focus plane (in stage units).
         """
@@ -1214,6 +1220,7 @@ class Camera(BaseSensor):
 
     def set_focus_distance(self, value: float):
         """Sets distance from the camera to the focus plane (in stage units).
+
         Args:
             value (float): Sets value of camera prim focusDistance attribute (in stage units).
         """
@@ -1241,6 +1248,7 @@ class Camera(BaseSensor):
 
     def get_horizontal_aperture(self) -> float:
         """Gets value of camera prim horizontalAperture attribute, which emulates sensor/film width on a camera.
+
         Returns:
             float: Value of camera prim horizontalAperture attribute, converted to stage units.
         """
@@ -1249,6 +1257,7 @@ class Camera(BaseSensor):
 
     def set_horizontal_aperture(self, value: float) -> None:
         """Sets value of camera prim horizontalAperture attribute, which emulates sensor/film width on a camera, then updates verticalAperture attribute to maintain resolution.
+
         Args:
             value (float): Value of camera prim horizontalAperture attribute (in stage units).
         """
@@ -1259,6 +1268,7 @@ class Camera(BaseSensor):
 
     def get_vertical_aperture(self) -> float:
         """Gets value of camera prim verticalAperture attribute, which emulates sensor/film height on a camera.
+
         Returns:
             float: Value of camera prim verticalAperture attribute, converted to stage units.
         """
@@ -1267,6 +1277,7 @@ class Camera(BaseSensor):
 
     def set_vertical_aperture(self, value: float) -> None:
         """Sets value of camera prim verticalAperture attribute, which emulates sensor/film height on a camera, then updates horizontalAperture attribute to maintain resolution.
+
         Args:
             value (float): Value of camera prim verticalAperture attribute (in stage units).
         """
@@ -1277,6 +1288,7 @@ class Camera(BaseSensor):
 
     def get_clipping_range(self) -> Tuple[float, float]:
         """Gets near and far clipping distances of camera prim.
+
         Returns:
             Tuple[float, float]: Near and far clipping distances (in stage units).
         """
@@ -1301,6 +1313,7 @@ class Camera(BaseSensor):
     def get_projection_type(self) -> str:
         """
         [DEPRECATED] Gets the `cameraProjectionType` property of the camera prim.
+
         Returns:
             str: omni:lensdistortion:model attribute of camera prim. If unset, returns "pinhole".
         """
@@ -1315,6 +1328,7 @@ class Camera(BaseSensor):
     def set_projection_type(self, value: str) -> None:
         """
         [DEPRECATED] Sets the `cameraProjectionType` property of the camera prim.
+
         Args:
             value (str): Name of the projection type to apply, or "pinhole" to remove any distortion schemas and unset `omni:lensdistortion:model`.
         """
@@ -1383,6 +1397,7 @@ class Camera(BaseSensor):
     def get_projection_mode(self) -> str:
         """
         Gets projection model of the camera prim.
+
         Returns:
             str: perspective or orthographic.
         """
@@ -1412,6 +1427,7 @@ class Camera(BaseSensor):
     def set_stereo_role(self, value: str) -> None:
         """
         Sets stereo role of the camera prim to mono, left or right.
+
         Args:
             value (str): "mono", "left" or "right".
         """
@@ -1470,6 +1486,7 @@ class Camera(BaseSensor):
         distortion_fn: Callable,
     ) -> None:
         """[DEPRECATED] Approximates given distortion with ftheta fisheye polynomial coefficients.
+
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
@@ -1525,7 +1542,6 @@ class Camera(BaseSensor):
         """[DEPRECATED] Approximates rational polynomial distortion with ftheta fisheye polynomial coefficients.
         Note: This method was designed to approximate the OpenCV pinhole distortion model using ftheta fisheye polynomial parameterization.
         The OpenCV pinhole distortion model is now directly supported, so this method will use that model directly.
-        Args:
 
         Args:
             nominal_width (float): Rendered Width (pixels)
@@ -1566,6 +1582,7 @@ class Camera(BaseSensor):
         """[DEPRECATED] Approximates kannala brandt distortion with ftheta fisheye polynomial coefficients.
         Note: This method was designed to approximate the OpenCV fisheye distortion model using ftheta fisheye polynomial parameterization.
         The OpenCV fisheye distortion model is now directly supported, so this method will use that model directly.
+
         Args:
             nominal_width (float): Rendered Width (pixels)
             nominal_height (float): Rendered Height (pixels)
@@ -1869,6 +1886,7 @@ class Camera(BaseSensor):
         self, distortion_model_attr: str, attr_names: List[str], coefficient_map: List[str]
     ) -> Tuple[float]:
         """Gets lens distortion model parameters if camera prim is using lens distortion model.
+
         Returns:
             Tuple[float, float, Tuple[float, float], float, List[float]]:
                 nominal_height, nominal_width, optical_center, max_fov, distortion_coefficients
@@ -1905,6 +1923,7 @@ class Camera(BaseSensor):
         distortion_coefficients: Optional[Sequence[float]] = None,
     ) -> None:
         """Applies F-theta lens distortion model to camera prim, then sets distortion parameters.
+
         Args:
             nominal_height (Optional[float]): Height of the calibrated sensor in pixels
             nominal_width (Optional[float]): Width of the calibrated sensor in pixels
@@ -1927,6 +1946,7 @@ class Camera(BaseSensor):
 
     def get_ftheta_properties(self) -> Tuple[float, float, Tuple[float, float], float, List[float]]:
         """Gets F-theta lens distortion model parameters if camera prim is using F-theta distortion model.
+
         Returns:
             Tuple[float, float, Tuple[float, float], float, List[float]]:
                 nominal_height (pixels), nominal_width (pixels), optical_center (x,y in pixels), max_fov (degrees), distortion_coefficients
@@ -1948,6 +1968,7 @@ class Camera(BaseSensor):
         distortion_coefficients: Optional[Sequence[float]] = None,
     ) -> None:
         """Applies Kannala-Brandt K3 lens distortion model to camera prim, then sets distortion parameters.
+
         Args:
             nominal_height (Optional[float]): Height of the calibrated sensor in pixels
             nominal_width (Optional[float]): Width of the calibrated sensor in pixels
@@ -1970,6 +1991,7 @@ class Camera(BaseSensor):
 
     def get_kannala_brandt_k3_properties(self) -> Tuple[float, float, Tuple[float, float], float, List[float]]:
         """Gets Kannala-Brandt K3 lens distortion model parameters if camera prim is using Kannala-Brandt K3 distortion model.
+
         Returns:
             Tuple[float, float, Tuple[float, float], float, List[float]]:
                 nominal_height, nominal_width, optical_center, max_fov, distortion_coefficients
@@ -1991,6 +2013,7 @@ class Camera(BaseSensor):
         distortion_coefficients: Optional[Sequence[float]] = None,
     ) -> None:
         """Applies Radial-Tangential Thin Prism lens distortion model to camera prim, then sets distortion parameters.
+
         Args:
             nominal_height (Optional[float]): Height of the calibrated sensor
             nominal_width (Optional[float]): Width of the calibrated sensor
@@ -2015,6 +2038,7 @@ class Camera(BaseSensor):
 
     def get_rad_tan_thin_prism_properties(self) -> Tuple[float, float, Tuple[float, float], float, List[float]]:
         """Gets Radial-Tangential Thin Prism lens distortion model parameters if camera prim is using Radial-Tangential Thin Prism distortion model.
+
         Returns:
             Tuple[float, float, Tuple[float, float], float, List[float]]:
                 nominal_height, nominal_width, optical_center, max_fov, distortion_coefficients
@@ -2038,6 +2062,7 @@ class Camera(BaseSensor):
         ray_exit_position_texture: Optional[str] = None,
     ) -> None:
         """Applies LUT lens distortion model to camera prim, then sets distortion parameters.
+
         Args:
             nominal_height (Optional[float]): Height of the calibrated sensor in pixels
             nominal_width (Optional[float]): Width of the calibrated sensor in pixels
@@ -2059,6 +2084,7 @@ class Camera(BaseSensor):
 
     def get_lut_properties(self) -> Tuple[float, float, Tuple[float, float], str, str]:
         """Gets LUT lens distortion model parameters if camera prim is using LUT distortion model.
+
         Returns:
             Tuple[float, float, Tuple[float, float], str, str]:
                 nominal_height (pixels), nominal_width (pixels), optical_center (x,y in pixels),
@@ -2086,6 +2112,7 @@ class Camera(BaseSensor):
     ) -> None:
         """
         Applies OpenCV pinhole distortion model to camera prim, then sets distortion parameters.
+
         Args:
             cx (float): Horizontal Render Position (pixels)
             cy (float): Vertical Render Position (pixels)
@@ -2107,6 +2134,7 @@ class Camera(BaseSensor):
     def get_opencv_pinhole_properties(self) -> Tuple[float, float, float, float, List]:
         """
         If camera prim is using OpenCV pinhole distortion model, returns corresponding distortion parameters.
+
         Returns:
             Tuple[float, float, float, float, List]: cx, cy, fx, fy, and OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4] respectively.
         """
@@ -2126,6 +2154,7 @@ class Camera(BaseSensor):
     ) -> None:
         """
         Applies OpenCV fisheye distortion model to camera prim, then sets distortion parameters.
+
         Args:
             cx (float): Horizontal Render Position (pixels)
             cy (float): Vertical Render Position (pixels)
@@ -2147,6 +2176,7 @@ class Camera(BaseSensor):
     def get_opencv_fisheye_properties(self) -> Tuple[float, float, float, float, List]:
         """
         If camera prim is using OpenCV fisheye distortion model, returns corresponding distortion parameters.
+
         Returns:
             Tuple[float, float, float, float, List]: cx, cy, fx, fy, and OpenCV fisheye parameters [k1, k2, k3, k4] respectively.
         """

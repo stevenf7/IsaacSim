@@ -1,4 +1,7 @@
 # Changelog
+## [3.3.3] - 2025-05-05
+### Changed
+- Fix API docs.
 
 ## [3.3.2] - 2025-04-18
 ### Changed

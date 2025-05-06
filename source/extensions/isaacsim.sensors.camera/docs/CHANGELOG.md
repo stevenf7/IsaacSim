@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.4] - 2025-05-05
+### Changed
+- Fix API docs.
+
 ## [1.0.3] - 2025-04-30
 ### Changed
 - Update event subscriptions to Event 2.0 system
