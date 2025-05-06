@@ -22,6 +22,9 @@ parser.add_argument(
 parser.add_argument(
     "--camera-target", type=float, nargs=3, default=None, help="Set perspective target <x> <y> <z> - optional"
 )
+parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
+parser.add_argument("--non-headless", action="store_false", help="Run with GUI - nonheadless mode")
+parser.add_argument("--viewport-updates", action="store_false", help="Enable viewport updates when headless")
 parser.add_argument(
     "--backend-type",
     default="OmniPerfKPIFile",
@@ -36,6 +39,9 @@ duration = args.duration
 env_url = args.env_url
 cam_pos = args.camera_position
 cam_target = args.camera_target
+gpu_frametime = args.gpu_frametime
+headless = args.non_headless
+viewport_updates = args.viewport_updates
 
 # Both cam_pos and cam_target should be specified if used
 if (cam_pos and not cam_target) or (cam_target and not cam_pos):
@@ -44,7 +50,7 @@ if (cam_pos and not cam_target) or (cam_target and not cam_pos):
 import numpy as np
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp({"headless": headless, "disable_viewport_updates": viewport_updates})
 
 import carb
 import omni
@@ -63,6 +69,7 @@ benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_scene_loading",
     workflow_metadata={"metadata": [{"name": "env_url", "data": env_url}, {"name": "duration", "data": duration}]},
     backend_type=args.backend_type,
+    gpu_frametime=gpu_frametime,
 )
 
 # Track scene loading time

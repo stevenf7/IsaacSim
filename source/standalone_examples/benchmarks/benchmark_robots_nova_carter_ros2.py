@@ -27,6 +27,9 @@ parser.add_argument(
 )
 parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--num-frames", type=int, default=600, help="Number of frames to run benchmark for")
+parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
+parser.add_argument("--non-headless", action="store_false", help="Run with GUI - nonheadless mode")
+parser.add_argument("--viewport-updates", action="store_false", help="Enable viewport updates when headless")
 parser.add_argument(
     "--backend-type",
     default="OmniPerfKPIFile",
@@ -42,11 +45,16 @@ enable_2d_lidar = args.enable_2d_lidar
 enable_hawks = args.enable_hawks
 n_gpu = args.num_gpus
 n_frames = args.num_frames
+gpu_frametime = args.gpu_frametime
+headless = args.non_headless
+viewport_updates = args.viewport_updates
 
 import numpy as np
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
+simulation_app = SimulationApp(
+    {"headless": headless, "max_gpu_count": n_gpu, "disable_viewport_updates": viewport_updates}
+)
 
 import carb
 import omni
@@ -76,6 +84,7 @@ benchmark = BaseIsaacBenchmark(
         ]
     },
     backend_type=args.backend_type,
+    gpu_frametime=gpu_frametime,
 )
 
 
