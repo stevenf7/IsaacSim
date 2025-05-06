@@ -43,10 +43,9 @@ parser.add_argument(
     choices=list(VALID_ANNOTATORS) + ["all"],
     help="List of annotators to enable, separated by space. Use 'all' to select all available.",
 )
-parser.add_argument("--disable-viewport-rendering", action="store_true", help="Disable viewport rendering")
 parser.add_argument("--delete-data-when-done", action="store_true", help="Delete local data after benchmarking")
 parser.add_argument("--print-results", action="store_true", help="Print results in terminal")
-parser.add_argument("--headless", action="store_true", help="Run in headless mode")
+parser.add_argument("--non-headless", action="store_false", help="Run in non-headless mode")
 parser.add_argument(
     "--backend-type",
     default="OmniPerfKPIFile",
@@ -56,6 +55,8 @@ parser.add_argument(
 
 parser.add_argument("--skip-write", action="store_true", help="Skip writing annotator data to disk")
 parser.add_argument("--env-url", default=None, help="Path to the environment url, default None")
+parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
+parser.add_argument("--viewport-updates", action="store_false", help="Enable viewport updates when headless")
 
 args, unknown = parser.parse_known_args()
 
@@ -64,13 +65,14 @@ num_cameras = args.num_cameras
 width, height = args.resolution[0], args.resolution[1]
 asset_count = args.asset_count
 annotators_str = ", ".join(args.annotators)
-disable_viewport_rendering = args.disable_viewport_rendering
 delete_data_when_done = args.delete_data_when_done
 print_results = args.print_results
-headless = args.headless
+headless = args.non_headless
 n_gpu = args.num_gpus
 skip_write = args.skip_write
 env_url = args.env_url
+gpu_frametime = args.gpu_frametime
+viewport_updates = args.viewport_updates
 
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
@@ -83,7 +85,7 @@ print(f"\tnum_cameras: {num_cameras}")
 print(f"\tresolution: {width}x{height}")
 print(f"\tasset_count: {asset_count}")
 print(f"\tannotators: {annotators_kwargs.keys()}")
-print(f"\tdisable_viewport_rendering: {disable_viewport_rendering}")
+print(f"\tdisable_viewport_rendering: {viewport_updates}")
 print(f"\tdelete_data_when_done: {delete_data_when_done}")
 print(f"\tprint_results: {print_results}")
 print(f"\theadless: {headless}")
@@ -96,7 +98,9 @@ import time
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu})
+simulation_app = SimulationApp(
+    {"headless": headless, "max_gpu_count": n_gpu, "disable_viewport_updates": viewport_updates}
+)
 
 REPLICATOR_GLOBAL_SEED = 11
 
@@ -126,6 +130,7 @@ benchmark = BaseIsaacBenchmark(
         ]
     },
     backend_type=args.backend_type,
+    gpu_frametime=gpu_frametime,
 )
 
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
@@ -137,10 +142,6 @@ if env_url is not None:
 else:
     print(f"[SDG Benchmark] Loading a new empty stage..")
     omni.usd.get_context().new_stage()
-
-if disable_viewport_rendering:
-    print(f"[SDG Benchmark] Disabling viewport rendering..")
-    get_active_viewport().updates_enabled = False
 
 rep.set_global_seed(REPLICATOR_GLOBAL_SEED)
 rep.create.light(rotation=(315, 0, 0), intensity=2000, light_type="distant")

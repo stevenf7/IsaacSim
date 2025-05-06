@@ -22,6 +22,9 @@ parser.add_argument(
     choices=["warp", "torch", "numpy"],
     help="Choose physics backend - numpy for CPU",
 )
+parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
+parser.add_argument("--non-headless", action="store_false", help="Run with GUI - nonheadless mode")
+parser.add_argument("--viewport-updates", action="store_false", help="Enable viewport updates when headless")
 parser.add_argument(
     "--backend-type",
     default="OmniPerfKPIFile",
@@ -36,10 +39,15 @@ n_frames = args.num_frames
 n_gpus = args.num_gpus
 max_line = args.max_in_line
 physics_backend = args.physics
+gpu_frametime = args.gpu_frametime
+headless = args.non_headless
+viewport_updates = args.viewport_updates
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus})
+simulation_app = SimulationApp(
+    {"headless": headless, "max_gpu_count": n_gpus, "disable_viewport_updates": viewport_updates}
+)
 
 import carb
 import isaacsim.core.utils.stage as stage_utils
@@ -65,6 +73,7 @@ benchmark = BaseIsaacBenchmark(
         ]
     },
     backend_type=args.backend_type,
+    gpu_frametime=gpu_frametime,
 )
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
