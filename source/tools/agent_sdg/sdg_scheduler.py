@@ -1,19 +1,24 @@
-# SPDX-FileCopyrightText: Copyright (c) 2023-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: LicenseRef-NvidiaProprietary
+# Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 #
-# NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
-# property and proprietary rights in and to this material, related
-# documentation and any modifications thereto. Any use, reproduction,
-# disclosure or distribution of this material and related documentation
-# without an express license agreement from NVIDIA CORPORATION or
-# its affiliates is strictly prohibited.
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
 
 
 """
 Standalone script to run a people sdg job in a local env.
 
 Usage:
-    python sdg_scheduler.py -c default_config.yaml [-f sensor_placements.json] [--save_usd]
+    python sdg_scheduler.py -c default_config.yaml
+Optional params:
+    --sensor_placment_file sensor_placements.json
+    --crash_report_path /home/xxx
+    --no_random_commands
+    --debug_print
+    --save_usd
 """
 
 import argparse
@@ -22,28 +27,26 @@ import os
 import sys
 
 import numpy as np
+from isaacsim import SimulationApp
 
-try:
-    CUSTOM_APP_PATH = f"{os.environ['EXP_PATH']}/metropolis.simulation.base.kit"
-    if not os.path.exists(CUSTOM_APP_PATH):
-        CUSTOM_APP_PATH = "tools/agent_sdg/metrosim.exp.kit"
-        from isaacsim.simulation_app import SimulationApp
-    else:
-        raise
-except:
-    # try to import app_framework, we *might* be running in custom app env
-    from app_framework import SimulationApp
-
+BASE_EXP_PATH = "apps/isaacsim.exp.full.kit"
 APP_CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 
 
 class AgentSDG:
-    def __init__(self, sim_app, config_file_path, camera_file_path, save_usd):
+    def __init__(
+        self, sim_app, config_file_path, camera_file_path, crash_report_path, no_random_commands, debug_print, save_usd
+    ):
         self._sim_app = sim_app
+        # Inputs
         self.config_file_path = config_file_path
         self.camera_file_path = camera_file_path
-        self.output_path = None
+        self.crash_report_path = crash_report_path
+        self.no_random_commands = no_random_commands
+        self.debug_print = debug_print
         self.save_usd = save_usd
+
+        self.output_path = None
         self.camera_placements_json = None
         self._sim_manager = None
         self._setup_sim_sub = None
@@ -55,7 +58,6 @@ class AgentSDG:
         # Enable all required extensions
         self._enable_extensions()
         await self._sim_app.app.next_update_async()
-
         # Set up global settings
         self._set_simulation_settings()
         await self._sim_app.app.next_update_async()
@@ -64,25 +66,34 @@ class AgentSDG:
         from isaacsim.replicator.agent.core.simulation import SimulationManager
 
         self._sim_manager = SimulationManager()
-        can_load_config = self._sim_manager.load_config_file(self.config_file_path)
-        if not can_load_config:
-            return
 
-        writer_selection = self._sim_manager.get_config_file_property_group("replicator", "writer_selection")
-        params = writer_selection.content_prop.get_value()
-        self.output_path = params["output_dir"]
+        try:
+            can_load_config = self._sim_manager.load_config_file(self.config_file_path)
+            if not can_load_config:
+                return False
 
-        # Set up sim
-        await self._setup_sim()
+            writer_selection = self._sim_manager.get_config_file_property_group("replicator", "writer_selection")
+            params = writer_selection.content_prop.get_value()
+            self.output_path = params["output_dir"]
+            # Set up sim
+            await self._setup_sim()
 
-        # [Optional] Camera placement
-        if self.camera_file_path:
-            self._do_camera_placement()
+            # [Optional] Camera placement
+            if self.camera_file_path:
+                self._do_camera_placement()
 
-        self._gen_random_commands()
+            # [Optional] Generate random commands
+            if not self.no_random_commands:
+                await self._gen_random_commands()
 
-        # Wait for data generation callback
-        await self._sim_manager.run_data_generation_async(will_wait_until_complete=True)
+            # Wait for data generation callback
+            await self._sim_manager.run_data_generation_async(will_wait_until_complete=True)
+            return True
+        except Exception as e:
+            import carb
+
+            carb.log_error(f"Failed to load config file {e}")
+            return False
 
     def _enable_extensions(self):
         import omni.kit.app
@@ -97,10 +108,11 @@ class AgentSDG:
         ext_manager.set_extension_enabled_immediate("omni.anim.graph.core", True)
         ext_manager.set_extension_enabled_immediate("omni.anim.retarget.core", True)
         ext_manager.set_extension_enabled_immediate("omni.anim.navigation.core", True)
-        ext_manager.set_extension_enabled_immediate("omni.anim.navigation.recast", True)
+        ext_manager.set_extension_enabled_immediate("omni.anim.navigation.meshtools", True)
         ext_manager.set_extension_enabled_immediate("omni.anim.people", True)
         ext_manager.set_extension_enabled_immediate("isaacsim.replicator.agent.core", True)
         ext_manager.set_extension_enabled_immediate("omni.kit.mesh.raycast", True)
+        ext_manager.set_extension_enabled_immediate("omni.physx.graph", True)  # For Conveyor Belt
 
     def _set_simulation_settings(self):
         import carb
@@ -124,6 +136,29 @@ class AgentSDG:
         self._settings.set("/app/omni.graph.scriptnode/enable_opt_in", False)  # To bypass action graph scriptnode check
         self._settings.set("/rtx/raytracing/fractionalCutoutOpacity", True)  # Needed for the DH characters
 
+        # Logging and debug print
+        self._settings.set("/log/level", "info")
+        self._settings.set("/log/channels/omni.replicator.core", "info")
+        self._settings.set("/log/channels/isaacsim.replicator.character.core", "info")
+        self._settings.set("/log/channels/omni.usd", "error")
+        self._settings.set("/log/channels/omni.hydra", "error")
+        self._settings.set("/log/channels/omni.kit.menu.*", "error")
+        self._settings.set("/log/channels/omni.kit.property.*", "error")
+        self._settings.set("/log/channels/omni.anim.graph.*", "error")
+        self._settings.set("/exts/isaacsim.replicator.agent/debug_print", self.debug_print)
+
+        # Crash reporter
+        self._settings.set("/crashreporter/enabled", True)
+        self._settings.set("/crashreporter/url", "https://services.nvidia.com/submit")
+        self._settings.set("/crashreporter/product", "agent-sdg-meshtool-debug")
+        self._settings.set("/crashreporter/version", "dev")
+        self._settings.set("/crashreporter/devOnlyOverridePrivacyAndForceUpload", True)
+        self._settings.set("/crashreporter/alwaysUpload", True)
+        if self.crash_report_path:
+            self._settings.set("/crashreporter/dumpDir", self.crash_report_path)
+            path = self._settings.get("/crashreporter/dumpDir")
+            print(f"Using carsh reporter path: {path}")
+
     async def _setup_sim(self):
         def done_callback(e):
             self._setup_sim_succeed = True
@@ -136,13 +171,17 @@ class AgentSDG:
         while self._setup_sim_sub and not self._sim_app.is_exiting():
             await self._sim_app.app.next_update_async()
 
-    def _gen_random_commands(self):
+    async def _gen_random_commands(self):
         if self._sim_manager.get_config_file_valid_value("character", "command_file"):
-            commands_list = self._sim_manager.generate_random_commands()
-            self._sim_manager.save_commands(commands_list)
+            task = asyncio.create_task(self._sim_manager.generate_random_commands())
+            await task
+            commands = task.result()
+            self._sim_manager.save_commands(commands)
         if self._sim_manager.get_config_file_valid_value("robot", "command_file"):
-            commands_list = self._sim_manager.generate_random_robot_commands()
-            self._sim_manager.save_robot_commands(commands_list)
+            task = asyncio.create_task(self._sim_manager.generate_random_robot_commands())
+            await task
+            commands = task.result()
+            self._sim_manager.save_robot_commands(commands)
 
     # ===== Camera placement related =====
 
@@ -214,8 +253,25 @@ class AgentSDG:
 def get_args():
     parser = argparse.ArgumentParser("Agent SDG")
     parser.add_argument("-c", "--config_file", required=True, help="Path to a IRA config file")
+    # Optional config
     parser.add_argument(
-        "-f", "--camera_placement_json_file", required=False, help="Path to camera placement json file."
+        "--sensor_placment_file", required=False, help="Path to camera placement json file. Default is none."
+    )
+    parser.add_argument(
+        "--crash_report_path",
+        required=False,
+        default=None,
+        help="Path to store the crash report. Default is the current working directory.",
+    )
+    parser.add_argument(
+        "--no_random_commands",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Do not generate random commands.",
+    )
+    parser.add_argument(
+        "--debug_print", required=False, default=False, action="store_true", help="Enable IRA debug print."
     )
     parser.add_argument(
         "--save_usd",
@@ -244,10 +300,17 @@ def main():
     # Read command line arguments
     args = get_args()
     config_file_path = args.config_file
-    camera_file_path = args.camera_placement_json_file
+    camera_file_path = args.sensor_placment_file
+    crash_report_path = args.crash_report_path
+    no_random_commands = args.no_random_commands
+    debug_print = args.debug_print
     save_usd = args.save_usd
-    print("Using Config file path: {}".format(config_file_path))
-    print("Using Camera placement file path: {}".format(camera_file_path))
+
+    print("Config file path: {}".format(config_file_path))
+    print("Sensor placement file path: {}".format(camera_file_path))
+    print("Crash Report Path: {}".format(crash_report_path))
+    print("Don't random commands: {}".format(no_random_commands))
+    print("Debug Print: {}".format(debug_print))
     print("Save USD: {}".format(save_usd))
 
     # Check files exist
@@ -259,26 +322,41 @@ def main():
         return
 
     # Start SimApp
-    sim_app = SimulationApp(launch_config=APP_CONFIG, experience=CUSTOM_APP_PATH)
+    sim_app = SimulationApp(launch_config=APP_CONFIG, experience=BASE_EXP_PATH)
 
     # Start SDG
-    sdg = AgentSDG(sim_app, os.path.abspath(config_file_path), camera_file_path, save_usd)
-    task = asyncio.ensure_future(sdg.run())
-    while not task.done():
-        sim_app.update()
+    sdg = AgentSDG(
+        sim_app,
+        os.path.abspath(config_file_path),
+        camera_file_path,
+        crash_report_path,
+        no_random_commands,
+        debug_print,
+        save_usd,
+    )
 
-    # [Optional] Save USD to
-    if save_usd:
-        import omni.client
+    from omni.kit.async_engine import run_coroutine
 
-        save_as_path = omni.client.combine_urls("{}/".format(sdg.output_path), "scene.usd")
-        save_usd_task = asyncio.ensure_future(_save_usd(save_as_path))
-        while not save_usd_task.done():
+    task = run_coroutine(sdg.run())
+    try:
+        while not task.done():
             sim_app.update()
 
+        if not task.result():
+            print("Failed to run SDG")
+
+        # [Optional] Save USD to
+        if save_usd:
+            import omni.client
+
+            save_as_path = omni.client.combine_urls("{}/".format(sdg.output_path), "scene.usd")
+            save_usd_task = asyncio.ensure_future(_save_usd(save_as_path))
+            while not save_usd_task.done():
+                sim_app.update()
+
     # Close app
-    sim_app.update()
-    sim_app.close()
+    finally:
+        sim_app.close()
 
 
 if __name__ == "__main__":
