@@ -77,9 +77,9 @@ benchmark = BaseIsaacBenchmark(
 )
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-robot_path = "/Isaac/Robots/Fraunhofer/O3dyn/o3dyn.usd"
-scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
-benchmark.fully_load_stage(benchmark.assets_root_path + scene_path)
+robot_path = benchmark.assets_root_path + "/Isaac/Robots/Fraunhofer/O3dyn/o3dyn.usd"
+scene_path = benchmark.assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
+benchmark.fully_load_stage(scene_path)
 
 SimulationManager.set_backend(physics_backend)
 if physics_backend == "numpy":
@@ -109,8 +109,7 @@ omni.kit.app.get_app().update()
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
-# # NOTE: PhysX Simulation Context error if this update() is removed
-# omni.kit.app.get_app().update()
+omni.kit.app.get_app().update()
 
 # Start robot movement - rotation in place
 joint_velocities = np.tile((5 * np.array([1.0, -1.0, 1.0, -1.0], dtype=np.float32)), (n_robots, 1))
