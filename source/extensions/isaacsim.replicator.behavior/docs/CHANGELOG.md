@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2025-05-07
+### Changed
+- Added checks for stage validity when destroying / resetting behaviors
+
 ## [1.1.1] - 2025-04-26
 ### Changed
 - SDG pipeline: Increased rgb mean diff tolerance and included depth comparison with small mean diff tolerance

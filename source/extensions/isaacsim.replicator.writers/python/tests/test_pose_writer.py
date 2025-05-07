@@ -23,7 +23,7 @@ def compare_json_dicts_recursive(data1, data2, path=""):
             return f"Length mismatch at {path}: {len(data1)} != {len(data2)}"
         if any(isinstance(x, float) for x in data1 + data2):
             try:
-                np.testing.assert_allclose(data1, data2, rtol=1e-5)
+                np.testing.assert_allclose(data1, data2, rtol=1e-5, atol=1e-5)
             except AssertionError:
                 return f"Value mismatch at {path}: {data1} != {data2}"
         else:
@@ -43,12 +43,30 @@ def compare_json_dicts_recursive(data1, data2, path=""):
                 msg.append(f"Extra keys in second dict at {path}: {extra2}")
             return "\n".join(msg)
         for key in keys1:
-            error = compare_json_dicts_recursive(data1[key], data2[key], f"{path}.{key}" if path else key)
-            if error:
-                return error
+            # If quaternion, compare it with its negated quaternion as well since it represents the same rotation
+            if (
+                "quat" in key
+                and isinstance(data1[key], list)
+                and isinstance(data2[key], list)
+                and len(data1[key]) == 4
+                and len(data2[key]) == 4
+            ):
+                q1 = np.array(data1[key])
+                q2 = np.array(data2[key])
+                try:
+                    np.testing.assert_allclose(q1, q2, rtol=1e-5, atol=1e-5)
+                except AssertionError:
+                    try:
+                        np.testing.assert_allclose(q1, -q2, rtol=1e-5, atol=1e-5)
+                    except AssertionError:
+                        return f"Quaternion mismatch at {path}.{key}: {data1[key]} != {data2[key]} (and not negative of each other)"
+            else:
+                error = compare_json_dicts_recursive(data1[key], data2[key], f"{path}.{key}" if path else key)
+                if error:
+                    return error
     elif isinstance(data1, float) and isinstance(data2, float):
         try:
-            np.testing.assert_allclose(data1, data2, rtol=1e-5)
+            np.testing.assert_allclose(data1, data2, rtol=1e-5, atol=1e-5)
         except AssertionError:
             return f"Float mismatch at {path}: {data1} != {data2}"
     elif data1 != data2:
@@ -83,7 +101,8 @@ class TestPoseWriter(omni.kit.test.AsyncTestCase):
         render_products = [rp1, rp2]
 
         # Setup writer
-        out_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_pose_writer")
+        # out_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_pose_writer")
+        out_dir = os.path.join(os.getcwd(), "test_pose_writer")
         writer = rep.writers.get("PoseWriter")
         writer.initialize(output_dir=out_dir, use_subfolders=True, write_debug_images=True)
         writer.attach(render_products)

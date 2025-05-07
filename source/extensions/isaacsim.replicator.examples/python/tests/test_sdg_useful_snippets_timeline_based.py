@@ -35,9 +35,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        await omni.kit.app.get_app().next_update_async()
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
 
     async def test_sdg_snippet_custom_fps_writer_annotator(self):
         import asyncio
@@ -54,7 +56,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         SENSOR_FPS = 10.0
         SENSOR_DT = 1.0 / SENSOR_FPS
 
-        async def run_custom_fps_example_async(num_frames=10):
+        async def run_custom_fps_example_async(duration_seconds):
             # Create a new stage
             await omni.usd.get_context().new_stage_async()
 
@@ -86,8 +88,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             print(f"Writer data will be written to: {out_dir_rgb}")
             writer_rgb = rep.WriterRegistry.get("BasicWriter")
             writer_rgb.initialize(output_dir=out_dir_rgb, rgb=True)
-            # NOTE: 'trigger=None' is needed to make sure the writer is only triggered at the custom schedule times
-            writer_rgb.attach(rp, trigger=None)
+            writer_rgb.attach(rp)
             annot_depth = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
             annot_depth.attach(rp)
 
@@ -95,12 +96,13 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             written_frames = 0
             previous_time = timeline.get_current_time()
             elapsed_time = 0.0
-            for i in range(num_frames):
+            loop_iteration_count = 0
+            while timeline.get_current_time() < duration_seconds:
                 current_time = timeline.get_current_time()
                 delta_time = current_time - previous_time
                 elapsed_time += delta_time
                 print(
-                    f"[{i}] current_time={current_time:.4f}; delta_time={delta_time:.4f}; elapsed_time={elapsed_time:.4f}/{SENSOR_DT:.4f};"
+                    f"[{loop_iteration_count}] current_time={current_time:.4f}; delta_time={delta_time:.4f}; elapsed_time={elapsed_time:.4f}/{SENSOR_DT:.4f};"
                 )
 
                 # Check if enough time has passed to trigger the sensor
@@ -111,11 +113,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                     # Enable render products for data access
                     rp.hydra_texture.set_updates_enabled(True)
 
-                    # Write will be scheduled at the next step call
-                    writer_rgb.schedule_write()
-
                     # Step needs to be called after scheduling the write
-                    await rep.orchestrator.step_async(delta_time=0.0)
+                    await rep.orchestrator.step_async(delta_time=0.0, pause_timeline=False)
 
                     # After step, the annotator data is available and in sync with the stage
                     annot_data = annot_depth.get_data()
@@ -127,27 +126,25 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                     # Disable render products to avoid unnecessary rendering
                     rp.hydra_texture.set_updates_enabled(False)
 
-                    # Restart the timeline if it has been paused by the replicator step function
-                    if not timeline.is_playing():
-                        timeline.play()
-
                 previous_time = current_time
                 # Advance the app (timeline) by one frame
                 await omni.kit.app.get_app().next_update_async()
+                loop_iteration_count += 1
 
             # Make sure the writer finishes writing the data to disk
             await rep.orchestrator.wait_until_complete_async()
 
-        # Run the example for a given number of frames
-        # NOTE: the expected number of frames written will be (num_frames - 1) * SENSOR_FPS / STAGE_FPS
-        await run_custom_fps_example_async(num_frames=61)
+        # Run the example.
+        # NOTE: The simulation duration is calculated to ensure 'target_num_writes' are captured.
+        # It includes the time for all sensor intervals plus a small buffer of a few stage frames.
+        target_num_writes = 6
+        duration_for_target_writes = (target_num_writes * SENSOR_DT) + (5.0 / STAGE_FPS)
+        await run_custom_fps_example_async(duration_seconds=duration_for_target_writes)
 
         # Validate the output directory contents
-        num_frames = 61
-        expected_write_counts = (num_frames - 1) * SENSOR_FPS / STAGE_FPS
         self.assertTrue(
             validate_folder_contents(
-                path=os.getcwd() + "/_out_writer_fps_rgb", expected_counts={"png": expected_write_counts}
+                path=os.getcwd() + "/_out_writer_fps_rgb", expected_counts={"png": target_num_writes}
             )
         )
 

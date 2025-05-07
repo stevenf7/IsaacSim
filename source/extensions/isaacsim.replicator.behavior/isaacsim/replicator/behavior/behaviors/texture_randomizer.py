@@ -185,8 +185,11 @@ class TextureRandomizer(BehaviorScript):
         self._remove_texture_materials()
 
         # Clear any empty scopes under the prim behavior scope
-        scope_root_prim = self.stage.GetPrimAtPath(f"{SCOPE_NAME}")
-        remove_empty_scopes(scope_root_prim, self.stage)
+        if self.stage:
+            scope_root_prim = self.stage.GetPrimAtPath(f"{SCOPE_NAME}")
+            remove_empty_scopes(scope_root_prim, self.stage)
+        else:
+            carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove empty scopes.")
 
         self._valid_prims.clear()
         self._update_counter = 0
@@ -209,6 +212,10 @@ class TextureRandomizer(BehaviorScript):
             shader.GetInput("texture_rotate").Set(texture_rotate)
 
     def _create_materials(self):
+        if not self.stage:
+            carb.log_warn(f"[{self.prim_path}] Stage is not valid to create materials.")
+            return
+
         # Create a new material for each valid prim
         MDL = "OmniPBR.mdl"
         mtl_name = MDL.rsplit(".", 1)[0]  # Extract the material name without the extension

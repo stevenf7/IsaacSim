@@ -139,10 +139,18 @@ class LocationRandomizer(BehaviorScript):
 
         # Check if the randomization should be relative to a target prim
         if target_prim_path:
-            self._target_prim = self.stage.GetPrimAtPath(Sdf.Path(target_prim_path))
-            if not self._target_prim or not self._target_prim.IsValid() or not self._target_prim.IsA(UsdGeom.Xformable):
+            if not self.stage:
+                carb.log_warn(f"[{self.prim_path}] Stage is not valid to access target prim '{target_prim_path}'.")
                 self._target_prim = None
-                carb.log_warn(f"[{self.prim_path}] Target prim not found or not valid.")
+            else:  # Stage is valid
+                fetched_prim = self.stage.GetPrimAtPath(Sdf.Path(target_prim_path))
+                if fetched_prim and fetched_prim.IsValid() and fetched_prim.IsA(UsdGeom.Xformable):
+                    self._target_prim = fetched_prim
+                else:
+                    self._target_prim = None
+                    carb.log_warn(
+                        f"[{self.prim_path}] Target prim '{target_prim_path}' not found, not valid, or not Xformable."
+                    )
 
         # Save the initial locations (and relative offsets) of the prims
         for prim in self._valid_prims:

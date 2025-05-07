@@ -155,8 +155,8 @@ class VolumeStackRandomizer(BehaviorScript):
         self._valid_prims = []
         self._prim_collision_walls = {}
         self._prim_assets = {}
-        self._physx_dt = 1 / self.stage.GetTimeCodesPerSecond()
         self._reset_requested = False
+        self._physx_dt = 1 / self.stage.GetTimeCodesPerSecond()
 
         # App event stream, used to listen to incoming control events, and to publish the state of the behavior script
         self._event_stream = carb.eventdispatcher.get_eventdispatcher()
@@ -563,9 +563,10 @@ class VolumeStackRandomizer(BehaviorScript):
         self._remove_collision_walls()
 
         # Remove any remaining empty scopes from the behavior's scope
-        scope_root_prim = self.stage.GetPrimAtPath(f"{SCOPE_NAME}/{self.BEHAVIOR_NS}")
-        if scope_root_prim:
-            remove_empty_scopes(scope_root_prim, self.stage)
+        if self.stage:
+            scope_root_prim = self.stage.GetPrimAtPath(f"{SCOPE_NAME}/{self.BEHAVIOR_NS}")
+            if scope_root_prim:
+                remove_empty_scopes(scope_root_prim, self.stage)
 
     def _group_prims_and_assets_into_batches(self):
         # Early return if no valid prims or assets were found
@@ -602,6 +603,10 @@ class VolumeStackRandomizer(BehaviorScript):
         return prim_asset_batches
 
     def _remove_collision_walls(self):
+        if not self.stage:
+            carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove collision walls.")
+            return
+
         # Remove the collision walls through the common xform root parent
         for collision_walls in self._prim_collision_walls.values():
             for wall in collision_walls:
@@ -613,6 +618,10 @@ class VolumeStackRandomizer(BehaviorScript):
         self._prim_collision_walls.clear()
 
     def _remove_assets(self):
+        if not self.stage:
+            carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove assets.")
+            return
+
         if self._prim_assets:
             for assets in self._prim_assets.values():
                 for asset in assets:
@@ -622,6 +631,10 @@ class VolumeStackRandomizer(BehaviorScript):
         self._prim_assets.clear()
 
     def _remove_physics_material(self):
+        if not self.stage:
+            carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove physics material.")
+            return
+
         if self._physics_material:
             self.stage.RemovePrim(self._physics_material.GetPath())
             self._physics_material = None
