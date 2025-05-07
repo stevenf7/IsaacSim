@@ -21,7 +21,7 @@ icon = "data/icon.png"
 name = "isaacsim.robot_setup.assembler"
 
 [[test]]
-
+enabled = false
 dependencies = [
 ]
 

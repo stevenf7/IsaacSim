@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.12] - 2025-05-04
+### Fixed
+- Ui test failures
+
 ## [2.1.11] - 2025-05-03
 ### Changed
 - Add ui specific test args
