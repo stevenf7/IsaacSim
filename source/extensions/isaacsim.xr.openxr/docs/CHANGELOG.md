@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.0] - 2025-05-06
+### Changed
+- Deprecating extension in favor of omni.kit.xr handtracking
+
 ## [0.2.10] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
