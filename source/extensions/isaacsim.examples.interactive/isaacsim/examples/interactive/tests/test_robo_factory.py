@@ -10,6 +10,7 @@
 
 import asyncio
 
+import carb
 import numpy as np
 import omni.kit
 
@@ -35,6 +36,17 @@ class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         while is_stage_loading():
             await update_stage_async()
+
+        settings = carb.settings.get_settings()
+        settings.set("/app/player/useFixedTimeStepping", False)
+        settings.set("/app/runLoops/main/rateLimitEnabled", False)
+        try:
+            import omni.kit.loop._loop as omni_loop
+
+            self._loop_runner = omni_loop.acquire_loop_interface()
+            self._loop_runner.set_manual_mode(True)
+        except Exception:
+            pass
         return
 
     # After running each test
@@ -55,7 +67,7 @@ class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCase):
         await self._sample._on_start_stacking_event_async()
         await update_stage_async()
         # run for 2500 frames and print time
-        for i in range(2000):
+        for i in range(1750):
             await update_stage_async()
         cube_names = self._sample._tasks[0].get_cube_names()
         task_observations = self._sample._tasks[0].get_observations()

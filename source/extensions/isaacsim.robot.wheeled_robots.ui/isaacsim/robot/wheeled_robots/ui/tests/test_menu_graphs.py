@@ -122,10 +122,12 @@ class TestDifferentialRobotGraph(OmniUiTest):
         graph_path = "/World/test_graph"
         graph = og.Controller.create_graph({"graph_path": graph_path, "evaluator_name": "execution"})
         og.Controller.create_node(graph_path + "/OnPlaybackTick", "omni.graph.action.OnPlaybackTick")
-
+        for _ in range(10):
+            await update_stage_async()
         # Open UI and set to add to existing graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Differential Controller")
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await update_stage_async()
 
         # Find and interact with parameter window
         window_name = "Differential Controller"
@@ -137,7 +139,8 @@ class TestDifferentialRobotGraph(OmniUiTest):
         add_to_graph_checkbox = ui_test.find(root_widget_path + "/HStack[0]/HStack[0]/VStack[0]/ToolButton[0]")
         self.assertIsNotNone(add_to_graph_checkbox, "Add to existing graph checkbox not found")
         await add_to_graph_checkbox.click()
-
+        for _ in range(10):
+            await update_stage_async()
         # Set the existing graph path
         graph_root_prim = ui_test.find(root_widget_path + "/HStack[1]/StringField[0]")
         self.assertIsNotNone(graph_root_prim, "Graph root prim not found")
@@ -155,14 +158,16 @@ class TestDifferentialRobotGraph(OmniUiTest):
         wheel_distance = ui_test.find(root_widget_path + "/HStack[4]/FloatField[0]")
         wheel_distance.model.set_value("0.118")
 
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await update_stage_async()
 
         # Click OK button
         ok_button = ui_test.find(root_widget_path + "/HStack[6]/Button[0]")
         self.assertIsNotNone(ok_button, "OK button not found")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await update_stage_async()
 
         # Verify nodes were added to existing graph
         graph = og.get_graph_by_path(graph_path)

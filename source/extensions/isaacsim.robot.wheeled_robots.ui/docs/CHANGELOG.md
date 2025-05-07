@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.12] - 2025-05-03
+### Changed
+- Update test settings to fix menu test failures
+
 ## [2.1.11] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

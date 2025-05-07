@@ -95,13 +95,14 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
             load_button = LoadButton(
                 "LoadButton", "LOAD", setup_scene_fn=setup_scene_fn, setup_post_load_fn=setup_post_load_fn
             )
-
+        await update_stage_async()
         button = ui_test.find(f"{window_title}//Frame/Frame[0]/HStack[0]/Button[0]")
         await button.click()
         await update_stage_async()
 
         # The LoadButton resets the Core World asynchronously, so it can take some time to get to the setup_post_load_fn
-        await asyncio.sleep(1)
+        for _ in range(30):
+            await update_stage_async()
 
         self.assertTrue(self.setup_scene_called)
         self.assertTrue(self.setup_post_load_called)

@@ -29,7 +29,7 @@ from pxr import Gf, UsdPhysics
 class TestArticulationGraphs(OmniUiTest):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -38,7 +38,7 @@ class TestArticulationGraphs(OmniUiTest):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
     async def test_position_graph_creation(self):
         """Test creation of articulation position controller graph"""
@@ -57,7 +57,7 @@ class TestArticulationGraphs(OmniUiTest):
 
         # Create position controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Joint Position")
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         window_name = "Articulation Position Controller"
         param_window = ui_test.find(window_name)
@@ -67,12 +67,12 @@ class TestArticulationGraphs(OmniUiTest):
         robot_prim = ui_test.find(root_widget_path + "/HStack[1]/StringField[0]")
         robot_prim.model.set_value(robot_path)
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         ok_button = ui_test.find(root_widget_path + "/HStack[4]/Button[0]")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         # Verify graph creation
         graph = og.get_graph_by_path("/Graphs/Position_Controller")
@@ -113,7 +113,7 @@ class TestArticulationGraphs(OmniUiTest):
 
         # Create position controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Joint Position")
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         window_name = "Articulation Position Controller"
         param_window = ui_test.find(window_name)
@@ -131,12 +131,12 @@ class TestArticulationGraphs(OmniUiTest):
         graph_field = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
         graph_field.model.set_value(graph_path)
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         ok_button = ui_test.find(root_widget_path + "/HStack[4]/Button[0]")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         # setup jointNames and Desired Joint Positions
         joint_names = [
@@ -208,7 +208,7 @@ class TestArticulationGraphs(OmniUiTest):
 
         # Create velocity controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Joint Velocity")
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         window_name = "Articulation Velocity Controller"
         param_window = ui_test.find(window_name)
@@ -218,12 +218,12 @@ class TestArticulationGraphs(OmniUiTest):
         robot_prim = ui_test.find(root_widget_path + "/HStack[1]/StringField[0]")
         robot_prim.model.set_value(robot_path)
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         ok_button = ui_test.find(root_widget_path + "/HStack[4]/Button[0]")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         # Verify graph creation
         graph = og.get_graph_by_path("/Graphs/Velocity_Controller")
@@ -265,7 +265,7 @@ class TestArticulationGraphs(OmniUiTest):
 
         # Create velocity controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Joint Velocity")
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         window_name = "Articulation Velocity Controller"
         param_window = ui_test.find(window_name)
@@ -282,11 +282,11 @@ class TestArticulationGraphs(OmniUiTest):
         # Set the existing graph path
         graph_field = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
         graph_field.model.set_value(graph_path)
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         ok_button = ui_test.find(root_widget_path + "/HStack[4]/Button[0]")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         # setup jointNames and Desired Joint Positions
         joint_names = ["left_wheel_joint", "right_wheel_joint"]
@@ -331,7 +331,7 @@ class TestArticulationGraphs(OmniUiTest):
         await update_stage_async()
         # Create gripper controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Open Loop Gripper")
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         window_name = "Gripper Controller"
         param_window = ui_test.find(window_name)
@@ -358,12 +358,12 @@ class TestArticulationGraphs(OmniUiTest):
         keyboard_checkbox = ui_test.find(root_widget_path + "/HStack[8]/HStack[0]/VStack[0]/ToolButton[0]")
         keyboard_checkbox.model.set_value(True)
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         ok_button = ui_test.find(root_widget_path + "/HStack[9]/Button[0]")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         # Verify graph creation
         graph = og.get_graph_by_path("/Graphs/Gripper_Controller")
@@ -404,9 +404,13 @@ class TestArticulationGraphs(OmniUiTest):
         graph = og.Controller.create_graph({"graph_path": graph_path, "evaluator_name": "execution"})
         og.Controller.create_node(graph_path + "/OnPlaybackTick", "omni.graph.action.OnPlaybackTick")
 
+        for _ in range(10):
+            await update_stage_async()
+
         # Create gripper controller graph
         await menu_click("Tools/Robotics/OmniGraph Controllers/Open Loop Gripper")
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await update_stage_async()
 
         window_name = "Gripper Controller"
         param_window = ui_test.find(window_name)
@@ -417,7 +421,8 @@ class TestArticulationGraphs(OmniUiTest):
         add_to_graph_checkbox = ui_test.find(root_widget_path + "/HStack[0]/HStack[0]/VStack[0]/ToolButton[0]")
         self.assertIsNotNone(add_to_graph_checkbox, "Add to existing graph checkbox not found")
         await add_to_graph_checkbox.click()
-
+        for _ in range(10):
+            await update_stage_async()
         # Set the existing graph path
         graph_field = ui_test.find(root_widget_path + "/HStack[3]/StringField[0]")
         graph_field.model.set_value(graph_path)
@@ -437,13 +442,15 @@ class TestArticulationGraphs(OmniUiTest):
         joint_names = ui_test.find(root_widget_path + "/HStack[5]/StringField[0]")
         joint_names.model.set_value("panda_finger_joint1, panda_finger_joint2")
 
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await update_stage_async()
 
         ok_button = ui_test.find(root_widget_path + "/HStack[9]/Button[0]")
         self.assertIsNotNone(ok_button, "OK button not found")
         await ok_button.click()
 
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await update_stage_async()
 
         # get the gripper controller node
         gripper_controller = og.get_node_by_path(f"{graph_path}/GripperController")

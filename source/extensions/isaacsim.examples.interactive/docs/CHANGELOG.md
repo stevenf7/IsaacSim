@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.6.1] - 2025-05-04
+### Changed
+- Reduce time taken to run tests
+### Fixed
+- Various unit tests
+
 ## [4.6.0] - 2025-05-03
 ### Changed
 - Updated Surface Gripper Example
