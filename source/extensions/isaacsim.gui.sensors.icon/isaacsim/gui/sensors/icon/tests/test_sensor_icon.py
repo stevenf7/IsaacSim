@@ -91,6 +91,107 @@ class TestSensorIcon(OmniUiTest):
         self._icon_scene.destroy()
         await ui_test.wait_n_updates(30)
 
+    async def test_sensoricon_saved_stage(self):
+        create_test_object()
+        self._settings.set(SHOW_TITLE_PATH, True)
+        await ui_test.human_delay()
+        await ui_test.wait_n_updates(30)
+        path = TEST_DATA_PATH_ICON.absolute().joinpath("icoSensors.svg")
+        self._icon_scene.add_sensor_icon(TEST_OBJECT_PRIM_PATH, str(path))
+        await ui_test.wait_n_updates(30)
+        model = self._icon_scene.get_model()
+        self.assertAlmostEqual(model.get_world_unit(), 1.0)
+        saved = omni.usd.get_context().save_stage()
+        self.assertTrue(saved)
+        self._icon_scene.destroy()
+        await ui_test.wait_n_updates(30)
+        self._icon_scene = SensorIcon.get_instance()
+        await ui_test.wait_n_updates(30)
+        new_model = self._icon_scene.get_model()
+        self.assertTrue(TEST_OBJECT_PRIM_PATH in new_model.get_prim_paths())
+        retrieved_path = new_model.get_icon_url(TEST_OBJECT_PRIM_PATH)
+        self.assertEqual(retrieved_path, str(path))
+
+    async def test_sensoricon_path_types(self):
+        """Tests handling of str and Sdf.Path for prim_path arguments."""
+        create_test_object()
+        self._settings.set(SHOW_TITLE_PATH, True)
+        await ui_test.human_delay()
+        await ui_test.wait_n_updates(30)
+
+        icon_path_str = str(TEST_DATA_PATH_ICON.absolute().joinpath("icoSensors.svg"))
+        prim_path_str = TEST_OBJECT_PRIM_PATH
+        prim_path_sdf = Sdf.Path(TEST_OBJECT_PRIM_PATH)
+
+        model = self._icon_scene.get_model()
+
+        # Test add_sensor_icon
+        self._icon_scene.add_sensor_icon(prim_path_str, icon_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_str), icon_path_str)
+        self.assertEqual(model.get_icon_url(prim_path_sdf), icon_path_str)
+        self._icon_scene.remove_sensor_icon(prim_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_str), "")
+
+        self._icon_scene.add_sensor_icon(prim_path_sdf, icon_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_sdf), icon_path_str)
+        self.assertEqual(model.get_icon_url(prim_path_str), icon_path_str)
+
+        # Test show_sensor_icon and hide_sensor_icon
+        sensor_item = model.get_item(prim_path_sdf)  # test with Sdf.Path
+        self.assertTrue(sensor_item.visible)  # Should be visible by default after add
+
+        self._icon_scene.hide_sensor_icon(prim_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertFalse(model.get_item(prim_path_sdf).visible)
+
+        self._icon_scene.show_sensor_icon(prim_path_sdf)
+        await ui_test.wait_n_updates(30)
+        self.assertTrue(model.get_item(prim_path_str).visible)
+
+        self._icon_scene.hide_sensor_icon(prim_path_sdf)
+        await ui_test.wait_n_updates(30)
+        self.assertFalse(model.get_item(prim_path_str).visible)
+
+        self._icon_scene.show_sensor_icon(prim_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertTrue(model.get_item(prim_path_sdf).visible)
+
+        # Test set_icon_click_fn - unused
+        def click_fn_1(*_):
+            pass
+
+        self._icon_scene.set_icon_click_fn(prim_path_str, click_fn_1)
+        self.assertEqual(model.get_on_click(prim_path_sdf), click_fn_1)
+
+        # Test IconModel with str and Sdf.Path params
+        self.assertEqual(model.get_icon_url(prim_path_str), icon_path_str)
+        self.assertEqual(model.get_icon_url(prim_path_sdf), icon_path_str)
+
+        pos_str = model.get_position(prim_path_str)
+        pos_sdf = model.get_position(prim_path_sdf)
+        self.assertIsNotNone(pos_str)
+        self.assertIsNotNone(pos_sdf)
+        self.assertEqual(Gf.Vec3d(pos_str), Gf.Vec3d(pos_sdf))  # check position
+
+        # Test remove_sensor_icon
+        self._icon_scene.remove_sensor_icon(prim_path_sdf)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_str), "")
+        self.assertIsNone(model.get_item(prim_path_sdf))
+
+        # Re-add to test removal with string path
+        self._icon_scene.add_sensor_icon(prim_path_sdf, icon_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_str), icon_path_str)
+
+        self._icon_scene.remove_sensor_icon(prim_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_sdf), "")
+        self.assertIsNone(model.get_item(prim_path_str))
+
 
 def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="Generic", attrs=None):
     kwargs = {"prim_type": prim_type, "prim_path": prim_path}

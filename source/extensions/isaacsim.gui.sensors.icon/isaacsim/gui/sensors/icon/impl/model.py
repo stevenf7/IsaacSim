@@ -87,8 +87,9 @@ class IconModel(sc.AbstractManipulatorModel):
             except Exception as e:
                 carb.log_warn(f"Failed querying usdrt for type {sensor_type_str}: {e}")
 
-        for prim_path_str in all_sensor_paths:
-            prim_path = Sdf.Path(prim_path_str)
+        for prim_path_obj in all_sensor_paths:
+            # Convert to string first in case paths are loaded from saved stage
+            prim_path = Sdf.Path(str(prim_path_obj))
             prim = stage.GetPrimAtPath(prim_path)
             if not prim:
                 continue
