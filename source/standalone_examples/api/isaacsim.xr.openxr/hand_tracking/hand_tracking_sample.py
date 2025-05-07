@@ -19,7 +19,7 @@ simulation_app = SimulationApp(
 
 # Handle start/stop teleop commands from XR device
 import carb
-from omni.kit.xr.core import XRCore
+from omni.kit.xr.core import XR_INPUT_DEVICE_HAND_TRACKING_POSE_NAMES, XRCore, XRPoseValidityFlags
 
 TELEOP_COMMAND_EVENT_TYPE = "teleop_command"
 
@@ -48,14 +48,11 @@ subscription = message_bus.create_subscription_to_pop_by_type(incoming_message_e
 
 import omni.usd
 from isaacsim.core.api import World
-from isaacsim.core.api.materials.omni_pbr import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.prims import create_prim, set_prim_visibility
-from isaacsim.xr.openxr import OpenXR, OpenXRSpec
 from omni.isaac.core.prims import XFormPrim
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux
 
-openxr = OpenXR()
 my_world = World(stage_units_in_meters=1.0)
 
 # Add Light Source
@@ -76,7 +73,7 @@ instancer_path = "/World/CubeInstancer"
 point_instancer = UsdGeom.PointInstancer.Define(my_world.stage, instancer_path)
 point_instancer.CreatePrototypesRel().SetTargets([Sdf.Path(base_cube_path)])
 
-hand_joint_count = int(OpenXRSpec.HandJointEXT.XR_HAND_JOINT_LITTLE_TIP_EXT) + 1
+hand_joint_count = len(XR_INPUT_DEVICE_HAND_TRACKING_POSE_NAMES)
 joint_count = hand_joint_count * 2 + 1
 
 # Initially hide all cubes until hands are tracked
@@ -111,34 +108,50 @@ while simulation_app.is_running():
         current_orientations = orientations_attr.Get()
         proto_indices = proto_idx_attr.Get()
 
-        left_joints = openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_LEFT_EXT) or [None] * hand_joint_count
-        right_joints = openxr.locate_hand_joints(OpenXRSpec.XrHandEXT.XR_HAND_RIGHT_EXT) or [None] * hand_joint_count
-        joints = left_joints + right_joints
+        left_hand_device = XRCore.get_singleton().get_input_device("/user/hand/left")
+        right_hand_device = XRCore.get_singleton().get_input_device("/user/hand/right")
+
+        left_joints = dict()
+        right_joints = dict()
+        if left_hand_device:
+            left_joints = left_hand_device.get_all_virtual_world_poses()
+        if right_hand_device:
+            right_joints = right_hand_device.get_all_virtual_world_poses()
+
+        proto_indices = [1 for _ in range(joint_count)]
+        proto_idx_attr.Set(proto_indices)
 
         if tracking_enabled:
             # Update hand joint indicators
-            for joint_idx in range(2 * hand_joint_count):
-                if joints[joint_idx] is not None:
-                    location_flags = joints[joint_idx].locationFlags
+            def update_joint_visual(joint, idx):
+                joint_transform = joint.pose_matrix
+                if joint.validity_flags & XRPoseValidityFlags.POSITION_VALID:
+                    world_position = joint_transform.ExtractTranslation()
+                    current_positions[idx] = Gf.Vec3f(world_position[0], world_position[1], world_position[2])
 
-                    if (
-                        location_flags & OpenXRSpec.XR_SPACE_LOCATION_POSITION_VALID_BIT
-                        and location_flags & OpenXRSpec.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT
-                    ):
-                        joint_pos = joints[joint_idx].pose.position
-                        joint_quat = joints[joint_idx].pose.orientation
-                        current_positions[joint_idx] = Gf.Vec3f(joint_pos.x, joint_pos.y, joint_pos.z)
-                        current_orientations[joint_idx] = Gf.Quath(
-                            joint_quat.w, joint_quat.x, joint_quat.y, joint_quat.z
-                        )
-                        proto_indices[joint_idx] = 0
-                    else:
-                        proto_indices[joint_idx] = 1
-                else:
-                    proto_indices[joint_idx] = 1
+                if joint.validity_flags & XRPoseValidityFlags.ORIENTATION_VALID:
+                    world_orientation = joint_transform.ExtractRotationQuat()
+                    current_orientations[idx] = Gf.Quath(
+                        world_orientation.GetReal(),
+                        world_orientation.GetImaginary()[0],
+                        world_orientation.GetImaginary()[1],
+                        world_orientation.GetImaginary()[2],
+                    )
+
+                proto_indices[idx] = 0
+
+            # Update left hand joints
+            for joint_idx, joint_name in enumerate(XR_INPUT_DEVICE_HAND_TRACKING_POSE_NAMES):
+                if joint_name in left_joints:
+                    update_joint_visual(left_joints[joint_name], joint_idx)
+
+            # Update right hand joints
+            for joint_idx, joint_name in enumerate(XR_INPUT_DEVICE_HAND_TRACKING_POSE_NAMES):
+                if joint_name in right_joints:
+                    update_joint_visual(right_joints[joint_name], joint_idx + hand_joint_count)
 
             # Get head device
-            head_device = XRCore.get_singleton().get_input_device("displayDevice")
+            head_device = XRCore.get_singleton().get_input_device("/user/head")
 
             if head_device:
                 hmd = head_device.get_virtual_world_pose("")

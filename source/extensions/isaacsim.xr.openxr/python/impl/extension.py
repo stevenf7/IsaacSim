@@ -17,6 +17,10 @@ from .. import _openxr
 # expose pybind interface/API
 _openxr_interface = None
 
+carb.log_warn(
+    "isaac.xr.openxr has been deprecated in favor of omni.kit.xr handtracking. Please update your code accordingly."
+)
+
 
 def acquire_openxr_interface():
     return _openxr_interface
