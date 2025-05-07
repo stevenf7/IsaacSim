@@ -36,6 +36,7 @@ namespace isaacsim::xr::openxr
 
 /**
  * @brief Interface for OpenXR hand tracking functionality
+ * @deprecated This extension is deprecated and will be removed in a future release. Use KitXR Hand Tracking instead.
  * @details Provides access to OpenXR hand tracking features, allowing applications
  *          to retrieve hand joint locations for VR/AR applications
  */

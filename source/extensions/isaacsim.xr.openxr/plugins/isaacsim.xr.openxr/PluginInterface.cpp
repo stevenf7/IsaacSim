@@ -260,7 +260,7 @@ protected:
     }
 
     // Check for tracked locations every frame
-    virtual void updateTracking(const omni::kit::xr::openxr::UpdateTrackingFrameData_v1& frameData) override
+    virtual void updateTracking(const omni::kit::xr::openxr::UpdateTrackingFrameData_v2& frameData) override
     {
         CARB_PROFILE_ZONE(carb::profiler::kCaptureMaskDefault, "HandTrackingExtension::updateTracking");
         if (!m_supportsHandTracking)
@@ -304,7 +304,7 @@ protected:
     PFN_xrDestroyHandTrackerEXT m_xrDestroyHandTrackerEXT = nullptr;
 
     bool m_supportsHandTracking = false;
-    omni::kit::xr::openxr::UpdateTrackingFrameData_v1 m_lastFrameData = {};
+    omni::kit::xr::openxr::UpdateTrackingFrameData_v2 m_lastFrameData = {};
 };
 
 class OpenxrImpl : public IOpenxr
@@ -407,8 +407,8 @@ CARB_EXPORT void carbOnPluginShutdown()
     delete g_openxrImpl;
 }
 
-const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.xr.openxr.plugin", "OpenXR interface", "NVIDIA",
-                                                    carb::PluginHotReload::eEnabled, "dev" };
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.xr.openxr.plugin", "OpenXR interface (DEPRECATED)",
+                                                    "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
 
 CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::xr::openxr::OpenxrImpl)
 
