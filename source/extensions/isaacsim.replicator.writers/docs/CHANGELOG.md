@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.8] - 2025-05-07
+### Changed
+- PoseWriter test: quaternion comparison both positive and negative quaternions
+- PoseWriter test: added float comparison tolerance atol
+- PoseWriter test: change the json golden output to store the new replicator rotation (negative of the previous one)
+
 ## [1.0.7] - 2025-04-11
 ### Fixed
 - Fixed PoseWriter size output from AABB to Oriented Bounding Box

@@ -35,9 +35,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        await omni.kit.app.get_app().next_update_async()
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
 
     async def test_sdg_snippet_multi_camera(self):
         import os

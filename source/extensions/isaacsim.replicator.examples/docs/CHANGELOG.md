@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.1.12] - 2025-05-07
+### Changed
+- Changed custom fps example to use duration in seconds as input
+- Increased the number of app updates in setUp and tearDown
+
 ## [1.1.11] - 2025-04-30
 ### Changed
 - Update event subscriptions to Event 2.0 system

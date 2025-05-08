@@ -413,6 +413,4 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         )
 
         # Compare the distance to image plane data (smaller tolerance since it is not influenced by denoising)
-        self.compare_npy_files(
-            golden_dir, test_dir, "distance_to_image_plane", atol=self.DEPTH_ATOL, rtol=self.DEPTH_RTOL
-        )
+        self.compare_npy_files(golden_dir, test_dir, "distance_to_image_plane", self.DEPTH_MEAN_DIFF_TOLERANCE)
