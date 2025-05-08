@@ -1,5 +1,11 @@
 # Changelog
-##[1.0.2] - 2025-05-06
+
+## [1.1.0] - 2025-05-08
+### Changed
+- Switched to Events 2.0 subscriptions
+- Disabled USD update listener when global visibility is off
+
+## [1.0.2] - 2025-05-06
 ### Changed
 - Fix error when populating initial icons when saving a stage
 ### Added

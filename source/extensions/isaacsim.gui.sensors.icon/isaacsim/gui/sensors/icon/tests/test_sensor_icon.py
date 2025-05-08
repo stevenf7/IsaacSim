@@ -192,6 +192,35 @@ class TestSensorIcon(OmniUiTest):
         self.assertEqual(model.get_icon_url(prim_path_sdf), "")
         self.assertIsNone(model.get_item(prim_path_str))
 
+    async def test_sensoricon_usd_listening(self):
+        """Tests USD listening and icon visibility."""
+        create_test_object()
+        self._settings.set(SHOW_TITLE_PATH, True)
+        await ui_test.human_delay()
+        await ui_test.wait_n_updates(30)
+        icon_path_str = str(TEST_DATA_PATH_ICON.absolute().joinpath("icoSensors.svg"))
+        prim_path_str = TEST_OBJECT_PRIM_PATH
+        prim_path_sdf = Sdf.Path(TEST_OBJECT_PRIM_PATH)
+
+        model = self._icon_scene.get_model()
+
+        # add sensor icon
+        self._icon_scene.add_sensor_icon(prim_path_str, icon_path_str)
+        await ui_test.wait_n_updates(30)
+        self.assertEqual(model.get_icon_url(prim_path_str), icon_path_str)
+        self.assertTrue(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
+        settings = carb.settings.get_settings()
+        # Globally turn off icon visibility
+        settings.set("/persistent/app/viewport/sensor_icon/visible", False)
+        await ui_test.wait_n_updates(30)
+        self.assertFalse(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
+        # Ensure USD Listening is off
+        self.assertFalse(model._usd_listening_active)
+        # Turn on USD listening
+        settings.set("/persistent/app/viewport/sensor_icon/visible", True)
+        await ui_test.wait_n_updates(30)
+        self.assertTrue(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
+
 
 def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="Generic", attrs=None):
     kwargs = {"prim_type": prim_type, "prim_path": prim_path}
