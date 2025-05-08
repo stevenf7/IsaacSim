@@ -262,6 +262,7 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
         # self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.z, self.ang_vel_cmd[2], delta=0.2)
 
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
         # Test2A: Check X odometry:
         ##############################
