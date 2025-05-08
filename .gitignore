@@ -80,6 +80,9 @@ CON
 !docs/images/**
 !source/extensions/**/data/**
 
+#ignore the standalone_examples_list.rst file
+docs/source/standalone_examples_list.rst
+
 # ignore the cache
 data/cache
 

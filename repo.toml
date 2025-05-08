@@ -1471,3 +1471,13 @@ exclude_dirs = [
   ".vscode",
   ".nvidia-omniverse",
 ]
+
+########################################################################################################################
+# Examples List Generator
+########################################################################################################################
+
+[repo_examples_list]
+# Path to the examples directory (relative to workspace root or absolute)
+examples_dir = "${root}/source/standalone_examples"
+# Output RST file path (relative to workspace root or absolute)
+output_file = "${root}/docs/source/standalone_examples_list.rst"
