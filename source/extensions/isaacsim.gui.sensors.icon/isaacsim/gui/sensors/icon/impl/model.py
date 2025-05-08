@@ -38,6 +38,7 @@ class IconModel(sc.AbstractManipulatorModel):
 
     def __init__(self):
         super().__init__()
+        self._usd_listening_active = True
         self._sensor_icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         self._sensor_icon_path = str(Path(self._sensor_icon_dir).joinpath("icons/icoSensors.svg"))
         self._usd_context = omni.usd.get_context()
@@ -45,7 +46,21 @@ class IconModel(sc.AbstractManipulatorModel):
         self._world_unit = 0.1
         self._icons = {}
         self._usd_listener = None
-        self._stage_sub = self._usd_context.get_stage_event_stream().create_subscription_to_pop(self._on_stage)
+
+        bus = carb.eventdispatcher.get_eventdispatcher()
+
+        self._stage_open_sub = bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+            on_event=self._on_stage_opened,
+            observer_name="IconModel._on_stage_opened",
+        )
+
+        self._stage_close_sub = bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.CLOSED),
+            on_event=self._on_stage_closed,
+            observer_name="IconModel._on_stage_closed",
+        )
+
         self._connect_to_stage()
 
     def _connect_to_stage(self):
@@ -62,10 +77,24 @@ class IconModel(sc.AbstractManipulatorModel):
 
             if self._world_unit == 0.0:
                 self._world_unit = 0.1
-            self._usd_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, stage)
-            self._populate_initial_icons()
+
+            if self._usd_listening_active:
+                self._usd_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, stage)
+                self._populate_initial_icons()
+            else:
+                if self._usd_listener:
+                    self._usd_listener.Revoke()
+                    self._usd_listener = None
+
+                # populate icons with hidden state
+                self._populate_initial_icons()
+                for item in self._icons.values():
+                    item.visible = False
+                self._item_changed(None)
         else:
             self._usdrt_stage = None
+            if self._usd_listener:
+                self._usd_listener.Revoke()
             self._usd_listener = None
             self.clear()
 
@@ -88,7 +117,6 @@ class IconModel(sc.AbstractManipulatorModel):
                 carb.log_warn(f"Failed querying usdrt for type {sensor_type_str}: {e}")
 
         for prim_path_obj in all_sensor_paths:
-            # Convert to string first in case paths are loaded from saved stage
             prim_path = Sdf.Path(str(prim_path_obj))
             prim = stage.GetPrimAtPath(prim_path)
             if not prim:
@@ -104,30 +132,38 @@ class IconModel(sc.AbstractManipulatorModel):
                 carb.log_warn(f"[Warning] Failed to compute visibility/activation for {prim_path}: {e}")
 
             item = IconModel.IconItem(prim_path, self._sensor_icon_path)
-            item.visible = should_be_visible
+            item.visible = should_be_visible if self._usd_listening_active else False
             self._icons[prim_path] = item
 
         self._item_changed(None)
 
-    def _on_stage(self, stage_event):
-        if stage_event.type == int(omni.usd.StageEventType.OPENED):
+    def _on_stage_opened(self, event):
+        # Revoke existing listener before reconnecting
+        if self._usd_listener:
+            self._usd_listener.Revoke()
             self._usd_listener = None
-            self._connect_to_stage()
-        elif stage_event.type == int(omni.usd.StageEventType.CLOSED):
-            self.clear()
-            self._usdrt_stage = None
+        self._connect_to_stage()
+
+    def _on_stage_closed(self, event):
+        self.clear()
+        self._usdrt_stage = None
+        if self._usd_listener:
+            self._usd_listener.Revoke()
             self._usd_listener = None
 
     def get_world_unit(self):
         return max(self._world_unit, 0.1)
 
     def __del__(self):
-        self._stage_sub = None
+        self._stage_open_sub = None
+        self._stage_close_sub = None
         self._usd_listener = None
         self.destroy()
 
     def destroy(self):
         self._icons = {}
+        if self._usd_listener:
+            self._usd_listener.Revoke()
         self._usd_listener = None
 
     def get_item(self, identifier):
@@ -172,10 +208,12 @@ class IconModel(sc.AbstractManipulatorModel):
 
     @Trace.TraceFunction
     def _on_usd_changed(self, notice, stage):
+        if not self._usd_listening_active:
+            return
+
         if not self._usdrt_stage and not stage:
             return
 
-        # check UsdGeom.Tokens is accessible
         try:
             _ = UsdGeom.Tokens.invisible
         except AttributeError:
@@ -199,7 +237,6 @@ class IconModel(sc.AbstractManipulatorModel):
                     pass
         else:
             # Fallback to USD stage query if usdrt fails or is unavailable
-            # carb.log_warn("USDrt stage unavailable, falling back to Usd.Stage query for sensors.")
             for prim in Usd.PrimRange.AllPrims(stage.GetPseudoRoot()):
                 prim_type = str(prim.GetTypeName())
                 if prim_type in self.SENSOR_TYPES:
@@ -390,7 +427,7 @@ class IconModel(sc.AbstractManipulatorModel):
             else:
                 should_be_visible = False  # No stage? Hide.
 
-            item.visible = should_be_visible
+            item.visible = should_be_visible and self._usd_listening_active
             self._icons[prim_path] = item
             self._item_changed(item)
 
@@ -415,8 +452,9 @@ class IconModel(sc.AbstractManipulatorModel):
             prim_path = Sdf.Path(prim_path)
         item = self._icons.get(prim_path)
         if item:
-            item.visible = True
-            self._item_changed(item)
+            if self._usd_listening_active:
+                item.visible = True
+                self._item_changed(item)
 
     def hide_sensor_icon(self, prim_path):
         if not isinstance(prim_path, Sdf.Path):
@@ -427,21 +465,33 @@ class IconModel(sc.AbstractManipulatorModel):
             self._item_changed(item)
 
     def show_all(self):
-        items_changed = []
-        for prim_path, item in self._icons.items():
-            if not item.visible:
-                item.visible = True
-                items_changed.append(item)
-        if items_changed:
-            for item in items_changed:
-                self._item_changed(item)
+        # Activate USD listening
+        self._usd_listening_active = True
+
+        # Re-register the USD listener if needed
+        stage = self._usd_context.get_stage()
+        if stage and not self._usd_listener:
+            self._usd_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, stage)
+
+        # Refresh all icons from the current USD state
+        self._populate_initial_icons()
 
     def hide_all(self):
+        # Deactivate USD listening
+        self._usd_listening_active = False
+
+        # Revoke USD listener
+        if self._usd_listener:
+            self._usd_listener.Revoke()
+            self._usd_listener = None
+
+        # Hide existing icons
         items_changed = []
         for prim_path, item in self._icons.items():
             if item.visible:
                 item.visible = False
                 items_changed.append(item)
+
         if items_changed:
             for item in items_changed:
                 self._item_changed(item)
