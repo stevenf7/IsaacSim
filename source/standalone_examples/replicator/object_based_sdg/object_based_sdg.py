@@ -112,7 +112,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 import usdrt
-from isaacsim.core.utils.semantics import add_labels, remove_labels
+from isaacsim.core.utils.semantics import add_labels, remove_labels, upgrade_prim_semantics_to_labels
 from isaacsim.storage.native import get_assets_root_path
 from omni.physx import get_physx_interface, get_physx_scene_query_interface
 from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
@@ -130,6 +130,8 @@ if env_url:
     stage = omni.usd.get_context().get_stage()
     # Remove any previous semantics in the loaded stage
     for prim in stage.Traverse():
+        # Make sure old semantics api are upgraded to the new labels api
+        upgrade_prim_semantics_to_labels(prim, include_descendants=True)
         remove_labels(prim, include_descendants=True)
 else:
     omni.usd.get_context().new_stage()
@@ -247,6 +249,7 @@ for i in range(mesh_distactors_num):
         falling_mesh_distractors.append(prim)
     mesh_distractors.append(prim)
     # Remove any previous semantics on the mesh distractor
+    upgrade_prim_semantics_to_labels(prim, include_descendants=True)
     remove_labels(prim, include_descendants=True)
 
 # REPLICATOR
