@@ -70,7 +70,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
         self.add_cube("/cube_1", 1.00, (1.00, 0, 0))
         self.add_cube("/cube_2", 1.00, (1.00, 2.00, 0))
         self.add_cube("/cube_3", 1.00, (-1.50, -1.50, 0))
-        self._physx = omni.physx.acquire_physx_interface()
+        self._physx = omni.physx.get_physx_interface()
         await omni.kit.app.get_app().next_update_async()
         generator = _omap.Generator(self._physx, context.get_stage_id())
         generator.update_settings(0.05, 4, 5, 6)
@@ -150,7 +150,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
         self.add_cube("/cube_1", 1.00, (1.00, 0, 0))
         self.add_cube("/cube_2", 1.00, (1.00, 2.00, 0))
         self.add_cube("/cube_3", 1.00, (-1.50, -1.50, 0))
-        self._physx = omni.physx.acquire_physx_interface()
+        self._physx = omni.physx.get_physx_interface()
 
         await omni.kit.app.get_app().next_update_async()
         UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))

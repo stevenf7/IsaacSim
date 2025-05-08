@@ -6,7 +6,7 @@
 
 
 [package]
-version = "0.4.1"
+version = "0.4.2"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -18,7 +18,8 @@ icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.core.utils" = {}
-"omni.physx.stageupdate" = {}
+"omni.physics.physx" = {}
+"omni.physics.stageupdate" = {}
 "omni.physx.tensors" = {}
 
 [[python.module]]

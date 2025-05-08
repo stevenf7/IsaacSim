@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.20] - 2025-05-07
+### Changed
+- switch to omni.physics interface
+
 ## [2.0.19] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

@@ -29,7 +29,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._physx_interface = omni.physx.acquire_physx_interface()
+        self._physx_interface = omni.physx.get_physx_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()

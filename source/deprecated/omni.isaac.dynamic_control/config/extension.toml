@@ -1,5 +1,5 @@
 [package]
-version = "2.0.1"
+version = "2.0.2"
 category = "Simulation"
 title = "Isaac Sim Dynamic Control"
 description = "The Dynamic Control extension provides a set of utilities to control physics objects. It provides opaque handles for different physics objects that remain valid between PhysX scene resets, which occur whenever play or stop is pressed."
@@ -20,8 +20,8 @@ warning = "Extension deprecated since Isaac Sim 4.5.0."
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.kit.usd.layers" = {}
-"omni.physx" = {}
-"omni.physx.stageupdate" = {}
+"omni.physics.physx" = {}
+"omni.physics.stageupdate" = {}
 "omni.timeline" = {} # Needed for simulation to occur
 "omni.usd" = {}
 "omni.usd.core" = {}

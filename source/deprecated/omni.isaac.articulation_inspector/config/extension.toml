@@ -1,5 +1,5 @@
 [package]
-version = "0.1.14"
+version = "0.1.15"
 category = "Simulation"
 title = "Articulation Inspector"
 description = "This extension can inspect and modify the properties of an articulation."

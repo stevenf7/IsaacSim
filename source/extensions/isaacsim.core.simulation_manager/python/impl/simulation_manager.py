@@ -35,7 +35,7 @@ class SimulationManager:
     _timeline = omni.timeline.get_timeline_interface()
     _message_bus = carb.eventdispatcher.get_eventdispatcher()
     _physx_sim_interface = omni.physx.get_physx_simulation_interface()
-    _physx_interface = omni.physx.acquire_physx_interface()
+    _physx_interface = omni.physx.get_physx_interface()
     _physics_sim_view = None
     _physics_sim_view__warp = None
     _post_warm_start_callback = None

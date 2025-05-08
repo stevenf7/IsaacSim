@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.11] - 2025-05-07
+### Changed
+- switch to omni.physics interface
+
 ## [1.0.10] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

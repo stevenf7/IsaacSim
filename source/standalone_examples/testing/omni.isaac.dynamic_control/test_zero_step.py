@@ -20,7 +20,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 stage = simulation_app.context.get_stage()
 sim_context = SimulationContext(stage_units_in_meters=1.0)
 
-physx_interface = omni.physx.acquire_physx_interface()
+physx_interface = omni.physx.get_physx_interface()
 physx_interface.start_simulation()
 physx_interface.force_load_physics_from_usd()
 assets_root_path = get_assets_root_path()
@@ -32,7 +32,7 @@ prim = stage.DefinePrim("/panda", "Xform")
 prim.GetReferences().AddReference(asset_path)
 physx_interface.force_load_physics_from_usd()
 sim_context._timeline.play()
-omni.physx.acquire_physx_interface().update_simulation(elapsedStep=0, currentTime=0)
+omni.physx.get_physx_interface().update_simulation(elapsedStep=0, currentTime=0)
 dc = _dynamic_control.acquire_dynamic_control_interface()
 # Get the handle to force it to refresh, this should not crash.
 art = dc.get_articulation("/panda")

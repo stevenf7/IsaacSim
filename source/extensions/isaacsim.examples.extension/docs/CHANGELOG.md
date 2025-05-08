@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.10] - 2025-05-07
+### Changed
+- switch to omni.physics interface
+
 ## [2.0.9] - 2025-04-09
 ### Changed
 - Update Isaac Sim robot asset path
