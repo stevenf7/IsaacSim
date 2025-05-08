@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.8.1] - 2025-05-08
+### Changed
+- Moved main app loop frametime callback to preUpdate event for increased consistency
+
 ## [2.8.0] - 2025-04-28
 ### Changed
 - GPU frametime collection is off by default, enabled by config in base_isaac_benchmark

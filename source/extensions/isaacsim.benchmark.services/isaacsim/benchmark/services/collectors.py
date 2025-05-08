@@ -113,7 +113,7 @@ class IsaacUpdateFrametimeCollector:
         self.__last_render_frametime_timestamp_ns = time.perf_counter_ns()
 
         self.__subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
-            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            event_name=omni.kit.app.GLOBAL_EVENT_PRE_UPDATE,
             on_event=self.__update_event_callback,
             observer_name="IsaacUpdateFrametimeCollector.__update_event_callback",
         )
