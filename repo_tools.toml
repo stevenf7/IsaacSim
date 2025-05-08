@@ -173,3 +173,11 @@ entry_point = "${config_root}/tools/isaac/check_extension_structure.py:setup_rep
 [format_lua]
 command = "format_lua"
 entry_point = "${config_root}/tools/isaac/format_lua.py:setup_repo_tool"
+
+########################################################################################################################
+# Generate Examples List
+########################################################################################################################
+
+[examples_list]
+command = "examples_list"
+entry_point = "${config_root}/tools/docs/generate_examples_list.py:setup_repo_tool"

@@ -188,3 +188,9 @@ Isaac Sim: Extensions API
 
    source/deprecated/omni.isaac.dynamic_control/docs/index
    source/extensions/omni.kit.loop-isaac/docs/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Standalone Examples
+
+   docs/source/standalone_examples_list
