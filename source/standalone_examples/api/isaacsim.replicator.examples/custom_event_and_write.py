@@ -14,16 +14,32 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 
 import os
 
+import carb
 import omni.replicator.core as rep
 import omni.usd
+import usdrt
+
+
+def is_fsd_enabled():
+    return carb.settings.get_settings().get_as_bool("/app/useFabricSceneDelegate")
+
 
 omni.usd.get_context().new_stage()
 distance_light = rep.create.light(rotation=(315, 0, 0), intensity=4000, light_type="distant")
 
 large_cube = rep.create.cube(scale=1.25, position=(1, 1, 0))
 small_cube = rep.create.cube(scale=0.75, position=(-1, -1, 0))
-large_cube_prim = large_cube.get_output_prims()["prims"][0]
-small_cube_prim = small_cube.get_output_prims()["prims"][0]
+large_cube_prim_path = large_cube.get_output("prims")[0]
+small_cube_prim_path = small_cube.get_output("prims")[0]
+
+if is_fsd_enabled():
+    usdrt_stage = usdrt.Usd.Stage.Attach(omni.usd.get_context().get_stage_id())
+    large_cube_prim = usdrt_stage.GetPrimAtPath(str(large_cube_prim_path), False)
+    small_cube_prim = usdrt_stage.GetPrimAtPath(str(small_cube_prim_path), False)
+else:
+    usd_stage = omni.usd.get_context().get_stage()
+    large_cube_prim = usd_stage.GetPrimAtPath(str(large_cube_prim_path))
+    small_cube_prim = usd_stage.GetPrimAtPath(str(small_cube_prim_path))
 
 rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
 writer = rep.WriterRegistry.get("BasicWriter")
