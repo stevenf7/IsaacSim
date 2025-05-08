@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.15] - 2025-05-07
+### Changed
+- switch to omni.physics interface
+
 ## [2.2.14] - 2025-05-02
 ### Changed
 - Remove all Dynamic control compile time dependencies

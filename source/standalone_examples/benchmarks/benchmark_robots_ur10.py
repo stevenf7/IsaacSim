@@ -167,7 +167,7 @@ robot_view.initialize()
 omni.kit.app.get_app().update()
 
 position_commands, velocity_commands = get_joint_commands(robot_view, v_max, T, joint_indices)
-_physxIFace = _physx.acquire_physx_interface()
+_physxIFace = _physx.get_physx_interface()
 physx_subscription = _physxIFace.subscribe_physics_step_events(
     partial(on_physics_step, robot_view, position_commands, velocity_commands)
 )

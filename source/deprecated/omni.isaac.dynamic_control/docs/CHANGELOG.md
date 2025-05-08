@@ -1,4 +1,7 @@
 # Changelog
+## [2.0.2] - 2025-05-07
+### Changed
+- switch to omni.physics interface
 
 ## [2.0.1] - 2025-05-03
 ### Fixed

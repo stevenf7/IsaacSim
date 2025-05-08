@@ -74,7 +74,7 @@ class PhysicsContext(object):
                 self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
             else:
                 self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(current_physics_prim)
-        self._physx_interface = omni.physx.acquire_physx_interface()
+        self._physx_interface = omni.physx.get_physx_interface()
         self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._device = SimulationManager.get_physics_sim_device()

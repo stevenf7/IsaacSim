@@ -320,7 +320,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
     async def test_physics_no_render(self):
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
-        self._physx_interface = omni.physx.acquire_physx_interface()
+        self._physx_interface = omni.physx.get_physx_interface()
         self._physx_interface.start_simulation()
         self._physx_interface.force_load_physics_from_usd()
         prim = self._stage.DefinePrim("/panda", "Xform")
@@ -332,7 +332,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         # do a zero time step, should not crash
         self._timeline.play()
-        omni.physx.acquire_physx_interface().update_simulation(elapsedStep=0, currentTime=0)
+        omni.physx.get_physx_interface().update_simulation(elapsedStep=0, currentTime=0)
         self._timeline.stop()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

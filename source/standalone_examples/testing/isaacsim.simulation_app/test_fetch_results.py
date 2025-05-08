@@ -30,7 +30,7 @@ def test_callback(step):
 
 
 print("Start test")
-physx_interface = omni.physx.acquire_physx_interface()
+physx_interface = omni.physx.get_physx_interface()
 physx_sim_interface = omni.physx.get_physx_simulation_interface()
 # Commenting out the following line will prevent the deadlock
 physics_timer_callback = physx_interface.subscribe_physics_step_events(test_callback)

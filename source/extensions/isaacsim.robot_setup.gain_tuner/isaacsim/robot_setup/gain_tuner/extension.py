@@ -78,7 +78,7 @@ class Extension(omni.ext.IExt):
 
         # Events
         self._usd_context = omni.usd.get_context()
-        self._physxIFace = _physx.acquire_physx_interface()
+        self._physxIFace = _physx.get_physx_interface()
         self._physx_subscription = None
         self._event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
         # self._update_stream = omni.kit.app.get_app().get_update_event_stream()

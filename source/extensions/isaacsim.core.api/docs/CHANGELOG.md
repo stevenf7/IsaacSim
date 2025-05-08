@@ -1,4 +1,7 @@
 # Changelog
+## [4.3.5] - 2025-05-07
+### Changed
+- switch to omni.physics interface
 
 ## [4.3.4] - 2025-05-04
 ### Changed

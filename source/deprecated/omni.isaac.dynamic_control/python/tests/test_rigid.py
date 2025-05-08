@@ -197,7 +197,7 @@ class TestRigidBody(omni.kit.test.AsyncTestCase):
         self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
         self._physics_scene.CreateGravityMagnitudeAttr().Set(0.0)
         await dc_utils.add_cube(self._stage, "/cube", 1.00, (0, 0, 1.00))
-        self._physx_interface = omni.physx.acquire_physx_interface()
+        self._physx_interface = omni.physx.get_physx_interface()
         self._physx_interface.start_simulation()
         self._physx_interface.force_load_physics_from_usd()
         handle = self._dc.get_rigid_body("/cube")

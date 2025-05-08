@@ -60,7 +60,7 @@ Example:
     >>> import omni
     >>> from isaacsim.asset.gen.omap import _omap
     >>> 
-    >>> physx = omni.physx.acquire_physx_interface()
+    >>> physx = omni.physx.get_physx_interface()
     >>> stage_id = omni.usd.get_context().get_stage_id()
     >>> 
     >>> generator = _omap.Generator(physx, stage_id)
@@ -92,7 +92,7 @@ Example:
     >>> import omni
     >>> from isaacsim.asset.gen.omap import _omap
     >>> 
-    >>> physx = omni.physx.acquire_physx_interface()
+    >>> physx = omni.physx.get_physx_interface()
     >>> stage_id = omni.usd.get_context().get_stage_id()
     >>> 
     >>> generator = _omap.Generator(physx, stage_id)

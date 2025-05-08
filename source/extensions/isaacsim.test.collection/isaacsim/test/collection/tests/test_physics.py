@@ -71,7 +71,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         # def physics_update(dt):
         #     print("physics update step:", dt, "seconds")
 
-        # physics_sub = omni.physx.acquire_physx_interface().subscribe_physics_step_events(physics_update)
+        # physics_sub = omni.physx.get_physx_interface().subscribe_physics_step_events(physics_update)
 
         # add scene
         self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))

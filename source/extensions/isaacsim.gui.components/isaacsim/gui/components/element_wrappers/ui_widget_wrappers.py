@@ -963,7 +963,7 @@ class StateButton(UIWidgetWrapper):
 
         self._physics_callback_fn = physics_callback_fn
         self._physx_subscription = None
-        self._physxIFace = _physx.acquire_physx_interface()
+        self._physxIFace = _physx.get_physx_interface()
 
         state_btn_frame = self._creat_ui_widget(label, a_text, b_text, tooltip)
 

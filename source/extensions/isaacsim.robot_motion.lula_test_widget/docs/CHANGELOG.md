@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.9] - 2025-05-07
+### Changed
+- switch to omni.physics interface
+
 ## [1.0.8] - 2025-04-21
 ### Changed
 - Remove hardcoded RmpFlow config path

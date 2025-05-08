@@ -1,5 +1,5 @@
 [package]
-version = "4.3.4"
+version = "4.3.5"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
@@ -24,7 +24,8 @@ writeTarget.kit = true
 "omni.kit.material.library" = {optional = true} # OmniGlass
 "omni.kit.stage_templates" = {}
 "omni.kit.usd.layers" = {}
-"omni.physx.stageupdate" = {}
+"omni.physics.physx" = {}
+"omni.physics.stageupdate" = {}
 "omni.physx.tensors" = {}
 "omni.pip.cloud" = {}
 "omni.pip.compute" = {} # scipy

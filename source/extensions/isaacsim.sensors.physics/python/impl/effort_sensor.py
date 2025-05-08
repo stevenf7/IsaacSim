@@ -55,7 +55,7 @@ class EffortSensor(SingleArticulation):
         return
 
     def initialize_callbacks(self) -> None:
-        self._acquisition_callback = omni.physx.acquire_physx_interface().subscribe_physics_step_events(
+        self._acquisition_callback = omni.physx.get_physx_interface().subscribe_physics_step_events(
             self._data_acquisition_callback
         )
         self._stage_open_callback = (
