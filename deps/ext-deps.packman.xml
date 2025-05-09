@@ -4,4 +4,8 @@
     <package name="openxr" version="1.1.37-3-loader-windows" platforms="windows-x86_64" />
     <package name="openxr" version="1.1.37-2-source" platforms="manylinux_2_35_x86_64" />
   </dependency>
+
+  <dependency name="omniverse_asset_converter" linkPath="../_build/target-deps/omniverse_asset_converter">
+    <package name="omniverse_asset_converter" version="3.2.2+release.1853.b7b41faa.gl.${platform_target}.release" platforms="${platform}" />
+  </dependency>
 </project>
