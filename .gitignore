@@ -151,3 +151,4 @@ Temp_Config*.json
 # Ignore packman verification results
 packman_verification_results.json
 packman_full_results.json
+packman_full_results.csv
