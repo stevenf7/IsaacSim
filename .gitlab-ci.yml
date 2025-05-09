@@ -1759,6 +1759,7 @@ publish-to-packman:
     paths:
       - packman_verification_results.json
       - packman_full_results.json
+      - packman_full_results.csv
     expire_in: 1 week
 
 check_externals_linux:
@@ -1770,6 +1771,7 @@ check_externals_linux:
     - ./tools/packman/python.sh tools/check_externals/check_externals.py
 
 check_externals_windows:
+  timeout: 25 minutes
   extends:
     - .check_externals_base
     - .runner-utility-windows-x86_64

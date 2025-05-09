@@ -262,8 +262,34 @@ with open("packman_verification_results.json", "w") as f:
 with open("packman_full_results.json", "w") as f:
     json.dump(full_package_listing, f, indent=2)
 
+# Write CSV output
+with open("packman_full_results.csv", "w") as f:
+    f.write("Package Name,Version,License Files,License Type\n")
+    for file in full_package_listing:
+        for package in full_package_listing[file]:
+            name = package["name"]
+            version = package["version"]
+
+            # Handle license file info
+            license_info = package.get("license_file")
+            if not license_info:
+                license_files = ""
+                license_type = ""
+            elif isinstance(license_info, list):
+                license_files = ";".join(license_info)
+                license_type = ""
+            elif isinstance(license_info, dict):
+                license_files = license_info["location"]
+                license_type = license_info.get("type", "")
+            else:
+                license_files = str(license_info)
+                license_type = ""
+
+            f.write(f"{name},{version},{license_files},{license_type}\n")
+
 print("\nDetailed results written to packman_verification_results.json")
 print("Full package listing written to packman_full_results.json")
+print("CSV summary written to packman_full_results.csv")
 
 # If we have anything in here then we failed verification
 exit(total_issues)
