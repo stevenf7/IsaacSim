@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.13] - 2025-05-09
+### Added
+- Added data augmentation example test with golden data comparison
+
 ## [1.1.12] - 2025-05-07
 ### Changed
 - Changed custom fps example to use duration in seconds as input
