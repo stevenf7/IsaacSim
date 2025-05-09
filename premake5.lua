@@ -84,20 +84,12 @@ function setup_isaacsim_folder_links()
         }
     end
 
-    if os.target() == "windows" then
-        repo_build.prebuild_copy {
-            { "source/scripts/omni.isaac.sim.create_junction${shell_ext}", "_build/%{platform}/%{config}" },
-        }
-    end
-
     repo_build.prebuild_copy {
         { "source/scripts/python/shared/*", "_build/%{platform}/%{config}" },
         { "source/scripts/python/%{platform}/*", "_build/%{platform}/%{config}" },
         { "source/scripts/jupyter_kernel", "_build/%{platform}/%{config}/jupyter_kernel" },
         { "source/scripts/run_all_tests${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/run_all_benchmarks${shell_ext}", "_build/%{platform}/%{config}" },
-        { "source/scripts/omni.isaac.sim.post.install${shell_ext}", "_build/%{platform}/%{config}" },
-        { "source/scripts/omni.isaac.sim.post.install.run${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/warmup${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/isaac-sim.docker*${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/clear_caches*${shell_ext}", "_build/%{platform}/%{config}" },

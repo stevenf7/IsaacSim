@@ -534,22 +534,6 @@ omniverse_flow_version_scheme = true
 ziponly = true
 manylinux_platform = "2_35"
 
-# to generate launcher images package
-[repo_package.packages.isaac-sim-pipeline-images-beta]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-strip_package_infos = true
-
-[repo_package.packages.isaac-sim-pipeline-images-rc]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-strip_package_infos = true
-
-[repo_package.packages.isaac-sim-pipeline-images-assets]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-strip_package_infos = true
-
 # to generate docs package for isaac sim
 [repo_package.packages.docs]
 omniverse_flow_version_scheme = true
@@ -1286,31 +1270,6 @@ script = "${config_root}/tools/ci/standalone_report.py"
 
 [repo_kit_pull_extensions]
 precache_exts_enabled = false
-
-########################################################################################################################
-# Omniverse Launcher package publish and deploy tool
-########################################################################################################################
-
-[[repo_deploy_launcher.package_verification]]
-cmd = [""]
-failure_message = "Failed to verify that all extensions are available and installable from the registry. Look for the errors above."
-
-########################################################################################################################
-# Launcher publish and deploy
-########################################################################################################################
-
-[repo_deploy_launcher]
-enabled = true
-git_url = "https://oauth2:${env:GITLAB_AUTH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac_sim-app.git"
-
-[repo_deploy_launcher.slack]
-inline_changelog = false
-jira_server_url = "https://omniverse-jirasw.nvidia.com"
-jira_service_account_api_key = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_API_KEY}"
-jira_service_account_name = "${env:JIRA_AUTOMATION_SERVICE_ACCOUNT_NAME}"
-repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/"
-slack_url = "${env:SLACK_CHANGELOG_PUBLISH_URL}"                                # omni-usd-composer
-write_jira = true
 
 ########################################################################################################################
 # Tool to promote extensions to the public registry pipeline

@@ -1,20 +1,4 @@
 ########################################################################################################################
-# Omniverse Launcher package publish and deploy tool
-########################################################################################################################
-
-[publish_launcher]
-command = "publish_launcher"
-entry_point = "${config_root}/tools/repoman/publish_launcher.py:setup_repo_tool"
-
-########################################################################################################################
-# Omniverse Launcher Images package publish and deploy tool
-########################################################################################################################
-
-[publish_launcher_images]
-command = "publish_launcher_images"
-entry_point = "${config_root}/tools/repoman/publish_launcher_images.py:setup_repo_tool"
-
-########################################################################################################################
 # Isaac Sim internal package publish tool
 ########################################################################################################################
 
