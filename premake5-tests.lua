@@ -267,6 +267,12 @@ function create_tests()
         "standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py"
     )
 
+    -- isaacsim.asset.importer.mjcf
+    python_sample_test(
+        "tests-nativepython-isaacsim.asset.importer.mjcf.mjcf_import",
+        "standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py"
+    )
+
     -- Replicator data samples
     local replicator_tests = {
         {
