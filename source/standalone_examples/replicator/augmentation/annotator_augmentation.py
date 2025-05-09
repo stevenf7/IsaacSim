@@ -71,7 +71,9 @@ def gaussian_noise_depth_wp(
     data_in: wp.array2d(dtype=wp.float32), data_out: wp.array2d(dtype=wp.float32), sigma: float, seed: int
 ):
     i, j = wp.tid()
-    state = wp.rand_init(seed, wp.tid())
+    # Unique ID for random seed per pixel
+    scalar_pixel_id = i * data_in.shape[1] + j
+    state = wp.rand_init(seed, scalar_pixel_id)
     data_out[i, j] = data_in[i, j] + sigma * wp.randn(state)
 
 
