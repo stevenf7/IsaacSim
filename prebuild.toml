@@ -1,4 +1,0 @@
-# # WAR for differences between launcher and regular packages
-# link = [
-#     ["_build/kit_$config/_build/$platform/$config/exts", "_build/kit_$config/_exts"]
-# ]
