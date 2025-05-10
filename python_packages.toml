@@ -103,7 +103,7 @@ inventory.include = [
     # license
     "LICENSE.txt",
     # cache
-    "extsPhysics",
+    # "extsPhysics",
 ]
 
 #=================================================================

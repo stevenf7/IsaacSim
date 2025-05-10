@@ -183,7 +183,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         all_exts["kit_exts"] = list_folders(root_path + "/extscache", hash)
         all_exts["other_exts"] = list_folders(root_path + "/extscache", hash, True)
         all_exts["kit_kernel"] = list_folders(root_path + "/kit/extscore")
-        all_exts["physics"] = list_folders(root_path + "/extsPhysics")
+        # all_exts["physics"] = list_folders(root_path + "/extsPhysics")
 
         url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/main/templates/omni.all.template.extensions.kit?ref_type=heads"
         # url_p1 = "https://gitlab-master.nvidia.com/omniverse/sample-p1-extensions/-/raw/main/source/apps/omni.sample_p1.extensions.kit"

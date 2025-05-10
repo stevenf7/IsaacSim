@@ -61,11 +61,11 @@ def generate_vscode_settings():
     folder_path = os.path.join(kit_path, "kernel", "py")
     if os.path.isdir(folder_path):
         extensions_paths.append(folder_path)
-    for folder in ["exts", "extscore", "extsPhysics"]:
+    for folder in ["exts", "extscore"]:
         extensions_paths.extend(_get_paths(os.path.join(kit_path, folder)))
     # - isaacsim
     isaacsim_path = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-    for folder in ["exts", "extscache", "extsDeprecated", "extsPhysics", "extsUser"]:
+    for folder in ["exts", "extscache", "extsDeprecated", "extsUser"]:
         extensions_paths.extend(_get_paths(os.path.join(isaacsim_path, folder)))
 
     cwd = os.getcwd()
