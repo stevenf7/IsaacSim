@@ -13,12 +13,26 @@ keywords = ["experience", "app", "usd", "isaacsim", "xr"] # That makes it browsa
 "isaacsim.xr.openxr" = {}
 
 [settings]
+app.xr.enabled = true
 app.fastShutdown = true
 app.name = "Isaac-Sim"
 app.version = "5.0.0"
 app.vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
+
+### async rendering settings
+omni.replicator.asyncRendering = true
+app.asyncRendering = true
+app.asyncRenderingLowLatency = true
+
+# For XR, set this back to default "#define OMNI_MAX_DEVICE_GROUP_DEVICE_COUNT 16"
+renderer.multiGpu.maxGpuCount = 16
+renderer.gpuEnumeration.glInterop.enabled = true # Allow Kit XR OpenXR to render headless
+
 xr.ui.enabled = false
 xrstage.profile.ar.anchorMode = "scene origin"
+xr.depth.aov = "GBufferDepth"
+defaults.xr.profile.ar.renderQuality = "off"
+rtx.rendermode = "RaytracedLighting"
 xr.openxr.components."omni.kit.xr.openxr.ext.hand_tracking".enabled = true
 xr.openxr.components."isaacsim.xr.openxr.hand_tracking".enabled = true
 
