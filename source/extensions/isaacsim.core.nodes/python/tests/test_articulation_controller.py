@@ -273,3 +273,65 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
         self.assertAlmostEqual(robot.get_joint_positions()[2], 1.7, delta=0.001)
         self.assertGreater(abs(robot.get_joint_positions()[3] - 1.7), 0.1)
+
+    # ----------------------------------------------------------------------
+    async def test_joint_indices_different_shape(self):
+        (test_graph, new_nodes, _, _) = og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("Joint1Index", "omni.graph.nodes.ConstantInt"),
+                    ("JointIndexArray", "omni.graph.nodes.ConstructArray"),
+                    ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
+                    ("JointCommandArray", "omni.graph.nodes.ConstructArray"),
+                    ("ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("Joint1Index.inputs:value", 2),
+                    ("Joint1Position.inputs:value", 1.7),
+                    ("JointIndexArray.inputs:arraySize", 1),
+                    ("JointCommandArray.inputs:arraySize", 1),
+                    ("ArticulationController.inputs:robotPath", "/panda"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
+                    ("Joint1Index.inputs:value", "JointIndexArray.inputs:input0"),
+                    ("JointIndexArray.outputs:array", "ArticulationController.inputs:jointIndices"),
+                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:input0"),
+                    ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
+                ],
+            },
+        )
+
+        # Initialize robot
+        robot = Robot(prim_path="/panda", name="franka")
+        self._timeline.play()
+        await og.Controller.evaluate(test_graph)
+        await simulate_async(2)
+        robot.initialize()
+
+        # Store initial joint positions
+        initial_position = robot.get_joint_positions()[2]
+
+        # Access nodes directly by their paths
+        articulation_controller_node = "/ActionGraph/ArticulationController"
+        joint1_position_node = "/ActionGraph/Joint1Position"
+
+        # Change the joint position value directly
+        og.Controller.attribute("inputs:value", joint1_position_node).set(0.5)
+
+        # Update the joint indices to have a different shape but same content
+        current_indices = og.Controller.attribute("inputs:jointIndices", articulation_controller_node).get()
+        # Reshape to 1D if it's not already
+        reshaped_indices = current_indices.reshape(-1)
+        og.Controller.attribute("inputs:jointIndices", articulation_controller_node).set(reshaped_indices)
+
+        # Evaluate the graph again with the updated values
+        await og.Controller.evaluate(test_graph)
+        await simulate_async(2)
+
+        new_position = robot.get_joint_positions()[2]
+
+        self.assertNotAlmostEqual(initial_position, new_position, delta=0.01)
+        self.assertAlmostEqual(new_position, 0.5, delta=0.01)

@@ -108,7 +108,7 @@ class OgnIsaacArticulationController:
                 state.joint_picked = False
 
             joint_indices = db.inputs.jointIndices
-            if np.asarray(joint_indices).any() and np.asarray([joint_indices != state.joint_indices]).flatten().any():
+            if np.asarray(joint_indices).any() and not np.array_equal(joint_indices, state.joint_indices):
                 state.joint_indices = np.array(joint_indices)
                 state.joint_picked = False
 
@@ -138,14 +138,3 @@ class OgnIsaacArticulationController:
         if state is not None:
             state.reset()
             state.initialized = False
-
-    @staticmethod
-    def release_instance(node, graph_instance_id):
-        try:
-            state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
-        except Exception:
-            state = None
-            pass
-
-        if state is not None:
-            state.reset()
