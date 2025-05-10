@@ -47,16 +47,17 @@ public:
         auto& state = db.perInstanceState<OgnIsaacReadSimulationTime>();
 
         state.m_resetOnStop = db.inputs.resetOnStop();
-        if (db.inputs.swhFrameNumber() > 0)
+        if (db.inputs.referenceTimeNumerator() > 0 || db.inputs.referenceTimeDenominator() > 0)
         {
             if (state.m_resetOnStop)
             {
-                db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeAtSwhFrame(db.inputs.swhFrameNumber());
+                db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeAtTime(omni::fabric::RationalTime(
+                    db.inputs.referenceTimeNumerator(), db.inputs.referenceTimeDenominator()));
             }
             else
             {
-                db.outputs.simulationTime() =
-                    state.m_coreNodeFramework->getSimTimeMonotonicAtSwhFrame(db.inputs.swhFrameNumber());
+                db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeMonotonicAtTime(
+                    omni::fabric::RationalTime(db.inputs.referenceTimeNumerator(), db.inputs.referenceTimeDenominator()));
             }
         }
         else
@@ -70,6 +71,7 @@ public:
                 db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeMonotonic();
             }
         }
+        db.outputs.execOut() = ExecutionAttributeState::kExecutionAttributeStateEnabled;
         return true;
     }
 

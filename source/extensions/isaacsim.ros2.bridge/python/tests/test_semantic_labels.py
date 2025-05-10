@@ -116,7 +116,8 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "CameraHelper.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "ClockPublisher.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "IsaacClock.inputs:execIn"),
+                        ("IsaacClock.outputs:execOut", "ClockPublisher.inputs:execIn"),
                         ("IsaacClock.outputs:simulationTime", "ClockPublisher.inputs:timeStamp"),
                     ],
                 },

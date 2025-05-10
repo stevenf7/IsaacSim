@@ -45,14 +45,16 @@ public:
     {
         auto& state = db.perInstanceState<OgnIsaacReadSystemTime>();
 
-        if (db.inputs.swhFrameNumber() > 0)
+        if (db.inputs.referenceTimeNumerator() > 0 || db.inputs.referenceTimeDenominator() > 0)
         {
-            db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTimeAtSwhFrame(db.inputs.swhFrameNumber());
+            db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTimeAtTime(
+                omni::fabric::RationalTime(db.inputs.referenceTimeNumerator(), db.inputs.referenceTimeDenominator()));
         }
         else
         {
             db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTime();
         }
+        db.outputs.execOut() = ExecutionAttributeState::kExecutionAttributeStateEnabled;
         return true;
     }
 

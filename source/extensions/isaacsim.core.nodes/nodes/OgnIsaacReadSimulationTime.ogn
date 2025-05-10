@@ -7,19 +7,30 @@
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacCore",
         "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
             "resetOnStop": {
                 "type": "bool",
                 "description": "If True the simulation time will reset when stop is pressed, False means time increases monotonically",
                 "uiName": "Reset On Stop",
                 "default": false
             },
-            "swhFrameNumber": {
+            "referenceTimeNumerator": {
                 "type": "int64",
-                "description": "Optional fabric frame number, leave as zero to get the latest simulation frame time",
-                "default": 0
+                "description": "Reference time represented as a rational number : numerator"
+            },
+            "referenceTimeDenominator": {
+                "type": "uint64",
+                "description": "Reference time represented as a rational number : denominator"
             }
         },
         "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "The output execution port"
+            },
             "simulationTime": {
                 "type": "double",
                 "description": "Current Simulation Time in Seconds",

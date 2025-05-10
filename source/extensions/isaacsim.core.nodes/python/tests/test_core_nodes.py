@@ -42,17 +42,17 @@ class TestCoreNodes(omni.kit.test.AsyncTestCase):
         b = self._core_nodes.get_sim_time_monotonic()
         c = self._core_nodes.get_system_time()
         await omni.kit.app.get_app().next_update_async()
-        a = self._core_nodes.get_sim_time_at_swh_frame(0)
-        b = self._core_nodes.get_sim_time_monotonic_at_swh_frame(0)
-        c = self._core_nodes.get_system_time_at_swh_frame(0)
+        a = self._core_nodes.get_sim_time_at_time(0)
+        b = self._core_nodes.get_sim_time_monotonic_at_time(0)
+        c = self._core_nodes.get_system_time_at_time(0)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         a = self._core_nodes.get_sim_time()
         b = self._core_nodes.get_sim_time_monotonic()
         c = self._core_nodes.get_system_time()
-        a = self._core_nodes.get_sim_time_at_swh_frame(0)
-        b = self._core_nodes.get_sim_time_monotonic_at_swh_frame(0)
-        c = self._core_nodes.get_system_time_at_swh_frame(0)
+        a = self._core_nodes.get_sim_time_at_time(0)
+        b = self._core_nodes.get_sim_time_monotonic_at_time(0)
+        c = self._core_nodes.get_system_time_at_time(0)
 
     # ----------------------------------------------------------------------
     async def test_physics_num_steps(self):

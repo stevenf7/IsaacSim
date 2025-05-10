@@ -113,7 +113,8 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
                 ],
                 keys.SET_VALUES: [("IsaacClock.inputs:resetOnStop", True)],
                 keys.CONNECT: [
-                    ("Impulse.outputs:execOut", "RosPublisher.inputs:execIn"),
+                    ("Impulse.outputs:execOut", "IsaacClock.inputs:execIn"),
+                    ("IsaacClock.outputs:execOut", "RosPublisher.inputs:execIn"),
                     ("IsaacClock.outputs:simulationTime", "RosPublisher.inputs:timeStamp"),
                 ],
             },
@@ -160,12 +161,12 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
             {
                 keys.CREATE_NODES: [
                     ("OnTick", "omni.graph.action.OnTick"),
-                    ("IsaacClock", "isaacsim.core.nodes.IsaacReadTimes"),
+                    ("IsaacClock", "isaacsim.core.nodes.IsaacReadSystemTime"),
                     ("RosPublisher", "isaacsim.ros2.bridge.ROS2PublishClock"),
                 ],
                 keys.CONNECT: [
-                    ("OnTick.outputs:tick", "IsaacClock.inputs:execIn"),
-                    ("IsaacClock.outputs:execOut", "RosPublisher.inputs:execIn"),
+                    ("OnTick.outputs:tick", "IsaacClock.inputs:exec"),
+                    ("IsaacClock.outputs:exec", "RosPublisher.inputs:execIn"),
                     ("IsaacClock.outputs:systemTime", "RosPublisher.inputs:timeStamp"),
                 ],
             },
