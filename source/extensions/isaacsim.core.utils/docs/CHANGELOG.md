@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.2] - 2025-05-09
+### Changed
+- semantics:add_labels now uses functional library from replicator
+
 ## [3.0.1] - 2025-05-03
 ### Changed
 - Make omni.usd.metrics.assembler.physics dependency optional

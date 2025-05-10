@@ -219,39 +219,10 @@ def add_labels(prim: Usd.Prim, labels: list[str], instance_name: str = "class", 
         overwrite (bool, optional): If True (default), existing labels for this instance are replaced.
                                    If False, the new labels are appended to existing ones (if any).
     """
-    api_exists = prim.HasAPI(UsdSemantics.LabelsAPI, instance_name)
+    import omni.replicator.core.functional as F
 
-    if api_exists and not overwrite:
-        # Append mode
-        sem_api = UsdSemantics.LabelsAPI(prim, instance_name)
-        labels_attr = sem_api.GetLabelsAttr()
-        if not labels_attr:
-            labels_attr = sem_api.CreateLabelsAttr()
-            existing_labels_list = []
-        else:
-            existing_labels_raw = labels_attr.Get()
-            existing_labels_list = list(existing_labels_raw) if existing_labels_raw is not None else []
-
-        updated = False
-        for label in labels:
-            if label not in existing_labels_list:
-                existing_labels_list.append(label)
-                updated = True
-
-        if updated:
-            labels_attr.Set(existing_labels_list)
-
-    else:
-        # Overwrite mode or API doesn't exist yet
-        if not api_exists:
-            prim.ApplyAPI(UsdSemantics.LabelsAPI, instance_name)
-
-        sem_api = UsdSemantics.LabelsAPI(prim, instance_name)
-        labels_attr = sem_api.GetLabelsAttr()
-        if not labels_attr:
-            labels_attr = sem_api.CreateLabelsAttr()
-
-        labels_attr.Set(labels)
+    mode = "replace" if overwrite else "add"
+    F.modify.semantics(prim, {instance_name: labels}, mode=mode)
 
 
 def get_labels(prim: Usd.Prim) -> dict[str, list[str]]:
