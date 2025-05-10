@@ -124,11 +124,9 @@ class Extension(omni.ext.IExt):
         folders = [
             "exts",
             "extscache",
-            "extsPhysics",
             os.path.join("kit", "exts"),
             os.path.join("kit", "extscore"),
             os.path.join("kit", "extensions"),
-            os.path.join("kit", "extsPhysics"),
             os.path.join("kit", "kernel", "py"),
         ]
         added_sys_path = []

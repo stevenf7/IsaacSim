@@ -70,7 +70,6 @@ files_exclude = [
     ["apps/exts.deps.generated.kit"],
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
-    ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["extsbuild/**"],
     ["exts/isaacsim.util.internal"],
     ["tests/tests-isaacsim.util.internal.*"],
@@ -128,7 +127,6 @@ files = [
     ["**"],
 ]
 files_exclude = [
-    ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020
     ["exts/*/pip_*/**/*.exe"],
@@ -151,7 +149,6 @@ files_exclude = [
     ["apps/exts.deps.generated.kit"],
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
-    ["kit/extsPhysics/**"], # This can contain portable files we don't want to package
     ["extsbuild/**"],
     ["exts/isaacsim.util.internal"],
     ["tests/tests-isaacsim.util.internal.*"],
@@ -174,7 +171,6 @@ files_exclude = [
     ["kit/**"],
     ["extscache/**"],
     ["extsbuild/**"],
-    ["extsPhysics/**"],
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/**"],

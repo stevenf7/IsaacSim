@@ -185,7 +185,6 @@ cache_path = "${root}/_build/${platform}/${config}/extscache"
 ext_folders = [
   "${root}/_build/$platform/$config/exts",
   "${root}/_build/$platform/$config/extsDeprecated",
-  "${root}/_build/$platform/$config/extsPhysics",
 ]
 
 # Apps to run and precache
@@ -244,7 +243,6 @@ library_paths = [
   "$root/_build/$platform/$config/kit",
   "$root/_build/$platform/$config/extscache/omni.usd*/bin",
   "$root/_build/$platform/$config/extscache/omni.usd.schema*/lib",
-  "$root/_build/$platform/$config/extsPhysics/omni.usd.schema*/bin"
 ]
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
@@ -1186,7 +1184,6 @@ python_analysis_extra_mapping = [
   "$root/_build/$platform/$config/extscache/*",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
-  "$root/_build/$platform/$config/extsPhysics/*",
 ]
 
 [repo_generate_changelog]
