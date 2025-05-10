@@ -90,53 +90,15 @@ class Extension(omni.ext.IExt):
         self.registered_annotators.append(annotator_name)
 
         ##### Time
-        template_name = "IsaacReadTimesAOV"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.POST_RENDER,
-                    "isaacsim.core.nodes.IsaacReadTimes",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            omni.syntheticdata.SyntheticData._rendererTemplateName,
-                            attributes_mapping={
-                                "outputs:rp": "inputs:renderResults",
-                                "outputs:exec": "inputs:execIn",
-                                "outputs:gpu": "inputs:gpu",
-                            },
-                        ),
-                    ],
-                ),
-                template_name=template_name,
-            )
-            self.registered_templates.append(template)
-
-        annotator_name = "IsaacReadTimes"
-        register_annotator_from_node_with_telemetry(
-            name=annotator_name,
-            input_rendervars=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "PostProcessDispatch",
-                    attributes_mapping={
-                        "outputs:renderResults": "inputs:renderResults",
-                        "outputs:exec": "inputs:execIn",
-                    },
-                ),
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    "IsaacReadTimesAOV",
-                    attributes_mapping={
-                        "outputs:execOut": "inputs:execIn",
-                    },
-                ),
-            ],
-            node_type_id="isaacsim.core.nodes.IsaacReadTimes",
-        )
-        self.registered_annotators.append(annotator_name)
 
         annotator_name = "IsaacReadSimulationTime"
         register_annotator_from_node_with_telemetry(
             name=annotator_name,
-            input_rendervars=["IsaacReadTimes"],
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    f"ReferenceTime", attributes_mapping={f"outputs:exec": "inputs:execIn"}
+                )
+            ],
             node_type_id="isaacsim.core.nodes.IsaacReadSimulationTime",
         )
         self.registered_annotators.append(annotator_name)
@@ -144,7 +106,11 @@ class Extension(omni.ext.IExt):
         annotator_name = "IsaacReadSystemTime"
         register_annotator_from_node_with_telemetry(
             name=annotator_name,
-            input_rendervars=["IsaacReadTimes"],
+            input_rendervars=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    f"ReferenceTime", attributes_mapping={f"outputs:exec": "inputs:execIn"}
+                )
+            ],
             node_type_id="isaacsim.core.nodes.IsaacReadSystemTime",
         )
         self.registered_annotators.append(annotator_name)

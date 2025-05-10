@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.14] - 2025-05-09
+### Changed
+- Updated tests to use modified ReadSimulationTime and ReadSystemTime nodes
+
 ## [4.4.13] - 2025-05-03
 ### Fixed
 - Fix issues where name override was incorrectly used if set to empty string

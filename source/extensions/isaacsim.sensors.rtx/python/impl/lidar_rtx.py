@@ -197,10 +197,14 @@ class LidarRtx(BaseSensor):
             og.Controller()
             .node("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
             .get_attribute("outputs:referenceTimeNumerator")
-            .get()
+            .get(),
+            og.Controller()
+            .node("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
+            .get_attribute("outputs:referenceTimeDenominator")
+            .get(),
         )
 
-        self._current_frame["rendering_time"] = self._core_nodes_interface.get_sim_time_at_swh_frame(
+        self._current_frame["rendering_time"] = self._core_nodes_interface.get_sim_time_at_time(
             self._current_frame["rendering_frame"]
         )
         for key in self._current_frame:

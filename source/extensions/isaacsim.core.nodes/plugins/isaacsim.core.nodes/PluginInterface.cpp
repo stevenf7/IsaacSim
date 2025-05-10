@@ -255,28 +255,6 @@ double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime)
         omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("systemTime"));
     return systemTime ? systemTime.value() : g_systemTime;
 }
-// TODO105 Depricate next 3 functions.
-double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
-{
-    return g_simStageWithHistory ?
-               getSimulationTimeAtTime(g_simStageWithHistory->getSimPeriod(g_stageId).asRationalTime() * swhFrame) :
-               g_simTime;
-}
-
-
-double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
-{
-    return g_simStageWithHistory ? getSimulationTimeMonotonicAtTime(
-                                       g_simStageWithHistory->getSimPeriod(g_stageId).asRationalTime() * swhFrame) :
-                                   g_simTimeMonotonic;
-}
-
-double getSystemTimeAtSwhFrame(const int64_t swhFrame)
-{
-    return g_simStageWithHistory ?
-               getSystemTimeAtTime(g_simStageWithHistory->getSimPeriod(g_stageId).asRationalTime() * swhFrame) :
-               g_systemTime;
-}
 
 uint64_t addHandle(void* handle)
 {
@@ -354,10 +332,6 @@ void fillInterface(isaacsim::core::nodes::CoreNodes& iface)
     iface.getSimTimeMonotonic = getSimulationTimeMonotonic;
     iface.getSystemTime = getSystemTime;
     iface.getPhysicsNumSteps = getPhysicsNumSteps;
-
-    iface.getSimTimeAtSwhFrame = getSimulationTimeAtSwhFrame;
-    iface.getSimTimeMonotonicAtSwhFrame = getSimulationTimeMonotonicAtSwhFrame;
-    iface.getSystemTimeAtSwhFrame = getSystemTimeAtSwhFrame;
 
     iface.addHandle = addHandle;
     iface.getHandle = getHandle;

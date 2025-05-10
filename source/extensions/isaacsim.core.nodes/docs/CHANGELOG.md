@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0] - 2025-05-07
+### Changed
+- IsaacReadSimulationTime and IsaacReadSystemTime use referenceTimeNumerator and referenceTimeDenominator directly
+- Simplified annotator structure for getting sim and system time
+- Modified input arguments for python bindings to take a tuple instead of a rational time object which could not be created by the user 
+
+### Removed
+- deprecated function and their python bindings getSimTimeAtSwhFrame, getSimTimeMonotonicAtSwhFrame, getSystemTimeAtSwhFrame, get_sim_time_at_swh_frame, get_sim_time_monotonic_at_swh_frame, get_system_time_at_swh_frame
+- removed IsaacReadTimes node
+
 ## [2.2.17] - 2025-05-09
 ### Added
 - Unit test in test_articulation_controller to verify joint_indices comparison logic functions properly

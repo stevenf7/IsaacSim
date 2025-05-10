@@ -174,20 +174,20 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         data = self._my_lidar.get_current_frame()
         current_time = data["rendering_time"]
-        current_step = data["rendering_frame"]
+        current_step = data["rendering_frame"][0]
         self._my_lidar.pause()
         await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 2)
         data = self._my_lidar.get_current_frame()
         self.assertTrue(data["rendering_time"] == current_time)
-        self.assertTrue(data["rendering_frame"] == current_step)
+        self.assertTrue(data["rendering_frame"][0] == current_step)
         self.assertTrue(self._my_lidar.is_paused())
         current_time = data["rendering_time"]
-        current_step = data["rendering_frame"]
+        current_step = data["rendering_frame"][0]
         self._my_lidar.resume()
         await update_stage_async()
         data = self._my_lidar.get_current_frame()
         self.assertTrue(data["rendering_time"] != current_time)
-        self.assertTrue(data["rendering_frame"] != current_step)
+        self.assertTrue(data["rendering_frame"][0] != current_step)
         await self.my_world.reset_async()
         return
 

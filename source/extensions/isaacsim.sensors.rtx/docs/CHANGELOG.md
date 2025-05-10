@@ -1,4 +1,9 @@
 # Changelog
+
+## [14.4.0] - 2025-05-09
+### Changed
+- rtx lidar ["rendering_frame"] contains both the rational time numerator and denominator and not just the numerator
+
 ## [14.3.1] - 2025-04-30
 ### Changed
 - Update event subscriptions to Event 2.0 system

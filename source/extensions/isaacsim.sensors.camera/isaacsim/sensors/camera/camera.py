@@ -509,8 +509,10 @@ class Camera(BaseSensor):
         )
         if parsed_payload[0] == self._render_product_path:
             self._og_controller.evaluate_sync(graph_id=self._sdg_graph_pipeline)
-            frame_number = self._fabric_time_annotator.get_data()["referenceTimeNumerator"]
-            current_time = self._core_nodes_interface.get_sim_time_at_swh_frame(frame_number)
+            frame_number = self._fabric_time_annotator.get_data()
+            current_time = self._core_nodes_interface.get_sim_time_at_time(
+                (frame_number["referenceTimeNumerator"], frame_number["referenceTimeDenominator"])
+            )
             if self._previous_time is not None:
                 self._elapsed_time += current_time - self._previous_time
             if self._frequency < 0 or self._elapsed_time >= self.get_dt():

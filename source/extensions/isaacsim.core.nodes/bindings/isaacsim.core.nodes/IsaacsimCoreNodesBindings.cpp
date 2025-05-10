@@ -52,7 +52,7 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
             system_time = core_nodes.get_system_time()
             
             # Get time metrics for a specific frame
-            frame_sim_time = core_nodes.get_sim_time_at_swh_frame(0)
+            frame_sim_time = core_nodes.get_sim_time_at_time(0)
             
             # Get physics step count
             steps = core_nodes.get_physics_num_steps()
@@ -107,12 +107,40 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
                 Returns:
                     float: The simulation time in seconds at the specified time.
              )pbdoc")
+        .def("get_sim_time_at_time", [](CoreNodes* iface, const std::tuple<int64_t, uint64_t>& timeTuple) {
+            int64_t numerator = std::get<0>(timeTuple);
+            uint64_t denominator = std::get<1>(timeTuple);
+            omni::fabric::RationalTime time(numerator, denominator);
+            return iface->getSimTimeAtTime(time);
+        }, R"pbdoc(
+                Gets simulation time in seconds at a specific rational time.
+
+                Args:
+                    time (tuple): A tuple of (numerator, denominator) representing the rational time.
+
+                Returns:
+                    float: The simulation time in seconds at the specified time.
+             )pbdoc")
         .def("get_sim_time_monotonic_at_time", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonicAtTime),
              R"pbdoc(
                 Gets monotonic simulation time in seconds at a specific rational time.
 
                 Args:
                     time (omni.fabric.RationalTime): The rational time to query.
+
+                Returns:
+                    float: The monotonic simulation time in seconds at the specified time.
+             )pbdoc")
+        .def("get_sim_time_monotonic_at_time", [](CoreNodes* iface, const std::tuple<int64_t, uint64_t>& timeTuple) {
+            int64_t numerator = std::get<0>(timeTuple);
+            uint64_t denominator = std::get<1>(timeTuple);
+            omni::fabric::RationalTime time(numerator, denominator);
+            return iface->getSimTimeMonotonicAtTime(time);
+        }, R"pbdoc(
+                Gets monotonic simulation time in seconds at a specific rational time.
+
+                Args:
+                    time (tuple): A tuple of (numerator, denominator) representing the rational time.
 
                 Returns:
                     float: The monotonic simulation time in seconds at the specified time.
@@ -127,44 +155,19 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
                 Returns:
                     float: The system time in seconds at the specified time.
              )pbdoc")
-        .def("get_sim_time_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSimTimeAtSwhFrame),
-             R"pbdoc(
-                Gets simulation time in seconds at a specific software frame.
+        .def("get_system_time_at_time", [](CoreNodes* iface, const std::tuple<int64_t, uint64_t>& timeTuple) {
+            int64_t numerator = std::get<0>(timeTuple);
+            uint64_t denominator = std::get<1>(timeTuple);
+            omni::fabric::RationalTime time(numerator, denominator);
+            return iface->getSystemTimeAtTime(time);
+        }, R"pbdoc(
+                Gets system (real-world) time in seconds at a specific rational time.
 
                 Args:
-                    swh_frame (int): The stage with history frame number to query.
+                    time (tuple): A tuple of (numerator, denominator) representing the rational time.
 
                 Returns:
-                    float: The simulation time in seconds at the specified frame.
-
-                Note:
-                    Deprecated: Use get_sim_time_at_time instead.
-             )pbdoc")
-        .def("get_sim_time_monotonic_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonicAtSwhFrame),
-             R"pbdoc(
-                Gets monotonic simulation time in seconds at a specific software frame.
-
-                Args:
-                    swh_frame (int): The stage to query.
-
-                Returns:
-                    float: The monotonic simulation time in seconds at the specified frame.
-
-                Note:
-                    Deprecated: Use get_sim_time_monotonic_at_time instead.
-             )pbdoc")
-        .def("get_system_time_at_swh_frame", wrapInterfaceFunction(&CoreNodes::getSystemTimeAtSwhFrame),
-             R"pbdoc(
-                Gets system (real-world) time in seconds at a specific software frame.
-
-                Args:
-                    swh_frame (int): The stage to query.
-
-                Returns:
-                    float: The system time in seconds at the specified frame.
-
-                Note:
-                    Deprecated: Use get_system_time_at_time instead.
+                    float: The system time in seconds at the specified time.
              )pbdoc")
         ;
 

@@ -9,6 +9,8 @@
 # its affiliates is strictly prohibited.
 
 
+import time
+
 import carb
 import numpy as np
 import omni.graph.core as og
@@ -17,6 +19,7 @@ import omni.kit.test
 import omni.replicator.core as rep
 from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.core.api.robots import Robot
+from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.core.utils.stage import get_current_stage, open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native import get_assets_root_path
@@ -71,17 +74,34 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
     #     annotator.detach()
 
     async def test_read_times(self):
-        annotator = rep.AnnotatorRegistry.get_annotator("IsaacReadTimes")
-        annotator.attach([self._render_product_path])
+        annotator_read_sim_time = rep.AnnotatorRegistry.get_annotator("IsaacReadSimulationTime")
+        annotator_read_sim_time.attach([self._render_product_path])
+        annotator_read_system_time = rep.AnnotatorRegistry.get_annotator("IsaacReadSystemTime")
+        annotator_read_system_time.attach([self._render_product_path])
+        fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
+        fabric_time_annotator.attach([self._render_product_path])
 
         self._timeline.play()
         await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 10)
-        data = annotator.get_data()
+
+        fabric_time_data = fabric_time_annotator.get_data()
+        data_read_sim_time = annotator_read_sim_time.get_data()
+        data_read_system_time = annotator_read_system_time.get_data()
+
         self.assertAlmostEqual(
-            data["simulationTime"], 0.01666666753590107 * 12
+            data_read_sim_time["simulationTime"], 0.01666666753590107 * 12
         )  # Two extra steps happen to init physics on play
-        # print(data)
-        annotator.detach()
+        self.assertAlmostEqual(data_read_system_time["systemTime"], time.time(), delta=0.5)
+
+        # TODO: Its not clear why reading the time directly from the rational time results in time being one frame ahead of the annotatot time
+        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
+        current_sim_time = self._core_nodes_interface.get_sim_time_at_time(
+            (fabric_time_data["referenceTimeNumerator"], fabric_time_data["referenceTimeDenominator"])
+        )
+        self.assertAlmostEqual(current_sim_time, 0.01666666753590107 * 13)
+        annotator_read_sim_time.detach()
+        annotator_read_system_time.detach()
+        fabric_time_annotator.detach()
 
     # TODO: this test won't work unless something consumes the time output so the node is executed
     # async def test_read_simulation_time(self):

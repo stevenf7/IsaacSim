@@ -67,42 +67,6 @@ struct CoreNodes
      */
     size_t(CARB_ABI* getPhysicsNumSteps)();
 
-    // TODO: deprecated : use getSimTimeAtTime instead
-    /**
-     * @brief Gets simulation time at a specific software frame.
-     * @details Returns the simulation time corresponding to a specific software frame.
-     *
-     * @deprecated Use getSimTimeAtTime instead.
-     *
-     * @param[in] swhFrame Frame number to query time for.
-     * @return Simulation time in seconds at the specified frame.
-     */
-    double(CARB_ABI* getSimTimeAtSwhFrame)(const int64_t swhFrame);
-
-    // TODO: deprecated : use getSimTimeMonotonicAtTime instead
-    /**
-     * @brief Gets monotonic simulation time at a specific software frame.
-     * @details Returns the monotonically increasing simulation time corresponding to a specific software frame.
-     *
-     * @deprecated Use getSimTimeMonotonicAtTime instead.
-     *
-     * @param[in] swhFrame Frame number to query time for.
-     * @return Monotonic simulation time in seconds at the specified frame.
-     */
-    double(CARB_ABI* getSimTimeMonotonicAtSwhFrame)(const int64_t swhFrame);
-
-    // TODO: deprecated : use getSystemTimeAtTime instead
-    /**
-     * @brief Gets system time at a specific software frame.
-     * @details Returns the system (real-world) time corresponding to a specific software frame.
-     *
-     * @deprecated Use getSystemTimeAtTime instead.
-     *
-     * @param[in] swhFrame Frame number to query time for.
-     * @return System time in seconds at the specified frame.
-     */
-    double(CARB_ABI* getSystemTimeAtSwhFrame)(const int64_t swhFrame);
-
     /**
      * @brief Adds a handle to the handle registry.
      * @details Registers a new handle in the handle registry and returns a unique identifier for it.
