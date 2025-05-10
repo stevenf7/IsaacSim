@@ -18,7 +18,8 @@ This script checks:
 4. Proper spacing between sections (one blank line)
 5. Dependencies in the [dependencies] section are alphabetically sorted
 6. Dependencies in the [[test]] section are alphabetically sorted
-7. (Optional) Required field writeTarget.kit is present and set to true in the [package] section
+7. Ensures there is exactly one empty line at the end of the file
+8. (Optional) Required field writeTarget.kit is present and set to true in the [package] section
    (only when --check-write-target is specified)
 
 When run without arguments, it validates all extension.toml files in the repository
@@ -184,7 +185,7 @@ class ExtensionTomlValidator:
         Fix whitespace between sections by ensuring each section is preceded by exactly one blank line.
         If there are more than one consecutive blank lines, reduce them to exactly one.
         Don't add blank lines between comments and the section headers they describe.
-        Also removes any extra empty lines at the start or end of the file.
+        Also ensures exactly one empty line at the end of the file.
         Ensures lines with only whitespace characters are treated as empty lines.
         Standardizes line endings to \n.
 
@@ -201,6 +202,7 @@ class ExtensionTomlValidator:
         fixed_lines = []
         reduced_excessive_whitespace = False
         removed_leading_trailing = False
+        added_trailing_line = False
         removed_whitespace_only_lines = False
 
         # Remove leading empty lines and lines with only whitespace
@@ -266,10 +268,14 @@ class ExtensionTomlValidator:
             fixed_lines.append(line)
             i += 1
 
-        # Remove trailing empty lines and lines with only whitespace
+        # Remove all trailing empty lines
         while fixed_lines and not fixed_lines[-1].strip():
             fixed_lines.pop()
             removed_leading_trailing = True
+
+        # Ensure exactly one empty line at the end of the file
+        fixed_lines.append("")
+        added_trailing_line = True
 
         # Add a message if we reduced excessive whitespace
         if reduced_excessive_whitespace:
@@ -287,6 +293,10 @@ class ExtensionTomlValidator:
         if removed_leading_trailing:
             self.fixes_applied.append("Removed extra empty lines at start and/or end of file")
 
+        # Add a message if we added a trailing empty line
+        if added_trailing_line:
+            self.fixes_applied.append("Ensured exactly one empty line at end of file")
+
         # Add a message if we standardized whitespace-only lines
         if removed_whitespace_only_lines:
             self.fixes_applied.append("Standardized lines with only whitespace characters to empty lines")
@@ -299,6 +309,7 @@ class ExtensionTomlValidator:
         Ensures each section has exactly one blank line before it (not more or less),
         except when a section is preceded by a comment that describes it.
         Also checks for extra empty lines at the start or end of the file.
+        Ensures the file ends with exactly one empty line.
 
         Args:
             file_path: Path to the file being validated
@@ -337,12 +348,22 @@ class ExtensionTomlValidator:
             else:
                 break
 
-        if trailing_empty_lines > 0:
+        if trailing_empty_lines > 1:
             self.errors.append(
                 ValidationError(
                     file_path,
                     "File Spacing",
-                    f"Extra empty lines ({trailing_empty_lines}) at the end of the file",
+                    f"Extra empty lines ({trailing_empty_lines}) at the end of the file, should be exactly 1",
+                    len(lines),
+                )
+            )
+            has_spacing_issue = True
+        elif trailing_empty_lines == 0:
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "File Spacing",
+                    "Missing empty line at the end of the file",
                     len(lines),
                 )
             )

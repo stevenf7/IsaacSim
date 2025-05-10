@@ -17,16 +17,15 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.simulation_manager" = {}
+"isaacsim.core.utils" = {}
+"isaacsim.test.docstring" = {} # needed for tests to load in test runner
+"omni.isaac.core_archive" = {}
 "omni.physx.tensors" = {}
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
-"omni.isaac.core_archive" = {}
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.utils" = {}
-"isaacsim.core.simulation_manager" = {}
-"isaacsim.test.docstring" = {} # needed for tests to load in test runner
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.core.experimental.prims"
 
@@ -37,9 +36,9 @@ name = "isaacsim.core.experimental.prims.tests"
 [[test]]
 timeout = 1000
 dependencies = [
+    "isaacsim.core.api",  # for isaacsim.core.api.materials,
     "omni.hydra.usdrt_delegate",
     "omni.kit.material.library",
-    "isaacsim.core.api",  # for isaacsim.core.api.materials
 ]
 args = [
     "--/app/asyncRendering=0",

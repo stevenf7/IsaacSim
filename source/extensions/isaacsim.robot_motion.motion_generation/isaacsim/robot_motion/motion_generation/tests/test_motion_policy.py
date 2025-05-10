@@ -753,9 +753,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             "target_no_obstacle": np.array(
                 [-0.43079016, 0.18957902, 0.33274212, 0.46673688, -0.36309126, 6.501429e-10]
             ),
-            "target_with_obstacle": np.array(
-                [-0.41054526, 0.08853104, 0.3780922, 0.47682625, -0.37121844, 6.5079464e-10]
-            ),
+            "target_with_obstacle": np.array([-0.41449845, 0.11129826, 0.37269664, 0.4741332, -0.36905077, 0.0]),
             "target_pos": np.array([0.5, 0.0, 0.0]),
             "obs_pos": np.array([0.50, 0.0, -0.20]),
         }

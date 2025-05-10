@@ -8,12 +8,14 @@
 ## [1.0.2] - 2025-05-06
 ### Changed
 - Fix error when populating initial icons when saving a stage
+
 ### Added
 - Added additional tests to check path errors
 
 ## [1.0.1] - 2025-05-03
 ### Changed
 - Updated unit tests with new paths
+
 ### Added
 - Error handling for extension restarts
 

@@ -1,15 +1,20 @@
 # Changelog
+
+## [2.4.1] - 2025-05-09
+### Added
+- Extension specific test arguments
+
 ## [2.4.0] - 2025-04-11
-### Updated
+### Changed
 - Include Robot Schema definition
 
 ## [2.3.13] - 2025-02-27
-### Updated
+### Changed
 - Disable mesh merge Collision API
 - Fix fixed joint merge
 
 ## [2.3.12] - 2025-02-06
-### Updated
+### Changed
 - Viewport now defaults Z as up axis
 
 ### Fixed
@@ -32,6 +37,7 @@
 ### Fixed
 - Fix missing map entry to fixed frames
 - Revert always ignoring fixed joints
+
 ### Added
 - Experimental support to mujoco_camera tags
 
@@ -148,53 +154,44 @@
 - Option to make instanceable. All imports are now instanceable.
 
 ## [1.14.1] - 2024-05-23
-
 ### Fixed
 - Error Message on creating symlink for Windows.
 
 ## [1.14.0] - 2024-05-11
-
 ### Fixed
 - Add Articulation Root to Fixed Joint when fixed base.
 
 ## [1.13.1] - 2024-04-29
-
 ### Fixed
 - Mimic Joints using Mimic Joint API
 - Scroll bar in Isaac Sim for UI
 
-
 ## [1.13.0] - 2024-04-04
-
 ### Fixed
 - Example window UI buttons callbacks
 
 ## [1.12.0] - 2024-04-03
-
 ### Added
 - Parse Camera and Lidar Sensor
 - Add code stub for other sensor types currently not in official URDF definition.
 
 ## [1.11.0] - 2024-03-26
-
 ### Fixed
 - Support for GLTF meshes
 
 ## [1.10.1] - 2024-03-20
-
 ### Fixed
 - Ensuring UI frames are always properly aligned
 
 ## [1.10.0] - 2024-02-29
-
 ### Added
 - UI Hooks to Expand URDF Import
 - Parse URDF in memory as string
+
 ### Fixed
 - Compute extent for cylinders axis
 
 ## [1.9.0] - 2024-02-26
-
 ### Added
 - Split URDF Parsing and Importing
 - Add utility to select joint drive types prior to import
@@ -204,61 +201,49 @@
 - Joint Axis is maintained when importing if it's aligned with X, Y or Z parent body axis
 
 ## [1.7.0] - 2024-02-11
-
 ### Fixed
 - Fixed importer to ensure rigid body principal axes are taken into account when computing inertia tensor.
 - Fixed importing of dynamics damping and friction (when authored).
 - Modified handling of massless root links so that they're given zero mass, which results in PhysX autocomputing the minimum mass required for articulation stability,
 
 ## [1.6.1] - 2023-12-14
-
 ### Fixed
 - output USD was accumulating disk size every time it was overwritten
 - Instanceable importing was causing the importer to segfault when overwriting.
 
 ## [1.6.0] - 2023-12-11
-
 ### Fixed
 - Changed the AddRobot (and all related bindings and commands) to allow getting the articulation Root prim path directly instead of the base prim, defaulting to getting the base prim.
 
 ## [1.5.0] - 2023-12-04
-
 ### Fixed
-- Fixed setting of articulation root on the actual link prim instead of the default prim. This
-  is needed to deal with letting PhysX parser decide what is the root prim for floating-base systems.
+- Fixed setting of articulation root on the actual link prim instead of the default prim. This is needed to deal with letting PhysX parser decide what is the root prim for floating-base systems.
 
 ## [1.4.1] - 2023-11-30
-
 ### Fixed
 - Handling meshes that inadvertertly duplicate the UV maps
 
 ## [1.4.0] - 2023-11-30
-
 ### Changed
 - Prompt users to confirm import path and confirm overwrite before proceeding with importing.
 
 ## [1.3.0] - 2023-11-29
-
 ### Added
 - Handling massless and inertialess links by adding small mass and inertia values
 
 ## [1.2.0] - 2023-11-28
-
 ### Added
 - Flag to decide whether or not to parse mimic joints
 
 ## [1.1.4] - 2023-10-18
-
 ### Changed
 - Update code dependencies
 
 ## [1.1.3] - 2023-10-02
-
 ### Changed
 - Mesh path parser now allows for prefixes other than "package://"
 
 ## [1.1.2] - 2023-08-21
-
 ### Added
 - Added processing of capsule bodies to replace cylinders
 
@@ -267,7 +252,6 @@
 - Fixed bug in merging joints when multiple levels of fixed joints exist.
 
 ## [1.1.1] - 2023-08-08
-
 ### Added
 - Added support for the boolean attribute  ``<joint dont_collapse>``: setting this parameter to true in the URDF joint tag prevents the child link from collapsing when the associated joint type is "fixed".
 
@@ -275,6 +259,7 @@
 ### Added
 - Suport for direct mimic joints
 - Maintain Merged Links as frames inside parent rigid body
+
 ### Fixed
 - Arbitrary joint axis were adding random 56.7 rotation degrees in the joint axis orientation
 
@@ -347,99 +332,78 @@
 ### Fixed
 - Fixes for kit 103.5
 
-## [0.5.1] - 2022-01-02
-
+## [0.5.1] - 2022-09-02
 ### Changed
 - Use omni.kit.viewport.utility when setting camera
 
 ## [0.5.0] - 2022-08-30
-
 ### Changed
 - Remove direct legacy viewport calls
 
 ## [0.4.1] - 2022-08-30
-
 ### Changed
 - Modified default gains in URDF -> USD converter to match gains for Franka and UR10 robots
 
 ## [0.4.0] - 2022-08-09
-
 ### Added
 - Cobotta 900 urdf data files
 
 ## [0.3.1] - 2022-08-08
-
 ### Fixed
 - Missing argument in example docstring
 
 ## [0.3.0] - 2022-07-09
-
 ### Added
 - Add instanceable option to importer
 
 ## [0.2.2] - 2022-06-02
-
 ### Changed
 - Fix title for file picker
 
 ## [0.2.1] - 2022-05-23
-
 ### Changed
 - Fix units for samples
 
 ## [0.2.0] - 2022-05-17
-
 ### Changed
 - Add joint values API
 
 ## [0.1.16] - 2022-04-19
-
 ### Changed
 - Add Texture import compatibility for Windows.
-
-## [0.1.16] - 2022-02-08
-
-### Changed
 - Revamped UI
 
 ## [0.1.15] - 2021-12-20
-
 ### Changed
 - Fixed bug where missing mesh on part with urdf material assigned would crash on material binding in a non-existing prim.
 
 ## [0.1.14] - 2021-12-20
-
 ### Changed
 - Fix bug where material was indexed by name and removing false duplicates.
 - Add Normal subdivision group import parameter.
 
 ## [0.1.13] - 2021-12-10
-
 ### Changed
 - Texture support for OBJ and Collada assets.
 - Remove bug where an invalid link on a joint would stop importing the remainder of the urdf. raises an error message instead.
 
 ## [0.1.12] - 2021-12-03
-
 ### Changed
 - Default to save Imported assets on a new USD and reference it on open stage.
 - Change base robot prim to also use orientOP instead of rotateOP
 - Change behavior where any stage event (e.g selection changed) was resetting some options on the UI
 
 ## [0.1.11] - 2021-11-29
-
 ### Changed
 - Use double precision for xform ops to match isaac sim defaults
 
 ## [0.1.10] - 2021-11-04
-
 ### Changed
 - create physics scene is false for import config
 - create physics scene will not create a scene if one exists
 - set default prim is false for import config
 
 ## [0.1.9] - 2021-10-25
-
 ### Added
 - Support to specify usd paths for urdf meshes.
 
@@ -452,7 +416,6 @@
 - warnings when setting attributes as double when they should have been float
 
 ## [0.1.8] - 2021-10-18
-
 ### Added
 - Floating joints are ignored but place any child links at the correct location.
 
@@ -460,7 +423,6 @@
 - Crash when urdf contained a floating joint
 
 ## [0.1.7] - 2021-09-23
-
 ### Added
 - Default position drive damping to UI
 
@@ -468,7 +430,6 @@
 - Default config parameters are now respected
 
 ## [0.1.6] - 2021-08-31
-
 ### Changed
 - Updated to New UI
 - Spheres and Cubes are treated as shapes
@@ -482,25 +443,21 @@
 - Parsing URDF is not a separate step with its own UI
 
 ## [0.1.5] - 2021-07-30
-
 ### Fixed
 - Zero joint velocity issue
 - Artifact when dragging URDF file due to transform matrix
 
 ## [0.1.4] - 2021-06-09
-
 ### Added
 - Fixed bugs with default density
 
 ## [0.1.3] - 2021-05-26
-
 ### Added
 - Fixed bugs with import units
 - Streamlined UI and fixed missing elements
 - Fixed issues with creating new stage on import
 
 ## [0.1.2] - 2020-12-11
-
 ### Added
 - Unit tests to extension
 - Add test urdf files
@@ -508,11 +465,9 @@
 - Fix unit conversion issue with import
 
 ## [0.1.1] - 2020-12-03
-
 ### Added
 - Sample URDF files for carter, franka ur10 and kaya
 
 ## [0.1.0] - 2020-12-03
-
 ### Added
 - Initial version of URDF importer extension

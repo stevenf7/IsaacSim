@@ -21,6 +21,7 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {}
 "omni.kit.viewport.utility" = {}
 "omni.replicator.core" = {}
+
 [[python.module]]
 name = "isaacsim.replicator.mobility_gen"
 

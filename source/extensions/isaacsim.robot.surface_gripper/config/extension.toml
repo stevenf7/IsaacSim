@@ -13,7 +13,6 @@ icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
 
-
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
@@ -29,15 +28,14 @@ name = "isaacsim.robot.surface_gripper"
 [[python.module]]
 name = "isaacsim.robot.surface_gripper.tests"
 
-[fswatcher.patterns]
-include = ["*.ogn", "*.py"]
-exclude = ["Ogn*Database.py"]
-# Ensure the plugin path and dependencies are correctly specified
-
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+# Ensure the plugin path and dependencies are correctly specified
 
 [[test]]
 dependencies = []

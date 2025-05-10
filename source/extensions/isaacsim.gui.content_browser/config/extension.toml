@@ -12,12 +12,11 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"omni.kit.window.content_browser" = {}
 "omni.kit.widget.filebrowser" = {}
+"omni.kit.window.content_browser" = {}
 "omni.kit.window.filepicker" = {}
 "omni.usd.core" = {}
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.gui.content_browser"
 
