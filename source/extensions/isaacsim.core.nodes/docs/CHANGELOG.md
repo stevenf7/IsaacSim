@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.17] - 2025-05-09
+### Added
+- Unit test in test_articulation_controller to verify joint_indices comparison logic functions properly
+
+## [2.2.16] - 2025-05-06
+### Fixed
+- Fix issues where np array comparison was leading to broadcast errors if joint_indices had different shapes
+
 ## [2.2.15] - 2025-05-02
 ### Fixed
 - Fix issues where name override was incorrectly used if set to empty string
