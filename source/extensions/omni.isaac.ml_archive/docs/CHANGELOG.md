@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.0] - 2025-04-07
+### Changed
+- Update to pytorch 2.7.0+cu128, remove gymnasium, add nvidia-cusparselt-cu12, nvidia-cufile-cu12, nvidia-nvjitlink-cu12
+
 ## [2.2.4] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
