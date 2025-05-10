@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.3] - 2025-05-09
+### Fixed
+- Buf with setting max effort with FSD enabled
+
 ## [4.1.2] - 2025-05-02
 ### Changed
 - Update Franka and Anymal USD paths

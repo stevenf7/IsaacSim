@@ -18,14 +18,13 @@ writeTarget.platform = true
 "isaacsim.storage.native" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ml_archive" = {}
-"omni.physx" = {}
 "omni.physics.tensors" = {}
+"omni.physx" = {}
+"omni.usd.metrics.assembler" = {}
+"omni.usd.metrics.assembler.physics" = {}
 "omni.usd.schema.semantics" = {}
 "omni.usdphysics" = {}
 "omni.warp.core" = {}
-"omni.usd.metrics.assembler" = {}
-"omni.usd.metrics.assembler.physics" = {}
-
 
 [[python.module]]
 name = "isaacsim.core.utils"

@@ -21,19 +21,18 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
+"isaacsim.core.utils" = {}
 "omni.appwindow" = { public = true }
-"omni.usd" = {}
-"omni.kit.viewport.utility" = {}
-"omni.ui.scene" = {}
-"omni.ui" = {}
-"omni.kit.viewport.registry" = {}
-"omni.kit.widget.stage" = {}
 "omni.kit.viewport.menubar.core" = {}
 "omni.kit.viewport.menubar.display" = {}
-"isaacsim.core.utils" = {}
+"omni.kit.viewport.registry" = {}
+"omni.kit.viewport.utility" = {}
+"omni.kit.widget.stage" = {}
+"omni.ui" = {}
+"omni.ui.scene" = {}
+"omni.usd" = {}
 "usdrt.scenegraph" = {}
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.gui.sensors.icon"
 
@@ -56,8 +55,8 @@ enabled = false
 [[test]]
 enabled = true
 dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
     "omni.kit.ui_test",
-    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
 ]
 args = [
     "--/app/asyncRendering=0",

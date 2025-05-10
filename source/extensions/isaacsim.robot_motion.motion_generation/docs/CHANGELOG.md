@@ -1,5 +1,9 @@
 # Changelog
 
+## [8.0.16] - 2025-05-09
+### Fixed
+- Test golden values
+
 ## [8.0.15] - 2025-05-01
 ### Changed
 - Update UR10 robot description to use ee_link as the end effector link

@@ -15,8 +15,8 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.storage.native" = {}
 "isaacsim.core.simulation_manager" = {}
+"isaacsim.storage.native" = {}
 "omni.graph" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.kit.viewport.utility" = {}
