@@ -202,28 +202,25 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
             bool(Semantics.SemanticsAPI.Get(prim, "Semantics")), "Old SemanticsAPI should be valid after creation"
         )
 
-        # 2) Upgrade with keep_old_semantics=False
-        upgraded_count = upgrade_prim_semantics_to_labels(prim, keep_old_semantics=False)
+        # 2) Upgrade semantics
+        # The upgrade function now always removes the old semantics.
+        upgraded_count = upgrade_prim_semantics_to_labels(prim)
         self.assertGreater(upgraded_count, 0, "At least one instance should be upgraded")
+
+        # 3) Verify old semantics are removed
         # Old semantics should be removed (API object should be invalid)
         self.assertFalse(
             bool(Semantics.SemanticsAPI.Get(prim, "Semantics")),
-            msg="Old SemanticsAPI should be invalid after upgrade with keep_old_semantics=False",
+            msg="Old SemanticsAPI should be invalid after upgrade",
         )
 
-        # 3) Re-create old semantics and upgrade with keep_old_semantics=True
-        add_update_semantics(prim, semantic_label="old_data_again", type_label="old_type_again")
-        # Ensure it's valid before the second upgrade attempt
+        # 4) Verify new labels exist (Optional: and are correct)
+        # This part can be expanded to check the actual labels if needed.
+        # For now, we confirm the old API is gone and new one might exist via get_labels.
+        new_labels = get_labels(prim)
         self.assertTrue(
-            bool(Semantics.SemanticsAPI.Get(prim, "Semantics")),
-            "Old SemanticsAPI should be valid before second upgrade",
-        )
-        upgraded_count = upgrade_prim_semantics_to_labels(prim, keep_old_semantics=True)
-        self.assertGreater(upgraded_count, 0, "At least one instance should be upgraded in the second pass")
-        # Old semantics should remain
-        self.assertTrue(
-            bool(Semantics.SemanticsAPI.Get(prim, "Semantics")),
-            "Old SemanticsAPI should still be valid after upgrade with keep_old_semantics=True",
+            "old_type" in new_labels and new_labels["old_type"] == ["old_data"],
+            "New labels should be present and correct after upgrade.",
         )
 
     async def test_new_labels_api(self):

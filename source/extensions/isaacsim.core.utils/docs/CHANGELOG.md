@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.3] - 2025-05-10
+### Changed
+- semantics:add_labels now removes the old SemanticsAPI after upgrading
+- semantics:removed keep_old_semantics from upgrade_prim_semantics_to_labels
+
 ## [3.0.2] - 2025-05-09
 ### Changed
 - semantics:add_labels now uses functional library from replicator

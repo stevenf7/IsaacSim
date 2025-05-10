@@ -397,23 +397,19 @@ def count_labels_in_scene(prim_path: str | None = None) -> dict[str, int]:
     return labels_counter
 
 
-def upgrade_prim_semantics_to_labels(
-    prim: Usd.Prim, include_descendants: bool = False, keep_old_semantics: bool = False
-) -> int:
+def upgrade_prim_semantics_to_labels(prim: Usd.Prim, include_descendants: bool = False) -> int:
     """Upgrades a prim and optionally its descendants from the deprecated SemanticsAPI
     to the new UsdSemantics.LabelsAPI.
 
     Converts each found SemanticsAPI instance on the processed prim(s) to a corresponding
     LabelsAPI instance. The old 'semanticType' becomes the new LabelsAPI
     'instance_name', and the old 'semanticData' becomes the single label in the
-    new 'labels' list.
+    new 'labels' list. The old SemanticsAPI is always removed after upgrading.
 
     Args:
         prim (Usd.Prim): The starting prim to upgrade.
         include_descendants (bool, optional): If True, upgrades the prim and all its descendants.
                                      If False (default), upgrades only the specified prim.
-        keep_old_semantics (bool, optional): If True, retains the old SemanticsAPI after upgrading.
-                                             Defaults to False.
 
     Returns:
         int: The total number of SemanticsAPI instances successfully upgraded to LabelsAPI.
@@ -452,23 +448,22 @@ def upgrade_prim_semantics_to_labels(
             new_labels = [old_data]
 
             try:
-                # Apply the new LabelsAPI schema, appending if the instance already exists
-                add_labels(current_prim, new_labels, instance_name=new_instance_name, overwrite=False)
-
-                # Handle removal of the old SemanticsAPI if requested
-                if not keep_old_semantics:
-                    old_sem_api = Semantics.SemanticsAPI.Get(current_prim, old_instance_name)
-                    if old_sem_api:
-                        typeAttr = old_sem_api.GetSemanticTypeAttr()
-                        dataAttr = old_sem_api.GetSemanticDataAttr()
+                old_sem_api_to_remove = Semantics.SemanticsAPI.Get(current_prim, old_instance_name)
+                if old_sem_api_to_remove:
+                    typeAttr = old_sem_api_to_remove.GetSemanticTypeAttr()
+                    dataAttr = old_sem_api_to_remove.GetSemanticDataAttr()
+                    # Ensure attributes are valid before trying to remove them by name
+                    if typeAttr and typeAttr.IsDefined():
                         current_prim.RemoveProperty(typeAttr.GetName())
+                    if dataAttr and dataAttr.IsDefined():
                         current_prim.RemoveProperty(dataAttr.GetName())
-                        current_prim.RemoveAPI(Semantics.SemanticsAPI, old_instance_name)
+                    current_prim.RemoveAPI(Semantics.SemanticsAPI, old_instance_name)
+
+                add_labels(current_prim, new_labels, instance_name=new_instance_name, overwrite=False)
 
                 total_upgraded += 1
 
             except Exception as e:
                 carb.log_warn(f"Failed to upgrade instance '{old_instance_name}' on {current_prim.GetPath()}: {e}")
                 continue
-
     return total_upgraded
