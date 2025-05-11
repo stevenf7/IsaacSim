@@ -48,8 +48,6 @@ files_exclude = [
     ["**/*.a"], # static libs
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["extsbuild/**"],
-    ["exts/isaacsim.util.internal"],
-    ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["tests/tests-startup.extscache*"],
@@ -71,8 +69,6 @@ files_exclude = [
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["extsbuild/**"],
-    ["exts/isaacsim.util.internal"],
-    ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["dockertests/**"],
@@ -150,8 +146,6 @@ files_exclude = [
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["extsbuild/**"],
-    ["exts/isaacsim.util.internal"],
-    ["tests/tests-isaacsim.util.internal.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["tests-external/**"],
