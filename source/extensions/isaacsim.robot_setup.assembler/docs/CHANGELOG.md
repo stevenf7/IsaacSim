@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.13] - 2025-05-10
+### Changed
+- Enable FSD in test settings
+
 ## [2.1.12] - 2025-05-07
 ### Changed
 - switch to omni.physics interface

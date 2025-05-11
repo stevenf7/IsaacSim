@@ -1,5 +1,5 @@
 [package]
-version = "2.1.9"
+version = "2.1.10"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
 description="UI components for isaacsim.asset.gen.conveyor. It provides menu entries to support UI-based creation of Custom Conveyor Bodies, and a Conveyor Track tool that creates a system of fixed conveyor belts from a dataset."
@@ -30,6 +30,7 @@ name = "isaacsim.asset.gen.conveyor.ui.tests"
 
 dependencies = [
     "omni.kit.ui_test",
+    "omni.hydra.usdrt_delegate",
 ]
 
 args = [
@@ -69,6 +70,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 stdoutFailPatterns.exclude = [

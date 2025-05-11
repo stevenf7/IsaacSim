@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.1] - 2025-05-10
+### Changed
+- Enable FSD in test settings
+
 ## [2.3.0] - 2025-05-01
 ### Added
 - Create Robot / Surface Gripper

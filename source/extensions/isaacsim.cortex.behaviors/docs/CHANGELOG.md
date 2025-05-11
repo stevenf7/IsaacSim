@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.7] - 2025-05-10
+### Changed
+- Enable FSD in test settings
+
 ## [2.0.6] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

@@ -1,4 +1,7 @@
 # Changelog
+## [1.2.1] - 2025-05-10
+### Changed
+- Enable FSD in test settings
 
 ## [1.2.0] - 2025-05-09
 ### Changed

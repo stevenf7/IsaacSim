@@ -1,7 +1,7 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "4.1.3"
+version = "4.1.4"
 category = "Simulation"
 title = "Reinforcement Learning Inference Example for Robots in Isaac Sim"
 description = "The Policy Based Robot Control Examples extension provides utilities for deploying reinforcement learning policies in Isaac Sim, as well as locomotion examples for humanoid and quadruped robots."
@@ -69,6 +69,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [[test]]

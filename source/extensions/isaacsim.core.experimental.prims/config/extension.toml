@@ -77,8 +77,8 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
-    ### Extension specific args
     "--/app/useFabricSceneDelegate=true",
+    ### Extension specific args
     "--/persistent/omnihydra/useFastSceneDelegate=true",
     "--/persistent/omnihydra/useSceneGraphInstancing=true",
 ]

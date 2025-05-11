@@ -134,6 +134,7 @@ keywords = ["experience", "app", "usd"] # That makes it browsable in UI with "ex
 "omni.usd.metrics.assembler.ui" = {}
 "omni.usd.schema.metrics.assembler" = {}
 "omni.warp.core" = {}
+"omni.hydra.usdrt_delegate" = {}
 
 # Extensions normally enabled in kit base editor
 # "omni.activity.profiler" = {}
@@ -205,6 +206,7 @@ hangDetector.enabled = true
 hangDetector.timeout = 120
 settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
 settings.persistent = true                       # settings are persistent for this app
+useFabricSceneDelegate=true                      # use FSD by default for better performance
 
 vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
 ### async rendering settings

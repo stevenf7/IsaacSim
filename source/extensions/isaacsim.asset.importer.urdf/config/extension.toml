@@ -9,7 +9,7 @@
 # its affiliates is strictly prohibited.
 
 [package]
-version = "2.4.1"  # Semantic Versionning is used: https://semver.org/
+version = "2.4.2"  # Semantic Versionning is used: https://semver.org/
 category = "Simulation"
 title = "Urdf Importer Extension"
 description = "URDF Importer"
@@ -66,12 +66,15 @@ path = "bin/*.plugin"
 recursive = false
 
 [settings]
+# Set the initial width of the file picker to 390
 exts."omni.kit.window.filepicker".detail_width_init = 390
+# Set the minimum width of the file picker to 390
 exts."omni.kit.window.filepicker".detail_width_min = 390
+# Set the maximum width of the file picker to 600
 exts."omni.kit.window.filepicker".detail_width_max = 600
 
 [[test]]
-dependencies = []
+dependencies = [ "omni.hydra.usdrt_delegate"]
 
 
 args = [
@@ -111,6 +114,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [documentation]

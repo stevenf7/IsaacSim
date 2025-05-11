@@ -1,5 +1,5 @@
 [package]
-version = "2.2.9"
+version = "2.2.10"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor Examples"
 description = "Provides example usage and snippets for Isaac Sim PhysX-raycast-based sensors."
@@ -68,6 +68,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [[test]]

@@ -1,5 +1,5 @@
 [package]
-version = "0.1.9"
+version = "0.1.10"
 category = "Simulation"
 title = "Isaac Sim Clash Detection"
 description = "Mesh Collision Detection Utility"
@@ -28,8 +28,8 @@ name = "isaacsim.util.clash_detection.tests"
 
 [[test]]
 dependencies=[
-"omni.kit.test",
 "omni.kit.property.bundle",
+"omni.kit.test",
 ]
 
 args = [
@@ -69,4 +69,5 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]

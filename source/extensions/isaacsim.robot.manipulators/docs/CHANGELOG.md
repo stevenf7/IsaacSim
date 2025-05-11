@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.1] - 2025-05-10
+### Changed
+- Enable FSD in test settings
+
 ## [3.2.0] - 2025-04-22
 ### Changed
 - Update to new Surface Gripper

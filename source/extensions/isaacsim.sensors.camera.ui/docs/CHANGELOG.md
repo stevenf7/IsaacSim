@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.11] - 2025-05-10
+### Changed
+- Enable FSD in test settings
+
 ## [0.1.10] - 2025-04-16
 ### Changed
 - Assets root path lookup moved to on-click callback, rather than on extension startup

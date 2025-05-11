@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.9] - 2025-05-10
+### Changed
+- Enable FSD in test settings
+
 ## [2.0.8] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

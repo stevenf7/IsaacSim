@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "2.4.1"
+version = "2.4.2"
 category = "Simulation"
 title = "Omniverse MJCF Importer"
 description = "MJCF Importer"
@@ -42,7 +42,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
-
+dependencies = [ "omni.hydra.usdrt_delegate"]
 # this is to catch issues where our assimp is out of sync with the one that comes with
 # asset importer as this can cause segfaults due to binary incompatibility.
 
@@ -92,6 +92,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [documentation]

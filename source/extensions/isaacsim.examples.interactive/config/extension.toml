@@ -1,5 +1,5 @@
 [package]
-version = "4.6.1"
+version = "4.6.2"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -134,6 +134,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
     ### Extension specific args
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",

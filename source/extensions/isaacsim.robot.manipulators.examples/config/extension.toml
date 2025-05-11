@@ -1,5 +1,5 @@
 [package]
-version = "1.0.9"
+version = "1.0.10"
 category = "example"
 title = "Manipulators Examples"
 description = "examples of manipulators and grippers"
@@ -58,6 +58,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [[test]]
