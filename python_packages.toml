@@ -50,7 +50,7 @@ inventory.include = [
 pyproject.description = "Isaac Sim kernel"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kernel"]
 pyproject.dependencies = [
-    "omniverse-kit==107.3.0.193460",
+    "omniverse-kit==107.3.0.193847",
 ]
 # inventory (relative to the build config)
 inventory.include = [
