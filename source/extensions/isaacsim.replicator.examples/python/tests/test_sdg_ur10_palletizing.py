@@ -37,9 +37,8 @@ def validate_folder_contents(path: str, expected_counts: dict[str, int]) -> bool
 class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
         omni.usd.get_context().close_stage()
@@ -121,6 +120,8 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 self._overlap_extent = carb.Float3(half_ext[0], half_ext[1], half_ext[2] * 1.1)
 
                 self._timeline = omni.timeline.get_timeline_interface()
+                # Make sure the timeline can continueously run
+                self._timeline.set_looping(True)
                 if not self._timeline.is_playing():
                     print("[PalletizingSDGDemo] Please start the palletizing demo first..")
                     return False

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.14] - 2025-05-10
+### Changed
+- fixed timeline tests by making sure the timeline is stopped and the looping is set to its original value
+
 ## [1.1.13] - 2025-05-09
 ### Added
 - Added data augmentation example test with golden data comparison

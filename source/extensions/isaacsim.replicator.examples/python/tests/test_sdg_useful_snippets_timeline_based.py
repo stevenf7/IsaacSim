@@ -141,6 +141,12 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         duration_for_target_writes = (target_num_writes * SENSOR_DT) + (5.0 / STAGE_FPS)
         await run_custom_fps_example_async(duration_seconds=duration_for_target_writes)
 
+        # Cleanup the timeline
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.stop()
+        timeline.commit()
+        timeline.set_looping(True)
+
         # Validate the output directory contents
         self.assertTrue(
             validate_folder_contents(
@@ -150,8 +156,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
     async def test_sdg_snippet_subscribers_and_events(self):
         import asyncio
+        import math
         import time
 
+        import carb.eventdispatcher
         import carb.events
         import carb.settings
         import omni.kit.app
@@ -181,13 +189,13 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         APP_FPS = 120
 
         # Duration after which to clear subscribers and print the cached events
-        MAX_DURATION = 3.0
-        PRINT_EVENTS = False
+        SUBSCRIBER_WALL_TIME_LIMIT_SEC = 0.5
+        PRINT_EVENTS = True
 
         def on_timeline_event(event: omni.timeline.TimelineEventType):
-            global timeline_sub
-            global timeline_events
-            global wall_start_time
+            nonlocal wall_start_time
+            nonlocal timeline_sub
+            nonlocal timeline_events
             elapsed_wall_time = time.time() - wall_start_time
 
             # Cache only time advance events
@@ -197,83 +205,86 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                 timeline_events.append((elapsed_wall_time, event_name, event_payload))
 
             # Clear subscriber and print cached events
-            if elapsed_wall_time > MAX_DURATION:
+            if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
                 if timeline_sub is not None:
                     timeline_sub.unsubscribe()
                     timeline_sub = None
                 num_events = len(timeline_events)
-                fps = num_events / MAX_DURATION
+                fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
                 print(f"[timeline] captured {num_events} events with aprox {fps} FPS")
                 if PRINT_EVENTS:
                     for i, (wall_time, event_name, payload) in enumerate(timeline_events):
                         print(f"\t[timeline][{i}]\ttime={wall_time:.4f};\tevent={event_name};\tpayload={payload}")
 
         def on_physics_step(dt: float):
-            global physx_events
-            global wall_start_time
+            nonlocal wall_start_time
+            nonlocal physx_events
+            nonlocal physx_sub
             elapsed_wall_time = time.time() - wall_start_time
 
             # Cache physics events
             physx_events.append((elapsed_wall_time, dt))
 
             # Clear subscriber and print cached events
-            if elapsed_wall_time > MAX_DURATION:
+            if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
                 # Physics unsubscription needs to be deferred from the callback function
                 # see: '[Error] [omni.physx.plugin] Subscription cannot be changed during the event call'
                 async def clear_physx_sub_async():
-                    global physx_sub
+                    nonlocal physx_sub
                     if physx_sub is not None:
                         physx_sub.unsubscribe()
                         physx_sub = None
 
                 asyncio.ensure_future(clear_physx_sub_async())
                 num_events = len(physx_events)
-                fps = num_events / MAX_DURATION
+                fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
                 print(f"[physics] captured {num_events} events with aprox {fps} FPS")
                 if PRINT_EVENTS:
                     for i, (wall_time, dt) in enumerate(physx_events):
                         print(f"\t[physics][{i}]\ttime={wall_time:.4f};\tdt={dt};")
 
-        def on_stage_render_event(event: omni.usd.StageRenderingEventType):
-            global stage_render_sub
-            global stage_render_events
-            global wall_start_time
+        def on_stage_render_event(event: carb.eventdispatcher.Event):
+            nonlocal wall_start_time
+            nonlocal stage_render_sub
+            nonlocal stage_render_events
             elapsed_wall_time = time.time() - wall_start_time
 
-            event_name = omni.usd.StageRenderingEventType(event.type).name
+            event_name = event.event_name
             event_payload = event.payload
             stage_render_events.append((elapsed_wall_time, event_name, event_payload))
 
-            if elapsed_wall_time > MAX_DURATION:
+            if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
                 if stage_render_sub is not None:
-                    stage_render_sub.unsubscribe()
+                    stage_render_sub.reset
                     stage_render_sub = None
                 num_events = len(stage_render_events)
-                fps = num_events / MAX_DURATION
+                fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
                 print(f"[stage render] captured {num_events} events with aprox {fps} FPS")
                 if PRINT_EVENTS:
                     for i, (wall_time, event_name, payload) in enumerate(stage_render_events):
                         print(f"\t[stage render][{i}]\ttime={wall_time:.4f};\tevent={event_name};\tpayload={payload}")
 
-        def on_app_update(event: carb.events.IEvent):
-            global app_sub
-            global app_update_events
-            global wall_start_time
+        def on_app_update(event: carb.eventdispatcher.Event):
+            nonlocal wall_start_time
+            nonlocal app_sub
+            nonlocal app_update_events
             elapsed_wall_time = time.time() - wall_start_time
 
-            event_type = event.type
+            # Cache app update events
+            event_name = event.event_name
             event_payload = event.payload
-            app_update_events.append((elapsed_wall_time, event_type, event_payload))
+            app_update_events.append((elapsed_wall_time, event_name, event_payload))
 
-            if elapsed_wall_time > MAX_DURATION:
+            if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
                 if app_sub is not None:
+                    app_sub.reset()
                     app_sub = None
                 num_events = len(app_update_events)
-                fps = num_events / MAX_DURATION
+                fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
                 print(f"[app] captured {num_events} events with aprox {fps} FPS")
                 if PRINT_EVENTS:
-                    for i, (wall_time, event_type, payload) in enumerate(app_update_events):
-                        print(f"\t[app][{i}]\ttime={wall_time:.4f};\tevent={event_type};\tpayload={payload}")
+                    for i, (wall_time, event_name, payload) in enumerate(app_update_events):
+                        print(f"\t[app][{i}]\ttime={wall_time:.4f};\tevent={event_name};\tpayload={payload}")
 
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()
@@ -351,7 +362,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
         # Start the timeline
         timeline.set_current_time(0)
-        timeline.set_end_time(MAX_DURATION + 1)
+        timeline.set_end_time(SUBSCRIBER_WALL_TIME_LIMIT_SEC + 1)
         timeline.set_looping(False)
         timeline.play()
         timeline.commit()
@@ -363,12 +374,46 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         physx_events = []
         physx_sub = omni.physx.get_physx_interface().subscribe_physics_step_events(on_physics_step)
         stage_render_events = []
-        stage_render_sub = (
-            omni.usd.get_context().get_rendering_event_stream().create_subscription_to_pop(on_stage_render_event)
+        stage_render_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_rendering_event_name(
+                omni.usd.StageRenderingEventType.NEW_FRAME, True
+            ),
+            on_event=on_stage_render_event,
+            observer_name="subscribers_and_events.on_stage_render_event",
         )
+
         app_update_events = []
         app_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
             on_event=on_app_update,
-            observer_name="TestSDGUsefulSnippets.test_sdg_snippet_subscribers_and_events.on_app_update",
+            observer_name="subscribers_and_events.on_app_update",
         )
+
+        # Run the application for a while to trigger the events, with a buffer to ensure subscribers have enough wall-clock time
+        num_app_updates = int(math.ceil(SUBSCRIBER_WALL_TIME_LIMIT_SEC * STAGE_FPS * 4))
+        for _ in range(num_app_updates):
+            await omni.kit.app.get_app().next_update_async()
+
+        print(f"Finished running the application for {num_app_updates} updates.")
+        print(f"Wall time: {time.time() - wall_start_time:.4f} seconds")
+        print(f"Number of timeline events: {len(timeline_events)}")
+        print(f"Number of physics events: {len(physx_events)}")
+        print(f"Number of stage render events: {len(stage_render_events)}")
+        print(f"Number of app update events: {len(app_update_events)}")
+
+        # Cleanup the timeline
+        timeline.stop()
+        timeline.commit()
+        timeline.set_looping(True)
+
+        # Check that events were captured
+        self.assertTrue(len(timeline_events) > 0, "Timeline events should be captured")
+        self.assertTrue(len(physx_events) > 0, "Physx events should be captured")
+        self.assertTrue(len(stage_render_events) > 0, "Stage render events should be captured")
+        self.assertTrue(len(app_update_events) > 0, "App update events should be captured")
+
+        # Check that all events have been captured and the subscribers have been reset
+        self.assertTrue(timeline_sub is None, "Timeline subscriber should be reset")
+        self.assertTrue(physx_sub is None, "Physx subscriber should be reset")
+        self.assertTrue(stage_render_sub is None, "Stage render subscriber should be reset")
+        self.assertTrue(app_sub is None, "App update subscriber should be reset")
