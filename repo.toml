@@ -698,7 +698,6 @@ exclude = [
   "tests-startup*${shell_ext}",
   "tests-selector*${shell_ext}",
   "tests-unit*${shell_ext}",
-  "tests-isaacsim.util.internal*${shell_ext}",
   "tests-isaacsim.benchmarks*${shell_ext}",
   "tests-standalone*${shell_ext}",
   "tests-nativepython*${shell_ext}",
@@ -787,30 +786,6 @@ stdout_fail_patterns.exclude = [
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 tc_report_enabled = false
 timeout = 5000
-
-[repo_test.suites.internalpythontests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-
-[[repo_test.suites.internalpythontests.group]]
-args = [
-  "--portable-root ${test_root}/portable_root",
-  "--reset-user",
-  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
-]
-exclude = []
-include = ["tests-isaacsim.util.internal*${shell_ext}"]
-stdout_fail_patterns.exclude = [
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
-]
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
-tc_report_enabled = false
-timeout = 5000
-
-[[repo_test.suites.internalpythontests.bucket]]
-include = ["tests-isaacsim.util.internal*${shell_ext}"]
-name = "1"
 
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"
@@ -976,7 +951,7 @@ publish_root = "${root}/_build/$platform/$config"
 ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
-exts.exclude = ["isaacsim.util.internal", "omni.kit.widget.cache_indicator"]
+exts.exclude = []
 exts.include = [
   "omni.isaac.*",
   "omni.exporter.urdf",
@@ -1187,7 +1162,7 @@ python_analysis_extra_mapping = [
 ]
 
 [repo_generate_changelog]
-exts_exclude = ["isaacsim.util.internal"]
+exts_exclude = []
 extscache_paths = ["${root}/source/apps/isaacsim.exp.extscache.kit"]
 home_path = "${root}/source/extensions/"
 
@@ -1349,7 +1324,6 @@ excluded_extensions = [
   "omni.pip.cloud",
   # others
   "omni.isaac.common_includes",
-  "isaacsim.util.internal",
   "omni.isaac.unit_converter",
 ]
 extension_folder = [

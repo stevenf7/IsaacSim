@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2025-05-09
+### Changed
+- Add file utility functions
+
 ## [1.1.0] - 2025-04-09
 ### Changed
 - Add authentication callback for ETM tests

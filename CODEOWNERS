@@ -90,7 +90,6 @@ source/extensions/isaacsim.test.docstring/ hmazhar@nvidia.com aserranomuno@nvidi
 source/extensions/isaacsim.util.camera_inspector/ hmazhar@nvidia.com ahaidu@nvidia.com
 source/extensions/isaacsim.util.clash_detection/ hmazhar@nvidia.com rgasoto@nvidia.com
 source/extensions/isaacsim.util.debug_draw/ hmazhar@nvidia.com
-source/extensions/isaacsim.util.internal/ hmazhar@nvidia.com
 source/extensions/isaacsim.util.merge_mesh/ hmazhar@nvidia.com rgasoto@nvidia.com
 source/extensions/isaacsim.util.physics/ hmazhar@nvidia.com stevfeng@nvidia.com
 source/extensions/isaacsim.xr.openxr/ hmazhar@nvidia.com rwiltz@nvidia.com

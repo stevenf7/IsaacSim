@@ -18,7 +18,7 @@ import omni.client
 import omni.usd
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.sensors.camera import Camera
-from isaacsim.util.internal.utils import file_utils
+from isaacsim.storage.native import path_dirname, path_relative
 from omni.client import create_folder, write_file
 from omni.isaac.core import World
 from omni.isaac.core.utils.bounds import compute_aabb, create_bbox_cache, recompute_extents
@@ -91,9 +91,9 @@ class AssetRenderer:
         asset_path = job_config["asset_path"]
 
         if "scene_path" in job_config:
-            scenes_dir = file_utils.dirname(job_config["scene_path"])
-            env_path = file_utils.relpath(env_path, scenes_dir)
-            asset_path = file_utils.relpath(asset_path, scenes_dir)
+            scenes_dir = path_dirname(job_config["scene_path"])
+            env_path = path_relative(env_path, scenes_dir)
+            asset_path = path_relative(asset_path, scenes_dir)
             save_stage(job_config["scene_path"], save_and_reload_in_place=True)
 
         # Add the references

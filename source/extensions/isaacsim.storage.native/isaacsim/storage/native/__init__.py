@@ -8,4 +8,5 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 from .impl.extension import *
+from .impl.file_utils import *
 from .nucleus import *

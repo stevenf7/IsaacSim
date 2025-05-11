@@ -133,16 +133,14 @@ import posixpath
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
-# Enable isaacsim.util.internal
-import omni.kit
-
-omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate("isaacsim.util.internal", True)
-import isaacsim.util.internal.utils.render_assets as render_assets
 import omni.client
+import omni.kit
 import omni.timeline
-from isaacsim.util.internal.utils.file_utils import join
+from isaacsim.storage.native import path_join
 from omni.isaac.core import World
 from omni.isaac.nucleus import is_dir, is_file
+
+from . import render_asset_utils as render_assets
 
 
 def is_a_dir(path):
@@ -171,10 +169,12 @@ def find_files(start_path, filter_fn=lambda a: True, ignore_dir_fn=lambda d: Fal
         result, entries = omni.client.list(path)
         if result == omni.client.Result.OK:
             files = files + [
-                join(path, e.relative_path) for e in entries if (e.flags & 4) == 0 and filter_fn(e.relative_path)
+                path_join(path, e.relative_path) for e in entries if (e.flags & 4) == 0 and filter_fn(e.relative_path)
             ]
             remaining_folders = remaining_folders + [
-                join(path, e.relative_path) for e in entries if (e.flags & 4) > 0 and not ignore_dir_fn(e.relative_path)
+                path_join(path, e.relative_path)
+                for e in entries
+                if (e.flags & 4) > 0 and not ignore_dir_fn(e.relative_path)
             ]
     return files
 
