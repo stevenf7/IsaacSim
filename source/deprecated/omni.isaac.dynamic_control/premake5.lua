@@ -16,7 +16,6 @@ includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
-    target_deps .. "/rtx_plugins/include",
     target_deps .. "/omni_client_library/include",
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
 }

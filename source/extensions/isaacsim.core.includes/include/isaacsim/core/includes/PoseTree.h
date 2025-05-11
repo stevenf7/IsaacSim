@@ -21,7 +21,6 @@
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/ObjectTypes.h>
 #include <omni/physics/tensors/TensorApi.h>
-#include <omni/usd/UsdUtils.h>
 #include <physx/include/foundation/PxTransform.h>
 #include <usdrt/scenegraph/usd/rt/xformable.h>
 

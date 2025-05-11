@@ -1,10 +1,13 @@
 # Changelog
+## [3.0.1] - 2025-05-11
+### Changed
+- Remove internal build time dependency
 
-## [3.0.0] - 2025-05-07
+## [3.0.0] - 2025-05-10
 ### Changed
 - IsaacReadSimulationTime and IsaacReadSystemTime use referenceTimeNumerator and referenceTimeDenominator directly
 - Simplified annotator structure for getting sim and system time
-- Modified input arguments for python bindings to take a tuple instead of a rational time object which could not be created by the user 
+- Modified input arguments for python bindings to take a tuple instead of a rational time object which could not be created by the user
 
 ### Removed
 - deprecated function and their python bindings getSimTimeAtSwhFrame, getSimTimeMonotonicAtSwhFrame, getSystemTimeAtSwhFrame, get_sim_time_at_swh_frame, get_sim_time_monotonic_at_swh_frame, get_system_time_at_swh_frame

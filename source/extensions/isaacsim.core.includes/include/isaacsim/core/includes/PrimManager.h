@@ -13,10 +13,8 @@
 #include "Component.h"
 #include "ComponentManager.h"
 
-#include <omni/usd/UtilsIncludes.h>
-//
+#include <isaacsim/core/includes/UsdNoticeListener.h>
 #include <omni/fabric/usd/PathConversion.h>
-#include <omni/usd/UsdUtils.h>
 
 #include <memory>
 #include <string>
@@ -31,21 +29,21 @@ namespace includes
 {
 
 /**
- * @class UsdNoticeListener
+ * @class PrimManagerUsdNoticeListener
  * @brief Custom USD notice listener for handling object changes in the stage
  * @details
  * Implements a specialized listener for USD object change notifications, specifically handling
  * prim additions, removals, and modifications. This listener is essential for maintaining
  * synchronization between the USD stage and component management system.
  */
-class UsdNoticeListener : public omni::usd::UsdUtils::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
+class PrimManagerUsdNoticeListener : public isaacsim::core::includes::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
 {
 public:
     /**
      * @brief Constructs a new USD notice listener
      * @param[in] manager Pointer to the component manager that will handle notifications
      */
-    UsdNoticeListener(ComponentManager* manager) : m_manager(manager)
+    PrimManagerUsdNoticeListener(ComponentManager* manager) : m_manager(manager)
     {
         m_stage = m_manager->getStage();
     }
@@ -144,7 +142,7 @@ public:
     virtual void initialize(pxr::UsdStageWeakPtr stage)
     {
         m_stage = stage;
-        m_noticeListener = std::make_unique<UsdNoticeListener>(this);
+        m_noticeListener = std::make_unique<PrimManagerUsdNoticeListener>(this);
         m_noticeListener->registerListener();
     }
 
@@ -279,7 +277,7 @@ protected:
     std::unordered_map<std::string, std::unique_ptr<ComponentType>> m_components;
 
     /** @brief USD notice listener for stage changes */
-    std::unique_ptr<UsdNoticeListener> m_noticeListener;
+    std::unique_ptr<PrimManagerUsdNoticeListener> m_noticeListener;
 
     /** @brief Mutex for thread-safe component operations */
     std::mutex m_componentMtx;

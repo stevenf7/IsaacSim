@@ -24,11 +24,8 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/fabric/IToken.h>
 #include <omni/fabric/SimStageWithHistory.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 #include <algorithm>
 #include <iostream>
@@ -46,10 +43,8 @@ namespace physx
 {
 
 
-LidarSensor::LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::SyntheticData* syntheticDataPtr)
-    : RangeSensorComponent(physxPtr)
+LidarSensor::LidarSensor(omni::physx::IPhysx* physxPtr) : RangeSensorComponent(physxPtr)
 {
-    m_syntheticDataPtr = syntheticDataPtr;
 }
 
 LidarSensor::~LidarSensor() = default;

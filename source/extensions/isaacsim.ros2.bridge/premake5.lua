@@ -47,7 +47,6 @@ for _, ros_distro in ipairs(ros_distributions) do
     includedirs {
         "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/cuda/include",
-        "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include",
@@ -55,6 +54,7 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/source/extensions/isaacsim.ros2.bridge",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{kit_sdk_bin_dir}/dev/fabric/include/",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/type_description_interfaces",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/service_msgs",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_dynamic_typesupport",
@@ -149,7 +149,6 @@ includedirs {
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/python/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     extsbuild_dir .. "/omni.syntheticdata/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",

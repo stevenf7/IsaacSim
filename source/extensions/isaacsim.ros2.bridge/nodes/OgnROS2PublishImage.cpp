@@ -16,7 +16,7 @@
 #    include <isaacsim/ros2/bridge/IpcBufferManager.h>
 #endif
 
-#include <carb/graphics/GraphicsTypes.h>
+#include <carb/RenderingTypes.h>
 #include <carb/profiler/Profile.h>
 #include <carb/tasking/ITasking.h>
 #include <carb/tasking/TaskingUtils.h>
@@ -40,7 +40,7 @@ public:
 
     void* inputDataPtr;
     void* outputDataPtr;
-    carb::graphics::Format resourceFormat;
+    carb::Format resourceFormat;
     int width;
     int height;
     size_t bufferSize;
@@ -64,7 +64,7 @@ public:
 
     void* inputDataPtr;
     void* outputDataPtr;
-    carb::graphics::Format resourceFormat;
+    carb::Format resourceFormat;
     int width;
     int height;
     size_t bufferSize;
@@ -264,7 +264,7 @@ public:
 
         threadData.inputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
         threadData.outputDataPtr = dataPtr;
-        threadData.resourceFormat = static_cast<carb::graphics::Format>(db.inputs.format());
+        threadData.resourceFormat = static_cast<carb::Format>(db.inputs.format());
         threadData.width = db.inputs.width();
         threadData.height = db.inputs.height();
         threadData.bufferSize = db.inputs.bufferSize();
@@ -309,9 +309,9 @@ public:
             cudaArray_t levelArray = 0;
             CUDA_CHECK(
                 cudaGetMipmappedArrayLevel(&levelArray, reinterpret_cast<cudaMipmappedArray_t>(data.inputDataPtr), 0));
-            switch (static_cast<carb::graphics::Format>(data.resourceFormat))
+            switch (static_cast<carb::Format>(data.resourceFormat))
             {
-            case carb::graphics::Format::eR32_SFLOAT:
+            case carb::Format::eR32_SFLOAT:
                 if (data.width * data.height * sizeof(float) != data.totalBytes)
                 {
                     CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",
@@ -356,7 +356,7 @@ public:
 
         threadData.inputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
         threadData.outputDataPtr = dataPtr;
-        threadData.resourceFormat = static_cast<carb::graphics::Format>(db.inputs.format());
+        threadData.resourceFormat = static_cast<carb::Format>(db.inputs.format());
         threadData.width = db.inputs.width();
         threadData.height = db.inputs.height();
         threadData.bufferSize = db.inputs.bufferSize();
@@ -509,9 +509,9 @@ public:
             cudaArray_t levelArray = 0;
             CUDA_CHECK(
                 cudaGetMipmappedArrayLevel(&levelArray, reinterpret_cast<cudaMipmappedArray_t>(data.inputDataPtr), 0));
-            switch (static_cast<carb::graphics::Format>(data.resourceFormat))
+            switch (static_cast<carb::Format>(data.resourceFormat))
             {
-            case carb::graphics::Format::eR32_SFLOAT:
+            case carb::Format::eR32_SFLOAT:
                 if (data.width * data.height * sizeof(float) != data.totalBytes)
                 {
                     CARB_LOG_ERROR("totalBytes doesn't match eR32_SFLOAT %zu %zu",

@@ -11,17 +11,13 @@
 #pragma once
 
 // #include <carb/filesystem/IFileSystem.h>
+#include <isaacsim/core/includes/Conversions.h>
+#include <isaacsim/core/includes/UsdUtilities.h>
+#include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/physics/tensors/IArticulationView.h>
 #include <omni/physics/tensors/IRigidBodyView.h>
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/TensorApi.h>
-// clang-format off
-#include <omni/usd/UtilsIncludes.h>
-#include <omni/usd/UsdUtils.h>
-// clang-format on
-
-#include <isaacsim/core/includes/Conversions.h>
-#include <isaacsim/core/simulation_manager/ISimulationManager.h>
 using namespace omni::physics::tensors;
 
 namespace isaacsim
@@ -143,7 +139,7 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f bodyTranslation, pxr::
     // Pose is global so offset by parent pose
     pxr::GfMatrix4d parentToWorldMat =
         pxr::UsdGeomXformable(prim).ComputeParentToWorldTransform(pxr::UsdTimeCode::Default());
-    omni::usd::UsdUtils::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix() * parentToWorldMat.GetInverse());
+    isaacsim::core::includes::setLocalTransformMatrix(prim, usdBodyPose.GetMatrix() * parentToWorldMat.GetInverse());
 }
 
 /**
@@ -190,11 +186,11 @@ inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
 
     if (doScale)
     {
-        auto currentTransformMat = omni::usd::UsdUtils::getLocalTransformMatrix(prim);
+        auto currentTransformMat = isaacsim::core::includes::getLocalTransformMatrix(prim);
         pxr::GfMatrix4d scaleMat;
         scaleMat.SetScale(pxBodyScale);
         auto scaledTransformMat = scaleMat * currentTransformMat;
-        omni::usd::UsdUtils::setLocalTransformMatrix(prim, scaledTransformMat);
+        isaacsim::core::includes::setLocalTransformMatrix(prim, scaledTransformMat);
     }
 }
 

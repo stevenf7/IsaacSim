@@ -12,8 +12,6 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <carb/graphics/GraphicsTypes.h>
-
 #include <isaacsim/ros2/bridge/Ros2Factory.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 

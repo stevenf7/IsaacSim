@@ -1,4 +1,7 @@
 # Changelog
+## [14.4.1] - 2025-05-10
+### Changed
+- Remove internal build time dependency
 
 ## [14.4.0] - 2025-05-09
 ### Changed

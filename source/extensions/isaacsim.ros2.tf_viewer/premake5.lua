@@ -78,7 +78,7 @@ includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/python/include/python3.11",
     "%{root}/_build/target-deps/python/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/nlohmann_json/include",
     "%{root}/source/extensions/isaacsim.ros2.bridge",
     "%{root}/source/extensions/isaacsim.ros2.bridge/include",

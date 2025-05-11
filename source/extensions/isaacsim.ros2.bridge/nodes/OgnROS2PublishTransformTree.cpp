@@ -17,7 +17,6 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/TensorApi.h>
-#include <omni/usd/UsdUtils.h>
 
 #include <OgnROS2PublishTransformTreeDatabase.h>
 #include <iomanip>

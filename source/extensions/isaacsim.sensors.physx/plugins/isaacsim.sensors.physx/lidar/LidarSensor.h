@@ -15,7 +15,6 @@
 #include <extensions/PxSceneQueryExt.h>
 #include <isaacsim/core/includes/Color.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/lidar.h>
@@ -45,9 +44,8 @@ public:
     /**
      * @brief Constructs a new LiDAR sensor instance
      * @param[in] physxPtr Pointer to the PhysX interface for physics simulation
-     * @param[in] syntheticDataPtr Pointer to the synthetic data interface for semantic information
      */
-    LidarSensor(omni::physx::IPhysx* physxPtr, omni::syntheticdata::SyntheticData* syntheticDataPtr);
+    LidarSensor(omni::physx::IPhysx* physxPtr);
 
     /**
      * @brief Virtual destructor for proper cleanup
@@ -268,41 +266,24 @@ private:
                     }
                     if (drawPoints)
                     {
-                        carb::scenerenderer::PrimitiveVertex data;
-
-                        // ::physx::PxVec3 diff = raycastHit.position - origin;
-
-                        // auto temp = raycastHit.position - diff.getNormalized();
                         // set ratio for color.  should be zero at m_minDepth and unity at m_maxDepth
                         auto ratio = (m_linearDepth[i] - m_minDepth * m_metersPerUnit) /
                                      ((m_maxDepth - m_minDepth) * m_metersPerUnit);
 
-                        data.position = hitPos;
-                        data.color = isaacsim::core::includes::color::distToRgba(ratio);
-                        data.width = 5.0;
-
-                        m_pointDrawing->addVertex(data);
-                        // data.position = { temp.x, temp.y, temp.z };
-                        // m_pointDrawing->addVertex(data);
+                        m_pointDrawing->addVertex(hitPos, isaacsim::core::includes::color::distToRgba(ratio), 5.0);
                     }
 
                     if (drawLines)
                     {
-                        carb::scenerenderer::PrimitiveVertex data;
 
                         ::physx::PxVec3 diff = raycastHit.position - origin;
                         auto temp = origin + diff.getNormalized() * m_minDepth;
                         // set ratio for color.  should be zero at m_minDepth and unity at m_maxDepth
                         auto ratio = (m_linearDepth[i] - m_minDepth * m_metersPerUnit) /
                                      ((m_maxDepth - m_minDepth) * m_metersPerUnit);
-
-                        data.position = { temp.x, temp.y, temp.z };
-                        data.color = isaacsim::core::includes::color::distToRgba(ratio);
-                        data.width = 1.0;
-
-                        m_lineDrawing->addVertex(data);
-                        data.position = hitPos;
-                        m_lineDrawing->addVertex(data);
+                        m_lineDrawing->addVertex(
+                            { temp.x, temp.y, temp.z }, isaacsim::core::includes::color::distToRgba(ratio), 1.0);
+                        m_lineDrawing->addVertex(hitPos, isaacsim::core::includes::color::distToRgba(ratio), 1.0);
                     }
                 }
                 else
@@ -315,17 +296,10 @@ private:
                     m_hitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z };
                     if (drawLines)
                     {
-                        carb::scenerenderer::PrimitiveVertex data;
-
                         auto temp = origin + unitDir * m_minDepth;
 
-                        data.position = { temp.x, temp.y, temp.z };
-                        data.color = { 1, 1, 1, 50.0f / 255.0f };
-                        data.width = 1.0;
-
-                        m_lineDrawing->addVertex(data);
-                        data.position = { hitPos.x, hitPos.y, hitPos.z };
-                        m_lineDrawing->addVertex(data);
+                        m_lineDrawing->addVertex({ temp.x, temp.y, temp.z }, { 1, 1, 1, 50.0f / 255.0f }, 1.0);
+                        m_lineDrawing->addVertex({ hitPos.x, hitPos.y, hitPos.z }, { 1, 1, 1, 50.0f / 255.0f }, 1.0);
                     }
                 }
             }
@@ -485,11 +459,6 @@ private:
      * @brief Final rotation of the sensor in world space
      */
     ::physx::PxQuat m_finalRotation;
-
-    /**
-     * @brief Pointer to synthetic data interface for semantic information
-     */
-    omni::syntheticdata::SyntheticData* m_syntheticDataPtr = nullptr;
 
     /**
      * @brief Flag to enable/disable semantic data collection

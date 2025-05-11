@@ -9,10 +9,10 @@
 // its affiliates is strictly prohibited.
 
 #pragma once
-#include <carb/cuda/CudaRuntime.h>
 #include <carb/logging/Log.h> // CudaRintime.h does not have CARB_LOG_ERROR
 
 #include <cuda.h>
+#include <cuda_runtime.h>
 
 namespace isaacsim
 {
@@ -20,6 +20,19 @@ namespace core
 {
 namespace includes
 {
+
+#define CUDA_SUCCEEDED(result) ((result) == cudaSuccess)
+#define CUDA_FAILED(result) ((result) != cudaSuccess)
+
+#define CUDA_CHECK(result)                                                                                             \
+    {                                                                                                                  \
+        cudaError_t _result = (result);                                                                                \
+        if (CUDA_FAILED(_result))                                                                                      \
+        {                                                                                                              \
+            CARB_LOG_ERROR(                                                                                            \
+                "CUDA error %d: %s - %s)", (_result), cudaGetErrorName(_result), cudaGetErrorString(_result));         \
+        }                                                                                                              \
+    }
 
 /**
  * @class ScopedDevice

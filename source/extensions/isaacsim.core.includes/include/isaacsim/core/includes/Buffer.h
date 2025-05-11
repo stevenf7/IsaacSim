@@ -11,9 +11,6 @@
 
 #include "ScopedCudaDevice.h"
 
-#include <carb/cuda/CudaRuntime.h>
-#include <carb/cudainterop/CudaInterop.h>
-
 #include <cuda.h>
 #include <iostream>
 #include <vector>

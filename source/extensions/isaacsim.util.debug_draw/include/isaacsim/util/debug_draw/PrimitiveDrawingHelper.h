@@ -10,14 +10,26 @@
 
 #pragma once
 
-#include <carb/scenerenderer/SceneRendererTypes.h>
-
 #include <omni/usd/UsdContextIncludes.h>
 //
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 
+#include <memory>
 #include <vector>
+
+// Forward declarations
+namespace carb
+{
+struct Float3;
+struct ColorRgba;
+
+namespace scenerenderer
+{
+struct PrimitiveList;
+typedef PrimitiveList* PrimitiveListId;
+}
+}
 
 namespace isaacsim
 {
@@ -27,6 +39,9 @@ namespace debug_draw
 {
 namespace drawing
 {
+
+// Forward declaration for private implementation class
+class PrimitiveDrawingHelperImpl;
 
 /**
  * @brief Helper class for drawing primitive shapes in 3D space
@@ -75,12 +90,6 @@ public:
     void addVertex(const carb::Float3& position, const carb::ColorRgba& color, const float width);
 
     /**
-     * @brief Adds a single pre-configured primitive vertex
-     * @param[in] vertex The vertex to add
-     */
-    void addVertex(const carb::scenerenderer::PrimitiveVertex& vertex);
-
-    /**
      * @brief Adds multiple vertices with individual attributes
      * @param[in] positions Vector of 3D positions
      * @param[in] colors Vector of colors for each position
@@ -124,18 +133,6 @@ public:
     void setWidth(float width);
 
     /**
-     * @brief Adds multiple pre-configured primitive vertices
-     * @param[in] vertices Vector of vertices to add
-     */
-    void addVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices);
-
-    /**
-     * @brief Sets vertices directly, replacing any existing vertices
-     * @param[in] vertices Vector of vertices to set
-     */
-    void setVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices);
-
-    /**
      * @brief Renders all currently stored vertices
      */
     void draw();
@@ -168,13 +165,17 @@ private:
      */
     bool isValid();
 
+    // Basic members
     omni::usd::UsdContext* m_usdContext;
     RenderingMode m_renderingMode;
     bool m_worldSpace;
     bool m_depthTest;
-    carb::scenerenderer::PrimitiveList* m_primitiveList;
     bool m_dirty;
-    std::vector<carb::scenerenderer::PrimitiveVertex> m_vertices;
+
+    // Opaque pointer to implementation details
+    struct VertexData;
+    std::unique_ptr<VertexData> m_vertexData;
+    carb::scenerenderer::PrimitiveListId m_primitiveList;
 };
 }
 }

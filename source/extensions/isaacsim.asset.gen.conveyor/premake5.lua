@@ -14,7 +14,6 @@ include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.asset.gen.conveyor/include",
-    target_deps .. "/rtx_plugins/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",

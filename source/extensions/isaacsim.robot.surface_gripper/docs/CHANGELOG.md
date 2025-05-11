@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.1] - 2025-05-10
+### Changed
+- Remove internal build time dependency
+
 ## [3.0.0] - 2025-04-16
 ### Changed
 - New Surface Gripper component for gripper schema.

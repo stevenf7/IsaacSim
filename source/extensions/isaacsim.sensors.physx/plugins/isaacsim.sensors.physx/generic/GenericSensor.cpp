@@ -22,8 +22,6 @@
 #include <isaacsim/core/includes/Pose.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 
 #include <chrono>
 #include <iostream>

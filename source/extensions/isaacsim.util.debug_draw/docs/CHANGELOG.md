@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.0] - 2025-05-10
+### Changed
+- Removed interfaces that required internal dependencies
+
 ## [2.0.9] - 2025-05-02
 ### Changed
 - Remove all Dynamic control compile time dependencies

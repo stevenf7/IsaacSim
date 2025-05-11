@@ -10,7 +10,6 @@
 
 #include "OgnIsaacGenerate32FC1Database.h"
 
-#include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
 #include <cmath>

@@ -19,8 +19,6 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
@@ -128,8 +126,8 @@ public:
         omni::math::linalg::vec3d translation = usdTransform.ExtractTranslation();
         usdTransform.Orthonormalize();
 
-        carb::scenerenderer::PrimitiveVertex data;
-        data.width = thickness;
+        carb::Float3 position;
+        float width = thickness;
 
         float angle = 0.0f;
         if (drawAxis[0])
@@ -139,12 +137,11 @@ public:
                 omni::math::linalg::vec3d point =
                     usdTransform.TransformDir(omni::math::linalg::vec3d(0, radius * cos(angle), radius * sin(angle))) +
                     translation;
-                data.position.x = static_cast<float>(point.GetArray()[0]);
-                data.position.y = static_cast<float>(point.GetArray()[1]);
-                data.position.z = static_cast<float>(point.GetArray()[2]);
-                data.color = *color[0];
+                position.x = static_cast<float>(point.GetArray()[0]);
+                position.y = static_cast<float>(point.GetArray()[1]);
+                position.z = static_cast<float>(point.GetArray()[2]);
 
-                m_lineDrawing->addVertex(data);
+                m_lineDrawing->addVertex(position, *color[0], width);
             }
         }
 
@@ -156,12 +153,11 @@ public:
                 omni::math::linalg::vec3d point =
                     usdTransform.TransformDir(omni::math::linalg::vec3d(radius * cos(angle), 0, radius * sin(angle))) +
                     translation;
-                data.position.x = static_cast<float>(point.GetArray()[0]);
-                data.position.y = static_cast<float>(point.GetArray()[1]);
-                data.position.z = static_cast<float>(point.GetArray()[2]);
-                data.color = *color[1];
+                position.x = static_cast<float>(point.GetArray()[0]);
+                position.y = static_cast<float>(point.GetArray()[1]);
+                position.z = static_cast<float>(point.GetArray()[2]);
 
-                m_lineDrawing->addVertex(data);
+                m_lineDrawing->addVertex(position, *color[1], width);
             }
         }
 
@@ -173,12 +169,11 @@ public:
                 omni::math::linalg::vec3d point =
                     usdTransform.TransformDir(omni::math::linalg::vec3d(radius * cos(angle), radius * sin(angle), 0)) +
                     translation;
-                data.position.x = static_cast<float>(point.GetArray()[0]);
-                data.position.y = static_cast<float>(point.GetArray()[1]);
-                data.position.z = static_cast<float>(point.GetArray()[2]);
-                data.color = *color[2];
+                position.x = static_cast<float>(point.GetArray()[0]);
+                position.y = static_cast<float>(point.GetArray()[1]);
+                position.z = static_cast<float>(point.GetArray()[2]);
 
-                m_lineDrawing->addVertex(data);
+                m_lineDrawing->addVertex(position, *color[2], width);
             }
         }
 

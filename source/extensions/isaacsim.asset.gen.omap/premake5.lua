@@ -14,7 +14,6 @@ include_physx()
 add_files("impl", "library")
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/include",
@@ -64,7 +63,6 @@ include_physx()
 
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/omni_client_library/include",

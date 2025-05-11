@@ -10,7 +10,6 @@
 
 #include "OgnIsaacConvertDepthToPointCloudDatabase.h"
 
-#include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
 #include <isaacsim/core/includes/Buffer.h>
@@ -39,7 +38,7 @@ class OgnIsaacConvertDepthToPointCloud
 public:
     static bool compute(OgnIsaacConvertDepthToPointCloudDatabase& db)
     {
-        if ((carb::graphics::Format)db.inputs.format() != carb::graphics::Format::eR32_SFLOAT)
+        if ((carb::Format)db.inputs.format() != carb::Format::eR32_SFLOAT)
         {
             db.logError("Input data must have texture format R32_SFLOAT");
             return false;

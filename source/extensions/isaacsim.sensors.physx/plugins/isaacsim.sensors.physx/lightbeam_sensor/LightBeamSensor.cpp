@@ -17,7 +17,6 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 #include <pxr/usd/usd/inherits.h>
-#include <omni/usd/UtilsIncludes.h>
 // clang-format on
 
 #include "LightBeamSensor.h"

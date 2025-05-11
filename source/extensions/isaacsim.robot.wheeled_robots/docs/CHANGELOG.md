@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.13] - 2025-05-10
+### Changed
+- Remove internal build time dependency
+
 ## [4.0.12] - 2025-04-09
 ### Changed
 - Update all test args to be consistent

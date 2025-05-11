@@ -22,7 +22,6 @@
 #include <carb/events/IEvents.h>
 
 #include <omni/fabric/FabricUSD.h>
-#include <omni/usd/UsdUtils.h>
 #include <physxSchema/physxSurfaceVelocityAPI.h>
 #include <pxr/pxr.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>

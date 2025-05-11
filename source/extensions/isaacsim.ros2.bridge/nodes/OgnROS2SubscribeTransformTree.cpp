@@ -219,8 +219,9 @@ public:
                 pxr::UsdPrim parentPrim = m_usdStage->GetPrimAtPath(pxr::SdfPath(parentPrimPath));
                 pxr::UsdPrim usdParentPrim = childPrim.GetParent();
 
-                pxr::GfMatrix4d parentToWorldTransform = omni::usd::UsdUtils::getWorldTransformMatrix(parentPrim);
-                pxr::GfMatrix4d usdParentToWorldTransform = omni::usd::UsdUtils::getWorldTransformMatrix(usdParentPrim);
+                pxr::GfMatrix4d parentToWorldTransform = isaacsim::core::includes::getWorldTransformMatrix(parentPrim);
+                pxr::GfMatrix4d usdParentToWorldTransform =
+                    isaacsim::core::includes::getWorldTransformMatrix(usdParentPrim);
 
                 // The transform we're given in the TFMessage
                 pxr::GfMatrix4d childTransform;

@@ -17,8 +17,6 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
-#include <carb/renderer/Renderer.h>
-#include <carb/scenerenderer/SceneRenderer.h>
 
 #include <isaacsim/util/debug_draw/Curves.h>
 #include <isaacsim/util/debug_draw/IDebugDraw.h>
@@ -40,18 +38,9 @@ CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::util::debug_draw::DebugDraw)
 CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::graph::core::IGraphRegistry, omni::fabric::IToken)
 DECLARE_OGN_NODES()
 
-using namespace carb::scenerenderer;
 
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
-// // Points
-// carb::scenerenderer::PrimitiveList* gDebugPointList;
-// std::vector<carb::scenerenderer::PrimitiveVertex> gDebugPointVector;
-
-// // Lines
-// std::vector<carb::scenerenderer::PrimitiveVertex> gDebugLineVector;
-// carb::scenerenderer::PrimitiveList* gDebugLineList;
-
 omni::usd::UsdContext* g_usdContext = nullptr;
 
 
@@ -145,7 +134,7 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
     {
         return;
     }
-    PrimitiveVertex point;
+
     if (filled)
     {
 
@@ -173,58 +162,28 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
             pxr::GfVec3f b2 = cpi + offset;
 
 
-            point.position = carb::Float3({ a1[0], a1[1], a1[2] });
-            point.width = 1.0;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
-            point.position = carb::Float3({ a2[0], a2[1], a2[2] });
-            point.width = 1.0;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(carb::Float3({ a1[0], a1[1], a1[2] }), colors, 1.0f);
+            g_lineDrawing->addVertex(carb::Float3({ a2[0], a2[1], a2[2] }), colors, 1.0f);
 
-            point.position = carb::Float3({ b1[0], b1[1], b1[2] });
-            point.width = 1.0;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
-            point.position = carb::Float3({ b2[0], b2[1], b2[2] });
-            point.width = 1.0;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(carb::Float3({ b1[0], b1[1], b1[2] }), colors, 1.0f);
+            g_lineDrawing->addVertex(carb::Float3({ b2[0], b2[1], b2[2] }), colors, 1.0f);
 
-            point.position = carb::Float3({ b1[0], b1[1], b1[2] });
-            point.width = 1.0;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
-            point.position = carb::Float3({ a2[0], a2[1], a2[2] });
-            point.width = 1.0;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(carb::Float3({ b1[0], b1[1], b1[2] }), colors, 1.0f);
+            g_lineDrawing->addVertex(carb::Float3({ a2[0], a2[1], a2[2] }), colors, 1.0f);
 
 
             // First line
             if (i == 0)
             {
 
-                point.position = carb::Float3({ b1[0], b1[1], b1[2] });
-                point.width = 1.0;
-                point.color = colors;
-                g_lineDrawing->addVertex(point);
-                point.position = carb::Float3({ a1[0], a1[1], a1[2] });
-                point.width = 1.0;
-                point.color = colors;
-                g_lineDrawing->addVertex(point);
+                g_lineDrawing->addVertex(carb::Float3({ b1[0], b1[1], b1[2] }), colors, 1.0f);
+                g_lineDrawing->addVertex(carb::Float3({ a1[0], a1[1], a1[2] }), colors, 1.0f);
             }
             // last line
             if (i == tessellatedPoints.size() - 2)
             {
-                point.position = carb::Float3({ b2[0], b2[1], b2[2] });
-                point.width = 1.0;
-                point.color = colors;
-                g_lineDrawing->addVertex(point);
-                point.position = carb::Float3({ a2[0], a2[1], a2[2] });
-                point.width = 1.0;
-                point.color = colors;
-                g_lineDrawing->addVertex(point);
+                g_lineDrawing->addVertex(carb::Float3({ b2[0], b2[1], b2[2] }), colors, 1.0f);
+                g_lineDrawing->addVertex(carb::Float3({ a2[0], a2[1], a2[2] }), colors, 1.0f);
             }
         }
     }
@@ -234,17 +193,11 @@ void CARB_ABI drawLinesSpline(const std::vector<carb::Float3>& points,
         {
             const float* pointPtr = tessellatedPoints[i].data();
 
-            point.position = carb::Float3({ pointPtr[0], pointPtr[1], pointPtr[2] });
-            point.width = width;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(carb::Float3({ pointPtr[0], pointPtr[1], pointPtr[2] }), colors, width);
 
             pointPtr = tessellatedPoints[i + 1].data();
 
-            point.position = carb::Float3({ pointPtr[0], pointPtr[1], pointPtr[2] });
-            point.width = width;
-            point.color = colors;
-            g_lineDrawing->addVertex(point);
+            g_lineDrawing->addVertex(carb::Float3({ pointPtr[0], pointPtr[1], pointPtr[2] }), colors, width);
         }
     }
 }

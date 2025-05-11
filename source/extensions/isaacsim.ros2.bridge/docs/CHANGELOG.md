@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.15] - 2025-05-10
+### Changed
+- Remove internal build time dependency
+
 ## [4.4.14] - 2025-05-09
 ### Changed
 - Updated tests to use modified ReadSimulationTime and ReadSystemTime nodes

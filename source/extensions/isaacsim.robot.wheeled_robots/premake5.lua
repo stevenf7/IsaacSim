@@ -26,7 +26,7 @@ includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/python/include/python3.11",
-    "%{root}/_build/target-deps/rtx_plugins/include",
+    
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/source/extensions/isaacsim.robot.wheeled_robots/include",
 }
@@ -69,7 +69,7 @@ add_files("python/tests", "python/tests/*.py")
 add_files("python/robots", "python/robots/*.py")
 
 includedirs {
-    "%{root}/_build/target-deps/rtx_plugins/include",
+    
     "%{root}/source/extensions/isaacsim.robot.wheeled_robots/include",
 }
 
