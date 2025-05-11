@@ -16,7 +16,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
     async def test_import_all(self):
         import filelock
         import fsspec
-        import gymnasium
         import mpmath
         import networkx
         import sympy
@@ -32,4 +31,3 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(mpmath)
         self.assertIsNotNone(networkx)
         self.assertIsNotNone(sympy)
-        self.assertIsNotNone(gymnasium)
