@@ -8,8 +8,6 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
-#include <carb/graphics/GraphicsTypes.h>
-
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 #include <nlohmann/json.hpp>
 

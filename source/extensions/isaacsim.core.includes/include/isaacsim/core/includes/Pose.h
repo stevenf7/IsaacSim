@@ -13,7 +13,6 @@
 #include "UsdUtilities.h"
 
 #include <foundation/PxTransform.h>
-#include <omni/usd/UsdUtils.h>
 #include <physx/include/foundation/PxTransform.h>
 
 #if defined(_WIN32)

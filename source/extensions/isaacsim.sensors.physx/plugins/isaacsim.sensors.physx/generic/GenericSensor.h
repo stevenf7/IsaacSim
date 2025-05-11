@@ -260,36 +260,22 @@ private:
                                                                             // offset
                 if (drawPoints)
                 {
-                    carb::scenerenderer::PrimitiveVertex data;
-
-                    // ::physx::PxVec3 diff = raycastHit.position - origin;
-
-                    data.position = hitPos;
-                    // auto temp = raycastHit.position - diff.getNormalized();
                     // set ratio for color.  should be zero at minDepth and unity at maxDepth
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                    data.color = isaacsim::core::includes::color::distToRgba(ratio);
-                    data.width = 5.0f;
-                    m_pointDrawing->addVertex(data);
+                    m_pointDrawing->addVertex(hitPos, isaacsim::core::includes::color::distToRgba(ratio), 5.0f);
                 }
 
                 // else
                 if (drawLines)
                 {
-                    carb::scenerenderer::PrimitiveVertex data;
-
                     ::physx::PxVec3 diff = raycastHit.position - origin;
                     auto temp = origin + diff.getNormalized() * minDepth;
                     // set ratio for color.  should be zero at minDepth and unity at maxDepth
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
 
-                    data.position = { temp.x, temp.y, temp.z };
-                    data.color = isaacsim::core::includes::color::distToRgba(ratio);
-                    data.width = 1.0;
-
-                    m_lineDrawing->addVertex(data);
-                    data.position = hitPos;
-                    m_lineDrawing->addVertex(data);
+                    m_lineDrawing->addVertex(
+                        { temp.x, temp.y, temp.z }, isaacsim::core::includes::color::distToRgba(ratio), 1.0);
+                    m_lineDrawing->addVertex(hitPos, isaacsim::core::includes::color::distToRgba(ratio), 1.0);
                 }
             }
             else
@@ -306,17 +292,11 @@ private:
                                                                             // offset
                 if (drawLines)
                 {
-                    carb::scenerenderer::PrimitiveVertex data;
 
                     auto temp = origin + unitDir * minDepth;
 
-                    data.position = { temp.x, temp.y, temp.z };
-                    data.color = { 1, 1, 1, 50.0f / 255.0f };
-                    data.width = 1.0;
-
-                    m_lineDrawing->addVertex(data);
-                    data.position = { hitPos.x, hitPos.y, hitPos.z };
-                    m_lineDrawing->addVertex(data);
+                    m_lineDrawing->addVertex({ temp.x, temp.y, temp.z }, { 1, 1, 1, 50.0f / 255.0f }, 1.0);
+                    m_lineDrawing->addVertex({ hitPos.x, hitPos.y, hitPos.z }, { 1, 1, 1, 50.0f / 255.0f }, 1.0);
                 }
             }
         }

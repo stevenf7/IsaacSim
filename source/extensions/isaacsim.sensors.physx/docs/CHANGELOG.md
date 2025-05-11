@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.16] - 2025-05-10
+### Changed
+- Remove internal build time dependency
+
 ## [2.2.15] - 2025-05-07
 ### Changed
 - switch to omni.physics interface

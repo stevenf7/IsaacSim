@@ -16,7 +16,6 @@
 #include <omni/physics/tensors/BodyTypes.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdUtils.h>
 #include <pxr/usd/sdf/layer.h>
 #include <pxr/usd/usdPhysics/filteredPairsAPI.h>
 

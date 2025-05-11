@@ -22,7 +22,6 @@ includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
-    target_deps .. "/rtx_plugins/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
     target_deps .. "/omni_client_library/include",

@@ -11,7 +11,6 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 #include <pxr/usd/usd/inherits.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <omni/physx/ContactEvent.h>
 // clang-format on
 

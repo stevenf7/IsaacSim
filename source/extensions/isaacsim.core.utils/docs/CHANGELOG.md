@@ -1,4 +1,7 @@
 # Changelog
+## [3.0.3] - 2025-05-10
+### Changed
+- Remove internal build time dependency
 
 ## [3.0.3] - 2025-05-10
 ### Changed

@@ -13,11 +13,11 @@ add_files("source", "plugins/isaacsim.core.simulation_manager")
 includedirs {
     "include",
     "plugins/isaacsim.core.simulation_manager",
-    target_deps .. "/rtx_plugins/include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{target_deps}/usd/%{cfg.buildcfg}/include",
     "%{target_deps}/usd/%{cfg.buildcfg}/include/boost",
     "%{target_deps}/python/include/python3.11",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
 }
@@ -61,7 +61,7 @@ includedirs {
     "include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
+    
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/source/extensions/isaacsim.core.simulation_manager/include",

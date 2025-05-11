@@ -20,19 +20,13 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/dictionary/DictionaryUtils.h>
-#include <carb/imgui/ImGui.h>
 #include <carb/logging/Log.h>
-#include <carb/renderer/Renderer.h>
 #include <carb/settings/ISettings.h>
 
 #include <isaacSensorSchema/isaacBaseSensor.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
-#include <omni/kit/KitUtils.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
-#include <omni/usd/UsdUtils.h>
 
 #include <memory>
 #include <string>
@@ -61,15 +55,11 @@ public:
     /**
      * @brief Constructs a new Sensor Manager object
      * @param[in] physxPtr Pointer to the PhysX interface for physics simulation
-     * @param[in] syntheticDataPtr Pointer to the synthetic data interface for additional sensor data
      * @param[in] taskingPtr Pointer to the tasking interface for parallel processing
      */
-    RangeSensorManager(omni::physx::IPhysx* physxPtr,
-                       omni::syntheticdata::SyntheticData* syntheticDataPtr,
-                       carb::tasking::ITasking* taskingPtr)
+    RangeSensorManager(omni::physx::IPhysx* physxPtr, carb::tasking::ITasking* taskingPtr)
     {
         m_physxPtr = physxPtr;
-        m_syntheticDataPtr = syntheticDataPtr;
         m_tasking = taskingPtr;
     }
 
@@ -212,7 +202,7 @@ public:
 
         if (prim.IsA<pxr::RangeSensorLidar>())
         {
-            component = std::make_unique<LidarSensor>(m_physxPtr, m_syntheticDataPtr);
+            component = std::make_unique<LidarSensor>(m_physxPtr);
         }
         else if (prim.IsA<pxr::RangeSensorGeneric>())
         {
@@ -312,11 +302,6 @@ private:
      * @brief Pointer to the PhysX interface for physics simulation
      */
     omni::physx::IPhysx* m_physxPtr = nullptr;
-
-    /**
-     * @brief Pointer to the synthetic data interface for additional sensor data
-     */
-    omni::syntheticdata::SyntheticData* m_syntheticDataPtr = nullptr;
 
     /**
      * @brief Pointer to the tasking interface for parallel processing

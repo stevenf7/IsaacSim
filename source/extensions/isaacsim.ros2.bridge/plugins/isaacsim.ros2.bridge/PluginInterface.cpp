@@ -36,7 +36,6 @@
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdTypes.h>
@@ -58,7 +57,6 @@ CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::ros2::bridge::Ros2Bridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::kit::IStageUpdate,
-                      omni::syntheticdata::SyntheticData,
                       omni::physx::IPhysx,
                       carb::tasking::ITasking,
                       carb::tokens::ITokens)

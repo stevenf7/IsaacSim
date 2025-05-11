@@ -31,7 +31,6 @@
 #include <omni/fabric/usd/PathConversion.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/KitUtils.h>
 #include <omni/physics/tensors/IRigidBodyView.h>
 #include <omni/physics/tensors/IRigidContactView.h>
 #include <omni/physics/tensors/ISimulationView.h>
@@ -40,7 +39,6 @@
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UsdContext.h>
-#include <omni/usd/UsdUtils.h>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.robot.surface_gripper.plugin", "Surface Gripper",
                                                     "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
@@ -65,7 +63,6 @@ omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
 omni::physics::tensors::TensorApi* g_tensorApi = nullptr;
 omni::physics::tensors::ISimulationView* g_simulationView = nullptr;
-omni::physics::tensors::IRigidBodyView* g_rigidBodyView = nullptr;
 omni::physics::tensors::TensorDesc rigidBodyData;
 carb::settings::ISettings* g_settings = nullptr;
 std::unique_ptr<isaacsim::robot::surface_gripper::SurfaceGripperManager> g_surfaceGripperManager;

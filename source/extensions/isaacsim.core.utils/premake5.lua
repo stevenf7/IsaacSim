@@ -20,7 +20,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.simulation_manager/include",
     "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/rtx_plugins/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/source/extensions/isaacsim.core.utils/include",

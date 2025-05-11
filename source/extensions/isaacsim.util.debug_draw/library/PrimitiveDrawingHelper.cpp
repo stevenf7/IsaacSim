@@ -11,7 +11,6 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
-#include <carb/renderer/RendererTypes.h>
 #include <carb/scenerenderer/SceneRenderer.h>
 
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
@@ -27,6 +26,13 @@ namespace debug_draw
 {
 namespace drawing
 {
+
+// Define the private vertex data structure
+struct PrimitiveDrawingHelper::VertexData
+{
+    std::vector<PrimitiveVertex> vertices;
+};
+
 PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
                                                RenderingMode renderingMode,
                                                bool worldSpace,
@@ -36,9 +42,11 @@ PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext
       m_worldSpace(worldSpace),
       m_depthTest(depthTest),
       m_primitiveList(nullptr),
-      m_dirty(false)
+      m_dirty(false),
+      m_vertexData(new VertexData())
 {
 }
+
 PrimitiveDrawingHelper::~PrimitiveDrawingHelper()
 {
     clear();
@@ -49,64 +57,61 @@ PrimitiveDrawingHelper::~PrimitiveDrawingHelper()
 void PrimitiveDrawingHelper::addVertex(const carb::Float3& position, const carb::ColorRgba& color, const float width)
 {
     m_dirty = true;
-    carb::scenerenderer::PrimitiveVertex point;
+    PrimitiveVertex point;
     point.position = position;
     point.width = width;
     point.color = color;
-    m_vertices.push_back(point);
+    m_vertexData->vertices.push_back(point);
 }
-void PrimitiveDrawingHelper::addVertex(const carb::scenerenderer::PrimitiveVertex& vertex)
-{
-    m_dirty = true;
-    m_vertices.push_back(vertex);
-}
+
 // Add a list of vertices
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positions,
                                          const std::vector<carb::ColorRgba>& colors,
                                          const std::vector<float>& widths)
 {
     m_dirty = true;
-    carb::scenerenderer::PrimitiveVertex point;
+    PrimitiveVertex point;
 
     for (size_t i = 0; i < positions.size(); i++)
     {
         point.position = positions[i];
         point.width = widths[i];
         point.color = colors[i];
-        m_vertices.push_back(point);
+        m_vertexData->vertices.push_back(point);
     }
 }
+
 // Add a list of vertices with constant color and width
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positions,
                                          const carb::ColorRgba& color,
                                          float width)
 {
     m_dirty = true;
-    carb::scenerenderer::PrimitiveVertex point;
+    PrimitiveVertex point;
     size_t firstIndex = size();
-    m_vertices.resize(firstIndex + positions.size());
+    m_vertexData->vertices.resize(firstIndex + positions.size());
     for (size_t i = 0; i < positions.size(); i++)
     {
         point.position = positions[i];
         point.width = width;
         point.color = color;
-        m_vertices[firstIndex + i] = point;
+        m_vertexData->vertices[firstIndex + i] = point;
     }
 }
 
 // set a list of vertices
 void PrimitiveDrawingHelper::setVertices(const carb::Float3* p, size_t numPositions)
 {
-    if (m_vertices.size() != numPositions)
+    if (m_vertexData->vertices.size() != numPositions)
     {
         m_dirty = true;
     }
-    m_vertices.resize(numPositions);
+    m_vertexData->vertices.resize(numPositions);
     for (int i = 0; i < static_cast<int>(numPositions); ++i)
     {
-        m_vertices[i].position.x = p[i].x;
-        m_vertices[i].position.y = p[i].y;
-        m_vertices[i].position.z = p[i].z;
+        m_vertexData->vertices[i].position.x = p[i].x;
+        m_vertexData->vertices[i].position.y = p[i].y;
+        m_vertexData->vertices[i].position.z = p[i].z;
     }
 
     /*tbb::parallel_for(tbb::blocked_range<int>(0, numPositions),
@@ -124,53 +129,38 @@ void PrimitiveDrawingHelper::setVertices(const carb::Float3* p, size_t numPositi
 // transform the positions of vertices
 void PrimitiveDrawingHelper::transformVertices(const double m[])
 {
-    int numPositions = static_cast<int>(m_vertices.size());
+    int numPositions = static_cast<int>(m_vertexData->vertices.size());
     for (int i = 0; i < numPositions; ++i)
     {
-        m_vertices[i].position =
-            carb::Float3{ static_cast<float>(m[0] * m_vertices[i].position.x + m[4] * m_vertices[i].position.y +
-                                             m[8] * m_vertices[i].position.z + m[12]),
-                          static_cast<float>(m[1] * m_vertices[i].position.x + m[5] * m_vertices[i].position.y +
-                                             m[9] * m_vertices[i].position.z + m[13]),
-                          static_cast<float>(m[2] * m_vertices[i].position.x + m[6] * m_vertices[i].position.y +
-                                             m[10] * m_vertices[i].position.z + m[14]) };
+        m_vertexData->vertices[i].position = carb::Float3{
+            static_cast<float>(m[0] * m_vertexData->vertices[i].position.x + m[4] * m_vertexData->vertices[i].position.y +
+                               m[8] * m_vertexData->vertices[i].position.z + m[12]),
+            static_cast<float>(m[1] * m_vertexData->vertices[i].position.x + m[5] * m_vertexData->vertices[i].position.y +
+                               m[9] * m_vertexData->vertices[i].position.z + m[13]),
+            static_cast<float>(m[2] * m_vertexData->vertices[i].position.x + m[6] * m_vertexData->vertices[i].position.y +
+                               m[10] * m_vertexData->vertices[i].position.z + m[14])
+        };
     }
 }
 
 // set a constant color
 void PrimitiveDrawingHelper::setColor(const carb::ColorRgba& color)
 {
-    int numPositions = static_cast<int>(m_vertices.size());
+    int numPositions = static_cast<int>(m_vertexData->vertices.size());
     for (int i = 0; i < numPositions; ++i)
     {
-        m_vertices[i].color = color;
+        m_vertexData->vertices[i].color = color;
     }
 }
 
 // set a constant width
 void PrimitiveDrawingHelper::setWidth(float width)
 {
-    int numPositions = static_cast<int>(m_vertices.size());
+    int numPositions = static_cast<int>(m_vertexData->vertices.size());
     for (int i = 0; i < numPositions; ++i)
     {
-        m_vertices[i].width = width;
+        m_vertexData->vertices[i].width = width;
     }
-}
-void PrimitiveDrawingHelper::addVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices)
-{
-    m_dirty = true;
-
-    m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end());
-}
-
-void PrimitiveDrawingHelper::setVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices)
-{
-    // avoid release/create of the primitive instance if the size is the same
-    if (m_vertices.size() != vertices.size())
-    {
-        m_dirty = true;
-    }
-    m_vertices = vertices;
 }
 
 // render current vertices
@@ -181,9 +171,8 @@ void PrimitiveDrawingHelper::draw()
         releaseList();
         createList();
     }
-    if (!m_vertices.empty() && isValid())
+    if (!m_vertexData->vertices.empty() && isValid())
     {
-
         carb::scenerenderer::PrimitiveListSettings settings = {};
         settings.width = 1.0f;
         settings.antialiasingWidth = 0;
@@ -200,23 +189,25 @@ void PrimitiveDrawingHelper::draw()
             m_usdContext->getSceneRendererContext(), m_primitiveList, settings);
         m_usdContext->getSceneRenderer()->updatePrimitiveListInstances(
             m_usdContext->getSceneRendererContext(), m_primitiveList, &inst, 0, 1, 1);
-        m_usdContext->getSceneRenderer()->updatePrimitiveListVertices(m_usdContext->getSceneRendererContext(),
-                                                                      m_primitiveList, m_vertices.data(), 0,
-                                                                      m_vertices.size(), m_vertices.size());
+        m_usdContext->getSceneRenderer()->updatePrimitiveListVertices(
+            m_usdContext->getSceneRendererContext(), m_primitiveList, m_vertexData->vertices.data(), 0,
+            m_vertexData->vertices.size(), m_vertexData->vertices.size());
     }
     else
     {
         releaseList();
     }
 }
+
 // clear data
 void PrimitiveDrawingHelper::clear()
 {
-    m_vertices.clear();
+    m_vertexData->vertices.clear();
 }
+
 size_t PrimitiveDrawingHelper::size()
 {
-    return m_vertices.size();
+    return m_vertexData->vertices.size();
 }
 
 void PrimitiveDrawingHelper::createList()
@@ -224,7 +215,6 @@ void PrimitiveDrawingHelper::createList()
     SceneId id = m_usdContext->getRendererScene();
     if (!m_primitiveList && id)
     {
-
         PrimitiveKind kind = m_renderingMode == RenderingMode::ePoints ? PrimitiveKind::ePoint : PrimitiveKind::eLine;
         carb::scenerenderer::PrimitiveListFlags flags = carb::scenerenderer::kPrimitiveListFlagNone;
         if (m_depthTest)
@@ -240,6 +230,7 @@ void PrimitiveDrawingHelper::createList()
             m_usdContext->getSceneRendererContext(), id, kind, flags);
     }
 }
+
 void PrimitiveDrawingHelper::releaseList()
 {
     if (isValid())
@@ -248,6 +239,7 @@ void PrimitiveDrawingHelper::releaseList()
         m_primitiveList = nullptr;
     }
 }
+
 bool PrimitiveDrawingHelper::isValid()
 {
     return m_primitiveList && m_usdContext && m_usdContext->getSceneRenderer() &&

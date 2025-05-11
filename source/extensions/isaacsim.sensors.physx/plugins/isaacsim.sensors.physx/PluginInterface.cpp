@@ -13,7 +13,6 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 #include <pxr/usd/usd/inherits.h>
-#include <omni/usd/UtilsIncludes.h>
 // clang-format on
 
 #include "core/RangeSensorManager.h"
@@ -31,12 +30,9 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/KitUtils.h>
-#include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
-#include <omni/usd/UsdUtils.h>
 
 #include <map>
 #include <vector>
@@ -53,7 +49,6 @@ CARB_PLUGIN_IMPL(g_kPluginDesc,
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
                       omni::fabric::IStageReaderWriter,
-                      omni::syntheticdata::SyntheticData,
                       carb::tasking::ITasking,
                       omni::graph::core::IGraphRegistry)
 
@@ -69,7 +64,6 @@ omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
-omni::syntheticdata::SyntheticData* g_syntheticDataInterface = nullptr;
 carb::tasking::ITasking* g_tasking = nullptr;
 
 
@@ -1012,17 +1006,10 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    g_syntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
-    if (!g_syntheticDataInterface)
-    {
-        CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
-        return;
-    }
     g_tasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
 
-    g_rangeSensorManager =
-        std::make_unique<isaacsim::sensors::physx::RangeSensorManager>(g_physx, g_syntheticDataInterface, g_tasking);
+    g_rangeSensorManager = std::make_unique<isaacsim::sensors::physx::RangeSensorManager>(g_physx, g_tasking);
 
     omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "Range Sensor Interface";

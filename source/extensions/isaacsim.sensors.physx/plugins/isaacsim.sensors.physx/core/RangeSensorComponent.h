@@ -13,7 +13,7 @@
 #include "isaacsim/core/includes/Component.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <carb/renderer/Renderer.h>
+#include <carb/tasking/ITasking.h>
 
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
@@ -22,7 +22,6 @@
 #include <omni/fabric/SimStageWithHistory.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/timeline/ITimeline.h>
 #include <pxr/usd/usdPhysics/scene.h>
 #include <rangeSensorSchema/rangeSensor.h>

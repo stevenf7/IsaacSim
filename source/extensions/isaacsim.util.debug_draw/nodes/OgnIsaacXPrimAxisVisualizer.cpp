@@ -20,8 +20,6 @@
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
@@ -118,43 +116,34 @@ public:
         ztransform += translation;
 
         // draw the axis in global frame
-        carb::scenerenderer::PrimitiveVertex center;
-        center.position.x = static_cast<float>(translation.GetArray()[0]);
-        center.position.y = static_cast<float>(translation.GetArray()[1]);
-        center.position.z = static_cast<float>(translation.GetArray()[2]);
-        center.width = axisThickness;
+        carb::Float3 centerPosition = { static_cast<float>(translation.GetArray()[0]),
+                                        static_cast<float>(translation.GetArray()[1]),
+                                        static_cast<float>(translation.GetArray()[2]) };
+        float lineWidth = axisThickness;
+
         // x axis - red
-        center.color = carb::ColorRgba{ 1.0f, 0.0f, 0.0f, 1.0f };
-        carb::scenerenderer::PrimitiveVertex xAxis;
-        xAxis.position =
-            carb::Float3{ static_cast<float>(xtransform.GetArray()[0]), static_cast<float>(xtransform.GetArray()[1]),
-                          static_cast<float>(xtransform.GetArray()[2]) };
-        xAxis.width = center.width;
-        xAxis.color = center.color;
-        m_lineDrawing->addVertex(center);
-        m_lineDrawing->addVertex(xAxis);
+        carb::ColorRgba xColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+        carb::Float3 xAxisPosition = { static_cast<float>(xtransform.GetArray()[0]),
+                                       static_cast<float>(xtransform.GetArray()[1]),
+                                       static_cast<float>(xtransform.GetArray()[2]) };
+        m_lineDrawing->addVertex(centerPosition, xColor, lineWidth);
+        m_lineDrawing->addVertex(xAxisPosition, xColor, lineWidth);
 
         // y axis - green
-        center.color = carb::ColorRgba{ 0.0f, 1.0f, 0.0f, 1.0f };
-        carb::scenerenderer::PrimitiveVertex yAxis;
-        yAxis.position =
-            carb::Float3{ static_cast<float>(ytransform.GetArray()[0]), static_cast<float>(ytransform.GetArray()[1]),
-                          static_cast<float>(ytransform.GetArray()[2]) };
-        yAxis.width = center.width;
-        yAxis.color = center.color;
-        m_lineDrawing->addVertex(center);
-        m_lineDrawing->addVertex(yAxis);
+        carb::ColorRgba yColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+        carb::Float3 yAxisPosition = { static_cast<float>(ytransform.GetArray()[0]),
+                                       static_cast<float>(ytransform.GetArray()[1]),
+                                       static_cast<float>(ytransform.GetArray()[2]) };
+        m_lineDrawing->addVertex(centerPosition, yColor, lineWidth);
+        m_lineDrawing->addVertex(yAxisPosition, yColor, lineWidth);
 
         // z axis - blue
-        center.color = carb::ColorRgba{ 0.0f, 0.0f, 1.0f, 1.0f };
-        carb::scenerenderer::PrimitiveVertex zAxis;
-        zAxis.position =
-            carb::Float3{ static_cast<float>(ztransform.GetArray()[0]), static_cast<float>(ztransform.GetArray()[1]),
-                          static_cast<float>(ztransform.GetArray()[2]) };
-        zAxis.width = center.width;
-        zAxis.color = center.color;
-        m_lineDrawing->addVertex(center);
-        m_lineDrawing->addVertex(zAxis);
+        carb::ColorRgba zColor = { 0.0f, 0.0f, 1.0f, 1.0f };
+        carb::Float3 zAxisPosition = { static_cast<float>(ztransform.GetArray()[0]),
+                                       static_cast<float>(ztransform.GetArray()[1]),
+                                       static_cast<float>(ztransform.GetArray()[2]) };
+        m_lineDrawing->addVertex(centerPosition, zColor, lineWidth);
+        m_lineDrawing->addVertex(zAxisPosition, zColor, lineWidth);
 
         m_lineDrawing->draw();
     }

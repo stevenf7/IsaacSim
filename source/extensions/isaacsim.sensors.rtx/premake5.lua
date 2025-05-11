@@ -24,7 +24,6 @@ includedirs {
     target_deps .. "/generic_model_output/%{platform}/%{config}/include",
     target_deps .. "/omni_client_library/include",
     target_deps .. "/python/include",
-    target_deps .. "/rtx_plugins/include",
     target_deps .. "/rapidjson/include",
 }
 libdirs {

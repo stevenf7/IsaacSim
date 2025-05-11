@@ -16,7 +16,6 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/filesystem/IFileSystem.h>
-#include <carb/imaging/IImaging.h>
 
 #include <isaacsim/core/nodes/ICoreNodes.h>
 #include <omni/fabric/FabricUSD.h>

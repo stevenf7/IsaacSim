@@ -22,13 +22,11 @@
 #include <carb/logging/Log.h>
 
 #include <extensions/PxRigidBodyExt.h>
+#include <isaacsim/core/includes/UsdNoticeListener.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UtilsIncludes.h>
-//
-#include <omni/usd/UsdUtils.h>
 
 #include <map>
 #include <string>
@@ -69,7 +67,7 @@ std::unique_ptr<DcContext> g_dcCtx = nullptr;
 pxr::UsdStageWeakPtr gStage = nullptr;
 
 // This custom Usd notice listener is required to clean up properly
-class DcUsdNoticeListener : public omni::usd::UsdUtils::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
+class DcUsdNoticeListener : public isaacsim::core::includes::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
 
 {
 public:

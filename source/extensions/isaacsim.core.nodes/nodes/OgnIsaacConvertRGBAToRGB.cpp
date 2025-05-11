@@ -10,8 +10,6 @@
 
 #include "OgnIsaacConvertRGBAToRGBDatabase.h"
 
-#include <carb/cudainterop/CudaInterop.h>
-#include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
 
 #include <isaacsim/core/includes/Buffer.h>

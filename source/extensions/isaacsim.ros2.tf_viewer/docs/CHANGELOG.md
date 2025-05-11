@@ -1,4 +1,7 @@
 # Changelog
+## [2.1.12] - 2025-05-10
+### Changed
+- Remove internal build time dependency
 
 ## [2.1.11] - 2025-05-03
 ### Fixed

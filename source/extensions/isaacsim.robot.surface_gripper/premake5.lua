@@ -34,7 +34,6 @@ includedirs {
     "%{root}/source/extensions/isaacsim.robot.schema/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     target_deps .. "/omni_client_library/include",
-    target_deps .. "/rtx_plugins/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",    
@@ -89,7 +88,6 @@ project_ext_bindings {
 
 includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include",
-    target_deps .. "/rtx_plugins/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",

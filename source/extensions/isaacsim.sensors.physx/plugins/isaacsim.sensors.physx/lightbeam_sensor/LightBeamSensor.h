@@ -16,8 +16,6 @@
 #include <isaacSensorSchema/isaacLightBeamSensor.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
 #include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
