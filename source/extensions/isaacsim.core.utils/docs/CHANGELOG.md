@@ -3,6 +3,10 @@
 ### Changed
 - Remove internal build time dependency
 
+## [3.1.0] - 2025-05-10
+### Changed
+- Add utility function to remove deleted references on a stage
+
 ## [3.0.3] - 2025-05-10
 ### Changed
 - semantics:add_labels now removes the old SemanticsAPI after upgrading

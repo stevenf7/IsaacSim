@@ -699,3 +699,49 @@ def get_next_free_path(path: str, parent: str = None) -> str:
     else:
         path = omni.usd.get_stage_next_free_path(get_current_stage(), path, True)
     return path
+
+
+def remove_deleted_references():
+    """Clean up deleted references in the current USD stage.
+
+    Removes any deleted items from both payload and references lists
+    for all prims in the stage's root layer. Prints information about
+    any deleted items that were cleaned up.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.utils.stage as stage_utils
+        >>> stage_utils.remove_deleted_references()
+        Removed 2 deleted payload items from </World/Robot>
+        Removed 1 deleted reference items from </World/Scene>
+    """
+    stage = get_current_stage()
+    deleted_count = 0
+
+    for prim in stage.Traverse():
+        prim_spec = stage.GetRootLayer().GetPrimAtPath(prim.GetPath())
+        if not prim_spec:
+            continue
+
+        # Clean payload references
+        payload_list = prim_spec.GetInfo("payload")
+        if payload_list.deletedItems:
+            deleted_payload_count = len(payload_list.deletedItems)
+            print(f"Removed {deleted_payload_count} deleted payload items from {prim.GetPath()}")
+            payload_list.deletedItems = []
+            prim_spec.SetInfo("payload", payload_list)
+            deleted_count += deleted_payload_count
+
+        # Clean prim references
+        references_list = prim_spec.GetInfo("references")
+        if references_list.deletedItems:
+            deleted_ref_count = len(references_list.deletedItems)
+            print(f"Removed {deleted_ref_count} deleted reference items from {prim.GetPath()}")
+            references_list.deletedItems = []
+            prim_spec.SetInfo("references", references_list)
+            deleted_count += deleted_ref_count
+
+    if deleted_count == 0:
+        print("No deleted references or payloads found in the stage.")
