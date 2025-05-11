@@ -1,5 +1,5 @@
 [package]
-version = "0.3.18"
+version = "0.3.19"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -89,6 +89,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [[test]]

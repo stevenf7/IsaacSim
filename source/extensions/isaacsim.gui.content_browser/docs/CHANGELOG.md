@@ -1,4 +1,7 @@
 # Changelog
+## [0.1.3] - 2025-05-10
+### Changed
+- Cleanup extension.toml
 
 ## [0.1.2] - 2025-04-21
 ### Changed

@@ -1,5 +1,5 @@
 [package]
-version = "4.3.5"
+version = "4.3.6"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
@@ -31,6 +31,7 @@ writeTarget.kit = true
 "omni.pip.compute" = {} # scipy
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
+"omni.hydra.usdrt_delegate" = {}
 
 [[python.module]]
 name = "isaacsim.core.api"
@@ -91,4 +92,5 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]

@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.12] - 2025-05-10
+### Changed
+- Cleanup extension.toml
+
 ## [1.0.11] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

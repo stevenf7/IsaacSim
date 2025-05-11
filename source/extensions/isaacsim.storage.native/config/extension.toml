@@ -1,5 +1,5 @@
 [package]
-version = "1.2.0"
+version = "1.2.1"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -70,4 +70,5 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]

@@ -1,5 +1,5 @@
 [package]
-version = "0.1.2"
+version = "0.1.3"
 category = "other"
 title = "Content Browser"
 description = "Isaac Sim Content Browser"
@@ -40,10 +40,10 @@ exts."isaacsim.gui.content_browser".folders = [
     "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Sensors",
 ]
 
+[[test]]
+enabled = true
+
 # disable startup test
 [[test]]
 name = "startup"
 enabled = false
-
-[[test]]
-enabled = true

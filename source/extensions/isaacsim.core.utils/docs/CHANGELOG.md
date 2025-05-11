@@ -1,5 +1,10 @@
 # Changelog
-## [3.0.3] - 2025-05-10
+
+## [3.1.2] - 2025-05-11
+### Changed
+- Enable FSD in test settings
+
+## [3.1.1] - 2025-05-10
 ### Changed
 - Remove internal build time dependency
 

@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "MobilityGen UI"
 description = "User interface for recording data with MobilityGen"
@@ -64,6 +64,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [[test]]

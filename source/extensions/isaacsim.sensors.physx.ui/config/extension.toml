@@ -1,5 +1,5 @@
 [package]
-version = "2.2.5"
+version = "2.2.6"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor UI components"
 description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
@@ -63,6 +63,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 [[test]]

@@ -1,5 +1,5 @@
 [package]
-version = "1.3.10"
+version = "1.3.11"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
@@ -67,6 +67,7 @@ dependencies = [
     "omni.kit.menu.stage",
     "omni.kit.tool.collect",
     "omni.kit.ui_test",
+    "omni.hydra.usdrt_delegate",
 ]
 
 args = [
@@ -106,6 +107,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 stdoutFailPatterns.exclude = [

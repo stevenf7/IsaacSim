@@ -1,4 +1,7 @@
 # Changelog
+## [4.1.4] - 2025-05-10
+### Changed
+- Enable FSD in test settings
 
 ## [4.1.3] - 2025-05-09
 ### Fixed

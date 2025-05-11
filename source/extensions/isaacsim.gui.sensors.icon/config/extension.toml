@@ -1,14 +1,5 @@
-# Extension configuration file.
-# Visit the "Extension configuration file (extension.toml)" section for more details:
-# https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
-#
-
-[core]
-reloadable = true
-order = 0
-
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "other"
 title = "Sensor Icon"
 description = "sensor icon in viewport"
@@ -47,16 +38,12 @@ exts."isaacsim.gui.sensors.icon".timeout = 5
 # show prim name with the sensor icon, default to false
 exts."omni.kit.prim.sensor".showTitle = false
 
-# disable startup test
-[[test]]
-name = "startup"
-enabled = false
-
 [[test]]
 enabled = true
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
     "omni.kit.ui_test",
+    "omni.hydra.usdrt_delegate",
 ]
 args = [
     "--/app/asyncRendering=0",
@@ -95,6 +82,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
+    "--/app/useFabricSceneDelegate=true",
 ]
 
 
@@ -102,4 +90,12 @@ stdoutFailPatterns.exclude = [
     "*<class 'omni.kit.menu.utils.scripts.utils.MenuUtilsExtension'>: extension object is still alive*", # Leak
     "*<class 'omni.kit.window.tests.Extension'>: extension object is still alive*", # Leak
     "*createDLSSContext error: unable to initialize context. Optional DLSS feature is disabled.*",
+]
+
+# disable startup test
+[[test]]
+name = "startup"
+enabled = false
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

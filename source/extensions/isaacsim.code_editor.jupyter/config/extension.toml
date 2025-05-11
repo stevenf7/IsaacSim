@@ -1,5 +1,5 @@
 [package]
-version = "1.0.11"
+version = "1.0.12"
 category = "Utility"
 title = "Jupyter notebook integration"
 description = "Jupyter notebook version of Omniverse's script editor"
@@ -49,8 +49,8 @@ exts."isaacsim.code_editor.jupyter".notebook_dir = ""
 exts."isaacsim.code_editor.jupyter".command_line_options = "--allow-root --no-browser --JupyterApp.answer_yes=True"
 
 [[test]]
-name = "startup"
-enabled = false
+enabled = true
 
 [[test]]
-enabled = true
+name = "startup"
+enabled = false
