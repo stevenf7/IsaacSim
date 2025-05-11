@@ -13,9 +13,10 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import asyncio
+import math
 import time
 
-import carb
+import carb.eventdispatcher
 import carb.events
 import carb.settings
 import omni.kit.app
@@ -45,14 +46,14 @@ LIMIT_APP_FPS = False
 APP_FPS = 120
 
 # Duration after which to clear subscribers and print the cached events
-MAX_DURATION = 3.0
-PRINT_EVENTS = False
+SUBSCRIBER_WALL_TIME_LIMIT_SEC = 0.5
+PRINT_EVENTS = True
 
 
 def on_timeline_event(event: omni.timeline.TimelineEventType):
+    global wall_start_time
     global timeline_sub
     global timeline_events
-    global wall_start_time
     elapsed_wall_time = time.time() - wall_start_time
 
     # Cache only time advance events
@@ -62,12 +63,12 @@ def on_timeline_event(event: omni.timeline.TimelineEventType):
         timeline_events.append((elapsed_wall_time, event_name, event_payload))
 
     # Clear subscriber and print cached events
-    if elapsed_wall_time > MAX_DURATION:
+    if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
         if timeline_sub is not None:
             timeline_sub.unsubscribe()
             timeline_sub = None
         num_events = len(timeline_events)
-        fps = num_events / MAX_DURATION
+        fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
         print(f"[timeline] captured {num_events} events with aprox {fps} FPS")
         if PRINT_EVENTS:
             for i, (wall_time, event_name, payload) in enumerate(timeline_events):
@@ -75,15 +76,16 @@ def on_timeline_event(event: omni.timeline.TimelineEventType):
 
 
 def on_physics_step(dt: float):
-    global physx_events
     global wall_start_time
+    global physx_events
+    global physx_sub
     elapsed_wall_time = time.time() - wall_start_time
 
     # Cache physics events
     physx_events.append((elapsed_wall_time, dt))
 
     # Clear subscriber and print cached events
-    if elapsed_wall_time > MAX_DURATION:
+    if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
         # Physics unsubscription needs to be defered from the callback function
         # see: '[Error] [omni.physx.plugin] Subscription cannot be changed during the event call'
         async def clear_physx_sub_async():
@@ -94,54 +96,55 @@ def on_physics_step(dt: float):
 
         asyncio.ensure_future(clear_physx_sub_async())
         num_events = len(physx_events)
-        fps = num_events / MAX_DURATION
+        fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
         print(f"[physics] captured {num_events} events with aprox {fps} FPS")
         if PRINT_EVENTS:
             for i, (wall_time, dt) in enumerate(physx_events):
                 print(f"\t[physics][{i}]\ttime={wall_time:.4f};\tdt={dt};")
 
 
-def on_stage_render_event(event: omni.usd.StageRenderingEventType):
+def on_stage_render_event(event: carb.eventdispatcher.Event):
+    global wall_start_time
     global stage_render_sub
     global stage_render_events
-    global wall_start_time
     elapsed_wall_time = time.time() - wall_start_time
 
-    event_name = omni.usd.StageRenderingEventType(event.type).name
+    event_name = event.event_name
     event_payload = event.payload
     stage_render_events.append((elapsed_wall_time, event_name, event_payload))
 
-    if elapsed_wall_time > MAX_DURATION:
+    if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
         if stage_render_sub is not None:
-            stage_render_sub.unsubscribe()
+            stage_render_sub.reset()
             stage_render_sub = None
         num_events = len(stage_render_events)
-        fps = num_events / MAX_DURATION
+        fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
         print(f"[stage render] captured {num_events} events with aprox {fps} FPS")
         if PRINT_EVENTS:
             for i, (wall_time, event_name, payload) in enumerate(stage_render_events):
                 print(f"\t[stage render][{i}]\ttime={wall_time:.4f};\tevent={event_name};\tpayload={payload}")
 
 
-def on_app_update(event: carb.events.IEvent):
+def on_app_update(event: carb.eventdispatcher.Event):
+    global wall_start_time
     global app_sub
     global app_update_events
-    global wall_start_time
     elapsed_wall_time = time.time() - wall_start_time
 
-    event_type = event.type
+    event_name = event.event_name
     event_payload = event.payload
-    app_update_events.append((elapsed_wall_time, event_type, event_payload))
+    app_update_events.append((elapsed_wall_time, event_name, event_payload))
 
-    if elapsed_wall_time > MAX_DURATION:
+    if elapsed_wall_time > SUBSCRIBER_WALL_TIME_LIMIT_SEC:
         if app_sub is not None:
+            app_sub.reset()
             app_sub = None
         num_events = len(app_update_events)
-        fps = num_events / MAX_DURATION
+        fps = num_events / SUBSCRIBER_WALL_TIME_LIMIT_SEC
         print(f"[app] captured {num_events} events with aprox {fps} FPS")
         if PRINT_EVENTS:
-            for i, (wall_time, event_type, payload) in enumerate(app_update_events):
-                print(f"\t[app][{i}]\ttime={wall_time:.4f};\tevent={event_type};\tpayload={payload}")
+            for i, (wall_time, event_name, payload) in enumerate(app_update_events):
+                print(f"\t[app][{i}]\ttime={wall_time:.4f};\tevent={event_name};\tpayload={payload}")
 
 
 stage = omni.usd.get_context().get_stage()
@@ -225,7 +228,7 @@ if DISABLE_SIMULATIONS:
 
 # Start the timeline
 timeline.set_current_time(0)
-timeline.set_end_time(MAX_DURATION + 1)
+timeline.set_end_time(SUBSCRIBER_WALL_TIME_LIMIT_SEC + 1)
 timeline.set_looping(False)
 timeline.play()
 timeline.commit()
@@ -237,7 +240,11 @@ timeline_sub = timeline.get_timeline_event_stream().create_subscription_to_pop(o
 physx_events = []
 physx_sub = omni.physx.get_physx_interface().subscribe_physics_step_events(on_physics_step)
 stage_render_events = []
-stage_render_sub = omni.usd.get_context().get_rendering_event_stream().create_subscription_to_pop(on_stage_render_event)
+stage_render_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+    event_name=omni.usd.get_context().stage_rendering_event_name(omni.usd.StageRenderingEventType.NEW_FRAME, True),
+    on_event=on_stage_render_event,
+    observer_name="subscribers_and_events.on_stage_render_event",
+)
 app_update_events = []
 app_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
     event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
@@ -245,10 +252,16 @@ app_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
     observer_name="subscribers_and_events.on_app_update",
 )
 
-# Keep the simulation running until the duration is passed
-while simulation_app.is_running():
-    if time.time() - wall_start_time > MAX_DURATION + 0.1:
-        break
+# Run the application for a while to trigger the events, with a buffer to ensure subscribers have enough wall-clock time
+num_app_updates = int(math.ceil(SUBSCRIBER_WALL_TIME_LIMIT_SEC * STAGE_FPS * 4))
+for _ in range(num_app_updates):
     simulation_app.update()
+
+print(f"Finished running the application for {num_app_updates} updates.")
+print(f"Wall time: {time.time() - wall_start_time:.4f} seconds")
+print(f"Number of timeline events: {len(timeline_events)}")
+print(f"Number of physics events: {len(physx_events)}")
+print(f"Number of stage render events: {len(stage_render_events)}")
+print(f"Number of app update events: {len(app_update_events)}")
 
 simulation_app.close()
