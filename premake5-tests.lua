@@ -521,6 +521,10 @@ function create_tests()
             "/standalone_examples/api/isaacsim.replicator.behavior/behaviors.py",
         },
         {
+            "tests-nativepython-testing-isaacsim.replicator.examples.cosmos_writer_warehouse",
+            "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_warehouse.py",
+        },           
+        {
             "tests-nativepython-testing-isaacsim.replicator.examples.custom_event_and_write",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
         },
