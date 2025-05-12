@@ -189,12 +189,13 @@ for file in files:
     root = tree.getroot()
     total_deps = len(root.findall(".//dependency"))
     deps_count_by_file[file] = total_deps
+    full_package_listing[file] = []
 
     # Create mapping of package name to link path
     package_paths = {}
     for dep in root.findall(".//dependency"):
         link_path = dep.get("linkPath")
-        for pkg in dep.findall(".//package"):
+        for pkg in dep.findall("package"):
             package_paths[pkg.get("name")] = link_path
 
     _, results = packmanapi.verify(
@@ -206,37 +207,29 @@ for file in files:
         tags={"public": "true"},
     )
 
-    print(f"Scanned {file} for packman dependencies, {len(results)} issue{'s' if len(results) != 1 else ''} found")
-
     results_by_file[file] = results
 
-    # Store full package listing from results with license info
-    full_package_listing[file] = [
-        {
-            "name": result[1].name,
-            "version": result[1].version,
-            **(
-                {"license_file": find_license_file(package_paths.get(result[1].name, ""), result[1].name)}
-                if not args.package or result[1].name == args.package
-                else {}
-            ),
-        }
-        for result in results
-    ]
+    # Get all packages from XML
+    for dependency in root.findall(".//dependency"):
+        for package in dependency.findall("package"):
+            name = package.get("name")
+            package_info = {
+                "name": name,
+                "version": package.get("version"),
+                "license_file": (
+                    find_license_file(package_paths.get(name, ""), name)
+                    if not args.package or name == args.package
+                    else None
+                ),
+            }
+            full_package_listing[file].append(package_info)
 
     # Prepare JSON output for this file
     json_output[file] = {
-        "total_dependencies": total_deps,
-        "issues_count": len(results),
         "problem_packages": [
             {
                 "name": result[1].name,
                 "version": result[1].version,
-                **(
-                    {"license_file": find_license_file(package_paths.get(result[1].name, ""), result[1].name)}
-                    if not args.package or result[1].name == args.package
-                    else {}
-                ),
             }
             for result in results
         ],
@@ -264,11 +257,17 @@ with open("packman_full_results.json", "w") as f:
 
 # Write CSV output
 with open("packman_full_results.csv", "w") as f:
-    f.write("Package Name,Version,License Files,License Type\n")
+    f.write("Package Name,Version,Public/Private,License Files,License Type\n")
     for file in full_package_listing:
+        # Get the list of private package names from problem_packages
+        private_packages = {pkg["name"] for pkg in json_output[file]["problem_packages"]}
+
         for package in full_package_listing[file]:
             name = package["name"]
             version = package["version"]
+
+            # If the package is in problem_packages, it's private
+            is_public = "private" if name in private_packages else "public"
 
             # Handle license file info
             license_info = package.get("license_file")
@@ -285,7 +284,7 @@ with open("packman_full_results.csv", "w") as f:
                 license_files = str(license_info)
                 license_type = ""
 
-            f.write(f"{name},{version},{license_files},{license_type}\n")
+            f.write(f"{name},{version},{is_public},{license_files},{license_type}\n")
 
 print("\nDetailed results written to packman_verification_results.json")
 print("Full package listing written to packman_full_results.json")
