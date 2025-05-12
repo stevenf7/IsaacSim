@@ -11,7 +11,7 @@ project_ext_plugin(ext, ogn.plugin_project)
 add_files("impl", "plugins")
 add_files("nodes", ogn.nodes_path)
 
-add_ogn_dependencies(ogn, { "python/nodes" })
+add_ogn_dependencies(ogn)
 
 include_physx()
 add_cuda_dependencies()
@@ -35,7 +35,7 @@ links {
     "omni.usd",
 }
 
-extra_usd_libs = {}
+extra_usd_libs = {"usdGeom"}
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
@@ -87,4 +87,5 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },
+    {"%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/omni/sensors", ogn.python_target_path .. "/generic_model_output" },
 }

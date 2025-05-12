@@ -8,248 +8,161 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+import os
 from typing import Optional
 
 import carb
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.commands
 import omni.kit.utils
+import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.utils.stage import add_reference_to_stage, get_next_free_path
 from isaacsim.core.utils.xforms import reset_and_set_xform_ops
-from pxr import Gf, Sdf, UsdGeom
+from isaacsim.storage.native import get_assets_root_path
+from pxr import Gf, Sdf, Usd, UsdGeom
 
 
-class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
+class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
+    _replicator_api = None
+    _sensor_type = "sensor"
+    _supported_configs = []
+    _schema = None
+    _sensor_plugin_name = ""
+    _camera_config_name = ""
+
     def __init__(
         self,
-        path: Optional[str] = "/RtxLidar",
+        path: Optional[str] = None,
         parent: Optional[str] = None,
         config: Optional[str] = None,
-        asset_path: Optional[str] = None,
         translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
         orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
         visibility: Optional[bool] = False,
         variant: Optional[str] = None,
+        force_camera_prim=False,
+        **kwargs,
     ):
-        # condensed way to copy all input arguments into self with an underscore prefix
-        for name, value in vars().items():
-            if name != "self":
-                setattr(self, f"_{name}", value)
+        self._parent = parent
+        self._config = config
+        self._translation = translation
+        self._orientation = orientation
+        self._visibility = visibility
+        self._variant = variant
+        self._force_camera_prim = force_camera_prim
+        self._prim_creation_kwargs = kwargs
         self._prim = None
-        pass
+        self._path = path or f"/Rtx{self._sensor_type.capitalize()}"
+        self._camera_config = self._config
 
-    def do(self):
-        self._stage = omni.usd.get_context().get_stage()
-        self._prim_path = get_next_free_path(self._path, self._parent)
-        if self._asset_path:
-            self._prim = add_reference_to_stage(usd_path=self._asset_path, prim_path=self._prim_path)
-        elif self._config:
-            carb.log_warn(
-                "Creating RTX Lidar from config file is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use an OmniLidar prim instead by optionally specifying the asset_path argument."
+    def _add_reference(self) -> Usd.Prim:
+        """Adds a reference to the stage if a config is provided, and sets that prim's variant if provided. Otherwise, returns None."""
+        if self._config:
+            for config in self._supported_configs:
+                if os.path.splitext(os.path.basename(config))[0] == self._config:
+                    if config.endswith(".usd"):
+                        prim_type = "Xform"
+                    else:
+                        prim_type = f"Omni{self._sensor_type.capitalize()}"
+                    prim = add_reference_to_stage(
+                        usd_path=get_assets_root_path() + config,
+                        prim_path=self._prim_path,
+                        prim_type=prim_type,
+                    )
+                    reset_and_set_xform_ops(prim.GetPrim(), self._translation, self._orientation)
+                    if self._variant:
+                        variant_set = prim.GetVariantSet("Sensor")
+                        if not variant_set:
+                            carb.log_warn(
+                                f"Variant set 'Sensor' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
+                            )
+                        if not variant_set.SetVariantSelection(self._variant):
+                            carb.log_warn(
+                                f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
+                            )
+                    return prim
+        return None
+
+    def _call_replicator_api(self) -> Usd.Prim:
+        if self._replicator_api is not None:
+            # Convert position and orientation into tuples for Replicator API.
+            position = (self._translation[0], self._translation[1], self._translation[2])
+            rotation = Gf.Rotation(self._orientation)
+            euler_angles_as_vec = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
+            euler_angles = (euler_angles_as_vec[0], euler_angles_as_vec[1], euler_angles_as_vec[2])
+            # Construct prim
+            return self._replicator_api(
+                position=position,
+                rotation=euler_angles,
+                name=self._prim_path,
+                parent=self._parent,
+                **self._prim_creation_kwargs,
             )
-            self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
-            IsaacSensorSchema.IsaacRtxLidarSensorAPI.Apply(self._prim)
-            camSensorTypeAttr = self._prim.CreateAttribute("cameraSensorType", Sdf.ValueTypeNames.Token, False)
-            camSensorTypeAttr.Set("lidar")
-            tokens = camSensorTypeAttr.GetMetadata("allowedTokens")
-            if not tokens:
-                camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar", "ids", "ultrasonic"])
-            self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
-                "omni.sensors.nv.lidar.lidar_core.plugin"
-            )
-            self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
-        else:
-            self._prim = self._stage.DefinePrim(self._prim_path, "OmniLidar")
-            self._prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        return None
 
-        if self._visibility is False:
-            UsdGeom.Imageable(self._prim).MakeInvisible()
-        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
-
-        if self._variant:
-            variant_set = self._prim.GetVariantSet("Sensor")
-            if not variant_set:
-                carb.log_warn(f"Variant set 'Sensor' not found for RTX Lidar at {self._prim_path}.")
-            if not variant_set.SetVariantSelection(self._variant):
-                carb.log_warn(f"Variant '{self._variant}' not found for RTX Lidar at {self._prim_path}.")
-
-        if self._prim:
-            return self._prim
-        else:
-            carb.log_error("Could not create RTX Lidar Prim")
-            return None
-
-    def undo(self):
-        # undo must be defined even if empty
-        pass
-
-
-class IsaacSensorCreateRtxIDS(omni.kit.commands.Command):
-    def __init__(
-        self,
-        path: str = "/RtxIDS",
-        parent: str = None,
-        config: str = "idsoccupancy",
-        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
-        orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
-        visibility: bool = False,
-        variant: Optional[str] = None,
-    ):
-        # condensed way to copy all input arguments into self with an underscore prefix
-        for name, value in vars().items():
-            if name != "self":
-                setattr(self, f"_{name}", value)
-        self._prim = None
-        pass
-
-    def do(self):
-        self._stage = omni.usd.get_context().get_stage()
-        self._prim_path = get_next_free_path(self._path, self._parent)
-        self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
-        camSensorTypeAttr = self._prim.CreateAttribute("cameraSensorType", Sdf.ValueTypeNames.Token, False)
-        camSensorTypeAttr.Set("ids")
+    def _create_camera_prim(self) -> Usd.Prim:
+        prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
+        if self._schema:
+            self._schema.Apply(prim)
+        camSensorTypeAttr = prim.CreateAttribute("cameraSensorType", Sdf.ValueTypeNames.Token, False)
+        camSensorTypeAttr.Set(self._sensor_type)
         tokens = camSensorTypeAttr.GetMetadata("allowedTokens")
+        prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(self._sensor_plugin_name)
         if not tokens:
             camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar", "ids", "ultrasonic"])
-        self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
-            "omni.sensors.nv.ids.ids.plugin"
-        )
-        self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
-        if self._visibility is False:
-            UsdGeom.Imageable(self._prim).MakeInvisible()
-        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
-
-        if self._variant:
-            variant_set = self._prim.GetVariantSet("Sensor")
-            if not variant_set:
-                carb.log_warn(f"Variant set 'Sensor' not found for RTX IDS at {self._prim_path}.")
-            if not variant_set.SetVariantSelection(self._variant):
-                carb.log_warn(f"Variant '{self._variant}' not found for RTX IDS at {self._prim_path}.")
-
-        if self._prim:
-            return self._prim
-        else:
-            carb.log_error("Could not create RTX IDS Prim")
-            return None
-
-    def undo(self):
-        # undo must be defined even if empty
-        pass
-
-
-class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
-    def __init__(
-        self,
-        path: Optional[str] = "/RtxRadar",
-        parent: Optional[str] = None,
-        config: Optional[str] = None,
-        asset_path: Optional[str] = None,
-        translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
-        orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
-        visibility: Optional[bool] = False,
-        variant: Optional[str] = None,
-    ):
-        # condensed way to copy all input arguments into self with an underscore prefix
-        for name, value in vars().items():
-            if name != "self":
-                setattr(self, f"_{name}", value)
-        self._prim = None
-        pass
+        if self._camera_config:
+            prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._camera_config)
+        return prim
 
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
-        if self._asset_path:
-            self._prim = add_reference_to_stage(usd_path=self._asset_path, prim_path=self._prim_path)
-        elif self._config:
-            carb.log_warn(
-                "Creating RTX Radar from config file is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use an OmniRadar prim instead by optionally specifying the asset_path argument."
-            )
-            self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
-            IsaacSensorSchema.IsaacRtxRadarSensorAPI.Apply(self._prim)
-            camSensorTypeAttr = self._prim.CreateAttribute("cameraSensorType", Sdf.ValueTypeNames.Token, False)
-            camSensorTypeAttr.Set("radar")
-            tokens = camSensorTypeAttr.GetMetadata("allowedTokens")
-            if not tokens:
-                camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar", "ids", "ultrasonic"])
-            self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
-                "omni.sensors.nv.radar.wpm_dmatapprox.plugin"
-            )
-            self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
-        else:
-            self._prim = self._stage.DefinePrim(self._prim_path, "OmniRadar")
-            self._prim.ApplyAPI("OmniSensorGenericRadarWpmDmatAPI")
-
-        if self._visibility is False:
-            UsdGeom.Imageable(self._prim).MakeInvisible()
-        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
-
-        if self._variant:
-            variant_set = self._prim.GetVariantSet("Sensor")
-            if not variant_set:
-                carb.log_warn(f"Variant set 'Sensor' not found for RTX Radar at {self._prim_path}.")
-            if not variant_set.SetVariantSelection(self._variant):
-                carb.log_warn(f"Variant '{self._variant}' not found for RTX Radar at {self._prim_path}.")
-
-        if self._prim:
-            return self._prim
-        else:
-            carb.log_error("Could not create RTX Radar Prim")
-            return None
+        self._prim = (
+            not self._force_camera_prim and (self._add_reference() or self._call_replicator_api())
+        ) or self._create_camera_prim()
+        return self._prim
 
     def undo(self):
-        # undo must be defined even if empty
         pass
 
 
-class IsaacSensorCreateRtxUltrasonic(omni.kit.commands.Command):
-    def __init__(
-        self,
-        path: Optional[str] = "/RtxUltrasonic",
-        parent: Optional[str] = None,
-        config: Optional[str] = None,
-        asset_path: Optional[str] = None,
-        translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
-        orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
-        visibility: Optional[bool] = False,
-        variant: Optional[str] = None,
-    ):
-        # condensed way to copy all input arguments into self with an underscore prefix
-        for name, value in vars().items():
-            if name != "self":
-                setattr(self, f"_{name}", value)
-        self._prim = None
-        pass
+class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
+    _replicator_api = staticmethod(rep.functional.create.lidar)
+    _sensor_type = "lidar"
+    _supported_configs = carb.settings.get_settings().get("exts/isaacsim.sensors.rtx/supportedLidarConfigs")
+    _schema = IsaacSensorSchema.IsaacRtxLidarSensorAPI
+    _sensor_plugin_name = "omni.sensors.nv.lidar.lidar_core.plugin"
 
-    def do(self):
-        self._stage = omni.usd.get_context().get_stage()
-        self._prim_path = get_next_free_path(self._path, self._parent)
-        if self._asset_path:
-            self._prim = add_reference_to_stage(usd_path=self._asset_path, prim_path=self._prim_path)
-        else:
-            self._prim = self._stage.DefinePrim(self._prim_path, "OmniUltrasonic")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self._config and self._config.startswith("OS"):
+            # In Isaac Sim 5.0, Ouster lidar configs were implemented as variants on the same prim in the main USD file
+            self._variant = self._config
+            self._config = self._config[:3]  # truncate to OS0, OS1, or OS2
+            self._camera_config = self._variant
 
-        if self._visibility is False:
-            UsdGeom.Imageable(self._prim).MakeInvisible()
-        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
-        if self._variant:
-            variant_set = self._prim.GetVariantSet("Sensor")
-            if not variant_set:
-                carb.log_warn(f"Variant set 'Sensor' not found for RTX Ultrasonic at {self._prim_path}.")
-            if not variant_set.SetVariantSelection(self._variant):
-                carb.log_warn(f"Variant '{self._variant}' not found for RTX Ultrasonic at {self._prim_path}.")
+class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
+    _replicator_api = staticmethod(rep.functional.create.radar)
+    _sensor_type = "radar"
+    _schema = IsaacSensorSchema.IsaacRtxRadarSensorAPI
+    _sensor_plugin_name = "omni.sensors.nv.radar.wpm_dmatapprox.plugin"
 
-        if self._prim:
-            return self._prim
-        else:
-            carb.log_error("Could not create RTX Ultrasonic Prim")
-            return None
 
-    def undo(self):
-        # undo must be defined even if empty
-        pass
+class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
+    _sensor_type = "ids"
+    _sensor_plugin_name = "omni.sensors.nv.ids.ids.plugin"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self._config is None:
+            self._config = "idsoccupancy"
+            self._camera_config = "idsoccupancy"
+
+
+class IsaacSensorCreateRtxUltrasonic(IsaacSensorCreateRtxSensor):
+    _sensor_type = "ultrasonic"
+    _sensor_plugin_name = "omni.sensors.nv.ultrasonic.wpm_ultrasonic.plugin"
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

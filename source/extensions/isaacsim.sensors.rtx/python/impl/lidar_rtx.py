@@ -8,7 +8,7 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-from typing import Optional, Tuple
+from typing import Literal, Optional, Tuple, Union
 
 import carb
 import numpy as np
@@ -18,7 +18,7 @@ import omni.replicator.core as rep
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_type_name, is_prim_path_valid
-from omni.syntheticdata import sensors
+from pxr import Gf, Usd
 
 
 class LidarRtx(BaseSensor):
@@ -28,9 +28,8 @@ class LidarRtx(BaseSensor):
         name: str = "lidar_rtx",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = np.array([1.0, 0.0, 0.0, 0.0]),
         config_file_name: Optional[str] = None,
-        asset_path: Optional[str] = None,
         **kwargs,
     ) -> None:
         DEPRECATED_ARGS = [
@@ -52,11 +51,20 @@ class LidarRtx(BaseSensor):
                 carb.log_warn(
                     f"Argument {arg} is deprecated as of Isaac Sim 5.0 and will be removed in a future release."
                 )
+                kwargs.pop(arg)
 
+        # Initialize dictionaries for annotators and writers
+        self._annotators = {}  # maps annotator name to annotator and node prim path
+        self._writers = {}  # maps writer name to writer
+        self._render_product = None
+        self._render_product_path = None
+
+        if position is None and translation is None:
+            position = np.array([0.0, 0.0, 0.0])
         if is_prim_path_valid(prim_path):
             if get_prim_type_name(prim_path) == "Camera":
                 carb.log_warn(
-                    "Support for creating RTXLidar from Camera prims is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use OmniLidar prim instead."
+                    "Support for creating LidarRtx from Camera prims is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use OmniLidar prim instead."
                 )
             elif get_prim_type_name(prim_path) != "OmniLidar":
                 raise Exception(f"Prim at {prim_path} is not an OmniLidar.")
@@ -64,45 +72,74 @@ class LidarRtx(BaseSensor):
                 raise Exception(f"Prim at {prim_path} does not have the OmniSensorGenericLidarCoreAPI schema.")
             carb.log_warn("Using existing RTX Lidar prim at path {}".format(prim_path))
         else:
+            p = position if translation is None else translation
             _, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name, asset_path=asset_path
+                "IsaacSensorCreateRtxLidar",
+                translation=Gf.Vec3d(p[0], p[1], p[2]),
+                orientation=Gf.Quatd(orientation[0], orientation[1], orientation[2], orientation[3]),
+                path=prim_path,
+                parent=None,
+                config=config_file_name,
+                **kwargs,
             )
+            if sensor.GetTypeName() == "Xform":
+                # Traverse children of referenced asset to find OmniLidar prim
+                for child in Usd.PrimRange(sensor):
+                    if child.GetTypeName() == "OmniLidar":
+                        carb.log_warn("Using OmniLidar prim at path {}".format(child.GetPath()))
+                        sensor = child
+            prim_path = str(sensor.GetPath())
 
-        self._render_product = rep.create.render_product(prim_path, resolution=(128, 128))
-        self._render_product_path = self._render_product.path
-        self._point_cloud_node_path = None
-        self._flat_scan_node_path = None
-        self._create_point_cloud_graph_node()
-        self._create_flat_scan_graph_node()
-        self._debug_draw_node_path = None
-        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
+        # Move the sensor again
         BaseSensor.__init__(
             self, prim_path=prim_path, name=name, translation=translation, position=position, orientation=orientation
         )
+
+        # Create render product
+        self._render_product = rep.create.render_product(prim_path, resolution=(128, 128))
+        self._render_product_path = self._render_product.path
+
+        # Initialize core nodes interface
+        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
         if position is not None and orientation is not None:
             self.set_world_pose(position=position, orientation=orientation)
         elif translation is not None and orientation is not None:
             self.set_local_pose(translation=translation, orientation=orientation)
         elif orientation is not None:
             self.set_local_pose(orientation=orientation)
+
+        # Define data dictionary for current frame
         self._current_frame = dict()
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
-        self._writer = None
 
-        self._attribute_map = {
-            "point_cloud_data": "data",
-            "range": "range",
-            "azimuth": "azimuth",
-            "elevation": "elevation",
-            "linear_depth_data": "linearDepthData",
-            "intensities_data": "intensitiesData",
-            "azimuth_range": "azimuthRange",
-            "horizontal_resolution": "horizontalResolution",
-        }
+        # Autoogenerate deprecated functions for modifying current_frame
+        DEPRECATED_ATTRIBUTES = [
+            "point_cloud_data",
+            "linear_depth_data",
+            "intensities_data",
+            "azimuth_range",
+            "horizontal_resolution",
+            "range_data",
+            "azimuth_data",
+            "elevation_data",
+        ]
+        for attribute in DEPRECATED_ATTRIBUTES:
+            for fun_name in [f"add_{attribute}_to_frame", f"remove_{attribute}_from_frame"]:
+
+                def attr_fun(self):
+                    carb.log_warn(
+                        f"{fun_name} is deprecated as of Isaac Sim 5.0 and will be removed in a future release. This attribute is now automatically added to the current frame if the corresponding annotator is attached."
+                    )
+                    return
+
+                setattr(self, fun_name, attr_fun)
+
         return
 
     def __del__(self):
+        self.detach_all_writers()
+        self.detach_all_annotators()
         if self._render_product:
             self._render_product.destroy()
 
@@ -116,20 +153,82 @@ class LidarRtx(BaseSensor):
     def get_current_frame(self) -> dict:
         return self._current_frame
 
+    def get_annotators(self) -> dict:
+        return self._annotators
+
+    def attach_annotator(
+        self,
+        annotator_name: Literal[
+            "GenericModelOutputLidarPointAccumulator",
+            "IsaacTransformRTXSensorReturnsNoAccumulator",
+            "IsaacTransformRTXSensorReturns",
+            "IsaacComputeRTXLidarFlatScanSimulationTime",
+            "IsaacComputeRTXLidarFlatScanSystemTime",
+            "IsaacExtractRTXSensorPointCloudNoAccumulator",
+            "IsaacExtractRTXSensorPointCloud",
+        ],
+    ) -> None:
+
+        if annotator_name in self._annotators:
+            carb.log_warn(f"Annotator {annotator_name} already attached to {self._render_product_path}")
+            return
+
+        annotator = rep.AnnotatorRegistry.get_annotator(annotator_name)
+        annotator.attach([self._render_product_path])
+        self._annotators[annotator_name] = annotator
+        return
+
+    def detach_annotator(self, annotator_name: str) -> None:
+        if annotator_name in self._annotators:
+            annotator = self._annotators.pop(annotator_name)
+            annotator.detach()
+        else:
+            carb.log_warn(f"Annotator {annotator_name} not attached to {self._render_product_path}")
+        return
+
+    def detach_all_annotators(self) -> None:
+        for annotator in self._annotators.values():
+            annotator.detach()
+        self._annotators.clear()
+        return
+
+    def get_writers(self) -> dict:
+        return self._writers
+
+    def attach_writer(self, writer_name: str) -> None:
+        if writer_name in self._writers:
+            carb.log_warn(f"Writer {writer_name} already attached to {self._render_product_path}")
+            return
+        writer = rep.WriterRegistry.get(writer_name)
+        writer.attach([self._render_product_path])
+        self._writers[writer_name] = writer
+
+    def detach_writer(self, writer_name: str) -> None:
+        if writer_name in self._writers:
+            writer = self._writers.pop(writer_name)
+            writer.detach()
+        else:
+            carb.log_warn(f"Writer {writer_name} not attached to {self._render_product_path}")
+        return
+
+    def detach_all_writers(self) -> None:
+        for writer in self._writers.values():
+            writer.detach()
+        self._writers.clear()
+        return
+
     def _create_point_cloud_graph_node(self):
-        self._point_cloud_annotator = rep.AnnotatorRegistry.get_annotator(
-            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
+        carb.log_warn(
+            "LidarRtx._create_point_cloud_graph_node is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use attach_annotator instead."
         )
-        self._point_cloud_annotator.attach([self._render_product_path])
-        self._point_cloud_node_path = self._point_cloud_annotator.get_node().get_prim_path()
+        self.attach_annotator("IsaacExtractRTXSensorPointCloud")
         return
 
     def _create_flat_scan_graph_node(self):
-        self._flat_scan_annotator = rep.AnnotatorRegistry.get_annotator(
-            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan" + "SimulationTime"
+        carb.log_warn(
+            "LidarRtx._create_flat_scan_graph_node is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use attach_annotator instead."
         )
-        self._flat_scan_annotator.attach([self._render_product_path])
-        self._flat_scan_node_path = self._flat_scan_annotator.get_node().get_prim_path()
+        self.attach_annotator("IsaacComputeRTXLidarFlatScan" + "SimulationTime")
         return
 
     def initialize(self, physics_sim_view=None) -> None:
@@ -139,15 +238,10 @@ class LidarRtx(BaseSensor):
             on_event=self._data_acquisition_callback,
             observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._data_acquisition_callback",
         )
-        # self._acquisition_callback = (
-        #     omni.kit.app.get_app_interface()
-        #     .get_update_event_stream()
-        #     .create_subscription_to_pop(self._data_acquisition_callback)
-        # )
-        self._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+        self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+            on_event=self._stage_open_callback_fn,
+            observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._stage_open_callback",
         )
         timeline = omni.timeline.get_timeline_interface()
         self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
@@ -162,7 +256,9 @@ class LidarRtx(BaseSensor):
         return
 
     def _timeline_timer_callback_fn(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
+        if event.type == int(omni.timeline.TimelineEventType.PAUSE) or event.type == int(
+            omni.timeline.TimelineEventType.STOP
+        ):
             self.pause()
         elif event.type == int(omni.timeline.TimelineEventType.PLAY):
             self.resume()
@@ -173,16 +269,12 @@ class LidarRtx(BaseSensor):
         return
 
     def resume(self) -> None:
-        self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
-            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
-            on_event=self._data_acquisition_callback,
-            observer_name="isaacsim.sensors.rtx.LidarRtx.resume._data_acquisition_callback",
-        )
-        # self._acquisition_callback = (
-        #     omni.kit.app.get_app_interface()
-        #     .get_update_event_stream()
-        #     .create_subscription_to_pop(self._data_acquisition_callback)
-        # )
+        if self._acquisition_callback is None:
+            self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                on_event=self._data_acquisition_callback,
+                observer_name="isaacsim.sensors.rtx.LidarRtx.resume._data_acquisition_callback",
+            )
         return
 
     def pause(self) -> None:
@@ -193,6 +285,9 @@ class LidarRtx(BaseSensor):
         return self._acquisition_callback is None
 
     def _data_acquisition_callback(self, event: carb.events.IEvent):
+        if not self._annotators and not self._writers:
+            return
+
         self._current_frame["rendering_frame"] = (
             og.Controller()
             .node("/Render/PostProcess/SDGPipeline/PostProcessDispatcher")
@@ -207,117 +302,85 @@ class LidarRtx(BaseSensor):
         self._current_frame["rendering_time"] = self._core_nodes_interface.get_sim_time_at_time(
             self._current_frame["rendering_frame"]
         )
-        for key in self._current_frame:
-            attribute_name = "".join([word[0].upper() + word[1:] for word in key.split("_")])
-            attribute_name = attribute_name[0].lower() + attribute_name[1:]
-            if key not in ["rendering_time", "rendering_frame"]:
-                if key in ["point_cloud_data", "range", "azimuth", "elevation"]:
-                    data = self._point_cloud_annotator.get_data()
-                    if key == "point_cloud_data":
-                        self._current_frame[key] = data[self._attribute_map[key]]
-                    else:
-                        self._current_frame[key] = data["info"][self._attribute_map[key]]
-                elif key in ["linear_depth_data", "intensities_data", "azimuth_range", "horizontal_resolution"]:
-                    data = self._flat_scan_annotator.get_data()
-                    self._current_frame[key] = data[self._attribute_map[key]]
-        return
+        for annotator_name, annotator in self._annotators.items():
+            self._current_frame[annotator_name] = annotator.get_data()
 
-    def add_point_cloud_data_to_frame(self):
-        self._current_frame["point_cloud_data"] = []
-        return
-
-    def remove_point_cloud_data_from_frame(self):
-        del self._current_frame["point_cloud_data"]
-        return
-
-    def add_linear_depth_data_to_frame(self):
-        self._current_frame["linear_depth_data"] = []
-        return
-
-    def remove_linear_depth_data_from_frame(self):
-        del self._current_frame["linear_depth_data"]
-        return
-
-    def add_intensities_data_to_frame(self):
-        self._current_frame["intensities_data"] = []
-        return
-
-    def remove_intensities_data_from_frame(self):
-        del self._current_frame["intensities_data"]
-        return
-
-    def add_azimuth_range_to_frame(self):
-        self._current_frame["azimuth_range"] = []
-        return
-
-    def remove_azimuth_range_from_frame(self):
-        del self._current_frame["azimuth_range"]
-        return
-
-    def add_horizontal_resolution_to_frame(self):
-        self._current_frame["horizontal_resolution"] = []
-        return
-
-    def remove_horizontal_resolution_from_frame(self):
-        del self._current_frame["horizontal_resolution"]
-        return
-
-    def add_range_data_to_frame(self):
-        self._current_frame["range"] = []
-        return
-
-    def remove_range_data_from_frame(self):
-        del self._current_frame["range"]
-        return
-
-    def add_azimuth_data_to_frame(self):
-        self._current_frame["azimuth"] = []
-        return
-
-    def remove_azimuth_data_from_frame(self):
-        del self._current_frame["azimuth"]
-        return
-
-    def add_elevation_data_to_frame(self):
-        self._current_frame["elevation"] = []
-        return
-
-    def remove_elevation_data_from_frame(self):
-        del self._current_frame["elevation"]
+        # Handle deprecated attributes
+        if "IsaacExtractRTXSensorPointCloud" in self._annotators:
+            point_cloud_data = self._annotators["IsaacExtractRTXSensorPointCloud"].get_data()
+            self._current_frame["point_cloud_data"] = point_cloud_data["data"]
+            self._current_frame["info"] = {}
+            self._current_frame["info"]["range"] = point_cloud_data["info"]["range"]
+            self._current_frame["info"]["azimuth"] = point_cloud_data["info"]["azimuth"]
+            self._current_frame["info"]["elevation"] = point_cloud_data["info"]["elevation"]
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            flat_scan_data = self._annotators["IsaacComputeRTXLidarFlatScanSimulationTime"].get_data()
+            self._current_frame["linear_depth_data"] = flat_scan_data["linearDepthData"]
+            self._current_frame["intensities_data"] = flat_scan_data["intensitiesData"]
+            self._current_frame["azimuth_range"] = flat_scan_data["azimuthRange"]
+            self._current_frame["horizontal_resolution"] = flat_scan_data["horizontalResolution"]
         return
 
     def get_horizontal_resolution(self) -> float:
-        return og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:horizontalResolution").get()
+        carb.log_warn(
+            "LidarRtx.get_horizontal_resolution is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the horizontal_resolution attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("horizontalResolution")
+        return None
 
     def get_horizontal_fov(self) -> float:
-        return og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:horizontalFov").get()
+        carb.log_warn(
+            "LidarRtx.get_horizontal_fov is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the horizontal_fov attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("horizontalFov")
+        return None
 
     def get_num_rows(self) -> int:
-        return og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:numRows").get()
+        carb.log_warn(
+            "LidarRtx.get_num_rows is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the num_rows attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("numRows")
+        return None
 
     def get_num_cols(self) -> int:
-        return og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:numCols").get()
+        carb.log_warn(
+            "LidarRtx.get_num_cols is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the num_cols attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("numCols")
+        return None
 
     def get_rotation_frequency(self) -> float:
-        return og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:rotationRate").get()
+        carb.log_warn(
+            "LidarRtx.get_rotation_frequency is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the rotation_frequency attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("rotationRate")
+        return None
 
     def get_depth_range(self) -> Tuple[float, float]:
-        result = og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:depthRange").get()
-        return result[0], result[1]
+        carb.log_warn(
+            "LidarRtx.get_depth_range is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the depth_range attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("depthRange")
+        return None
 
     def get_azimuth_range(self) -> Tuple[float, float]:
-        result = og.Controller().node(self._flat_scan_node_path).get_attribute("outputs:azimuthRange").get()
-        return result[0], result[1]
+        carb.log_warn(
+            "LidarRtx.get_azimuth_range is deprecated as of Isaac Sim 5.0 and will be removed in a future release. Use the azimuth_range attribute in the current frame instead."
+        )
+        if "IsaacComputeRTXLidarFlatScanSimulationTime" in self._annotators:
+            return self._current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("azimuthRange")
+        return None
 
     def enable_visualization(self):
-        self._writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-        self._writer.initialize()
-        self._writer.attach([self._render_product_path])
-
+        self.attach_writer("RtxLidar" + "DebugDrawPointCloud")
         return
 
     def disable_visualization(self):
-        if self._writer:
-            self._writer.detach()
-        self._writer = None
+        self.detach_writer("RtxLidar" + "DebugDrawPointCloud")
         return

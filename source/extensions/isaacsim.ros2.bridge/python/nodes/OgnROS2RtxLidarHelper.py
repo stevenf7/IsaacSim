@@ -75,7 +75,7 @@ class OgnROS2RtxLidarHelper:
                     return False
                 prim = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
                 if not (prim.IsA(UsdGeom.Camera) and prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI)) and not (
-                    prim.IsA("OmniLidar") and prim.HasAPI("OmniSensorGenericLidarCoreAPI")
+                    prim.GetTypeName() == "OmniLidar" and prim.HasAPI("OmniSensorGenericLidarCoreAPI")
                 ):
                     carb.log_warn("Render product not attached to RTX Lidar (Camera or OmniLidar prims are required).")
                     db.per_instance_state.initialized = False

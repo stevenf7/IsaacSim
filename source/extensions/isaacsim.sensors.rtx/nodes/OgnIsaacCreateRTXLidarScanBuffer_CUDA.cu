@@ -13,6 +13,35 @@
 #define DEG2RAD(deg) ((deg) / 180.f * 3.14159265358979323846f)
 #define RAD2DEG(rad) ((rad) / 3.14159265358979323846f * 180.f)
 
+__global__ void cartesianToSphericalKernel(float3* srcDest, float* azimuth, float* elevation, float* range, int N)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= N)
+        return;
+
+    float x = srcDest[idx].x;
+    float y = srcDest[idx].y;
+    float z = srcDest[idx].z;
+
+    float rangeRad = sqrtf(x * x + y * y + z * z);
+    float azimuthRad = atan2f(y, x);
+    float elevationRad = asinf(z / rangeRad);
+
+    azimuth[idx] = RAD2DEG(azimuthRad);
+    elevation[idx] = RAD2DEG(elevationRad);
+    range[idx] = RAD2DEG(rangeRad);
+}
+
+extern "C" void cartesianToSpherical(float3* srcDest, float* azimuth, float* elevation, float* range, int N, int cdi)
+{
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, cdi);
+    const int nt = prop.maxThreadsPerBlock;
+    const int nb = (N + nt - 1) / nt;
+
+    cartesianToSphericalKernel<<<nb, nt>>>(srcDest, azimuth, elevation, range, N);
+}
+
 // uses the destination and a scratch area to compte and store for use computing pc
 // omni.sensor v1.0.0+ provides azimuth in [-180, 180), +CCW
 // omni.sensor v0.4.x  provided azimuth in [0, 360), +CW

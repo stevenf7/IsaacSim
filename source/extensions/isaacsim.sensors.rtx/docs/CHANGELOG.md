@@ -1,4 +1,35 @@
 # Changelog
+## [15.0.0] - 2025-05-03
+### Added
+- Full support for OmniSensor prims
+- IsaacSensorCreateRtxSensor command base class
+- exts."isaacsim.sensors.rtx".supportedLidarConfigs specifies OmniLidar USDs (some including meshes)
+  that can be added via sensor create commands.
+- Sensor creation commands now have "force_camera_prim" bool argument to forcibly create Camera prims
+  as RTX Sensors (see below).
+
+## Changed
+- Deprecated Camera prims as RTX Sensors
+- LidarRTX no longer implicitly attaches annotators or writers; user must now explicitly
+  attach annotators or writers using helper methods.
+- LidarRTX get_current_frame() data dictionary exposes data from each attached annotator
+- LidarRTX now supports all annotators in isaacsim.sensors.rtx extension
+- IsaacSensorCreateRtxLidar, IsaacSensorCreateRtxRadar, IsaacSensorCreateRtxIDS, and
+  IsaacSensorCreateRtxUltrasonic commands now subclass IsaacSensorCreateRtxSensor
+- IsaacSensorCreateRtxLidar will now add a reference USD to stage if a matching config is provided
+- IsaacSensorCreateRtxLidar and IsaacSensorCreateRtxRadar will now create OmniSensor prims on the stage by default
+- OgnIsaacComputeRTXLidarFlatScan now only works with lidar configurations or OmniLidar prims specifying
+  2D lidars, with all emitters at 0 degrees elevation.
+
+## Removed
+- OgnIsaacComputeRTXLidarPointCloud node removed in favor of OgnIsaacExtractRTXSensorPointCloud
+- OgnIsaacComputeRTXRadarPointCloud node removed in favor of OgnIsaacExtractRTXSensorPointCloud
+- OgnIsaacCreateRTXLidarScanBuffer node removed in favor of OgnIsaacExtractRTXSensorPointCloud
+- OgnIsaacReadRTXLidarData node removed in favor of standalone examples
+
+## Fixed
+- OgnIsaacComputeRTXLidarFlatScan properly outputs all returns from full scan of 2D lidar.
+
 ## [14.4.2] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

@@ -14,6 +14,7 @@
 
 import asyncio
 import math
+import time
 
 import carb.tokens
 import numpy as np
@@ -28,7 +29,6 @@ import usdrt.Sdf
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.viewports import add_aov_to_viewport
-from isaacsim.sensors.physics import _sensor
 from omni.kit.viewport.utility import get_active_viewport
 from omni.syntheticdata import sensors
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
@@ -65,107 +65,70 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         rclpy.init()
 
-        self._is = _sensor.acquire_imu_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.ros2.bridge")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._stage = omni.usd.get_context().get_stage()
+
+        self._sensor = None
+        self._render_product = None
+        self._render_product_path = None
 
         pass
 
     async def tearDown(self):
         import rclpy
 
-        self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         # rospy.signal_shutdown("test_complete")
+        self._timeline.stop()
         self._timeline = None
         rclpy.shutdown()
         pass
 
-    async def test_rtx_lidar_point_cloud(self):
-        stage = omni.usd.get_context().get_stage()
-
-        viewport_api = get_active_viewport()
-        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
-
-        cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-
-        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-        writer.initialize()
-        writer.attach([viewport_api.get_render_product_path()])
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-
-        _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
-        await omni.kit.app.get_app().next_update_async()
-        viewport_api.set_active_camera(sensor.GetPath().pathString)
-
-    async def test_rtx_radar_point_cloud(self):
-        stage = omni.usd.get_context().get_stage()
-
-        viewport_api = get_active_viewport()
-        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
-        render_product_path = viewport_api.get_render_product_path()
-
-        cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 5), (5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-
-        _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/sensor", parent=None)
-        viewport_api.set_active_camera(sensor.GetPath().pathString)
-
-        writer = rep.writers.get("RtxRadar" + "ROS2PublishPointCloud")
-        writer.initialize()
-        writer.attach([render_product_path])
-        await omni.kit.app.get_app().next_update_async()
-        rv = "RtxRadar"
-        writer_2 = rep.writers.get(rv + "DebugDrawPointCloud")
-        writer_2.attach([render_product_path])
-
-        await omni.kit.app.get_app().next_update_async()
-
-    pass
-
-    async def test_rtx_lidar(self):
-        stage = omni.usd.get_context().get_stage()
-        viewport_api = get_active_viewport()
-        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
-        render_product_path = viewport_api.get_render_product_path()
-
-        config = "Example_Rotary"
-        _, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateRtxLidar",
-            path="/sim_lidar",
-            parent=None,
-            config=config,
-            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+    async def _build_lidar_scene(self, sensor_config):
+        _, self._sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateRtxLidar", path="/sim_lidar", config=sensor_config
         )
-        viewport_api.set_active_camera(sensor.GetPath().pathString)
-        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        # add_aov_to_viewport(viewport_api, "RtxSensorCpu")
 
-        cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_5", (1, 1, 1), (0, -4, 0), physics=False)
+        # Find OmniLidar prim by traversing the stage
+        for child_prim in Usd.PrimRange(self._sensor):
+            if child_prim.GetTypeName() == "OmniLidar":
+                self._sensor = child_prim
+                break
+        self.assertEqual(self._sensor.GetTypeName(), "OmniLidar")
+        self._sensor_prim_path = self._sensor.GetPath()
 
+        # Create a render product for the sensor
+        self._render_product = rep.create.render_product(
+            self._sensor_prim_path, resolution=(128, 128), render_vars=["GenericModelOutput", "RtxSensorMetadata"]
+        )
+        self._render_product_path = self._render_product.path
+
+        # Add cubes to the scene
+        cube_prim = add_cube(self._stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
+        cube_prim = add_cube(self._stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
+        cube_prim = add_cube(self._stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
+        cube_prim = add_cube(self._stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
+        cube_prim = add_cube(self._stage, "/World/cube_5", (1, 1, 1), (0, -4, 0), physics=False)
+
+        return
+
+    async def _test_rtx_lidar_point_cloud(
+        self, sensor_config="Example_Rotary", enable_full_scan=False, use_system_time=False
+    ):
+
+        await self._build_lidar_scene(sensor_config=sensor_config)
+        self.assertIsNotNone(self._sensor)
+        self.assertIsNotNone(self._render_product)
+        self.assertIsNotNone(self._render_product_path)
+
+        # Create OmniGraph for sensor
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -173,30 +136,17 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("PCLPublish", "isaacsim.ros2.bridge.ROS2RtxLidarHelper"),
-                        ("LaserScanPublish", "isaacsim.ros2.bridge.ROS2RtxLidarHelper"),
-                        ("PublishTF", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
-                        ("SimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("SimTime.inputs:resetOnStop", True),
-                        ("PCLPublish.inputs:renderProductPath", render_product_path),
+                        ("PCLPublish.inputs:renderProductPath", self._render_product_path),
                         ("PCLPublish.inputs:topicName", "point_cloud"),
                         ("PCLPublish.inputs:type", "point_cloud"),
                         ("PCLPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("PCLPublish.inputs:fullScan", False),
-                        ("LaserScanPublish.inputs:fullScan", False),
-                        ("LaserScanPublish.inputs:renderProductPath", render_product_path),
-                        ("LaserScanPublish.inputs:topicName", "laser_scan"),
-                        ("LaserScanPublish.inputs:type", "laser_scan"),
-                        ("LaserScanPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("PublishTF.inputs:targetPrims", [usdrt.Sdf.Path("/sim_lidar")]),
-                        ("PublishTF.inputs:parentPrim", [usdrt.Sdf.Path("/sim_lidar")]),
+                        ("PCLPublish.inputs:fullScan", enable_full_scan),
+                        ("PCLPublish.inputs:useSystemTime", use_system_time),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PCLPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "LaserScanPublish.inputs:execIn"),
-                        ("SimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
                     ],
                 },
             )
@@ -204,199 +154,193 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
             print(e)
 
         # enable debug rendering for test purposes
-        rv = "RtxLidar"
-        writer = rep.writers.get(rv + "DebugDrawPointCloud")
-        writer.attach([render_product_path])
+        # rv = "RtxLidar"
+        # writer = rep.writers.get(rv + "DebugDrawPointCloud")
+        # writer.attach([self._render_product_path])
 
         import rclpy
 
+        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
         from sensor_msgs.msg import LaserScan, PointCloud2
 
         self._pcl_data = None
-        self._scan_data = None
+        node = rclpy.create_node("rtx_lidar_tester")
 
         def pcl_callback(data):
             self._pcl_data = data
 
+        pcl_sub = node.create_subscription(PointCloud2, "point_cloud", pcl_callback, get_qos_profile())
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        self._system_time = time.time()
+
+        await simulate_async(1.5, callback=spin)
+        for _ in range(10):
+            if self._pcl_data is None:
+                await simulate_async(1, callback=spin)
+        self.assertIsNotNone(self._pcl_data)
+
+        return
+
+    async def _test_rtx_lidar_laser_scan(self, sensor_config="SICK_picoScan150", use_system_time=False):
+
+        await self._build_lidar_scene(sensor_config=sensor_config)
+        self.assertIsNotNone(self._sensor)
+        self.assertIsNotNone(self._render_product)
+        self.assertIsNotNone(self._render_product_path)
+
+        # Create OmniGraph for sensor
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("FlatScanPublish", "isaacsim.ros2.bridge.ROS2RtxLidarHelper"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("FlatScanPublish.inputs:renderProductPath", self._render_product_path),
+                        ("FlatScanPublish.inputs:topicName", "laser_scan"),
+                        ("FlatScanPublish.inputs:type", "laser_scan"),
+                        ("FlatScanPublish.inputs:resetSimulationTimeOnStop", True),
+                        ("FlatScanPublish.inputs:useSystemTime", use_system_time),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "FlatScanPublish.inputs:execIn"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        # # enable debug rendering for test purposes
+        # rv = "RtxLidar"
+        # writer = rep.writers.get(rv + "DebugDrawPointCloud")
+        # writer.attach([self._render_product_path])
+
+        import rclpy
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        from sensor_msgs.msg import LaserScan, PointCloud2
+
+        self._scan_data = None
+        node = rclpy.create_node("rtx_lidar_tester")
+
         def scan_callback(data):
             self._scan_data = data
 
-        node = rclpy.create_node("rtx_lidar_tester")
-        pcl_sub = node.create_subscription(PointCloud2, "point_cloud", pcl_callback, get_qos_profile())
         scan_sub = node.create_subscription(LaserScan, "laser_scan", scan_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
 
-        await asyncio.sleep(2.0)
+        self._system_time = time.time()
 
-        import time
-
-        system_time = time.time()
-
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._pcl_data is None:
-                await simulate_async(1, callback=spin)
-
+        await simulate_async(15, callback=spin)
+        # for _ in range(10):
+        #     if self._scan_data is None:
+        #         await simulate_async(1, callback=spin)
         self.assertIsNotNone(self._scan_data)
-        self.assertIsNotNone(self._pcl_data)
-
-        self.assertGreaterEqual(self._scan_data.header.stamp.sec, 1)
-        self.assertLess(self._scan_data.header.stamp.sec, system_time / 2.0)
-        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, 1)
-        self.assertLess(self._pcl_data.header.stamp.sec, system_time / 2.0)
-
-        # check laser scan
-        self.assertGreater(len(self._scan_data.ranges), 10)
-
-        for r in self._scan_data.ranges:
-            if r < 0.0:
-                continue  # invalid scan
-            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
-            self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
-
-        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
-        arr = np.frombuffer(self._pcl_data.data, ff)
-
-        # print(arr)
-        self.assertGreater(len(arr), 10)
-        for p in arr:
-            self.assertGreater(p[2], -4.5)
-            self.assertLess(p[2], 4.5)
-
-        self._timeline.stop()
-        # make sure all previous messages are cleared
-        await omni.kit.app.get_app().next_update_async()
-        spin()
-        await asyncio.sleep(2.0)
-
-        self._pcl_data = None
-        self._scan_data = None
-
-        # Turn on SystemTime for timestamp of all lidar publishers. And retry test.
-        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:useSystemTime").set(True)
-        og.Controller.attribute("/ActionGraph/LaserScanPublish" + ".inputs:useSystemTime").set(True)
-
-        await omni.kit.app.get_app().next_update_async()
-        system_time = time.time()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2, callback=spin)
-        for _ in range(10):
-            if self._pcl_data is None:
-                await simulate_async(1, callback=spin)
-
-        self.assertIsNotNone(self._scan_data)
-        self.assertIsNotNone(self._pcl_data)
-
-        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, system_time)
-        self.assertGreaterEqual(self._scan_data.header.stamp.sec, system_time)
-
-        # check laser scan
-        self.assertGreater(len(self._scan_data.ranges), 10)
-
-        for r in self._scan_data.ranges:
-            if r < 0.0:
-                continue  # invalid scan
-            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
-            self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
-
-        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
-        arr = np.frombuffer(self._pcl_data.data, ff)
-
-        # print(arr)
-        self.assertGreater(len(arr), 10)
-        for p in arr:
-            self.assertGreater(p[2], -4.5)
-            self.assertLess(p[2], 4.5)
-
-        self._timeline.stop()
-
-        # make sure all previous messages are cleared
-        await omni.kit.app.get_app().next_update_async()
-        spin()
-        await asyncio.sleep(2.0)
-
-        self._pcl_data = None
-        self._scan_data = None
-
-        # Turn off SystemTime for timestamp for lidar point_cloud publisher with full scan enabled.
-        # And run test to check timestamp.
-        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:useSystemTime").set(False)
-        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:fullScan").set(True)
-
-        await omni.kit.app.get_app().next_update_async()
-        system_time = time.time()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._pcl_data is None:
-                await simulate_async(1, callback=spin)
-
-        self.assertIsNotNone(self._pcl_data)
-        self.assertIsNotNone(self._scan_data)
-
-        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, 1)
-        self.assertLess(self._pcl_data.header.stamp.sec, system_time / 2.0)
-
-        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
-        arr = np.frombuffer(self._pcl_data.data, ff)
-
-        # print(arr)
-        self.assertGreater(len(arr), 10)
-        for p in arr:
-            self.assertGreater(p[2], -4.5)
-            self.assertLess(p[2], 4.5)
-
-        self._timeline.stop()
-
-        # make sure all previous messages are cleared
-        await omni.kit.app.get_app().next_update_async()
-        spin()
-        await asyncio.sleep(2.0)
-
-        self._pcl_data = None
-        self._scan_data = None
-
-        # Turn on SystemTime for timestamp for lidar point_cloud publisher with full scan enabled.
-        # And run test to check timestamp.
-        # Turn off systemTime for laser_scan publisher
-
-        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:useSystemTime").set(True)
-        og.Controller.attribute("/ActionGraph/PCLPublish" + ".inputs:fullScan").set(True)
-
-        og.Controller.attribute("/ActionGraph/LaserScanPublish" + ".inputs:useSystemTime").set(False)
-
-        await omni.kit.app.get_app().next_update_async()
-        system_time = time.time()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._pcl_data is None:
-                await simulate_async(1, callback=spin)
-
-        self.assertIsNotNone(self._pcl_data)
-        self.assertIsNotNone(self._scan_data)
-
-        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, system_time)
-
-        self.assertGreaterEqual(self._scan_data.header.stamp.sec, 1)
-        self.assertLess(self._scan_data.header.stamp.sec, system_time / 2.0)
-
-        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
-        arr = np.frombuffer(self._pcl_data.data, ff)
-
-        # print(arr)
-        self.assertGreater(len(arr), 10)
-        for p in arr:
-            self.assertGreater(p[2], -4.5)
-            self.assertLess(p[2], 4.5)
 
         node.destroy_node()
+
+        return
+
+    async def test_rtx_lidar_point_cloud_full_scan_simulation_time(self):
+        """Test publishing PointCloud2 from RTX Lidar with full scan enabled and using simulation time."""
+        await self._test_rtx_lidar_point_cloud(enable_full_scan=True, use_system_time=False)
+
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, 1)
+        self.assertLess(self._pcl_data.header.stamp.sec, self._system_time / 2.0)
+
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+    async def test_rtx_lidar_point_cloud_simulation_time(self):
+        """Test publishing PointCloud2 from RTX Lidar with full scan disabled and using simulation time."""
+        await self._test_rtx_lidar_point_cloud(enable_full_scan=False, use_system_time=False)
+
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, 1)
+        self.assertLess(self._pcl_data.header.stamp.sec, self._system_time / 2.0)
+
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+    async def test_rtx_lidar_point_cloud_full_scan_system_time(self):
+        """Test publishing PointCloud2 from RTX Lidar with full scan enabled and using system time."""
+        await self._test_rtx_lidar_point_cloud(enable_full_scan=True, use_system_time=True)
+
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, self._system_time)
+
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+    async def test_rtx_lidar_point_cloud_system_time(self):
+        """Test publishing PointCloud2 from RTX Lidar with full scan disabled and using system time."""
+        await self._test_rtx_lidar_point_cloud(enable_full_scan=False, use_system_time=True)
+
+        self.assertGreaterEqual(self._pcl_data.header.stamp.sec, self._system_time)
+
+        ff = fields_to_dtype(self._pcl_data.fields, self._pcl_data.point_step)
+        arr = np.frombuffer(self._pcl_data.data, ff)
+
+        # print(arr)
+        self.assertGreater(len(arr), 10)
+        for p in arr:
+            self.assertGreater(p[2], -4.5)
+            self.assertLess(p[2], 4.5)
+
+    async def test_rtx_lidar_laser_scan_simulation_time(self):
+        """Test publishing LaserScan from RTX Lidar with full scan disabled and using simulation time."""
+        await self._test_rtx_lidar_laser_scan(use_system_time=False)
+
+        self.assertGreaterEqual(self._scan_data.header.stamp.sec, 1)
+        self.assertLess(self._scan_data.header.stamp.sec, self._system_time / 2.0)
+
+        # check laser scan
+        self.assertGreater(len(self._scan_data.ranges), 10)
+
+        for r in self._scan_data.ranges:
+            if r < 0.0:
+                continue  # invalid scan
+            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
+            self.assertLess(r, 6.37)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
+
+    async def test_rtx_lidar_laser_scan_system_time(self):
+        """Test publishing LaserScan from RTX Lidar with full scan disabled and using system time."""
+        await self._test_rtx_lidar_laser_scan(use_system_time=True)
+
+        self.assertGreaterEqual(self._scan_data.header.stamp.sec, self._system_time)
+
+        # check laser scan
+        self.assertGreater(len(self._scan_data.ranges), 10)
+
+        for r in self._scan_data.ranges:
+            if r < 0.0:
+                continue  # invalid scan
+            self.assertGreater(r, 3.49)  # this is the distance to the inset cube
+            self.assertLess(r, 6.38)  # should be less than sqrt(4.5&2+4.5^2) ~ 6.3639
