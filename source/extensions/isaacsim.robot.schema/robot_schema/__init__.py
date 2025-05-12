@@ -13,6 +13,7 @@ import pxr
 
 
 class Classes(Enum):
+
     ROBOT_API = "RobotAPI"
     LINK_API = "LinkAPI"
     REFERENCE_POINT_API = "ReferencePointAPI"
@@ -148,6 +149,6 @@ def CreateSurfaceGripper(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
 
 
 def ApplyAttachmentPointAPI(prim: pxr.Usd.Prim):
-    prim.AddAppliedSchema(Classes.ATTACHMENT_POINT_API.value)
+    prim.AddAppliedSchema(Classes.ATTACHMENT_POINT_API.name)
     for attr in [Attributes.FORWARD_AXIS, Attributes.CLEARANCE_OFFSET]:
         prim.CreateAttribute(attr.name, attr.type, False)

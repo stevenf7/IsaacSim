@@ -25,7 +25,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 
 from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
-from .ui_builder import UIBuilder
+from .ui.ui_builder import UIBuilder
 
 """
 This file serves as a basic template for the standard boilerplate operations
@@ -55,7 +55,7 @@ class Extension(omni.ext.IExt):
 
         # Build Window
         self._window = ScrollingWindow(
-            title=EXTENSION_TITLE, width=600, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            title=EXTENSION_TITLE, width=700, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         self._window.set_visibility_changed_fn(self._on_window)
 
@@ -129,7 +129,7 @@ class Extension(omni.ext.IExt):
                 return window
 
             tgt = ui.Workspace.get_window("Viewport")
-            dock(tgt, EXTENSION_TITLE, omni.ui.DockPosition.LEFT, 0.33)
+            dock(tgt, EXTENSION_TITLE, omni.ui.DockPosition.LEFT, 0.55)
             await omni.kit.app.get_app().next_update_async()
 
         self._task = asyncio.ensure_future(dock_window())
@@ -146,12 +146,12 @@ class Extension(omni.ext.IExt):
         if self._timeline.is_playing():
             if not self._physx_subscription:
                 self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
-            if not self._render_subscription:
-                self._render_subscription = self._event_dispatcher.observe_event(
-                    event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
-                    on_event=self.ui_builder.on_render_step,
-                    observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_render_step",
-                )
+        if not self._render_subscription:
+            self._render_subscription = self._event_dispatcher.observe_event(
+                event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+                on_event=self.ui_builder.on_render_step,
+                observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_render_step",
+            )
 
     def _on_timeline_event(self, event):
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
@@ -165,7 +165,6 @@ class Extension(omni.ext.IExt):
                 )
         elif event.type == int(omni.timeline.TimelineEventType.STOP):
             self._physx_subscription = None
-            self._render_subscription = None
 
         self.ui_builder.on_timeline_event(event)
 

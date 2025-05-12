@@ -1104,8 +1104,10 @@ class StateButton(UIWidgetWrapper):
                 ui.Spacer(width=10)
                 with ui.Frame(width=0):
                     with ui.VStack():
-                        with ui.Placer(offset_x=0, offset_y=7):
+                        ui.Spacer()
+                        with ui.Placer(offset_x=0, offset_y=5):
                             ui.Rectangle(height=5, width=5, alignment=ui.Alignment.CENTER)
+                        ui.Spacer()
                 ui.Spacer(width=5)
         return containing_frame
 
@@ -2025,7 +2027,8 @@ class XYPlot(UIWidgetWrapper):
                 m = np.min(row)
                 if data_min is None or m < data_min:
                     data_min = m
-
+        if data_min is None:
+            return 0
         return float(data_min)
 
     def _get_ragged_data_max(self, data) -> float:
@@ -2038,7 +2041,8 @@ class XYPlot(UIWidgetWrapper):
                 m = np.max(row)
                 if data_max is None or m > data_max:
                     data_max = m
-
+        if data_max is None:
+            return 0
         return float(data_max)
 
     def _get_interpolated_data(self, x_min=None, x_max=None):
