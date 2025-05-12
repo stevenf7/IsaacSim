@@ -193,7 +193,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         rp = rep.create.render_product(cam, (512, 512))
 
         # Set the output directory for the data
-        out_dir = os.getcwd() + "/_out_sim_event"
+        out_dir = os.path.join(os.getcwd(), "_out_sim_event")
         os.makedirs(out_dir, exist_ok=True)
         print(f"Outputting data to {out_dir}..")
 
@@ -259,7 +259,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
         rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
         writer = rep.WriterRegistry.get("BasicWriter")
-        out_dir = os.getcwd() + "/_out_custom_event"
+        out_dir = os.path.join(os.getcwd(), "_out_custom_event")
         print(f"Writing data to {out_dir}")
         writer.initialize(output_dir=out_dir, rgb=True)
         writer.attach(rp)
@@ -411,7 +411,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             basic_writer = rep.WriterRegistry.get("BasicWriter")
             delta_time_str = "None" if custom_delta_time is None else f"{custom_delta_time:.4f}"
             render_mode_str = f"pt_subsamples_{pt_subsamples}_spp_{pt_spp}" if use_path_tracing else "rt"
-            output_directory = os.getcwd() + f"/_out_motion_blur_dt_{delta_time_str}_{render_mode_str}"
+            output_directory = os.path.join(os.getcwd(), f"_out_motion_blur_dt_{delta_time_str}_{render_mode_str}")
             print(f"[MotionBlur] Output directory: {output_directory}")
             basic_writer.initialize(output_dir=output_directory, rgb=True)
             basic_writer.attach(render_product)

@@ -303,7 +303,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             # Create the writer and the render product
             rp = rep.create.render_product(camera_path, (512, 512))
             writer = rep.writers.get("BasicWriter")
-            output_directory = os.getcwd() + "/out_behaviors_sdg"
+            output_directory = os.path.join(os.getcwd(), "out_behaviors_sdg")
             print(f"output_directory: {output_directory}")
             writer.initialize(output_dir=output_directory, rgb=True, distance_to_image_plane=True, colorize_depth=True)
             writer.attach(rp)

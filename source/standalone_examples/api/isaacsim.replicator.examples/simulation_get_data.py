@@ -57,7 +57,7 @@ cam = rep.create.camera(position=(5, 5, 5), look_at=(0, 0, 0))
 rp = rep.create.render_product(cam, (512, 512))
 
 # Set the output directory for the data
-out_dir = os.getcwd() + "/_out_sim_event"
+out_dir = os.path.join(os.getcwd(), "_out_sim_event")
 os.makedirs(out_dir, exist_ok=True)
 print(f"Outputting data to {out_dir}..")
 

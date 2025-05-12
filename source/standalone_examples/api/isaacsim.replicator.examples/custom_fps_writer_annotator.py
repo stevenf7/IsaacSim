@@ -54,7 +54,7 @@ def run_custom_fps_example(duration_seconds):
     rp.hydra_texture.set_updates_enabled(False)
 
     # Create a writer and an annotator as different ways to access the data
-    out_dir_rgb = os.getcwd() + "/_out_writer_fps_rgb"
+    out_dir_rgb = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
     print(f"Writer data will be written to: {out_dir_rgb}")
     writer_rgb = rep.WriterRegistry.get("BasicWriter")
     writer_rgb.initialize(output_dir=out_dir_rgb, rgb=True)

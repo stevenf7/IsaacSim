@@ -84,7 +84,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             rp.hydra_texture.set_updates_enabled(False)
 
             # Create a writer and an annotator as different ways to access the data
-            out_dir_rgb = os.getcwd() + "/_out_writer_fps_rgb"
+            out_dir_rgb = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
             print(f"Writer data will be written to: {out_dir_rgb}")
             writer_rgb = rep.WriterRegistry.get("BasicWriter")
             writer_rgb.initialize(output_dir=out_dir_rgb, rgb=True)
@@ -150,7 +150,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         # Validate the output directory contents
         self.assertTrue(
             validate_folder_contents(
-                path=os.getcwd() + "/_out_writer_fps_rgb", expected_counts={"png": target_num_writes}
+                path=os.path.join(os.getcwd(), "_out_writer_fps_rgb"), expected_counts={"png": target_num_writes}
             )
         )
 

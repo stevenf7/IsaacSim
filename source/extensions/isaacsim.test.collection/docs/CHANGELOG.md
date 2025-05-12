@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.14] - 2025-05-12
+### Changed
+- Using os.path.join to create output directory in sdg tests
+
 ## [2.0.13] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
