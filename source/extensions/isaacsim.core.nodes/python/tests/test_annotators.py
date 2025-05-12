@@ -74,13 +74,19 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
     #     annotator.detach()
 
     async def test_read_times(self):
+
         annotator_read_sim_time = rep.AnnotatorRegistry.get_annotator("IsaacReadSimulationTime")
+        annotator_read_sim_time.initialize(resetOnStop=True)
         annotator_read_sim_time.attach([self._render_product_path])
         annotator_read_system_time = rep.AnnotatorRegistry.get_annotator("IsaacReadSystemTime")
         annotator_read_system_time.attach([self._render_product_path])
         fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
         fabric_time_annotator.attach([self._render_product_path])
 
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 10)
 
