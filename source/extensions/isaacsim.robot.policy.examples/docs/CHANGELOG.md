@@ -1,7 +1,9 @@
 # Changelog
+
 ## [4.1.4] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
+- Add get_physx_simulation_interface().flush_changes() to policy_controller to fix FSD issues
 
 ## [4.1.3] - 2025-05-09
 ### Fixed

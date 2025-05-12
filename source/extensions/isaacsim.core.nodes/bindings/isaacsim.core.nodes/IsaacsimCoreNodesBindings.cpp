@@ -52,7 +52,7 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
             system_time = core_nodes.get_system_time()
             
             # Get time metrics for a specific frame
-            frame_sim_time = core_nodes.get_sim_time_at_time(0)
+            frame_sim_time = core_nodes.get_sim_time_at_time((0, 0))
             
             # Get physics step count
             steps = core_nodes.get_physics_num_steps()

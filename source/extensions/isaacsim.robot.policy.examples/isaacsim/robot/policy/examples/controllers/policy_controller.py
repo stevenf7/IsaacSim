@@ -99,6 +99,11 @@ class PolicyController(BaseController):
         """
         self.robot.initialize(physics_sim_view=physics_sim_view)
         self.robot.get_articulation_controller().set_effort_modes(effort_modes)
+
+        # TODO: Must flush when FSD is enabled.
+        # Otherwise the delayed FSD handling next frame will overwrite set_max_efforts below
+        get_physx_simulation_interface().flush_changes()
+
         self.robot.get_articulation_controller().switch_control_mode(control_mode)
         max_effort, max_vel, stiffness, damping, self.default_pos, self.default_vel = get_robot_joint_properties(
             self.policy_env_params, self.robot.dof_names
