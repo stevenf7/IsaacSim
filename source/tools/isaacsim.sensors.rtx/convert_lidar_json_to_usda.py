@@ -14,79 +14,147 @@ import re
 from pathlib import Path
 
 
-def json_value_to_usda(value):
-    """Convert a JSON value to its USDA representation."""
-    if isinstance(value, str):
-        # Escape quotes in strings
-        escaped_value = value.replace('"', '\\"')
-        return f'"{escaped_value}"'
-    elif isinstance(value, bool):
-        return "true" if value else "false"
-    elif isinstance(value, (int, float)):
+def json_value_to_usda(value, usd_type):
+    """Convert a JSON value to its USD representation.
+
+    Args:
+        value (Any): The value to convert
+        usd_type (str): The USD type to convert to
+
+    Returns:
+        str: The USD representation of the value
+    """
+    # Handle array types first
+    if usd_type.endswith("[]"):
+        if not value:
+            return "[]"
+        element_type = usd_type[:-2]  # Remove [] suffix
+        elements = [json_value_to_usda(x, element_type) for x in value]
+
+        # If array has more than 10 elements, format with line breaks
+        if len(elements) > 10:
+            # Find the maximum width needed for each element
+            max_width = max(len(str(e)) for e in elements)
+
+            # Format elements into groups of 10
+            lines = []
+            for i in range(0, len(elements), 10):
+                group = elements[i : i + 10]
+                # Pad each element to max_width and join with commas
+                padded = [str(e).rjust(max_width) for e in group]
+                lines.append(", ".join(padded))
+
+            # Join lines with newlines and proper indentation
+            array_content = ",\n        ".join(lines)
+            return f"[\n        {array_content}\n    ]"
+        else:
+            # For short arrays, keep them on one line
+            return f"[{', '.join(elements)}]"
+
+    # Handle scalar types
+    if usd_type == "uint":
+        # Convert any number to integer for uint type
+        return str(int(value))
+    elif usd_type == "float":
         return str(value)
-    elif isinstance(value, list):
-        # For arrays, format with up to 10 elements per line
-        if len(value) <= 10:  # For short arrays, keep on one line
-            items = [json_value_to_usda(item) for item in value]
-            return f"[ {', '.join(items)} ]"
-        else:  # For long arrays, use 10 elements per line with column alignment
-            # Convert all items to their string representations first
-            items = [json_value_to_usda(item) for item in value]
-
-            # Find the maximum width needed for any element in the entire array
-            max_width = max(len(item) for item in items) if items else 0
-
-            chunks = []
-            # Process the array in chunks of 10 elements
-            for i in range(0, len(items), 10):
-                chunk = items[i : i + 10]
-
-                # Pad each element with spaces to align columns
-                # Use the global max width for consistent alignment across all rows
-                padded_chunk = [item.rjust(max_width) for item in chunk]
-                chunks.append(", ".join(padded_chunk))
-
-            return "[\n            " + ",\n            ".join(chunks) + "\n        ]"
-    elif value is None:
-        return "None"
-    else:
+    elif usd_type == "bool":
+        return "1" if value else "0"
+    elif usd_type == "token":  # Convert token values to uppercase
+        return f'"{str(value).upper()}"'
+    else:  # string type
         return f'"{str(value)}"'
 
 
 # Schema-defined attribute types based on generatedSchema.usda
 SCHEMA_ATTRIBUTE_TYPES = {
-    # Core sensor attributes
+    # Core sensor attributes from OmniSensorAPI
     "modelName": "string",
+    "marketName": "string",
+    "modelVendor": "string",
+    "modelVersion": "string",
     "tickRate": "float",
-    # LiDAR core attributes
-    "class": "string",
-    "type": "string",
-    "name": "string",
-    "driveWorksId": "string",
+    # Token attributes from schema
+    "purpose": "token",  # allowedTokens = ["default", "render", "proxy", "guide"]
+    "visibility": "token",  # allowedTokens = ["inherited", "invisible"]
+    "xformOpOrder": "token[]",
+    # Attributes from OmniSensorGenericLidarCoreAPI
+    "aspectRatio": "float",
+    "auxOutputType": "token",  # allowedTokens = ["NONE", "BASIC", "EXTRA", "FULL"]
+    "avgPowerW": "float",
+    "azimuthErrorMean": "float",
+    "azimuthErrorStd": "float",
+    "beamWaistHorM": "float",
+    "beamWaistVerM": "float",
+    "bitDepthResolution": "float",
+    "calibrationGain": "float",
+    "customFrameOfReferenceTrafo": "float[]",
+    "divergenceHorDeg": "float",
+    "divergenceVerDeg": "float",
+    "effectiveApertureSizeM": "float",
+    "elementsCoordsType": "token",  # allowedTokens = ["CARTESIAN", "SPHERICAL"]
+    "elevationErrorMean": "float",
+    "elevationErrorStd": "float",
+    "emitterStatesFile": "string",
+    "farRangeM": "float",
+    "focusDistM": "float",
+    "intensityMappingDecoding": "float[]",
+    "intensityMappingEncoding": "float[]",
+    "intensityMappingType": "token",  # allowedTokens = ["LINEAR", "NONLINEAR", "NONLINEAR_ENCODING_ONLY", "NONLINEAR_DECODING_ONLY"]
+    "intensityProcessing": "token",  # allowedTokens = ["RAW", "NORMALIZATION", "CORRECTION"]
+    "intensityScalePercent": "float",
+    "maxAzimuthROI": "float",
+    "maxReturns": "uint",
+    "minAzimuthROI": "float",
+    "minDistBetweenEchosM": "float",
+    "minReflectance": "float",
+    "minReflectionRangeM": "float",
+    "Msquared": "float",
+    "nearRangeM": "float",
+    "numberOfChannels": "uint",
+    "numberOfEmitters": "uint",
+    "numLines": "uint",
+    "numRaysPerLine": "uint[]",
+    "originErrorMean": "float[]",
+    "originErrorStd": "float[]",
+    "outputFrameOfReference": "token",  # allowedTokens = ["SENSOR", "WORLD", "CUSTOM"]
+    "outputMotionCompensationState": "token",  # allowedTokens = ["NONCOMPENSATED", "COMPENSATED"]
+    "pixelPitch": "float",
+    "pulseTimeNs": "uint",
+    "quantumEfficiency": "float",
+    "rangeAccuracyM": "float",
+    "rangeCount": "uint",
+    "rangeOffsetM": "float",
+    "rangeResolutionM": "float",
+    "rangesMaxM": "float[]",
+    "rangesMinM": "float[]",
+    "rayType": "token",  # allowedTokens = ["IDEALIZED", "GAUSSIAN_BEAM", "UNIFORM_BEAM"]
+    "reflectionPowerFraction": "float",
+    "reportRateBaseHz": "uint",
+    "rotationDirection": "token",  # allowedTokens = ["CW", "CCW"]
+    "scanRateBaseHz": "uint",
+    "scanType": "token",  # allowedTokens = ["ROTARY", "SOLID_STATE"]
+    "skipDroppingInvalidPoints": "bool",
+    "startAzimuthOffsetDeg": "float",
+    "stateResolutionStep": "uint",
+    "transmissionPowerFraction": "float",
+    "validEndAzimuthDeg": "float",
+    "validStartAzimuthDeg": "float",
+    "waveLengthNm": "float",
     # Emitter state attributes from OmniSensorGenericLidarCoreEmitterStateAPI
     "azimuthDeg": "float[]",
+    "bank": "uint[]",
+    "channelId": "uint[]",
+    "distanceCorrectionM": "float[]",
     "elevationDeg": "float[]",
-    "fireTimeNs": "float[]",
-    "bank": "float[]",
-    "isROIState": "bool[]",
-    "timeOffsetNs": "float[]",
-    # Other LiDAR attributes commonly found in configs
-    "intensityMappingType": "string",
-    "horizontalResolution": "uint",
-    "verticalChannels": "uint",
-    "rotationRate": "float",
-    "fieldOfView": "float",
-    "range": "float",
-    "horizontalFOV": "float",
-    "verticalFOV": "float",
-    "minRange": "float",
-    "maxRange": "float",
-    "horizontalBeams": "uint",
-    "verticalBeams": "uint",
-    "minAzimuthDeg": "float",
-    "maxAzimuthDeg": "float",
-    "minElevationDeg": "float",
-    "maxElevationDeg": "float",
+    "fireTimeNs": "uint[]",
+    "focalDistM": "float[]",
+    "focalSlope": "float[]",
+    "horOffsetM": "float[]",
+    "isROIState": "bool",
+    "rangeId": "uint[]",
+    "reportRateDiv": "float[]",
+    "roi": "bool[]",
+    "vertOffsetM": "float[]",
 }
 
 
@@ -97,54 +165,34 @@ def get_schema_type(key):
     return SCHEMA_ATTRIBUTE_TYPES.get(base_key)
 
 
-def get_usd_type(value, key=None):
-    """Determine the USD type for a given value, using schema if key is known."""
-    # First check if we have a schema-defined type for this key
-    if key is not None:
-        schema_type = get_schema_type(key)
-        if schema_type:
-            return schema_type
+def get_usd_type(key, value):
+    """Get the USD type for a given key-value pair.
 
-    # Fall back to auto-detection for unknown attributes
+    Args:
+        key (str): The attribute key
+        value (Any): The attribute value
+
+    Returns:
+        str: The USD type for this attribute
+    """
+    # Check schema first using base key (last part after colon)
+    base_key = key.split(":")[-1]
+    schema_type = SCHEMA_ATTRIBUTE_TYPES.get(base_key)
+    if schema_type:
+        return schema_type
+
+    # For values not in schema, infer type based on Python type
     if isinstance(value, bool):
         return "bool"
-    elif isinstance(value, int):
-        if value >= 0:
-            return "uint"
-        return "int"
-    elif isinstance(value, float):
-        return "float"
-    elif isinstance(value, str):
-        return "string"
+    elif isinstance(value, (int, float)):  # Simplify numeric type handling
+        return "float" if isinstance(value, float) else "uint"
     elif isinstance(value, list):
-        if not value:  # Empty list
+        if not value:
             return "float[]"  # Default for empty arrays
-
-        # First check if we have a schema-defined type for this array
-        if key is not None:
-            schema_type = get_schema_type(key)
-            if schema_type and schema_type.endswith("[]"):
-                return schema_type
-
-        # Auto-detect array type
-        if all(isinstance(x, bool) for x in value):
-            return "bool[]"
-        elif all(isinstance(x, int) and x >= 0 for x in value):
-            return "uint[]"
-        elif all(isinstance(x, int) for x in value):
-            return "int[]"
-        elif all(isinstance(x, float) for x in value):
-            return "float[]"
-        elif all(isinstance(x, str) for x in value):
-            return "string[]"
-
-        # Mixed or complex list, default to float[] for numeric data
-        if all(isinstance(x, (int, float)) for x in value):
-            return "float[]"
-
-        return "string[]"  # Default for mixed content
-    else:
-        return "string"  # Default fallback
+        # Get type of first element and append []
+        element_type = get_usd_type("", value[0]).replace("[]", "")
+        return f"{element_type}[]"
+    return "string"  # Default case
 
 
 def flatten_json(json_obj, prefix="", result=None, skip_emitter_states=False):
@@ -161,12 +209,27 @@ def flatten_json(json_obj, prefix="", result=None, skip_emitter_states=False):
         if skip_emitter_states and key == "emitterStates":
             continue
 
+        # Handle rangeOffset to rangeOffsetM conversion
+        if key == "rangeOffset":
+            key = "rangeOffsetM"
+
+        # Handle scanType SOLIDSTATE to SOLID_STATE conversion
+        if key == "scanType" and value == "SOLIDSTATE":
+            value = "SOLID_STATE"
+
         new_key = f"{prefix}:{key}" if prefix else key
 
         if isinstance(value, dict):
             flatten_json(value, new_key, result, skip_emitter_states)
         else:
-            result[new_key] = value
+            # Only include attributes that are in the schema (except for rangeOffsetM which we converted)
+            base_key = new_key.split(":")[-1]
+            if base_key in SCHEMA_ATTRIBUTE_TYPES or base_key == "rangeOffsetM":
+                result[new_key] = value
+
+    # After flattening, check if we need to add numberOfChannels
+    if "numberOfChannels" not in result and "numberOfEmitters" in result:
+        result["numberOfChannels"] = result["numberOfEmitters"]
 
     return result
 
@@ -182,113 +245,165 @@ def sanitize_name(name):
     return sanitized
 
 
-def convert_json_to_usda(json_path, usda_path):
-    with open(json_path, "r") as f:
-        config = json.load(f)
+def extract_model_info(config):
+    """Extract model name and optional tick rate from config.
 
-    base_name = os.path.splitext(os.path.basename(json_path))[0]
+    Args:
+        config (dict): The JSON config
 
-    # Extract model name from 'profile' section or the root 'name' field as fallback
+    Returns:
+        tuple: (model_name, tick_rate or None)
+    """
     profile = config.get("profile", {})
     model_name = profile.get("name", config.get("name", "UnknownLidar"))
-
-    # Sanitize the model name for USD compatibility
-    model_name_with_underscores = sanitize_name(model_name)
+    model_name = sanitize_name(model_name)
 
     # Extract tick rate from name (e.g., "10hz" -> 10)
-    tick_rate = 10  # default
-    for part in model_name.split():
-        if "hz" in part.lower():
-            try:
-                tick_rate = int(part.lower().replace("hz", ""))
-                break
-            except ValueError:
-                pass
+    match = re.search(r"(\d+)hz", model_name.lower())
+    return model_name, int(match.group(1)) if match else None
 
-    # Only flatten and convert fields from the 'profile' section
-    # Skip emitterStates as we'll handle them separately
-    flattened = {}
-    if "profile" in config:
-        flattened = flatten_json(profile, skip_emitter_states=True)
 
-    # Generate attributes, handle special cases and name conflicts
+def process_emitter_states(emitter_states):
+    """Process emitter states into attributes and API schemas.
+
+    Args:
+        emitter_states (list): List of emitter state dictionaries
+
+    Returns:
+        tuple: (attributes, api_schemas)
+    """
     attributes = []
-    for key, value in flattened.items():
-        # Transform JSON key to USD format
-        usd_key = f"omni:sensor:Core:{key}"
-        usd_value = json_value_to_usda(value)
-        usd_type = get_usd_type(value, key)
-        attributes.append(f"        {usd_type} {usd_key} = {usd_value}")
+    api_schemas = ["OmniSensorGenericLidarCoreAPI"]
 
-    # Handle emitter states as attributes on the main prim
-    emitter_states = []
-    try:
-        emitter_states = profile.get("emitterStates", [])
-    except (KeyError, AttributeError):
-        pass
-
-    # Process each emitter state separately
+    # Process each emitter state
     for i, state in enumerate(emitter_states):
+        # First pass: find any float[] attributes and their length
+        float_array_length = None
         for key, value in state.items():
-            # Skip comment fields
             if "comment" in key.lower():
                 continue
 
-            # Format: emitterState:s{NNN}:{property}
-            # Where NNN is a 3-digit number with leading zeros
+            # Skip attributes not in schema
+            if key not in SCHEMA_ATTRIBUTE_TYPES:
+                continue
+
+            usd_type = get_usd_type(key, value)
+            if usd_type == "float[]" and value:
+                float_array_length = len(value)
+                break
+
+        # Second pass: process all attributes
+        processed_keys = set()
+        for key, value in state.items():
+            if "comment" in key.lower():
+                continue
+
+            # Skip attributes not in schema
+            if key not in SCHEMA_ATTRIBUTE_TYPES:
+                continue
+
             emitter_key = f"emitterState:s{i+1:03d}:{key}"
             usd_key = f"omni:sensor:Core:{emitter_key}"
+            usd_type = get_usd_type(key, value)
 
-            # Get schema-defined type or auto-detect
-            schema_type = get_schema_type(key)
+            # Ensure array type for emitter state values
+            if not usd_type.endswith("[]"):
+                usd_type = f"{usd_type}[]"
+                value = [value]
 
-            if schema_type:
-                # Use schema-defined type
-                usd_type = schema_type
+            usd_value = json_value_to_usda(value, usd_type)
+            attributes.append(f"    {usd_type} {usd_key} = {usd_value}")
+            processed_keys.add(key)
 
-                # Convert single values to arrays for array types
-                if isinstance(value, (int, float, bool, str)) and usd_type.endswith("[]"):
-                    usd_value = json_value_to_usda([value])
-                else:
-                    usd_value = json_value_to_usda(value)
+        # If we found float arrays, populate missing float[] attributes with zeros
+        # and populate channelId with sequential numbers if not specified
+        if float_array_length is not None:
+            # Add channelId if not specified
+            if "channelId" not in processed_keys:
+                emitter_key = f"emitterState:s{i+1:03d}:channelId"
+                usd_key = f"omni:sensor:Core:{emitter_key}"
+                channel_array = list(range(1, float_array_length + 1))  # 1 to N
+                usd_value = json_value_to_usda(channel_array, "uint[]")
+                attributes.append(f"    uint[] {usd_key} = {usd_value}")
+                processed_keys.add("channelId")
 
-                attributes.append(f"        {usd_type} {usd_key} = {usd_value}")
-            else:
-                # Auto-detect type for unknown attributes
-                if isinstance(value, list):
-                    usd_value = json_value_to_usda(value)
-                    usd_type = get_usd_type(value)
-                    attributes.append(f"        {usd_type} {usd_key} = {usd_value}")
-                else:
-                    # Single values should be arrays in emitter state context
-                    usd_value = json_value_to_usda([value])
-                    element_type = get_usd_type(value)
-                    if element_type == "uint":
-                        usd_type = "uint[]"
-                    else:
-                        usd_type = f"{element_type}[]"
-                    attributes.append(f"        {usd_type} {usd_key} = {usd_value}")
+            # Add missing float[] attributes with zeros
+            for key, type_info in SCHEMA_ATTRIBUTE_TYPES.items():
+                if (
+                    type_info == "float[]"
+                    and key
+                    in [
+                        "azimuthDeg",
+                        "elevationDeg",
+                        "fireTimeNs",
+                        "bank",
+                        "timeOffsetNs",
+                        "distanceCorrectionM",
+                        "focalDistM",
+                        "focalSlope",
+                        "horOffsetM",
+                        "reportRateDiv",
+                        "vertOffsetM",
+                    ]
+                    and key not in processed_keys
+                ):
+                    emitter_key = f"emitterState:s{i+1:03d}:{key}"
+                    usd_key = f"omni:sensor:Core:{emitter_key}"
+                    zero_array = [0.0] * float_array_length
+                    usd_value = json_value_to_usda(zero_array, "float[]")
+                    attributes.append(f"    float[] {usd_key} = {usd_value}")
 
-    attributes_text = "\n".join(attributes)
+    # Add schemas for additional emitter states
+    if len(emitter_states) > 1:
+        for i in range(1, len(emitter_states)):
+            api_schemas.append(f"OmniSensorGenericLidarCoreEmitterStateAPI:s{i+1:03d}")
 
+    return attributes, api_schemas
+
+
+def convert_json_to_usda(json_path, usda_path):
+    """Convert a JSON config file to USDA format."""
+    with open(json_path, "r") as f:
+        config = json.load(f)
+
+    # Extract basic information
+    model_name, tick_rate = extract_model_info(config)
+
+    # Process main attributes
+    attributes = []
+    if "profile" in config:
+        flattened = flatten_json(config["profile"], skip_emitter_states=True)
+        for key, value in flattened.items():
+            usd_key = f"omni:sensor:Core:{key}"
+            usd_type = get_usd_type(key, value)
+            usd_value = json_value_to_usda(value, usd_type)
+            attributes.append(f"    {usd_type} {usd_key} = {usd_value}")
+
+    # Process emitter states
+    emitter_states = config.get("profile", {}).get("emitterStates", [])
+    emitter_attrs, api_schemas = process_emitter_states(emitter_states)
+    attributes.extend(emitter_attrs)
+
+    # Format API schemas
+    api_schemas_str = ", ".join(f'"{schema}"' for schema in api_schemas)
+
+    # Generate USDA content
     usda_content = f"""#usda 1.0
 (
     doc = "Generated from {os.path.basename(json_path)}"
-    defaultPrim = "Lidar"
+    defaultPrim = "{model_name}"
 )
 
-def Xform "Lidar"
+def OmniLidar "{model_name}" (
+    prepend apiSchemas = [{api_schemas_str}]
+)
 {{
-    def OmniLidar "{model_name_with_underscores}" (
-        prepend apiSchemas = ["OmniSensorGenericLidarCoreAPI"]
-    )
-    {{
-        string omni:sensor:modelName = "{model_name_with_underscores}"
-        float omni:sensor:tickRate = {tick_rate}
+    string omni:sensor:modelName = "{model_name}"
+{f'    float omni:sensor:tickRate = {tick_rate}' if tick_rate is not None else ''}
 
-        # Configuration parameters from JSON
-{attributes_text}
-    }}
+    # Configuration parameters from JSON
+{chr(10).join(attributes)}
+
 }}
 """
     with open(usda_path, "w") as f:

@@ -1,4 +1,8 @@
 # Changelog
+## [4.5.0] - 2025-05-09
+### Changed
+- ROS2RTXLidarHelper uses updated isaacsim.sensors.rtx annotators
+
 ## [4.4.16] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

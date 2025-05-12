@@ -79,5 +79,34 @@
             "externalConsole": false,
             "internalConsoleOptions": "openOnSessionStart",
         },
+        {
+            "name": "(gdb) Attach",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceFolder}/_build/linux-x86_64/debug/kit/kit",
+            "processId": "${command:pickProcess}",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "{lldb) Attach (release)",
+            "type": "lldb",
+            "request": "attach",
+            "program": "${workspaceFolder}/_build/linux-x86_64/release/kit/kit",
+            "pid": "${command:pickProcess}",
+        },
+        {
+            "name": "{lldb) Attach (debug)",
+            "type": "lldb",
+            "request": "attach",
+            "program": "${workspaceFolder}/_build/linux-x86_64/debug/kit/kit",
+            "pid": "${command:pickProcess}",
+        }
     ]
 }

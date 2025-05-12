@@ -1,12 +1,13 @@
 {
     "IsaacComputeRTXLidarFlatScan": {
-        "version": 2,
-        "icon": "icons/isaac-sim.svg",
-        "description": [
-            "Accumulates full scan from the lowest elevation emitter on an RTX Lidar"
-        ],
+        "version": 3,        "icon": "icons/isaac-sim.svg",
+        "description": "Accumulates full scan from the lowest elevation emitter on an RTX Lidar",
+        "language": "C++",
         "metadata": {
-            "uiName": "Isaac Compute RTX Lidar Flat Scan Node"
+            "categories": ["Sensor"],
+            "keywords": ["rtx", "lidar", "sensor"],
+            "tooltip": "Accumulates full scan from the lowest elevation emitter on an RTX Lidar",
+            "display_name": "Compute RTX Lidar Flat Scan"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRtxSensor",
@@ -21,6 +22,11 @@
                 "description": "Pointer to LiDAR render result.",
                 "uiName": "Data Pointer"
             },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
             "bufferSize": {
                 "type": "uint64",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
@@ -28,11 +34,6 @@
             "renderProductPath": {
                 "type": "token",
                 "description": "Used to retrieve lidar configuration."
-            },
-            "timeStamp": {
-                "type": "double",
-                "description": "Input timestamp (s)",
-                "uiName": "Input time"
             }
         },
         "outputs": {
@@ -75,7 +76,7 @@
             "numRows": {
                 "type": "int",
                 "description": "Number of rows in buffers",
-                "default": 0
+                "default": 1
             },
             "numCols": {
                 "type": "int",
@@ -86,12 +87,6 @@
                 "type": "float[2]",
                 "description": "The azimuth range [min, max] (deg).",
                 "default": [0.0, 0.0]
-            },
-            "timeStamp": {
-                "type": "double",
-                "description": "Timestamp of first beam in scan",
-                "uiName": "Timestamp",
-                "default": 0.0
             }
         }
     }

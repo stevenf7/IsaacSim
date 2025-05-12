@@ -10,11 +10,13 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
+#include "GenericModelOutput.h"
+#include "OgnIsaacComputeRTXLidarFlatScanDatabase.h"
 #include "SensorNodeUtils.h"
+#include "isaacsim/core/includes/Buffer.h"
+#include "isaacsim/core/includes/ScopedCudaDevice.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <GenericModelOutput.h>
-#include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>
 #include <math.h>
 
 namespace isaacsim
@@ -24,228 +26,215 @@ namespace sensors
 namespace rtx
 {
 
-// a scan buffer that takes only one emitter, as nearest 0 elevation, and has to be from a rotary lidar.
-// because it creates laser scan data which assumes 0 elevation emitter with all the same delta for emitter rotation
-// and time.
 class OgnIsaacComputeRTXLidarFlatScan : public LidarConfigHelper
 {
 private:
-    // ID of emitter at lowest elevation (rotary) or ID of first emitter of lowest-elevation line (solid-state)
-    uint32_t m_emitterToOutput{ 0 };
-    int m_numRaysPerLine{ -1 }; // Number of emitters in lowest-elevation line (solid-state only)
-    float m_startAzimuthDeg; // starting azimuth of emitter in lowest-elevation line (solid-state only)
-    float m_horizontalResolution; // angular separation between beams (deg)
-    float m_inElevationDeg; // absolute-value of elevation of lowest-elevation emitter
-    std::vector<uint8_t> m_intensityBuffer; // buffer containing intensity values from GMO pointer
-    std::vector<float> m_distanceBuffer; // buffer containing range measurements from GMO pointer
-    std::vector<double> m_timestampBuffer; // buffer containing adjusted timestamps from GMO pointer
-    double m_timeOffset{ DBL_MIN }; // offset between render time (from GMO pointer) and simulation time (from input)
-    uint32_t m_bufferSize; // size of buffers, based on number of beams as determined from lidar profile
-    uint32_t m_prevIdx; // tracks where in the buffers the last measurements were inserted, based on azimuth
+    bool warnDeprecated = false;
 
 public:
     static bool compute(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
+        // Disable downstream execution by default
+        db.outputs.exec() = kExecutionAttributeStateDisabled;
+
         uint8_t* dataPtr = reinterpret_cast<uint8_t*>(db.inputs.dataPtr());
         // no reason to update the scan buffer if there is no dataHost
         if (!dataPtr)
         {
-            db.outputs.numRows() = 1;
-            db.outputs.numCols() = 0;
-            return true;
+            CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: dataPtr input is empty.");
+            return false;
         }
-        auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
-
-        GenericModelOutputHelper helper(dataPtr);
-        if (!helper.isValid(OutputType::POINTCLOUD, CoordsType::SPHERICAL, Modality::LIDAR))
+        // This is a GPU buffer generating node.  If the input cudaHandle is -1 (CPU), then just use the host device.
+        int cudaDeviceIndex = db.inputs.cudaDeviceIndex();
+        cudaDeviceProp cudaDeviceProperties;
+        if (cudaDeviceIndex != -1 &&
+            cudaGetDeviceProperties(&cudaDeviceProperties, cudaDeviceIndex) != cudaError::cudaSuccess)
         {
-            CARB_LOG_WARN(
-                "Input to IsaacComputeRTXLidarFlatScan is not a valid LIDAR POINTCLOUD type. Buffer will not be parsed.");
-            return true;
-        }
-        if (helper.mGmo.numElements == 0)
-        {
-            return true;
+            CARB_LOG_ERROR("IsaacComputeRTXLidarFlatScan can't find CUDA device %d.", cudaDeviceIndex);
+            return false;
         }
 
-        const omni::sensors::LidarAuxiliaryData* auxPoints =
-            static_cast<const omni::sensors::LidarAuxiliaryData*>(helper.mGmo.auxiliaryData);
-        const uint32_t* tickIds = auxPoints ? auxPoints->tickId : nullptr;
-        const uint32_t* emitterIds = auxPoints ? auxPoints->emitterId : nullptr;
-        const uint8_t* echoIds = auxPoints ? auxPoints->echoId : nullptr;
-
-        // Find the lowest elevation emitter and update state lidar config variables every time the lidar config
-        // changes. This should be infrequent after initialization.
-        if (state.updateLidarConfig(db.tokenToString(db.inputs.renderProductPath())))
+        // Retrieve GMO struct from buffer, then validate it
+        omni::sensors::GenericModelOutput* gmo = omni::sensors::getModelOutputPtrFromBuffer(dataPtr);
+        if (gmo->numElements == 0)
         {
-            if (state.scanType == LidarScanType::kRotary)
+            CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: gmo->numElements is 0. Skipping execution.");
+            return false;
+        }
+
+        // Verify that we have a supported modality
+        if (gmo->modality != omni::sensors::Modality::LIDAR)
+        {
+            CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: Unsupported sensor modality: %d. Only LIDAR is supported.",
+                          static_cast<int>(gmo->modality));
+            return false;
+        }
+
+        // Retrieve lidar prim from render product path, then validate its attributes
+        const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
+        if (renderProductPath.length() == 0)
+        {
+            CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.");
+            return false;
+        }
+        float rotationRate, horizontalFov, horizontalResolution, azimuthRangeStart, azimuthRangeEnd, nearRangeM,
+            farRangeM;
+        pxr::UsdPrim lidarPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
+        if (lidarPrim.IsA<pxr::UsdGeomCamera>())
+        {
+            auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
+            CARB_LOG_WARN_ONCE(
+                "RTX sensors as camera prims are deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniLidar prim with the new OmniSensorGenericLidarCoreAPI schema.");
+            bool updatedConfig = state.updateLidarConfig(renderProductPath.c_str());
+            if (state.scanType == LidarScanType::kUnknown)
             {
-                // Find emitter profile for emitter at minimum elevation angle. Ideally this is at 0.0 deg.
-                state.m_emitterToOutput = 0;
-                state.m_inElevationDeg = 91.0;
-                for (size_t s = 0; s < state.emitterStateCount; s++)
+                if (updatedConfig)
                 {
-                    for (size_t i = 0; i < state.numberOfEmitters; i++)
-                    {
-                        float curElevation = ::fabs(state.emitterStates[s].elevationDeg[i]);
-                        if (curElevation < state.m_inElevationDeg)
-                        {
-                            state.m_inElevationDeg = curElevation;
-                            state.m_emitterToOutput = (uint32_t)i;
-                        }
-                    }
+                    CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: Lidar prim is not a valid Lidar. Skipping execution.");
                 }
-                // Set useful state variables
-                state.m_bufferSize = state.getTicksPerScan();
-                state.m_horizontalResolution = static_cast<float>(360.0 / state.m_bufferSize);
-                // Populate config-based outputs
-                db.outputs.horizontalFov() = 360.0;
-                db.outputs.rotationRate() = static_cast<float>(state.scanRateBaseHz);
-                db.outputs.azimuthRange() = { -180.0f, 180.0f - state.m_horizontalResolution };
+                return false;
             }
-            else if (state.scanType == LidarScanType::kSolidState)
+            if (!state.is2D)
             {
-                // Find the solid state line with the lowest elevation, and store its start/end azimuth.
-                float endAzimuthDeg = 361.0;
-                state.m_inElevationDeg = 91.0; // 90 is max, so fist emitter state will always at least be picked.
-                for (int s = 0; s < (int)state.emitterStateCount; s++)
+                if (updatedConfig)
                 {
-                    int emitterToCheck = 0; // first emitter in line
-                    for (int l = 0; l < (int)state.numLines; l++)
-                    {
-                        float curElevation = ::fabs(state.emitterStates[s].elevationDeg[emitterToCheck]);
-                        if (curElevation < state.m_inElevationDeg)
-                        {
-                            state.m_inElevationDeg = curElevation;
-                            state.m_emitterToOutput = emitterToCheck;
-                            state.m_numRaysPerLine = state.numRaysPerLine[l];
-                            state.m_startAzimuthDeg = state.emitterStates[s].azimuthDeg[emitterToCheck];
-                            // with one emitter the start and end are the same. otherwise, assume fixed azimuth
-                            // difference between emitters in line
-                            state.m_horizontalResolution =
-                                state.m_numRaysPerLine < 2 ?
-                                    0 :
-                                    state.emitterStates[s].azimuthDeg[emitterToCheck + 1] - state.m_startAzimuthDeg;
-                            endAzimuthDeg =
-                                state.m_startAzimuthDeg + state.m_horizontalResolution * (state.m_numRaysPerLine - 1);
-                        }
-                        // Advance to first emitter in next line
-                        emitterToCheck += state.numRaysPerLine[l];
-                    }
+                    CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar. Skipping execution.");
                 }
-                if (state.m_startAzimuthDeg > endAzimuthDeg)
-                {
-                    // then it's a solid start that is spinning ccw
-                    float tempAzimuth = state.m_startAzimuthDeg;
-                    state.m_startAzimuthDeg = endAzimuthDeg;
-                    endAzimuthDeg = tempAzimuth;
-                }
-                float horizontalFov = endAzimuthDeg - state.m_startAzimuthDeg;
-                if (horizontalFov > 360.0f)
-                {
-                    CARB_LOG_WARN_ONCE(
-                        "IsaacComputeRTXLidarFlatScan: %s is not not designed to work with Flat Scan data.  When a Solid State lidar is used with this node, there must be a row of evenly spaced emitters all at the same elevation.",
-                        state.config.c_str());
-                    horizontalFov = 360.0f;
-                }
-                state.m_bufferSize = state.m_numRaysPerLine;
-                state.m_prevIdx = state.rotationDirection == LidarRotationDirection::CW ? state.m_bufferSize - 1 : 0;
-                db.outputs.horizontalFov() = horizontalFov;
-                db.outputs.rotationRate() = static_cast<float>(state.scanRateBaseHz);
-                db.outputs.azimuthRange() = { state.m_startAzimuthDeg, endAzimuthDeg };
+                return false;
+            }
+            if (state.scanType == LidarScanType::kSolidState)
+            {
+                azimuthRangeStart = state.azimuthStartDeg;
+                azimuthRangeEnd = state.azimuthEndDeg;
+                horizontalFov = azimuthRangeStart - azimuthRangeEnd;
+                horizontalResolution = horizontalFov / static_cast<float>(state.numberOfEmitters);
             }
             else
             {
-                CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan %s is an unknown scanType.", state.config.c_str());
-                db.outputs.numCols() = 0;
-                return true;
+                horizontalResolution = 360.0f * state.scanRateBaseHz / state.reportRateBaseHz;
+                azimuthRangeStart = -180.0f;
+                azimuthRangeEnd = 180.0f - horizontalResolution;
+                horizontalFov = 360.0f;
             }
-            if (state.m_inElevationDeg != 0.0f)
+            nearRangeM = state.nearRangeM;
+            farRangeM = state.farRangeM;
+            rotationRate = static_cast<float>(state.scanRateBaseHz);
+        }
+        else
+        {
+            pxr::TfToken elementsCoordsType;
+            if (lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:elementsCoordsType")).Get(&elementsCoordsType) &&
+                elementsCoordsType != pxr::TfToken("SPHERICAL"))
             {
-                CARB_LOG_WARN_ONCE("IsaacComputeRTXLidarFlatScan: lowest elevation emitter line is %f, not 0.",
-                                   state.m_inElevationDeg);
+                CARB_LOG_WARN(
+                    "IsaacComputeRTXLidarFlatScan: Lidar prim elementsCoordsType is not set to SPHERICAL. Skipping execution.");
+                return false;
             }
-            // Reallocate and fill output buffers
-            state.m_distanceBuffer = std::vector<float>(state.m_bufferSize, -1.0);
-            state.m_intensityBuffer = std::vector<uint8_t>(state.m_bufferSize, 0);
-            state.m_timestampBuffer = std::vector<double>(state.m_bufferSize, DBL_MIN);
-            // Set outputs common to solid-state and rotary lidars
-            db.outputs.depthRange() = { state.nearRangeM, state.farRangeM };
-            db.outputs.horizontalResolution() = state.m_horizontalResolution;
-        }
-
-        if ((state.scanType == LidarScanType::kRotary && (!echoIds || !emitterIds || !tickIds)) ||
-            (state.scanType == LidarScanType::kSolidState && (!echoIds || !emitterIds)))
-        {
-            return true;
-        }
-
-        db.outputs.exec() = kExecutionAttributeStateDisabled;
-        if (state.m_timeOffset == DBL_MIN)
-        {
-            state.m_timeOffset = db.inputs.timeStamp() - helper.mGmo.timestampNs / 1e9;
-        }
-        for (uint32_t pointIdx = 0; pointIdx < helper.mGmo.numElements; pointIdx++)
-        {
-            if (echoIds[pointIdx])
-                continue;
-            uint32_t emitterId = emitterIds[pointIdx];
-            if ((state.scanType == LidarScanType::kRotary && emitterId == state.m_emitterToOutput) ||
-                (state.scanType == LidarScanType::kSolidState && state.m_emitterToOutput <= emitterId &&
-                 emitterId < (state.m_emitterToOutput + state.m_numRaysPerLine)))
+            pxr::VtFloatArray elevationDeg;
+            if (lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:emitterState:s001:elevationDeg")).Get(&elevationDeg))
             {
-                float azimuth = helper.mGmo.elements.x[pointIdx];
-                // Compute index of buffer in which measurements will be placed, based on beam azimuth
-                uint32_t idx =
-                    static_cast<uint32_t>((azimuth - db.outputs.azimuthRange()[0]) / state.m_horizontalResolution);
-                if (idx >= state.m_bufferSize)
+                const float epsilon = 1e-3f; // Tolerance of 0.001 degrees
+                for (const float elev : elevationDeg)
                 {
-                    idx = state.m_bufferSize - 1;
-                }
-                if (state.m_prevIdx - idx > state.m_intensityBuffer.size() / 2)
-                {
-                    db.outputs.intensitiesData().resize(state.m_bufferSize);
-                    db.outputs.linearDepthData().resize(state.m_bufferSize);
-                    db.outputs.numCols() = static_cast<int>(state.m_bufferSize);
-                    db.outputs.numRows() = 1;
-                    db.outputs.timeStamp() = DBL_MIN;
-                    for (size_t i = 0; i < state.m_bufferSize; i++)
+                    if (::fabs(elev) > epsilon)
                     {
-                        db.outputs.intensitiesData().at(i) = state.m_intensityBuffer[i];
-                        db.outputs.linearDepthData().at(i) = state.m_distanceBuffer[i];
-                        size_t inIdx =
-                            state.rotationDirection == LidarRotationDirection::CW ? state.m_bufferSize - i - 1 : i;
-                        if (db.outputs.timeStamp() == DBL_MIN && state.m_timestampBuffer[inIdx] != DBL_MIN)
-                        {
-                            // Set timestamp to first timestamp that's not a sentinel value
-                            db.outputs.timeStamp() = state.m_timestampBuffer[inIdx];
-                        }
+                        CARB_LOG_WARN(
+                            "IsaacComputeRTXLidarFlatScan: Lidar prim elevationDeg contains nonzero value %f, indicating a 3D lidar. Skipping execution.",
+                            elev);
+                        return false;
                     }
-                    // Reset local buffers
-                    std::fill(state.m_intensityBuffer.begin(), state.m_intensityBuffer.end(), 0);
-                    std::fill(state.m_distanceBuffer.begin(), state.m_distanceBuffer.end(), -1.0);
-                    std::fill(state.m_timestampBuffer.begin(), state.m_timestampBuffer.end(), DBL_MIN);
-                    db.outputs.exec() = kExecutionAttributeStateEnabled;
                 }
-                // Push latest depth into distance buffer
-                float distance = helper.mGmo.elements.z[pointIdx];
-                if (state.m_inElevationDeg)
-                {
-                    distance = distance * ::cosf(deg2Rad(state.m_inElevationDeg));
-                }
-                state.m_distanceBuffer[idx] = distance;
-                // Push latest intensity into intensity buffer
-                state.m_intensityBuffer[idx] = static_cast<uint8_t>(helper.mGmo.elements.scalar[pointIdx] * 255.0f);
-                state.m_timestampBuffer[idx] = helper.mGmo.timestampNs / 1e9 +
-                                               helper.mGmo.elements.timeOffsetNs[pointIdx] / 1e9 + state.m_timeOffset;
-                state.m_prevIdx = idx;
+            }
+            // Populate any prim-specific outputs
+            uint32_t rotationRateAsInt;
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:scanRateBaseHz")).Get(&rotationRateAsInt);
+            rotationRate = static_cast<float>(rotationRateAsInt);
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:nearRangeM")).Get(&nearRangeM);
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:farRangeM")).Get(&farRangeM);
+
+            pxr::TfToken outputType;
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:scanType")).Get(&outputType);
+            if (outputType == pxr::TfToken("SOLID_STATE"))
+            {
+                pxr::VtFloatArray azimuthDeg;
+                lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:emitterState:s001:azimuthDeg")).Get(&azimuthDeg);
+
+                azimuthRangeStart = *std::min_element(azimuthDeg.begin(), azimuthDeg.end());
+                azimuthRangeEnd = *std::max_element(azimuthDeg.begin(), azimuthDeg.end());
+                horizontalFov = azimuthRangeEnd - azimuthRangeStart;
+                horizontalResolution = horizontalFov / static_cast<float>(azimuthDeg.size());
+            }
+            else
+            {
+                // Set useful state variables
+                uint32_t reportRateBaseHzAsInt;
+                lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:reportRateBaseHz")).Get(&reportRateBaseHzAsInt);
+                float reportRateBaseHz = static_cast<float>(reportRateBaseHzAsInt);
+                horizontalResolution = 360.0f * rotationRate / reportRateBaseHz;
+
+                azimuthRangeStart = -180.0f;
+                azimuthRangeEnd = 180.0f - horizontalResolution;
+                horizontalFov = 360.0;
             }
         }
+
+        db.outputs.horizontalFov() = horizontalFov;
+        db.outputs.horizontalResolution() = horizontalResolution;
+        db.outputs.azimuthRange() = { azimuthRangeStart, azimuthRangeEnd };
+        db.outputs.rotationRate() = rotationRate;
+        db.outputs.depthRange() = { nearRangeM, farRangeM };
+        db.outputs.numRows() = 1;
+        db.outputs.numCols() = gmo->numElements;
+
+        // Populate output buffers
+        db.outputs.linearDepthData().resize(gmo->numElements);
+        db.outputs.intensitiesData().resize(gmo->numElements);
+        if (cudaDeviceIndex == -1)
+        {
+            // Create a map of azimuth to depth and intensity, to automatically sort by azimuth
+            std::map<float, std::pair<float, uint8_t>> azimuthToDepthAndIntensity;
+            for (size_t i = 0; i < gmo->numElements; i++)
+            {
+                // Skip invalid returns
+                if ((gmo->elements.flags[i] & omni::sensors::ElementFlags::VALID) != omni::sensors::ElementFlags::VALID)
+                {
+                    continue;
+                }
+                azimuthToDepthAndIntensity[gmo->elements.x[i]] = {
+                    gmo->elements.z[i], static_cast<uint8_t>(gmo->elements.scalar[i] * 255.0f)
+                };
+            }
+            // Copy sorted values into output buffers
+            db.outputs.linearDepthData().resize(azimuthToDepthAndIntensity.size());
+            db.outputs.intensitiesData().resize(azimuthToDepthAndIntensity.size());
+            db.outputs.numCols() = static_cast<int>(azimuthToDepthAndIntensity.size());
+            size_t index = 0;
+            for (const auto& [azimuth, depthAndIntensity] : azimuthToDepthAndIntensity)
+            {
+                db.outputs.linearDepthData()[index] = depthAndIntensity.first;
+                db.outputs.intensitiesData()[index] = depthAndIntensity.second;
+                index++;
+            }
+        }
+        else
+        {
+            isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
+
+            cudaMemcpyAsync(db.outputs.linearDepthData().data(), gmo->elements.z, gmo->numElements * sizeof(float),
+                            cudaMemcpyDeviceToHost, 0);
+            cudaMemcpyAsync(db.outputs.intensitiesData().data(), gmo->elements.scalar, gmo->numElements * sizeof(float),
+                            cudaMemcpyDeviceToHost, 0);
+
+            cudaDeviceSynchronize();
+        }
+
+        // Return success and enable downstream execution
+        db.outputs.exec() = kExecutionAttributeStateEnabled;
         return true;
     }
 };
 
 REGISTER_OGN_NODE()
-} // sensor
-} // isaac
-} // omni
+} // rtx
+} // sensors
+} // isaacsim

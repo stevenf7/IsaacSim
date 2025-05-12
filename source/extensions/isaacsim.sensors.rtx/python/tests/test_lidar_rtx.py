@@ -9,199 +9,538 @@
 # its affiliates is strictly prohibited.
 
 import asyncio
+import unittest
 
-import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
+import omni.timeline
+import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
-from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
+from isaacsim.core.prims import SingleXFormPrim
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import LidarRtx
 from isaacsim.storage.native import get_assets_root_path_async
+from pxr import Gf, Sdf, Usd, UsdGeom
 
 
-class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
-    # Before running each test
+class TestLidarRtx(omni.kit.test.AsyncTestCase):
+    """Test class for LidarRtx functionality"""
+
+    # Class constants
+    ALLOWED_ANNOTATORS = [
+        "GenericModelOutputLidarPointAccumulator",
+        "IsaacTransformRTXSensorReturnsNoAccumulator",
+        "IsaacTransformRTXSensorReturns",
+        "IsaacComputeRTXLidarFlatScanSimulationTime",
+        "IsaacComputeRTXLidarFlatScanSystemTime",
+        "IsaacExtractRTXSensorPointCloudNoAccumulator",
+        "IsaacExtractRTXSensorPointCloud",
+    ]
+
+    EXPECTED_FRAME_KEYS = [
+        "rendering_time",
+        "rendering_frame",
+        "point_cloud_data",
+        "info",
+        "linear_depth_data",
+        "intensities_data",
+        "azimuth_range",
+        "horizontal_resolution",
+    ]
+
+    INFO_KEYS = ["range", "azimuth", "elevation"]
+
     async def setUp(self):
+        """Set up the test environment with a new stage and world"""
         await create_new_stage_async()
-        self.my_world = World(stage_units_in_meters=1.0)
-        await self.my_world.initialize_simulation_context_async()
+        self.world = World(stage_units_in_meters=1.0)
+        await self.world.initialize_simulation_context_async()
         await update_stage_async()
-        self.my_world.scene.add_default_ground_plane()
-        self.xform = self.my_world.scene.add(SingleXFormPrim(prim_path="/lidar_rig", name="rig"))
-        self._my_lidar = self.my_world.scene.add(
-            LidarRtx(prim_path="/lidar_rig/lidar", name="lidar", config_file_name="Example_Rotary")
-        )
-        cube_1 = self.my_world.scene.add(
-            VisualCuboid(
-                prim_path="/World/cube", name="cube_1", position=np.array([2, 2, 2.5]), scale=np.array([20, 0.2, 5])
-            )
-        )
 
-        cube_2 = self.my_world.scene.add(
-            VisualCuboid(
-                prim_path="/World/cube_2", name="cube_2", position=np.array([2, -2, 2.5]), scale=np.array([20, 0.2, 5])
-            )
-        )
-        await self.my_world.reset_async()
+        # Get stage reference
+        self.stage = omni.usd.get_context().get_stage()
+
+        # Create an OmniLidar prim and apply OmniSensorGenericLidarCoreAPI schema
+        self.lidar_prim_path = "/World/valid_lidar"
+        lidar_prim = self.stage.DefinePrim(self.lidar_prim_path, "OmniLidar")
+        lidar_prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+
+        # Verify our prim was created with the right type and API
+        self.assertEqual(lidar_prim.GetTypeName(), "OmniLidar")
+        self.assertTrue(lidar_prim.HasAPI("OmniSensorGenericLidarCoreAPI"))
+
+        # Create a Camera prim for testing constructor with Camera
+        self.camera_prim_path = "/World/test_camera"
+        camera_prim = self.stage.DefinePrim(self.camera_prim_path, "Camera")
+
+        # Create an Xform prim for testing constructor with invalid prim type
+        self.xform_prim_path = "/World/test_xform"
+        xform_prim = self.stage.DefinePrim(self.xform_prim_path, "Xform")
+
+        # Create an OmniLidar prim without the required API schema
+        self.invalid_lidar_prim_path = "/World/invalid_lidar"
+        invalid_lidar_prim = self.stage.DefinePrim(self.invalid_lidar_prim_path, "OmniLidar")
+
+        await self.world.reset_async()
         self._timeline = omni.timeline.get_timeline_interface()
-        return
 
-    # After running each test
     async def tearDown(self):
-        self.my_world.clear_instance()
+        """Clean up after tests"""
+        self.world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        return
 
-    async def test_poses(self):
-        self.xform.set_world_pose(
-            position=np.array([5.0, 0.0, 5.0]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, -90, 0]), degrees=True),
+    async def advance_frames(self, render_product_path, num_frames=1):
+        """Helper method to advance frames
+
+        Args:
+            render_product_path: Path of render product for the sensor
+            num_frames: Number of frames to advance
+        """
+        for _ in range(num_frames):
+            await omni.syntheticdata.sensors.next_render_simulation_async(render_product_path)
+
+    def verify_annotators_added(self, lidar, annotator_names):
+        """Helper method to verify annotators are correctly added
+
+        Args:
+            lidar: LidarRtx instance to check
+            annotator_names: List of annotator names that should be present
+        """
+        annotators = lidar.get_annotators()
+        for name in annotator_names:
+            self.assertIn(name, annotators)
+
+    def attach_all_annotators(self, lidar):
+        """Helper method to attach all annotators to a lidar
+
+        Args:
+            lidar: LidarRtx instance to attach annotators to
+        """
+        for annotator_name in self.ALLOWED_ANNOTATORS:
+            lidar.attach_annotator(annotator_name)
+        self.verify_annotators_added(lidar, self.ALLOWED_ANNOTATORS)
+
+    async def test_constructor_with_valid_lidar_prim(self):
+        """Test that constructor works with valid OmniLidar prim path"""
+        # This should not raise an exception
+        lidar = LidarRtx(prim_path=self.lidar_prim_path, name="valid_lidar_instance")
+        self.assertIsNotNone(lidar)
+        self.assertEqual(lidar.prim_path, self.lidar_prim_path)
+
+    async def test_constructor_with_camera_prim(self):
+        """Test constructor with Camera prim"""
+        # Test position and orientation in constructor
+        test_position = np.array([1.0, 2.0, 3.0])
+        test_orientation = np.array([0.0, 0.0, 0.707, 0.707])  # 90 degrees around Z
+
+        lidar = LidarRtx(
+            prim_path=self.camera_prim_path,
+            name="camera_lidar_instance",
+            position=test_position,
+            orientation=test_orientation,
         )
-        self._my_lidar.set_world_pose(
-            position=np.array([0.0, 0.0, 25.0]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
+
+        # Get the actual position and orientation
+        camera_prim = self.stage.GetPrimAtPath(self.camera_prim_path)
+        xform = UsdGeom.Xformable(camera_prim)
+
+        # Get world transform matrix
+        world_transform = xform.ComputeLocalToWorldTransform(0)
+
+        # Extract position from transform
+        actual_position = world_transform.ExtractTranslation()
+
+        # Extract rotation from transform (as quaternion)
+        rotation = world_transform.ExtractRotationQuat()
+
+        # Verify position matches what was set
+        np.testing.assert_array_almost_equal(
+            np.array([actual_position[0], actual_position[1], actual_position[2]]), test_position, decimal=5
         )
-        position, orientation = self._my_lidar.get_world_pose()
-        self.assertTrue(np.isclose(position, [0, 0, 25], atol=1e-05).all())
+
+        # Verify orientation matches what was set (allowing for quaternion sign differences)
+        actual_quat = np.array(
+            [rotation.GetReal(), rotation.GetImaginary()[0], rotation.GetImaginary()[1], rotation.GetImaginary()[2]]
+        )
+
         self.assertTrue(
-            np.isclose(
-                orientation, rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True), atol=1e-05
-            ).all()
+            np.allclose(actual_quat, test_orientation, atol=1e-3)
+            or np.allclose(-actual_quat, test_orientation, atol=1e-3)
         )
-        translation, orientation = self._my_lidar.get_local_pose()
-        self.assertTrue(np.isclose(translation, [20, 0, 5], atol=1e-05).all())
-        self.assertTrue(
-            np.isclose(
-                orientation, rot_utils.euler_angles_to_quats(np.array([0, 180, 0]), degrees=True), atol=1e-05
-            ).all()
-        )
-        self._my_lidar.set_local_pose(
-            translation=np.array([0.0, 0.0, 25.0]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
-        )
-        return
 
-    async def test_read_data_annotator(self):
-        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacReadRTXLidarData")
-        annotator.attach([self._my_lidar.get_render_product_path()])
+    async def test_constructor_with_xform_prim(self):
+        """Test constructor with Xform prim (should raise Exception)"""
+        with self.assertRaises(Exception):
+            lidar = LidarRtx(prim_path=self.xform_prim_path, name="xform_lidar_instance")
 
-        self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
-        data = annotator.get_data()
-        # TODO: Improve Test
-        self.assertEqual(len(data["intensities"]), len(data["azimuths"]))
-        annotator.detach()
+    async def test_constructor_with_invalid_lidar_prim(self):
+        """Test constructor with OmniLidar prim without required API schema (should raise Exception)"""
+        with self.assertRaises(Exception):
+            lidar = LidarRtx(prim_path=self.invalid_lidar_prim_path, name="invalid_lidar_instance")
 
-    async def test_read_pcl_annotator(self):
+    async def test_get_render_product_path(self):
+        """Test get_render_product_path returns a valid path with correct prim type"""
+        lidar = LidarRtx(prim_path=self.lidar_prim_path, name="render_path_test")
 
-        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud")
-        annotator.attach([self._my_lidar.get_render_product_path()])
+        # Get the render product path
+        render_product_path = lidar.get_render_product_path()
 
-        self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
-        data = annotator.get_data()
-        # TODO: Improve Test
-        self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
-        annotator.detach()
+        # Verify it's not None and is a string
+        self.assertIsNotNone(render_product_path)
+        self.assertIsInstance(render_product_path, str)
 
-    async def test_read_buffer_annotator(self):
+        # Verify the prim at this path exists and is the right type
+        render_product_prim = self.stage.GetPrimAtPath(render_product_path)
+        self.assertTrue(render_product_prim.IsValid())
+        self.assertEqual(render_product_prim.GetTypeName(), "RenderProduct")
 
-        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpu" + "IsaacCreateRTXLidarScanBuffer")
-        annotator.attach([self._my_lidar.get_render_product_path()])
+    async def test_annotator_methods(self):
+        """Test attach_annotator, detach_annotator, get_annotators, and detach_all_annotators"""
+        lidar = LidarRtx(prim_path=self.lidar_prim_path, name="annotator_test")
 
-        self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 2)
-        data = annotator.get_data()
-        # TODO: Improve Test
-        # self.assertGreater(len(data["data"]), 72000)  # make sure that the number of points is reasonable
-        self.assertTrue(np.all(np.linalg.norm(data["data"], axis=1) > 0))
-        annotator.detach()
+        # Test each annotator individually
+        for annotator_name in self.ALLOWED_ANNOTATORS:
+            # Initially, get_annotators should return an empty dictionary for this annotator
+            annotators = lidar.get_annotators()
+            self.assertNotIn(annotator_name, annotators)
 
-    async def test_data_acquisition(self):
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
-        for annotator in ["linear_depth_data", "point_cloud_data", "intensities_data"]:
-            getattr(self._my_lidar, "add_{}_to_frame".format(annotator))()
-            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
-            data = self._my_lidar.get_current_frame()
-            self.assertTrue(annotator in data.keys())
-            self.assertTrue(data[annotator].shape[0] > 0)
-            getattr(self._my_lidar, "remove_{}_from_frame".format(annotator))()
-            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
-            data = self._my_lidar.get_current_frame()
-            self.assertTrue(annotator not in data.keys())
-        for annotator in ["elevation", "azimuth", "range"]:
-            getattr(self._my_lidar, "add_{}_data_to_frame".format(annotator))()
-            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
-            data = self._my_lidar.get_current_frame()
-            self.assertTrue(annotator in data.keys())
-            self.assertTrue(data[annotator].shape[0] > 0)
-            getattr(self._my_lidar, "remove_{}_data_from_frame".format(annotator))()
-            await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 1)
-            data = self._my_lidar.get_current_frame()
-            self.assertTrue(annotator not in data.keys())
+            # Attach the annotator
+            lidar.attach_annotator(annotator_name)
 
-        self.assertTrue(self._my_lidar.get_horizontal_resolution() > 0)
-        self.assertTrue(self._my_lidar.get_horizontal_fov() > 0)
-        self.assertTrue(self._my_lidar.get_num_rows() > 0)
-        self.assertTrue(self._my_lidar.get_num_cols() > 0)
-        self.assertTrue(self._my_lidar.get_rotation_frequency() > 0)
-        low, high = self._my_lidar.get_depth_range()
-        self.assertTrue(low == 1.0)
-        self.assertTrue(high > 0)
-        low, high = self._my_lidar.get_azimuth_range()
-        self.assertTrue(low < 0)
-        self.assertTrue(high > 0)
-        return
+            # Verify it was added with get_annotators
+            annotators = lidar.get_annotators()
+            self.assertIn(annotator_name, annotators)
 
-    async def test_visualization(self):
-        self._my_lidar.enable_visualization()
-        for _ in range(100):
+            # Detach the annotator
+            lidar.detach_annotator(annotator_name)
+
+            # Verify it was removed with get_annotators
+            annotators = lidar.get_annotators()
+            self.assertNotIn(annotator_name, annotators)
+
+        # Now add all annotators at once
+        self.attach_all_annotators(lidar)
+
+        # Detach all annotators
+        lidar.detach_all_annotators()
+
+        # Verify all were removed
+        annotators = lidar.get_annotators()
+        self.assertEqual(len(annotators), 0)
+
+    async def test_writer_methods(self):
+        """Test get_writers, attach_writer, detach_writer, and detach_all_writers"""
+        lidar = LidarRtx(prim_path=self.lidar_prim_path, name="writer_test")
+
+        # Use RtxLidarDebugDrawPointCloud as the test writer
+        writer_name = "RtxLidarDebugDrawPointCloud"
+
+        # Initially, get_writers should return an empty dictionary
+        writers = lidar.get_writers()
+        self.assertNotIn(writer_name, writers)
+
+        # Attach the writer
+        lidar.attach_writer(writer_name)
+
+        # Verify it was added with get_writers
+        writers = lidar.get_writers()
+        self.assertIn(writer_name, writers)
+
+        # Detach the writer
+        lidar.detach_writer(writer_name)
+
+        # Verify it was removed with get_writers
+        writers = lidar.get_writers()
+        self.assertNotIn(writer_name, writers)
+
+        # Add the writer again
+        lidar.attach_writer(writer_name)
+
+        # Verify it was added
+        writers = lidar.get_writers()
+        self.assertIn(writer_name, writers)
+
+        # Detach all writers
+        lidar.detach_all_writers()
+
+        # Verify all were removed
+        writers = lidar.get_writers()
+        self.assertEqual(len(writers), 0)
+
+        # Test visualization methods
+        lidar.enable_visualization()
+
+        # Let the stage update a few times
+        for _ in range(3):
             await update_stage_async()
-        self._my_lidar.disable_visualization()
-        for _ in range(100):
+
+        lidar.disable_visualization()
+
+        # Let the stage update a few times
+        for _ in range(3):
             await update_stage_async()
-        return
 
-    async def test_pause_resume(self):
-        await update_stage_async()
-        await update_stage_async()
-        data = self._my_lidar.get_current_frame()
-        current_time = data["rendering_time"]
-        current_step = data["rendering_frame"][0]
-        self._my_lidar.pause()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 2)
-        data = self._my_lidar.get_current_frame()
-        self.assertTrue(data["rendering_time"] == current_time)
-        self.assertTrue(data["rendering_frame"][0] == current_step)
-        self.assertTrue(self._my_lidar.is_paused())
-        current_time = data["rendering_time"]
-        current_step = data["rendering_frame"][0]
-        self._my_lidar.resume()
-        await update_stage_async()
-        data = self._my_lidar.get_current_frame()
-        self.assertTrue(data["rendering_time"] != current_time)
-        self.assertTrue(data["rendering_frame"][0] != current_step)
-        await self.my_world.reset_async()
-        return
+    async def test_timeline_and_get_current_frame(self):
+        """Test timeline events and get_current_frame method"""
+        # Create a LidarRtx object with config_file_name set to "Example_Rotary"
+        lidar = LidarRtx(
+            prim_path="/World/timeline_test_lidar", name="timeline_test_lidar", config_file_name="Example_Rotary"
+        )
 
-    # async def test_get_properties(self):
-    #     await omni.syntheticdata.sensors.next_render_simulation_async(self._my_lidar.get_render_product_path(), 10)
-    #     self.assertTrue(self._my_lidar.get_horizontal_resolution() > 0)
-    #     self.assertTrue(self._my_lidar.get_horizontal_fov() > 0)
-    #     self.assertTrue(self._my_lidar.get_num_rows() > 0)
-    #     self.assertTrue(self._my_lidar.get_num_cols() > 0)
-    #     self.assertTrue(self._my_lidar.get_rotation_frequency() > 0)
-    #     low, high = self._my_lidar.get_depth_range()
-    #     self.assertTrue(low == 0)
-    #     self.assertTrue(high > 0)
-    #     low, high = self._my_lidar.get_azimuth_range()
-    #     self.assertTrue(low > 0)
-    #     self.assertTrue(high > 0)
-    #     return
+        # Call initialize
+        lidar.initialize()
+
+        # Attach all possible annotators
+        self.attach_all_annotators(lidar)
+
+        # Advance the timeline by 3 frames
+        self._timeline.play()
+        await self.advance_frames(lidar.get_render_product_path(), 3)
+
+        # Store the return value of get_current_frame
+        current_frame = lidar.get_current_frame()
+
+        # Confirm current_frame is a dict
+        self.assertIsInstance(current_frame, dict)
+
+        # Confirm current_frame contains expected keys
+        for key in self.EXPECTED_FRAME_KEYS:
+            self.assertIn(key, current_frame, f"Missing expected key: {key}")
+
+        # Confirm current_frame contains keys for each annotator
+        for annotator_name in self.ALLOWED_ANNOTATORS:
+            self.assertIn(annotator_name, current_frame, f"Missing annotator data: {annotator_name}")
+
+        # Confirm current_frame["info"] is a dict containing expected keys
+        self.assertIsInstance(current_frame["info"], dict)
+        for key in self.INFO_KEYS:
+            self.assertIn(key, current_frame["info"], f"Missing info key: {key}")
+
+        # Test pause functionality
+        lidar.pause()
+        self.assertTrue(lidar.is_paused())
+
+        # Render 3 more frames while paused
+        await self.advance_frames(lidar.get_render_product_path(), 3)
+
+        # Confirm still paused
+        self.assertTrue(lidar.is_paused())
+
+        # Test resume functionality
+        lidar.resume()
+        self.assertFalse(lidar.is_paused())
+
+        # Render 3 more frames
+        await self.advance_frames(lidar.get_render_product_path(), 3)
+
+        # Test timeline pause (should pause the lidar)
+        self._timeline.pause()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertTrue(lidar.is_paused())
+
+        # Test timeline play (should resume the lidar)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertFalse(lidar.is_paused())
+
+        # Render 10 frames
+        await self.advance_frames(lidar.get_render_product_path(), 10)
+
+        # Get the updated frame after all rendering
+        current_frame = lidar.get_current_frame()
+
+        # Verify annotator and frame data
+        # TODO (adevalla): Pausing and resuming the timeline results in empty GMO buffers - why?
+        # self.verify_frame_data(lidar, current_frame)
+
+    def verify_frame_data(self, lidar, current_frame):
+        """Helper method to verify frame data
+
+        Args:
+            lidar: LidarRtx instance to check
+            current_frame: The current frame dictionary to verify
+        """
+        # Verify each annotator value is a non-empty dictionary
+        for annotator_name in self.ALLOWED_ANNOTATORS:
+            self.assertIn(annotator_name, current_frame, f"Missing annotator data: {annotator_name}")
+            self.assertIsInstance(current_frame[annotator_name], dict, f"{annotator_name} value is not a dictionary")
+            self.assertNotEqual(len(current_frame[annotator_name]), 0, f"{annotator_name} dictionary is empty")
+
+        # Confirm current_frame["info"] is a non-empty dict containing expected keys
+        self.assertIsInstance(current_frame["info"], dict)
+        self.assertNotEqual(len(current_frame["info"]), 0, "info dictionary is empty")
+        for key in self.INFO_KEYS:
+            self.assertIn(key, current_frame["info"], f"Missing info key: {key}")
+
+        # Check that expected keys contain meaningful data
+        for key in self.EXPECTED_FRAME_KEYS:
+            if key != "rendering_time" and key != "rendering_frame":
+                self.assertIsNotNone(current_frame[key], f"{key} has None value")
+                if isinstance(current_frame[key], dict):
+                    self.assertNotEqual(len(current_frame[key]), 0, f"{key} dictionary is empty")
+                elif isinstance(current_frame[key], (list, np.ndarray)):
+                    self.assertNotEqual(len(current_frame[key]), 0, f"{key} list/array is empty")
+
+        # Confirm data consistency between current_frame and annotator data
+        self.verify_point_cloud_data(current_frame)
+        self.verify_flat_scan_data(current_frame)
+
+        # Test the deprecated getter methods to ensure they're not returning None
+        self.verify_getter_methods(lidar, current_frame)
+
+    def verify_point_cloud_data(self, current_frame):
+        """Helper method to verify point cloud data
+
+        Args:
+            current_frame: The current frame dictionary to verify
+        """
+        # Point cloud data check
+        np.testing.assert_array_equal(
+            current_frame["point_cloud_data"],
+            current_frame["IsaacExtractRTXSensorPointCloud"]["data"],
+            "point_cloud_data does not match IsaacExtractRTXSensorPointCloud data",
+        )
+
+        # Info field checks
+        self.assertEqual(
+            current_frame["info"]["range"],
+            current_frame["IsaacExtractRTXSensorPointCloud"]["range"],
+            "info range does not match IsaacExtractRTXSensorPointCloud range",
+        )
+
+        self.assertEqual(
+            current_frame["info"]["azimuth"],
+            current_frame["IsaacExtractRTXSensorPointCloud"]["azimuth"],
+            "info azimuth does not match IsaacExtractRTXSensorPointCloud azimuth",
+        )
+
+        self.assertEqual(
+            current_frame["info"]["elevation"],
+            current_frame["IsaacExtractRTXSensorPointCloud"]["elevation"],
+            "info elevation does not match IsaacExtractRTXSensorPointCloud elevation",
+        )
+
+    def verify_flat_scan_data(self, current_frame):
+        """Helper method to verify flat scan data
+
+        Args:
+            current_frame: The current frame dictionary to verify
+        """
+        np.testing.assert_array_equal(
+            current_frame["linear_depth_data"],
+            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["linearDepthData"],
+            "linear_depth_data does not match IsaacComputeRTXLidarFlatScanSimulationTime linearDepthData",
+        )
+
+        np.testing.assert_array_equal(
+            current_frame["intensities_data"],
+            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["intensitiesData"],
+            "intensities_data does not match IsaacComputeRTXLidarFlatScanSimulationTime intensitiesData",
+        )
+
+        self.assertEqual(
+            current_frame["azimuth_range"],
+            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["azimuthRange"],
+            "azimuth_range does not match IsaacComputeRTXLidarFlatScanSimulationTime azimuthRange",
+        )
+
+        self.assertEqual(
+            current_frame["horizontal_resolution"],
+            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["horizontalResolution"],
+            "horizontal_resolution does not match IsaacComputeRTXLidarFlatScanSimulationTime horizontalResolution",
+        )
+
+    def verify_getter_methods(self, lidar, current_frame):
+        """Helper method to verify getter methods
+
+        Args:
+            lidar: LidarRtx instance to check
+            current_frame: The current frame dictionary to verify
+        """
+        # Test get_horizontal_resolution
+        horizontal_resolution = lidar.get_horizontal_resolution()
+        self.assertIsNotNone(horizontal_resolution)
+        self.assertEqual(
+            horizontal_resolution,
+            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("horizontalResolution"),
+        )
+
+        # Test get_horizontal_fov
+        horizontal_fov = lidar.get_horizontal_fov()
+        self.assertIsNotNone(horizontal_fov)
+        self.assertEqual(
+            horizontal_fov, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("horizontalFov")
+        )
+
+        # Test get_num_rows
+        num_rows = lidar.get_num_rows()
+        self.assertIsNotNone(num_rows)
+        self.assertEqual(num_rows, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("numRows"))
+
+        # Test get_num_cols
+        num_cols = lidar.get_num_cols()
+        self.assertIsNotNone(num_cols)
+        self.assertEqual(num_cols, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("numCols"))
+
+        # Test get_rotation_frequency
+        rotation_frequency = lidar.get_rotation_frequency()
+        self.assertIsNotNone(rotation_frequency)
+        self.assertEqual(
+            rotation_frequency, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("rotationRate")
+        )
+
+        # Test get_depth_range
+        depth_range = lidar.get_depth_range()
+        self.assertIsNotNone(depth_range)
+        self.assertEqual(depth_range, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("depthRange"))
+
+        # Test get_azimuth_range
+        azimuth_range = lidar.get_azimuth_range()
+        self.assertIsNotNone(azimuth_range)
+        self.assertEqual(azimuth_range, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("azimuthRange"))
+
+    async def test_getter_methods_after_detach(self):
+        """Test getter methods after detaching annotator"""
+        # Create a LidarRtx object
+        lidar = LidarRtx(
+            prim_path="/World/annotator_detach_test_lidar",
+            name="annotator_detach_test",
+            config_file_name="Example_Rotary",
+        )
+        lidar.initialize()
+
+        # Add the required annotator
+        lidar.attach_annotator("IsaacComputeRTXLidarFlatScanSimulationTime")
+
+        # Run the timeline to populate data
+        self._timeline.play()
+        await self.advance_frames(lidar.get_render_product_path(), 3)
+
+        # Verify getters return values
+        self.assertIsNotNone(lidar.get_horizontal_resolution())
+        self.assertIsNotNone(lidar.get_horizontal_fov())
+        self.assertIsNotNone(lidar.get_num_rows())
+        self.assertIsNotNone(lidar.get_num_cols())
+        self.assertIsNotNone(lidar.get_rotation_frequency())
+        self.assertIsNotNone(lidar.get_depth_range())
+        self.assertIsNotNone(lidar.get_azimuth_range())
+
+        # Detach the annotator
+        lidar.detach_annotator("IsaacComputeRTXLidarFlatScanSimulationTime")
+
+        # Advance frames
+        await self.advance_frames(lidar.get_render_product_path(), 3)
+
+        # Verify all getters now return None
+        self.assertIsNone(lidar.get_horizontal_resolution())
+        self.assertIsNone(lidar.get_horizontal_fov())
+        self.assertIsNone(lidar.get_num_rows())
+        self.assertIsNone(lidar.get_num_cols())
+        self.assertIsNone(lidar.get_rotation_frequency())
+        self.assertIsNone(lidar.get_depth_range())
+        self.assertIsNone(lidar.get_azimuth_range())

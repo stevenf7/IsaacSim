@@ -1,0 +1,89 @@
+{
+    "IsaacExtractRTXSensorPointCloud": {
+        "version": 1,
+        "description": "Extracts point cloud data from an RTX sensor's output buffer, as Cartesian coordinated and azimuth, elevation, & range.",
+        "language": "C++",
+        "metadata": {
+            "categories": ["Sensor"],
+            "keywords": ["rtx", "lidar", "sensor"],
+            "tooltip": "Extracts point cloud data from an RTX sensor's output buffer, as Cartesian coordinated and azimuth, elevation, & range.",
+            "display_name": "Extract RTX Sensor Point Cloud"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRtxSensor",
+        "state": {"$comment": ["Internal state"]},
+        "inputs": {
+            "exec": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "gmoBufferPointer":{
+                "type": "uint64",
+                "description": "Pointer to RTX sensor's output buffer",
+                "uiName": "RTX sensor output buffer"
+            },
+            "gmoDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            }
+        },
+        "outputs": {
+            "exec": {
+                "type": "execution",
+                "description": "Output execution triggers when lidar sensor has data"
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The transform matrix from lidar to world coordinates"
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Buffer containing point cloud data",
+                "uiName": "Point Cloud Data"
+            },
+            "sensorOutputBuffer": {
+                "type": "uint64",
+                "description": "Pointer to RTX sensor's output buffer",
+                "uiName": "RTX sensor output buffer"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the point cloud buffer (0 if the input is a texture)"
+            },
+            "height":{
+                "type": "uint",
+                "description": "Height of point cloud buffer, will always return 1",
+                "default": 1
+            },
+            "width":{
+                "type": "uint",
+                "description": "3 x Width or number of points in point cloud buffer",
+                "default": 0
+            },
+            "range":{
+                "type": "float[]",
+                "description": "range in m",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "azimuth":{
+                "type": "float[]",
+                "description": "azimuth in deg [-180, 180)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "elevation":{
+                "type": "float[]",
+                "description": "elevation in deg [-90, 90]",
+                "memoryType": "cpu",
+                "default": []
+            }
+        }
+    }
+}
