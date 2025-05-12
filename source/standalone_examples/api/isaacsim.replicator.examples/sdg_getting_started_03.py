@@ -50,7 +50,7 @@ def run_example():
 
     # Write data using the basic writer with the rgb and bounding box annotators
     writer = rep.writers.get("BasicWriter")
-    out_dir = os.getcwd() + "/_out_basic_writer_rand"
+    out_dir = os.path.join(os.getcwd(), "_out_basic_writer_rand")
     print(f"Output directory: {out_dir}")
     writer.initialize(output_dir=out_dir, rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True)
     writer.attach(rp)

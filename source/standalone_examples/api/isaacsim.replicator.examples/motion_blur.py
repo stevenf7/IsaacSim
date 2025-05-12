@@ -120,7 +120,7 @@ def run_motion_blur_example(num_frames=3, custom_delta_time=None, use_path_traci
     basic_writer = rep.WriterRegistry.get("BasicWriter")
     delta_time_str = "None" if custom_delta_time is None else f"{custom_delta_time:.4f}"
     render_mode_str = f"pt_subsamples_{pt_subsamples}_spp_{pt_spp}" if use_path_tracing else "rt"
-    output_directory = os.getcwd() + f"/_out_motion_blur_dt_{delta_time_str}_{render_mode_str}"
+    output_directory = os.path.join(os.getcwd(), f"_out_motion_blur_dt_{delta_time_str}_{render_mode_str}")
     print(f"[MotionBlur] Output directory: {output_directory}")
     basic_writer.initialize(output_dir=output_directory, rgb=True)
     basic_writer.attach(render_product)

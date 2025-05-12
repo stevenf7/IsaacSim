@@ -96,7 +96,7 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
 
                 # SDG
                 self._rep_camera = None
-                self._output_dir = os.path.join(os.getcwd(), "_out_palletizing_sdg_demo", "")
+                self._output_dir = os.path.join(os.getcwd(), "_out_palletizing_sdg_demo")
                 print(f"[PalletizingSDGDemo] Output directory: {self._output_dir}")
 
             def start(self, num_captures):

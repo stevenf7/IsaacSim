@@ -74,7 +74,7 @@ def run_example():
 
     # Use the pose writer to write the data to disk
     pose_writer = rep.WriterRegistry.get("PoseWriter")
-    out_dir = os.getcwd() + "/_out_pose_writer"
+    out_dir = os.path.join(os.getcwd(), "_out_pose_writer")
     print(f"Output directory: {out_dir}")
     pose_writer.initialize(output_dir=out_dir, write_debug_images=True)
     pose_writer.attach([rp_cam, rp_persp])

@@ -43,7 +43,7 @@ else:
 
 rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
 writer = rep.WriterRegistry.get("BasicWriter")
-out_dir = os.getcwd() + "/_out_custom_event"
+out_dir = os.path.join(os.getcwd(), "_out_custom_event")
 print(f"Writing data to {out_dir}")
 writer.initialize(output_dir=out_dir, rgb=True)
 writer.attach(rp)

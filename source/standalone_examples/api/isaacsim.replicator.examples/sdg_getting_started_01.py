@@ -37,7 +37,7 @@ def run_example():
 
     # Write data using the basic writer with the rgb and bounding box annotators
     writer = rep.writers.get("BasicWriter")
-    out_dir = os.getcwd() + "/_out_basic_writer"
+    out_dir = os.path.join(os.getcwd(), "_out_basic_writer")
     print(f"Output directory: {out_dir}")
     writer.initialize(output_dir=out_dir, rgb=True, bounding_box_2d_tight=True)
     writer.attach(rp)

@@ -81,7 +81,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         async def run_randomizations_async(num_frames, lights, write_data=True, delay=0):
             if write_data:
                 writer = rep.WriterRegistry.get("BasicWriter")
-                out_dir = os.getcwd() + "/_out_rand_lights"
+                out_dir = os.path.join(os.getcwd(), "_out_rand_lights")
                 print(f"Writing data to {out_dir}..")
                 writer.initialize(output_dir=out_dir, rgb=True)
                 rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
@@ -203,7 +203,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         async def run_randomizations_async(num_frames, materials, textures, write_data=True, delay=0):
             if write_data:
                 writer = rep.WriterRegistry.get("BasicWriter")
-                out_dir = os.getcwd() + "/_out_rand_textures"
+                out_dir = os.path.join(os.getcwd(), "_out_rand_textures")
                 print(f"Writing data to {out_dir}..")
                 writer.initialize(output_dir=out_dir, rgb=True)
                 rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
@@ -320,7 +320,7 @@ class TestRandomizerSnippets(omni.kit.test.AsyncTestCase):
         ):
             if write_data:
                 writer = rep.WriterRegistry.get("BasicWriter")
-                out_dir = os.getcwd() + "/_out_rand_sphere_scan"
+                out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
                 print(f"Writing data to {out_dir}..")
                 writer.initialize(output_dir=out_dir, rgb=True)
                 rp_persp = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="PerspView")

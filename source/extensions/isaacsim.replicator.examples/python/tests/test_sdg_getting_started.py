@@ -64,7 +64,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
 
         # Write data using the basic writer with the rgb and bounding box annotators
         writer = rep.writers.get("BasicWriter")
-        out_dir = os.getcwd() + "/_out_basic_writer"
+        out_dir = os.path.join(os.getcwd(), "_out_basic_writer")
         print(f"Output directory: {out_dir}")
         writer.initialize(output_dir=out_dir, rgb=True, bounding_box_2d_tight=True)
         writer.attach(rp)
@@ -134,7 +134,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
 
         # Use the pose writer to write the data to disk
         pose_writer = rep.WriterRegistry.get("PoseWriter")
-        out_dir = os.getcwd() + "/_out_pose_writer"
+        out_dir = os.path.join(os.getcwd(), "_out_pose_writer")
         print(f"Output directory: {out_dir}")
         pose_writer.initialize(output_dir=out_dir, write_debug_images=True)
         pose_writer.attach([rp_cam, rp_persp])
@@ -192,7 +192,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
 
         # Write data using the basic writer with the rgb and bounding box annotators
         writer = rep.writers.get("BasicWriter")
-        out_dir = os.getcwd() + "/_out_basic_writer_rand"
+        out_dir = os.path.join(os.getcwd(), "_out_basic_writer_rand")
         print(f"Output directory: {out_dir}")
         writer.initialize(output_dir=out_dir, rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True)
         writer.attach(rp)
@@ -265,7 +265,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
 
         # Write data using the basic writer with the rgb and bounding box annotators
         writer = rep.writers.get("BasicWriter")
-        out_dir = os.getcwd() + "/_out_basic_writer_sim"
+        out_dir = os.path.join(os.getcwd(), "_out_basic_writer_sim")
         print(f"Output directory: {out_dir}")
         writer.initialize(output_dir=out_dir, rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True)
         writer.attach(rp)
