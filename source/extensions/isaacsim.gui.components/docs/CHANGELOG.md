@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.3] - 2025-05-11
+### Changed
+- minor adjustment to the button decorator so it adapts to different button sizes centered.
+
 ## [1.1.2] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
@@ -6,6 +11,7 @@
 ## [1.1.1] - 2025-05-07
 ### Changed
 - switch to omni.physics interface
+
 
 ## [1.1.0] - 2025-05-03
 ### Changed

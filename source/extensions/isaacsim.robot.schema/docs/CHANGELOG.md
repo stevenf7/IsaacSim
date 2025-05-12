@@ -1,4 +1,11 @@
 # Changelog
+
+## [3.4.0] - 2025-05-09
+### Changed
+- fixed minor errors on Applying surface gripper API types
+### Added
+- Added Robot Parsing Utils to generate  Robot Kinematic tree based on the joints available on the schema and their parent-child relationships.
+
 ## [3.3.3] - 2025-05-05
 ### Changed
 - Fix API docs.
