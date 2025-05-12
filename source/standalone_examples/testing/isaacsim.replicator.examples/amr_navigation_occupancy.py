@@ -43,8 +43,8 @@ class NavSDGDemo:
     CARTER_URL = "/Isaac/Samples/Replicator/OmniGraph/nova_carter_nav_only.usd"
     DOLLY_URL = "/Isaac/Props/Dolly/dolly_physics.usd"
     PROPS_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics"
-    LEFT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/front_hawk/left/camera_left"
-    RIGHT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/front_hawk/right/camera_right"
+    LEFT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/sensors/front_hawk/left/camera_left"
+    RIGHT_CAMERA_PATH = "/NavWorld/CarterNav/chassis_link/sensors/front_hawk/right/camera_right"
 
     def __init__(self):
         self._carter_chassis = None
