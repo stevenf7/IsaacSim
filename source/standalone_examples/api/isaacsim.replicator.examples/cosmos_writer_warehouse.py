@@ -145,7 +145,7 @@ def run_example(num_frames, capture_interval=1, start_delay=None, use_instance_i
     run_sdg_pipeline(camera_prim.GetPath(), num_frames, capture_interval, use_instance_id, segmentation_mapping)
 
 
-NUM_FRAMES = 10
-CAPTURE_INTERVAL = 4
-START_DELAY = 0.2
+NUM_FRAMES = 4
+CAPTURE_INTERVAL = 2
+START_DELAY = 0.1
 run_example(num_frames=NUM_FRAMES, capture_interval=4, start_delay=START_DELAY, use_instance_id=True)
