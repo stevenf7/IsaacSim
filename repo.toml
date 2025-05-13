@@ -9,7 +9,6 @@ import_configs = [
   "${root}/_repo/deps/repo_kit_tools/kit-template/repo.toml",
   # Shared config for kit extensions repos that also publish an app to the Launcher
   "${root}/_repo/deps/repo_kit_tools/kit-template/repo-app.toml",
-  "${root}/_repo/deps/repo_kit_tools/kit-template/repo-external-app.toml",
 ]
 
 # Repository Name. It is used for solution name and final package name
@@ -115,9 +114,12 @@ vscode.python_env.PATH = [
 vscode.write_python_paths_in_settings_json = false # We do this manually as a post processing step now to guarantee extscache is downloaded
 # vscode.generate_python_env_file = false
 
+msbuild.sln_file = "isaac-sim.sln"
+msbuild.vs_version = "vs2019"
+
 # stage_files.error_if_missing = true
 
-# licensing.enabled = true
+licensing.enabled = false
 licensing.packages = [
   "${root}/deps/rtx-target-deps.packman.xml",
   "${root}/deps/ext-deps.packman.xml",
@@ -166,50 +168,6 @@ extra_tokens = {"precache_flag_0" = "-u"}
 help = "Update extensions: remove generated part from kit files and clean cache path before running exts precaching. (Pass -u flag to repo precache_exts tool)."
 kwargs.required = false
 name = "-u"
-
-[repo_build.build]
-enabled = true
-"platform:windows-x86_64".enabled = true  # Set to `true` to build C++ extensions on Windows.
-
-[repo_build.msbuild]
-sln_file = "isaac-sim.sln"
-# If set to true will attempt to link to host's Visual Studio and Windows SDK installations.
-# This is needed if C++ compilation is needed on Windows, and repo_build.build.enabled is set to true.
-link_host_toolchain = true   # This requires Microsoft Visual Studio BuildTools installed.
-# AUTOREMOVE: BEGIN
-# Internally enable host linking in CI
-"token:in_ci==true".link_host_toolchain = true
-# AUTOREMOVE: END
-
-# Filter on Visual Studio version e.g.: Visual Studio 2022. Empty string will match all years and prioritize the newest.
-vs_version = "vs2022"
-
-# AUTOREMOVE: BEGIN
-"token:in_ci==true".vs_version = "vs2019"
-# AUTOREMOVE: END
-
-# Visual Studio path; This will be used if the user would like to point to a specific VS installation rather than rely on heuristic locating.
-# vs_path = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\"
-# AUTOREMOVE: BEGIN
-# Internal CI Visual Studio path that sometimes works.
-"token:in_ci==true".vs_path = "C:\\vs2019"
-# AUTOREMOVE: END
-
-# Filter specifically to "Enterprise", "Professional", or "Community" editions of Visual Studio
-# vs_edition = "Community"
-
-# Filter by Visual Studio installations that have installed this version of the MSVC compiler.
-# msvc_version = "v142"
-
-# Filter by Visual Studio installations that ship with MSBuild of this major version.
-# msbuild_version = "17"
-
-# Windows SDK version
-# winsdk_version = "10.0.17763.0"
-
-# Windows SDK path; This will prevent needing to dynamically locate an installation by guesswork.
-# winsdk_path = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.17763.0"
-
 ########################################################################################################################
 # Extensions precacher
 ########################################################################################################################
@@ -668,7 +626,7 @@ env_vars = [
     "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib",
   ],
 ]
-test_root = "$root/_build/$platform/$config/tests"
+test_root = "$root/_build/$platform/$config"
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim*.7z"
