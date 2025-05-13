@@ -1,4 +1,8 @@
 # Changelog
+## [4.4.0] - 2025-05-12
+### Changed
+- Updated get stage calls to use stage_utils.get_current_stage()
+
 ## [4.3.6] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

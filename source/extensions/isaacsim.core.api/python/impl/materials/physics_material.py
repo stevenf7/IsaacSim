@@ -10,6 +10,7 @@
 from typing import Optional
 
 import carb
+import isaacsim.core.utils.stage as stage_utils
 import omni.kit.app
 from pxr import Usd, UsdPhysics, UsdShade
 
@@ -36,7 +37,7 @@ class PhysicsMaterial(object):
         self._name = name
         self._prim_path = prim_path
 
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
             carb.log_info("Physics Material Prim already defined at path: {}".format(prim_path))
             self._material = UsdShade.Material(stage.GetPrimAtPath(prim_path))

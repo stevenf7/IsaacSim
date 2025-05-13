@@ -11,6 +11,7 @@
 from typing import Optional
 
 import carb
+import isaacsim.core.utils.stage as stage_utils
 import numpy as np
 import omni.kit.app
 from isaacsim.core.api.materials.visual_material import VisualMaterial
@@ -44,7 +45,7 @@ class OmniGlass(VisualMaterial):
         depth: Optional[float] = None,
         thin_walled: Optional[bool] = None,
     ) -> None:
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage()
         if is_prim_path_valid(prim_path=prim_path):
             material = UsdShade.Material(get_prim_at_path(prim_path))
         else:
