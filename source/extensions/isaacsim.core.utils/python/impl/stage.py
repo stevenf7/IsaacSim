@@ -99,6 +99,29 @@ def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd
     return stage
 
 
+def get_current_stage_id() -> int:
+    """Get the current open stage id
+
+    Returns:
+        int: The stage id.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.utils.stage as stage_utils
+        >>>
+        >>> stage_utils.get_current_stage_id()
+        1234567890
+    """
+    stage = get_current_stage()
+    stage_cache = UsdUtils.StageCache.Get()
+    stage_id = stage_cache.GetId(stage).ToLongInt()
+    if stage_id < 0:
+        stage_id = stage_cache.Insert(stage).ToLongInt()
+    return stage_id
+
+
 def update_stage() -> None:
     """Update the current USD stage.
 
@@ -458,13 +481,14 @@ def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be saved with this method")
+
+    layer = Sdf.Layer.CreateNew(usd_path)
+    root_layer = get_current_stage().GetRootLayer()
+    layer.TransferContent(root_layer)
+    result = layer.Save()
     if save_and_reload_in_place:
-        result = omni.usd.get_context().save_as_stage(usd_path)
-    else:
-        layer = Sdf.Layer.CreateNew(usd_path)
-        root_layer = get_current_stage().GetRootLayer()
-        layer.TransferContent(root_layer)
-        result = layer.Save()
+        open_stage(usd_path)
+
     return result
 
 

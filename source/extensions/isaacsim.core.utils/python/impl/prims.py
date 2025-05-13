@@ -17,11 +17,11 @@ import numpy as np
 import omni.kit
 import omni.usd
 import usdrt
-from isaacsim.core.utils._isaac_utils import _find_matching_prim_paths
-from isaacsim.core.utils.semantics import add_labels
 
 # isaacsim
-from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
+from isaacsim.core.utils._isaac_utils import _find_matching_prim_paths
+from isaacsim.core.utils.semantics import add_labels
+from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, get_current_stage_id
 from isaacsim.core.utils.string import find_root_prim_path_from_regex
 from isaacsim.core.utils.types import SDF_type_to_Gf
 from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
@@ -397,7 +397,7 @@ def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[st
         >>> prims_utils.find_matching_prim_paths("/World/env_.*/Cube")
         ['/World/env_01/Cube', '/World/env_02/Cube']
     """
-    stage_id = omni.usd.get_context().get_stage_id()
+    stage_id = get_current_stage_id()
     if prim_type is None:
         prim_type = ""
     return _find_matching_prim_paths(prim_path_regex.replace(".*", "*"), stage_id, prim_type)
