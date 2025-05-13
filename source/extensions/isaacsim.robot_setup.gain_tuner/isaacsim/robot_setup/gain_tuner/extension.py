@@ -51,6 +51,7 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements"""
 
         self.ext_id = ext_id
+        self._ext_name = omni.ext.get_extension_name(ext_id)
         self._usd_context = omni.usd.get_context()
 
         # Build Window
@@ -61,7 +62,7 @@ class Extension(omni.ext.IExt):
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.register_action(
-            ext_id,
+            self._ext_name,
             f"CreateUIExtension:{EXTENSION_TITLE}",
             self._menu_callback,
             description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",

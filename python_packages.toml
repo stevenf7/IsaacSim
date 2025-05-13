@@ -451,6 +451,8 @@ inventory.include = [
     "exts/isaacsim.robot_setup.grasp_editor",
     "exts/isaacsim.robot_setup.import_wizard",
     "exts/isaacsim.robot_setup.xrdf_editor",
+    "exts/isaacsim.robot_setup.wizard",
+
     # deprecated extensions
     "extsDeprecated/omni.isaac.articulation_inspector",
     "extsDeprecated/omni.isaac.gain_tuner",
