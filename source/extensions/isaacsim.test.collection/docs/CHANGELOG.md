@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.15] - 2025-05-13
+### Added
+- Added test for evaluating a double OG trigger bug
+
 ## [2.0.14] - 2025-05-12
 ### Changed
 - Using os.path.join to create output directory in sdg tests
