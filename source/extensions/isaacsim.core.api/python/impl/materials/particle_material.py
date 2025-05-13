@@ -76,7 +76,7 @@ class ParticleMaterial:
             lift (float, optional): The lift coefficient for cloth and inflatable particle objects.
             drag (float, optional): The drag coefficient for cloth and inflatable particle objects.
         """
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage()
         self._name = name
         self._prim_path = prim_path
         self._prim = stage.GetPrimAtPath(prim_path)

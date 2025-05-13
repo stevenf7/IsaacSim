@@ -49,7 +49,7 @@ class DeformableMaterial:
             elasticity_damping (float, optional): Material damping parameter in [0, inf)
             damping_scale (float, optional): The damping scale coefficient in [0, 1]
         """
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage()
         self._name = name
         self._prim_path = prim_path
         self._prim = stage.GetPrimAtPath(prim_path)

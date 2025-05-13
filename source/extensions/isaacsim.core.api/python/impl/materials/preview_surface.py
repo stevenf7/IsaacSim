@@ -10,6 +10,7 @@
 from typing import Optional
 
 import carb
+import isaacsim.core.utils.stage as stage_utils
 import numpy as np
 import omni.kit.app
 from isaacsim.core.api.materials.visual_material import VisualMaterial
@@ -37,7 +38,7 @@ class PreviewSurface(VisualMaterial):
         roughness: Optional[float] = None,
         metallic: Optional[float] = None,
     ) -> None:
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
             carb.log_info("Material Prim already defined at path: {}".format(prim_path))
             material = UsdShade.Material(stage.GetPrimAtPath(prim_path))
