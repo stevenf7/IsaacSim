@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.1] - 2025-05-12
+### Changed
+- register action without version number
+
 ## [3.0.0] - 2025-05-09
 ### Changed
 - Update extension to use new Core Prim API and Robot Schema
