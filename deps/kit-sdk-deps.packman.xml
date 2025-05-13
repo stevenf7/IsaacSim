@@ -18,7 +18,9 @@
     <filter include="omni_usd_resolver" />
     <filter include="usdrt" />
     <filter include="usd-release" />
+    <filter include="winsdk" linkPath="../_build/host-deps/winsdk"  tags="non-redist" />
     <filter include="premake" linkPath="../_build/host-deps/premake" />
+    <filter include="msvc" linkPath="../_build/host-deps/msvc"  tags="non-redist" />
   </import>
 
   <!-- Import Physics plugins deps -->
