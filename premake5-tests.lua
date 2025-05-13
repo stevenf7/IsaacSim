@@ -557,6 +557,10 @@ function create_tests()
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_04.py",
         },
         {
+            "tests-nativepython-testing-isaacsim.replicator.examples.simready_assets_sdg",
+            "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
+        },        
+        {
             "tests-nativepython-testing-isaacsim.replicator.examples.multi_camera",
             "standalone_examples/api/isaacsim.replicator.examples/multi_camera.py",
         },
