@@ -13,6 +13,7 @@ import carb
 import isaacsim.core.utils.prims as prim_utils
 import omni.usd
 import Semantics
+from isaacsim.core.utils.stage import get_current_stage, get_current_stage_id
 from pxr import Usd, UsdGeom, UsdSemantics
 
 
@@ -122,7 +123,7 @@ def check_missing_semantics(prim_path: str = None) -> List[str]:
     prims = []
 
     if prim_path is None:
-        stage = omni.usd.get_context().get_stage()
+        stage = get_current_stage()
         prims = stage.Traverse()
     else:
         prims = prim_utils.get_all_matching_child_prims(prim_path, lambda prim: True)
@@ -150,7 +151,7 @@ def check_incorrect_semantics(prim_path: str = None) -> List[List[str]]:
     )
     incorrect_pairs = []
     if prim_path is None:
-        stage = omni.usd.get_context().get_stage()
+        stage = get_current_stage()
         prims = stage.Traverse()
     else:
         prims = prim_utils.get_all_matching_child_prims(prim_path, lambda prim: True)
@@ -189,7 +190,7 @@ def count_semantics_in_scene(prim_path: str = None) -> Dict[str, int]:
     )
     semantics_counter = {"missing": 0}
     if prim_path is None:
-        stage = omni.usd.get_context().get_stage()
+        stage = get_current_stage()
         prims = stage.Traverse()
     else:
         prims = prim_utils.get_all_matching_child_prims(prim_path, lambda prim: True)
@@ -287,7 +288,7 @@ def check_missing_labels(prim_path: str | None = None) -> list[str]:
         list[str]: Prim paths of meshes with no LabelsAPI applied.
     """
     prim_paths = []
-    stage = omni.usd.get_context().get_stage()
+    stage = get_current_stage()
     if stage is None:
         carb.log_warn("Invalid stage, skipping label check")
         return prim_paths
@@ -324,7 +325,7 @@ def check_incorrect_labels(prim_path: str | None = None) -> list[list[str]]:
         list[list[str]]: List containing pairs of [prim_path, first_incorrect_label].
     """
     incorrect_pairs = []
-    stage = omni.usd.get_context().get_stage()
+    stage = get_current_stage()
     if stage is None:
         carb.log_warn("Invalid stage, skipping label check")
         return incorrect_pairs
@@ -370,7 +371,7 @@ def count_labels_in_scene(prim_path: str | None = None) -> dict[str, int]:
                        Includes a 'missing_labels' count for meshes with no LabelsAPI.
     """
     labels_counter = {"missing_labels": 0}
-    stage = omni.usd.get_context().get_stage()
+    stage = get_current_stage()
     if stage is None:
         carb.log_warn("Invalid stage, skipping label check")
         return labels_counter

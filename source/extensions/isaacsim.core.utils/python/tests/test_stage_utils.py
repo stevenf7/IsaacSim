@@ -19,11 +19,12 @@ from isaacsim.core.utils.stage import (
     clear_stage,
     create_new_stage_async,
     get_current_stage,
+    get_current_stage_id,
     update_stage_async,
     use_stage,
 )
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, UsdUtils
 
 
 class TestStage(omni.kit.test.AsyncTestCase):
@@ -100,12 +101,16 @@ class TestStage(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         stage_in_memory = Usd.Stage.CreateInMemory()
         default_stage = omni.usd.get_context().get_stage()
+        default_stage_id = UsdUtils.StageCache.Get().GetId(default_stage).ToLongInt()
         self.assertIs(get_current_stage(), default_stage)
+        self.assertEqual(get_current_stage_id(), default_stage_id)
         # - USD stage
         with use_stage(stage_in_memory):
             self.assertIs(get_current_stage(), stage_in_memory)
             self.assertIsNot(get_current_stage(), default_stage)
+            self.assertNotEqual(get_current_stage_id(), default_stage_id)
         self.assertIs(get_current_stage(), default_stage)
+        self.assertEqual(get_current_stage_id(), default_stage_id)
         # - get Fabric stage
         with use_stage(stage_in_memory):
             self.assertIsInstance(get_current_stage(fabric=True), usdrt.Usd.Stage)

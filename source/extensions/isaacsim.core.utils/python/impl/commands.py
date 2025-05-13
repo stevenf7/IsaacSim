@@ -14,6 +14,7 @@ import carb
 import omni.kit.commands
 import omni.kit.utils
 from isaacsim.core.utils._isaac_utils import transforms
+from isaacsim.core.utils.stage import get_current_stage, get_current_stage_id
 from pxr import Sdf
 
 
@@ -41,7 +42,8 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
             if name != "self":
                 setattr(self, f"_{name}", value)
         pass
-        self._stage = omni.usd.get_context().get_stage()
+        self._stage = get_current_stage()
+        self._stage_id = get_current_stage_id()
         self._context = omni.usd.get_context()
         pass
 
@@ -50,7 +52,7 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         self._prim.GetReferences().AddReference(self._usd_path)
         if self._translation is not None and self._rotation is not None:
             transforms.set_transform(
-                self._context.get_stage_id(),
+                self._stage_id,
                 str(self._prim.GetPath()),
                 tuple(self._translation),
                 tuple(self._rotation),
@@ -82,14 +84,14 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
+        self._stage = get_current_stage()
+        self._stage_id = get_current_stage_id()
         self._context = omni.usd.get_context()
         pass
 
     def do(self) -> bool:
         if self._translation is not None and self._rotation is not None:
-            transforms.set_transform(
-                self._context.get_stage_id(), str(self._prim_path), self._translation, self._rotation
-            )
+            transforms.set_transform(self._stage_id, str(self._prim_path), self._translation, self._rotation)
         return True
         pass
 
@@ -115,12 +117,14 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
+        self._stage = get_current_stage()
+        self._stage_id = get_current_stage_id()
         self._context = omni.usd.get_context()
         pass
 
     def do(self) -> bool:
         if self._scale is not None:
-            transforms.set_scale(self._context.get_stage_id(), str(self._prim_path), self._scale)
+            transforms.set_scale(self._stage_id, str(self._prim_path), self._scale)
         return True
         pass
 

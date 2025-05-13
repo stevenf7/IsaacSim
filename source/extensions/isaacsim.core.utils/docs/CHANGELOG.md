@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.0] - 2025-05-12
+### Changed
+- Updated get stage calls to use stage_utils.get_current_stage()
+- Added get_current_stage_id()
 
 ## [3.1.2] - 2025-05-11
 ### Changed

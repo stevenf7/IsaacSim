@@ -11,6 +11,7 @@
 import typing
 from copy import copy
 
+from isaacsim.core.utils.stage import get_current_stage
 from omni.usd import get_context
 from pxr import PhysxSchema, Usd, UsdPhysics
 
@@ -69,7 +70,7 @@ def find_all_articulation_base_paths() -> typing.List:
     articulation_root_paths = []
     articulation_candidates = set()
 
-    stage = get_context().get_stage()
+    stage = get_current_stage()
 
     if not stage:
         return articulation_root_paths
