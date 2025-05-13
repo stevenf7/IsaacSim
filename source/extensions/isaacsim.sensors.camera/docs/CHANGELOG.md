@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.7] - 2025-05-12
+### Changed
+- Use pinhole model for camera class by default
+
 ## [1.0.6] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

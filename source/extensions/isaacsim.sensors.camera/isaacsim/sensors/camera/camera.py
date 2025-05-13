@@ -297,7 +297,6 @@ class Camera(BaseSensor):
         for property_name in properties:
             if self.prim.GetAttribute(property_name).Get() is None:
                 self.prim.CreateAttribute(property_name, Sdf.ValueTypeNames.Float)
-        self.set_lens_distortion_model(value="OmniLensDistortionFthetaAPI")
         self._current_frame = dict()
         # Initialize the first frame with the correct backend (warp or numpy)
         if self._annotator_device is None:

@@ -26,6 +26,7 @@ name = "isaacsim.util.merge_mesh.tests"
 dependencies = [
     "omni.kit.material.library",
     "omni.kit.primitive.mesh",
+    "omni.hydra.usdrt_delegate",
 ]
 args = [
     "--/app/asyncRendering=0",

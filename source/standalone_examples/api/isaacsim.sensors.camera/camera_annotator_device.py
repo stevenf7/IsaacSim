@@ -713,7 +713,7 @@ def test_current_frame_output(camera_default: Camera, camera_cpu: Camera, camera
     # Current frame from the default and cpu cameras should only have numpy arrays
     for key in current_frame_default.keys():
         data = current_frame_default[key]
-        if isinstance(data, dict):
+        if isinstance(data, dict) and "data" in data:
             data = data["data"]
         if key in annotators_with_cuda_support:
             print(f"With CUDA: {key}, value type: {type(data)}")
@@ -738,7 +738,7 @@ def test_current_frame_output(camera_default: Camera, camera_cpu: Camera, camera
     test_2_passed = True
     for key in current_frame_cpu.keys():
         data = current_frame_cpu[key]
-        if isinstance(data, dict):
+        if isinstance(data, dict) and "data" in data:
             data = data["data"]
         if key in annotators_with_cuda_support:
             print(f"With CUDA: {key}, value type: {type(data)}")
@@ -764,7 +764,7 @@ def test_current_frame_output(camera_default: Camera, camera_cpu: Camera, camera
     # Current frame from the cuda camera should have wp.arrays for cuda supported annotators and numpy arrays for the rest
     for key in current_frame_cuda.keys():
         data = current_frame_cuda[key]
-        if isinstance(data, dict):
+        if isinstance(data, dict) and "data" in data:
             data = data["data"]
         if key in annotators_with_cuda_support:
             print(f"With CUDA: {key}, value type: {type(data)}")
