@@ -148,13 +148,25 @@ files_exclude = [
     ["extsbuild/**"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
-    ["tests-external/**"],
     ["dockertests/**"],
+    ["tests-external/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.importer.onshape*"],
     ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
     ["**/.git/**"], # ISIM-1020
+    ["dev/**"],
+    ["omni.isaac.sim*"],
+    ["pull_kit_sdk*"],
+    ["run_all_*"],
+    ["compile_commands.json"],
+    # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
+    ["exts/*/pip_*/**/*.exe"],
+    ["extscache/*/pip_*/**/*.exe"],
+    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/*.exe"],
+    ["kit/python/lib/python3.11/site-packages/setuptools/*.exe"],
+    ["kit/python/lib/site-packages/pip/_vendor/distlib/*.exe"],
+    ["kit/python/lib/site-packages/setuptools/*.exe"],
 ]
 
 [isaac-sim-binaryscan.release]
@@ -165,11 +177,11 @@ files_exclude = [
     ["kit/**"],
     ["extscache/**"],
     ["extsbuild/**"],
-    ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/**"],
-    ["exts/omni.pip.cloud/pip_prebundle/**"],
-    ["exts/omni.pip.compute/pip_prebundle/**"],
+    # ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
+    # ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
+    # ["exts/omni.isaac.core_archive/pip_prebundle/**"],
+    # ["exts/omni.pip.cloud/pip_prebundle/**"],
+    # ["exts/omni.pip.compute/pip_prebundle/**"],
 ]
 
 [isaac-sim-binaryscan.linux-x86_64]
@@ -180,13 +192,13 @@ files_strip = [
     ["**/*.so"],
 ]
 
-files_strip_exclude = [
-    ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/**"],
-    ["exts/omni.pip.cloud/pip_prebundle/**"],
-    ["exts/omni.pip.compute/pip_prebundle/**"],
-]
+# files_strip_exclude = [
+#     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
+#     ["exts/omni.isaac.ml_archive/pip_prebundle/**"],
+#     ["exts/omni.isaac.core_archive/pip_prebundle/**"],
+#     ["exts/omni.pip.cloud/pip_prebundle/**"],
+#     ["exts/omni.pip.compute/pip_prebundle/**"],
+# ]
 
 [isaac-sim-binaryscan.windows-x86_64]
 files = [
