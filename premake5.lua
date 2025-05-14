@@ -6,7 +6,8 @@ root = repo_build.get_abs_path(".")
 
 -- Deprecated Extension Path
 deprecated_exts_path = "%{root}/_build/%{platform}/%{config}/extsDeprecated"
-
+-- extensions needed to build isaac sim
+isaac_sim_extsbuild_dir= "%{root}/_build/%{platform}/%{config}/extsbuild"
 -- Shared build scripts from repo_build package
 no_compile_commands_file = false
 
