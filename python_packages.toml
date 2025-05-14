@@ -489,6 +489,7 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.ros2.bridge",
+    "exts/isaacsim.ros2.sim_control",
     "exts/isaacsim.ros2.tf_viewer",
     "exts/isaacsim.ros2.urdf",
     # deprecated extensions
