@@ -1,4 +1,10 @@
 # Changelog
+
+## [3.1.0] - 2025-05-13
+### Changed
+- Added IsaacReadSimulationTimeAnnotator node
+- Added IsaacReadSystemTimeAnnotator node
+
 ## [3.0.2] - 2025-05-11
 ### Changed
 - Enable FSD in test settings

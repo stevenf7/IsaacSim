@@ -23,7 +23,7 @@
 //
 #include <omni/usd/UsdContext.h>
 
-#include <OgnIsaacReadSystemTimeDatabase.h>
+#include <OgnIsaacReadSystemTimeAnnotatorDatabase.h>
 
 namespace isaacsim
 {
@@ -32,18 +32,19 @@ namespace core
 namespace nodes
 {
 
-class OgnIsaacReadSystemTime
+class OgnIsaacReadSystemTimeAnnotator
 {
 public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
-        auto& state = OgnIsaacReadSystemTimeDatabase::sPerInstanceState<OgnIsaacReadSystemTime>(nodeObj, instanceId);
+        auto& state = OgnIsaacReadSystemTimeAnnotatorDatabase::sPerInstanceState<OgnIsaacReadSystemTimeAnnotator>(
+            nodeObj, instanceId);
         state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
     }
 
-    static bool compute(OgnIsaacReadSystemTimeDatabase& db)
+    static bool compute(OgnIsaacReadSystemTimeAnnotatorDatabase& db)
     {
-        auto& state = db.perInstanceState<OgnIsaacReadSystemTime>();
+        auto& state = db.perInstanceState<OgnIsaacReadSystemTimeAnnotator>();
 
         if (db.inputs.referenceTimeNumerator() > 0 || db.inputs.referenceTimeDenominator() > 0)
         {
@@ -54,6 +55,7 @@ public:
         {
             db.outputs.systemTime() = state.m_coreNodeFramework->getSystemTime();
         }
+        db.outputs.execOut() = ExecutionAttributeState::kExecutionAttributeStateEnabled;
         return true;
     }
 

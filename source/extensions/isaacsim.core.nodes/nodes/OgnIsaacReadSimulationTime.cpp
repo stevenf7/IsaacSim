@@ -71,7 +71,6 @@ public:
                 db.outputs.simulationTime() = state.m_coreNodeFramework->getSimTimeMonotonic();
             }
         }
-        db.outputs.execOut() = ExecutionAttributeState::kExecutionAttributeStateEnabled;
         return true;
     }
 
