@@ -58,8 +58,10 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     def _add_reference(self) -> Usd.Prim:
         """Adds a reference to the stage if a config is provided, and sets that prim's variant if provided. Otherwise, returns None."""
         if self._config:
+            found_config = False
             for config in self._supported_configs:
                 if os.path.splitext(os.path.basename(config))[0] == self._config:
+                    found_config = True
                     if config.endswith(".usd"):
                         prim_type = "Xform"
                     else:
@@ -81,6 +83,10 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
                                 f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
                             )
                     return prim
+            if not found_config:
+                carb.log_warn(
+                    f"Config '{self._config}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
+                )
         return None
 
     def _call_replicator_api(self) -> Usd.Prim:
@@ -91,6 +97,8 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
             euler_angles_as_vec = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
             euler_angles = (euler_angles_as_vec[0], euler_angles_as_vec[1], euler_angles_as_vec[2])
             # Construct prim
+            if self._prim_path.startswith("/"):
+                self._prim_path = self._prim_path[1:]
             return self._replicator_api(
                 position=position,
                 rotation=euler_angles,

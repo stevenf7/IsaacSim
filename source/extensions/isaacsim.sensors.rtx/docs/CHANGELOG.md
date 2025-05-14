@@ -1,4 +1,8 @@
 # Changelog
+## [15.0.1] - 2025-05-03
+### Added
+- Added SICK TiM 481 and Slamtec RPLIDAR S2E to test suite.
+
 ## [15.0.0] - 2025-05-03
 ### Added
 - Full support for OmniSensor prims

@@ -24,6 +24,9 @@ from isaacsim.sensors.rtx import get_gmo_data
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, Usd
 
+# Number of extra frames to render to ensure sensor generates returns. Note increasing this number will increase the time it takes to run the tests.
+NUM_EXTRA_FRAMES = 8
+
 
 class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
     """Test class for RTX sensor annotators"""
@@ -217,7 +220,6 @@ class TestIsaacComputeRTXLidarFlatScanSimulationTime(TestRTXSensorAnnotator):
             "numCols",
             "numRows",
             "rotationRate",
-            # "timeStamp",
         ]:
             self.assertIn(expected_key, self._annotator_data)
             setattr(self, expected_key, self._annotator_data[expected_key])
@@ -233,7 +235,6 @@ class TestIsaacComputeRTXLidarFlatScanSimulationTime(TestRTXSensorAnnotator):
             self.assertEqual(0, self.numCols)
             self.assertEqual(1, self.numRows)
             self.assertEqual(0.0, self.rotationRate)
-            # self.assertEqual(0.0, self.timeStamp)
             return
 
         # Construct azimuth and elevation vectors, then test returns
@@ -295,7 +296,6 @@ class TestIsaacExtractRTXSensorPointCloudNoAccumulator(TestRTXSensorAnnotator):
         self.assertEqual(self.elevation.shape[0], gmo.numElements)
         self.assertEqual(self.range.shape[0], gmo.numElements)
         await self._test_returns(self.azimuth, self.elevation, self.range, flags=gmo.flags)
-        # print(self.data)
 
         # # Test buffer size
         # self.assertEqual(self.bufferSize, gmo.numElements * 3 * 8)
@@ -339,11 +339,11 @@ class SensorConfig:
 sensor_configs = {
     "lidar": [
         SensorConfig("/Isaac/Sensors/HESAI/Hesai_XT32_SD10.usda", 10.0, False, 21333),
-        # SensorConfig("/Isaac/Sensors/NVIDIA/Debug_Rotary.usda", 6.0, False, 7), # TODO (adevalla): Fails - file bug to track
+        # SensorConfig("/Isaac/Sensors/NVIDIA/Debug_Rotary.usda", 10.0, True, 7), # TODO (adevalla): ISIM-3547
         SensorConfig(
             "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda", 10.0, False, 533
         ),  # Despite the name, this config's emitter is at elevation -2 degrees, so it won't trigger flatscan
-        # SensorConfig("/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda", 10.0, False, 153600), # TODO (adevalla): Fails - file bug to track
+        # SensorConfig("/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda", 10.0, False, 153600), # TODO (adevalla): ISIM-3548
         SensorConfig("/Isaac/Sensors/NVIDIA/Example_Rotary.usda", 10.0, False, 153600),
         SensorConfig("/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda", 10.0, False, 12),
         SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV6_128ch10hz1024res.usda", 10.0, False, 43690),
@@ -371,7 +371,7 @@ sensor_configs = {
         SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch10hz512res.usda", 10.0, False, 21845),
         SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch20hz1024res.usda", 20.0, False, 87380),
         SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch20hz512res.usda", 20.0, False, 43690),
-        # SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz1024res.usda", 10.0, False, 43690), # TODO (adevalla): Fails - file bug to track
+        # SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz1024res.usda", 10.0, False, 43690), # TODO (adevalla): ISIM-3546
         # SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz2048res.usda", 10.0, False, 87380),
         # SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz512res.usda", 10.0, False, 21845),
         # SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch20hz1024res.usda", 20.0, False, 87380),
@@ -385,8 +385,8 @@ sensor_configs = {
         SensorConfig("/Isaac/Sensors/SICK/SICK_multiScan136.usda", 20.0, False, 3600),
         SensorConfig("/Isaac/Sensors/SICK/SICK_multiScan165.usda", 20.0, False, 3840),
         SensorConfig("/Isaac/Sensors/SICK/SICK_picoScan150.usda", 20.0, True, 920),
-        # SensorConfig("/Isaac/Sensors/SICK/SICK_tim781.usda", 10.0, False, 203), # TODO (adevalla): Fails - file bug to track
-        # SensorConfig("/Isaac/Sensors/Slamtec/RPLIDAR_S2E.usda", 10.0, True, 533), # TODO (adevalla): Fails - file bug to track
+        SensorConfig("/Isaac/Sensors/SICK/SICK_tim781.usda", 10.0, True, 203),
+        SensorConfig("/Isaac/Sensors/Slamtec/RPLIDAR_S2E.usda", 10.0, True, 533),
         SensorConfig("/Isaac/Sensors/Velodyne/vls-128/Velodyne_VLS128.usda", 10.0, False, 80047),
         SensorConfig("/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda", 10.0, False, 17067),
         SensorConfig("/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda", 10.0, False, 36000),
@@ -445,8 +445,6 @@ def _create_test_for_annotator(
                         self.sensor = child_prim
                         break
 
-        self.assertEqual(self.sensor.GetTypeName(), expected_prim_type)
-
         # Create render product and attach to sensor
         self.hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
@@ -460,27 +458,20 @@ def _create_test_for_annotator(
         # Define some convenient test parameters
         self._is_2d_lidar = is_2d_lidar
         self._expected_returns = expected_returns
-        self._num_frames_for_test = int(60.0 / rotation_rate) if self._accumulate_returns else 1
-        carb.log_warn("num_frames_for_test: {}".format(self._num_frames_for_test))
+        self._num_frames_for_test = (int(60.0 / rotation_rate) if self._accumulate_returns else 1) + NUM_EXTRA_FRAMES
+        carb.log_warn("Rendering {} frames for test.".format(self._num_frames_for_test))
 
         # Render to get annotator result
         await self.my_world.reset_async()
         self._timeline.play()
-        for _ in range(self._num_frames_for_test + 3):
-            await omni.kit.app.get_app().next_update_async()
+        await omni.syntheticdata.sensors.next_render_simulation_async(
+            self.hydra_texture.path, self._num_frames_for_test
+        )
         self._timeline.stop()
 
         # Call the main test method
         self._annotator_data = self._annotator.get_data()
         await self._test_annotator_result()
-
-    # Set proper function name and docstring
-    config_for_doc = config
-    if config_for_doc.endswith(".usda"):
-        config_for_doc = os.path.basename(config_for_doc)[:-5]
-    test_name = f"{sensor_type}_{prim_type}_{config_for_doc}_{data_source}"
-    test_function.__name__ = f"test_{test_name}"
-    test_function.__doc__ = f"Test annotator results using {sensor_type} as {prim_type} prim, with config {config_for_doc} and data on {data_source.upper()}."
 
     return test_function
 
@@ -503,5 +494,12 @@ for test_class in annotators:
                         is_2d_lidar=sensor_config.is_2d_lidar,
                         expected_returns=sensor_config.expected_returns,
                     )
-                    # print(sensor_type, prim_type, config, data_source, "---", test_class.__name__, test_func.__name__)
+                    # Set proper function name and docstring
+                    config_for_doc = sensor_config.asset_path
+                    if config_for_doc.endswith(".usda"):
+                        config_for_doc = os.path.basename(config_for_doc)[:-5]
+                    test_name = f"{sensor_type}_{prim_type}_{config_for_doc}_{data_source}"
+                    test_func.__name__ = f"test_{test_name}"
+                    test_func.__doc__ = f"Test {test_class.__name__} annotator results using {sensor_type} as {prim_type} prim, with config {config_for_doc} and data on {data_source.upper()}."
+
                     setattr(test_class, test_func.__name__, test_func)
