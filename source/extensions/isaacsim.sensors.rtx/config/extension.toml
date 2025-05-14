@@ -1,5 +1,5 @@
 [package]
-version = "15.0.0"
+version = "15.0.1"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -87,6 +87,8 @@ exts."isaacsim.sensors.rtx".supportedLidarConfigs=[
     "/Isaac/Sensors/SICK/SICK_multiScan136.usda",
     "/Isaac/Sensors/SICK/SICK_multiScan165.usda",
     "/Isaac/Sensors/SICK/SICK_picoScan150.usda",
+    "/Isaac/Sensors/SICK/SICK_tim781.usda",
+    "/Isaac/Sensors/Slamtec/RPLIDAR_S2E.usda",
     "/Isaac/Sensors/Velodyne/vls-128/Velodyne_VLS128.usda",
     "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda",
     "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda",
