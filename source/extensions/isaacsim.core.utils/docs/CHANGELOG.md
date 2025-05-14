@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.1] - 2025-05-13
+### Fixed
+- Fixed usdrt API mixup in usd workflow. 
+
 ## [3.2.0] - 2025-05-12
 ### Changed
 - Updated get stage calls to use stage_utils.get_current_stage()
