@@ -1549,37 +1549,6 @@ publish-container:
     allow_failure: true
 
 # ==============================================================================================================
-publish-container-base:
-    extends:
-      - .deploy-common
-      - .omni_nvks_runner_with_docker
-    variables:
-        APP_NAME: "isaac-sim"
-        FAMILY_NAME: "base"
-    before_script:
-      - docker version
-      - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
-      - docker login nvcr.io
-    script:
-      - ./tools/container/publish_container-base.sh
-    needs:
-      - job: build-linux-x86_64-release
-        artifacts: true
-    retry:
-        max: 2
-        when:
-          - always
-    rules:
-      - if: $ALLOW_PUBLISH_CONTAINERS != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-        when: never
-    #   - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
-    allow_failure: true
-
-# ==============================================================================================================
 binaryscan-build-linux-x86_64-release:
     extends:
       - .build-common
@@ -1750,7 +1719,7 @@ publish-to-packman:
 # ==============================================================================================================
 
 .check_externals_base:
-  extends: 
+  extends:
     - .repo-artifacts
     - .check-common
   stage: check
