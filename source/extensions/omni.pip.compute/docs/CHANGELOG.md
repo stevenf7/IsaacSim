@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.6.0] - 2025-05-12
+### Changed
+- Added trimesh==4.5.1, rtree==1.3.0
+
 ## [1.5.4] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.2] - 2025-05-10
+### Added
+- SDG Grasping menu item in Replicator submenu
+
 ## [2.3.1] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
