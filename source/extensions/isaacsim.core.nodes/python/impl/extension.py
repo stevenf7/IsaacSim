@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
                     f"ReferenceTime", attributes_mapping={f"outputs:exec": "inputs:execIn"}
                 )
             ],
-            node_type_id="isaacsim.core.nodes.IsaacReadSimulationTime",
+            node_type_id="isaacsim.core.nodes.IsaacReadSimulationTimeAnnotator",
         )
         self.registered_annotators.append(annotator_name)
 
@@ -111,7 +111,7 @@ class Extension(omni.ext.IExt):
                     f"ReferenceTime", attributes_mapping={f"outputs:exec": "inputs:execIn"}
                 )
             ],
-            node_type_id="isaacsim.core.nodes.IsaacReadSystemTime",
+            node_type_id="isaacsim.core.nodes.IsaacReadSystemTimeAnnotator",
         )
         self.registered_annotators.append(annotator_name)
 
