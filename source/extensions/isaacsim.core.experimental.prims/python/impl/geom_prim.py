@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import carb
 import numpy as np
 import warp as wp
 from pxr import PhysxSchema, UsdGeom, UsdPhysics, UsdShade
@@ -27,6 +28,7 @@ class GeomPrim(XformPrim):
 
     Args:
         paths: Single path or list of paths to USD prims. Can include regular expressions for matching multiple prims.
+        resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         translations: Translations in the local frame (shape ``(N, 3)``).
@@ -61,6 +63,8 @@ class GeomPrim(XformPrim):
         self,
         paths: str | list[str],
         *,
+        # Prim
+        resolve_paths: bool = True,
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -70,8 +74,12 @@ class GeomPrim(XformPrim):
         # GeomPrim
         apply_collision_apis: bool = False,
     ) -> None:
+        # define properties
+        self._geoms = []
+        # initialize base class
         super().__init__(
             paths,
+            resolve_paths=resolve_paths,
             positions=positions,
             translations=translations,
             orientations=orientations,
@@ -79,7 +87,6 @@ class GeomPrim(XformPrim):
             reset_xform_op_properties=reset_xform_op_properties,
         )
         # get geometric primitives
-        self._geoms = []
         for prim in self.prims:
             # shapes
             if prim.IsA(UsdGeom.Capsule):
@@ -600,14 +607,14 @@ class GeomPrim(XformPrim):
 
         .. code-block:: python
 
-            >>> from isaacsim.core.api.materials import PhysicsMaterial
+            >>> from isaacsim.core.experimental.materials import RigidBodyMaterial
             >>>
-            >>> # create a rigid body physical material
-            >>> material = PhysicsMaterial(
-            ...     prim_path="/World/physics_material/aluminum",  # path to the material prim to create
-            ...     dynamic_friction=0.4,
-            ...     static_friction=1.1,
-            ...     restitution=0.1
+            >>> # create a rigid body physics material
+            >>> material = RigidBodyMaterial(
+            ...     "/World/physics_material/aluminum",
+            ...     static_frictions=[1.1],
+            ...     dynamic_frictions=[0.4],
+            ...     restitutions=[0.1],
             ... )
             >>>
             >>> # apply the material to all prims
@@ -633,7 +640,7 @@ class GeomPrim(XformPrim):
                 else UsdShade.Tokens.strongerThanDescendants
             )
             material_binding_api.Bind(
-                materials[0 if broadcast_materials else i].material,
+                materials[0 if broadcast_materials else i].materials[0],
                 bindingStrength=binding_strength,
                 materialPurpose="physics",
             )
@@ -660,20 +667,22 @@ class GeomPrim(XformPrim):
 
             >>> # get the applied material path of the first prim
             >>> physics_material = prims.get_applied_physics_materials(indices=[0])[0]
-            >>> physics_material.prim_path
+            >>> physics_material.prim_paths[0]
             '/World/physics_material/aluminum'
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
+        from isaacsim.core.experimental.materials import PhysicsMaterial  # defer imports to avoid circular dependencies
+
         indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
         materials = []
         for index in indices.numpy():
             material_binding_api = GeomPrim.ensure_api([self.prims[index]], UsdShade.MaterialBindingAPI)[0]
             material_path = str(material_binding_api.GetDirectBinding(materialPurpose="physics").GetMaterialPath())
+            material = None
             if material_path:
-                from isaacsim.core.api.materials.physics_material import PhysicsMaterial
-
-                materials.append(PhysicsMaterial(material_path))
-            else:
-                materials.append(None)
+                material = PhysicsMaterial.fetch_instances([material_path])[0]
+                if material is None:
+                    carb.log_warn(f"Unsupported physics material ({material_path}): {self.prim_paths[index]}")
+            materials.append(material)
         return materials

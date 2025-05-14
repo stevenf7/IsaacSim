@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import re
+from abc import ABC
 
 import isaacsim.core.utils.prims as prims_utils
 import warp as wp
@@ -29,7 +30,7 @@ _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID = (
 )
 
 
-class Prim:
+class Prim(ABC):
     """Base wrapper class to manage USD prims.
 
     Creates a wrapper over one or more USD prims in the stage.
@@ -70,10 +71,13 @@ class Prim:
         # get prims
         self._prims = [prims_utils.get_prim_at_path(prim_path) for prim_path in self._prim_paths]
         # register internal callbacks
-        self._callback_ids = [
-            SimulationManager.register_callback(self._on_physics_ready, event=IsaacEvents.PHYSICS_READY),
-            SimulationManager.register_callback(self._on_prim_deletion, event=IsaacEvents.PRIM_DELETION),
-        ]
+        self._callback_ids = getattr(self, "_callback_ids", [])  # avoid attribute overwriting in multiple inheritance
+        self._callback_ids.extend(
+            [
+                SimulationManager.register_callback(self._on_physics_ready, event=IsaacEvents.PHYSICS_READY),
+                SimulationManager.register_callback(self._on_prim_deletion, event=IsaacEvents.PRIM_DELETION),
+            ]
+        )
 
     def __del__(self) -> None:
         """Clean up instance by deregistering callbacks and resetting internal state."""

@@ -85,12 +85,12 @@ class TestOps(omni.kit.test.AsyncTestCase):
                         # - NumPy array
                         output = _ops.broadcast_to(x, shape=shape, dtype=dtype, device=device)
                         check_array(output, shape=shape, dtype=dtype, device=device)
-                        check_equal(output.numpy(), broadcasted)
+                        check_equal(broadcasted, output)
                         # - list
                         output = _ops.broadcast_to(x.tolist(), shape=shape, dtype=dtype, device=device)
                         check_array(output, shape=shape, dtype=dtype, device=device)
-                        check_equal(output.numpy(), broadcasted)
+                        check_equal(broadcasted, output)
                         # - Warp array
                         output = _ops.broadcast_to(wp.array(x), shape=shape, dtype=dtype, device=device)
                         check_array(output, shape=shape, dtype=dtype, device=device)
-                        check_equal(output.numpy(), broadcasted)
+                        check_equal(broadcasted, output)

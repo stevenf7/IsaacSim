@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2025-05-12
+### Changed
+- Update implementation to use experimental material API (visual and physics materials)
+
 ## [0.2.0] - 2025-04-29
 ### Added
 - Add support for articulation actuator modeling: advanced joint properties and drive envelope

@@ -39,6 +39,7 @@ class Articulation(XformPrim):
 
     Args:
         paths: Single path or list of paths to USD prims. Can include regular expressions for matching multiple prims.
+        resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         translations: Translations in the local frame (shape ``(N, 3)``).
@@ -83,6 +84,8 @@ class Articulation(XformPrim):
         self,
         paths: str | list[str],
         *,
+        # Prim
+        resolve_paths: bool = True,
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -92,17 +95,10 @@ class Articulation(XformPrim):
         # Articulation
         enable_residual_reports: bool = False,
     ) -> None:
+        # define properties
         paths = [paths] if isinstance(paths, str) else paths
         paths = [get_articulation_root_api_prim_path(path) for path in paths]
-        super().__init__(
-            paths,
-            positions=positions,
-            translations=translations,
-            orientations=orientations,
-            scales=scales,
-            reset_xform_op_properties=reset_xform_op_properties,
-        )
-        # default state properties
+        # - default state properties
         self._default_linear_velocities = None
         self._default_angular_velocities = None
         self._default_dof_positions = None
@@ -110,34 +106,45 @@ class Articulation(XformPrim):
         self._default_dof_efforts = None
         self._default_dof_stiffnesses = None
         self._default_dof_dampings = None
-        # initialize instance from arguments
-        self._enable_residual_reports = enable_residual_reports
-        if enable_residual_reports:
-            Articulation.ensure_api(self.prims, PhysxSchema.PhysxResidualReportingAPI)
-        # physics tensor entity properties
-        # - links
+        # - physics tensor entity properties
+        # -- links
         self._num_links = None
         self._link_names = None
         self._link_index_dict = None
         self._link_paths = None
-        # - joints
+        # -- joints
         self._num_joints = None
         self._joint_names = None
         self._joint_index_dict = None
         self._joint_paths = None
         self._joint_types = None
-        # - DOFs
+        # -- DOFs
         self._num_dofs = None
         self._dof_names = None
         self._dof_index_dict = None
         self._dof_paths = None
         self._dof_types = None
-        # - other properties
+        # -- other properties
         self._num_shapes = 0
         self._num_fixed_tendons = 0
-        # - articulation physics view
+        # -- articulation physics view
         self._physics_articulation_view = None
         self._physics_tensor_entity_initialized = False
+        # initialize base class
+        super().__init__(
+            paths,
+            resolve_paths=resolve_paths,
+            positions=positions,
+            translations=translations,
+            orientations=orientations,
+            scales=scales,
+            reset_xform_op_properties=reset_xform_op_properties,
+        )
+        # initialize instance from arguments
+        self._enable_residual_reports = enable_residual_reports
+        if enable_residual_reports:
+            Articulation.ensure_api(self.prims, PhysxSchema.PhysxResidualReportingAPI)
+        # setup subscriptions
         self._subscription_to_timeline_stop_event = (
             SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
                 int(omni.timeline.TimelineEventType.STOP),
@@ -436,7 +443,7 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> prims.num_shapes
-            25
+            29
         """
         assert self._physics_tensor_entity_initialized, _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED
         return self._num_shapes
@@ -4544,8 +4551,8 @@ class Articulation(XformPrim):
         """Handle physics ready event."""
         super()._on_physics_ready(event)
         physics_simulation_view = SimulationManager._physics_sim_view__warp
-        if physics_simulation_view is None:
-            carb.log_warn("Invalid physics simulation view")
+        if physics_simulation_view is None or not physics_simulation_view.is_valid:
+            carb.log_warn(f"Invalid physics simulation view. Articulation ({self._paths}) will not be initialized")
             return
         self._physics_articulation_view = physics_simulation_view.create_articulation_view(
             [path.replace(".*", "*") for path in self._paths]

@@ -75,6 +75,6 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
             stage_utils.add_reference_to_stage(
                 f"{assets_root_path}/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
                 prim_path=f"/World/prim_{i}",
-            )
+            ).GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
         # test case
         await self.assertDocTests(Articulation, stop_on_failure=False)

@@ -7,35 +7,146 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
+from typing import Callable, Literal
+
 import numpy as np
+import omni.kit.test
+import omni.usd
 import warp as wp
+from isaacsim.core.simulation_manager import SimulationManager
+
+
+def cprint(message):
+    if os.environ.get("ISAACSIM_TEST_VERBOSE", "0").lower() in ["1", "true", "yes"]:
+        print(message)
+
+
+def parametrize(
+    *,
+    devices: list[Literal["cpu", "cuda"]] = ["cpu", "cuda"],
+    backends: list[Literal["usd", "usdrt", "fabric", "tensor"]] = ["usd", "usdrt", "fabric", "tensor"],
+    instances: list[Literal["one", "many"]] = ["one", "many"],
+    operations: list[Literal["wrap", "create"]] = ["wrap", "create"],
+    prim_class: type,
+    prim_class_kwargs: dict = {},
+    populate_stage_func: Callable[[int, Literal["wrap", "create"]], None],
+    populate_stage_func_kwargs: dict = {},
+    max_num_prims: int = 5,
+):
+    def decorator(func):
+        async def wrapper(self):
+            for device in devices:
+                for backend in backends:
+                    for instance in instances:
+                        for operation in operations:
+                            assert backend in ["usd", "usdrt", "fabric", "tensor"], f"Invalid backend: {backend}"
+                            assert instance in ["one", "many"], f"Invalid instance: {instance}"
+                            assert operation in ["wrap", "create"], f"Invalid operation: {operation}"
+                            cprint(
+                                f"  |-- device: {device}, backend: {backend}, instance: {instance}, operation: {operation}"
+                            )
+                            # populate stage
+                            await populate_stage_func(max_num_prims, operation, **populate_stage_func_kwargs)
+                            # configure simulation manager
+                            SimulationManager.set_physics_sim_device(device)
+                            # parametrize test
+                            if operation == "wrap":
+                                paths = "/World/A_0" if instance == "one" else "/World/A_.*"
+                            elif operation == "create":
+                                paths = (
+                                    "/World/A_0"
+                                    if instance == "one"
+                                    else [f"/World/A_{i}" for i in range(max_num_prims)]
+                                )
+                            prim = prim_class(paths, **prim_class_kwargs)
+                            num_prims = 1 if instance == "one" else max_num_prims
+                            # call test method according to backend
+                            if backend == "tensor":
+                                omni.timeline.get_timeline_interface().play()
+                                await omni.kit.app.get_app().next_update_async()
+                                await func(self, prim=prim, num_prims=num_prims, device=device, backend=backend)
+                                omni.timeline.get_timeline_interface().stop()
+                            elif backend in ["usd", "usdrt", "fabric"]:
+                                await func(self, prim=prim, num_prims=num_prims, device=device, backend=backend)
+
+        return wrapper
+
+    return decorator
 
 
 def check_array(
-    x: wp.array,
+    a: wp.array | list[wp.array],
     shape: list[int] | None = None,
     dtype: type | None = None,
     device: str | wp.context.Device | None = None,
 ):
-    assert isinstance(x, wp.array), f"{repr(x)} ({type(x)}) is not a Warp array"
-    if shape is not None:
-        assert tuple(x.shape) == tuple(shape), f"Unexpected shape: expected {shape}, got {x.shape}"
-    if dtype is not None:
-        assert x.dtype == dtype, f"Unexpected dtype: expected {dtype}, got {x.dtype}"
-    if device is not None:
-        assert x.device == wp.get_device(device), f"Unexpected device: expected {device}, got {x.device}"
+    for i, x in enumerate(a if isinstance(a, (list, tuple)) else [a]):
+        assert isinstance(x, wp.array), f"[{i}]: {repr(x)} ({type(x)}) is not a Warp array"
+        if shape is not None:
+            assert tuple(x.shape) == tuple(shape), f"[{i}]: Unexpected shape: expected {shape}, got {x.shape}"
+        if dtype is not None:
+            assert x.dtype == dtype, f"[{i}]: Unexpected dtype: expected {dtype}, got {x.dtype}"
+        if device is not None:
+            assert x.device == wp.get_device(device), f"[{i}]: Unexpected device: expected {device}, got {x.device}"
 
 
-def check_equal(a: np.ndarray, b: np.ndarray, *, msg: str = ""):
-    assert a.shape == b.shape, f"Unexpected shape: expected {a.shape}, got {b.shape}\n{msg}"
-    assert (a == b).all(), f"Unexpected value:\nExpected\n{a}\nGot\n{b}\n{msg}"
+def check_lists(a: list, b: list, *, check_value: bool = True, check_type: bool = True, predicate: callable = None):
+    assert len(a) == len(b), f"Unexpected length: expected {len(a)}, got {len(b)}"
+    for x, y in zip(a, b):
+        if check_value:
+            if predicate is not None:
+                x = predicate(x)
+                y = predicate(y)
+            assert x == y, f"Unexpected value: expected {x}, got {y}"
+        if check_type:
+            assert type(x) == type(y), f"Unexpected type: expected {type(x)}, got {type(y)}"
 
 
-def check_allclose(a: np.ndarray, b: np.ndarray, *, rtol: float = 1e-03, atol: float = 1e-05, msg: str = ""):
-    assert a.shape == b.shape, f"Unexpected shape: expected {a.shape}, got {b.shape}\n{msg}"
-    assert np.allclose(
-        a, b, rtol=rtol, atol=atol
-    ), f"Unexpected value (within tolerance):\nExpected\n{a}\nGot\n{b}\n{msg}"
+def check_equal(
+    a: wp.array | np.ndarray | list[wp.array] | list[np.ndarray],
+    b: wp.array | np.ndarray | list[wp.array] | list[np.ndarray],
+    *,
+    given: list | None = None,
+):
+    msg = ""
+    a = a if isinstance(a, (list, tuple)) else [a]
+    b = b if isinstance(b, (list, tuple)) else [b]
+    assert len(a) == len(b), f"Unexpected (check) length: {len(a)} != {len(b)}"
+    for i, (x, y) in enumerate(zip(a, b)):
+        if isinstance(x, wp.array):
+            x = x.numpy()
+        if isinstance(y, wp.array):
+            y = y.numpy()
+        if given is not None:
+            msg = f"\nGiven ({type(given[i])})\n{given[i]}"
+        assert x.shape == y.shape, f"[{i}]: Unexpected shape: expected {x.shape}, got {y.shape}{msg}"
+        assert (x == y).all(), f"[{i}]: Unexpected value:\nExpected\n{x}\nGot\n{y}{msg}"
+
+
+def check_allclose(
+    a: wp.array | np.ndarray | list[wp.array] | list[np.ndarray],
+    b: wp.array | np.ndarray | list[wp.array] | list[np.ndarray],
+    *,
+    rtol: float = 1e-03,
+    atol: float = 1e-05,
+    given: list | None = None,
+):
+    msg = ""
+    a = a if isinstance(a, (list, tuple)) else [a]
+    b = b if isinstance(b, (list, tuple)) else [b]
+    assert len(a) == len(b), f"Unexpected (check) length: {len(a)} != {len(b)}"
+    for i, (x, y) in enumerate(zip(a, b)):
+        if isinstance(x, wp.array):
+            x = x.numpy()
+        if isinstance(y, wp.array):
+            y = y.numpy()
+        if given is not None:
+            msg = f"\nGiven ({type(given[i])})\n{given[i]}"
+        assert x.shape == y.shape, f"[{i}]: Unexpected shape: expected {x.shape}, got {y.shape}{msg}"
+        assert np.allclose(
+            x, y, rtol=rtol, atol=atol
+        ), f"[{i}]: Unexpected value (within tolerance):\nExpected\n{x}\nGot\n{y}{msg}"
 
 
 def draw_sample(
