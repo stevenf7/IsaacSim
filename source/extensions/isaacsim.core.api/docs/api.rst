@@ -13,6 +13,8 @@ Python API
     :nosignatures:
 
     ~controllers.ArticulationController
+    ~controllers.BaseController
+    ~controllers.BaseGripperController
 
 .. rubric:: loggers
 .. autosummary::
@@ -111,6 +113,18 @@ Controllers
 ^^^^^^^^^^^
 
 .. autoclass:: isaacsim.core.api.controllers.ArticulationController
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.core.api.controllers.BaseController
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.core.api.controllers.BaseGripperController
     :members:
     :undoc-members:
     :inherited-members:

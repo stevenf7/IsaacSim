@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.4.1] - 2025-05-14
+### Added
+- Add missing controller classes to API docs
+
 ## [4.4.0] - 2025-05-12
 ### Changed
 - Updated get stage calls to use stage_utils.get_current_stage()
