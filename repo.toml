@@ -47,7 +47,6 @@ linux_x86_64_cxx_abi=true
 
 fetch.packman_target_files_to_pull = [
   "${root}/deps/kit-sdk.packman.xml",
-  "${root}/deps/rtx-plugins.packman.xml",
   "${root}/deps/omni-physics.packman.xml",
   "${root}/deps/kit-sdk-deps.packman.xml",
   "${root}/deps/ext-deps.packman.xml",
@@ -206,7 +205,7 @@ links.exts.include = [
   "usdrt.scenegraph",
   "omni.graph.tools",
   "omni.kit.test",
-  "omni.kit.xr.core",
+  "isaacsim.util.debug_draw"
 ]
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
 

@@ -56,7 +56,6 @@ filter {}
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.asset.gen.omap.plugin")
 dependson { "isaacsim.asset.gen.omap.generator" }
-dependson { "isaacsim.util.debug_draw.primitive_drawing" }
 
 add_files("impl", "plugins")
 include_physx()
@@ -67,12 +66,13 @@ includedirs {
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
-    "%{root}/source/extensions/isaacsim.util.debug_draw/include",
+    extsbuild_dir .. "/isaacsim.util.debug_draw/include",
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
+    extsbuild_dir .. "/isaacsim.util.debug_draw/bin",
 }
 links { "isaacsim.util.debug_draw.primitive_drawing", "isaacsim.asset.gen.omap.generator", "omni.usd" }
 

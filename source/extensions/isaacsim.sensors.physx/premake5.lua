@@ -24,13 +24,14 @@ includedirs {
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/_build/target-deps/python/include",
     "%{root}/source/extensions/isaacsim.sensors.physx/include",
-    "%{root}/source/extensions/isaacsim.util.debug_draw/include",
+    extsbuild_dir .. "/isaacsim.util.debug_draw/include",
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
+    extsbuild_dir .. "/isaacsim.util.debug_draw/bin",
 }
 
 links {

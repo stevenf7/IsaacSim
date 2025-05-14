@@ -606,13 +606,8 @@ inventory.include = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.util.camera_inspector",
-    "exts/isaacsim.util.clash_detection",
-    "exts/isaacsim.util.debug_draw",
-    "exts/isaacsim.util.internal",
     "exts/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
-    # TODO: move to other package
-    "exts/isaacsim.xr.openxr",
     # deprecated extensions
     "extsDeprecated/omni.isaac.debug_draw",
     "extsDeprecated/omni.isaac.merge_mesh",

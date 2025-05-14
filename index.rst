@@ -170,7 +170,6 @@ Isaac Sim: Extensions API
    :caption: Extensions (Util)
 
    source/extensions/isaacsim.util.camera_inspector/docs/index
-   source/extensions/isaacsim.util.clash_detection/docs/index
 
    source/extensions/isaacsim.util.debug_draw/docs/index
    source/extensions/isaacsim.util.merge_mesh/docs/index
