@@ -55,7 +55,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 # USER ubuntu
 
 # FOR DEVELOPMENT #
-ENV OMNI_SERVER http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5
+ENV OMNI_SERVER http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0
 # # FOR PRODUCTION #
 # ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0
 
