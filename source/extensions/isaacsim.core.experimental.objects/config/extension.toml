@@ -1,0 +1,40 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Core (Objects)"
+description = "The Core Objects extension provides a set of APIs to create and/or wrap one or more USD objects in the stage..."
+authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.objects"
+keywords = ["isaacsim", "core", "objects"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.warp.core" = {}
+"omni.isaac.core_archive" = {}
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.utils" = {}
+"isaacsim.core.experimental.prims" = {}
+
+# define the Python module that the extension provides
+[[python.module]]
+name = "isaacsim.core.experimental.objects"
+
+# define the Python module for tests
+[[python.module]]
+name = "isaacsim.core.experimental.objects.tests"
+
+[[test]]
+timeout = 1000
+dependencies = [
+    "omni.kit.material.library",
+    "omni.kit.primitive.mesh",
+]
+pythonTests.include = ["isaacsim.core.experimental.objects.tests.*"]

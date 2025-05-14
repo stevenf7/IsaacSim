@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim Core (Prims)"
 description = "The Core Prims extension provides a set of APIs to wrap one or more USD prims in the stage in order to manipulate (read/write) their attributes and perform other operations during the simulation."
@@ -22,6 +22,7 @@ writeTarget.kit = true
 "isaacsim.core.utils" = {}
 "isaacsim.test.docstring" = {} # needed for tests to load in test runner
 "omni.isaac.core_archive" = {}
+"omni.hydra.usdrt_delegate" = {}
 "omni.physx.tensors" = {}
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
@@ -36,9 +37,7 @@ name = "isaacsim.core.experimental.prims.tests"
 [[test]]
 timeout = 1000
 dependencies = [
-    "isaacsim.core.api",  # for isaacsim.core.api.materials,
-    "omni.hydra.usdrt_delegate",
-    "omni.kit.material.library",
+    "isaacsim.core.experimental.materials",  # for visual/physics materials
 ]
 args = [
     "--/app/asyncRendering=0",

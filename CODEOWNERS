@@ -28,6 +28,8 @@ source/extensions/isaacsim.code_editor.vscode/ hmazhar@nvidia.com aserranomuno@n
 source/extensions/isaacsim.core.api/ hmazhar@nvidia.com aserranomuno@nvidia.com
 source/extensions/isaacsim.core.cloner/ hmazhar@nvidia.com aserranomuno@nvidia.com kellyg@nvidia.com
 source/extensions/isaacsim.core.deprecation_manager/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.experimental.materials/ hmazhar@nvidia.com aserranomuno@nvidia.com
+source/extensions/isaacsim.core.experimental.objects/ hmazhar@nvidia.com aserranomuno@nvidia.com
 source/extensions/isaacsim.core.experimental.prims/ hmazhar@nvidia.com aserranomuno@nvidia.com
 source/extensions/isaacsim.core.includes/ hmazhar@nvidia.com
 source/extensions/isaacsim.core.nodes/ hmazhar@nvidia.com ayushg@nvidia.com aserranomuno@nvidia.com

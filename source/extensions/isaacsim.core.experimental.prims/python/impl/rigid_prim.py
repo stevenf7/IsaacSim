@@ -20,7 +20,7 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.prims import get_prim_parent
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
-from . import _backend, _fabric, _ops
+from . import _backend, _ops
 from .prim import _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID, _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
@@ -38,6 +38,7 @@ class RigidPrim(XformPrim):
 
     Args:
         paths: Single path or list of paths to USD prims. Can include regular expressions for matching multiple prims.
+        resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         translations: Translations in the local frame (shape ``(N, 3)``).
@@ -79,6 +80,8 @@ class RigidPrim(XformPrim):
         self,
         paths: str | list[str],
         *,
+        # Prim
+        resolve_paths: bool = True,
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -89,26 +92,30 @@ class RigidPrim(XformPrim):
         masses: list | np.ndarray | wp.array | None = None,
         densities: list | np.ndarray | wp.array | None = None,
     ) -> None:
+        # define properties
+        # - default state properties
+        self._default_linear_velocities = None
+        self._default_angular_velocities = None
+        # - physics tensor entity properties
+        self._physics_rigid_body_view = None
+        # initialize base class
         super().__init__(
             paths,
+            resolve_paths=resolve_paths,
             positions=positions,
             translations=translations,
             orientations=orientations,
             scales=scales,
             reset_xform_op_properties=reset_xform_op_properties,
         )
-        # default state properties
-        self._default_linear_velocities = None
-        self._default_angular_velocities = None
+        # apply rigid body API
+        RigidPrim.ensure_api(self.prims, UsdPhysics.RigidBodyAPI)
         # initialize instance from arguments
         if masses is not None:
             self.set_masses(masses)
         if densities is not None:
             self.set_densities(densities)
-        # apply rigid body API
-        RigidPrim.ensure_api(self.prims, UsdPhysics.RigidBodyAPI)
-        # physics tensor entity properties
-        self._physics_rigid_body_view = None
+        # setup subscriptions
         self._subscription_to_timeline_stop_event = (
             SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
                 int(omni.timeline.TimelineEventType.STOP),
@@ -1408,7 +1415,7 @@ class RigidPrim(XformPrim):
         super()._on_physics_ready(event)
         # get physics simulation view
         physics_simulation_view = SimulationManager._physics_sim_view__warp
-        if physics_simulation_view is None:
+        if physics_simulation_view is None or not physics_simulation_view.is_valid:
             carb.log_warn(f"Invalid physics simulation view. RigidPrim ({self._paths}) will not be initialized")
             return
         # create rigid body view

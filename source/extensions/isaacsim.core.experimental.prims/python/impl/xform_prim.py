@@ -39,6 +39,7 @@ class XformPrim(Prim):
 
     Args:
         paths: Single path or list of paths to USD prims. Can include regular expressions for matching multiple prims.
+        resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         translations: Translations in the local frame (shape ``(N, 3)``).
@@ -73,23 +74,28 @@ class XformPrim(Prim):
         self,
         paths: str | list[str],
         *,
+        # Prim
+        resolve_paths: bool = True,
+        # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
     ) -> None:
-        super().__init__(paths)
-        self._non_root_articulation_link = is_prim_non_root_articulation_link(prim_path=self.prim_paths[0])
-        # default state properties
+        # define properties
+        # - default state properties
         self._default_positions = None
         self._default_orientations = None
-        # fabric properties
+        # - fabric properties
         self._fabric_data = {}
         self._fabric_stage = None
         self._fabric_hierarchy = None
         self._fabric_view_index_attr = None
+        # initialize base class
+        super().__init__(paths, resolve_paths=resolve_paths)
         # initialize instance from arguments
+        self._non_root_articulation_link = is_prim_non_root_articulation_link(prim_path=self.prim_paths[0])
         # - reset xformOp properties
         if not self._non_root_articulation_link:
             if reset_xform_op_properties:
@@ -329,16 +335,15 @@ class XformPrim(Prim):
 
         .. code-block:: python
 
-            >>> from isaacsim.core.api.materials import OmniGlass
+            >>> from isaacsim.core.experimental.materials import OmniGlassMaterial
             >>>
             >>> # create a dark-red glass visual material
-            >>> material = OmniGlass(
-            ...     prim_path="/World/material/glass",  # path to the material prim to create
-            ...     ior=1.25,
-            ...     depth=0.001,
-            ...     thin_walled=False,
-            ...     color=np.array([0.5, 0.0, 0.0])
-            ... )
+            >>> material = OmniGlassMaterial("/World/material/glass")
+            >>> material.set_input_values("glass_ior", [1.25])
+            >>> material.set_input_values("depth", [0.001])
+            >>> material.set_input_values("thin_walled", [False])
+            >>> material.set_input_values("glass_color", [0.5, 0.0, 0.0])
+            >>>
             >>> prims.apply_visual_materials(material)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
@@ -361,7 +366,7 @@ class XformPrim(Prim):
                 else UsdShade.Tokens.strongerThanDescendants
             )
             material_binding_api.Bind(
-                materials[0 if broadcast_materials else i].material, bindingStrength=binding_strength
+                materials[0 if broadcast_materials else i].materials[0], bindingStrength=binding_strength
             )
 
     def get_applied_visual_materials(
@@ -386,52 +391,23 @@ class XformPrim(Prim):
 
             >>> # get the applied visual material of the last wrapped prim
             >>> prims.get_applied_visual_materials(indices=[2])[0]
-            <isaacsim.core.api.materials.omni_glass.OmniGlass object at 0x...>
+            <isaacsim.core.experimental.materials.impl.visual_materials.omni_glass.OmniGlassMaterial object at 0x...>
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
+        from isaacsim.core.experimental.materials import VisualMaterial  # defer imports to avoid circular dependencies
+
         indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
         materials = []
         for index in indices.numpy():
             material_binding_api = XformPrim.ensure_api([self.prims[index]], UsdShade.MaterialBindingAPI)[0]
             material_path = str(material_binding_api.GetDirectBinding().GetMaterialPath())
-            if not material_path:
-                materials.append(None)
-                continue
-            stage = get_current_stage()
-            material = UsdShade.Material(stage.GetPrimAtPath(material_path))
-            # get material shader
-            shader = None
-            surface_source = material.ComputeSurfaceSource()
-            if surface_source[0].GetPath():
-                shader = surface_source[0]
-            else:
-                for item in ["shader", "Shader"]:
-                    shader_path = f"{material_path}/{item}"
-                    if is_prim_path_valid(shader_path):
-                        shader = UsdShade.Shader(get_prim_at_path(shader_path))
-            if shader is None:
-                carb.log_warn(f"Unsupported visual material shader: {self.prim_paths[index]}")
-                materials.append(None)
-                continue
-            # get material
-            implementation_source = shader.GetImplementationSource()
-            asset_sub_identifier = shader.GetPrim().GetAttribute("info:mdl:sourceAsset:subIdentifier").Get()
-            if implementation_source == "id" and shader.GetShaderId() == "UsdPreviewSurface":
-                from isaacsim.core.api.materials.preview_surface import PreviewSurface
-
-                materials.append(PreviewSurface(material_path, shader=shader))
-            elif asset_sub_identifier == "OmniGlass":
-                from isaacsim.core.api.materials.omni_glass import OmniGlass
-
-                materials.append(OmniGlass(material_path, shader=shader))
-            elif asset_sub_identifier == "OmniPBR":
-                from isaacsim.core.api.materials.omni_pbr import OmniPBR
-
-                materials.append(OmniPBR(material_path, shader=shader))
-            else:
-                carb.log_warn(f"Unsupported visual material ({material_path}): {self.prim_paths[index]}")
-                materials.append(None)
+            material = None
+            if material_path:
+                material = VisualMaterial.fetch_instances([material_path])[0]
+                if material is None:
+                    carb.log_warn(f"Unsupported visual material ({material_path}): {self.prim_paths[index]}")
+            materials.append(material)
         return materials
 
     def get_world_poses(self, *, indices: list | np.ndarray | wp.array | None = None) -> tuple[wp.array, wp.array]:
