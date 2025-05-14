@@ -1,10 +1,10 @@
 <project toolsVersion="5.6">
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
-        <package name="nv_ros2" version="humble_py_3.11_20250304_cdc9364-linux-x86_64_release" platforms="manylinux_2_35_x86_64"/>
+        <package name="nv_ros2" version="humble_py_3.11_20250406_5e0d59e-linux-x86_64_release" platforms="manylinux_2_35_x86_64"/>
         <package name="nv_ros2" version="humble_py_3.11_20250305_9e7d7e8_windows-x86_64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="nv_ros2_jazzy" linkPath="../_build/target-deps/nv_ros2_jazzy">
-        <package name="nv_ros2" version="jazzy_py_3.11_20250304_cdc9364-linux-x86_64_release" platforms="manylinux_2_35_x86_64"/>
+        <package name="nv_ros2" version="jazzy_py_3.11_20250406_5e0d59e-linux-x86_64_release" platforms="manylinux_2_35_x86_64"/>
         <package name="nv_ros2" version="jazzy_py_3.11_20250304_9e7d7e8_windows-x86_64_release.7z" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
