@@ -17,7 +17,9 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import imageio
         import pyyaml
         import scipy
+        import trimesh
 
         self.assertIsNotNone(imageio)
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(pyyaml)
+        self.assertIsNotNone(trimesh)

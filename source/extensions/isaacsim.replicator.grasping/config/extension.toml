@@ -1,0 +1,29 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Replicator Grasping Workflow"
+description = "Synthetic data generation workflow for grasping scenarios"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.grasping"
+keywords = ["isaac", "grasping", "replicator", "sdg"]
+changelog = "docs/CHANGELOG.md"
+readme  = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+[dependencies]
+"omni.physx" = {}
+"omni.pip.compute" = {}
+"omni.usd" = {}
+
+[[python.module]]
+name = "isaacsim.replicator.grasping"
+
+[[test]]
+dependencies = [
+    "omni.kit.primitive.mesh",
+]

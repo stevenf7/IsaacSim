@@ -60,6 +60,8 @@ class ToolsMenuExtension:
                             MenuLayout.Item("Calibration Tool"),
                             MenuLayout.Item("Command Injection"),
                             MenuLayout.Item("Custom Command"),
+                            MenuLayout.Seperator("Grasping"),
+                            MenuLayout.Item(name="Grasping", source="Replicator/Grasping"),
                         ],
                     ),
                     MenuLayout.SubMenu(
