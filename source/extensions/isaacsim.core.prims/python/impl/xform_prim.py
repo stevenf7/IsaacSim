@@ -703,7 +703,7 @@ class XFormPrim(Prim):
                 indices = self._backend_utils.to_list(indices)
                 write_idx = 0
                 for i in indices:
-                    positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i])
+                    positions[write_idx], orientations[write_idx] = get_world_pose(self._prim_paths[i], fabric=False)
                     write_idx += 1
                 positions = self._backend_utils.convert(positions, device=self._device, dtype="float32", indexed=True)
                 orientations = self._backend_utils.convert(
