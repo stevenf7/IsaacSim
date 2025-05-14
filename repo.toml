@@ -424,6 +424,7 @@ doxygen_input = [
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ScopedCudaDevice.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ScopedTimer.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Transforms.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/UsdNoticeListener.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/UsdUtilities.h",
   "source/extensions/isaacsim.core.nodes/include/isaacsim/core/nodes/ICoreNodes.h",
   "source/extensions/isaacsim.core.simulation_manager/include/isaacsim/core/simulation_manager/ISimulationManager.h",
