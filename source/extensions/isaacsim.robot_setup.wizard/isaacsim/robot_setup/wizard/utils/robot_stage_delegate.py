@@ -14,6 +14,7 @@ class RobotContextMenu(ContextMenu):
         if event.type != int(omni.kit.menu.core.MenuEventType.ACTIVATE):
             return
 
+        print("on_mouse_event")
         try:
             import omni.kit.context_menu
         except ModuleNotFoundError:
@@ -66,7 +67,7 @@ class RobotContextMenu(ContextMenu):
         # setup menu
         menu_dict = [
             {
-                "name": "Use as Reference to Align Parent Link",
+                "name": "Mark as Reference to Align Parent Link",
                 "glyph": "menu_rename.svg",
                 "show_fn": [self._can_align_parent_link_origin, self._is_prim_selected, self.is_one_prim_selected],
                 "onclick_fn": self._align_parent_link_origin,
@@ -164,18 +165,30 @@ class RobotContextMenu(ContextMenu):
         Delete prims
 
         Args:
-            objects: context_menu data
-            destructive: If it's true, it will remove all corresponding prims in all layers.
-                         Otherwise, it will deactivate the prim in current edit target if its def is not in the current edit target.
-                         By default, it will be non-destructive.
+            remove the prim from the robot_temp_stage, and mark the prim to delete during reorg
         """
+        # remove the prim from the robot_temp_stage
         prims = objects.get("prim_list", [])
         stage = objects["stage"]
         if prims:
             for prim in prims:
                 prim_path = prim.GetPath()
                 stage.RemovePrim(prim_path)
-                omni.kit.commands.execute("DeletePrims", paths=[prim_path])
+
+        # marking it to be deleted during reorg
+        registered_robot = RobotRegistry().get()
+        if registered_robot is None:
+            return False
+        to_delete_prim_path = objects["prim_list"][0].GetPath().pathString
+        # if registered_robot already has reference mesh property, get it, otherwise,= add_property
+        if not hasattr(registered_robot, "delete_prim_paths"):
+            registered_robot.add_property(registered_robot.__class__, "delete_prim_paths", [])
+
+        delete_prim_paths = registered_robot.delete_prim_paths
+        delete_prim_paths.append(to_delete_prim_path)
+        registered_robot.delete_prim_paths = delete_prim_paths
+
+        return True
 
 
 class RobotStageDelegate(StageDelegate):

@@ -5,7 +5,7 @@ order = 0
 
 # https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html#package-section
 [package]
-version = "0.0.1"
+version = "0.0.2"
 category = "other"
 title = "Isaac Sim Robot Wizard [Beta]"
 description = "Wizard to guide through robot import and configuration"

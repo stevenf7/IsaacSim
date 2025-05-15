@@ -5,9 +5,9 @@ Backend of "Add Joints and Drives"
 
 import omni.usd
 import usd.schema.isaac.robot_schema as rs
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import PhysxSchema, UsdPhysics
 
-JOINT_TYPES = ["Prismatic", "Revolute"]  ## TODO: future suppor:  "Fixed", "Spherical", "D6", "Mimic"
+JOINT_TYPES = ["Prismatic", "Revolute", "Fixed"]  ## TODO: future suppor:  "Spherical", "D6", "Mimic"
 DRIVE_TYPES = ["force", "acceleration"]
 ACTUATOR_TYPES = ["linear", "angular"]
 AXIS_LIST = ["X", "Y", "Z"]
@@ -23,6 +23,8 @@ def get_joint_handle(joint_prim):
         joint_handle = UsdPhysics.PrismaticJoint.Get(stage, joint_path)
     elif joint_prim.GetTypeName() == "PhysicsRevoluteJoint":
         joint_handle = UsdPhysics.RevoluteJoint.Get(stage, joint_path)
+    elif joint_prim.GetTypeName() == "PhysicsFixedJoint":
+        joint_handle = UsdPhysics.FixedJoint.Get(stage, joint_path)
     elif joint_prim.GetTypeName() == "PhysicsSphericalJoint":
         joint_handle = UsdPhysics.SphericalJoint.Get(stage, joint_path)
     elif joint_prim.GetTypeName() == "PhysicsD6Joint":
@@ -50,7 +52,6 @@ def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
 
     stage = omni.usd.get_context().get_stage()
     if not stage:
-        print("stage not found")
         return
 
     joint_prim = stage.GetPrimAtPath(joint_path)
@@ -61,7 +62,6 @@ def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
         # if the joint type is different, delete the old one and create a new one
         prim_type_to_joint_type = f"Physics{joint_type}Joint"
         if prim_type_to_joint_type != joint_prim.GetTypeName():
-            print("joint already exists but not the right type, deleting it")
             stage.RemovePrim(joint_path)
             joint_prim = None
         else:
@@ -82,7 +82,6 @@ def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
 
     # (not elif, because the joint might get deleted above)
     if not joint_prim:
-        print("joint does not exist, creating it")
         # define the joint
         if joint_type == "Prismatic":
             joint_handle = UsdPhysics.PrismaticJoint.Define(stage, joint_path)
@@ -107,14 +106,16 @@ def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
     # set rest of the joint settings
     joint_prim = stage.GetPrimAtPath(joint_path)
     if not joint_prim.GetTypeName() == "PhysicsFixedJoint":
+        # fixed joints doesn't have axis attribute
         if joint_prim.HasAttribute("physics:axis"):
             joint_handle.GetAxisAttr().Set(axis)
         else:
             joint_handle.CreateAxisAttr(axis)
-    if joint_prim.HasAttribute("physics:body0"):
-        joint_handle.GetBody0Rel().SetTargets([f"{parent}"])
-    else:
-        joint_handle.CreateBody0Rel().SetTargets([f"{parent}"])
+        # fixed joints doesn't need a parent body
+        if joint_prim.HasAttribute("physics:body0"):
+            joint_handle.GetBody0Rel().SetTargets([f"{parent}"])
+        else:
+            joint_handle.CreateBody0Rel().SetTargets([f"{parent}"])
     if joint_prim.HasAttribute("physics:body1"):
         joint_handle.GetBody1Rel().SetTargets([f"{child}"])
     else:
@@ -127,7 +128,6 @@ def apply_joint_settings(joint_path, **kwargs):
     """
     apply the joint settings to the joint
     """
-
     stage = omni.usd.get_context().get_stage()
     joint_prim = stage.GetPrimAtPath(joint_path)
     if not joint_prim or not stage:
@@ -182,7 +182,6 @@ def apply_drive_settings(joint_path, **kwargs):
     joint_handle = get_joint_handle(joint_prim)
 
     if not joint_handle:
-        print("joint is not defined")
         return
 
     drive_type = kwargs.get("drive_type", None)
@@ -277,29 +276,13 @@ def get_all_settings(joint_path):
     return settings_dict
 
 
-def apply_joint_apis(robot_path, articulation_root_path):
+def apply_joint_apis(robot_path):
     """
     apply the apis to the joint (joint state, robot joint, articulation root)
     """
     stage = omni.usd.get_context().get_stage()
     robot_prim = stage.GetPrimAtPath(robot_path)
     robot_name = robot_prim.GetName()
-    # if articulation root not given, use the parent robot prim
-    if articulation_root_path == "Pick from the Robot":
-        articulation_prim = stage.GetPrimAtPath(f"/{robot_name}")
-    # make sure there isn't already an articulation root on stage, if there is, delete it if it's not on the prim desired
-    articulation_prim = stage.GetPrimAtPath(articulation_root_path)
-
-    def remove_articulation_root_recursive(prim):
-        if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-            prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
-        for child in prim.GetChildren():
-            remove_articulation_root_recursive(child)
-
-    # delete any previous articulation root prim that might be on the robot
-    remove_articulation_root_recursive(robot_prim)
-    UsdPhysics.ArticulationRootAPI.Apply(articulation_prim)
-
     # joint state api on every joint and
     joint_scope_prim = stage.GetPrimAtPath(f"/{robot_name}/Joints")
     robot_joints = robot_prim.GetRelationship(rs.Relations.ROBOT_JOINTS.name)
@@ -321,17 +304,3 @@ def apply_joint_apis(robot_path, articulation_root_path):
             continue
 
         PhysxSchema.JointStateAPI.Apply(joint_prim, actuator_type)
-
-
-def joint_cleanup(robot_prim):
-    """
-    if there are joints on stage that's not on the table (i.e. name changed or removed), delete them
-    """
-    # get all the joints on stage
-    robot_name = robot_prim.GetName()
-    stage = omni.usd.get_context().get_stage()
-    joints_scope_path = f"/{robot_name}/Joints"
-    joints_scope_prim = stage.GetPrimAtPath(joints_scope_path)
-    for joint_prim in joints_scope_prim.GetChildren():
-        if joint_prim.GetName() not in self.joint_names:
-            stage.RemovePrim(joint_prim.GetPath())

@@ -107,7 +107,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.robot_setup.assembler/docs/index
    source/extensions/isaacsim.robot_setup.gain_tuner/docs/index
    source/extensions/isaacsim.robot_setup.grasp_editor/docs/index
-   source/extensions/isaacsim.robot_setup.import_wizard/docs/index
+   source/extensions/isaacsim.robot_setup.wizard/docs/index
    source/extensions/isaacsim.robot_setup.xrdf_editor/docs/index
 
 .. toctree::

@@ -6,6 +6,7 @@ import omni.kit.app
 import omni.ui as ui
 
 from ..builders.robot_templates import *
+from ..progress import ProgressColorState, ProgressRegistry
 from ..utils.robot_asset_picker import RobotAssetPicker
 from ..utils.ui_utils import (
     ButtonWithIcon,
