@@ -311,7 +311,7 @@ class AddColliders:
         self._treeview_empty_page = None
         self.__subscription = None
         self._next_step_button = None
-        self._treeview_intital_height = 200
+        self._treeview_initial_height = 200
         self.frame = ui.Frame(visible=visible)
         self.frame.set_build_fn(self._build_frame)
         self._collider_model = None
@@ -357,14 +357,10 @@ class AddColliders:
                                     self._search = SearchField(on_search_fn=self._filter_by_text)
                                     # Filter button
                                     self._filter_button = FilterButton([], width=20)
-                                    # self._build_options_button()
                                 ui.Spacer(height=4)
                                 self._build_tree_view()
                                 ui.Spacer(height=4)
                             ui.Spacer(width=2)
-                    ButtonWithIcon(
-                        "Add Colliders", name="add", height=44, image_width=14, clicked_fn=self.add_colliders
-                    )
 
                     ui.Spacer(height=10)
                     separator("Next: Add Joints and Drivers")
@@ -373,43 +369,33 @@ class AddColliders:
                         "Add Joints and Drivers",
                         name="next",
                         clicked_fn=lambda: next_step(
-                            "Add Colliders", "Add Joints & Drivers", verify_fn=self._update_collider_model
+                            "Add Colliders", "Add Joints & Drivers", verify_fn=self._add_colliders
                         ),
                         height=44,
                         image_width=18,
-                        enabled=self._collider_model._searchable_num > 0,
+                        enabled=True,
                     )
 
     def _filter_by_text(self, filters):
         if self._collider_model:
             self._collider_model.filter_by_text(filters)
 
-    def _build_options_button(self):
-        option_items = [
-            OptionItem("First Option"),
-            OptionItem("Second Option"),
-            OptionItem("Third Option"),
-            OptionItem("More Options"),
-        ]
-        self._option_button = OptionsButton(option_items, width=20)
-
     def set_visible(self, visible):
         if self.frame:
-            self.frame.visible = visible
             if visible:
                 self._preprocess_page()
+            self.frame.visible = visible
 
     def _preprocess_page(self):
+        # get the colliders from the robot on stage
         self._robot = RobotRegistry().get()
-        if not self._robot:
-            return
-        # get the colliders from the robot
         stage = omni.usd.get_context().get_stage()
-
-        if not self._collider_model:
-            self._collider_model = ColliderModel([])
+        if not stage or not self._robot:
+            return
 
         def __recursively_find_mesh(prim, collider_model: ColliderModel) -> ColliderModel:
+            if not prim:
+                return
             children = prim.GetChildren()
             if children:
                 for child in children:
@@ -417,14 +403,20 @@ class AddColliders:
             else:
                 collider_name = "/".join(prim.GetPath().pathString.split("/")[2:])
                 if prim.GetTypeName() in MESH_TYPES:
+                    print(f"adding collider: {collider_name}")
                     collider_model.add_item(ColliderItem(collider_name, prim.GetTypeName()))
 
             return collider_model
 
-        mesh_scope_prim = stage.GetPrimAtPath("/colliders")
-        __recursively_find_mesh(mesh_scope_prim, self._collider_model)
+        if not self._collider_model:
+            self._collider_model = ColliderModel([])
 
-    def _update_collider_model(self):
+        mesh_scope_prim = stage.GetPrimAtPath("/colliders")
+        updated_collider_model = __recursively_find_mesh(mesh_scope_prim, self._collider_model)
+        self._collider_model = updated_collider_model
+        print(f"updated_collider_model: {self._collider_model}")
+
+    def _add_colliders(self):
         """
         the actual applying collider part. get the links from the table and add colliders accordingly
         """
@@ -447,17 +439,15 @@ class AddColliders:
         # Check if there are items in the model
         if self._collider_model._searchable_num > 0:
             # Enable the next step button if there are items
-            if not self._next_step_button.enabled:
-                self._next_step_button.enabled = True
+            self._next_step_button.enabled = True
             # Hide the empty page if there are items
-            if self._treeview_empty_page and self._treeview_empty_page.visible:
+            if self._treeview_empty_page.visible:
                 self._treeview_empty_page.visible = False
-        else:
+        elif self._collider_model._searchable_num == 0:
             # Disable the next step button if there are no items
-            if self._next_step_button.enabled:
-                self._next_step_button.enabled = False
+            self._next_step_button.enabled = False
             # Show the empty page if there are no items
-            if self._treeview_empty_page and not self._treeview_empty_page.visible:
+            if not self._treeview_empty_page.visible:
                 self._treeview_empty_page.visible = True
 
         # Update the id_column delegate based on the number of items
@@ -469,7 +459,7 @@ class AddColliders:
             self.id_column.remove_item()
 
     def treeview_empty_page(self):
-        self._treeview_empty_page = ui.VStack(visible=True, height=self._treeview_intital_height)
+        self._treeview_empty_page = ui.VStack(visible=True, height=self._treeview_initial_height)
         with self._treeview_empty_page:
             ui.Spacer(height=ui.Fraction(3))
             ui.Label("Collider list is empty", alignment=ui.Alignment.CENTER, name="empty_treeview_title")
@@ -479,13 +469,12 @@ class AddColliders:
             ui.Label("Click the 'Add Colliders' button", alignment=ui.Alignment.CENTER)
             ui.Label("to begin the collider creation process", alignment=ui.Alignment.CENTER)
             ui.Spacer(height=ui.Fraction(2))
-        ## TODO: shouldn't need this if the models are added and removed in a way that triggers _model_changed
-        if self._collider_model:
-            self._treeview_empty_page.visible = False
+
+        self._treeview_empty_page.visible = bool(self._collider_model._searchable_num == 0)
 
     def _build_tree_view(self):
         with ui.ZStack():
-            scrolling_frame = ui.ScrollingFrame(name="treeview", height=self._treeview_intital_height)
+            scrolling_frame = ui.ScrollingFrame(name="treeview", height=self._treeview_initial_height)
             with scrolling_frame:
                 if not self._collider_model:
                     self._collider_model = ColliderModel([])
@@ -505,7 +494,7 @@ class AddColliders:
                             column_widths=[25, ui.Fraction(1), ui.Fraction(1), 25],
                         )
                         self.treeview_empty_page()
-            placer = ui.Placer(drag_axis=ui.Axis.Y, offset_y=self._treeview_intital_height, draggable=True)
+            placer = ui.Placer(drag_axis=ui.Axis.Y, offset_y=self._treeview_initial_height, draggable=True)
             with placer:
                 with ui.ZStack(height=4):
                     splitter_highlight = ui.Rectangle(name="splitter_highlight")

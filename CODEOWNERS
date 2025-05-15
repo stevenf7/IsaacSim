@@ -70,7 +70,7 @@ source/extensions/isaacsim.robot_motion.motion_generation/ hmazhar@nvidia.com
 source/extensions/isaacsim.robot_setup.assembler/ hmazhar@nvidia.com qwan@nvidia.com arudich@nvidia.com
 source/extensions/isaacsim.robot_setup.gain_tuner/ hmazhar@nvidia.com qwan@nvidia.com rgasoto@nvidia.com
 source/extensions/isaacsim.robot_setup.grasp_editor/ hmazhar@nvidia.com qwan@nvidia.com rgasoto@nvidia.com
-source/extensions/isaacsim.robot_setup.import_wizard/ hmazhar@nvidia.com qwan@nvidia.com
+source/extensions/isaacsim.robot_setup.wizard/ hmazhar@nvidia.com qwan@nvidia.com
 source/extensions/isaacsim.robot_setup.xrdf_editor/ hmazhar@nvidia.com arudich@nvidia.com
 source/extensions/isaacsim.ros2.bridge/ hmazhar@nvidia.com ayushg@nvidia.com
 source/extensions/isaacsim.ros2.tf_viewer/ hmazhar@nvidia.com aserranomuno@nvidia.com

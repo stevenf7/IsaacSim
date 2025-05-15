@@ -1121,7 +1121,6 @@ excluded_extensions = [
     "omni.isaac.franka",
     "omni.isaac.gain_tuner",
     "omni.isaac.grasp_editor",
-    "omni.isaac.import_wizard",
     "omni.isaac.jupyter_notebook",
     "omni.isaac.kit",
     "omni.isaac.lula",

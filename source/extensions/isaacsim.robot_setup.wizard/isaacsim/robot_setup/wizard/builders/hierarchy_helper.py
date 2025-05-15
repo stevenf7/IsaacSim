@@ -32,7 +32,7 @@ JOINT_PRIM_TYPES = [
 ]
 
 
-def apply_hierarchy(lookup_table, reference_mesh):
+def apply_hierarchy(lookup_table, reference_mesh, delete_prim_paths):
     """
     lookup_table is a dictionary of old paths and new paths
     """
@@ -88,13 +88,13 @@ def apply_hierarchy(lookup_table, reference_mesh):
     robot_prim = robot_stage.GetPrimAtPath(f"/{robot_name}")
     process_mesh(robot_stage, robot_prim, reference_mesh)
 
-    # apply the apis
+    # # apply the apis
     apply_apis()
 
-    # clean up the transforms, so that scales are in the meshes folder, and any translation and rotation happens on the robot link level.
-    cleanup_xforms()
+    # # # clean up the transforms, so that scales and relative transforms (to the link) are in the meshes folder, and any link-level translation and rotation happens on the robot link level.
+    cleanup_xforms(delete_prim_paths)
 
-    # apply the physics layer
+    # # # apply the physics layer
     create_physics_variant()
 
 
@@ -225,7 +225,7 @@ def process_mesh(stage, robot_prim, reference_mesh):
                     reference_mesh_local_prim = child
                     break
         ## Step 2:
-        ## align the link xform to the reference mesh xform
+        ## align the link xform to the reference mesh xform, (also relocating all the children of the link relative to the reference mesh origin)
         if reference_mesh_local_prim:
             reference_mesh_local_path = reference_mesh_local_prim.GetPath().pathString
             relocate_parent_to_child_origin(link_path, reference_mesh_local_path)
@@ -244,8 +244,12 @@ def process_mesh(stage, robot_prim, reference_mesh):
                 path_to = f"/meshes/{link_name}/{child_name}"
                 try:
                     omni.kit.commands.execute(
-                        "MovePrimCommand", path_from=child_path, path_to=path_to, destructive=True
-                    )
+                        "MovePrimCommand",
+                        path_from=child_path,
+                        path_to=path_to,
+                        destructive=True,
+                        keep_world_transform=False,
+                    )  # must keep the local transform, otherwise the transform won't be relative to the new link origin
                 except Exception as e:
                     print(f"Error moving prim {child_path} to /meshes/{link_name}/{child_name}: {e}")
 
@@ -285,7 +289,6 @@ def relocate_parent_to_child_origin(parent_prim_path, reference_child_prim_path)
     :param parent_prim: The parent UsdPrim object.
     :param reference_child_prim: The child UsdPrim object to be used as the reference frame.
     """
-
     stage = omni.usd.get_context().get_stage()
     parent_prim = stage.GetPrimAtPath(parent_prim_path)
     reference_prim = stage.GetPrimAtPath(reference_child_prim_path)
@@ -300,7 +303,6 @@ def relocate_parent_to_child_origin(parent_prim_path, reference_child_prim_path)
 
     # go through all the children of this parent and update their transforms relative to the new parent origin
     immediate_children_list = parent_prim.GetAllChildren()
-
     for child in immediate_children_list:
         if child.IsValid():
             child_xform = UsdGeom.Xformable(child)
@@ -310,11 +312,8 @@ def relocate_parent_to_child_origin(parent_prim_path, reference_child_prim_path)
 
             # Calculate the new child transform relative to the new parent transform
             new_child_rel_xform = child_global_transform_mat * ref_world_transform_no_scale.GetInverse()
-
             # Update the child's transform
             update_xforms(child_xform, new_child_rel_xform, child_scale)
-        else:
-            print(f"Child {child} is not valid")
 
     # # update the transforms of the parent last
     update_xforms(parent_prim, ref_world_transform_no_scale)
@@ -356,12 +355,13 @@ def update_xforms(prim, new_xform, scale=(1, 1, 1)):
         scaleOp.Set(scale)
 
 
-def cleanup_xforms():
+def cleanup_xforms(delete_prim_paths):
     """
     xform rules:
-        - no xforms of any sort in meshes folder
-        - xform scale on /visuals(colliders)/link/link_ref
-        - xform translation and rotation on /robot/link
+        - no xforms on the links in the meshes folder, keep the relative transformd within each link for the meshes(i.e. the foundational mesh for each link should be at the origin, not necesarily each piece that makes up that link)
+        - default xforms on link/collider references
+        - xform translation and rotation on /robot/link stays (these should be already post-reference-aligned)
+        - delete the prims in delete_prim_paths (should all be under /robot)
     """
     robot = RobotRegistry().get()
     stage = omni.usd.get_context().get_stage()
@@ -371,17 +371,50 @@ def cleanup_xforms():
     link_names = robot.links
     robot_name = robot.name
 
-    # remove xformOp attributes from meshes all except scale
+    # remove xformOp attributes from link level prims in meshes folder (but should keep object level xforms)
     mesh_scope_prim = stage.GetPrimAtPath("/meshes")
-    recursive_transform_removal(mesh_scope_prim, exclude_list=["xformOp:scale"])
+    for mesh_link in mesh_scope_prim.GetChildren():
+        for attr in mesh_link.GetAttributes():
+            if attr.GetName().startswith("xformOp:"):
+                mesh_link.RemoveProperty(attr.GetName())
 
-    # for all the robot/link, only remove scale, keep other xformOp attributes
+    # for all the robot/link, reset scale to 1,1,1, keep other xformOp attributes
     for link_name in link_names:
         link_prim = stage.GetPrimAtPath(f"/{robot_name}/{link_name}")
-        # remove it from the link prim, and put it in the visuals/link level
-        link_prim.RemoveProperty("xformOp:scale")
-        # remove all the other xformOp attributes from the visuals and colliders
-        recursive_transform_removal(link_prim)
+        recursive_reset_transforms(link_prim, exclude_list=["xformOp:translate", "xformOp:orient", "xformOp:pivot"])
+
+    # remove the xformOp attributes from the robot/link/visual
+    for link_name in link_names:
+        link_visual_prim = stage.GetPrimAtPath(f"/{robot_name}/{link_name}/visual")
+        for attr in link_visual_prim.GetAttributes():
+            if attr.GetName().startswith("xformOp:"):
+                link_visual_prim.RemoveProperty(attr.GetName())
+
+    # delete the prims in delete_prim_paths
+    for prim_path in list(set(delete_prim_paths)):
+        # need to check if the prims marked to delete is a link in the new stage, don't delete it if it is, cause then you'd be deleting a new link. otherwise it's a leftover, delete it (including all its children)
+        if prim_path.split("/")[2] not in link_names:
+            stage.RemovePrim(prim_path)
+
+
+def recursive_reset_transforms(prim, exclude_list=[]):
+    """
+    reset the transforms of the prim and all its children.
+    for xform:translate, default is 0,0,0 xform:orient, default is 0,0,0,1 xform:scale, default is 1,1,1 xform:pivot, default is 0,0,0
+    """
+    for child in prim.GetChildren():
+        for attr in child.GetAttributes():
+            if attr.GetName() not in exclude_list:
+
+                if attr.GetName() == "xformOp:translate":
+                    attr.Set(Gf.Vec3d(0, 0, 0))
+                elif attr.GetName() == "xformOp:orient":
+                    attr.Set(Gf.Quatd(1, 0, 0, 0))
+                elif attr.GetName() == "xformOp:scale":
+                    attr.Set(Gf.Vec3d(1, 1, 1))
+                elif attr.GetName() == "xformOp:pivot":
+                    attr.Set(Gf.Vec3d(0, 0, 0))
+        recursive_reset_transforms(child, exclude_list)
 
 
 def recursive_transform_removal(prim, exclude_list=[]):
@@ -469,11 +502,12 @@ def create_physics_variant():
         collider_xform = stage.GetPrimAtPath(f"/colliders/{link_name}")
         collider_xform.GetReferences().AddInternalReference(f"/meshes/{link_name}")
         # under the robot
-        link_path = f"/{robot_name}/{link_name}/collider"
-        UsdGeom.Xform.Define(stage, link_path)
-        link_prim = stage.GetPrimAtPath(link_path)
-        link_prim.GetReferences().AddInternalReference(f"/colliders/{link_name}")
-        link_prim.SetInstanceable(True)
+        link_collider_path = f"/{robot_name}/{link_name}/collider"
+        UsdGeom.Xform.Define(stage, link_collider_path)
+        # match the xform of the collider link with the visual link
+        link_collider_prim = stage.GetPrimAtPath(link_collider_path)
+        link_collider_prim.GetReferences().AddInternalReference(f"/colliders/{link_name}")
+        link_collider_prim.SetInstanceable(True)
 
     # move the joint folder to the physics layer
     joint_folder = f"/{robot_name}/Joints"
@@ -502,7 +536,6 @@ def _recursive_api_removal(prim, api_name, api_handle):
     """
     for child in prim.GetChildren():
         if api_name in child.GetAppliedSchemas():
-            print(f"removing {api_name} from {child.GetPath().pathString}")
             child.RemoveAPI(api_handle)
         _recursive_api_removal(child, api_name, api_handle)
 

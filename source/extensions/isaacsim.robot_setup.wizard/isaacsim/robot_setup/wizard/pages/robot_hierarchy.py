@@ -142,7 +142,10 @@ class RobotHierarchy:
                                 None, columns_enabled=[], stage_delegate=RobotStageDelegate()
                             )
                             self._robot_stage_widget._tree_view.header_visible = False
-
+                            # self._robot_stage_widget.filter_by_type(
+                            #     [UsdGeom.Mesh, UsdGeom.Sphere, UsdGeom.Capsule, UsdGeom.Cylinder, UsdGeom.Cone],
+                            #     True,
+                            # )
                         self._robot_splitter = ui.Placer(
                             offset_y=self._initial_robot_window_height,
                             drag_axis=ui.Axis.Y,
@@ -202,6 +205,7 @@ class RobotHierarchy:
         UsdGeom.Xform.Define(self._links_temp_stage, f"/{self._robot.name}")
         for link in self._robot.links:
             UsdGeom.Xform.Define(self._links_temp_stage, f"/{self._robot.name}/{link}")
+        self._links_stage_widget.expand(f"/{self._robot.name}")
 
     def _new_link_stage(self):
         """Helper method to set up the selection watch for the links stage."""
@@ -369,4 +373,12 @@ class RobotHierarchy:
         else:
             self._reference_mesh = {}
 
-        apply_hierarchy(self._history, self._reference_mesh)
+        if hasattr(self._robot, "delete_prim_paths"):
+            self._delete_prim_paths = self._robot.delete_prim_paths
+        else:
+            self._delete_prim_paths = []
+
+        print(f"delete_prim_paths: {self._delete_prim_paths}")
+        print(f"reference_mesh: {self._reference_mesh}")
+
+        apply_hierarchy(self._history, self._reference_mesh, self._delete_prim_paths)

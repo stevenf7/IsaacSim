@@ -12,7 +12,7 @@ Backend of "Save Robot"
 import os
 
 import omni.usd
-from pxr import Sdf, Usd, UsdGeom
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 from ..utils.utils import apply_standard_stage_settings
 from .robot_templates import RobotRegistry
@@ -88,3 +88,24 @@ def create_variant_usd(add_ground=False, add_lights=False, add_physics_scene=Fal
 
     # save the stage
     stage.Save()
+
+
+def apply_articulation_apis(robot_path, articulation_root_path):
+    stage = omni.usd.get_context().get_stage()
+    robot_prim = stage.GetPrimAtPath(robot_path)
+    robot_name = robot_prim.GetName()
+    # if articulation root not given, use the parent robot prim
+    if articulation_root_path == "Pick from the Robot":
+        articulation_prim = stage.GetPrimAtPath(f"/{robot_name}")
+    # make sure there isn't already an articulation root on stage, if there is, delete it if it's not on the prim desired
+    articulation_prim = stage.GetPrimAtPath(articulation_root_path)
+
+    def remove_articulation_root_recursive(prim):
+        if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+            prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
+        for child in prim.GetChildren():
+            remove_articulation_root_recursive(child)
+
+    # delete any previous articulation root prim that might be on the robot
+    remove_articulation_root_recursive(robot_prim)
+    UsdPhysics.ArticulationRootAPI.Apply(articulation_prim)

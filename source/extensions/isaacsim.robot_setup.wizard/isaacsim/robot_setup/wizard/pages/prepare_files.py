@@ -25,10 +25,11 @@ class PrepareFiles:
         self._current_stage_path_widget = None
         self._original_robot_path_widget = None
         self._save_copy_in_robot_root_folder_path_widget = None
-        self._current_stage_is_unsaved = False
         self._save_current_stage_frame = None
         self._overwrite_stage_frame = None
         self._save_copy_in_robot_root_folder_path_frame = None
+
+        self._current_stage_is_unsaved = False
 
         ## param defaults
         self._reset_params()
@@ -233,10 +234,11 @@ class PrepareFiles:
 
     def set_visible(self, visible):
         if self.frame:
+            self.frame.visible = visible
+
             if visible:
                 self._preprocess_page()
                 self._update_widgets()
-            self.frame.visible = visible
 
     def _overwrite_current_stage_widget_changed(self, value):
         if value:
@@ -248,7 +250,6 @@ class PrepareFiles:
         if value:
             self._save_copy_in_robot_root_folder_path_frame.visible = True
         else:
-            print("save copy in robot root folder widget changed to false")
             self._save_copy_in_robot_root_folder_path_frame.visible = False
 
     def _build_robot_files_frame(self):
@@ -357,7 +358,7 @@ class PrepareFiles:
 
         is_unsaved = omni.usd.get_context().has_pending_edit()  # has unsaved changes
         is_new_stage = omni.usd.get_context().is_new_stage()  # new stage, has no file associated with it
-        self._current_stage_is_unsaved = is_unsaved and not is_new_stage
+        self._current_stage_is_unsaved = is_unsaved or is_new_stage
 
     def _update_widgets(self):
         if self._robot_name_widget:
@@ -383,10 +384,7 @@ class PrepareFiles:
         self._robot.original_stage_path = self._current_stage_path_widget.model.get_value_as_string()
         # if the original robot path is not a reference or payload already, save the current stage as the original file
         original_robot_path = self._original_robot_path_widget.model.get_value_as_string()
-        if self._original_robot_path_widget:
-            self._robot.original_robot_path = original_robot_path
-        else:
-            self._robot.original_robot_path = ""
+        self._robot.original_robot_path = original_robot_path
 
         # save the base, physics, and robot files
         self._robot.base_file_path = os.path.join(robot_root_folder, "configurations", self._robot.name + "_base.usd")

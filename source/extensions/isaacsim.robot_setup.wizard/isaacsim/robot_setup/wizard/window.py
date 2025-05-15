@@ -1,3 +1,5 @@
+import asyncio
+
 import carb
 import omni.kit.actions
 import omni.kit.app
@@ -72,6 +74,13 @@ class RobotWizardWindow:
             self._window.destroy()
         self._window = None
 
+    async def _dock_windows(self):
+        viewport = ui.Workspace.get_window("Viewport")
+        for _ in range(3):
+            await omni.kit.app.get_app().next_update_async()
+        if viewport:
+            self._window.dock_in(viewport, ui.DockPosition.RIGHT)
+
     def set_visible(self, visible: bool):
         """Set window visibility state.
 
@@ -80,6 +89,8 @@ class RobotWizardWindow:
         """
         if self._window:
             self._window.visible = visible
+            if visible:
+                asyncio.ensure_future(self._dock_windows())
 
     def _visibility_changed_fn(self, visible):
         if not visible:
@@ -108,7 +119,6 @@ class RobotWizardWindow:
             carb.log_warn(f"Could not open browswer with url: {doc_link}, {e}")
 
     def _on_launch_on_startup_clicked(self, model):
-        print("Launch on startup set to", model.get_value_as_bool())
         self._launch_on_startup = model.get_value_as_bool()
         carb.settings.get_settings().set_bool(
             "/persistent/exts/isaacsim.robot_setup.wizard/launch_on_startup", self._launch_on_startup
