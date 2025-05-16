@@ -365,16 +365,15 @@ void UrdfImporter::addRigidBody(std::unordered_map<std::string, pxr::UsdStageRef
         pxr::UsdPhysicsRigidBodyAPI physicsAPI = pxr::UsdPhysicsRigidBodyAPI::Apply(linkPrim.GetPrim());
 
         {
-            pxr::UsdEditContext context(stages["stage"], stages["robot_stage"]->GetRootLayer());
-            pxr::UsdPrim prim = linkPrim.GetPrim();
+            setAuthoringLayer(stages["stage"], stages["robot_stage"]->GetRootLayer()->GetIdentifier());
+            pxr::UsdPrim prim = stages["stage"]->GetPrimAtPath(linkPrim.GetPrim().GetPath());
             isaacsim::robot::schema::ApplyLinkAPI(prim);
             auto linksRel = robotPrim.GetPrim().GetRelationship(
                 isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::ROBOT_LINKS));
             pxr::SdfPathVector targets;
-            linksRel.GetTargets(&targets);
-            targets.push_back(prim.GetPath());
-            linksRel.SetTargets(targets);
+            linksRel.AddTarget(prim.GetPath());
         }
+        setAuthoringLayer(stages["stage"], stages["physics_stage"]->GetRootLayer()->GetIdentifier());
         pxr::UsdPhysicsMassAPI massAPI = pxr::UsdPhysicsMassAPI::Apply(linkPrim.GetPrim());
         if (link.inertial.hasMass)
         {
@@ -1101,14 +1100,13 @@ void UrdfImporter::addJoint(std::unordered_map<std::string, pxr::UsdStageRefPtr>
 
     if (jointPrim)
     {
-        pxr::UsdPrim prim = jointPrim.GetPrim();
+        setAuthoringLayer(stages["stage"], stages["robot_stage"]->GetRootLayer()->GetIdentifier());
+        pxr::UsdPrim prim = stages["stage"]->GetPrimAtPath(jointPrim.GetPrim().GetPath());
         isaacsim::robot::schema::ApplyJointAPI(prim);
         auto jointsRel = robotPrim.GetPrim().GetRelationship(
             isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::ROBOT_JOINTS));
         pxr::SdfPathVector targets;
-        jointsRel.GetTargets(&targets);
-        targets.push_back(prim.GetPath());
-        jointsRel.SetTargets(targets);
+        jointsRel.AddTarget(prim.GetPath());
     }
 }
 void UrdfImporter::addLinksAndJoints(std::unordered_map<std::string, pxr::UsdStageRefPtr> stages,
@@ -1400,20 +1398,13 @@ std::string UrdfImporter::addToStage(std::unordered_map<std::string, pxr::UsdSta
     if (config.makeDefaultPrim)
         primPath =
             pxr::SdfPath(GetNewSdfPathString(stages["stage"], "/" + makeValidUSDIdentifier(std::string(urdfRobot.name))));
-    pxr::SdfPath returnPath = primPath;
     // // Remove the prim we are about to add in case it exists
     // if (stage->GetPrimAtPath(primPath))
     // {
     //     stage->RemovePrim(primPath);
     // }
 
-    pxr::UsdGeomXform robotPrim = pxr::UsdGeomXform::Define(stages["stage"], primPath);
-
-    {
-        auto prim = robotPrim.GetPrim();
-        pxr::UsdEditContext context(stages["stage"], stages["robot_stage"]->GetRootLayer());
-        isaacsim::robot::schema::ApplyRobotAPI(prim);
-    }
+    setAuthoringLayer(stages["stage"], stages["stage"]->GetRootLayer()->GetIdentifier());
 
     if (stages["stage"]->GetRootLayer() != stages["base_stage"]->GetRootLayer()) // If the stage is not the base stage,
                                                                                  // we need to copy the root layer
@@ -1421,6 +1412,16 @@ std::string UrdfImporter::addToStage(std::unordered_map<std::string, pxr::UsdSta
         primPath = pxr::SdfPath(
             GetNewSdfPathString(stages["base_stage"], "/" + makeValidUSDIdentifier(std::string(urdfRobot.name))));
     }
+    pxr::SdfPath returnPath = primPath;
+
+    pxr::UsdGeomXform robotPrim = pxr::UsdGeomXform::Define(stages["stage"], primPath);
+
+    {
+        setAuthoringLayer(stages["stage"], stages["robot_stage"]->GetRootLayer()->GetIdentifier());
+        pxr::UsdPrim prim = stages["stage"]->GetPrimAtPath(robotPrim.GetPrim().GetPath());
+        isaacsim::robot::schema::ApplyRobotAPI(prim);
+    }
+    setAuthoringLayer(stages["stage"], stages["stage"]->GetRootLayer()->GetIdentifier());
 
     pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(robotPrim);
     gprim.ClearXformOpOrder();

@@ -24,7 +24,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 
 from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
-from .ui_builder import UIBuilder
+from .ui.ui_builder import UIBuilder
 
 """
 This file serves as a basic template for the standard boilerplate operations
@@ -61,8 +61,22 @@ class Extension(omni.ext.IExt):
         # UI
         self._models = {}
         self._ext_id = ext_id
+        self._ext_name = omni.ext.get_extension_name(ext_id)
+
+        # Register action for menu click
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            self._ext_name,
+            f"CreateUIExtension:{EXTENSION_TITLE}",
+            self._menu_callback,
+            description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
+        )
+
+        # Create menu items using registered action
         menu_items = [
-            make_menu_item_description(ext_id, EXTENSION_TITLE, lambda a=weakref.proxy(self): a._menu_callback())
+            MenuItemDescription(
+                name=EXTENSION_TITLE, onclick_action=(self._ext_name, f"CreateUIExtension:{EXTENSION_TITLE}")
+            )
         ]
         self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Tools")
@@ -80,6 +94,11 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         self._models = {}
         remove_menu_items(self._menu_items, "Tools")
+
+        # Deregister action
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_name, f"CreateUIExtension:{EXTENSION_TITLE}")
+
         if self._window:
             self._window = None
         self.ui_builder.cleanup()

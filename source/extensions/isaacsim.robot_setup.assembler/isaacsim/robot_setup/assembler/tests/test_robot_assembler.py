@@ -15,9 +15,7 @@ from typing import List
 import carb
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api.world import World
-from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
-from isaacsim.core.utils.articulations import find_all_articulation_base_paths, move_articulation_root
+from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
@@ -25,10 +23,9 @@ from isaacsim.core.utils.stage import (
     get_current_stage,
     update_stage_async,
 )
-from isaacsim.core.utils.types import ArticulationAction
-from isaacsim.robot_setup.assembler import AssembledRobot, RobotAssembler
+from isaacsim.robot_setup.assembler import RobotAssembler
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import PhysxSchema, Sdf, UsdLux, UsdPhysics
+from pxr import Gf, Sdf, UsdGeom, UsdLux
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -48,23 +45,32 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.robot_setup.assembler")
-        self._robot_assembler_data_path = os.path.join(ext_manager.get_extension_path(ext_id), "data", "test_assets")
+
+        self._robot_assembler = RobotAssembler()
 
         await create_new_stage_async()
+
+        self.stage = omni.usd.get_context().get_stage()
+        self.stage.DefinePrim(Sdf.Path("/World"), "Xform")
         omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_fps)
+
+        await self._prepare_stage()
 
         await update_stage_async()
 
         pass
 
+    async def _wait_n_frames(self, n):
+        for i in range(n):
+            await update_stage_async()
+
     # After running each test
     async def tearDown(self):
         self._timeline.stop()
+        self._robot_assembler.reset()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
+            await update_stage_async()
         await update_stage_async()
-        World.clear_instance()
         pass
 
     async def _create_light(self):
@@ -79,317 +85,128 @@ class TestRobotAssembler(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(len(l2) == len(l1), f"{l1}, {l2}")
 
-    async def _prepare_stage(self, robots: List[SingleArticulation]):
+    async def _prepare_stage(self):
         # Set settings to ensure deterministic behavior
         # Initialize the robot
         # Play the timeline
 
         self._timeline.stop()
-
-        world = World()
-
-        await world.initialize_simulation_context_async()
         await self._create_light()
-
-        self._timeline.play()
-        await update_stage_async()
-
-        for robot in robots:
-            robot.initialize()
-            robot.disable_gravity()
-            robot.set_solver_position_iteration_count(64)
-            robot.set_solver_velocity_iteration_count(64)
-
-        await update_stage_async()
-
-    async def _assert_assembled(self, base_prim, attach_prim):
-        # Assert that the attach prim moves when the base prim moves
-        # Move the prim somewhat smoothly across the stage to avoid physics errors
-
-        base_prim_xform = SingleXFormPrim(base_prim)
-        attach_prim_xform = SingleXFormPrim(attach_prim)
-
-        base_position = base_prim_xform.get_world_pose()[0]
-        attach_position = attach_prim_xform.get_world_pose()[0]
-
-        offset = np.array([1, -0.5, 1])
-        for off in np.linspace(base_position, base_position + offset, num=20, endpoint=True):
-            base_prim_xform.set_world_pose(off)
-            await update_stage_async()
-        for i in range(5):
-            await update_stage_async()
-
-        self.assertTrue(
-            np.allclose(base_prim_xform.get_world_pose()[0] - base_position, offset, atol=0.01),
-            str(base_prim_xform.get_world_pose()[0] - base_position),
-        )
-        self.assertTrue(
-            np.allclose(attach_prim_xform.get_world_pose()[0] - attach_position, offset, atol=0.05),
-            str(attach_prim_xform.get_world_pose()[0] - attach_position) + str(offset),
-        )
-
-        for off in np.linspace(base_position + offset, base_position, num=20, endpoint=True):
-            base_prim_xform.set_world_pose(off)
-            await update_stage_async()
-        for i in range(5):
-            await update_stage_async()
-
-        self.assertTrue(
-            np.allclose(attach_prim_xform.get_world_pose()[0], attach_position, atol=0.05),
-            str(attach_prim_xform.get_world_pose()[0]) + str(attach_position),
-        )
-
-    async def _assert_not_assembled(self, base_prim, attach_prim):
-        # Assert that the two prims do not move together
-
-        base_prim_xform = SingleXFormPrim(base_prim)
-        attach_prim_xform = SingleXFormPrim(attach_prim)
-
-        base_position = base_prim_xform.get_world_pose()[0]
-        attach_position = attach_prim_xform.get_world_pose()[0]
-
-        offset = np.array([1, -0.5, 1])
-        base_prim_xform.set_world_pose(base_position + offset)
-        for i in range(10):
-            await update_stage_async()
-
-        self.assertTrue(
-            np.allclose(attach_prim_xform.get_world_pose()[0], attach_position, atol=0.001),
-            f"{attach_prim_xform.get_world_pose()[0]} {attach_position}",
-        )
-
-        base_prim_xform.set_world_pose(base_position)
-        await update_stage_async()
-
-    async def _wait_n_frames(self, n):
-        for i in range(n):
-            await update_stage_async()
-
-    async def testRobotToRobotAssembleTopLevelRoots(self):
-        await self._testRobotToRobotAssemble("/World/ur10e", "/World/allegro_hand")
-
-    async def testRobotToRobotAssembleTopLevelToRootJoint(self):
-        await self._testRobotToRobotAssemble("/World/ur10e", "/World/allegro_hand/root_joint")
-
-    async def testRobotToRobotAssembleRootJointToTopLevel(self):
-        await self._testRobotToRobotAssemble("/World/ur10e/root_joint", "/World/allegro_hand")
-
-    async def testRobotToRobotAssembleRootJointToRootJoint(self):
-        await self._testRobotToRobotAssemble("/World/ur10e/root_joint", "/World/allegro_hand/root_joint")
-
-    async def testRobotToRobotAssembleTopLevelToBaseLink(self):
-        # This will fail disassemble because the allegro root joint disagrees with its
-        # final position and there is a resulting physics constraint violation.  The test is hard-coded
-        # to skip the disassembly.
-        await self._testRobotToRobotAssemble("/World/ur10e", "/World/allegro_hand/allegro_mount")
-
-    async def testRobotToRobotAssembleRootJointToBaseLink(self):
-        # This will fail disassemble because the allegro root joint disagrees with its
-        # final position and there is a resulting physics constraint violation.  The test is hard-coded
-        # to skip the disassembly.
-        await self._testRobotToRobotAssemble("/World/ur10e/root_joint", "/World/allegro_hand/allegro_mount")
-
-    async def _testRobotToRobotAssemble(self, base_art_root, attach_art_root):
         assets_root_path = await get_assets_root_path_async()
-
-        add_reference_to_stage(assets_root_path + "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/World/allegro_hand")
-        SingleXFormPrim("/World/allegro_hand").set_world_pose(np.array([1.0, 0.0, 0.0]))
-
-        ## TODO: Temporarily using the old UR10e.usd asset. Revert to the one inside /UniversalRobots folder once the assembler is updated.
-        # add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
-        add_reference_to_stage(assets_root_path + "/Isaac/Robots/UR10/ur10e.usd", "/World/ur10e")
-        SingleXFormPrim("/World/ur10e").set_world_pose(np.array([-1.0, 0.0, 0.0]))
-
-        # Move the Articulation root to different places in order to test that each location is handled correctly
-        move_articulation_root(get_prim_at_path("/World/ur10e/root_joint"), get_prim_at_path(base_art_root))
-        move_articulation_root(get_prim_at_path("/World/allegro_hand"), get_prim_at_path(attach_art_root))
-
-        self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e", "/World/allegro_hand"])
-
-        await update_stage_async()
-        await update_stage_async()
-
-        for single_robot in [False, True]:
-            base_robot_path = "/World/ur10e"
-            attach_robot_path = "/World/allegro_hand"
-            base_robot_mount_frame = "/tool0"
-            attach_robot_mount_frame = "/allegro_mount"
-            fixed_joint_offset = np.array([0.0, 0.0, -0.1])
-            fixed_joint_orient = np.array([0.956, 0.0, -0.0, 0.2935])
-
-            robot_assembler = RobotAssembler()
-            assembled_robot = robot_assembler.assemble_articulations(
-                base_robot_path,
-                attach_robot_path,
-                base_robot_mount_frame,
-                attach_robot_mount_frame,
-                fixed_joint_offset,
-                fixed_joint_orient,
-                mask_all_collisions=True,
-                single_robot=single_robot,
-            )
-
-            assembled_robot.set_fixed_joint_transform(np.array([0.0, 0.0, -0.15]), np.array([0.956, 0.0, -0.0, 0.2935]))
-
-            num_frame_to_settle = 30
-
-            # Controlling the resulting assembled robot is different depending on the single_robot flag
-            self._timeline.stop()
-            await update_stage_async()
-            if single_robot:
-                # The robots will be considered to be part of a single Articulation at the base robot path
-                controllable_single_robot = SingleArticulation(base_robot_path)
-                await self._prepare_stage([controllable_single_robot])
-
-                joint_target = 0.3 * np.ones(22)
-                controllable_single_robot.apply_action(ArticulationAction(joint_target))
-
-                await self._wait_n_frames(num_frame_to_settle)
-
-                self.assertTrue(
-                    np.all(abs(controllable_single_robot.get_joint_positions() - joint_target) < 0.01),
-                    controllable_single_robot.get_joint_positions(),
-                )
-
-                self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e"])
-
-            else:
-                # The robots are controlled independently from each other
-                base_robot = SingleArticulation(base_robot_path)
-                attach_robot = SingleArticulation(attach_robot_path)
-                await self._prepare_stage([base_robot, attach_robot])
-
-                base_robot_joint_target = np.array([0.3, 0, 0, 0, 0, 0])
-                base_robot.apply_action(ArticulationAction(base_robot_joint_target))
-                hand_joint_target = np.zeros(16)
-                hand_joint_target[3] = 1
-                attach_robot.apply_action(ArticulationAction(hand_joint_target))
-
-                await self._wait_n_frames(num_frame_to_settle)
-                self.assertTrue(np.all(abs(base_robot.get_joint_positions() - base_robot_joint_target) < 0.01))
-                self.assertTrue(np.all(abs(attach_robot.get_joint_positions() - hand_joint_target) < 0.01))
-
-                self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e", "/World/allegro_hand"])
-
-            attach_robot_mount_path = attach_robot_path + attach_robot_mount_frame
-
-            await self._assert_assembled(base_robot_path, attach_robot_mount_path)
-
-            if attach_art_root == "/World/allegro_hand/allegro_mount":
-                # The allegro will explode after disassembling because of a fixed joint constraint violation.
-                # There is nothing within the scope of the robot assembler to fix.
-                continue
-
-            assembled_robot.disassemble()
-            await self._assert_not_assembled(base_robot_path, attach_robot_mount_path)
-
-            await update_stage_async()
-
-            # Make sure that the Articulation Root APIs were put back on disassemble()
-            base_art_prim = get_prim_at_path(base_art_root)
-            self.assertTrue(base_art_prim.HasAPI(UsdPhysics.ArticulationRootAPI))
-            self.assertTrue(base_art_prim.HasAPI(PhysxSchema.PhysxArticulationAPI))
-            self.assertTrue(base_art_prim.GetProperty("physxArticulation:articulationEnabled").IsValid())
-
-            attach_art_prim = get_prim_at_path(attach_art_root)
-            self.assertTrue(attach_art_prim.HasAPI(UsdPhysics.ArticulationRootAPI))
-            self.assertTrue(attach_art_prim.HasAPI(PhysxSchema.PhysxArticulationAPI))
-            self.assertTrue(attach_art_prim.GetProperty("physxArticulation:articulationEnabled").IsValid())
-
-            self.assertListsSame(find_all_articulation_base_paths(), ["/World/ur10e", "/World/allegro_hand"])
-
-    async def testRobotToRigidBodyAssemble(self):
-        assets_root_path = await get_assets_root_path_async()
-
-        add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount")
-        SingleXFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
-
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")
-        SingleXFormPrim("/World/ur10e").set_world_pose(np.array([1.0, 0.0, 0.0]))
+        add_reference_to_stage(
+            assets_root_path + "/Isaac/Robots/WonikRobotics/AllegroHand/allegro_hand_instanceable.usd",
+            "/World/allegro_hand",
+        )
+
+        self._robot_base = "/World/ur10e"
+        self._robot_base_mount = "/ee_link"
+        self._robot_attach = "/World/allegro_hand"
+        self._robot_attach_mount = "/allegro_mount"
 
         await update_stage_async()
 
-        robot_assembler = RobotAssembler()
-        base_robot_path = "/World/ur10_mount"
-        robot_assembler.convert_prim_to_rigid_body(base_robot_path)
-        attach_robot_path = "/World/ur10e"
-        base_robot_mount_frame = ""
-        attach_robot_mount_frame = "/base_link"
-        fixed_joint_offset = np.array([0.0, 0.0, 0.0])
-        fixed_joint_orient = np.array([1.0, 0.0, 0.0, 0.0])
+    def apply_rotation(self, axis, angle):
+        prim = self.stage.GetPrimAtPath(self._robot_assembler._attachment_robot_prim)
 
-        assembled_bodies = robot_assembler.assemble_rigid_bodies(
-            base_robot_path,
-            attach_robot_path,
-            base_robot_mount_frame,
-            attach_robot_mount_frame,
-            fixed_joint_offset,
-            fixed_joint_orient,
-            mask_all_collisions=True,
+        xformable = UsdGeom.Xformable(prim)
+        old_matrix = xformable.GetLocalTransformation()
+        old_rotation = old_matrix.ExtractRotation()
+        rotation = Gf.Rotation(axis, angle)
+        new_matrix = Gf.Matrix4d().SetRotateOnly(rotation) * old_matrix
+
+        omni.kit.commands.execute(
+            "TransformPrimCommand",
+            path=prim.GetPath(),
+            old_transform_matrix=old_matrix,
+            new_transform_matrix=new_matrix,
         )
 
-        offset, orient = assembled_bodies.get_fixed_joint_transform()
-        assembled_bodies.set_fixed_joint_transform(np.array([0, 0, -0.2]), np.array([1, 0, 0, 0]))
-
-        await self._prepare_stage([SingleArticulation(attach_robot_path)])
-
-        attach_robot_mount_path = attach_robot_path + attach_robot_mount_frame
-
-        await self._assert_assembled(base_robot_path, attach_robot_mount_path)
-        assembled_bodies.disassemble()
-        await self._assert_not_assembled(base_robot_path, attach_robot_mount_path)
-
-        # Switch the order of base and robot
-        assembled_bodies = robot_assembler.assemble_rigid_bodies(
-            attach_robot_path,
-            base_robot_path,
-            attach_robot_mount_frame,
-            base_robot_mount_frame,
-            fixed_joint_offset,
-            fixed_joint_orient,
-            mask_all_collisions=True,
+    async def test_robot_assembler_begin_assembly(self):
+        self._robot_assembler.begin_assembly(
+            self.stage,
+            self._robot_base,
+            self._robot_base + self._robot_base_mount,
+            self._robot_attach,
+            self._robot_attach + self._robot_attach_mount,
+            "Gripper",
+            "allegro_hand",
         )
-        self._timeline.stop()
-        await update_stage_async()
-        await self._prepare_stage([SingleArticulation(attach_robot_path)])
 
-        await self._assert_assembled(attach_robot_path, base_robot_path + "/assembler_mount_frame")
-        assembled_bodies.disassemble()
-        await self._assert_not_assembled(attach_robot_path, base_robot_path + "/assembler_mount_frame")
+        self.apply_rotation([0, 0, 1], -90)
+        self.apply_rotation([0, 1, 0], -90)
 
-    async def testRigidBodyToRigidBodyAssemble(self):
-        assets_root_path = await get_assets_root_path_async()
+        await self._assert_pose()
 
-        await self._create_light()
-
-        add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount")
-        SingleXFormPrim("/World/ur10_mount").set_world_pose(np.array([-1.0, 0.0, 0.0]))
-
-        add_reference_to_stage(assets_root_path + "/Isaac/Props/Mounts/ur10_mount.usd", "/World/ur10_mount_01")
-        SingleXFormPrim("/World/ur10_mount_01").set_world_pose(np.array([1.0, 0.0, 0.0]))
-        await update_stage_async()
-
-        robot_assembler = RobotAssembler()
-        base_robot_path = "/World/ur10_mount"
-        robot_assembler.convert_prim_to_rigid_body(base_robot_path)
-        attach_robot_path = "/World/ur10_mount_01"
-        robot_assembler.convert_prim_to_rigid_body(attach_robot_path)
-        base_robot_mount_frame = ""
-        attach_robot_mount_frame = ""
-        fixed_joint_offset = np.array([0.0, 0.0, 0.522])
-        fixed_joint_orient = np.array([1.0, 0.0, 0.0, 0.0])
-        assembled_bodies = robot_assembler.assemble_rigid_bodies(
-            base_robot_path,
-            attach_robot_path,
-            base_robot_mount_frame,
-            attach_robot_mount_frame,
-            fixed_joint_offset,
-            fixed_joint_orient,
-            mask_all_collisions=True,
+    async def test_robot_assembler_cancel_assembly(self):
+        self._robot_assembler.begin_assembly(
+            self.stage,
+            self._robot_base,
+            self._robot_base + self._robot_base_mount,
+            self._robot_attach,
+            self._robot_attach + self._robot_attach_mount,
+            "Gripper",
+            "allegro_hand",
         )
+        self._robot_assembler.cancel_assembly()
+        await self._wait_n_frames(5)
+        attachment_mount_pose = omni.usd.get_world_transform_matrix(
+            self.stage.GetPrimAtPath(self._robot_attach + self._robot_attach_mount)
+        )
+        self.assertAlmostEqual(np.linalg.norm(attachment_mount_pose - np.eye(4)), 0.0, 2)
+
+    async def test_robot_assembler_cancel_twice(self):
+        for i in range(2):
+            await self.test_robot_assembler_cancel_assembly()
+
+    async def _assert_pose(self):
+        robot_base_pose = omni.usd.get_world_transform_matrix(
+            self.stage.GetPrimAtPath(self._robot_base + self._robot_base_mount)
+        )
+        attachment_mount_pose = omni.usd.get_world_transform_matrix(
+            self.stage.GetPrimAtPath(self._robot_attach + self._robot_attach_mount)
+        )
+
+        dist = np.linalg.norm(robot_base_pose.ExtractTranslation() - attachment_mount_pose.ExtractTranslation())
+        self.assertAlmostEqual(float(dist), 0.0, 2)
+
+    async def _assert_assembled(self):
+        self._robot_assembler.assemble()
+
+        attachment_root_joint = self.stage.GetPrimAtPath(self._robot_attach + "/root_joint")
+        self.assertFalse(attachment_root_joint.IsActive())
+
+        await self._assert_pose()
+
         self._timeline.play()
+        await self._wait_n_frames(20)
+        await self._assert_pose()
 
-        await self._assert_assembled(base_robot_path, attach_robot_path)
-        assembled_bodies.disassemble()
+    async def test_robot_assembler_assemble(self):
+        await self.test_robot_assembler_begin_assembly()
+        await self._assert_assembled()
+        self._timeline.stop()
+        await self._wait_n_frames(1)
 
-        await self._assert_not_assembled(base_robot_path, attach_robot_path)
+    async def test_robot_assembler_assemble_twice(self):
+        await self.test_robot_assembler_assemble()
+        self._robot_assembler.cancel_assembly()
+        await self._wait_n_frames(5)
+        await self.test_robot_assembler_assemble()
+
+    async def test_robot_assembler_finish_assembly(self):
+        await self.test_robot_assembler_assemble()
+        self._robot_assembler.finish_assemble()
+        await self._wait_n_frames(1)
+        attachment_root_joint = self.stage.GetPrimAtPath(self._robot_attach + "/root_joint")
+        self.assertFalse(attachment_root_joint.IsActive())
+
+        await self._assert_pose()
+
+        self._timeline.play()
+        await self._wait_n_frames(20)
+        await self._assert_pose()
+
+        self._timeline.stop()
+        await self._wait_n_frames(1)
+        await self._assert_pose()

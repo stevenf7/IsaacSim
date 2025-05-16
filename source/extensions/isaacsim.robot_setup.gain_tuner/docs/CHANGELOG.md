@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.2] - 2025-05-14
+### Changed
+- Fix deregiter of action when extension is shutdown without version number
+
 ## [3.0.1] - 2025-05-12
 ### Changed
 - register action without version number

@@ -68,7 +68,9 @@ class Extension(omni.ext.IExt):
             description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
         )
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_TITLE, onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"))
+            MenuItemDescription(
+                name=EXTENSION_TITLE, onclick_action=(self._ext_name, f"CreateUIExtension:{EXTENSION_TITLE}")
+            )
         ]
 
         self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=self._menu_items)]
@@ -92,7 +94,7 @@ class Extension(omni.ext.IExt):
         remove_menu_items(self._menu_items, "Tools")
 
         action_registry = omni.kit.actions.core.get_action_registry()
-        action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
+        action_registry.deregister_action(self._ext_name, f"CreateUIExtension:{EXTENSION_TITLE}")
 
         if self._window:
             self._window = None

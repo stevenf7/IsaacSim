@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.3] - 2025-05-14
+### Fixed
+- Fixed issue where the importer was not properly adding the robot schema prim lists and layer assignments as a List Editable.
+
 ## [2.4.2] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

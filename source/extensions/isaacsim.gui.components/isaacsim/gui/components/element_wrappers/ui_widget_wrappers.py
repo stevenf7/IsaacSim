@@ -1220,11 +1220,13 @@ class DropDown(UIWidgetWrapper):
         populate_fn: Callable = None,
         on_selection_fn: Callable = None,
         keep_old_selections: bool = False,
+        add_flourish: bool = True,
     ):
         self._populate_fn = populate_fn
         self._on_selection_fn = on_selection_fn
         self._keep_old_selection = keep_old_selections
         self._items = []
+        self._add_flourish = add_flourish
 
         combobox_frame = self._create_ui_widget(label, tooltip)
         super().__init__(combobox_frame)
@@ -1399,8 +1401,10 @@ class DropDown(UIWidgetWrapper):
         with containing_frame:
             with ui.HStack():
                 self._label = ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=tooltip)
+                self.combo_adorner_hstack = ui.HStack()
                 self._combobox = ui.ComboBox(combobox_model)
-                add_line_rect_flourish(False)
+                if self._add_flourish:
+                    add_line_rect_flourish(False)
 
         return containing_frame
 
