@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2025-05-12
+### Changed
+- Update imageio==2.37.0, scipy==1.15.3, pyyaml==6.0.2, opencv-python-headless==4.11.0.86
+
 ## [1.6.0] - 2025-05-12
 ### Changed
 - Added trimesh==4.5.1, rtree==1.3.0
