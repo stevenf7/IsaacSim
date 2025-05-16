@@ -220,33 +220,27 @@ inline std::string resolve_path(const std::string& path)
 
 // given the path of one file it strips the filename and appends the relative
 // path onto it
-inline void MakeRelativePath(const char* filePath, const char* fileRelativePath, char* fullPath)
+inline std::string MakeRelativePath(const std::string& filePath, const std::string& fileRelativePath)
 {
     // get base path of file
-    const char* lastSlash = nullptr;
+    size_t lastSlashPos = filePath.find_last_of("/\\");
+    std::string basePath;
 
-    if (!lastSlash)
-        lastSlash = strrchr(filePath, '\\');
-    if (!lastSlash)
-        lastSlash = strrchr(filePath, '/');
-
-    int baseLength = 0;
-
-    if (lastSlash)
+    if (lastSlashPos != std::string::npos)
     {
-        baseLength = int(lastSlash - filePath) + 1;
-
-        // copy base path (including slash to relative path)
-        memcpy(fullPath, filePath, baseLength);
+        basePath = filePath.substr(0, lastSlashPos + 1);
     }
 
-    // if (fileRelativePath[0] == '.')
-    //++fileRelativePath;
-    if (fileRelativePath[0] == '\\' || fileRelativePath[0] == '/')
-        ++fileRelativePath;
+    std::string adjustedRelativePath = fileRelativePath;
 
-    // append mesh filename
-    strcpy(fullPath + baseLength, fileRelativePath);
+    // Remove leading slash or backslash if present
+    if (!adjustedRelativePath.empty() && (adjustedRelativePath[0] == '\\' || adjustedRelativePath[0] == '/'))
+    {
+        adjustedRelativePath = adjustedRelativePath.substr(1);
+    }
+
+    // Combine the base path with the adjusted relative path
+    return basePath + adjustedRelativePath;
 }
 
 inline std::string pathJoin(const std::string& path1, const std::string& path2)

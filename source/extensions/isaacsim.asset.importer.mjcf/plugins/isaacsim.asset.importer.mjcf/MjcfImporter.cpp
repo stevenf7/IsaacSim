@@ -127,9 +127,7 @@ MJCFImporter::MJCFImporter(const std::string fullPath, ImportConfig& config)
     defaultClassName = "main";
 
     std::string filePath = fullPath;
-    char relPathBuffer[2048];
-    isaacsim::asset::utils::path::MakeRelativePath(filePath.c_str(), "", relPathBuffer);
-    baseDirPath = std::string(relPathBuffer);
+    baseDirPath = isaacsim::asset::utils::path::MakeRelativePath(filePath, "");
 
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* root = LoadFile(doc, filePath);
