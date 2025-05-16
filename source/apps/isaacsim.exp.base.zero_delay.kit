@@ -10,12 +10,13 @@ keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in
 "isaacsim.exp.base" = {}
 
 [settings]
-app.name = "Isaac-Sim"
+app.name = "Isaac-Sim Zero Delay"
 app.version = "5.0.0"
 app.hydraEngine.waitIdle = true
 app.updateOrder.checkForHydraRenderComplete = 1000
-app.vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
-app.exts.isaacsim.ros2.bridge.publish_multithreading_disabled = true
+app.vulkan = true                     # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
+app.enableDeveloperWarnings = false     # disable developer warnings to reduce log noise
+app.exts.isaacsim.ros2.bridge.publish_multithreading_disabled = true # disable multithreading for ros2 bridge to reduce latency
 
 [settings.app.exts.folders]
 '++' = [
