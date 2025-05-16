@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.0] - 2025-05-15
+### Changed
+- Removed internal carb setting
+
 ## [1.3.11] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
