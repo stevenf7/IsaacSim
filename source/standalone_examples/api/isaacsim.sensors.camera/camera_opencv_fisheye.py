@@ -10,7 +10,7 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True})  # Option: "renderer": "PathTracing"
+simulation_app = SimulationApp({"headless": True})
 
 import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
@@ -32,14 +32,16 @@ distortion_coefficients = [0.05, 0.01, -0.003, -0.0005]
 # Camera sensor size and optical path parameters. These parameters are not the part of the
 # OpenCV camera model, but they are nessesary to simulate the depth of field effect.
 #
-# To disable the depth of field effect, set the f_stop to 0.0. This is useful for debugging.
-pixel_size = 3  # in microns, 3 microns is common
-f_stop = 1.8  # f-number, the ratio of the lens focal length to the diameter of the entrance pupil
-focus_distance = 0.6  # in meters, the distance from the camera to the object plane
-diagonal_fov = 235  # in degrees, the diagonal field of view to be rendered
-
+# Note: To disable the depth of field effect, set the f_stop to 0.0. This is useful for debugging.
+# Set pixel size (microns)
+pixel_size = 3
+# Set f-number, the ratio of the lens focal length to the diameter of the entrance pupil (unitless)
+f_stop = 1.8
+# Set focus distance (meters) - chosen as distance from camera to cube
+focus_distance = 1.5
 
 # Create a world, add a 1x1x1 meter cube, a ground plane, and a camera
+# Note: stage units are set to meters.
 world = World(stage_units_in_meters=1.0)
 world.scene.add_default_ground_plane()
 
@@ -89,25 +91,24 @@ world.reset()
 camera.initialize()
 
 # Calculate the focal length and aperture size from the camera matrix
-((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
-horizontal_aperture = pixel_size * 1e-3 * width
-vertical_aperture = pixel_size * 1e-3 * height
-focal_length_x = fx * pixel_size * 1e-3
-focal_length_y = fy * pixel_size * 1e-3
-focal_length = (focal_length_x + focal_length_y) / 2  # in mm
+((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix  # fx, fy are in pixels, cx, cy are in pixels
+horizontal_aperture = pixel_size * width * 1e-6  # convert to meters
+vertical_aperture = pixel_size * height * 1e-6  # convert to meters
+focal_length_x = pixel_size * fx * 1e-6  # convert to meters
+focal_length_y = pixel_size * fy * 1e-6  # convert to meters
+focal_length = (focal_length_x + focal_length_y) / 2  # convert to meters
 
 # Set the camera parameters, note the unit conversion between Isaac Sim sensor and Kit
-camera.set_focal_length(focal_length / 10.0)
+camera.set_focal_length(focal_length)
 camera.set_focus_distance(focus_distance)
-camera.set_lens_aperture(f_stop * 100.0)
-camera.set_horizontal_aperture(horizontal_aperture / 10.0)
-camera.set_vertical_aperture(vertical_aperture / 10.0)
+camera.set_lens_aperture(f_stop)
+camera.set_horizontal_aperture(horizontal_aperture)
+camera.set_vertical_aperture(vertical_aperture)
 
 camera.set_clipping_range(0.05, 1.0e5)
 
 # Set the distortion coefficients
-camera.set_projection_type("fisheyePolynomial")
-camera.set_kannala_brandt_properties(width, height, cx, cy, diagonal_fov, distortion_coefficients)
+camera.set_opencv_fisheye_properties(cx=cx, cy=cy, fx=fx, fy=fy, fisheye=distortion_coefficients)
 
 # Get the rendered frame and save it to a file
 for i in range(100):

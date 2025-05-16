@@ -39,13 +39,9 @@ from isaacsim.core.utils.render_product import get_resolution, set_camera_prim_p
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Sdf, Usd, UsdGeom, Vt
 
-# Map of Camera prim attributes to OpenCV pinhole camera model parameters (p1, p2, k1, k2, k3, k4, k5, k6, s1, s2, s3, s4) by index
-OPENCV_PINHOLE_ATTRIBUTE_MAP = ["k1", "k2", "p1", "p2", "k3", "k4", "k5", "k6", "s1", "s2", "s3", "s4"]
-
-# Map of Camera prim attributes to OpenCV fisheye camera model parameters (k0, k1, k2, k3, k4) by index
-OPENCV_FISHEYE_ATTRIBUTE_MAP = ["k1", "k2", "k3", "k4"]
-
 # Attribute maps for lens distortion models
+OPENCV_PINHOLE_ATTRIBUTE_MAP = ["k1", "k2", "p1", "p2", "k3", "k4", "k5", "k6", "s1", "s2", "s3", "s4"]
+OPENCV_FISHEYE_ATTRIBUTE_MAP = ["k1", "k2", "k3", "k4"]
 FTHETA_ATTRIBUTE_MAP = ["k0", "k1", "k2", "k3", "k4"]
 KANNALA_BRANDT_K3_ATTRIBUTE_MAP = ["k0", "k1", "k2", "k3"]
 RAD_TAN_THIN_PRISM_ATTRIBUTE_MAP = ["k0", "k1", "k2", "k3", "k4", "k5", "p0", "p1", "s0", "s1", "s2", "s3"]
@@ -236,7 +232,6 @@ class Camera(BaseSensor):
         self._resolution = resolution
         self._render_product = None
         self._annotator_device = annotator_device
-        self._rgb_annotator = None
         self._supported_annotators = [
             "normals",
             "motion_vectors",
@@ -252,8 +247,6 @@ class Camera(BaseSensor):
             "pointcloud",
         ]
         self._custom_annotators = dict()
-        for annotator in self._supported_annotators:
-            self._custom_annotators[annotator] = None
         BaseSensor.__init__(
             self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
         )
@@ -263,40 +256,6 @@ class Camera(BaseSensor):
             self.set_local_pose(translation=translation, orientation=orientation)
         elif orientation is not None:
             self.set_local_pose(orientation=orientation)
-        if self.prim.GetAttribute("cameraProjectionType").Get() is None:
-            attr = self.prim.CreateAttribute("cameraProjectionType", Sdf.ValueTypeNames.Token)
-            # The allowed tokens are not set in kit except with the first interaction with the dropdown menu
-            # setting it here for now.
-            if attr.GetMetadata("allowedTokens") is None:
-                attr.SetMetadata(
-                    "allowedTokens",
-                    [
-                        "pinhole",
-                        "fisheyeOrthographic",
-                        "fisheyeEquidistant",
-                        "fisheyeEquisolid",
-                        "fisheyePolynomial",
-                        "fisheyeSpherical",
-                        "fisheyeKannalaBrandtK3",
-                        "fisheyeRadTanThinPrism",
-                        "omniDirectionalStereo",
-                    ],
-                )
-        properties = [
-            "fthetaPolyA",
-            "fthetaPolyB",
-            "fthetaPolyC",
-            "fthetaPolyD",
-            "fthetaPolyE",
-            "fthetaCx",
-            "fthetaCy",
-            "fthetaWidth",
-            "fthetaHeight",
-            "fthetaMaxFov",
-        ]
-        for property_name in properties:
-            if self.prim.GetAttribute(property_name).Get() is None:
-                self.prim.CreateAttribute(property_name, Sdf.ValueTypeNames.Float)
         self._current_frame = dict()
         # Initialize the first frame with the correct backend (warp or numpy)
         if self._annotator_device is None:
@@ -306,9 +265,6 @@ class Camera(BaseSensor):
                 backend_utils = warp_utils
             else:
                 backend_utils = np_utils
-        self._current_frame["rgba"] = backend_utils.create_zeros_tensor(
-            shape=[resolution[0], resolution[1], 4], dtype="uint8", device=self._annotator_device
-        )
         self._pause = False
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
@@ -323,8 +279,9 @@ class Camera(BaseSensor):
 
     def __del__(self):
         """detach annotators on destroy and destroy the internal render product if it exists"""
-        for annotator in self.supported_annotators:
-            getattr(self, "remove_{}_from_frame".format(annotator))()
+        custom_annotators = list(self._custom_annotators.keys())
+        for annotator_name in custom_annotators:
+            getattr(self, "remove_{}_from_frame".format(annotator_name))()
         if self._render_product is not None:
             self._render_product.destroy()
 
@@ -404,11 +361,12 @@ class Camera(BaseSensor):
         else:
             return self._current_frame
 
-    def initialize(self, physics_sim_view=None) -> None:
+    def initialize(self, physics_sim_view=None, attach_rgb_annotator=True) -> None:
         """To be called before using this class after a reset of the world
 
         Args:
-            physics_sim_view (_type_, optional): _description_. Defaults to None.
+            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            attach_rgb_annotator (bool, optional): True to attach the rgb annotator to the camera. Defaults to True. Set to False to improve performance.
         """
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
         if self._render_product_path:
@@ -418,9 +376,9 @@ class Camera(BaseSensor):
         else:
             self._render_product = rep.create.render_product(self.prim_path, resolution=self._resolution)
             self._render_product_path = self._render_product.path
-        self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb", device=self._annotator_device)
+        if attach_rgb_annotator:
+            self.attach_annotator(annotator_name="rgb")
         self._fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
-        self._rgb_annotator.attach([self._render_product_path])
         self._fabric_time_annotator.attach([self._render_product_path])
         self._acquisition_callback = (
             omni.usd.get_context()
@@ -441,9 +399,6 @@ class Camera(BaseSensor):
             else:
                 backend_utils = np_utils
         width, height = self.get_resolution()
-        self._current_frame["rgba"] = backend_utils.create_zeros_tensor(
-            shape=[width, height, 4], dtype="uint8", device=self._annotator_device
-        )
         self._stage_open_callback = (
             omni.usd.get_context()
             .get_stage_event_stream()
@@ -517,10 +472,9 @@ class Camera(BaseSensor):
             if self._frequency < 0 or self._elapsed_time >= self.get_dt():
                 self._elapsed_time = 0
                 self._current_frame["rendering_frame"] = frame_number
-                self._current_frame["rgba"] = self._rgb_annotator.get_data()
                 self._current_frame["rendering_time"] = current_time
                 for key in self._current_frame:
-                    if key not in ["rgba", "rendering_time", "rendering_frame"]:
+                    if key not in ["rendering_time", "rendering_frame"]:
                         self._current_frame[key] = self._custom_annotators[key].get_data()
             self._previous_time = current_time
         return
@@ -717,7 +671,72 @@ class Camera(BaseSensor):
                 )
         return BaseSensor.set_local_pose(self, translation, orientation)
 
-    def add_normals_to_frame(self, init_params: dict = None) -> None:
+    def attach_annotator(self, annotator_name: str, **kwargs) -> None:
+        """Attach an annotator to the camera.
+
+        Args:
+            annotator_name (str): Name of the annotator to attach.
+            **kwargs: Additional arguments to pass to the annotator.
+
+        Raises:
+            rep.annotators.AnnotatorRegistryError: If the annotator is not found.
+        """
+
+        if annotator_name in self._custom_annotators:
+            carb.log_warn(f"Annotator {annotator_name} already attached to {self._render_product_path}")
+            return
+
+        # Retrieve the annotator from the registry
+        try:
+            annotator = rep.AnnotatorRegistry.get_annotator(
+                annotator_name, device=self._annotator_device, init_params=kwargs
+            )
+        except rep.annotators.AnnotatorRegistryError as e:
+            carb.log_error(f"Annotator {annotator_name} not found")
+            raise e
+
+        # Attach the annotator to the render product
+        annotator.attach([self._render_product_path])
+        # Populate annotator and current frame data dictionaries
+        self._custom_annotators[annotator_name] = annotator
+        self._current_frame[annotator_name] = None
+
+        return
+
+    def detach_annotator(self, annotator_name: str) -> None:
+        """Detach an annotator from the camera.
+
+        Args:
+            annotator_name (str): Name of the annotator to detach.
+        """
+        if annotator_name in self._custom_annotators:
+            annotator = self._custom_annotators.pop(annotator_name)
+            annotator.detach()
+            self._current_frame.pop(annotator_name)
+        else:
+            carb.log_warn(f"Annotator {annotator_name} not attached to {self._render_product_path}")
+        return
+
+    def add_rgb_to_frame(self, init_params: dict = {}) -> None:
+        """Attach the rgb annotator to this camera.
+        Args:
+            init_params: Optional annotator parameters
+
+        The rgbannotator returns:
+
+            np.array
+            shape: (width, height, 4)
+            dtype: np.float32
+
+        See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#ldrcolor
+        """
+        self.attach_annotator(annotator_name="rgb", **init_params)
+
+    def remove_rgb_from_frame(self) -> None:
+        """Detach the rgb annotator from the camera."""
+        self.detach_annotator(annotator_name="rgb")
+
+    def add_normals_to_frame(self, init_params: dict = {}) -> None:
         """Attach the normals annotator to this camera.
         Args:
             init_params: Optional annotator parameters
@@ -729,21 +748,13 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#normals
         """
-        if self._custom_annotators["normals"] is None:
-            self._custom_annotators["normals"] = rep.AnnotatorRegistry.get_annotator(
-                "normals", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["normals"].attach([self._render_product_path])
-        self._current_frame["normals"] = None
-        return
+        self.attach_annotator(annotator_name="normals", **init_params)
 
     def remove_normals_from_frame(self) -> None:
-        if self._custom_annotators["normals"] is not None:
-            self._custom_annotators["normals"].detach([self._render_product_path])
-            self._custom_annotators["normals"] = None
-        self._current_frame.pop("normals", None)
+        """Detach the normals annotator from the camera."""
+        self.detach_annotator(annotator_name="normals")
 
-    def add_motion_vectors_to_frame(self, init_params: dict = None) -> None:
+    def add_motion_vectors_to_frame(self, init_params: dict = {}) -> None:
         """Attach the motion vectors annotator to this camera.
         Args:
             init_params: Optional annotator parameters
@@ -755,21 +766,12 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#motion-vectors
         """
-        if self._custom_annotators["motion_vectors"] is None:
-            self._custom_annotators["motion_vectors"] = rep.AnnotatorRegistry.get_annotator(
-                "motion_vectors", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["motion_vectors"].attach([self._render_product_path])
-        self._current_frame["motion_vectors"] = None
-        return
+        self.attach_annotator(annotator_name="motion_vectors", **init_params)
 
     def remove_motion_vectors_from_frame(self) -> None:
-        if self._custom_annotators["motion_vectors"] is not None:
-            self._custom_annotators["motion_vectors"].detach([self._render_product_path])
-            self._custom_annotators["motion_vectors"] = None
-        self._current_frame.pop("motion_vectors", None)
+        self.detach_annotator(annotator_name="motion_vectors")
 
-    def add_occlusion_to_frame(self, init_params: dict = None) -> None:
+    def add_occlusion_to_frame(self, init_params: dict = {}) -> None:
         """Attach the occlusion annotator to this camera.
         Args:
             init_params: Optional annotator parameters
@@ -779,21 +781,14 @@ class Camera(BaseSensor):
             shape: (num_objects, 1)
             dtype: np.dtype([("instanceId", "<u4"), ("semanticId", "<u4"), ("occlusionRatio", "<f4")])
         """
-        if self._custom_annotators["occlusion"] is None:
-            self._custom_annotators["occlusion"] = rep.AnnotatorRegistry.get_annotator(
-                "occlusion", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["occlusion"].attach([self._render_product_path])
-        self._current_frame["occlusion"] = None
+        self.attach_annotator(annotator_name="occlusion", **init_params)
         return
 
     def remove_occlusion_from_frame(self) -> None:
-        if self._custom_annotators["occlusion"] is not None:
-            self._custom_annotators["occlusion"].detach([self._render_product_path])
-            self._custom_annotators["occlusion"] = None
-        self._current_frame.pop("occlusion", None)
+        """Detach the occlusion annotator from the camera."""
+        self.detach_annotator(annotator_name="occlusion")
 
-    def add_distance_to_image_plane_to_frame(self, init_params: dict = None) -> None:
+    def add_distance_to_image_plane_to_frame(self, init_params: dict = {}) -> None:
         """Attach the distance_to_image_plane annotator to this camera.
         Args:
             init_params: Optional annotator parameters
@@ -805,21 +800,14 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#distance-to-image-plane
         """
-        if self._custom_annotators["distance_to_image_plane"] is None:
-            self._custom_annotators["distance_to_image_plane"] = rep.AnnotatorRegistry.get_annotator(
-                "distance_to_image_plane", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["distance_to_image_plane"].attach([self._render_product_path])
-        self._current_frame["distance_to_image_plane"] = None
+        self.attach_annotator(annotator_name="distance_to_image_plane", **init_params)
         return
 
     def remove_distance_to_image_plane_from_frame(self) -> None:
-        if self._custom_annotators["distance_to_image_plane"] is not None:
-            self._custom_annotators["distance_to_image_plane"].detach([self._render_product_path])
-            self._custom_annotators["distance_to_image_plane"] = None
-        self._current_frame.pop("distance_to_image_plane", None)
+        """Detach the distance_to_image_plane annotator from the camera."""
+        self.detach_annotator(annotator_name="distance_to_image_plane")
 
-    def add_distance_to_camera_to_frame(self, init_params: dict = None) -> None:
+    def add_distance_to_camera_to_frame(self, init_params: dict = {}) -> None:
         """Attach the distance_to_camera_to_frame annotator to this camera.
         Args:
             init_params: Optional annotator parameters
@@ -831,21 +819,13 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#distance-to-camera
         """
-        if self._custom_annotators["distance_to_camera"] is None:
-            self._custom_annotators["distance_to_camera"] = rep.AnnotatorRegistry.get_annotator(
-                "distance_to_camera", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["distance_to_camera"].attach([self._render_product_path])
-        self._current_frame["distance_to_camera"] = None
-        return
+        self.attach_annotator(annotator_name="distance_to_camera", **init_params)
 
     def remove_distance_to_camera_from_frame(self) -> None:
-        if self._custom_annotators["distance_to_camera"] is not None:
-            self._custom_annotators["distance_to_camera"].detach([self._render_product_path])
-            self._custom_annotators["distance_to_camera"] = None
-        self._current_frame.pop("distance_to_camera", None)
+        """Detach the distance_to_camera annotator from the camera."""
+        self.detach_annotator(annotator_name="distance_to_camera")
 
-    def add_bounding_box_2d_tight_to_frame(self, init_params: dict = None) -> None:
+    def add_bounding_box_2d_tight_to_frame(self, init_params: dict = {}) -> None:
         """Attach the bounding_box_2d_tight annotator to this camera.
         Args:
             init_params: Optional annotator parameters (e.g. init_params={"semanticTypes": ["prim"]})
@@ -866,22 +846,13 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-2d-tight
         """
-
-        if self._custom_annotators["bounding_box_2d_tight"] is None:
-            self._custom_annotators["bounding_box_2d_tight"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_2d_tight_fast", init_params=init_params
-            )
-            self._custom_annotators["bounding_box_2d_tight"].attach([self._render_product_path])
-        self._current_frame["bounding_box_2d_tight"] = None
-        return
+        self.attach_annotator(annotator_name="bounding_box_2d_tight", **init_params)
 
     def remove_bounding_box_2d_tight_from_frame(self) -> None:
-        if self._custom_annotators["bounding_box_2d_tight"] is not None:
-            self._custom_annotators["bounding_box_2d_tight"].detach([self._render_product_path])
-            self._custom_annotators["bounding_box_2d_tight"] = None
-        self._current_frame.pop("bounding_box_2d_tight", None)
+        """Detach the bounding_box_2d_tight annotator from the camera."""
+        self.detach_annotator(annotator_name="bounding_box_2d_tight")
 
-    def add_bounding_box_2d_loose_to_frame(self, init_params: dict = None) -> None:
+    def add_bounding_box_2d_loose_to_frame(self, init_params: dict = {}) -> None:
         """Attach the bounding_box_2d_loose annotator to this camera.
         Args:
             init_params: Optional annotator parameters (e.g. init_params={"semanticTypes": ["prim"]})
@@ -903,42 +874,27 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-2d-loose
         """
-        if self._custom_annotators["bounding_box_2d_loose"] is None:
-            self._custom_annotators["bounding_box_2d_loose"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_2d_loose_fast", init_params=init_params
-            )
-            self._custom_annotators["bounding_box_2d_loose"].attach([self._render_product_path])
-        self._current_frame["bounding_box_2d_loose"] = None
+        self.attach_annotator(annotator_name="bounding_box_2d_loose", **init_params)
         return
 
     def remove_bounding_box_2d_loose_from_frame(self) -> None:
-        if self._custom_annotators["bounding_box_2d_loose"] is not None:
-            self._custom_annotators["bounding_box_2d_loose"].detach([self._render_product_path])
-            self._custom_annotators["bounding_box_2d_loose"] = None
-        self._current_frame.pop("bounding_box_2d_loose", None)
+        """Detach the bounding_box_2d_loose annotator from the camera."""
+        self.detach_annotator(annotator_name="bounding_box_2d_loose")
 
-    def add_bounding_box_3d_to_frame(self, init_params: dict = None) -> None:
+    def add_bounding_box_3d_to_frame(self, init_params: dict = {}) -> None:
         """Attach the bounding_box_3d annotator to this camera.
         Args:
             init_params: Optional annotator parameters (e.g. init_params={"semanticTypes": ["prim"]})
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-3d
         """
-        if self._custom_annotators["bounding_box_3d"] is None:
-            self._custom_annotators["bounding_box_3d"] = rep.AnnotatorRegistry.get_annotator(
-                "bounding_box_3d_fast", init_params=init_params
-            )
-            self._custom_annotators["bounding_box_3d"].attach([self._render_product_path])
-        self._current_frame["bounding_box_3d"] = None
-        return
+        self.attach_annotator(annotator_name="bounding_box_3d", **init_params)
 
     def remove_bounding_box_3d_from_frame(self) -> None:
-        if self._custom_annotators["bounding_box_3d"] is not None:
-            self._custom_annotators["bounding_box_3d"].detach([self._render_product_path])
-            self._custom_annotators["bounding_box_3d"] = None
-        self._current_frame.pop("bounding_box_3d", None)
+        """Detach the bounding_box_3d annotator from the camera."""
+        self.detach_annotator(annotator_name="bounding_box_3d")
 
-    def add_semantic_segmentation_to_frame(self, init_params: dict = None) -> None:
+    def add_semantic_segmentation_to_frame(self, init_params: dict = {}) -> None:
         """Attach the semantic_segmentation annotator to this camera.
         Args:
             init_params: Optional parameters specifying the parameters to initialize the annotator with
@@ -950,21 +906,14 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#semantic-segmentation
         """
-        if self._custom_annotators["semantic_segmentation"] is None:
-            self._custom_annotators["semantic_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "semantic_segmentation", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["semantic_segmentation"].attach([self._render_product_path])
-        self._current_frame["semantic_segmentation"] = None
+        self.attach_annotator(annotator_name="semantic_segmentation", **init_params)
         return
 
     def remove_semantic_segmentation_from_frame(self) -> None:
-        if self._custom_annotators["semantic_segmentation"] is not None:
-            self._custom_annotators["semantic_segmentation"].detach([self._render_product_path])
-            self._custom_annotators["semantic_segmentation"] = None
-        self._current_frame.pop("semantic_segmentation", None)
+        """Detach the semantic_segmentation annotator from the camera."""
+        self.detach_annotator(annotator_name="semantic_segmentation")
 
-    def add_instance_id_segmentation_to_frame(self, init_params: dict = None) -> None:
+    def add_instance_id_segmentation_to_frame(self, init_params: dict = {}) -> None:
         """Attach the instance_id_segmentation annotator to this camera.
         Args:
             init_params: Optional parameters specifying the parameters to initialize the annotator with
@@ -977,21 +926,14 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-id-segmentation
         """
-        if self._custom_annotators["instance_id_segmentation"] is None:
-            self._custom_annotators["instance_id_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_id_segmentation_fast", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["instance_id_segmentation"].attach([self._render_product_path])
-        self._current_frame["instance_id_segmentation"] = None
+        self.attach_annotator(annotator_name="instance_id_segmentation", **init_params)
         return
 
     def remove_instance_id_segmentation_from_frame(self) -> None:
-        if self._custom_annotators["instance_id_segmentation"] is not None:
-            self._custom_annotators["instance_id_segmentation"].detach([self._render_product_path])
-            self._custom_annotators["instance_id_segmentation"] = None
-        self._current_frame.pop("instance_id_segmentation", None)
+        """Detach the instance_id_segmentation annotator from the camera."""
+        self.detach_annotator(annotator_name="instance_id_segmentation")
 
-    def add_instance_segmentation_to_frame(self, init_params: dict = None) -> None:
+    def add_instance_segmentation_to_frame(self, init_params: dict = {}) -> None:
         """Attach the instance_segmentation annotator to this camera.
         The main difference between instance id segmentation and instance segmentation are that instance segmentation annotator goes down the hierarchy to the lowest level prim which has semantic labels, which instance id segmentation always goes down to the leaf prim.
         Args:
@@ -1004,21 +946,14 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-segmentation
         """
-        if self._custom_annotators["instance_segmentation"] is None:
-            self._custom_annotators["instance_segmentation"] = rep.AnnotatorRegistry.get_annotator(
-                "instance_segmentation_fast", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["instance_segmentation"].attach([self._render_product_path])
-        self._current_frame["instance_segmentation"] = None
+        self.attach_annotator(annotator_name="instance_segmentation", **init_params)
         return
 
     def remove_instance_segmentation_from_frame(self) -> None:
-        if self._custom_annotators["instance_segmentation"] is not None:
-            self._custom_annotators["instance_segmentation"].detach([self._render_product_path])
-            self._custom_annotators["instance_segmentation"] = None
-        self._current_frame.pop("instance_segmentation", None)
+        """Detach the instance_segmentation annotator from the camera."""
+        self.detach_annotator(annotator_name="instance_segmentation")
 
-    def add_pointcloud_to_frame(self, include_unlabelled: bool = True, init_params: dict = None) -> None:
+    def add_pointcloud_to_frame(self, include_unlabelled: bool = True, init_params: dict = {}) -> None:
         """Attach the pointcloud annotator to this camera.
         Args:
             include_unlabelled: Optional parameter to include unlabelled points in the pointcloud
@@ -1031,22 +966,14 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#point-cloud
         """
-        if self._custom_annotators["pointcloud"] is None:
-            init_params = init_params or {}
-            if "includeUnlabelled" not in init_params:
-                init_params["includeUnlabelled"] = include_unlabelled
-            self._custom_annotators["pointcloud"] = rep.AnnotatorRegistry.get_annotator(
-                "pointcloud", device=self._annotator_device, init_params=init_params
-            )
-            self._custom_annotators["pointcloud"].attach([self._render_product_path])
-        self._current_frame["pointcloud"] = None
+        if "includeUnlabelled" not in init_params:
+            init_params["includeUnlabelled"] = include_unlabelled
+        self.attach_annotator(annotator_name="pointcloud", **init_params)
         return
 
     def remove_pointcloud_from_frame(self) -> None:
-        if self._custom_annotators["pointcloud"] is not None:
-            self._custom_annotators["pointcloud"].detach([self._render_product_path])
-            self._custom_annotators["pointcloud"] = None
-        self._current_frame.pop("pointcloud", None)
+        """Detach the pointcloud annotator from the camera."""
+        self.detach_annotator(annotator_name="pointcloud")
 
     def get_rgba(self, device: str = None) -> np.ndarray | wp.types.array:
         """
@@ -1058,7 +985,11 @@ class Camera(BaseSensor):
             rgba (np.ndarray): (N x 4) RGBa color data for each point.
             wp.types.array: (N x 4) RGBa color data for each point.
         """
-        return self._rgb_annotator.get_data(device=device)
+        if "rgb" in self._custom_annotators:
+            return self._custom_annotators["rgb"].get_data(device=device)
+        else:
+            carb.log_warn(f"Annotator 'rgb' not attached to {self._render_product_path}")
+            return None
 
     def get_rgb(self, device: str = None) -> np.ndarray | wp.types.array:
         """
@@ -1070,8 +1001,11 @@ class Camera(BaseSensor):
             rgb (np.ndarray): (N x 3) RGB color data for each point.
             wp.types.array: (N x 3) RGB color data for each point.
         """
-
-        return self._rgb_annotator.get_data(device=device)[:, :, :3]
+        if "rgb" in self._custom_annotators:
+            return self._custom_annotators["rgb"].get_data(device=device)[:, :, :3]
+        else:
+            carb.log_warn(f"Annotator 'rgb' not attached to {self._render_product_path}")
+            return None
 
     def get_depth(self, device: str = None) -> np.ndarray | wp.types.array:
         """Gets the depth data from the camera sensor as distance to image plane.
@@ -1083,13 +1017,10 @@ class Camera(BaseSensor):
             depth (np.ndarray): (n x m) depth data for each point.
             wp.types.array: (n x m) depth data for each point.
         """
-
-        if annot := self._custom_annotators.get("distance_to_image_plane"):
-            return annot.get_data(device=device)
+        if "distance_to_image_plane" in self._custom_annotators:
+            return self._custom_annotators["distance_to_image_plane"].get_data(device=device)
         else:
-            carb.log_warn(
-                f"[get_depth][{self.prim_path}] WARNING: Annotator 'distance_to_image_plane' not found. Available annotators: {self.get_current_frame().keys()}. Returning None"
-            )
+            carb.log_warn(f"Annotator 'distance_to_image_plane' not attached to {self._render_product_path}")
             return None
 
     def get_pointcloud(self, device: str = None, world_frame: bool = True) -> np.ndarray | wp.array:
@@ -1241,7 +1172,7 @@ class Camera(BaseSensor):
             numbers increase it.
 
         Returns:
-            float: Value of camera prim fStop attribute (in stage units). 0 turns off focusing.
+            float: Value of camera prim fStop attribute. 0 turns off focusing.
         """
         return self.prim.GetAttribute("fStop").Get()
 
@@ -1250,7 +1181,7 @@ class Camera(BaseSensor):
             numbers increase it.
 
         Args:
-            value (float): Sets value of camera prim fStop attribute (in stage units). 0 turns off focusing.
+            value (float): Sets value of camera prim fStop attribute. 0 turns off focusing.
         """
         self.prim.GetAttribute("fStop").Set(value)
         return
@@ -1355,7 +1286,10 @@ class Camera(BaseSensor):
             carb.log_warn(
                 f"'{value}' is not a supported projection type. Please use a supported OmniLensDistortion*API instead."
             )
-        self.prim.GetAttribute("cameraProjectionType").Set(value)
+        if self.prim.HasAttribute("cameraProjectionType"):
+            self.prim.GetAttribute("cameraProjectionType").Set(value)
+        else:
+            self.prim.CreateAttribute("cameraProjectionType", Sdf.ValueTypeNames.String, False).Set(value)
         return
 
     def get_lens_distortion_model(self) -> str:
@@ -1469,19 +1403,21 @@ class Camera(BaseSensor):
                 "fisheye projection type is not set to be able to use set_fisheye_polynomial_properties method."
             )
         if nominal_width:
-            self.prim.GetAttribute("fthetaWidth").Set(nominal_width)
+            self.prim.CreateAttribute("fthetaWidth", Sdf.ValueTypeNames.Float, False).Set(nominal_width)
         if nominal_height:
-            self.prim.GetAttribute("fthetaHeight").Set(nominal_height)
+            self.prim.CreateAttribute("fthetaHeight", Sdf.ValueTypeNames.Float, False).Set(nominal_height)
         if optical_centre_x:
-            self.prim.GetAttribute("fthetaCx").Set(optical_centre_x)
+            self.prim.CreateAttribute("fthetaCx", Sdf.ValueTypeNames.Float, False).Set(optical_centre_x)
         if optical_centre_y:
-            self.prim.GetAttribute("fthetaCy").Set(optical_centre_y)
+            self.prim.CreateAttribute("fthetaCy", Sdf.ValueTypeNames.Float, False).Set(optical_centre_y)
         if max_fov:
-            self.prim.GetAttribute("fthetaMaxFov").Set(max_fov)
+            self.prim.CreateAttribute("fthetaMaxFov", Sdf.ValueTypeNames.Float, False).Set(max_fov)
         if polynomial is not None:
             for i in range(5):
                 if polynomial[i]:
-                    self.prim.GetAttribute("fthetaPoly" + (chr(ord("A") + i))).Set(float(polynomial[i]))
+                    self.prim.CreateAttribute("fthetaPoly" + (chr(ord("A") + i)), Sdf.ValueTypeNames.Float, False).Set(
+                        float(polynomial[i])
+                    )
         return
 
     def set_matching_fisheye_polynomial_properties(
