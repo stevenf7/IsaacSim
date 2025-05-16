@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.4.5] - 2025-05-16
+### Changed
+- Remove timeline commit from physx callback
+
 ## [0.4.4] - 2025-05-11
 ### Changed
 - Enable FSD in test settings

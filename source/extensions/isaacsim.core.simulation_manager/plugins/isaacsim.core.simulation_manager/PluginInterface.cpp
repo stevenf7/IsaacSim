@@ -19,7 +19,6 @@
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/timeline/ITimeline.h>
 
 #include <algorithm>
 
@@ -34,7 +33,6 @@ const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.simulation_ma
 namespace
 {
 omni::physx::IPhysx* g_physXInterface = nullptr;
-omni::timeline::ITimeline* g_timelineInterface = nullptr;
 omni::physx::SubscriptionId g_physicsOnStepSubscription;
 carb::events::ISubscriptionPtr g_physicsEventSubscription;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
@@ -342,8 +340,6 @@ void onPhysicsStep(float timeElapsed, void* userData)
     g_simulationTimeMonotonic += timeElapsed;
     g_numPhysicsSteps += 1;
     g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
-    g_timelineInterface->getTimeline()->setCurrentTime(g_simulationTime);
-    g_timelineInterface->getTimeline()->commitSilently();
     g_simulating = true;
 }
 /**
@@ -392,7 +388,6 @@ public:
     {
         // TODO: in case there is more than one physics scene which one is returned?
         g_physXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
-        g_timelineInterface = carb::getCachedInterface<omni::timeline::ITimeline>();
         g_physicsOnStepSubscription = g_physXInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep, nullptr);
         g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 
