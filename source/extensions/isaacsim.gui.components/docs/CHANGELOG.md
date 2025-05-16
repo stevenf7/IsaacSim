@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2025-05-14
+### Changed
+- Added optional flourish to the combobox instead of mandatory
+
 ## [1.1.3] - 2025-05-11
 ### Changed
 - minor adjustment to the button decorator so it adapts to different button sizes centered.

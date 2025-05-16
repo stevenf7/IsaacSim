@@ -123,8 +123,8 @@ const std::unordered_map<Attributes, std::pair<pxr::TfToken, pxr::SdfValueTypeNa
 };
 // Map of relation names
 const std::unordered_map<Relations, pxr::TfToken> relationNames = {
-    { Relations::ROBOT_LINKS, pxr::TfToken("physics:robotLinks") },
-    { Relations::ROBOT_JOINTS, pxr::TfToken("physics:robotjoints") },
+    { Relations::ROBOT_LINKS, pxr::TfToken(_attrPrefix + ":physics:robotLinks") },
+    { Relations::ROBOT_JOINTS, pxr::TfToken(_attrPrefix + ":physics:robotJoints") },
     { Relations::ATTACHMENT_POINTS, pxr::TfToken(_attrPrefix + ":attachmentPoints") },
     { Relations::GRIPPED_OBJECTS, pxr::TfToken(_attrPrefix + ":grippedObjects") }
 };

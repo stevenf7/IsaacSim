@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.1] - 2025-05-14
+### Changed
+- Fixed relationship names for robot links and joints.
+
 ## [3.4.0] - 2025-05-09
 ### Changed
 - fixed minor errors on Applying surface gripper API types

@@ -360,12 +360,11 @@ std::string importRobot(const std::string& assetRoot,
         {
             physics_subLayerPaths.push_back(base_layer);
         }
-        auto robot_layer = resolve_relative(stages["physics_stage"]->GetRootLayer()->GetIdentifier(),
-                                            stages["robot_stage"]->GetRootLayer()->GetIdentifier());
-        if (std::find(physics_subLayerPaths.begin(), physics_subLayerPaths.end(), robot_layer) ==
-            physics_subLayerPaths.end())
+        auto robot_layer = resolve_relative(
+            stages["stage"]->GetRootLayer()->GetIdentifier(), stages["robot_stage"]->GetRootLayer()->GetIdentifier());
+        if (std::find(subLayerPaths.begin(), subLayerPaths.end(), robot_layer) == subLayerPaths.end())
         {
-            physics_subLayerPaths.push_back(robot_layer);
+            subLayerPaths.push_back(robot_layer);
         }
     }
     // Add as sublayers for authoring
@@ -391,6 +390,10 @@ std::string importRobot(const std::string& assetRoot,
 
             // Remove the physics and sensor stages from sublayers, and add them as payloads through variants
             rootLayer->GetSubLayerPaths().clear();
+            // Restore the Robot layer
+            // auto robot_layer = resolve_relative(stages["stage"]->GetRootLayer()->GetIdentifier(),
+            //                         stages["robot_stage"]->GetRootLayer()->GetIdentifier());
+            // rootLayer->GetSubLayerPaths().push_back(robot_layer);
             auto root_prim = stages["stage"]->GetPrimAtPath(pxr::SdfPath(result));
             if (!root_prim && !result.empty())
             {
