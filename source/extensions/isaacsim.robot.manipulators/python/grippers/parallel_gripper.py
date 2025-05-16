@@ -16,7 +16,7 @@ from isaacsim.robot.manipulators.grippers.gripper import Gripper
 
 
 class ParallelGripper(Gripper):
-    """Provides high level functions to set/ get properties and actions of a parllel gripper
+    """Provides high level functions to set/ get properties and actions of a parallel gripper
     (a gripper that has two fingers).
 
     Args:
@@ -25,6 +25,7 @@ class ParallelGripper(Gripper):
         joint_opened_positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively when opened.
         joint_closed_positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively when closed.
         action_deltas (np.ndarray, optional): deltas to apply for finger joint positions when openning or closing the gripper. Defaults to None.
+        use_mimic_joints (bool, optional): whether to use mimic joints. Defaults to False. If True, only the drive joint is used
     """
 
     def __init__(
@@ -34,6 +35,7 @@ class ParallelGripper(Gripper):
         joint_opened_positions: np.ndarray,
         joint_closed_positions: np.ndarray,
         action_deltas: np.ndarray = None,
+        use_mimic_joints: bool = False,
     ) -> None:
         Gripper.__init__(self, end_effector_prim_path=end_effector_prim_path)
         self._joint_prim_names = joint_prim_names
@@ -44,6 +46,7 @@ class ParallelGripper(Gripper):
         self._set_joint_positions_func = None
         self._action_deltas = action_deltas
         self._articulation_num_dofs = None
+        self._use_mimic_joints = use_mimic_joints
         return
 
     @property
@@ -78,6 +81,26 @@ class ParallelGripper(Gripper):
         """
         return self._joint_prim_names
 
+    @property
+    def active_joint_indices(self):
+        """Get the indices of active joints based on the use_mimic_joints setting.
+
+        Returns:
+            List[int]: List of active joint indices.
+        """
+        if self._use_mimic_joints:
+            return [self._joint_dof_indicies[0]]
+        return [self._joint_dof_indicies[0], self._joint_dof_indicies[1]]
+
+    @property
+    def active_joint_count(self):
+        """Get the number of active joints based on the use_mimic_joints setting.
+
+        Returns:
+            int: Number of active joints (1 or 2).
+        """
+        return 1 if self._use_mimic_joints else 2
+
     def initialize(
         self,
         articulation_apply_action_func: Callable,
@@ -103,23 +126,26 @@ class ParallelGripper(Gripper):
         Gripper.initialize(self, physics_sim_view=physics_sim_view)
         self._get_joint_positions_func = get_joint_positions_func
         self._articulation_num_dofs = len(dof_names)
-        for index in range(len(dof_names)):
-            if self._joint_prim_names[0] == dof_names[index]:
+
+        # Find joint indices
+        for index, dof_name in enumerate(dof_names):
+            if dof_name == self._joint_prim_names[0]:
                 self._joint_dof_indicies[0] = index
-            elif self._joint_prim_names[1] == dof_names[index]:
+            elif not self._use_mimic_joints and dof_name == self._joint_prim_names[1]:
                 self._joint_dof_indicies[1] = index
-        # make sure that all gripper dof names were resolved
-        if self._joint_dof_indicies[0] is None or self._joint_dof_indicies[1] is None:
+
+        # Validate that required joints were found
+        required_joints = 1 if self._use_mimic_joints else 2
+        indices_found = sum(1 for idx in self._joint_dof_indicies[:required_joints] if idx is not None)
+        if indices_found != required_joints:
             raise Exception("Not all gripper dof names were resolved to dof handles and dof indices.")
+
         self._articulation_apply_action_func = articulation_apply_action_func
         current_joint_positions = get_joint_positions_func()
+
         if self._default_state is None:
-            self._default_state = np.array(
-                [
-                    current_joint_positions[self._joint_dof_indicies[0]],
-                    current_joint_positions[self._joint_dof_indicies[1]],
-                ]
-            )
+            self._default_state = np.array([current_joint_positions[idx] for idx in self.active_joint_indices])
+
         self._set_joint_positions_func = set_joint_positions_func
         return
 
@@ -168,10 +194,9 @@ class ParallelGripper(Gripper):
         return self._default_state
 
     def post_reset(self):
+        """Reset the gripper to its default state."""
         Gripper.post_reset(self)
-        self._set_joint_positions_func(
-            positions=self._default_state, joint_indices=[self._joint_dof_indicies[0], self._joint_dof_indicies[1]]
-        )
+        self._set_joint_positions_func(positions=self._default_state, joint_indices=self.active_joint_indices)
         return
 
     def set_joint_positions(self, positions: np.ndarray) -> None:
@@ -179,9 +204,7 @@ class ParallelGripper(Gripper):
         Args:
             positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively.
         """
-        self._set_joint_positions_func(
-            positions=positions, joint_indices=[self._joint_dof_indicies[0], self._joint_dof_indicies[1]]
-        )
+        self._set_joint_positions_func(positions=positions, joint_indices=self.active_joint_indices)
         return
 
     def get_joint_positions(self) -> np.ndarray:
@@ -189,7 +212,7 @@ class ParallelGripper(Gripper):
         Returns:
             np.ndarray: joint positions of the left finger joint and the right finger joint respectively.
         """
-        return self._get_joint_positions_func(joint_indices=[self._joint_dof_indicies[0], self._joint_dof_indicies[1]])
+        return self._get_joint_positions_func(joint_indices=self.active_joint_indices)
 
     def forward(self, action: str) -> ArticulationAction:
         """calculates the ArticulationAction for all of the articulation joints that corresponds to "open"
@@ -205,38 +228,32 @@ class ParallelGripper(Gripper):
             ArticulationAction: articulation action to be passed to the articulation itself
                                 (includes all joints of the articulation).
         """
+        target_joint_positions = [None] * self._articulation_num_dofs
+
         if action == "open":
-            target_joint_positions = [None] * self._articulation_num_dofs
             if self._action_deltas is None:
-                target_joint_positions[self._joint_dof_indicies[0]] = self._joint_opened_positions[0]
-                target_joint_positions[self._joint_dof_indicies[1]] = self._joint_opened_positions[1]
+                # Use predefined open positions
+                for i, joint_idx in enumerate(self.active_joint_indices):
+                    target_joint_positions[joint_idx] = self._joint_opened_positions[i]
             else:
-                current_joint_positions = self._get_joint_positions_func()
-                current_left_finger_position = current_joint_positions[self._joint_dof_indicies[0]]
-                current_right_finger_position = current_joint_positions[self._joint_dof_indicies[1]]
-                target_joint_positions[self._joint_dof_indicies[0]] = (
-                    current_left_finger_position + self._action_deltas[0]
-                )
-                target_joint_positions[self._joint_dof_indicies[1]] = (
-                    current_right_finger_position + self._action_deltas[1]
-                )
+                # Apply deltas to current positions
+                current_positions = self._get_joint_positions_func()
+                for i, joint_idx in enumerate(self.active_joint_indices):
+                    target_joint_positions[joint_idx] = current_positions[joint_idx] + self._action_deltas[i]
+
         elif action == "close":
-            target_joint_positions = [None] * self._articulation_num_dofs
             if self._action_deltas is None:
-                target_joint_positions[self._joint_dof_indicies[0]] = self._joint_closed_positions[0]
-                target_joint_positions[self._joint_dof_indicies[1]] = self._joint_closed_positions[1]
+                # Use predefined closed positions
+                for i, joint_idx in enumerate(self.active_joint_indices):
+                    target_joint_positions[joint_idx] = self._joint_closed_positions[i]
             else:
-                current_joint_positions = self._get_joint_positions_func()
-                current_left_finger_position = current_joint_positions[self._joint_dof_indicies[0]]
-                current_right_finger_position = current_joint_positions[self._joint_dof_indicies[1]]
-                target_joint_positions[self._joint_dof_indicies[0]] = (
-                    current_left_finger_position - self._action_deltas[0]
-                )
-                target_joint_positions[self._joint_dof_indicies[1]] = (
-                    current_right_finger_position - self._action_deltas[1]
-                )
+                # Apply negative deltas to current positions
+                current_positions = self._get_joint_positions_func()
+                for i, joint_idx in enumerate(self.active_joint_indices):
+                    target_joint_positions[joint_idx] = current_positions[joint_idx] - self._action_deltas[i]
         else:
-            raise Exception("action {} is not defined for ParallelGripper".format(action))
+            raise Exception(f"action {action} is not defined for ParallelGripper")
+
         return ArticulationAction(joint_positions=target_joint_positions)
 
     def apply_action(self, control_actions: ArticulationAction) -> None:
@@ -248,15 +265,18 @@ class ParallelGripper(Gripper):
         joint_actions = ArticulationAction()
         if control_actions.joint_positions is not None:
             joint_actions.joint_positions = [None] * self._articulation_num_dofs
-            joint_actions.joint_positions[self._joint_dof_indicies[0]] = control_actions.joint_positions[0]
-            joint_actions.joint_positions[self._joint_dof_indicies[1]] = control_actions.joint_positions[1]
+            for i, joint_idx in enumerate(self.active_joint_indices):
+                joint_actions.joint_positions[joint_idx] = control_actions.joint_positions[i]
+
         if control_actions.joint_velocities is not None:
             joint_actions.joint_velocities = [None] * self._articulation_num_dofs
-            joint_actions.joint_velocities[self._joint_dof_indicies[0]] = control_actions.joint_velocities[0]
-            joint_actions.joint_velocities[self._joint_dof_indicies[1]] = control_actions.joint_velocities[1]
+            for i, joint_idx in enumerate(self.active_joint_indices):
+                joint_actions.joint_velocities[joint_idx] = control_actions.joint_velocities[i]
+
         if control_actions.joint_efforts is not None:
             joint_actions.joint_efforts = [None] * self._articulation_num_dofs
-            joint_actions.joint_efforts[self._joint_dof_indicies[0]] = control_actions.joint_efforts[0]
-            joint_actions.joint_efforts[self._joint_dof_indicies[1]] = control_actions.joint_efforts[1]
+            for i, joint_idx in enumerate(self.active_joint_indices):
+                joint_actions.joint_efforts[joint_idx] = control_actions.joint_efforts[i]
+
         self._articulation_apply_action_func(control_actions=joint_actions)
         return

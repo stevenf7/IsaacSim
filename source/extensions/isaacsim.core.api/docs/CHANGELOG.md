@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.2] - 2025-05-14
+### Changed
+- Specify cuboid collider
+
 ## [4.4.1] - 2025-05-14
 ### Added
 - Add missing controller classes to API docs

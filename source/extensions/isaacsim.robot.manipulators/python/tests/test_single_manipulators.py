@@ -11,9 +11,11 @@
 import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World
+from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
+from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators import SingleManipulator
-from isaacsim.robot.manipulators.grippers import SurfaceGripper
+from isaacsim.robot.manipulators.grippers import ParallelGripper, SurfaceGripper
 from isaacsim.storage.native import get_assets_root_path_async
 
 
@@ -25,6 +27,7 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         await self._my_world.initialize_simulation_context_async()
         self._assets_root_path = await get_assets_root_path_async()
         self._my_world.scene.add_default_ground_plane()
+        self._timeline = omni.timeline.get_timeline_interface()
 
     async def test_single_manipulators(self):
         asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
@@ -45,3 +48,47 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
         self.assertFalse(ur10.gripper is None)
         pass
+
+    async def test_parallel_gripper(self):
+        asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
+        robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/ur10e")
+        robot.GetVariantSet("Gripper").SetVariantSelection("Robotiq_2f_140")
+        await omni.kit.app.get_app().next_update_async()
+
+        gripper = ParallelGripper(
+            # We chose the following values while inspecting the articulation
+            end_effector_prim_path="/World/ur10e/ee_link/robotiq_base_link",
+            joint_prim_names=["finger_joint"],
+            joint_opened_positions=np.array([0]),
+            joint_closed_positions=np.array([45]),
+            action_deltas=np.array([-45]),
+            use_mimic_joints=True,
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        ur10 = self._my_world.scene.add(
+            SingleManipulator(
+                prim_path="/World/ur10e",
+                name="my_ur10e",
+                end_effector_prim_path="/World/ur10e/ee_link/robotiq_base_link",
+                gripper=gripper,
+            )
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        ur10.initialize()
+        await omni.kit.app.get_app().next_update_async()
+
+        ur10.gripper.apply_action(ArticulationAction(joint_positions=[45]))
+
+        await simulate_async(0.4)
+
+        self.assertAlmostEqual(ur10.gripper.get_joint_positions()[0], 45 / 180 * np.pi, delta=1e-2)
+
+    async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
