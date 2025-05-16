@@ -1457,3 +1457,45 @@ exclude_dirs = [
 examples_dir = "${root}/source/standalone_examples"
 # Output RST file path (relative to workspace root or absolute)
 output_file = "${root}/docs/source/standalone_examples_list.rst"
+
+# AUTOREMOVE: BEGIN
+#----------------------------------------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------------------------------------------#
+
+
+########################################################################################################################
+# Tool to strip down parts of repo and git push to github
+########################################################################################################################
+
+[repo_stage_for_github]
+enabled = true
+
+github_repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
+
+exclude = [
+    ".git",
+    ".gitlab-ci.yml",
+    "tools/ci/*",
+    "docs",
+    "tools/deps/repo-deps-nv.packman.xml",
+    "index.rst",
+    "README_internal.md"
+]
+
+[[repo_stage_for_github.trim]]
+files = ["repo.toml"]
+begin_marker = "# AUTOREMOVE: BEGIN"
+end_marker = "# AUTOREMOVE: END"
+
+[[repo_stage_for_github.trim]]
+files = [
+    "source/apps/isaacsim.exp.base.kit",
+]
+begin_marker = "# FOR DEVELOPMENT - START #"
+end_marker = "# FOR DEVELOPMENT - END #"
+
+#----------------------------------------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------------------------------------------#
+# AUTOREMOVE: END
