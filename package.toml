@@ -86,10 +86,6 @@ files_exclude = [
     # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
     ["exts/*/pip_*/**/*.exe"],
     ["extscache/*/pip_*/**/*.exe"],
-    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/*.exe"],
-    ["kit/python/lib/python3.11/site-packages/setuptools/*.exe"],
-    ["kit/python/lib/site-packages/pip/_vendor/distlib/*.exe"],
-    ["kit/python/lib/site-packages/setuptools/*.exe"],
 ]
 
 [isaac-sim-standalone.linux-x86_64]
@@ -163,10 +159,6 @@ files_exclude = [
     # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
     ["exts/*/pip_*/**/*.exe"],
     ["extscache/*/pip_*/**/*.exe"],
-    ["kit/python/lib/python3.11/site-packages/pip/_vendor/distlib/*.exe"],
-    ["kit/python/lib/python3.11/site-packages/setuptools/*.exe"],
-    ["kit/python/lib/site-packages/pip/_vendor/distlib/*.exe"],
-    ["kit/python/lib/site-packages/setuptools/*.exe"],
 ]
 
 [isaac-sim-binaryscan.release]
