@@ -63,9 +63,6 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings = carb.settings.get_settings()
         self._ext_manager = omni.kit.app.get_app().get_extension_manager()
 
-        # FOR DEVELOPMENT #
-        self._settings.set("/privacy/externalBuild", False)
-
         # Adjust the Window Title to show the Isaac Sim Version
         window_title = get_main_window_title()
         app_version_core, app_version_prerel, _, _, _, _, _, _ = get_version()
