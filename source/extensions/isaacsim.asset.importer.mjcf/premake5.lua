@@ -24,6 +24,8 @@ project_ext_plugin(ext, "isaacsim.asset.importer.mjcf.plugin")
         target_deps.."/omni_client_library/include",
         target_deps.."/omniverse_asset_converter/include",
         extsbuild_dir .. "%{root}/source/extensions/isaacsim.robot.schema/include",
+        "%{root}/source/extensions/isaacsim.asset.importer.mjcf/includes",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
     }
 
     libdirs {
@@ -73,8 +75,14 @@ project_ext_bindings {
     target_subdir = "isaacsim/asset/importer/mjcf"
 }
 
+includedirs {
+    "%{root}/source/extensions/isaacsim.asset.importer.mjcf/includes",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+}
+
+
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/isaacsim/asset/importer/mjcf/scripts" },
+    { "python/impl", ext.target_dir.."/isaacsim/asset/importer/mjcf/impl" },
     { "python/tests", ext.target_dir.."/isaacsim/asset/importer/mjcf/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },

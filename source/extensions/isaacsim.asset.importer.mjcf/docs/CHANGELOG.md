@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.3] - 2025-05-15
+### Changed
+- Restructure codebase to align with isaac sim guidelines
+
 ## [2.4.2] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
