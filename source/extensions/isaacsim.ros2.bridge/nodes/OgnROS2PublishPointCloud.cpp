@@ -18,12 +18,37 @@
 // clang-format on
 #include "isaacsim/core/includes/UsdUtilities.h"
 
+#include <carb/profiler/Profile.h>
+#include <carb/tasking/ITasking.h>
+#include <carb/tasking/TaskingUtils.h>
+
 #include <isaacsim/core/includes/ScopedCudaDevice.h>
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2PublishPointCloudDatabase.h>
 
 using namespace isaacsim::ros2::bridge;
+
+class PublishPointCloudThreadData
+{
+public:
+    PublishPointCloudThreadData()
+    {
+    }
+
+    void* inputDataPtr;
+    void* outputDataPtr;
+    size_t bufferSize;
+    size_t totalBytes;
+    int cudaDeviceIndex;
+
+    cudaStream_t* stream;
+    int* streamDevice;
+    bool* mStreamNotCreated;
+
+    std::shared_ptr<Ros2Publisher> publisher;
+    std::shared_ptr<Ros2PointCloudMessage> message;
+};
 
 class OgnROS2PublishPointCloud : public Ros2Node
 {
@@ -55,6 +80,7 @@ public:
         // Publisher was not valid, create a new one
         if (!state.m_publisher)
         {
+            CARB_PROFILE_ZONE(0, "setup point cloud publisher");
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
@@ -84,19 +110,88 @@ public:
                 state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
 
             state.m_frameId = db.inputs.frameId();
+
+            // Get extension settings for multithreading
+            carb::settings::ISettings* threadSettings = carb::getCachedInterface<carb::settings::ISettings>();
+            static constexpr char s_kThreadDisable[] = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled";
+            state.m_multithreadingDisabled = threadSettings->getAsBool(s_kThreadDisable);
             return true;
         }
 
         return state.publishLidar(db);
     }
 
+    PublishPointCloudThreadData buildThreadData(OgnROS2PublishPointCloudDatabase& db,
+                                                OgnROS2PublishPointCloud& state,
+                                                void* dataPtr,
+                                                size_t totalBytes)
+    {
+        PublishPointCloudThreadData threadData;
+
+        threadData.inputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
+        threadData.outputDataPtr = dataPtr;
+        threadData.bufferSize = db.inputs.bufferSize();
+        threadData.totalBytes = totalBytes;
+        threadData.cudaDeviceIndex = db.inputs.cudaDeviceIndex();
+
+        threadData.stream = &state.m_stream;
+        threadData.streamDevice = &state.m_streamDevice;
+        threadData.mStreamNotCreated = &state.m_streamNotCreated;
+
+        threadData.publisher = state.m_publisher;
+        threadData.message = state.m_message;
+
+        return threadData;
+    }
+
+    static bool publishPointCloudHelper(PublishPointCloudThreadData& data)
+    {
+        CARB_PROFILE_ZONE(1, "Publish PointCloud Thread");
+        isaacsim::core::includes::ScopedDevice scopedDev(data.cudaDeviceIndex);
+
+        // If the device doesn't match and we have created a stream, destroy it
+        if (*data.streamDevice != data.cudaDeviceIndex && *data.mStreamNotCreated == false)
+        {
+            CARB_PROFILE_ZONE(1, "Destroy stream");
+            CUDA_CHECK(cudaStreamDestroy(*data.stream));
+            *data.mStreamNotCreated = true;
+            *data.streamDevice = -1;
+        }
+        // Create a stream if it does not exist
+        if (*data.mStreamNotCreated)
+        {
+            CARB_PROFILE_ZONE(1, "Create stream");
+            CUDA_CHECK(cudaStreamCreate(data.stream));
+            *data.mStreamNotCreated = false;
+            *data.streamDevice = data.cudaDeviceIndex;
+        }
+
+        CARB_PROFILE_ZONE(1, "data in cuda memory");
+        CUDA_CHECK(cudaMemcpyAsync(
+            data.outputDataPtr, data.inputDataPtr, data.bufferSize, cudaMemcpyDeviceToHost, *data.stream));
+        CUDA_CHECK(cudaStreamSynchronize(*data.stream));
+
+        {
+            CARB_PROFILE_ZONE(1, "pcl publisher publish");
+            data.publisher.get()->publish(data.message->getPtr());
+        }
+        return true;
+    }
+
     bool publishLidar(OgnROS2PublishPointCloudDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
         auto& state = db.perInstanceState<OgnROS2PublishPointCloud>();
+        auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
+
+        {
+            CARB_PROFILE_ZONE(1, "wait for previous publish");
+            // Wait for last message publish
+            state.m_tasks.wait();
+        }
 
         // Check if subscription count is 0
-        if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
+        if (!state.m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
             return false;
         }
@@ -113,20 +208,38 @@ public:
                 width = db.inputs.bufferSize() / pointStep;
                 rowStep = db.inputs.bufferSize();
                 size_t totalBytes = rowStep;
-                state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
+                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, width, height, pointStep);
                 // Data is on host as ptr, buffer size matches
-                memcpy(state.m_message->getBufferPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                {
+                    memcpy(state.m_message->getBufferPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                }
             }
-
             else if (db.inputs.dataPtr() == 0)
             {
                 width = db.inputs.data.size();
                 rowStep = pointStep * db.inputs.data.size();
                 size_t totalBytes = rowStep;
-                state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
+                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, width, height, pointStep);
                 // Data is on host as ogn data, copy from cpu
-                memcpy(state.m_message->getBufferPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
-                       totalBytes);
+                {
+                    memcpy(state.m_message->getBufferPtr(),
+                           reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
+                }
+            }
+
+            if (state.m_multithreadingDisabled)
+            {
+                CARB_PROFILE_ZONE(1, "Publish PCL");
+                state.m_publisher.get()->publish(state.m_message->getPtr());
+            }
+            else
+            {
+                tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
+                                 [&state]
+                                 {
+                                     CARB_PROFILE_ZONE(1, "Publish PCL Thread");
+                                     state.m_publisher.get()->publish(state.m_message->getPtr());
+                                 });
             }
         }
         else
@@ -135,17 +248,26 @@ public:
             {
                 width = db.inputs.bufferSize() / pointStep;
                 rowStep = db.inputs.bufferSize();
-                // size_t totalBytes = rowStep;
-                state.m_message->generateBuffer(db.inputs.timeStamp(), m_frameId, width, height, pointStep);
+                size_t totalBytes = rowStep;
+                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, width, height, pointStep);
 
-                isaacsim::core::includes::ScopedDevice scopedDev(db.inputs.cudaDeviceIndex());
-                auto src = reinterpret_cast<void*>(db.inputs.dataPtr());
-                CUDA_CHECK(
-                    cudaMemcpy(state.m_message->getBufferPtr(), src, db.inputs.bufferSize(), cudaMemcpyDeviceToHost));
+                PublishPointCloudThreadData publishPointCloudThreadData =
+                    buildThreadData(db, state, state.m_message->getBufferPtr(), totalBytes);
+
+                if (state.m_multithreadingDisabled)
+                {
+                    return publishPointCloudHelper(publishPointCloudThreadData);
+                }
+                else
+                {
+                    // In order to get the benefits of using a separate stream, do the work in a new thread
+                    tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
+                                     [data = publishPointCloudThreadData]() mutable
+                                     { return publishPointCloudHelper(data); });
+                }
             }
         }
 
-        state.m_publisher.get()->publish(state.m_message->getPtr());
         return true;
     }
 
@@ -157,6 +279,19 @@ public:
 
     virtual void reset()
     {
+        {
+            CARB_PROFILE_ZONE(1, "wait for previous publish");
+            // Wait for last message to publish before starting next
+            m_tasks.wait();
+        }
+        if (m_streamNotCreated == false)
+        {
+            isaacsim::core::includes::ScopedDevice scopedDev(m_streamDevice);
+            CUDA_CHECK(cudaStreamDestroy(m_stream));
+            m_streamDevice = -1;
+            m_streamNotCreated = true;
+        }
+
         m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
@@ -166,6 +301,13 @@ private:
     std::shared_ptr<Ros2PointCloudMessage> m_message = nullptr;
 
     std::string m_frameId = "sim_lidar";
+
+    carb::tasking::TaskGroup m_tasks;
+    cudaStream_t m_stream;
+    int m_streamDevice = -1;
+    bool m_streamNotCreated = true;
+
+    bool m_multithreadingDisabled = false;
 };
 
 REGISTER_OGN_NODE()
