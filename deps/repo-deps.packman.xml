@@ -46,5 +46,9 @@
   <dependency name="repo_python_package" linkPath="../_repo/deps/repo_python_package">
     <package name="repo_python_package" version="0.5.8" />
   </dependency>
+  <!-- For building pip prebundles -->
+  <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">
+    <package name="repo_licensing" version="1.17.0" />
+  </dependency>
 # AUTOREMOVE: END
 </project>
