@@ -152,7 +152,7 @@ class AssetRenderer:
             )
 
         self._camera.set_clipping_range(0.001, self._camera.get_clipping_range()[1])
-        self._camera.initialize()
+        self._camera.initialize(attach_rgb_annotator=False)
 
         # Get the existing xform ops
         ops = AssetRenderer.get_standard_xform_ops(self._camera._camera_prim)
@@ -241,7 +241,7 @@ class AssetRenderer:
         camera_pos += Gf.Vec3d(final_center[0], final_center[1], final_center[2])
 
         self._translate_op.Set(camera_pos)
-        self._camera.initialize()
+        self._camera.initialize(attach_rgb_annotator=False)
 
         return True
 

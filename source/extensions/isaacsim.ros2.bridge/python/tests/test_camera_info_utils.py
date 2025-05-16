@@ -54,7 +54,7 @@ class TestCameraInfoUtils(omni.kit.test.AsyncTestCase):
             position=np.array([0, 0, 100]),
             orientation=np.array([1, 0, 0, 0]),
         )
-        self._camera.initialize()
+        self._camera.initialize(attach_rgb_annotator=False)
 
         # Store the render product path from the camera
         self._render_product_path = self._camera._render_product_path

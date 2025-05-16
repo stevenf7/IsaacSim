@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.6.1] - 2025-05-15
+### Changed
+- Disable RGB annotator when initializing Camera in tests
+
 ## [4.6.0] - 2025-05-15
 ### Added
 - Enabled multithreading in OgnROS2PublishPointCloud
