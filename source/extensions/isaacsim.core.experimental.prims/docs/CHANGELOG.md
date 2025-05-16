@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2025-05-16
+### Fixed
+- Fix rigid prim's angular velocity unit for USD backend
+
 ## [0.3.0] - 2025-05-12
 ### Changed
 - Update implementation to use experimental material API (visual and physics materials)

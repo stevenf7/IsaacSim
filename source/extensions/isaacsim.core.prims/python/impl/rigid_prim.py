@@ -715,7 +715,7 @@ class RigidPrim(XFormPrim):
         else:
             idx_count = 0
             indices = self._backend_utils.to_list(indices)
-            velocities = self._backend_utils.to_list(velocities)
+            velocities = np.rad2deg(self._backend_utils.to_numpy(velocities)).tolist()
             for i in indices:
                 if self._rigid_body_apis[i] is None:
                     if self._prims[i].HasAPI(UsdPhysics.RigidBodyAPI):
@@ -785,7 +785,7 @@ class RigidPrim(XFormPrim):
                 )
                 write_idx += 1
             angular_velocities = self._backend_utils.convert(
-                angular_velocities, dtype="float32", device=self._device, indexed=True
+                np.deg2rad(angular_velocities), dtype="float32", device=self._device, indexed=True
             )
             return angular_velocities
 

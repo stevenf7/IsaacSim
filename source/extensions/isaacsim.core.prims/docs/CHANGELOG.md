@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.16] - 2025-05-16
+### Fixed
+- Fix rigid prim's angular velocity unit for USD implementation
+
 ## [0.3.15] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

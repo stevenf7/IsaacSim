@@ -457,7 +457,7 @@ class RigidPrim(XformPrim):
                     )
                 if angular_velocities is not None:
                     rigid_body_api.GetAngularVelocityAttr().Set(
-                        Gf.Vec3f(*angular_velocities[0 if angular_velocities.shape[0] == 1 else i].tolist())
+                        Gf.Vec3f(*np.rad2deg(angular_velocities[0 if angular_velocities.shape[0] == 1 else i]).tolist())
                     )
 
     def get_velocities(
@@ -509,7 +509,7 @@ class RigidPrim(XformPrim):
                 linear_velocities[i] = np.array(rigid_body_api.GetVelocityAttr().Get(), dtype=np.float32)
                 angular_velocities[i] = np.array(rigid_body_api.GetAngularVelocityAttr().Get(), dtype=np.float32)
             return _ops.place(linear_velocities, device=self._device), _ops.place(
-                angular_velocities, device=self._device
+                np.deg2rad(angular_velocities), device=self._device
             )
 
     def apply_forces(
