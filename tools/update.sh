@@ -64,7 +64,7 @@ python3 isaac/generate_doxygen_input.py --root ../
 if [ "$RUN_EXTSCACHE" = true ]; then
   echo "Running build and cleaning extscache..."
   # Build with update flag
-  ../repo.sh build -xur
+  ../repo.sh build -ur
 
   # Cleanup
   python3 isaac/clean_extscache.py --update-locks --kit-file="../source/apps/isaacsim.exp.extscache.kit"

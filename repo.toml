@@ -465,10 +465,6 @@ doxygen_input = [
   "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lightbeam_sensor/LightBeamSensor.h",
   "source/extensions/isaacsim.sensors.rtx/include/isaacsim/sensors/rtx/IIsaacSimSensorsRtx.h",
   "source/extensions/isaacsim.sensors.rtx/nodes/SensorNodeUtils.h",
-  "source/extensions/isaacsim.util.debug_draw/include/isaacsim/util/debug_draw/Curves.h",
-  "source/extensions/isaacsim.util.debug_draw/include/isaacsim/util/debug_draw/IDebugDraw.h",
-  "source/extensions/isaacsim.util.debug_draw/include/isaacsim/util/debug_draw/PrimitiveDrawingHelper.h",
-  "source/extensions/isaacsim.xr.openxr/include/isaacsim/xr/openxr/IOpenXR.h",
   "source/extensions/omni.kit.loop-isaac/include/RunLoopRunner.h",
   "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
 ]
