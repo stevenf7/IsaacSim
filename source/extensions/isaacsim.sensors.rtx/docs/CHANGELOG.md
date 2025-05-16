@@ -1,4 +1,9 @@
 # Changelog
+
+## [15.0.2] - 2025-05-15
+### Changed
+- UsdUtilities.h was updated
+
 ## [15.0.1] - 2025-05-03
 ### Added
 - Added SICK TiM 481 and Slamtec RPLIDAR S2E to test suite.

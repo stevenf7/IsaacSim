@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.18] - 2025-05-15
+### Changed
+- UsdUtilities.h was updated
+
 ## [2.2.17] - 2025-05-11
 ### Changed
 - Enable FSD in test settings
