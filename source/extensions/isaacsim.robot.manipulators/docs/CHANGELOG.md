@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.3.0] - 2025-05-12
+### Changed
+- Update ParallelGripper to be compatible with mimic joint claws that are controlled by a single joint
+
 ## [3.2.1] - 2025-05-10
 ### Changed
 - Enable FSD in test settings
