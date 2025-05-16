@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.2] - 2025-05-16
+### Changed
+- UsdUtilities.h was updated
+
 ## [4.6.1] - 2025-05-15
 ### Changed
 - Disable RGB annotator when initializing Camera in tests

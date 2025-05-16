@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.4] - 2025-05-15
+### Changed
+- Remove unnecessary warnings for empty attributes in UsdUtilities.h
+
 ## [2.0.3] - 2025-05-10
 ### Changed
 - Remove internal build time dependency

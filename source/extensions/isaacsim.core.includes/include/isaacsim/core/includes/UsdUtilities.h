@@ -387,7 +387,6 @@ inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& 
  * @details
  * Provides a safe way to get attribute values with:
  * - Value existence checking
- * - Warning messages for missing values
  * - Type-safe value retrieval
  *
  * @tparam T Type of the attribute value to retrieve
@@ -404,10 +403,6 @@ void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
     if (attr.HasValue())
     {
         attr.Get(&inputValue);
-    }
-    else
-    {
-        CARB_LOG_WARN("USD attribute %s does not exist, using default", attr.GetName().GetString().c_str());
     }
 }
 

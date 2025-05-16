@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.1] - 2025-05-15
+### Changed
+- UsdUtilities.h was updated
+
 ## [3.1.0] - 2025-05-13
 ### Changed
 - Added IsaacReadSimulationTimeAnnotator node
