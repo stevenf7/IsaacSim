@@ -45,6 +45,7 @@ stages:
   - security
   - deploy
   - prod-test
+  - check-externals
   - pages
 
 # ==============================================================================================================
@@ -1722,7 +1723,8 @@ publish-to-packman:
   extends:
     - .repo-artifacts
     - .check-common
-  stage: check
+  stage: check-externals
+  needs: []
   allow_failure: true
   artifacts:
     paths:
