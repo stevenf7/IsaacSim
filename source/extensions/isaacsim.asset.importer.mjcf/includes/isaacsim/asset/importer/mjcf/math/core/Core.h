@@ -134,27 +134,3 @@ T ByteSwap(const T& val)
 #else
 #    define ToLittleEndian(x) x
 #endif
-
-// #include "platform.h"
-
-// #define sizeof_array(x) (sizeof(x)/sizeof(*x))
-template <typename T, size_t N>
-size_t sizeof_array(const T (&)[N])
-{
-    return N;
-}
-
-// unary_function depricated in c++11
-// functor designed for use in the stl
-// template <typename T>
-// class free_ptr : public std::unary_function<T*, void>
-//{
-// public:
-//    void operator()(const T* ptr)
-//    {
-//        delete ptr;
-//    }
-//};
-
-// given the path of one file it strips the filename and appends the relative
-// path onto it

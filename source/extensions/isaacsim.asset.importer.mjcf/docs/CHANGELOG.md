@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.4] - 2025-05-15
+### Changed
+- Updated MakeRelativePath to use std::string
+
 ## [2.4.3] - 2025-05-15
 ### Changed
 - Restructure codebase to align with isaac sim guidelines

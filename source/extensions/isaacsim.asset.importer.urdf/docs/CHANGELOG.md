@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.4] - 2025-05-15
+### Fixed
+- Removed unused code
+
 ## [2.4.3] - 2025-05-14
 ### Fixed
 - Fixed issue where the importer was not properly adding the robot schema prim lists and layer assignments as a List Editable.
