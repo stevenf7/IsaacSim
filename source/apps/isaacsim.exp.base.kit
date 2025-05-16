@@ -196,7 +196,7 @@ indent_all_ticks = false
 show_menu_titles = true
 
 [settings.app]
-name = "Isaac-Sim"
+name = "Isaac-Sim Base"
 version = "5.0.0"
 versionFile = "${app}/../VERSION"
 content.emptyStageOnStart = true
@@ -209,7 +209,8 @@ hangDetector.enabled = true
 hangDetector.timeout = 120
 settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata TODO105 still true?
 settings.persistent = true                       # settings are persistent for this app
-useFabricSceneDelegate=true                      # use FSD by default for better performance
+useFabricSceneDelegate = true                    # use FSD by default for better performance
+enableDeveloperWarnings = false                  # disable developer warnings to reduce log noise
 
 vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
 ### async rendering settings
