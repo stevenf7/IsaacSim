@@ -2,12 +2,12 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "imageio==2.22.2",                 # SWIPAT filed under: https://nvbugs/3701046
-    "scipy==1.10.1",                   # SWIPAT filed under: https://nvbugs/3673519
-    "pyyaml==6.0.1",                   # SWIPAT filed under: https://nvbugs/3434739
-    "opencv-python-headless==4.9.0.80",         # SWIPAT filed under:
-    "trimesh==4.5.1",                  # SWIPAT filed under:
-    "rtree==1.3.0",                    # SWIPAT filed under:
+    "imageio==2.37.0",                  # SWIPAT filed under: https://nvbugs/3701046    # 
+    "scipy==1.15.3",                    # SWIPAT filed under: https://nvbugs/3673519    # General
+    "pyyaml==6.0.2",                    # SWIPAT filed under: https://nvbugs/3434739    # General
+    "opencv-python-headless==4.11.0.86",# SWIPAT filed under:                           # General
+    "trimesh==4.5.1",                   # SWIPAT filed under:                           # Grasp generation
+    "rtree==1.3.0",                     # SWIPAT filed under:                           # Grasp generation  
 ]
 
 target = "../_build/target-deps/pip_compute_prebundle"
