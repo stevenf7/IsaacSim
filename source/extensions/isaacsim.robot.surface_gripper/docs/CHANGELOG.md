@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.4] - 2025-05-16
+### Changed
+- Update extension unit tests
+
 ## [3.0.3] - 2025-05-15
 ### Changed
 - UsdUtilities.h was updated

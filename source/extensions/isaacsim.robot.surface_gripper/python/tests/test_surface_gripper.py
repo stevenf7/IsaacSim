@@ -13,6 +13,7 @@ import os
 
 import carb
 import carb.tokens
+import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import numpy as np
 import omni.kit.commands
 
@@ -22,444 +23,361 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.physics.tensors
-from isaacsim.core.prims import SingleRigidPrim
+from isaacsim.core.api import World
+from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.physics import simulate_async
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-# from isaacsim.robot.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
-from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdLux, UsdPhysics
+from isaacsim.core.utils.stage import (
+    add_reference_to_stage,
+    clear_stage,
+    close_stage,
+    create_new_stage_async,
+    get_current_stage,
+    update_stage_async,
+)
+from pxr import Gf, PhysxSchema
 from usd.schema.isaac import robot_schema
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
-    async def createRigidCube(self, boxActorPath, mass, scale, position, rotation, color):
-        p = Gf.Vec3f(position[0], position[1], position[2])
-        orientation = Gf.Quatf(rotation[3], rotation[0], rotation[1], rotation[2])
-        color = Gf.Vec3f(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
-        size = 1.0
-        scale = Gf.Vec3f(scale[0], scale[1], scale[2])
-
-        cubeGeom = UsdGeom.Cube.Define(self.stage, boxActorPath)
-        cubePrim = self.stage.GetPrimAtPath(boxActorPath)
-        cubeGeom.CreateSizeAttr(size)
-        cubeGeom.AddTranslateOp().Set(p)
-        cubeGeom.AddOrientOp().Set(orientation)
-        cubeGeom.AddScaleOp().Set(scale)
-        cubeGeom.CreateDisplayColorAttr().Set([color])
-        await omni.kit.app.get_app().next_update_async()
-        UsdPhysics.CollisionAPI.Apply(cubePrim)
-        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
-
-        if mass > 0:
-            massAPI = UsdPhysics.MassAPI.Apply(cubePrim)
-            massAPI.CreateMassAttr(mass)
-        else:
-            rigid_api.CreateKinematicEnabledAttr(True)
-
-        await omni.kit.app.get_app().next_update_async()
-        UsdPhysics.CollisionAPI(cubePrim)
-
-    # Helper for setting up the physics stage
-    async def setup_physics(self, box1_props):
-        # Set Up Physics scene
-
-        UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
-        self._scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/physicsScene"))
-        self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        self._scene.CreateGravityMagnitudeAttr().Set(9.81)
-
-        # Create two cubes and set them to be rigid bodies
-
-        # box0
-        await self.createRigidCube(*self.box0_props)
-        # Box1
-        await self.createRigidCube(*box1_props)
-
-        joint_prim = UsdPhysics.Joint.Define(self.stage, self.d6FixedJoint)
-        joint_prim.CreateBody0Rel().SetTargets([self.box0])
-        joint_prim.CreateBody1Rel().SetTargets([self.box1])
-
-        # d6FixedJoint = UsdPhysics.Joint.Define(self.stage, "/box0/d6FixedJoint")
-        # d6FixedJoint.CreateBody0Rel().SetTargets(["/box0"])
-
-    # Before running each test
     async def setUp(self):
-        self.box0 = "/box0"
-        self.box1 = "/box1"
-        self.box0_props = [self.box0, 0.0, [1, 1, 2.0], [-0.50, 0, 1.00], [0, 0, 0, 1], [80, 80, 255]]
-        self.box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
-        self.d6FixedJoint = Sdf.Path("/box0/d6FixedJoint")
-
-        # self.sgp = Surface_Gripper_Properties()
-        # self.sgp.d6JointPath = self.d6FixedJoint
-        # self.sgp.parentPath = self.box0
-        # self.sgp.offset = omni.physics.tensors.Transform()
-        # self.sgp.offset.p.x = 0.501
-        # self.sgp.offset.p.z = 1.00
-        # self.sgp.gripThreshold = 0.02
-        # self.sgp.forceLimit = 1.0e3
-        # self.sgp.torqueLimit = 1.0e3
-        # self.sgp.bendAngle = np.pi / 4
-        # self.sgp.stiffness = 1.0e4
-        # self.sgp.damping = 1.0e3
-
-        await omni.usd.get_context().new_stage_async()
-        self.stage = omni.usd.get_context().get_stage()
+        World.clear_instance()
+        await create_new_stage_async()
+        self._world = World(stage_units_in_meters=1.0)
+        await self._world.initialize_simulation_context_async()
+        self._stage = get_current_stage()
+        self._gripper_interface = surface_gripper.acquire_surface_gripper_interface()
         self._timeline = omni.timeline.get_timeline_interface()
+        await update_stage_async()
+        await self.load_gantry_scene()
+        await update_stage_async()
 
-        self.surface_gripper = omni.kit.commands.execute(
-            "CreateSurfaceGripper",
-            prim_path="/SurfaceGripper",
-        )
-
-        gripper_prim = self.stage.GetPrimAtPath("/SurfaceGripper")
-        attachment_points_rel = gripper_prim.GetRelationship(robot_schema.Relations.ATTACHMENT_POINTS.name)
-        attachment_points_rel.SetTargets([self.d6FixedJoint])
-
-        pass
-
-    # After running each test
     async def tearDown(self):
-        # Because lifetime for this joint object is managed by the DC plugin and not usd the order
-        # that dc and the gripper are cleaned up matters. First remove the surface gripper and
-        # then call stop and then cleanup dc
-        self.surface_gripper = None
-        # await omni.kit.app.get_app().next_update_async()
-        # self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        pass
-
-    # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_create_surface_gripper(self):
-
-        # self.surface_gripper = Surface_Gripper()
-        assert self.surface_gripper is not None
-
-        pass
-
-    async def test_initialize_surface_gripper(self):
-
-        await self.setup_physics(self.box1_props)
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
-        self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        # self.assertTrue(self.surface_gripper.initialize(self.sgp))
-        pass
-
-    async def test_close_surface_gripper(self):
-
-        await self.setup_physics(self.box1_props)
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
-        self._timeline.play()
-
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-
-        # self.sgp.forceLimit = 1.0e10
-        # self.sgp.torqueLimit = 1.0e10
-        # self.sgp.stiffness = 1.0e10
-
-        # self.surface_gripper.initialize(self.sgp)
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=self.box1_props[3], orientation=self.box1_props[4])
-        box1.set_linear_velocity([0.0, 0.0, 0.0])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
-
-        # self.assertTrue(self.surface_gripper.close())
-        # use 100 instead of 30, to make sure the joint doesn't break
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
-            # self.surface_gripper.update()
-        # self.assertTrue(self.surface_gripper.is_closed())
-        await simulate_async(1.0)
-        await omni.kit.app.get_app().next_update_async()
-        position, orientation = box1.get_world_pose()
-        # self.assertGreater(position[2], 2.00)
-
-        # Check to make sure that pause and then play does not break joint
-        self._timeline.pause()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
-        await simulate_async(0.5)
-        await omni.kit.app.get_app().next_update_async()
-        # self.surface_gripper.update()
-        position, orientation = box1.get_world_pose()
-        # self.assertGreater(position[2], 2.00)
-        # self.assertTrue(self.surface_gripper.is_closed())
-        pass
-
-    async def test_close_stop_close(self):
-        await self.test_close_surface_gripper()
+        await update_stage_async()
         self._timeline.stop()
-        await simulate_async(0.5)
-        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await simulate_async(1.0)
+        await update_stage_async()
 
+    async def test_create_surface_gripper(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await update_stage_async()
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
+        self.assertTrue(gripper_prim.IsValid())
+
+    async def test_configure_surface_gripper(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
+        self.assertTrue(gripper_prim.GetAttribute(robot_schema.Attributes.MAX_GRIP_DISTANCE.name).IsValid())
+        self.assertTrue(gripper_prim.GetAttribute(robot_schema.Attributes.COAXIAL_FORCE_LIMIT.name).IsValid())
+        self.assertTrue(gripper_prim.GetAttribute(robot_schema.Attributes.SHEAR_FORCE_LIMIT.name).IsValid())
+        self.assertTrue(gripper_prim.GetAttribute(robot_schema.Attributes.RETRY_INTERVAL.name).IsValid())
+
+    async def test_close_open_close_surface_gripper(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=self.box1_props[3], orientation=self.box1_props[4])
-        box1.set_linear_velocity([0.0, 0.0, 0.0])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
 
-        # self.assertTrue(self.surface_gripper.close())
-        # use 100 instead of 30, to make sure the joint doesn't break
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
-            # self.surface_gripper.update()
-        # self.assertTrue(self.surface_gripper.is_closed())
+        await self.update_joint_target_positions(0.0, 0.0, 0.145)
         await simulate_async(1.0)
-        await omni.kit.app.get_app().next_update_async()
-        position, orientation = box1.get_world_pose()
-        # self.assertGreater(position[2], 2.000)
 
-        # Check to make sure that pause and then play does not break joint
-        self._timeline.pause()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
-        await simulate_async(0.5)
-        await omni.kit.app.get_app().next_update_async()
-        # self.surface_gripper.update()
-        position, orientation = box1.get_world_pose()
-        # self.assertGreater(position[2], 2.000)
-        # self.assertTrue(self.surface_gripper.is_closed())
-        pass
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_28")
 
-    async def test_close_surface_gripper_and_move(self):
-        self.box0_props[1] = 3.000
-        self.box0_props[2] = [0.1, 0.1, 0.1]
-        self.box0_props[3] = [-0.05, 0, 0.05]
-        box1_props = [self.box1, 0.0100, [0.1, 0.1, 0.1], [0.05, 0, 0.05], [0, 0, 0, 1], [255, 80, 80]]
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.open_gripper(gripper_prim_path)
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
 
-        await self.setup_physics(box1_props)
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_28")
 
-        # Disable gravity for this test
-        self._scene.CreateGravityMagnitudeAttr().Set(0.0)
-
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
-        self._timeline.play()
-
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        # self.sgp.offset.p.x = 0.051
-        # self.sgp.offset.p.z = 0
-        # self.sgp.gripThreshold = 2
-        # self.sgp.forceLimit = 1.0e10
-        # self.sgp.torqueLimit = 1.0e10
-        # self.sgp.bendAngle = 0
-        # self.sgp.stiffness = 1.0e10
-        # self.sgp.damping = 1.0e10
-
-        # self.surface_gripper.initialize(self.sgp)
-        box0 = SingleRigidPrim(self.box0)
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=box1_props[3], orientation=box1_props[4])
-        box1.set_linear_velocity([0.0, 0.0, 0.0])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
-        # self.assertTrue(self.surface_gripper.close())
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
-            box0.set_linear_velocity([0, 0.0, 5.00])
-            box0.set_angular_velocity([-20.0, 0.0, 10])
-            # self.surface_gripper.update()
-        # self.assertTrue(self.surface_gripper.is_closed())
-
-        v0 = box0.get_linear_velocity()
-        v1 = box1.get_angular_velocity()
-
-        # Check if both objects are moving
-        # self.assertGreater(np.linalg.norm(v0), 0.01)
-        # self.assertGreater(np.linalg.norm(v1), 0.01)
-
-        pass
-
-    async def test_close_offset_surface_gripper(self):
-
-        self.box0_props[4] = (0, 0, 0.70701, -0.70701)
-        self.box1_props = [self.box1, 0.10, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
-        # self.sgp.offset.p = (0, 0.501, 1.00)
-        # self.sgp.offset.r = (0, 0, 0.7071, 0.7071)
-        # self.sgp.forceLimit = 1.0e10
-        # self.sgp.torqueLimit = 1.0e10
-        # self.sgp.stiffness = 1.0e10
-
-        await self.test_close_surface_gripper()
-        pass
-
-    async def test_close_out_of_reach_surface_gripper(self):
-
-        box1_props = [self.box1, 0.010, [0.1, 0.1, 0.1], [0.08, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
-
-        await self.setup_physics(box1_props)
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
+    async def test_multi_object_close(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
         self._timeline.play()
 
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        # self.surface_gripper.initialize(self.sgp)
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=box1_props[3], orientation=box1_props[4])
-        box1.set_linear_velocity([0.0, 0.0, 0.0])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
+        await self.update_joint_target_positions(0.175, 0.0, 0.145)
+        await simulate_async(1.0)
 
-        # self.assertFalse(self.surface_gripper.close())
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
-            # self.surface_gripper.update()
-        # self.assertFalse(self.surface_gripper.is_closed())
+        expected_gripped_object_list = ["/World/Boxes/Cube_20", "/World/Boxes/Cube_24"]
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        await update_stage_async()
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 2)
+        self.assertTrue(sorted(set(gripped_object_list)) == sorted(set(expected_gripped_object_list)))
 
-        position, orientation = box1.get_world_pose()
-        # self.assertLess(position[2], 2.00)
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.open_gripper(gripper_prim_path)
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
 
-        pass
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 2)
+        self.assertTrue(sorted(set(gripped_object_list)) == sorted(set(expected_gripped_object_list)))
 
-    async def test_open_surface_gripper(self):
-
-        await self.test_close_surface_gripper()
-
-        box1 = SingleRigidPrim(self.box1)
-        # self.surface_gripper.open()
-        await omni.kit.app.get_app().next_update_async()
-        # self.surface_gripper.update()
-        await simulate_async(1)
-        await omni.kit.app.get_app().next_update_async()
-        # self.assertFalse(self.surface_gripper.is_closed())
-        lin_vel = box1.get_linear_velocity()
-        # self.assertGreater(np.linalg.norm(lin_vel), 0)
-        position, orientation = box1.get_world_pose()
-        # self.assertLess(position[2], 200)
-
-        # Check to make sure that pause and then play does not close joint
-        self._timeline.pause()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
+    async def test_close_threshold(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
         self._timeline.play()
-        await simulate_async(0.5)
-        await omni.kit.app.get_app().next_update_async()
-        position, orientation = box1.get_world_pose()
-        # self.assertLess(position[2], 200)
-        # self.assertFalse(self.surface_gripper.is_closed())
-        pass
 
-    async def test_break_surface_gripper(self):
+        await self.update_joint_target_positions(0.0, 0.0, 0.125)
+        await simulate_async(1.0)
 
-        box1_props = [self.box1, 100, [0.1, 0.1, 0.02], [0.06, 0, 2.005], [0, 0, 0, 1], [255, 80, 80]]
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
 
-        await self.setup_physics(box1_props)
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.open_gripper(gripper_prim_path)
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
+
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
+
+    async def test_retry_interval(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
         self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        # self.surface_gripper.initialize(self.sgp)
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=[0.06, 0, 2.005], orientation=box1_props[4])
-        box1.set_linear_velocity([0.0, 0.0, 0.0])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
 
-        # self.assertTrue(self.surface_gripper.close())
-        await omni.kit.app.get_app().next_update_async()
+        await self.update_joint_target_positions(0.0, 0.0, 0.125)
+        await simulate_async(1.0)
 
-        i = 0
-        while i < 600:
-            i = i + 1
-            await omni.kit.app.get_app().next_update_async()
-            # self.surface_gripper.update()
-            # if not self.surface_gripper.is_closed():
-            #     break
-        # self.assertFalse(self.surface_gripper.is_closed())
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await self.update_joint_target_positions(0.0, 0.0, 0.145)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closing")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
 
-        lin_vel = box1.get_linear_velocity()
-        # self.assertGreater(np.linalg.norm(lin_vel), 0)
-        pass
+        await simulate_async(1.0)
 
-    async def test_bend_surface_gripper(self):
-        from isaacsim.core.utils._isaac_utils import math as mu
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_28")
 
-        box1_props = [self.box1, 0.200, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
-
-        await self.setup_physics(box1_props)
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
+    async def test_shear_break_forces(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
         self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        # self.sgp.forceLimit = 1.0e24
-        # self.sgp.torqueLimit = 1.0e24
-        # self.sgp.stiffness = 1.0e-1
-        # self.sgp.damping = 1.0e-2
-        # self.surface_gripper.initialize(self.sgp)
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=[0.06, 0, 2.04], orientation=box1_props[4])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
-        # self.assertTrue(self.surface_gripper.close())
-        await omni.kit.app.get_app().next_update_async()
 
-        i = 0
-        rx1 = (1, 0, 0)
-        rx2 = (1, 0, 0)
-        while i < 300:
-            i += 1
-            await omni.kit.app.get_app().next_update_async()
-            position, orientation = box1.get_world_pose()
-            rx1 = mu.get_basis_vector_x(orientation)
-            rx2 = mu.get_basis_vector_x(box1_props[4])
-            # self.surface_gripper.update()
+        await self.update_joint_target_positions(0.0, 0.0, 0.145)
+        await simulate_async(1.0)
 
-        # self.assertLess(abs(mu.dot(rx2, rx1)), 0.9)
-        box1.set_linear_velocity([0.0, 0.0, 0.0])
-        while i < 400:
-            i += 1
-            await omni.kit.app.get_app().next_update_async()
-            # self.surface_gripper.update()
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
 
-        # self.assertTrue(self.surface_gripper.is_closed())
-        # self.assertGreater(position[2], 1.90)
-        pass
+        # Max shear force is 5
+        # Box 28 has mass of 0.2
+        box_28_prim_path = "/World/Boxes/Cube_28"
+        box_28_prim = self._stage.GetPrimAtPath(box_28_prim_path)
+        forceApi = PhysxSchema.PhysxForceAPI.Apply(box_28_prim)
+        forceApi.GetForceAttr().Set(Gf.Vec3f(0.0, -4, 0.0))
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], box_28_prim_path)
 
-    async def test_fixed_surface_gripper(self):
-        from isaacsim.core.utils._isaac_utils import math as mu
+        forceApi.GetForceAttr().Set(Gf.Vec3f(0.0, -500, 0.0))
+        await update_stage_async()
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
 
-        box1_props = [self.box1, 0.100, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
-
-        await self.setup_physics(box1_props)
-        # self.surface_gripper = Surface_Gripper()
-        # Start Simulation and wait
+    async def test_coaxial_break_force(self):
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
         self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
-        # self.sgp.forceLimit = 1.0e24
-        # self.sgp.torqueLimit = 1.0e24
-        # self.sgp.stiffness = 1.0
-        # self.sgp.damping = 1.0
-        # self.sgp.bendAngle = 0
-        # self.surface_gripper.initialize(self.sgp)
-        box1 = SingleRigidPrim(self.box1)
-        box1.set_world_pose(position=[0.06, 0, 2.04], orientation=box1_props[4])
-        box1.set_angular_velocity([0.0, 0.0, 0.0])
-        # self.assertTrue(self.surface_gripper.close())
-        await omni.kit.app.get_app().next_update_async()
 
-        i = 0
-        rx1 = (1, 0, 0)
-        rx2 = (1, 0, 0)
-        while i < 300:
-            i += 1
-            await omni.kit.app.get_app().next_update_async()
-            position, orientation = box1.get_world_pose()
-            rx1 = mu.get_basis_vector_x(orientation)
-            rx2 = mu.get_basis_vector_x(box1_props[4])
-            # self.surface_gripper.update()
+        await self.update_joint_target_positions(0.0, 0.0, 0.145)
+        await simulate_async(1.0)
 
-        # self.assertGreater(abs(mu.dot(rx2, rx1)), 0.99)
-        # self.assertTrue(self.surface_gripper.is_closed())
-        # self.assertGreater(position[2], 2.00)
-        pass
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+
+        # Max coaxial force is 0.005
+        # Box 28 has mass of 0.2
+        box_28_prim_path = "/World/Boxes/Cube_28"
+        box_28_prim = self._stage.GetPrimAtPath(box_28_prim_path)
+        forceApi = PhysxSchema.PhysxForceAPI.Apply(box_28_prim)
+        forceApi.GetForceAttr().Set(Gf.Vec3f(0.0, 0.0, -0.003))
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closed")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], box_28_prim_path)
+
+        await self.update_joint_target_positions(0.0, 0.0, 0.0)
+        await simulate_async(1.0)
+
+        forceApi.GetForceAttr().Set(Gf.Vec3f(0.0, 0.0, -1000))
+        await update_stage_async()
+        await simulate_async(2.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
+
+    async def test_multi_gripper_scene(self):
+        # First gripper
+        gripper_prim_path = "/World/SurfaceGripper"
+        gripper_joints_prim_path = "/World/Surface_Gripper_Joints"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path)
+        await self.configure_surface_gripper(gripper_prim_path, gripper_joints_prim_path)
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
+
+        # Second gripper
+        gripper_prim_path_01 = "/World/SurfaceGripper_01"
+        gripper_joints_prim_path_01 = "/World/Surface_Gripper_Joints_01"
+        robot_schema.CreateSurfaceGripper(self._stage, gripper_prim_path_01)
+        await self.configure_surface_gripper(gripper_prim_path_01, gripper_joints_prim_path_01)
+        gripper_prim_01 = self._stage.GetPrimAtPath(gripper_prim_path_01)
+
+        self._timeline.play()
+
+        # Move grippers down to touch the boxes
+        # First gripper should be "Closing" (Some gripper joints are off the box)
+        # Second gripper should be "Closed"
+        await self.update_joint_target_positions(0.0, 0.05, 0.15)
+        await simulate_async(1.0)
+
+        # First gripper
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closing")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_28")
+
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.open_gripper(gripper_prim_path)
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Open")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
+
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.close_gripper(gripper_prim_path)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path), "Closing")
+        gripped_object_list = gripper_prim.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_28")
+
+        # Second gripper
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.close_gripper(gripper_prim_path_01)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path_01), "Closed")
+        gripped_object_list = gripper_prim_01.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_30")
+
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.open_gripper(gripper_prim_path_01)
+        await update_stage_async()
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path_01), "Open")
+        gripped_object_list = gripper_prim_01.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 0)
+
+        await update_stage_async()
+        await update_stage_async()
+        self._gripper_interface.close_gripper(gripper_prim_path_01)
+        await simulate_async(1.0)
+        self.assertEqual(self._gripper_interface.get_gripper_status(gripper_prim_path_01), "Closed")
+        gripped_object_list = gripper_prim_01.GetRelationship(robot_schema.Relations.GRIPPED_OBJECTS.name).GetTargets()
+        self.assertEqual(len(gripped_object_list), 1)
+        self.assertEqual(gripped_object_list[0], "/World/Boxes/Cube_30")
+
+    async def load_gantry_scene(self):
+        usd_path = os.path.abspath(
+            os.path.join(
+                get_extension_path_from_name("isaacsim.robot.surface_gripper"), "data", "SurfaceGripper_gantry.usda"
+            )
+        )
+        add_reference_to_stage(usd_path, "/World")
+        self._stage.SetDefaultPrim(self._stage.GetPrimAtPath("/World"))
+        await update_stage_async()
+
+    async def configure_surface_gripper(self, gripper_prim_path, gripper_joints_prim_path):
+        gripper_prim = self._stage.GetPrimAtPath(gripper_prim_path)
+        attachment_points_rel = gripper_prim.GetRelationship(robot_schema.Relations.ATTACHMENT_POINTS.name)
+        gripper_joints = [p.GetPath() for p in self._stage.GetPrimAtPath(gripper_joints_prim_path).GetChildren()]
+        attachment_points_rel.SetTargets(gripper_joints)
+        gripper_prim.GetAttribute(robot_schema.Attributes.MAX_GRIP_DISTANCE.name).Set(0.02)
+        gripper_prim.GetAttribute(robot_schema.Attributes.COAXIAL_FORCE_LIMIT.name).Set(0.005)
+        gripper_prim.GetAttribute(robot_schema.Attributes.SHEAR_FORCE_LIMIT.name).Set(5)
+        gripper_prim.GetAttribute(robot_schema.Attributes.RETRY_INTERVAL.name).Set(1.0)
+        await update_stage_async()
+
+    async def update_joint_target_positions(self, joint_x_target, joint_y_target, joint_z_target):
+        joint_x = self._stage.GetPrimAtPath("/World/Joints/x_joint")
+        joint_x.GetAttribute("drive:linear:physics:targetPosition").Set(joint_x_target)
+        await update_stage_async()
+        joint_y = self._stage.GetPrimAtPath("/World/Joints/y_joint")
+        joint_y.GetAttribute("drive:linear:physics:targetPosition").Set(joint_y_target)
+        await update_stage_async()
+        joint_z = self._stage.GetPrimAtPath("/World/Joints/z_joint")
+        joint_z.GetAttribute("drive:linear:physics:targetPosition").Set(joint_z_target)
+        await update_stage_async()
