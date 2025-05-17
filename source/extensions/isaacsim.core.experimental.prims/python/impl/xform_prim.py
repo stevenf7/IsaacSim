@@ -95,7 +95,7 @@ class XformPrim(Prim):
         # initialize base class
         super().__init__(paths, resolve_paths=resolve_paths)
         # initialize instance from arguments
-        self._non_root_articulation_link = is_prim_non_root_articulation_link(prim_path=self.prim_paths[0])
+        self._non_root_articulation_link = is_prim_non_root_articulation_link(prim_path=self.paths[0])
         # - reset xformOp properties
         if not self._non_root_articulation_link:
             if reset_xform_op_properties:
@@ -406,7 +406,7 @@ class XformPrim(Prim):
             if material_path:
                 material = VisualMaterial.fetch_instances([material_path])[0]
                 if material is None:
-                    carb.log_warn(f"Unsupported visual material ({material_path}): {self.prim_paths[index]}")
+                    carb.log_warn(f"Unsupported visual material ({material_path}): {self.paths[index]}")
             materials.append(material)
         return materials
 
@@ -447,7 +447,7 @@ class XformPrim(Prim):
             positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
-                positions[i], orientations[i] = get_world_pose(self.prim_paths[index])
+                positions[i], orientations[i] = get_world_pose(self.paths[index])
             return _ops.place(positions, device=self._device), _ops.place(orientations, device=self._device)
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
@@ -456,7 +456,7 @@ class XformPrim(Prim):
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
-                matrix = fabric_hierarchy.get_world_xform(usdrt.Sdf.Path(self.prim_paths[index]))
+                matrix = fabric_hierarchy.get_world_xform(usdrt.Sdf.Path(self.paths[index]))
                 quaternion = matrix.RemoveScaleShear().ExtractRotationQuat()
                 positions[i] = matrix.ExtractTranslation()
                 orientations[i] = np.array([quaternion.GetReal(), *quaternion.GetImaginary()])
@@ -578,15 +578,15 @@ class XformPrim(Prim):
                 broadcast_orientations = orientations.shape[0] == 1
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
-                prim_path = usdrt.Sdf.Path(self.prim_paths[index])
-                matrix = fabric_hierarchy.get_world_xform(usdrt.Sdf.Path(self.prim_paths[index]))
+                path = usdrt.Sdf.Path(self.paths[index])
+                matrix = fabric_hierarchy.get_world_xform(path)
                 if positions is not None:
                     matrix.SetTranslateOnly(usdrt.Gf.Vec3d(*positions[0 if broadcast_positions else i]))
                 if orientations is not None:
                     matrix.SetRotateOnly(usdrt.Gf.Quatd(*orientations[0 if broadcast_orientations else i]))
                     scaling_matrix = usdrt.Gf.Matrix4d().SetIdentity().SetScale(usdrt.Gf.Transform(matrix).GetScale())
                     matrix = scaling_matrix * matrix
-                fabric_hierarchy.set_world_xform(prim_path, matrix)
+                fabric_hierarchy.set_world_xform(path, matrix)
 
     def get_local_poses(self, *, indices: list | np.ndarray | wp.array | None = None) -> tuple[wp.array, wp.array]:
         """Get the poses (translations and orientations) in the local frame of the prims.
@@ -625,7 +625,7 @@ class XformPrim(Prim):
             translations = np.zeros((indices.shape[0], 3), dtype=np.float32)
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
-                translations[i], orientations[i] = get_local_pose(self.prim_paths[index])
+                translations[i], orientations[i] = get_local_pose(self.paths[index])
             return _ops.place(translations, device=self._device), _ops.place(orientations, device=self._device)
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
@@ -634,7 +634,7 @@ class XformPrim(Prim):
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
-                matrix = fabric_hierarchy.get_local_xform(usdrt.Sdf.Path(self.prim_paths[index]))
+                matrix = fabric_hierarchy.get_local_xform(usdrt.Sdf.Path(self.paths[index]))
                 quaternion = matrix.RemoveScaleShear().ExtractRotationQuat()
                 translations[i] = matrix.ExtractTranslation()
                 orientations[i] = np.array([quaternion.GetReal(), *quaternion.GetImaginary()])
@@ -733,12 +733,12 @@ class XformPrim(Prim):
                 if translations is not None:
                     assert (
                         "xformOp:translate" in property_names
-                    ), f"Undefined 'xformOp:translate' property for {self.prim_paths[index]}. Call '.reset_xform_op_properties()' first"
+                    ), f"Undefined 'xformOp:translate' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
                     prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(*translations[i]))
                 if orientations is not None:
                     assert (
                         "xformOp:orient" in property_names
-                    ), f"Undefined 'xformOp:orient' property for {self.prim_paths[index]}. Call '.reset_xform_op_properties()' first"
+                    ), f"Undefined 'xformOp:orient' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
                     xform_op = prim.GetAttribute("xformOp:orient")
                     xform_op.Set((Gf.Quatf if xform_op.GetTypeName() == "quatf" else Gf.Quatd)(*orientations[i]))
         # USDRT API (with FSD and IFabricHierarchy)
@@ -753,15 +753,15 @@ class XformPrim(Prim):
                 broadcast_orientations = orientations.shape[0] == 1
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
-                prim_path = usdrt.Sdf.Path(self.prim_paths[index])
-                matrix = fabric_hierarchy.get_local_xform(usdrt.Sdf.Path(self.prim_paths[index]))
+                path = usdrt.Sdf.Path(self.paths[index])
+                matrix = fabric_hierarchy.get_local_xform(path)
                 if translations is not None:
                     matrix.SetTranslateOnly(usdrt.Gf.Vec3d(*translations[0 if broadcast_translations else i]))
                 if orientations is not None:
                     matrix.SetRotateOnly(usdrt.Gf.Quatd(*orientations[0 if broadcast_orientations else i]))
                     scaling_matrix = usdrt.Gf.Matrix4d().SetIdentity().SetScale(usdrt.Gf.Transform(matrix).GetScale())
                     matrix = scaling_matrix * matrix
-                fabric_hierarchy.set_local_xform(prim_path, matrix)
+                fabric_hierarchy.set_local_xform(path, matrix)
         # Fabric API
         elif backend == "fabric":
             # ensure fabric data and update selection if needed
@@ -838,7 +838,7 @@ class XformPrim(Prim):
                 property_names = prim.GetPropertyNames()
                 assert (
                     "xformOp:scale" in property_names
-                ), f"Undefined 'xformOp:scale' property for {self.prim_paths[index]}. Call '.reset_xform_op_properties()' first"
+                ), f"Undefined 'xformOp:scale' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
                 prim.GetAttribute("xformOp:scale").Set(Gf.Vec3d(*scales[0 if broadcast else i]))
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
@@ -847,10 +847,10 @@ class XformPrim(Prim):
             broadcast = scales.shape[0] == 1
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
-                prim_path = usdrt.Sdf.Path(self.prim_paths[index])
-                transform = usdrt.Gf.Transform(fabric_hierarchy.get_local_xform(prim_path))
+                path = usdrt.Sdf.Path(self.paths[index])
+                transform = usdrt.Gf.Transform(fabric_hierarchy.get_local_xform(path))
                 transform.SetScale(usdrt.Gf.Vec3d(*scales[0 if broadcast else i]))
-                fabric_hierarchy.set_local_xform(prim_path, transform.GetMatrix())
+                fabric_hierarchy.set_local_xform(path, transform.GetMatrix())
         # Fabric API
         elif backend == "fabric":
             # ensure fabric data and update selection if needed
@@ -918,7 +918,7 @@ class XformPrim(Prim):
                 property_names = prim.GetPropertyNames()
                 assert (
                     "xformOp:scale" in property_names
-                ), f"Undefined 'xformOp:scale' property for {self.prim_paths[index]}. Call '.reset_xform_op_properties()' first"
+                ), f"Undefined 'xformOp:scale' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
                 scales[i] = np.array(prim.GetAttribute("xformOp:scale").Get(), dtype=np.float32)
             return _ops.place(scales, device=self._device)
         # USDRT API (with FSD and IFabricHierarchy)
@@ -927,7 +927,7 @@ class XformPrim(Prim):
             scales = np.zeros((indices.shape[0], 3), dtype=np.float32)
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
-                transform = usdrt.Gf.Transform(fabric_hierarchy.get_local_xform(usdrt.Sdf.Path(self.prim_paths[index])))
+                transform = usdrt.Gf.Transform(fabric_hierarchy.get_local_xform(usdrt.Sdf.Path(self.paths[index])))
                 scales[i] = transform.GetScale()
             return _ops.place(scales, device=self._device)
         # Fabric API
@@ -1113,7 +1113,7 @@ class XformPrim(Prim):
             self._fabric_stage = get_current_stage(fabric=True)
             # create fabric's view indices attribute
             self._fabric_view_index_attr = f"isaacsim:fabric:index:{hash(self)}"
-            fabric_prims = [self._fabric_stage.GetPrimAtPath(prim_path) for prim_path in self._prim_paths]
+            fabric_prims = [self._fabric_stage.GetPrimAtPath(path) for path in self._paths]
             for i, prim in enumerate(fabric_prims):
                 prim.CreateAttribute(self._fabric_view_index_attr, usdrt.Sdf.ValueTypeNames.UInt, True)
                 prim.GetAttribute(self._fabric_view_index_attr).Set(i)

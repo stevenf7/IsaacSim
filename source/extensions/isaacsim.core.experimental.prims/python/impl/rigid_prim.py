@@ -1416,19 +1416,17 @@ class RigidPrim(XformPrim):
         # get physics simulation view
         physics_simulation_view = SimulationManager._physics_sim_view__warp
         if physics_simulation_view is None or not physics_simulation_view.is_valid:
-            carb.log_warn(f"Invalid physics simulation view. RigidPrim ({self._paths}) will not be initialized")
+            carb.log_warn(f"Invalid physics simulation view. RigidPrim ({self.paths}) will not be initialized")
             return
         # create rigid body view
-        self._physics_rigid_body_view = physics_simulation_view.create_rigid_body_view(
-            [path.replace(".*", "*") for path in self._paths]
-        )
+        self._physics_rigid_body_view = physics_simulation_view.create_rigid_body_view(self.paths)
         # validate rigid body view
         if self._physics_rigid_body_view is None:
-            carb.log_warn(f"Unable to create rigid body view for {self._paths}")
+            carb.log_warn(f"Unable to create rigid body view for {self.paths}")
             return
         if not self._physics_rigid_body_view.check():
             carb.log_warn(
-                f"Unable to create rigid body view for {self._paths}. Underlying physics objects are not valid"
+                f"Unable to create rigid body view for {self.paths}. Underlying physics objects are not valid"
             )
             self._physics_rigid_body_view = None
 

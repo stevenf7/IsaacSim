@@ -667,7 +667,7 @@ class GeomPrim(XformPrim):
 
             >>> # get the applied material path of the first prim
             >>> physics_material = prims.get_applied_physics_materials(indices=[0])[0]
-            >>> physics_material.prim_paths[0]
+            >>> physics_material.paths[0]
             '/World/physics_material/aluminum'
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
@@ -683,6 +683,6 @@ class GeomPrim(XformPrim):
             if material_path:
                 material = PhysicsMaterial.fetch_instances([material_path])[0]
                 if material is None:
-                    carb.log_warn(f"Unsupported physics material ({material_path}): {self.prim_paths[index]}")
+                    carb.log_warn(f"Unsupported physics material ({material_path}): {self.paths[index]}")
             materials.append(material)
         return materials

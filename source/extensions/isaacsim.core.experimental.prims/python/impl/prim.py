@@ -60,16 +60,16 @@ class Prim(ABC):
         self._is_valid = True
         self._device = wp.get_device(SimulationManager.get_physics_sim_device())
         # get prim paths
-        self._paths = [paths] if isinstance(paths, str) else paths
+        self._raw_paths = [paths] if isinstance(paths, str) else paths
         if resolve_paths:
-            self._prim_paths, nonexistent_paths = self.resolve_paths(self._paths)
+            self._paths, nonexistent_paths = self.resolve_paths(self._raw_paths)
             assert (
                 not nonexistent_paths
             ), f"Specified paths must correspond to existing prims: {', '.join(nonexistent_paths)}"
         else:
-            self._prim_paths = self._paths
+            self._paths = self._raw_paths
         # get prims
-        self._prims = [prims_utils.get_prim_at_path(prim_path) for prim_path in self._prim_paths]
+        self._prims = [prims_utils.get_prim_at_path(path) for path in self._paths]
         # register internal callbacks
         self._callback_ids = getattr(self, "_callback_ids", [])  # avoid attribute overwriting in multiple inheritance
         self._callback_ids.extend(
@@ -87,9 +87,9 @@ class Prim(ABC):
         self._is_valid = False
         # reset internal properties
         self._device = None
-        self._paths = []
+        self._raw_paths = []
         self._prims = []
-        self._prim_paths = []
+        self._paths = []
 
     def __len__(self) -> int:
         """Get the number of prims encapsulated by the wrapper.
@@ -104,14 +104,14 @@ class Prim(ABC):
             >>> len(prims)
             3
         """
-        return len(self._prim_paths)
+        return len(self._paths)
 
     """
     Properties.
     """
 
     @property
-    def prim_paths(self) -> list[str]:
+    def paths(self) -> list[str]:
         """Prim paths in the stage encapsulated by the wrapper.
 
         Returns:
@@ -121,10 +121,10 @@ class Prim(ABC):
 
         .. code-block:: python
 
-            >>> prims.prim_paths
+            >>> prims.paths
             ['/World/prim_0', '/World/prim_1', '/World/prim_2']
         """
-        return self._prim_paths
+        return self._paths
 
     @property
     def prims(self) -> list[Usd.Prim]:
@@ -298,7 +298,7 @@ class Prim(ABC):
             self._deregister_callbacks()
             self._is_valid = False
             return
-        for path in self._paths:
+        for path in self._raw_paths:
             if re.match(pattern=f'^{"/".join(path.split("/")[: prim_path.count("/") + 1])}$', string=prim_path):
                 self._deregister_callbacks()
                 self._is_valid = False

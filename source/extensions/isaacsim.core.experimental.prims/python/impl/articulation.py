@@ -4528,11 +4528,11 @@ class Articulation(XformPrim):
         # query articulation metadata for each prim
         stage = omni.usd.get_context().get_stage()
         stage_id = omni.usd.get_context().get_stage_id()
-        for prim_path in self.prim_paths:
+        for path in self.paths:
             omni.physx.get_physx_property_query_interface().query_prim(
                 stage_id=stage_id,
                 query_mode=omni.physx.bindings._physx.PhysxPropertyQueryMode.QUERY_ARTICULATION,
-                prim_id=PhysicsSchemaTools.sdfPathToInt(prim_path),
+                prim_id=PhysicsSchemaTools.sdfPathToInt(path),
                 articulation_fn=query_report,
             )
         # update amounts and indices
@@ -4552,30 +4552,28 @@ class Articulation(XformPrim):
         super()._on_physics_ready(event)
         physics_simulation_view = SimulationManager._physics_sim_view__warp
         if physics_simulation_view is None or not physics_simulation_view.is_valid:
-            carb.log_warn(f"Invalid physics simulation view. Articulation ({self._paths}) will not be initialized")
+            carb.log_warn(f"Invalid physics simulation view. Articulation ({self.paths}) will not be initialized")
             return
-        self._physics_articulation_view = physics_simulation_view.create_articulation_view(
-            [path.replace(".*", "*") for path in self._paths]
-        )
+        self._physics_articulation_view = physics_simulation_view.create_articulation_view(self.paths)
         if self._physics_articulation_view is None:
-            carb.log_warn(f"Unable to create articulation view for {self._paths}")
+            carb.log_warn(f"Unable to create articulation view for {self.paths}")
             return
         try:
             if self._physics_articulation_view._backend is None:
-                carb.log_warn(f"Unable to create articulation view for {self._paths}. Physics backend not found.")
+                carb.log_warn(f"Unable to create articulation view for {self.paths}. Physics backend not found.")
                 self._physics_articulation_view = None
                 return
         except AttributeError as e:
-            carb.log_warn(f"Unable to create articulation view for {self._paths}. {e}")
+            carb.log_warn(f"Unable to create articulation view for {self.paths}. {e}")
             return
         if not self._physics_articulation_view.check():
             carb.log_warn(
-                f"Unable to create articulation view for {self._paths}. Underlying physics objects are not valid."
+                f"Unable to create articulation view for {self.paths}. Underlying physics objects are not valid."
             )
             self._physics_articulation_view = None
             return
         if not self._physics_articulation_view.is_homogeneous:
-            carb.log_warn(f"Articulation view for {self._paths} is not homogeneous")
+            carb.log_warn(f"Articulation view for {self.paths} is not homogeneous")
             self._physics_articulation_view = None
             return
         # get internal properties

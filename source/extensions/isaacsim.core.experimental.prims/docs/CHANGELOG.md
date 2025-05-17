@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.4.0] - 2025-05-16
+### Changed
+- Rename properties related to the wrapped prim paths
+
 ## [0.3.2] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
