@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.6] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [0.2.5] - 2025-04-30
 ### Changed
 - Update event subscriptions to Event 2.0 system

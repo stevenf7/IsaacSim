@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.4] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [0.1.3] - 2025-05-10
 ### Changed
 - Cleanup extension.toml

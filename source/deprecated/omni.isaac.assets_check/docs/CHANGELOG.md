@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.12] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [0.3.11] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

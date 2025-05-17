@@ -1,8 +1,11 @@
 # Changelog
+## [1.1.18] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
 
 ## [1.1.17] - 2025-05-16
 ### Added
-- added test for starting capturing while the timeline is running 
+- added test for starting capturing while the timeline is running
 - test utils.py for functions used in multiple tests
 
 ### Changed

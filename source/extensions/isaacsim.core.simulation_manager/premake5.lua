@@ -61,7 +61,7 @@ includedirs {
     "include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
-    
+
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/source/extensions/isaacsim.core.simulation_manager/include",

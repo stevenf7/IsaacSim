@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.9] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [3.1.8] - 2025-05-07
 ### Changed
 - switch to omni.physics interface

@@ -1,5 +1,5 @@
 [package]
-version = "2.9.2"
+version = "2.9.3"
 category = "Simulation"
 title = "Isaac Sim App Selector"
 description = "Mini Launch Pad app for Isaac Sim Sub Apps"
@@ -9,6 +9,7 @@ readme = "docs/README.md"
 preview_image = "icons/preview.png"
 icon = "icons/isaacsim.exp.full.png"
 toggleable = false
+writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.version" = {}

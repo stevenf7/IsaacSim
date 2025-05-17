@@ -80,7 +80,6 @@ extra_usd_libs = {}
 add_usd(extra_usd_libs)
 -- End OpenUSD
 
-
 filter { "system:linux", "platforms:x86_64" }
 links { "tbb" }
 filter {}

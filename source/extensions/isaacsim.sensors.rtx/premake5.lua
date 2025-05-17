@@ -35,7 +35,7 @@ links {
     "omni.usd",
 }
 
-extra_usd_libs = {"usdGeom"}
+extra_usd_libs = { "usdGeom" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
@@ -87,5 +87,8 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },
-    {"%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/omni/sensors", ogn.python_target_path .. "/generic_model_output" },
+    {
+        "%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/omni/sensors",
+        ogn.python_target_path .. "/generic_model_output",
+    },
 }

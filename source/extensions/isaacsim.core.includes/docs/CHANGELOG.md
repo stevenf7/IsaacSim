@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.5] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [2.0.4] - 2025-05-15
 ### Changed
 - Remove unnecessary warnings for empty attributes in UsdUtilities.h
