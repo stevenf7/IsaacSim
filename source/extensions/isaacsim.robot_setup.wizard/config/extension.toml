@@ -35,7 +35,6 @@ exts."isaacsim.robot_setup.wizard".timeout = 5
 # launch on startup
 persistent.exts."isaacsim.robot_setup.wizard".launch_on_startup = false
 
-
 [[test]]
 name = "startup"
 enabled = true

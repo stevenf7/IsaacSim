@@ -7,7 +7,6 @@
 ### Removed
 - Removed isaacsim.robot_setup.import_wizard extension
 
-
 ## [0.0.1] - 2025-05-12
 ### Added
 - Initial release

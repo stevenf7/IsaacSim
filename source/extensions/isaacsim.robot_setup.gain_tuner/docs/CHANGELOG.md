@@ -12,10 +12,11 @@
 ### Changed
 - Update extension to use new Core Prim API and Robot Schema
 - Redesigned the UI to be more user friendly and intuitive
+
 ### Added
 - Added a new "Save Gains to Physics Layer" button to the UI
 - Added new Sequential mode to the gains test
-- Added Natural Frequency and Damping Ratio fields to the gains tuning mode. 
+- Added Natural Frequency and Damping Ratio fields to the gains tuning mode.
 - Added automatic selection between Position and Velocity command based on the joint gains
 - Added switching between Acceleration and Force modes for the joint setting.
 

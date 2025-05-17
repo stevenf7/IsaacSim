@@ -12,8 +12,8 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
-"isaacsim.core.experimental.prims" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.prims" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
 "omni.kit.uiapp" = {}

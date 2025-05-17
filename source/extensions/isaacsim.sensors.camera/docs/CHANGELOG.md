@@ -2,6 +2,7 @@
 ## [1.1.0] - 2025-05-13
 ### Added
 - attach_annotator and detach_annotator APIs to Camera
+
 ### Changed
 - Camera.initialize() now optionally attaches RGB annotator
 - Camera constructor no longer sets default lens distortion model to OmniLensDistortionFthetaAPI
