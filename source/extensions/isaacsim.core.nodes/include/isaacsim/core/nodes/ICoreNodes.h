@@ -33,13 +33,14 @@ namespace nodes
  */
 struct CoreNodes
 {
-    CARB_PLUGIN_INTERFACE("isaacsim::core::nodes", 1, 1);
+    CARB_PLUGIN_INTERFACE("isaacsim::core::nodes", 2, 0);
 
     /**
      * @brief Gets the current simulation time.
      * @details Returns the current time in the simulation.
      *
      * @return Current simulation time in seconds.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getSimulationTime() instead.
      */
     double(CARB_ABI* getSimTime)();
 
@@ -48,6 +49,7 @@ struct CoreNodes
      * @details Returns a simulation time that is guaranteed to be monotonically increasing.
      *
      * @return Monotonically increasing simulation time in seconds.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getSimulationTimeMonotonic() instead.
      */
     double(CARB_ABI* getSimTimeMonotonic)();
 
@@ -56,6 +58,7 @@ struct CoreNodes
      * @details Returns the current system (real-world) time.
      *
      * @return Current system time in seconds.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getSystemTime() instead.
      */
     double(CARB_ABI* getSystemTime)();
 
@@ -64,6 +67,7 @@ struct CoreNodes
      * @details Returns the total count of physics steps that have been completed since simulation start.
      *
      * @return Number of physics steps completed since simulation start.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getNumPhysicsSteps() instead.
      */
     size_t(CARB_ABI* getPhysicsNumSteps)();
 
@@ -100,6 +104,7 @@ struct CoreNodes
      *
      * @param[in] time Rational time to query simulation time for.
      * @return Simulation time in seconds at the specified time.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getSimulationTimeAtTime() instead.
      */
     double(CARB_ABI* getSimTimeAtTime)(const omni::fabric::RationalTime& time);
 
@@ -109,6 +114,8 @@ struct CoreNodes
      *
      * @param[in] time Rational time to query monotonic simulation time for.
      * @return Monotonic simulation time in seconds at the specified time.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getSimulationTimeMonotonicAtTime()
+     * instead.
      */
     double(CARB_ABI* getSimTimeMonotonicAtTime)(const omni::fabric::RationalTime& time);
 
@@ -118,6 +125,7 @@ struct CoreNodes
      *
      * @param[in] time Rational time to query system time for.
      * @return System time in seconds at the specified time.
+     * @deprecated Use isaacsim::core::simulation_manager::ISimulationManager::getSystemTimeAtTime() instead.
      */
     double(CARB_ABI* getSystemTimeAtTime)(const omni::fabric::RationalTime& time);
 };

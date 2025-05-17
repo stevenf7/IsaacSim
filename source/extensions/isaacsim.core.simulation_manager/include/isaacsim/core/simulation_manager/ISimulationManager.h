@@ -30,6 +30,7 @@ Carbonite SDK API:
 #include <carb/Defines.h>
 #include <carb/Interface.h>
 
+#include <omni/fabric/RationalTime.h>
 #include <pch/UsdPCH.h>
 #include <pxr/pxr.h>
 
@@ -45,7 +46,7 @@ namespace simulation_manager
 
 struct ISimulationManager
 {
-    CARB_PLUGIN_INTERFACE("isaacsim::core::simulation_manager::ISimulationManager", 1, 0);
+    CARB_PLUGIN_INTERFACE("isaacsim::core::simulation_manager::ISimulationManager", 2, 0);
 
     /**
      * @brief Registers a callback function to be called when a deletion event occurs.
@@ -112,6 +113,18 @@ struct ISimulationManager
     DLL_EXPORT virtual double getSimulationTime() = 0;
 
     /**
+     * @brief Gets the current simulation time which does not reset when the simulation is stopped.
+     * @return The current simulation time.
+     */
+    DLL_EXPORT virtual double getSimulationTimeMonotonic() = 0;
+
+    /**
+     * @brief Gets the current system time.
+     * @return The current system time.
+     */
+    DLL_EXPORT virtual double getSystemTime() = 0;
+
+    /**
      * @brief Gets the current physics step count.
      * @return The current physics step count.
      */
@@ -128,6 +141,33 @@ struct ISimulationManager
      * @return The current simulation pause state.
      */
     DLL_EXPORT virtual bool isPaused() = 0;
+
+    /**
+     * @brief Gets simulation time at a specific rational time.
+     * @details Returns the simulation time corresponding to a specific rational time.
+     *
+     * @param[in] time Rational time to query simulation time for.
+     * @return Simulation time in seconds at the specified time.
+     */
+    DLL_EXPORT virtual double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime) = 0;
+
+    /**
+     * @brief Gets monotonic simulation time at a specific rational time.
+     * @details Returns the monotonically increasing simulation time corresponding to a specific rational time.
+     *
+     * @param[in] time Rational time to query monotonic simulation time for.
+     * @return Monotonic simulation time in seconds at the specified time.
+     */
+    DLL_EXPORT virtual double getSimulationTimeMonotonicAtTime(const omni::fabric::RationalTime& rtime) = 0;
+
+    /**
+     * @brief Gets system time at a specific rational time.
+     * @details Returns the system (real-world) time corresponding to a specific rational time.
+     *
+     * @param[in] time Rational time to query system time for.
+     * @return System time in seconds at the specified time.
+     */
+    DLL_EXPORT virtual double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime) = 0;
 };
 
 } // namespace isaacsim

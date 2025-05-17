@@ -1,7 +1,10 @@
 # Changelog
-## [0.4.6] - 2025-05-16
+## [1.0.0] - 2025-05-16
 ### Changed
-- Make extension target a specific kit version
+- Add time acquisition related features to this extension
+- getSystemTime, getSimulationTimeMonotonic
+- getSimulationTimeAtTime, getSimulationTimeMonotonicAtTime, getSystemTimeAtTime
+- Add python bindings for new APIs
 
 ## [0.4.5] - 2025-05-16
 ### Changed

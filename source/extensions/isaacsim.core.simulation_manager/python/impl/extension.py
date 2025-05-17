@@ -25,7 +25,6 @@ def acquire_simulation_manager_interface():
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         # acquire the pybind interface
         global _simulation_manager_interface
         _simulation_manager_interface = _simulation_manager.acquire_simulation_manager_interface()
