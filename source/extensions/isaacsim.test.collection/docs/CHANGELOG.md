@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.16] - 2025-05-16
+### Added
+- Added test_advance_timeline.py to test the delta times between frames when the stage and physics FPS are different
+
 ## [2.0.15] - 2025-05-13
 ### Added
 - Added test for evaluating a double OG trigger bug

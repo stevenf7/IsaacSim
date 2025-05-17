@@ -15,6 +15,8 @@ import omni.kit
 import omni.usd
 from PIL import Image
 
+from .utils import print_diff_histogram
+
 
 class TestDataAugmentation(omni.kit.test.AsyncTestCase):
 
@@ -32,18 +34,6 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
-
-    # Helper function to print numpy histogram data
-    def print_diff_histogram(self, diff_array, num_bins=10):
-        print(f"\t\tDiff histogram ({num_bins} bins):")
-        hist_counts, bin_edges = np.histogram(diff_array, bins=num_bins)
-        if np.any(hist_counts):
-            for i in range(len(hist_counts)):
-                bin_start = bin_edges[i]
-                bin_end = bin_edges[i + 1]
-                print(f"\t\t  [{bin_start:6.1f} - {bin_end:6.1f}): {hist_counts[i]}")
-        else:
-            print("\t\t  No differences")
 
     # Compare PNG files with the specified prefix using mean pixel difference
     def compare_images_with_mean_diff(self, golden_dir, test_dir, prefix, tolerance):
@@ -83,7 +73,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             print(f"\t'{file_name}': mean_diff={mean_diff}, max_diff={max_diff}")
 
             # Generate and print histogram of differences
-            self.print_diff_histogram(diff_array, num_bins=10)
+            print_diff_histogram(diff_array, num_bins=10)
 
             self.assertTrue(
                 mean_diff < tolerance,
@@ -133,7 +123,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             print(f"\t'{file_name}': mean_diff={mean_diff}, max_diff={max_diff}")
 
             # Generate and print histogram of differences (condensed)
-            self.print_diff_histogram(diff_array, num_bins=10)
+            print_diff_histogram(diff_array, num_bins=10)
 
             # Compare using either mean difference or np.allclose based on provided parameters
             if mean_diff_tolerance is not None:

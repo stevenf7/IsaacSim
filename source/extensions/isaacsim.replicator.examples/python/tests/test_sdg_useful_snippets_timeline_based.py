@@ -9,23 +9,11 @@
 # its affiliates is strictly prohibited.
 
 import os
-from collections import Counter
 
 import omni.kit
 import omni.usd
 
-
-# Check the contents of a folder against expected extension counts e.g expected_counts={png: 3, json: 3, npy: 3}
-def validate_folder_contents(path: str, expected_counts: dict[str, int]) -> bool:
-    if not os.path.exists(path) or not os.path.isdir(path):
-        return False
-
-    # Count the number of files with each extension
-    file_counts = Counter(f.split(".")[-1] for f in os.listdir(path) if "." in f)
-    print(f"File counts: {file_counts}")
-
-    # Check that the counts match the expected counts
-    return all(file_counts.get(ext, 0) == count for ext, count in expected_counts.items())
+from .utils import validate_folder_contents
 
 
 class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
@@ -148,11 +136,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         timeline.set_looping(True)
 
         # Validate the output directory contents
-        self.assertTrue(
-            validate_folder_contents(
-                path=os.path.join(os.getcwd(), "_out_writer_fps_rgb"), expected_counts={"png": target_num_writes}
-            )
-        )
+        out_dir = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": target_num_writes})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_snippet_subscribers_and_events(self):
         import asyncio
