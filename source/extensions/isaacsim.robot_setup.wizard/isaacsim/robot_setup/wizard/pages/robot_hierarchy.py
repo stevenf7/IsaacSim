@@ -205,7 +205,6 @@ class RobotHierarchy:
         UsdGeom.Xform.Define(self._links_temp_stage, f"/{self._robot.name}")
         for link in self._robot.links:
             UsdGeom.Xform.Define(self._links_temp_stage, f"/{self._robot.name}/{link}")
-        self._links_stage_widget.expand(f"/{self._robot.name}")
 
     def _new_link_stage(self):
         """Helper method to set up the selection watch for the links stage."""
@@ -284,9 +283,7 @@ class RobotHierarchy:
         self._link_popup_window.show()
 
     def _delete_link_item(self):
-        print("links selected", self._links_selected)
         if len(self._links_selected) == 0:
-            print("no link selected")
             return
 
         for path in self._links_selected:
@@ -377,8 +374,5 @@ class RobotHierarchy:
             self._delete_prim_paths = self._robot.delete_prim_paths
         else:
             self._delete_prim_paths = []
-
-        print(f"delete_prim_paths: {self._delete_prim_paths}")
-        print(f"reference_mesh: {self._reference_mesh}")
 
         apply_hierarchy(self._history, self._reference_mesh, self._delete_prim_paths)

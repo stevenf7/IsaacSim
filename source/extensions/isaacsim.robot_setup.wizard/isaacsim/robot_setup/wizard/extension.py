@@ -32,7 +32,7 @@ class WizardExtension(omni.ext.IExt, MenuHelperExtension):
         self.ext_id = ext_id
 
         ui.Workspace.set_show_window_fn(WizardExtension.WINDOW_NAME, self.show_window)
-        ui.Workspace.show_window(WizardExtension.WINDOW_NAME)
+        # ui.Workspace.show_window(WizardExtension.WINDOW_NAME)
 
         self.menu_startup(WizardExtension.WINDOW_NAME, WizardExtension.WINDOW_NAME, WizardExtension.MENU_GROUP)
 

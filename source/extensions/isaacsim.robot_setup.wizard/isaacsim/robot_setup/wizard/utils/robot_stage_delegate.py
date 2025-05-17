@@ -14,7 +14,6 @@ class RobotContextMenu(ContextMenu):
         if event.type != int(omni.kit.menu.core.MenuEventType.ACTIVATE):
             return
 
-        print("on_mouse_event")
         try:
             import omni.kit.context_menu
         except ModuleNotFoundError:

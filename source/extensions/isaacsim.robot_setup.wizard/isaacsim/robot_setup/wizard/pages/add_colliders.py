@@ -403,7 +403,6 @@ class AddColliders:
             else:
                 collider_name = "/".join(prim.GetPath().pathString.split("/")[2:])
                 if prim.GetTypeName() in MESH_TYPES:
-                    print(f"adding collider: {collider_name}")
                     collider_model.add_item(ColliderItem(collider_name, prim.GetTypeName()))
 
             return collider_model
@@ -414,7 +413,6 @@ class AddColliders:
         mesh_scope_prim = stage.GetPrimAtPath("/colliders")
         updated_collider_model = __recursively_find_mesh(mesh_scope_prim, self._collider_model)
         self._collider_model = updated_collider_model
-        print(f"updated_collider_model: {self._collider_model}")
 
     def _add_colliders(self):
         """

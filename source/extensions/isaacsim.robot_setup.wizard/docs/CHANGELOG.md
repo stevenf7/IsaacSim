@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [0.0.3] - 2025-05-16
+### Changed
+- minor bug fixes and improvements
+
+
 ## [0.0.2] - 2025-05-14
 ### Changed
 - minor bug fixes and improvements
