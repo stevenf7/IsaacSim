@@ -1,10 +1,11 @@
 # Changelog
-
+## [0.0.4] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
 
 ## [0.0.3] - 2025-05-16
 ### Changed
 - minor bug fixes and improvements
-
 
 ## [0.0.2] - 2025-05-14
 ### Changed

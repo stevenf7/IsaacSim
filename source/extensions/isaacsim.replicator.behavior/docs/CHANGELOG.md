@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.5] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
 
 ## [1.1.4] - 2025-05-12
 ### Changed

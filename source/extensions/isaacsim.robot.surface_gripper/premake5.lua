@@ -2,8 +2,6 @@ local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "isaacsim/robot/surface_gripper")
 local hostDepsDir = "%{root}/_build/host-deps"
 
-
-
 -- Then define the main extension project
 project_ext(ext)
 
@@ -12,10 +10,10 @@ project_ext_plugin(ext, "isaacsim.robot.surface_gripper.plugin")
 cppdialect("C++17")
 
 -- Specify clear dependencies without circular references
-dependson { 
+dependson {
     "prebuild",
     "carb.physics-usd.plugin",
-     "omni.physx.plugin" ,
+    "omni.physx.plugin",
 }
 
 add_files("impl", "plugins")
@@ -36,7 +34,7 @@ includedirs {
     target_deps .. "/omni_client_library/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
-    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",    
+    target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
     target_deps .. "/python/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",

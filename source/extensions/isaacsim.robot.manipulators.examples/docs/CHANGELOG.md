@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.11] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [1.0.10] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

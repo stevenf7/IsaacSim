@@ -523,7 +523,7 @@ function create_tests()
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.cosmos_writer_warehouse",
             "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_warehouse.py",
-        },           
+        },
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.custom_event_and_write",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
@@ -559,7 +559,7 @@ function create_tests()
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.simready_assets_sdg",
             "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
-        },        
+        },
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.multi_camera",
             "standalone_examples/api/isaacsim.replicator.examples/multi_camera.py",

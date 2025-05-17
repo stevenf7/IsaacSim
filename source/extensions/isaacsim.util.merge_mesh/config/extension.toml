@@ -1,5 +1,5 @@
 [package]
-version = "2.0.9"
+version = "2.0.10"
 category = "Simulation"
 title = "Isaac Sim Merge Mesh"
 description = "Isaac Sim tool to facilitate combining meshes together in a single USD Prim. It provides the ability to reset the mesh origin to world origin, and combining all materials into a single list, combining materials with the same characteristics."
@@ -24,9 +24,9 @@ name = "isaacsim.util.merge_mesh.tests"
 
 [[test]]
 dependencies = [
+    "omni.hydra.usdrt_delegate",
     "omni.kit.material.library",
     "omni.kit.primitive.mesh",
-    "omni.hydra.usdrt_delegate",
 ]
 args = [
     "--/app/asyncRendering=0",

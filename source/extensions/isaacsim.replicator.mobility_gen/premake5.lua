@@ -1,8 +1,5 @@
 local ext = get_current_extension_info()
-local ogn = get_ogn_project_information(
-    ext, 
-    "isaacsim/replicator/mobility_gen"
-)
+local ogn = get_ogn_project_information(ext, "isaacsim/replicator/mobility_gen")
 
 project_ext(ext)
 

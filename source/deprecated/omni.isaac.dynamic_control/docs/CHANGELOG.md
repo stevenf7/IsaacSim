@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.4] - 2025-05-16
+### Changed
+- Make extension target a specific kit version
+
 ## [2.0.3] - 2025-05-10
 ### Changed
 - Remove internal build time dependency
