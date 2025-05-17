@@ -8,24 +8,10 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-import os
-from collections import Counter
-
 import omni.kit
 import omni.usd
 
-
-# Check the contents of a folder against expected extension counts e.g expected_counts={png: 3, json: 3, npy: 3}
-def validate_folder_contents(path: str, expected_counts: dict[str, int]) -> bool:
-    if not os.path.exists(path) or not os.path.isdir(path):
-        return False
-
-    # Count the number of files with each extension
-    file_counts = Counter(f.split(".")[-1] for f in os.listdir(path) if "." in f)
-    print(f"File counts: {file_counts}")
-
-    # Check that the counts match the expected counts
-    return all(file_counts.get(ext, 0) == count for ext, count in expected_counts.items())
+from .utils import validate_folder_contents
 
 
 class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
@@ -148,8 +134,12 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await run_example_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=file_path, expected_counts={"png": 15}))
-        self.assertTrue(validate_folder_contents(path=writer.file_path, expected_counts={"png": 15}))
+        folder_contents_success_annot = validate_folder_contents(path=file_path, expected_counts={"png": 15})
+        folder_contents_success_writer = validate_folder_contents(path=writer.file_path, expected_counts={"png": 15})
+        self.assertTrue(folder_contents_success_annot, f"Output directory contents validation failed for {file_path}")
+        self.assertTrue(
+            folder_contents_success_writer, f"Output directory contents validation failed for {writer.file_path}"
+        )
 
     async def test_sdg_snippet_simulation_get_data(self):
         import json
@@ -240,8 +230,20 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await run_example_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=out_dir, expected_counts={"png": 10, "json": 5}))
-        self.assertTrue(validate_folder_contents(path=f"{out_dir}/writer", expected_counts={"png": 10, "json": 5}))
+        annot_out_dir = out_dir
+        folder_contents_success_annot = validate_folder_contents(
+            path=annot_out_dir, expected_counts={"png": 10, "json": 5}
+        )
+        writer_out_dir = f"{out_dir}/writer"
+        folder_contents_success_writer = validate_folder_contents(
+            path=writer_out_dir, expected_counts={"png": 10, "json": 5}
+        )
+        self.assertTrue(
+            folder_contents_success_annot, f"Output directory contents validation failed for {annot_out_dir}"
+        )
+        self.assertTrue(
+            folder_contents_success_writer, f"Output directory contents validation failed for {writer_out_dir}"
+        )
 
     async def test_sdg_snippet_custom_event_and_write(self):
         import os
@@ -299,7 +301,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await run_example_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=out_dir, expected_counts={"png": 4}))
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": 4})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_snippet_motion_blur_short(self):
         import asyncio
@@ -465,7 +468,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             await rep.orchestrator.wait_until_complete_async()
 
             # Validate the output directory contents
-            self.assertTrue(validate_folder_contents(path=output_directory, expected_counts={"png": 3}))
+            folder_contents_success = validate_folder_contents(path=output_directory, expected_counts={"png": 3})
+            self.assertTrue(
+                folder_contents_success, f"Output directory contents validation failed for {output_directory}"
+            )
 
         async def run_motion_blur_examples_async():
             motion_blur_step_duration = [None, 1 / 240]  # [None, 1 / 30, 1 / 60, 1 / 240]

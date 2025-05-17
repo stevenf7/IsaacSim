@@ -82,7 +82,10 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         await rep.orchestrator.wait_until_complete_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=out_dir, expected_counts={"png": 3, "json": 6, "npy": 3}))
+        folder_contents_success = validate_folder_contents(
+            path=out_dir, expected_counts={"png": 3, "json": 6, "npy": 3}
+        )
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_02(self):
         class MyWriter(Writer):
@@ -162,7 +165,8 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         await rep.orchestrator.wait_until_complete_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=out_dir, expected_counts={"png": 12, "json": 6}))
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": 12, "json": 6})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_03(self):
         # Custom randomizer function using USD API
@@ -218,7 +222,8 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         await rep.orchestrator.wait_until_complete_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=out_dir, expected_counts={"png": 6, "json": 3}))
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": 6, "json": 3})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_04(self):
         def add_colliders_and_rigid_body_dynamics(prim):
@@ -318,4 +323,5 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         await rep.orchestrator.wait_until_complete_async()
 
         # Validate the output directory contents
-        self.assertTrue(validate_folder_contents(path=out_dir, expected_counts={"png": 12, "json": 6}))
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": 12, "json": 6})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")

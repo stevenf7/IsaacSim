@@ -8,30 +8,10 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-import os
-from collections import Counter
-
 import omni.kit
 import omni.usd
 
-
-# Check the contents of a folder recursively against expected extension counts e.g expected_counts={png: 3, json: 3, npy: 3}
-def validate_folder_contents(path: str, expected_counts: dict[str, int]) -> bool:
-    if not os.path.exists(path) or not os.path.isdir(path):
-        return False
-
-    # Recursively count the number of files with each extension
-    file_counts = Counter()
-    for root, _, files in os.walk(path):
-        for f in files:
-            if "." in f:
-                extension = f.split(".")[-1]
-                file_counts[extension] += 1
-
-    print(f"File counts {path}: {file_counts}")
-
-    # Check that the counts match the expected counts
-    return all(file_counts.get(ext, 0) == count for ext, count in expected_counts.items())
+from .utils import validate_folder_contents
 
 
 class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
@@ -430,7 +410,9 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
             print("[PalletizingSDGDemo] Done..")
 
             # Check if all the expected files were written
-            all_data_written = validate_folder_contents(sdg_demo._output_dir, {"png": 80, "json": 72})
-            self.assertTrue(all_data_written, "Not all files were written")
+            all_data_written = validate_folder_contents(
+                sdg_demo._output_dir, {"png": 80, "json": 72}, include_subfolders=True
+            )
+            self.assertTrue(all_data_written, f"Not all files were written in to: {sdg_demo._output_dir}")
 
         await run_example_async()

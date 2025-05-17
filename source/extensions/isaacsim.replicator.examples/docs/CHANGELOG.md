@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.17] - 2025-05-16
+### Added
+- added test for starting capturing while the timeline is running 
+- test utils.py for functions used in multiple tests
+
+### Changed
+- more verbose terminal outputs for tests
+
 ## [1.1.16] - 2025-05-12
 ### Changed
 - Using os.path.join to create output directory in sdg tests
