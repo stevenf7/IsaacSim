@@ -17,6 +17,7 @@ import omni.usd
 import usd.schema.isaac.robot_schema as rs
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
+from ..utils.utils import can_create_dir
 from .collider_helper import remove_collider
 from .robot_templates import RobotRegistry
 
@@ -43,14 +44,24 @@ def apply_hierarchy(lookup_table, reference_mesh, delete_prim_paths):
     base_layer_path = robot.base_file_path
     original_stage_path = robot.original_stage_path
 
-    # assume there's a stage open already, save it to the original stage path
-    omni.usd.get_context().save_as_stage(original_stage_path)
+    # a stage has to be opened already, save it to the original stage path if the user indicated so on the previous page, and have write access to
+    if robot.save_stage_original and can_create_dir(os.path.dirname(original_stage_path)):
+        omni.usd.get_context().save_as_stage(original_stage_path)
+        copy_from_path = original_stage_path
+    else:
+        if can_create_dir(robot.robot_root_folder):
+            stage_copy_path = os.path.join(robot.robot_root_folder, "stage_copy.usd")
+            omni.usd.get_context().save_as_stage(stage_copy_path)
+            copy_from_path = stage_copy_path
+            # a copy of the stage is always saved in the robot root folder during the wizard configuration. If the user chose not to save a copy of the stage, this file will be deleted at the end of the wizard
+        else:
+            raise Exception(f"Cannot write to {robot.robot_root_folder}, please check write access")
 
     # make sure the directory exists, if not, create it
     os.makedirs(os.path.dirname(base_layer_path), exist_ok=True)
 
     # copy the file to the new path, open the new stage in memory
-    shutil.copy(original_stage_path, base_layer_path)
+    shutil.copy(copy_from_path, base_layer_path)
     omni.usd.get_context().open_stage(base_layer_path)
 
     robot_stage = omni.usd.get_context().get_stage()

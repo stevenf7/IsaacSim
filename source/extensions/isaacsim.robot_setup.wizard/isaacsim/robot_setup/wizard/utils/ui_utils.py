@@ -241,7 +241,6 @@ def open_extension(ext_name, action_id=None):
     ext_id = ext_manager.get_extension_id_by_module(ext_name)
     if action_id is None:
         action_id = f'{ext_id.replace(" ", "_")}{ext_name.replace(" ", "_")}'
-        print("action id defaulted to ", action_id)
     action_registry.execute_action(ext_id, action_id)
 
 

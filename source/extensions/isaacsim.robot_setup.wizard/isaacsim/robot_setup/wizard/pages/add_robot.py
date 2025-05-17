@@ -85,7 +85,7 @@ class AddRobot:
                         # step 2 and 3 in horizontal stack
                         with ui.HStack(spacing=10):
                             with ui.VStack(height=0):
-                                separator("3. Robot Type")
+                                separator("2. Robot Type")
                                 ui.Spacer(height=6)
                                 with ui.VStack():
                                     ui.Spacer()

@@ -6,7 +6,7 @@ import omni.usd
 from ..builders.robot_templates import RobotRegistry
 from ..style import LABEL_COLOR, LABEL_ERROR_COLOR, LABEL_WARNING_COLOR
 from ..utils.ui_utils import ButtonWithIcon, custom_header, next_step, open_folder_picker, separator
-from ..utils.utils import can_create_dir, stage_is_dirty
+from ..utils.utils import can_create_dir
 
 
 class PrepareFiles:
@@ -392,6 +392,11 @@ class PrepareFiles:
             robot_root_folder, "configurations", self._robot.name + "_physics.usd"
         )
         self._robot.robot_file_path = os.path.join(robot_root_folder, self._robot.name + ".usd")
+
+        # save the stage as it is
+        self._robot.save_stage_original = self._overwrite_current_stage_widget.model.get_value_as_bool()
+        # save the a copy of the stage in the robot root folder
+        self._robot.save_stage_copy = self._save_copy_in_robot_root_folder_widget.model.get_value_as_bool()
 
         RobotRegistry().update(self._robot)
 

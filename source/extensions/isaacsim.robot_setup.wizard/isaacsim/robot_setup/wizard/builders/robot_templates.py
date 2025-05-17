@@ -73,13 +73,22 @@ class RobotTemplate(ABC):
     def __init__(self, name):
         # the properties default to any robot template
         self.add_property(self.__class__, "name", name)
-        self.add_property(self.__class__, "parent_prim_path", None)
-        self.add_property(self.__class__, "original_robot_path", None)
+        self.add_property(self.__class__, "parent_prim_path", None)  # robot prim at the origianl stage
+
         self.add_property(self.__class__, "robot_root_folder", None)
         self.add_property(self.__class__, "base_file_path", None)
         self.add_property(self.__class__, "physics_file_path", None)
-        self.add_property(self.__class__, "robot_file_path", None)
-        self.add_property(self.__class__, "original_stage_path", None)
+        self.add_property(self.__class__, "robot_file_path", None)  # the main robot file usd with all the variants
+        self.add_property(
+            self.__class__, "original_stage_path", None
+        )  # path to the original stage where editing started
+        self.add_property(
+            self.__class__, "original_robot_path", None
+        )  # path to the original robot even if the robot on editing stage is a reference or payload
+        self.add_property(self.__class__, "save_stage_copy", False)  # save a copy of the stage in the robot root folder
+        self.add_property(
+            self.__class__, "save_stage_original", False
+        )  # save (likely overwrites) the original stage in the original_stage_path
 
         # register the robot
         RobotRegistry().register(name, self)
