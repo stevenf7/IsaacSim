@@ -168,7 +168,7 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.apply_physics_materials(v0, indices=indices)
                     output = prim.get_applied_physics_materials(indices=indices)
-                check_lists(expected_v0, output, predicate=lambda x: x.prim_paths[0])
+                check_lists(expected_v0, output, predicate=lambda x: x.paths[0])
         # - check the number of applied materials after applying materials by indices
         with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
             output = prim.get_applied_physics_materials()
@@ -182,7 +182,7 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                 prim.apply_physics_materials(v0)
                 output = prim.get_applied_physics_materials()
-            check_lists(expected_v0, output, predicate=lambda x: x.prim_paths[0])
+            check_lists(expected_v0, output, predicate=lambda x: x.paths[0])
         # - check the number of applied materials after applying materials by all
         with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
             output = prim.get_applied_physics_materials()
