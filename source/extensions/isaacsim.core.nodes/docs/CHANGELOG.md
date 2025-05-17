@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [3.2.0] - 2025-05-16
+### Changed
+- Deprecate all time related functions, use isaacsim.core.simulation_manager APIs instead
+
 ## [3.1.1] - 2025-05-15
 ### Changed
 - UsdUtilities.h was updated

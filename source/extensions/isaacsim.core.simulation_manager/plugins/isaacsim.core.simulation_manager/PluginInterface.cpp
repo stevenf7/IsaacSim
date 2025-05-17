@@ -15,7 +15,9 @@
 #include <isaacsim/core/simulation_manager/UsdNoticeListener.h>
 #include <omni/ext/IExt.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/fabric/stage/StageReaderWriter.h>
+#include <omni/fabric/IToken.h>
+#include <omni/fabric/SimStageWithHistory.h>
+#include <omni/graph/core/Type.h>
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
@@ -37,6 +39,14 @@ omni::physx::SubscriptionId g_physicsOnStepSubscription;
 carb::events::ISubscriptionPtr g_physicsEventSubscription;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
+
+omni::fabric::ISimStageWithHistory* g_simStageWithHistory = nullptr;
+omni::fabric::IStageReaderWriter* g_stageReaderWriter = nullptr;
+omni::fabric::IStageAtTimeInterval* g_stageAtTimeInterval = nullptr;
+omni::fabric::StageReaderWriterId g_stageReaderWriterId;
+omni::fabric::SimStageWithHistoryId g_simStageWithHistoryId;
+omni::fabric::UsdStageId g_stageId;
+pxr::UsdStageWeakPtr g_stage = nullptr;
 double g_simulationTime = 0.0;
 double g_simulationTimeMonotonic = 0.0;
 double g_systemTime = 0.0;
@@ -183,6 +193,30 @@ public:
     }
 
     /**
+     * @brief Gets the current simulation time.
+     * @details
+     * Returns the current simulation time which does not reset when the simulation is stopped.
+     *
+     * @return The current simulation time.
+     */
+    double getSimulationTimeMonotonic() override
+    {
+        return g_simulationTimeMonotonic;
+    }
+
+    /**
+     * @brief Gets the current system time.
+     * @details
+     * Returns the current system time.
+     *
+     * @return The current system time.
+     */
+    double getSystemTime() override
+    {
+        return g_systemTime;
+    }
+
+    /**
      * @brief Enables or disables the USD notice handler.
      * @details
      * Controls whether USD notices are processed by the notice listener.
@@ -315,6 +349,70 @@ public:
         callbackIter = 0;
     }
 
+
+    double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime) override
+    {
+        auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+        pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
+
+        if (!g_stage->GetPrimAtPath(usdPath) || !g_simStageWithHistoryId.id || !g_stageId.id)
+        {
+            return g_simulationTime;
+        }
+        else
+        {
+            CARB_LOG_ERROR("getSimulationTimeAtTime , returning default sim time %d %d %d",
+                           !g_stage->GetPrimAtPath(usdPath), !g_simStageWithHistoryId.id, !g_stageId.id);
+        }
+        omni::fabric::StageAtTime stageAtTime(g_simStageWithHistoryId, rtime);
+        auto simTime = stageAtTime.getAttributeRd<double>(
+            omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTime"));
+        return simTime ? simTime.value() : g_simulationTime;
+    }
+
+
+    double getSimulationTimeMonotonicAtTime(const omni::fabric::RationalTime& rtime) override
+    {
+        auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+        pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
+
+        if (!g_stage->GetPrimAtPath(usdPath) || !g_simStageWithHistoryId.id || !g_stageId.id)
+        {
+            return g_simulationTimeMonotonic;
+        }
+        else
+        {
+            CARB_LOG_ERROR("getSimulationTimeMonotonicAtTime, returning default monotonic sim time %d %d %d",
+                           !g_stage->GetPrimAtPath(usdPath), !g_simStageWithHistoryId.id, !g_stageId.id);
+        }
+        omni::fabric::StageAtTime stageAtTime(g_simStageWithHistoryId, rtime);
+        auto simTimeMonotonic = stageAtTime.getAttributeRd<double>(
+            omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTimeMonotonic"));
+        return simTimeMonotonic ? simTimeMonotonic.value() : g_simulationTimeMonotonic;
+    }
+
+    double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime) override
+    {
+
+        auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+        pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
+
+        if (!g_stage->GetPrimAtPath(usdPath) || !g_simStageWithHistoryId.id || !g_stageId.id)
+        {
+            return g_systemTime;
+        }
+        else
+        {
+            CARB_LOG_ERROR("getSystemTimeAtTime, returning default system time %d %d %d",
+                           !g_stage->GetPrimAtPath(usdPath), !g_simStageWithHistoryId.id, !g_stageId.id);
+        }
+        omni::fabric::StageAtTime stageAtTime(g_simStageWithHistoryId, rtime);
+        auto systemTime = stageAtTime.getAttributeRd<double>(
+            omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("systemTime"));
+        return systemTime ? systemTime.value() : g_systemTime;
+    }
+
+
 private:
     /**
      * @brief USD notice listener object that handles USD notices.
@@ -328,11 +426,42 @@ private:
 };
 
 /**
+ * @brief Callback function for resume events.
+ * @details
+ * Creates a prim and attributes for the simulation time.
+ *
+ * @param[in] currentTime The current time.
+ * @param[in] userData User data pointer.
+ */
+void onResume(float currentTime, void* userData)
+{
+    g_stageReaderWriterId = g_stageReaderWriter->get(g_stageId);
+    g_simStageWithHistoryId = g_simStageWithHistory->get(g_stageId);
+    omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(g_stageReaderWriterId);
+
+    stageReaderWriter.createPrim(omni::fabric::Path("/__OgnIsaacSimTime__"));
+
+    const omni::graph::core::Type typeTag(omni::graph::core::BaseDataType::eTag);
+    const omni::fabric::Token fcExportToRingbuffer("fcExportToRingbuffer");
+    stageReaderWriter.createAttribute(omni::fabric::Path("/__OgnIsaacSimTime__"), fcExportToRingbuffer, typeTag);
+
+    const omni::graph::core::Type typeDouble(omni::graph::core::BaseDataType::eDouble, 1, 0);
+    *stageReaderWriter.getOrCreateAttributeWr<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTime"), typeDouble) = g_simulationTime;
+    *stageReaderWriter.getOrCreateAttributeWr<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("simTimeMonotonic"), typeDouble) =
+        g_simulationTimeMonotonic;
+    *stageReaderWriter.getOrCreateAttributeWr<double>(
+        omni::fabric::Path("/__OgnIsaacSimTime__"), omni::fabric::Token("systemTime"), typeDouble) = g_systemTime;
+}
+
+/**
  * @brief Callback function for physics step events.
  * @details
  * Updates the simulation time and physics step count.
  *
  * @param[in] timeElapsed The elapsed time since the last physics step.
+ * @param[in] userData User data pointer.
  */
 void onPhysicsStep(float timeElapsed, void* userData)
 {
@@ -341,7 +470,38 @@ void onPhysicsStep(float timeElapsed, void* userData)
     g_numPhysicsSteps += 1;
     g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     g_simulating = true;
+
+    omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(g_stageReaderWriterId);
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
+    pxr::UsdStageRefPtr usdStage =
+        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(g_stageId.id)));
+
+    g_stageReaderWriter->prefetchPrim(g_stageId, path);
+    if (!usdStage->GetPrimAtPath(usdPath))
+    {
+        // create prim and attributes if they do not exist, this sets them to the current values as well
+        onResume(0, nullptr);
+        return;
+    }
+
+    double* simTime = stageReaderWriter.getAttributeWr<double>(path, omni::fabric::Token("simTime"));
+    double* simTimeMonotonic = stageReaderWriter.getAttributeWr<double>(path, omni::fabric::Token("simTimeMonotonic"));
+    double* systemTime = stageReaderWriter.getAttributeWr<double>(path, omni::fabric::Token("systemTime"));
+    // Check if the attributes exist
+    if (simTime && simTimeMonotonic && systemTime)
+    {
+        *simTime = g_simulationTime;
+        *simTimeMonotonic = g_simulationTimeMonotonic;
+        *systemTime = g_systemTime;
+    }
+    else
+    {
+        CARB_LOG_ERROR("Could not read or create sim time attributes");
+    }
 }
+
+
 /**
  * @brief Callback function for stop events.
  * @details
@@ -351,6 +511,15 @@ void onPhysicsStep(float timeElapsed, void* userData)
  */
 void onStop(void* userData)
 {
+    omni::fabric::StageReaderWriter stageReaderWriter = omni::fabric::StageReaderWriter(g_stageReaderWriterId);
+    auto path = omni::fabric::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
+    pxr::UsdStageRefPtr usdStage =
+        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(g_stageId.id)));
+    if (usdStage->GetPrimAtPath(usdPath))
+    {
+        stageReaderWriter.destroyPrim(path);
+    }
     g_simulationTime = 0;
     g_numPhysicsSteps = 0;
 }
@@ -366,7 +535,17 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
     g_simulationTime = 0;
     g_numPhysicsSteps = 0;
+
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    if (!stage)
+    {
+        CARB_LOG_ERROR("Isaac Core Simulation Manager could not find USD stage");
+        return;
+    }
+    g_stage = stage;
+    g_stageId.id = stageId;
 }
+
 
 /**
  * @class Extension
@@ -390,6 +569,9 @@ public:
         g_physXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
         g_physicsOnStepSubscription = g_physXInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep, nullptr);
         g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+        g_simulationTime = 0;
+        g_simulationTimeMonotonic = 0;
+        g_numPhysicsSteps = 0;
 
         g_physicsEventSubscription = carb::events::createSubscriptionToPop(
             g_physXInterface->getSimulationEventStreamV2().get(),
@@ -413,10 +595,15 @@ public:
             0, "IsaacSim.Core.SimulationManager.SimulationEvent");
 
         g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
+        g_stageReaderWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        g_simStageWithHistory = carb::getCachedInterface<omni::fabric::ISimStageWithHistory>();
+        g_stageAtTimeInterval = carb::getCachedInterface<omni::fabric::IStageAtTimeInterval>();
+
         omni::kit::StageUpdateNodeDesc desc = { 0 };
         desc.displayName = "Isaac Simulation Manager";
         desc.onStop = onStop;
         desc.onAttach = onAttach;
+        desc.onResume = onResume;
         g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
     }
 

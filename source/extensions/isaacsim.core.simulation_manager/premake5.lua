@@ -20,6 +20,7 @@ includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
     target_deps .. "/omni_physics/%{config}/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 
 libdirs {
@@ -27,7 +28,7 @@ libdirs {
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
 }
-links { "physxSchema", "omni.usd" }
+links { "physxSchema", "omni.usd", "carb" }
 
 extra_usd_libs = { "usdUtils", "usdPhysics" }
 
@@ -66,6 +67,7 @@ includedirs {
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/source/extensions/isaacsim.core.simulation_manager/include",
     "%{root}/source/extensions/isaacsim.core.simulation_manager/plugins",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 
 libdirs {

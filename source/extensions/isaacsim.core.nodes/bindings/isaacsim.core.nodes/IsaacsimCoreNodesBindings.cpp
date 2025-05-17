@@ -70,6 +70,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The current simulation time in seconds.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_simulation_time() instead.
              )pbdoc")
         .def("get_sim_time_monotonic", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonic),
              R"pbdoc(
@@ -80,6 +83,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The monotonic simulation time in seconds.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_simulation_monotonic() instead.
              )pbdoc")
         .def("get_system_time", wrapInterfaceFunction(&CoreNodes::getSystemTime),
              R"pbdoc(
@@ -87,6 +93,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The current system time in seconds.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_system_time() instead.
              )pbdoc")
         .def("get_physics_num_steps", wrapInterfaceFunction(&CoreNodes::getPhysicsNumSteps),
              R"pbdoc(
@@ -96,6 +105,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     int: The number of physics steps completed.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_num_physics_steps() instead.
              )pbdoc")
         .def("get_sim_time_at_time", wrapInterfaceFunction(&CoreNodes::getSimTimeAtTime),
              R"pbdoc(
@@ -106,6 +118,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The simulation time in seconds at the specified time.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_simulation_time_at_time() instead.
              )pbdoc")
         .def("get_sim_time_at_time", [](CoreNodes* iface, const std::tuple<int64_t, uint64_t>& timeTuple) {
             int64_t numerator = std::get<0>(timeTuple);
@@ -120,6 +135,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The simulation time in seconds at the specified time.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_simulation_time_at_time() instead.
              )pbdoc")
         .def("get_sim_time_monotonic_at_time", wrapInterfaceFunction(&CoreNodes::getSimTimeMonotonicAtTime),
              R"pbdoc(
@@ -130,6 +148,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The monotonic simulation time in seconds at the specified time.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_simulation_time_monotonic_at_time() instead.
              )pbdoc")
         .def("get_sim_time_monotonic_at_time", [](CoreNodes* iface, const std::tuple<int64_t, uint64_t>& timeTuple) {
             int64_t numerator = std::get<0>(timeTuple);
@@ -144,6 +165,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The monotonic simulation time in seconds at the specified time.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_simulation_time_monotonic_at_time() instead.
              )pbdoc")
         .def("get_system_time_at_time", wrapInterfaceFunction(&CoreNodes::getSystemTimeAtTime),
              R"pbdoc(
@@ -154,6 +178,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The system time in seconds at the specified time.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_system_time_at_time() instead.
              )pbdoc")
         .def("get_system_time_at_time", [](CoreNodes* iface, const std::tuple<int64_t, uint64_t>& timeTuple) {
             int64_t numerator = std::get<0>(timeTuple);
@@ -168,6 +195,9 @@ PYBIND11_MODULE(_isaacsim_core_nodes, m)
 
                 Returns:
                     float: The system time in seconds at the specified time.
+
+                @deprecated: This method is deprecated and will be removed in a future release.
+                Please use isaacsim.core.simulation_manager.get_system_time_at_time() instead.
              )pbdoc")
         ;
 
