@@ -16,7 +16,6 @@
 ### Changed
 - switch to omni.physics interface
 
-
 ## [1.1.0] - 2025-05-03
 ### Changed
 - add an optional set_on_end_edit_fn callback for float fields

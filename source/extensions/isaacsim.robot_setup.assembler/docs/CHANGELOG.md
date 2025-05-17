@@ -6,10 +6,13 @@
 - Updated robot assembler API
 - Updated UI
 - Updated test cases
+
 ### Added
 - Apply changes on Payloads and configurable with variants when assembling directly on source base robot.
+
 ### Removed
 - Deprecated Script generation for robot assembler - new API should be straightforward to use.
+
 ## [2.1.13] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

@@ -12,7 +12,7 @@
 ### Added
 - Enabled multithreading in OgnROS2PublishPointCloud
 
-## [4.5.0] - 2025-05-09
+## [4.5.0] - 2025-05-11
 ### Changed
 - ROS2RTXLidarHelper uses updated isaacsim.sensors.rtx annotators
 

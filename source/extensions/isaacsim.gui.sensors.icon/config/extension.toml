@@ -42,8 +42,8 @@ exts."omni.kit.prim.sensor".showTitle = false
 enabled = true
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
-    "omni.kit.ui_test",
     "omni.hydra.usdrt_delegate",
+    "omni.kit.ui_test",
 ]
 args = [
     "--/app/asyncRendering=0",

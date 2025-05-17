@@ -17,13 +17,12 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.warp.core" = {}
-"omni.isaac.core_archive" = {}
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.utils" = {}
 "isaacsim.core.experimental.prims" = {}
+"isaacsim.core.utils" = {}
+"omni.isaac.core_archive" = {}
+"omni.warp.core" = {}
 
-# define the Python module that the extension provides
 [[python.module]]
 name = "isaacsim.core.experimental.objects"
 

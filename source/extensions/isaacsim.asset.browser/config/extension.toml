@@ -63,11 +63,11 @@ menu.window = "Isaac Sim Assets"
 
 [[test]]
 dependencies = [
+    "omni.hydra.usdrt_delegate",
     "omni.kit.browser.asset",
     "omni.kit.menu.stage",
     "omni.kit.tool.collect",
     "omni.kit.ui_test",
-    "omni.hydra.usdrt_delegate",
 ]
 
 args = [

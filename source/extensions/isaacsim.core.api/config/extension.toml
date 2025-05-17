@@ -19,6 +19,7 @@ writeTarget.kit = true
 "isaacsim.core.utils" = {}
 "isaacsim.core.version" = {}
 "isaacsim.storage.native" = {}
+"omni.hydra.usdrt_delegate" = {}
 "omni.isaac.core_archive" = {}
 "omni.isaac.ml_archive" = {}
 "omni.kit.material.library" = {optional = true} # OmniGlass
@@ -31,7 +32,6 @@ writeTarget.kit = true
 "omni.pip.compute" = {} # scipy
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
-"omni.hydra.usdrt_delegate" = {}
 
 [[python.module]]
 name = "isaacsim.core.api"
