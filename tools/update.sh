@@ -56,18 +56,22 @@ cd "$SCRIPT_DIR"
 ../repo.sh update omni_physics --include-pre-release --patch
 ../repo.sh check_python_package_definitions --update-omniverse-kit
 python3 isaac/update_isaac_sim_deps.py --mode version
-
+pushd ../
 # Generate documentation
-python3 isaac/generate_doxygen_input.py --root ../
+python3 tools/isaac/generate_doxygen_input.py --root ./
+popd
 
 # Run conditional updates based on command line arguments
 if [ "$RUN_EXTSCACHE" = true ]; then
   echo "Running build and cleaning extscache..."
+  pushd ../
   # Build with update flag
-  ../repo.sh build -ur
+  ./repo.sh build -ur
+  
 
   # Cleanup
-  python3 isaac/clean_extscache.py --update-locks --kit-file="../source/apps/isaacsim.exp.extscache.kit"
+  python3 tools/isaac/clean_extscache.py --update-locks --kit-file="source/apps/isaacsim.exp.extscache.kit"
+  popd
 fi
 
 if [ "$RUN_REPO_UPDATE" = true ]; then
