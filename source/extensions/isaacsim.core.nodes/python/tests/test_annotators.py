@@ -74,7 +74,6 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
     #     annotator.detach()
 
     async def test_read_times(self):
-
         annotator_read_sim_time = rep.AnnotatorRegistry.get_annotator("IsaacReadSimulationTime")
         annotator_read_sim_time.initialize(resetOnStop=True)
         annotator_read_sim_time.attach([self._render_product_path])
@@ -83,17 +82,16 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
         fabric_time_annotator.attach([self._render_product_path])
 
+        # Testing that reset on stop works
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.syntheticdata.sensors.next_render_simulation_async(self._render_product_path, 10)
-
         fabric_time_data = fabric_time_annotator.get_data()
         data_read_sim_time = annotator_read_sim_time.get_data()
         data_read_system_time = annotator_read_system_time.get_data()
-
         self.assertAlmostEqual(
             data_read_sim_time["simulationTime"], 0.01666666753590107 * 12
         )  # Two extra steps happen to init physics on play
@@ -108,23 +106,6 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         annotator_read_sim_time.detach()
         annotator_read_system_time.detach()
         fabric_time_annotator.detach()
-
-    # TODO: this test won't work unless something consumes the time output so the node is executed
-    # async def test_read_simulation_time(self):
-    #     annotator = rep.AnnotatorRegistry.get_annotator("IsaacReadSimulationTime")
-    #     annotator.attach([self._render_product_path])
-
-    #     self._timeline.play()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     data = annotator.get_data()
-    #     # self.assertAlmostEqual(data["simulationTime"], 0.1666666753590107)
-    #     print(data)
-    #     # annotator.detach()
 
     async def test_convert_rgba_to_rgb(self):
         import omni.syntheticdata._syntheticdata as sd

@@ -125,7 +125,6 @@ class SimulationContext:
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
-        self._loop_runner = None
         self._physics_context = None
         self._current_time = 0
         if self._set_defaults:
@@ -135,11 +134,9 @@ class SimulationContext:
                 self._initial_stage_units_in_meters = 1.0
 
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            import omni.kit.loop._loop as omni_loop
 
             if self.is_playing():
                 self.stop()
-            self._loop_runner = omni_loop.acquire_loop_interface()
             self._init_stage(
                 physics_dt=physics_dt,
                 rendering_dt=self._initial_rendering_dt,
@@ -429,21 +426,26 @@ class SimulationContext:
         rendering_hz = 0
         if rendering_dt > 0:
             rendering_hz = 1.0 / rendering_dt
-        # TODO Is there a better way to do this or atleast reset this to the original values on close
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
-        else:
-            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", False)
-        set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
+
+        # If rate limiting is enabled, set the rendering rate to the specified value
+        # Otherwise run the app as fast as possible and do not specify the target rate
+        if get_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled"):
+            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
+            self._timeline.set_target_framerate(rendering_hz)
         with Usd.EditContext(get_current_stage(), get_current_stage().GetRootLayer()):
             get_current_stage().SetTimeCodesPerSecond(rendering_hz)
-        self._timeline.set_target_framerate(rendering_hz)
+        self._timeline.set_time_codes_per_second(rendering_hz)
         self._rendering_dt = rendering_dt
-        # the custom isaac loop runner is available by default when running as a native python script with SimulationApp
-        # other apps need to enable it before startup in their respective .kit files.
-        if self._loop_runner is not None:
-            self._loop_runner.set_manual_step_size(rendering_dt)
-            self._loop_runner.set_manual_mode(True)
+        # The isaac sim loop runner is enabled by default in isaac sim apps, but in case we are in an app with the kit loop runner, protect against this
+        try:
+            import omni.kit.loop._loop as omni_loop
+
+            _loop_runner = omni_loop.acquire_loop_interface()
+            _loop_runner.set_manual_step_size(rendering_dt)
+            _loop_runner.set_manual_mode(True)
+        except Exception:
+            pass
+
         return
 
     def get_physics_dt(self) -> float:

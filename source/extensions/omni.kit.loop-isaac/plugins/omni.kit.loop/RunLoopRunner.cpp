@@ -227,7 +227,7 @@ public:
     {
         // (hacky) Set first update time ~1/60 sec to avoid dealing with 0 elapsed time
         m_lastUpdateTime -= milliseconds(16);
-        mDeltaTime = 1.0 / 60.0;
+        m_deltaTime = 1.0 / 60.0;
     }
 
     ~RunLoopThread()
@@ -284,9 +284,9 @@ public:
         double dt = duration_cast<microseconds>(startTime - m_lastUpdateTime).count() * 0.000001;
         m_lastUpdateTime = startTime;
 
-        if (mIsManualDt)
+        if (m_manualMode)
         {
-            dt = mDeltaTime;
+            dt = m_deltaTime;
         }
 
         CARB_PROFILE_EVENT(
@@ -448,6 +448,7 @@ public:
             m_slidingMaximumToleranceFactorPath =
                 fmt::format("{0}/{1}/slidingMaximum/outlierTolerance", kAppRunLoops, name);
             m_updateEnabled = fmt::format("{0}/{1}/update/enabled", kAppRunLoops, name);
+            m_manualModeString = fmt::format("{0}/{1}/manualModeEnabled", kAppRunLoops, name);
 
             settings->setDefaultBool(m_rateLimitEnabledString.c_str(), false);
             settings->setDefaultBool(m_rateLimitUseBusyLoopString.c_str(), false);
@@ -478,6 +479,7 @@ public:
         syncToPresentGlobal = settings->getAsBool(kSyncToPresentGlobal);
         useSlidingMaximum = settings->getAsBool(m_slidingMaximumEnabledPath.c_str());
         updateEnabled = settings->getAsBool(m_updateEnabled.c_str());
+        m_manualMode = settings->getAsBool(m_manualModeString.c_str());
 
         if (useSlidingMaximum)
         {
@@ -493,13 +495,23 @@ public:
             m_runLoopSynchronizer->setActive(syncToPresent && syncToPresentGlobal);
         }
     }
-    void setManualStepSize(double dt)
+    void setManualStepSize(const double dt)
     {
-        mDeltaTime = dt;
+        m_deltaTime = dt;
     }
-    void setManualMode(bool enabled)
+    void setManualMode(const bool enabled)
     {
-        mIsManualDt = enabled;
+        m_manualModeString = fmt::format("{0}/{1}/manualModeEnabled", kAppRunLoops, name);
+        auto settings = getCachedInterface<settings::ISettings>();
+        if (settings)
+        {
+            settings->setBool(m_manualModeString.c_str(), enabled);
+        }
+        m_manualMode = enabled;
+    }
+    bool getManualMode()
+    {
+        return m_manualMode;
     }
 
 private:
@@ -534,13 +546,15 @@ private:
     std::string m_slidingMaximumToleranceFactorPath;
     std::string m_updateEnabled;
 
+
     std::unique_ptr<RunLoopSynchronizer> m_runLoopSynchronizer;
 
     bool m_initialized = false;
 
     // Variables for storing and handling manually set dt
-    double mDeltaTime;
-    bool mIsManualDt = false;
+    std::string m_manualModeString;
+    double m_deltaTime;
+    bool m_manualMode = false;
 
     //
     // It is convenient to have a counter that tracks what update
@@ -777,7 +791,7 @@ private:
     carb::thread::mutex m_mutex;
 };
 
-static void SetManualStepSize(double dt, std::string name = "")
+static void SetManualStepSize(const double dt, const std::string& name = "")
 {
     for (auto& l : m_runLoops)
     {
@@ -794,7 +808,7 @@ static void SetManualStepSize(double dt, std::string name = "")
         }
     }
 }
-static void SetManualMode(bool enabled, std::string name = "")
+static void SetManualMode(const bool enabled, const std::string& name = "")
 {
     for (auto& l : m_runLoops)
     {
@@ -810,6 +824,25 @@ static void SetManualMode(bool enabled, std::string name = "")
             l.second.setManualMode(enabled);
         }
     }
+}
+
+static bool GetManualMode(const std::string& name = "")
+{
+    for (auto& l : m_runLoops)
+    {
+        if (name.compare("") != 0)
+        {
+            if (l.first.compare(name) == 0)
+            {
+                return l.second.getManualMode();
+            }
+        }
+        else
+        {
+            return l.second.getManualMode();
+        }
+    }
+    return false;
 }
 
 
@@ -848,6 +881,7 @@ void fillInterface(omni::kit::IRunLoopRunnerImpl& iface)
 
     iface.setManualMode = SetManualMode;
     iface.setManualStepSize = SetManualStepSize;
+    iface.getManualMode = GetManualMode;
 }
 
 void fillInterface(omni::kit::IExtensionPluginImpl& iface)

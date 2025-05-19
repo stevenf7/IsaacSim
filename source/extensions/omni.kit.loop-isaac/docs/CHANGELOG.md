@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.3.0] - 2025-05-17
+### Changed
+- Added a getManualMode function and associated python binding
+- Added a manualModeEnabled carb setting that can be set per run loop
+
 ## [1.2.6] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.8.0] - 2025-05-17
+### Changed
+- "/app/player/useFixedTimeStepping" is not set to false by default, set it in your .kit/experience file when using SimulationApp
+
 ## [2.7.0] - 2025-05-02
 ### Added
 - Add option to disable viewport updates when running in headless mode

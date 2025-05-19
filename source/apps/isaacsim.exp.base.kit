@@ -211,6 +211,9 @@ settings.fabricDefaultStageFrameHistoryCount = 3 # needed for omni.syntheticdata
 settings.persistent = true                       # settings are persistent for this app
 useFabricSceneDelegate = true                    # use FSD by default for better performance
 enableDeveloperWarnings = false                  # disable developer warnings to reduce log noise
+runLoops.main.rateLimitEnabled = false           # Disable rate limiting, simulation runs as fast as possible
+runLoops.main.manualModeEnabled = true           # Enable manual mode, dt is fixed at requested rate
+player.useFixedTimeStepping = false              # Disable fixed time stepping, dt is controlled by loop runner
 
 vulkan = true # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
 ### async rendering settings

@@ -62,6 +62,9 @@ args = [
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
     "--/app/useFabricSceneDelegate=true",
+    "--/app/player/useFixedTimeStepping=false",
+    "--/app/runLoops/main/rateLimitEnabled=false",
+    "--/app/runLoops/main/manualModeEnabled=true",
     ### Extension specific args
     "--/rtx/ecoMode/enabled=True"
 ]

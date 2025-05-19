@@ -36,16 +36,7 @@ class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         while is_stage_loading():
             await update_stage_async()
-        settings = carb.settings.get_settings()
-        settings.set("/app/player/useFixedTimeStepping", False)
-        settings.set("/app/runLoops/main/rateLimitEnabled", False)
-        try:
-            import omni.kit.loop._loop as omni_loop
 
-            self._loop_runner = omni_loop.acquire_loop_interface()
-            self._loop_runner.set_manual_mode(True)
-        except Exception:
-            pass
         return
 
     # After running each test
@@ -60,7 +51,7 @@ class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCase):
         pass
 
     # Run all functions with simulation enabled
-    async def test_bin_filling(self):
+    async def test_bin_filling_task(self):
         await self._sample.reset_async()
         await update_stage_async()
         world = self._sample.get_world()

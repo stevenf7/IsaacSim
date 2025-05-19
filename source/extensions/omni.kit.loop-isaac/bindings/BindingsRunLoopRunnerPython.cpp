@@ -64,6 +64,18 @@ PYBIND11_MODULE(_loop, m)
                     arg1 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
 
                 )pbdoc",
-             py::arg("enabled") = "True", py::arg("name") = "");
+             py::arg("enabled") = "True", py::arg("name") = "")
+        .def("get_manual_mode", wrapInterfaceFunction(&IRunLoopRunnerImpl::getManualMode),
+             R"pbdoc(
+                Gets the manual mode for the run loop.
+
+                Args: 
+                    arg0 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
+
+                Returns:
+                    :obj:`bool`: True if manual mode is enabled, false otherwise.
+
+                )pbdoc",
+             py::arg("name") = "");
 }
 }
