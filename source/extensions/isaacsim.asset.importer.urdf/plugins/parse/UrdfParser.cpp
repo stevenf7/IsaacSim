@@ -878,7 +878,7 @@ bool parseMaterial(const XMLElement& element, UrdfMaterial& material)
     if (materialElement)
     {
         auto name = materialElement->Attribute("name");
-        if (name && strlen(name) > 0)
+        if (name && name[0] != '\0')
         {
             material.name = makeValidUSDIdentifier(name);
         }

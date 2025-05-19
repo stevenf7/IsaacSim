@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.6] - 2025-05-19
+### Changed
+- Remove usage of strlen
+
 ## [2.4.5] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
