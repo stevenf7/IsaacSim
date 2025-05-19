@@ -130,6 +130,9 @@ args = [
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
     "--/app/useFabricSceneDelegate=true",
+    "--/app/player/useFixedTimeStepping=false",
+    "--/app/runLoops/main/rateLimitEnabled=false",
+    "--/app/runLoops/main/manualModeEnabled=true",
     ### Extension specific args
     '--/exts/isaacsim.ros2.bridge/ros_distro = "humble"',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",

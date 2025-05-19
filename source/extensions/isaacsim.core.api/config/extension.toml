@@ -1,5 +1,5 @@
 [package]
-version = "4.4.2"
+version = "4.5.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
@@ -93,4 +93,7 @@ args = [
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
     "--/app/useFabricSceneDelegate=true",
+    "--/app/player/useFixedTimeStepping=false",
+    "--/app/runLoops/main/rateLimitEnabled=false",
+    "--/app/runLoops/main/manualModeEnabled=true",
 ]

@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.5.0] - 2025-05-17
+### Changed
+- Allow for more control over time stepping behavior
+- "/app/runLoops/main/rateLimitFrequency" and timeline.set_target_framerate(rendering_hz) are only set if the app has "/app/runLoops/main/rateLimitEnabled" set to true
+- isaac sim loop runner set_manual_mode is always used if rendering rate is specified
+
 ## [4.4.2] - 2025-05-14
 ### Changed
 - Specify cuboid collider

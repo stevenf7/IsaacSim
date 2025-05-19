@@ -78,6 +78,9 @@ args = [
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
     "--/app/useFabricSceneDelegate=true",
+    "--/app/player/useFixedTimeStepping=false",
+    "--/app/runLoops/main/rateLimitEnabled=false",
+    "--/app/runLoops/main/manualModeEnabled=true",
 ]
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles

@@ -45,6 +45,9 @@ STANDARD_TEST_ARGS = [
     "--/rtx/reservedDescriptors=900000",
     "--vulkan",
     "--/app/useFabricSceneDelegate=true",
+    "--/app/player/useFixedTimeStepping=false",
+    "--/app/runLoops/main/rateLimitEnabled=false",
+    "--/app/runLoops/main/manualModeEnabled=true",
 ]
 
 STARTUP_TEST_ARGS = [

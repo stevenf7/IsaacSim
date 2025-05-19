@@ -28,6 +28,7 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },
     { "include", ext.target_dir .. "/include" },
+    { "python/tests", ext.target_dir .. "/omni/kit/loop/tests" },
 }
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir .. "/omni/kit/loop" },

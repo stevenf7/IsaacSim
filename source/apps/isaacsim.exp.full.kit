@@ -142,8 +142,12 @@ name = "Isaac-Sim Full"
 version = "5.0.0"
 file.ignoreUnsavedOnExit = false
 window.title = "Isaac Sim Full"
-vulkan = true                        # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
-enableDeveloperWarnings = false      # disable developer warnings to reduce log noise
+vulkan = true                          # Explicitly enable Vulkan (on by default on Linux, off by default on Windows)
+enableDeveloperWarnings = false        # Disable developer warnings to reduce log noise
+runLoops.main.rateLimitEnabled = true  # Enable rate limiting, simulation runs at specified rendering rate (default 60 hz)
+runLoops.main.manualModeEnabled = true # Enable manual mode, dt is fixed at requested rate
+player.useFixedTimeStepping = true     # Disable fixed time stepping, dt is controlled by loop runner
+
 
 # set the default ros bridge to enable on startup
 [settings."filter:platform"."windows-x86_64"]

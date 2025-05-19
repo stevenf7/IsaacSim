@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.2.1] - 2025-05-19
+### Fixed
+- Unit tests failing due to non-deterministic behavior
 
 ## [3.2.0] - 2025-05-16
 ### Changed

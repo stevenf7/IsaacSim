@@ -16,6 +16,9 @@ import omni.kit.test
 
 class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
     async def setUp(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.set_start_time(0)
+        self._timeline.set_end_time(1)
         pass
 
     async def tearDown(self):
@@ -24,7 +27,6 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
     async def test_on_stop_play_callback(self):
         self._settings = carb.settings.get_settings()
         self._settings.set("/rtx/ecoMode/enabled", True)
-        self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._settings.get("/rtx/ecoMode/enabled"), False)
