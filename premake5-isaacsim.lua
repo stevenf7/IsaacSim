@@ -103,7 +103,7 @@ function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, 
             .. '%{iif(not cfg.staticruntime or cfg.staticruntime ~= "On", "/MD", "/MT")..iif(not cfg.runtime or cfg.runtime == "Debug", "d", "")}'
             .. " -c -I "
             .. carbSDKInclude
-            .. " -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"
+            .. " -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH -DBUILDING_FOR_ISAAC_SIM %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"
             .. ext
         buildmessage(buildString)
         buildcommands { buildString }
@@ -144,9 +144,9 @@ function add_cuda_dependencies()
     setRuntimeToBeKitCompatible()
 
     filter { "files:**.cu", "system:windows", "configurations:debug" }
-    make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G -allow-unsupported-compiler")
     filter { "files:**.cu", "system:windows", "configurations:release" }
-    make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "-allow-unsupported-compiler")
     filter { "files:**.cu", "system:linux", "configurations:debug" }
     make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g -G")
     filter { "files:**.cu", "system:linux", "configurations:release" }

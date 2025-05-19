@@ -35,6 +35,11 @@ extra_usd_libs = {
 add_usd(extra_usd_libs)
 -- End OpenUSD
 
+includedirs {
+    target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
+}
+
+
 filter { "system:linux" }
 includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
