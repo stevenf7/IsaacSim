@@ -63,8 +63,6 @@ if os.target() == "linux" then
     }
 else
     filter { "system:windows", "platforms:x86_64" }
-    toolset("v142")
-    filter { "system:windows", "platforms:x86_64" }
     defines { "_WIN32" }
     filter {}
     libdirs {
