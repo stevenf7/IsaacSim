@@ -102,7 +102,10 @@ Software is furnished to do so, subject to the following conditions:""",
         for match in matches:
             rel_path = os.path.relpath(match)
 
-            # Skip duplicates
+            # Skip PIP-packages-LICENSES.txt and duplicates
+            if os.path.basename(match) == "PIP-packages-LICENSES.txt":
+                print(f"    Skipping PIP packages license file: {rel_path}")
+                continue
             if rel_path in all_matches:
                 print(f"    Skipping exact duplicate: {rel_path}")
                 continue
@@ -171,6 +174,23 @@ Software is furnished to do so, subject to the following conditions:""",
     return sorted(all_matches) if all_matches else None
 
 
+def matches_current_platform(package, current_platform):
+    """Check if a package matches the current platform.
+
+    Args:
+        package: XML package element
+        current_platform: String representing current platform (e.g. 'windows-x86_64')
+
+    Returns:
+        bool: True if package matches current platform, False otherwise
+    """
+    platforms = package.get("platforms", "")
+    if not platforms:
+        return True  # If no platforms specified, assume it matches all
+    platform_list = platforms.split()
+    return current_platform in platform_list
+
+
 # Get list of files to process
 if args.file:
     if not os.path.exists(args.file):
@@ -179,72 +199,97 @@ if args.file:
 else:
     files = glob("./deps/*.packman.xml")
 
-results_by_file = defaultdict(list)
-deps_count_by_file = {}
-json_output = {}
-full_package_listing = {}
+# Define configs to check
+configs = ["release", "debug"]
+
+results_by_file = defaultdict(lambda: defaultdict(list))  # Nested defaultdict for file->config->results
+deps_count_by_file = defaultdict(lambda: defaultdict(int))  # Nested defaultdict for file->config->count
+json_output = defaultdict(dict)  # Nested dict for file->config->data
+full_package_listing = defaultdict(lambda: defaultdict(list))  # Nested defaultdict for file->config->packages
 
 for file in files:
     tree = ET.parse(file)
     root = tree.getroot()
-    total_deps = len(root.findall(".//dependency"))
-    deps_count_by_file[file] = total_deps
-    full_package_listing[file] = []
 
-    # Create mapping of package name to link path
-    package_paths = {}
-    for dep in root.findall(".//dependency"):
-        link_path = dep.get("linkPath")
-        for pkg in dep.findall("package"):
-            package_paths[pkg.get("name")] = link_path
+    for config in configs:
+        print(f"\nChecking {file} with config: {config}")
 
-    _, results = packmanapi.verify(
-        file,
-        exclude_local=True,
-        remotes=["cloudfront"],
-        tokens={"config": "release", "platform_target": platform_target, "platform_target_abi": platform_target},
-        platform=platform,
-        tags={"public": "true"},
-    )
+        # Only count packages that match our platform
+        total_deps = sum(
+            1
+            for dep in root.findall(".//dependency")
+            for pkg in dep.findall("package")
+            if matches_current_platform(pkg, platform)
+        )
+        deps_count_by_file[file][config] = total_deps
+        full_package_listing[file][config] = []
 
-    results_by_file[file] = results
+        # Create mapping of package name to link path
+        package_paths = {}
+        for dep in root.findall(".//dependency"):
+            link_path = dep.get("linkPath")
+            for pkg in dep.findall("package"):
+                if matches_current_platform(pkg, platform):
+                    package_paths[pkg.get("name")] = link_path
 
-    # Get all packages from XML
-    for dependency in root.findall(".//dependency"):
-        for package in dependency.findall("package"):
-            name = package.get("name")
-            package_info = {
-                "name": name,
-                "version": package.get("version"),
-                "license_file": (
-                    find_license_file(package_paths.get(name, ""), name)
-                    if not args.package or name == args.package
-                    else None
-                ),
-            }
-            full_package_listing[file].append(package_info)
+        _, results = packmanapi.verify(
+            file,
+            exclude_local=True,
+            remotes=["cloudfront"],
+            tokens={"config": config, "platform_target": platform_target, "platform_target_abi": platform_target},
+            platform=platform,
+            tags={"public": "true"},
+        )
 
-    # Prepare JSON output for this file
-    json_output[file] = {
-        "problem_packages": [
-            {
-                "name": result[1].name,
-                "version": result[1].version,
-            }
-            for result in results
-        ],
-    }
+        results_by_file[file][config] = results
 
+        # Update the package listing
+        for dependency in root.findall(".//dependency"):
+            for package in dependency.findall("package"):
+                if matches_current_platform(package, platform):
+                    name = package.get("name")
+                    version = package.get("version", "")
+                    # Replace variables in version string
+                    version = version.replace("${config}", config)
+                    version = version.replace("${platform_target}", platform_target)
+                    version = version.replace("${platform_target_abi}", platform_target)
+
+                    package_info = {
+                        "name": name,
+                        "version": version,
+                        "license_file": (
+                            find_license_file(package_paths.get(name, ""), name)
+                            if not args.package or name == args.package
+                            else None
+                        ),
+                    }
+                    full_package_listing[file][config].append(package_info)
+
+        # Prepare JSON output for this file and config
+        json_output[file][config] = {
+            "problem_packages": [
+                {
+                    "name": result[1].name,
+                    "version": result[1].version,
+                }
+                for result in results
+            ],
+        }
+
+# Update summary output
 total_issues = 0
 total_deps = 0
 print("\nSummary of issues:")
 print("-" * 80)
 for file in sorted(results_by_file.keys()):
-    issues = results_by_file[file]
-    total_issues += len(issues)
-    total_deps += deps_count_by_file[file]
     print(f"\n{file}:")
-    print(f"  {len(issues)} issue{'s' if len(issues) != 1 else ''} out of {deps_count_by_file[file]} dependencies")
+    for config in configs:
+        issues = results_by_file[file][config]
+        total_issues += len(issues)
+        total_deps += deps_count_by_file[file][config]
+        print(
+            f"  {config}: {len(issues)} issue{'s' if len(issues) != 1 else ''} out of {deps_count_by_file[file][config]} dependencies"
+        )
 
 print(f"\nTotal issues found: {total_issues} across {total_deps} total dependencies")
 
@@ -258,33 +303,55 @@ with open("packman_full_results.json", "w") as f:
 # Write CSV output
 with open("packman_full_results.csv", "w") as f:
     f.write("Package Name,Version,Public/Private,License Files,License Type\n")
+
+    # Create a dictionary to track unique package entries
+    unique_packages = {}
+
     for file in full_package_listing:
-        # Get the list of private package names from problem_packages
-        private_packages = {pkg["name"] for pkg in json_output[file]["problem_packages"]}
+        # First collect all packages from both configs
+        for config in configs:
+            private_packages = {pkg["name"] for pkg in json_output[file][config]["problem_packages"]}
 
-        for package in full_package_listing[file]:
-            name = package["name"]
-            version = package["version"]
+            for package in full_package_listing[file][config]:
+                name = package["name"]
+                version = package["version"]
+                is_public = "private" if name in private_packages else "public"
 
-            # If the package is in problem_packages, it's private
-            is_public = "private" if name in private_packages else "public"
+                # Create a key for the package based on its identifying information
+                package_key = (name, version)
 
-            # Handle license file info
-            license_info = package.get("license_file")
-            if not license_info:
-                license_files = ""
-                license_type = ""
-            elif isinstance(license_info, list):
-                license_files = ";".join(license_info)
-                license_type = ""
-            elif isinstance(license_info, dict):
-                license_files = license_info["location"]
-                license_type = license_info.get("type", "")
-            else:
-                license_files = str(license_info)
-                license_type = ""
+                # Store package info if we haven't seen it before
+                if package_key not in unique_packages:
+                    # Handle license file info
+                    license_info = package.get("license_file")
+                    if not license_info:
+                        license_files = ""
+                        license_type = ""
+                    elif isinstance(license_info, list):
+                        license_files = ";".join(license_info)
+                        license_type = ""
+                    elif isinstance(license_info, dict):
+                        license_files = license_info["location"]
+                        license_type = license_info.get("type", "")
+                    else:
+                        license_files = str(license_info)
+                        license_type = ""
 
-            f.write(f"{name},{version},{is_public},{license_files},{license_type}\n")
+                    unique_packages[package_key] = {
+                        "name": name,
+                        "version": version,
+                        "public_private": is_public,
+                        "license_files": license_files,
+                        "license_type": license_type,
+                    }
+
+    # Write unique packages to CSV
+    for package_info in unique_packages.values():
+        f.write(
+            f"{package_info['name']},{package_info['version']},"
+            f"{package_info['public_private']},{package_info['license_files']},"
+            f"{package_info['license_type']}\n"
+        )
 
 print("\nDetailed results written to packman_verification_results.json")
 print("Full package listing written to packman_full_results.json")
