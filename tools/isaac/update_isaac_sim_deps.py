@@ -117,7 +117,7 @@ def extract_package_names(xml_file):
     .. code-block:: python
 
         >>> extract_package_names("deps/isaac-sim.packman.xml")
-        ['nv_ros2', 'lula', 'octomap', 'tinyxml2', 'doctest', 'openssl', 'omniisaacsimschemas_openusd_0.24.05_py_3.11', 'nlohmann_json', 'generic-model-output', 'rapidjson']
+        ['nv_ros2', 'lula', 'octomap', 'tinyxml2', 'omniisaacsimschemas_openusd_0.24.05_py_3.11', 'nlohmann_json', 'generic-model-output', 'rapidjson']
     """
     package_names = set()
 
