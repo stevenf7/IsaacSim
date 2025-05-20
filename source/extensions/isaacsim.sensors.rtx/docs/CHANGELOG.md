@@ -1,4 +1,8 @@
 # Changelog
+## [15.0.4] - 2025-05-19
+### Added
+- Added Ouster OS2 to test suite.
+
 ## [15.0.3] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
