@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.5] - 2025-05-20
+### Changed
+- Update assets path to staging
+
 ## [0.1.4] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
