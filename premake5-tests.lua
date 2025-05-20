@@ -569,6 +569,10 @@ function create_tests()
             "standalone_examples/api/isaacsim.replicator.examples/simulation_get_data.py",
         },
         {
+            "tests-nativepython-testing-isaacsim.replicator.grasping.grasping_workflow_sdg",
+            "standalone_examples/api/isaacsim.replicator.grasping/grasping_workflow_sdg.py",
+        },
+        {
             "tests-nativepython-testing-isaacsim.sensors.physics.contact_sensor",
             "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py",
         },
