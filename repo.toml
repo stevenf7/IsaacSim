@@ -1391,7 +1391,7 @@ pyproject.urls = [
 ]
 pyproject.version = "${build_string}"
 
-wheel.platforms = {"linux-x86_64" = "manylinux_2_34_x86_64", "windows-x86_64" = "win_amd64"}
+wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64"}
 
 # whl publishing (pypi)
 [[repo_python_package.publish.task]]
@@ -1426,7 +1426,7 @@ archives = [
   "omni.isaac.ml_archive",
   "omni.pip.compute",
   "omni.pip.cloud",
-  # "omni.kit.pip_archive",
+  "omni.kit.pip_archive",
 ]
 search_folder = "${root}/_build/packages/python"
 [repo_dump_extensions]

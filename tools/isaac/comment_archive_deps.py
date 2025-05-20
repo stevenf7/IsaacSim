@@ -18,16 +18,33 @@ import omni.repo.man
 logger = logging.getLogger(__name__)
 
 
-def _comment_archives(file_path, archives):
-    with open(file_path, "r") as f:
-        content = f.read()
-    for archive in archives:
-        if archive in content:
-            content = content.replace(f'"{archive}"', f'## "{archive}"')
-            content = content.replace(f"'{archive}'", f'## "{archive}"')
-            omni.repo.man.print_log(f"{file_path} -> {archive}", logging.INFO)
-    with open(file_path, "w") as f:
-        f.write(content)
+def _comment_archives(file_path, archives, remove: bool = True):
+    # remove
+    if remove:
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+        content = []
+        for line in lines:
+            append_line = True
+            for archive in archives:
+                if archive in line:
+                    append_line = False
+                    omni.repo.man.print_log(f"{file_path} -> {archive}", logging.INFO)
+            if append_line:
+                content.append(line)
+        with open(file_path, "w") as f:
+            f.writelines(content)
+    # comment
+    else:
+        with open(file_path, "r") as f:
+            content = f.read()
+        for archive in archives:
+            if archive in content:
+                content = content.replace(f'"{archive}"', f'## "{archive}"')
+                content = content.replace(f"'{archive}'", f'## "{archive}"')
+                omni.repo.man.print_log(f"{file_path} -> {archive}", logging.INFO)
+        with open(file_path, "w") as f:
+            f.write(content)
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
