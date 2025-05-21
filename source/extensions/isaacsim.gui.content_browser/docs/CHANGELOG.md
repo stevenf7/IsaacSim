@@ -1,4 +1,10 @@
 # Changelog
+
+
+## [0.1.6] - 2025-05-20
+### Changed
+- fixed empty paramter error in _on_file_change_event
+
 ## [0.1.5] - 2025-05-20
 ### Changed
 - Update assets path to staging

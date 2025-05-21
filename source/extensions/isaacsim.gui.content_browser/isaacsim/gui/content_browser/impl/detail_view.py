@@ -44,10 +44,7 @@ class ExtendedFileInfo(DetailFrameController):
         self._widget = None
         self._current_url = ""
         self._resolve_subscription = None
-        self._time_label = None
-        self._created_by_label = None
-        self._modified_by_label = None
-        self._size_label = None
+        self._isaac_content_frame = None
 
     def build_header(self, collapsed: bool, title: str):
         """
@@ -94,7 +91,6 @@ class ExtendedFileInfo(DetailFrameController):
             else:
                 self._frame.title = os.path.basename(selected[-1])
                 entry = None
-            entry = entry or self._empty_list_entry
 
             # check for variants
             variant_set_names = []
@@ -104,41 +100,43 @@ class ExtendedFileInfo(DetailFrameController):
                     vset = stage.GetDefaultPrim().GetVariantSets()
                     variant_set_names = vset.GetNames()
 
-            # build variant options
+            entry = entry or self._empty_list_entry
             with self._widget:
                 with ui.ZStack():
                     ui.Rectangle()
                     with ui.VStack():
                         ui.Rectangle(height=2, style_type_name_override="DetailFrame.Separator")
-                        with ui.VStack():
-                            if variant_set_names:
-                                ui.Label("Variant Options", font_size=10)
-                                for name in variant_set_names:
-                                    ui.Spacer(height=8)
-                                    ui.Label(name, style_type_name_override="DetailFrame.LineItem.left_aligned")
-                                    variant_set = vset.GetVariantSet(name)
-                                    variants = variant_set.GetVariantNames()
-                                    for variant in variants:
-                                        with ui.HStack():
-                                            ui.Spacer(width=10)
-                                            ui.Label(
-                                                variant, style_type_name_override="DetailFrame.LineItem.left_aligned"
-                                            )
-                                ui.Spacer(height=8)
+                        with ui.VStack(style_type_name_override="DetailFrame.Body"):
+                            self._isaac_content_frame = ui.Frame()
+                            with self._isaac_content_frame:
+                                if variant_set_names:
+                                    with ui.VStack():
+                                        ui.Label("Variant Options", font_size=10)
+                                        for name in variant_set_names:
+                                            ui.Spacer(height=8)
+                                        ui.Label(name, style_type_name_override="DetailFrame.LineItem.left_aligned")
+                                        variant_set = vset.GetVariantSet(name)
+                                        variants = variant_set.GetVariantNames()
+                                        for variant in variants:
+                                            with ui.HStack():
+                                                ui.Spacer(width=10)
+                                                ui.Label(
+                                                    variant,
+                                                    style_type_name_override="DetailFrame.LineItem.left_aligned",
+                                                )
+                                        ui.Spacer(height=8)
 
-                            elif entry.relative_path.endswith(IMPORTER_FILETYPES):
-                                ui.Label("URDF file, use File->Import to convert to USD")
-                            elif entry.relative_path.endswith(TXT_FILETYPES):
-                                ui.Label("Text file, Right Click and select Download to download file")
-                            else:
-                                ui.Label("No Additional Information")
+                                elif entry.relative_path.endswith(IMPORTER_FILETYPES):
+                                    ui.Label("URDF file, use File->Import to convert to USD")
+                                elif entry.relative_path.endswith(TXT_FILETYPES):
+                                    ui.Label("Text file, Right Click and select Download to download file")
+                                else:
+                                    ui.Label("No Additional Information")
 
     def _on_file_change_event(self, result: omni.client.Result, entry: omni.client.ListEntry):
         if result == omni.client.Result.OK and self._current_url:
-            self._time_label.text = FileBrowserItem.datetime_as_string(entry.modified_time)
-            self._created_by_label.text = entry.created_by
-            self._modified_by_label.text = entry.modified_by
-            self._size_label.text = FileBrowserItem.size_as_string(entry.size)
+            # isaac sim content info don't need to be updated on every single file change. only when clicked on.
+            pass
 
     def _on_selection_changed_impl(self, selected: List[str] = []):
         self._build_ui_impl(selected)
@@ -148,3 +146,6 @@ class ExtendedFileInfo(DetailFrameController):
             self._widget.destroy()
         self._widget = None
         self._resolve_subscription = None
+        if self._isaac_content_frame:
+            self._isaac_content_frame.destroy()
+        self._isaac_content_frame = None
