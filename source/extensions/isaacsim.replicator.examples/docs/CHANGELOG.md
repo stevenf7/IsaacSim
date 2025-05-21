@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.19] - 2025-05-21
+### Changed
+- Added simready assets example snippettest
+
 ## [1.1.18] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
