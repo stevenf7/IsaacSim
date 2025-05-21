@@ -122,7 +122,7 @@ def usd_mesh_to_trimesh(usd_mesh: UsdGeom.Mesh, apply_scale: bool = True, verbos
                 quad_count += 1
         else:
             # Fan triangulation for polygons with more than 4 vertices
-            # NOTE: This simple approach works for convex polygons but may not be optimal for concave ones
+            # NOTE: This approach works for convex polygons but may not be optimal for concave ones
             for i in range(1, count - 1):
                 triangles.append([indices[0], indices[i], indices[i + 1]])
             if verbose:

@@ -366,8 +366,6 @@ async def simulate_physics_async(
     physx_sim_interface = omni.physx.get_physx_simulation_interface()
 
     if physics_scene:
-        print(f"Simulating physics with scene: '{physics_scene.GetPath()}', num_frames {num_frames}, step_dt {step_dt}")
-
         physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(physics_scene.GetPrim())
         physx_scene_api.CreateUpdateTypeAttr().Set(PhysxSchema.Tokens.Disabled)
 
@@ -381,7 +379,6 @@ async def simulate_physics_async(
         physx_sim_interface.fetch_results_scene(scene_int)
         await omni.kit.app.get_app().next_update_async()
     else:
-        print("Simulating physics with default scene")
         for _ in range(num_frames):
             physx_sim_interface.simulate(step_dt, 0)
             physx_sim_interface.fetch_results()

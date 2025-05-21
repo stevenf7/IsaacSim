@@ -32,6 +32,6 @@ sampler_config:
   - 0
   - 1
   - 0
-  random_seed: -1
+  random_seed: 12
   sampler_type: antipodal
   verbose: false

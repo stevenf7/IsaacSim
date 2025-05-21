@@ -32,7 +32,7 @@ def run_example(
     config_path=None,
     sampler_config=None,
     physics_scene_path=None,
-    output_path=None,
+    output_dir=None,
     gripper_path=None,
     object_prim_path=None,
 ):
@@ -84,7 +84,7 @@ def run_example(
                 return
 
         # Generate the grasp poses
-        success_generation = grasping_manager.generate_grasp_poses(config=grasping_manager.sampler_config)
+        success_generation = grasping_manager.generate_grasp_poses()
         if not success_generation or not grasping_manager.grasp_locations:
             print("Failed to generate grasp poses or no poses were generated.")
             return
@@ -100,11 +100,11 @@ def run_example(
         return
 
     # Determine Output Path
-    if not output_path:
+    if not output_dir:
         print("Warning: Output path is not defined data will not be saved.")
 
     # Set the output path and overwrite flag
-    grasping_manager.set_results_output_path(output_path)
+    grasping_manager.set_results_output_dir(output_dir)
     grasping_manager.set_overwrite_results_output(True)
 
     # Determine Physics Scene Path
@@ -132,9 +132,9 @@ def run_example(
 stage_path = "/Isaac/Samples/Replicator/Stage/sdg_grasping_xarm.usd"
 ext_path = get_extension_path_from_name("isaacsim.replicator.grasping")
 config_path = os.path.join(ext_path, "data/gripper_configs/xarm_antipodal_soup_can.yaml")
-output_path = "~/grasping_results/xarm_antipodal"
+output_dir = os.path.join(os.getcwd(), "xarm_antipodal")
 
-run_example(stage_path=stage_path, config_path=config_path, output_path=output_path)
+run_example(stage_path=stage_path, config_path=config_path, output_dir=output_dir)
 
 
 simulation_app.close()
