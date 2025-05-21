@@ -204,6 +204,12 @@ function create_tests()
         "standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py",
         "--test"
     )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_metadata",
+        "standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_metadata.py",
+        "--test"
+    )
+
     -- isaacsim.sensors.physics
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.physx.rotating_lidar_physX",
