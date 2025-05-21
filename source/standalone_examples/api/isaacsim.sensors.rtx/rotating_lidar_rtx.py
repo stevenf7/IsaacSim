@@ -67,8 +67,7 @@ cube_2 = my_world.scene.add(
 my_controller = DifferentialController(name="simple_control", wheel_radius=0.04295, wheel_base=0.4132)
 
 my_world.reset()
-my_lidar.add_range_data_to_frame()
-my_lidar.add_point_cloud_data_to_frame()
+my_lidar.attach_annotator("IsaacExtractRTXSensorPointCloudNoAccumulator")
 my_lidar.enable_visualization()
 i = 0
 reset_needed = False

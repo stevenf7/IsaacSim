@@ -433,8 +433,13 @@ def get_gmo_data(dataPtr: int) -> gmo_utils.GenericModelOutput:
         dataPtr (int): Expected uint64 pointer to GMO buffer.
 
     Returns:
-        gmo_utils.GenericModelOutput: GMO buffer.
+        gmo_utils.GenericModelOutput: GMO buffer at dataPtr. Empty struct if dataPtr is 0 or None.
     """
+    if dataPtr == 0 or dataPtr is None:
+        carb.log_warn(
+            "isaacsim.sensors.rtx.get_gmo_data: received null pointer, returning empty GenericModelOutput buffer."
+        )
+        return gmo_utils.GenericModelOutput
     # Reach 28 bytes into the GMO data buffer using the pointer address
     size_buffer = (ctypes.c_char * 28).from_address(dataPtr)
     # Resolve bytes 16-23 as a uint64, corresponding to GMO size_in_bytes field
