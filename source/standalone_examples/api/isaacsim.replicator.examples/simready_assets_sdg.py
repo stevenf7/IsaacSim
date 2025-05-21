@@ -48,17 +48,109 @@ async def search_assets_async():
     return tables, dishes, items
 
 
-def run_simready_randomization(scenario_id):
-    print(f"Creating new stage for scenario {scenario_id}...")
+def run_simready_randomization(stage, camera_prim, render_product, tables, dishes, items):
+    print(f"Creating new temp layer for randomizing the scene...")
+    simready_temp_layer = Sdf.Layer.CreateAnonymous("TempSimreadyLayer")
+    session = stage.GetSessionLayer()
+    session.subLayerPaths.append(simready_temp_layer.identifier)
+    with Usd.EditContext(stage, simready_temp_layer):
+        # Load the simready assets with rigid body properties
+        variants = {"PhysicsVariant": "RigidBody"}
+
+        # Choose a random table from the list of tables and add it to the stage with physics
+        table_asset = random.choice(tables)
+        _, table_prim_path = sre.add_asset_to_stage(table_asset.main_url, variants=variants, payload=True)
+        print(f"\tAdded '{table_asset.name}'")
+
+        print(f"\tDisabling rigid body properties and keeping only colliders...")
+        # Disable the rigid body properties and keep only the colliders
+        table_prim = stage.GetPrimAtPath(table_prim_path)
+        if not table_prim.HasAPI(UsdPhysics.RigidBodyAPI):
+            rigid_body_api = UsdPhysics.RigidBodyAPI.Apply(table_prim)
+        else:
+            rigid_body_api = UsdPhysics.RigidBodyAPI(table_prim)
+        rigid_body_api.CreateRigidBodyEnabledAttr(False)
+
+        # Compute the height of the table from its bounding box
+        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
+        table_bbox = bbox_cache.ComputeWorldBound(table_prim)
+        table_size = table_bbox.GetRange().GetSize()
+
+        # Choose one random plate from the list of plates
+        dish_asset = random.choice(dishes)
+        _, dish_prim_path = sre.add_asset_to_stage(dish_asset.main_url, variants=variants, payload=True)
+        print(f"\tAdded '{dish_asset.name}'")
+
+        # Compute the height of the plate from its bounding box
+        dish_prim = stage.GetPrimAtPath(dish_prim_path)
+        dish_bbox = bbox_cache.ComputeWorldBound(dish_prim)
+        dish_size = dish_bbox.GetRange().GetSize()
+
+        # Get a random position for the plate on the table using the two sizes
+        dish_x = random.uniform(-table_size[0] / 2 + dish_size[0] / 2, table_size[0] / 2 - dish_size[0] / 2)
+        dish_y = random.uniform(-table_size[1] / 2 + dish_size[1] / 2, table_size[1] / 2 - dish_size[1] / 2)
+        dish_z = table_size[2] + dish_size[2] / 2
+
+        # Move the plate to the random position on the table
+        dish_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(dish_x, dish_y, dish_z))
+
+        # Spawn a random number of items
+        num_items = random.randint(2, 4)
+        item_prims = []
+        for _ in range(num_items):
+            item_asset = random.choice(items)
+            _, item_prim_path = sre.add_asset_to_stage(item_asset.main_url, variants=variants, payload=True)
+            item_prims.append(stage.GetPrimAtPath(item_prim_path))
+        print(f"\tAdded {[item.GetName() for item in item_prims]}")
+
+        # Move the items on top of each other above the plate
+        current_z = dish_z
+        xy_offset = dish_size[0] / 4
+        for item_prim in item_prims:
+            item_bbox = bbox_cache.ComputeWorldBound(item_prim)
+            item_size = item_bbox.GetRange().GetSize()
+            item_x = dish_x + random.uniform(-xy_offset, xy_offset)
+            item_y = dish_y + random.uniform(-xy_offset, xy_offset)
+            item_z = current_z + item_size[2] / 2
+            item_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(item_x, item_y, item_z))
+            current_z += item_size[2]
+
+        # Run the simulation for several frames for the items to settle
+        print(f"\tRunning the simulation for the items to settle...")
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
+        for _ in range(25):
+            simulation_app.update()
+        print(f"\tPausing the simulation")
+        timeline.pause()
+
+        # Move the camera above the dish
+        print(f"\tMoving the camera above the dish and capturing the scene...")
+        camera_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(dish_x, dish_y, dish_z + 2))
+
+        # Toggle the render product and capture the scene
+        render_product.hydra_texture.set_updates_enabled(True)
+        rep.orchestrator.step(delta_time=0.0, rt_subframes=16)
+        render_product.hydra_texture.set_updates_enabled(False)
+        print("\tStoping the timeline")
+        timeline.stop()
+
+    simulation_app.update()
+    session.subLayerPaths.remove(simready_temp_layer.identifier)
+    simready_temp_layer = None
+    print(f"\tRemoved the temp layer")
+
+
+def run_simready_randomizations(num_scenarios):
     omni.usd.get_context().new_stage()
     stage = omni.usd.get_context().get_stage()
+    rep.orchestrator.set_capture_on_play(False)
+    random.seed(8)
+    rep.set_global_seed(8)
 
-    random.seed(12)
-    rep.set_global_seed(12)
-
+    # Add lights to the scene
     dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
     dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
-
     distant_light = stage.DefinePrim("/World/DistantLight", "DistantLight")
     if not distant_light.GetAttribute("xformOp:rotateXYZ"):
         UsdGeom.Xformable(distant_light).AddRotateXYZOp()
@@ -75,98 +167,35 @@ def run_simready_randomization(scenario_id):
     tables, dishes, items = search_task.result()
     print(f"\tFound {len(tables)} tables, {len(dishes)} dishes, {len(items)} items")
 
-    # Load the simready assets with rigid body properties
-    variants = {"PhysicsVariant": "RigidBody"}
-
-    # Choose a random table from the list of tables and add it to the stage with physics
-    table_asset = random.choice(tables)
-    _, table_prim_path = sre.add_asset_to_stage(table_asset.main_url, variants=variants, payload=True)
-    print(f"\tAdded '{table_asset.name}'")
-
-    print(f"\tDisabling rigid body properties and keeping only colliders...")
-    # Disable the rigid body properties and keep only the colliders
-    table_prim = stage.GetPrimAtPath(table_prim_path)
-    if not table_prim.HasAPI(UsdPhysics.RigidBodyAPI):
-        rigid_body_api = UsdPhysics.RigidBodyAPI.Apply(table_prim)
-    else:
-        rigid_body_api = UsdPhysics.RigidBodyAPI(table_prim)
-    rigid_body_api.CreateRigidBodyEnabledAttr(False)
-
-    # Compute the height of the table from its bounding box
-    bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
-    table_bbox = bbox_cache.ComputeWorldBound(table_prim)
-    table_size = table_bbox.GetRange().GetSize()
-
-    # Choose one random plate from the list of plates
-    dish_asset = random.choice(dishes)
-    _, dish_prim_path = sre.add_asset_to_stage(dish_asset.main_url, variants=variants, payload=True)
-    print(f"\tAdded '{dish_asset.name}'")
-
-    # Compute the height of the plate from its bounding box
-    dish_prim = stage.GetPrimAtPath(dish_prim_path)
-    dish_bbox = bbox_cache.ComputeWorldBound(dish_prim)
-    dish_size = dish_bbox.GetRange().GetSize()
-
-    # Get a random position for the plate on the table using the two sizes
-    dish_x = random.uniform(-table_size[0] / 2 + dish_size[0] / 2, table_size[0] / 2 - dish_size[0] / 2)
-    dish_y = random.uniform(-table_size[1] / 2 + dish_size[1] / 2, table_size[1] / 2 - dish_size[1] / 2)
-    dish_z = table_size[2] + dish_size[2] / 2
-
-    # Move the plate to the random position on the table
-    dish_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(dish_x, dish_y, dish_z))
-
-    # Spawn a random number of items
-    num_items = random.randint(3, 6)
-    item_prims = []
-    for _ in range(num_items):
-        item_asset = random.choice(items)
-        _, item_prim_path = sre.add_asset_to_stage(item_asset.main_url, variants=variants, payload=True)
-        item_prims.append(stage.GetPrimAtPath(item_prim_path))
-    print(f"\tAdded {[item.GetName() for item in item_prims]}")
-
-    # Move the items on top of each other above the plate
-    current_z = dish_z
-    xy_offset = dish_size[0] / 4
-    for item_prim in item_prims:
-        item_bbox = bbox_cache.ComputeWorldBound(item_prim)
-        item_size = item_bbox.GetRange().GetSize()
-        item_x = dish_x + random.uniform(-xy_offset, xy_offset)
-        item_y = dish_y + random.uniform(-xy_offset, xy_offset)
-        item_z = current_z + item_size[2] / 2
-        item_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(item_x, item_y, item_z))
-        current_z += item_size[2]
-
-    # Run the simulation for several frames
-    timeline = omni.timeline.get_timeline_interface()
-    timeline.play()
-    for _ in range(35):
-        simulation_app.update()
-    timeline.pause()
-
-    # Capture the scene using a basicwriter
-    rep.orchestrator.set_capture_on_play(False)
-    cam = rep.create.camera(position=(0, 0, 2), look_at=(dish_x, dish_y, dish_z))
-    rp = rep.create.render_product(cam, (512, 512))
-    output_dir = os.path.join(os.getcwd(), f"_out_simready_assets_{scenario_id}")
+    # Create the writer and the render product for capturing the scene
+    output_dir = os.path.join(os.getcwd(), "_out_simready_assets")
     print(f"\tWriting to {output_dir}...")
     writer = rep.writers.get("BasicWriter")
     writer.initialize(output_dir=output_dir, rgb=True)
+
+    # Disable the render by default, enable it when capturing the scene
+    camera_prim = stage.DefinePrim("/World/SceneCamera", "Camera")
+    UsdGeom.Xformable(camera_prim).AddTranslateOp()
+    rp = rep.create.render_product(camera_prim.GetPath(), (512, 512))
+    rp.hydra_texture.set_updates_enabled(False)
     writer.attach(rp)
 
-    rep.orchestrator.preview()
-    rep.orchestrator.step(delta_time=0.0, rt_subframes=16)
-    rep.orchestrator.wait_until_complete()
+    # Create the scenarios and capture the scene
+    for i in range(num_scenarios):
+        print(f"Running simready randomization scenario {i}..")
+        run_simready_randomization(
+            stage=stage, camera_prim=camera_prim, render_product=rp, tables=tables, dishes=dishes, items=items
+        )
 
+    print("Waiting for the data collection to complete")
+    rep.orchestrator.wait_until_complete()
+    print("Detaching writer and destroying render product")
     writer.detach()
     rp.destroy()
 
 
-def run_simready_randomizations(num_scenarios):
-    for i in range(num_scenarios):
-        print(f"Running simready randomization scenario {i}..")
-        run_simready_randomization(scenario_id=i)
-
-
-run_simready_randomizations(2)
+num_scenarios = 5
+print(f"Running {num_scenarios} simready randomization scenarios...")
+run_simready_randomizations(num_scenarios)
 
 simulation_app.close()
