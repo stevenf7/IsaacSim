@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.2] - 2025-05-20
+### Changed
+- Update urdf exporter pip prebundle
+
 ## [1.2.1] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues
