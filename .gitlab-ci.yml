@@ -1550,71 +1550,6 @@ publish-container:
     allow_failure: true
 
 # ==============================================================================================================
-binaryscan-build-linux-x86_64-release:
-    extends:
-      - .build-common
-      - .runner-build-linux-x86_64
-      - .osec:vault:v3:prod_token_job
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
-    before_script:
-      - set -eu
-      - apt-get install -y libarchive-tools
-      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-    script:
-      - ./repo.sh build -r --no-docker
-      - ./repo.sh package -m isaac-sim-binaryscan -c release
-    rules:
-      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
-    allow_failure: true
-
-# ==============================================================================================================
-binaryscan-build-windows-x86_64-release:
-    extends:
-      - .build-common
-      - .runner-build-windows-x86_64
-      - .osec:vault:v3:prod_token_job
-    before_script:
-      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-    script:
-      - ./repo.bat build -r
-      - ./repo.bat package -m isaac-sim-binaryscan -c release
-    rules:
-      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
-    allow_failure: true
-
-# ==============================================================================================================
-binaryscan-publish-to-packman:
-    extends:
-      - .deploy-common
-      - .runner-utility-linux-x86_64
-    script:
-      - ls _build/packages/
-      - ./repo.sh publish_binaryscan_packages
-    needs:
-      - job: binaryscan-build-linux-x86_64-release
-        artifacts: true
-      - job: binaryscan-build-windows-x86_64-release
-        artifacts: true
-    rules:
-      - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
-    allow_failure: true
-
-# ==============================================================================================================
 assets-1-publish-to-packman:
     extends:
       - .deploy-common
@@ -1718,7 +1653,6 @@ publish-to-packman:
       - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
-
 .check_externals_base:
   extends:
     - .repo-artifacts
@@ -1749,8 +1683,3 @@ check_externals_windows:
   script:
     - ./build.bat --fetch -rd
     - ./tools/packman/python.bat tools/check_externals/check_externals.py
-
-
-
-
-

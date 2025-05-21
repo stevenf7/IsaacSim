@@ -596,29 +596,6 @@ strip_package_infos = true
 windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
 manylinux_platform = "2_35"
 
-[repo_package.packages.isaac-sim-internal-standalone]
-omniverse_flow_version_scheme = true
-package_per_config = true
-root = "_build/$${platform}/$${config}"
-manylinux_platform = "2_35"
-
-[repo_package.packages.isaac-sim-binaryscan]
-append_config = true
-omniverse_flow_version_scheme = true
-package_per_config = true
-replace_authors_in_kit_extensions = true
-root = "_build/$${platform}/$${config}"
-strip_package_infos = true
-windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
-manylinux_platform = "2_35"
-
-# to generate test runner package for isaac sim
-[repo_package.packages.test_runner]
-archive_format = "zip"
-omniverse_flow_version_scheme = true
-ziponly = true
-manylinux_platform = "2_35"
-
 # to generate docs package for isaac sim
 [repo_package.packages.docs]
 omniverse_flow_version_scheme = true
@@ -1516,6 +1493,11 @@ github_repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/isaacsim_sta
 exclude = [
     ".git",
     ".gitlab-ci.yml",
+    ".nspect-vuln-allowlist.toml",
+    ".omni-pulse.toml",
+    "PACKAGE-INFO.yaml",
+    "package.toml",
+    "python_packages.toml",
     "tools/ci/*",
     "docs",
     "tools/deps/repo-deps-nv.packman.xml",
