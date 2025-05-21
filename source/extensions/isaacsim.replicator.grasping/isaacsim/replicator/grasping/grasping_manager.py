@@ -26,7 +26,7 @@ DEFAULT_SAMPLER_CONFIG = {
     "num_candidates": 100,
     "num_orientations": 1,
     "gripper_maximum_aperture": 0.08,
-    "gripper_standoff_fingertips": 0.1,
+    "gripper_standoff_fingertips": 0.17,
     "gripper_approach_direction": (0, 0, 1),
     "grasp_align_axis": (0, 1, 0),
     "orientation_sample_axis": (0, 1, 0),
@@ -84,12 +84,17 @@ class GraspingManager:
         self._temp_grasping_physics_scene: UsdPhysics.Scene | None = None
 
         # Results output path
-        self._results_output_path: str | None = None
+        self._results_output_dir: str | None = None
         self._write_frame_counter: int = 0  # Counter of the current frame being written
         self._overwrite_results_output: bool = False  # Flag to control result file overwriting
 
         # Store sampler configuration - initialized with defaults
         self.sampler_config = DEFAULT_SAMPLER_CONFIG.copy()
+
+        # Workflow control
+        self._workflow_stop_requested: bool = False
+        self._workflow_printed_messages: set = set()
+        self._first_write_failure_logged_this_workflow: bool = False
 
     def clear(self):
         """Clear all phases, poses, and reset any physics scene references."""
@@ -98,14 +103,35 @@ class GraspingManager:
         self.grasp_orientations = []
         self.object_simulation_phases = []
         self.joint_pregrasp_states.clear()
-        self.clear_simulation(simulate_using_timeline=False)
-        self.clear_simulation(simulate_using_timeline=True)
+        self._clear_all_simulation_aspects()
         self.clear_gripper()
         self.clear_object()
         self.sampler_config = DEFAULT_SAMPLER_CONFIG.copy()
+        self._workflow_stop_requested = False
+        self._workflow_printed_messages.clear()
+        self._first_write_failure_logged_this_workflow = False
+
+    def _clear_all_simulation_aspects(self) -> None:
+        """Resets all simulation aspects, including direct physics, temporary scenes, and timeline."""
+        stage = omni.usd.get_context().get_stage()
+
+        # Clear direct physics simulation and temporary scene
+        grasping_utils.reset_physics_simulation()
+        if self._temp_grasping_physics_scene:
+            scene_path = self._temp_grasping_physics_scene.GetPath()
+            if stage and stage.GetPrimAtPath(scene_path):
+                stage.RemovePrim(scene_path)
+            self._temp_grasping_physics_scene = None
+
+        # Clear timeline-based simulation
+        grasping_utils.stop_timeline()
 
     def clear_simulation(self, simulate_using_timeline: bool) -> None:
-        """Reset the physics simulation to its initial state."""
+        """Resets the physics simulation state, either for direct physics stepping or timeline-based simulation.
+
+        If `simulate_using_timeline` is False, this also handles the cleanup of any temporary
+        physics scene created by the grasping manager.
+        """
         stage = omni.usd.get_context().get_stage()
         if simulate_using_timeline:
             grasping_utils.stop_timeline()
@@ -113,7 +139,7 @@ class GraspingManager:
             grasping_utils.reset_physics_simulation()
             if self._temp_grasping_physics_scene:
                 scene_path = self._temp_grasping_physics_scene.GetPath()
-                if stage:
+                if stage and stage.GetPrimAtPath(scene_path):  # Check if prim exists before removal
                     stage.RemovePrim(scene_path)
             self._temp_grasping_physics_scene = None
 
@@ -127,13 +153,23 @@ class GraspingManager:
         self._object_prim_path = None
 
     # --- Results ---
-    def set_results_output_path(self, path: str | None):
-        """Set the output path for grasp results and initialize the writer."""
-        if path and isinstance(path, str) and path.strip():
-            self._results_output_path = path.strip()
-            print(f"Results will be written to {path.strip()}")
+    def set_results_output_dir(self, dir_path: str | None):
+        """Set the output directory for grasp results."""
+        if dir_path and isinstance(dir_path, str) and dir_path.strip():
+            expanded_path = os.path.expanduser(dir_path.strip())
+            if not os.path.isabs(expanded_path):
+                carb.log_warn(
+                    f"Provided results output directory '{dir_path}' (expanded to '{expanded_path}') is not an absolute path. This might lead to unexpected behavior."
+                )
+            self._results_output_dir = expanded_path
+            print(f"Results will be written to directory: {expanded_path}")
         else:
+            self._results_output_dir = None
             print("Results writing disabled.")
+
+    def get_results_output_dir(self) -> str | None:
+        """Get the current results output directory."""
+        return self._results_output_dir
 
     def set_overwrite_results_output(self, overwrite: bool):
         """Set whether to overwrite or find the next available index for result files."""
@@ -259,7 +295,7 @@ class GraspingManager:
             overwrite: Whether to overwrite the file if it exists.
         """
         config = {}
-        # These are the short names for components the user can specify.
+        # Defines valid short names for configuration components.
         all_short_names = {"gripper", "phases", "object", "pregrasp", "poses", "sampler"}
         components_to_save_short_names = set(components) if components is not None else all_short_names
 
@@ -318,7 +354,7 @@ class GraspingManager:
         """
         config_data = grasping_utils.read_yaml_config(file_path)
 
-        # These are the short names for components the user can specify.
+        # Defines valid short names for configuration components.
         all_short_names = {"gripper", "phases", "object", "pregrasp", "poses", "sampler"}
         requested_short_names = set(components) if components is not None else all_short_names
 
@@ -361,7 +397,7 @@ class GraspingManager:
                     current_gripper_path = self.gripper_path
                     if (
                         not current_gripper_path and load_status.get("gripper") == "Success"
-                    ):  # Gripper was loaded but path is empty (should not happen)
+                    ):  # Gripper was reported as loaded, but its path is unexpectedly empty.
                         carb.log_warn("Cannot validate phases: Gripper was reported as loaded, but its path is empty.")
                         load_status["phases"] = "Failed (Gripper path empty after load)"
                     elif not current_gripper_path:  # Gripper not loaded or failed to load
@@ -596,6 +632,31 @@ class GraspingManager:
         final_status = {key: status for key, status in load_status.items() if key in requested_short_names}
         return final_status
 
+    def request_workflow_stop(self) -> None:
+        """Request the current grasp evaluation workflow to stop gracefully."""
+        self._workflow_stop_requested = True
+        # Use _log_once for consistency, ensuring it prints if not already part of a workflow log
+        self._log_once("Workflow stop requested by user.", "print")
+
+    def _log_once(self, message: str, level: str = "info") -> None:
+        """Logs a message once per workflow run based on the message string.
+
+        Args:
+            message: The string message to log.
+            level: "info", "warn", or "print".
+        """
+        if message not in self._workflow_printed_messages:
+            if level == "info":
+                carb.log_info(message)
+            elif level == "warn":
+                carb.log_warn(message)
+            elif level == "print":
+                print(message)
+            else:
+                carb.log_warn(f"_log_once called with unknown level '{level}': {message}")
+                print(message)  # Default to print for unknown level
+            self._workflow_printed_messages.add(message)
+
     # --- Simulation ---
     async def simulate_all_grasp_phases(
         self,
@@ -634,7 +695,10 @@ class GraspingManager:
         self._temp_grasping_physics_scene = None  # Clear any previous temp scene reference
 
         if simulate_using_timeline:
-            print("Simulating grasp phases using timeline (custom scene path ignored).")
+            self._log_once(
+                "Simulating grasp phases using timeline (custom scene path and isolation ignored for timeline).",
+                "print",
+            )
             # Timeline simulation uses default scene logic implicitly
         elif physics_scene_path:
             # Try to get the user-specified scene
@@ -642,19 +706,26 @@ class GraspingManager:
             if base_physics_scene:
                 # Always duplicate if base scene is valid
                 tmp_scene_path = f"{physics_scene_path}_tmp_grasping"
-                print(f"Attempting to duplicate scene '{base_physics_scene.GetPath()}' to '{tmp_scene_path}'")
+                self._log_once(
+                    f"Attempting to duplicate scene '{base_physics_scene.GetPath()}' to '{tmp_scene_path}' for isolated/temp simulation.",
+                    "print",
+                )
                 duplicated_prim = grasping_utils.duplicate_prim(
                     stage, str(base_physics_scene.GetPath()), tmp_scene_path
                 )
 
                 if duplicated_prim and duplicated_prim.IsA(UsdPhysics.Scene):
                     self._temp_grasping_physics_scene = UsdPhysics.Scene(duplicated_prim)
-                    print(f"Using temporary duplicated scene: {self._temp_grasping_physics_scene.GetPath()}")
+                    self._log_once(
+                        f"Using temporary duplicated scene: {self._temp_grasping_physics_scene.GetPath()}", "print"
+                    )
                     physics_scene = self._temp_grasping_physics_scene  # Simulate using the temp scene
 
                     # Check if isolation is needed ON the temp scene
                     if isolate_simulation:
-                        print(f"Isolating gripper/object within temporary scene: {physics_scene.GetPath()}")
+                        self._log_once(
+                            f"Isolating gripper/object within temporary scene: {physics_scene.GetPath()}", "print"
+                        )
                         prims_to_isolate = []
                         if self.gripper_prim:
                             prims_to_isolate.append(self.gripper_prim)
@@ -669,24 +740,29 @@ class GraspingManager:
                         if isolated_rigid_body_prims:
                             is_isolated = True
                         else:
-                            carb.log_warn(
-                                f"Failed to isolate prims to temporary scene {physics_scene.GetPath()}, simulation will run non-isolated in this temp scene."
+                            self._log_once(
+                                f"Failed to isolate prims to temporary scene {physics_scene.GetPath()}, simulation will run non-isolated in this temp scene.",
+                                "warn",
                             )
                     else:
-                        print(f"Running non-isolated simulation in temporary scene: {physics_scene.GetPath()}")
+                        self._log_once(
+                            f"Running non-isolated simulation in temporary scene: {physics_scene.GetPath()}", "print"
+                        )
                 else:
-                    carb.log_warn(
-                        f"Failed to duplicate scene '{base_physics_scene.GetPath()}' to '{tmp_scene_path}'. Falling back to default scene simulation."
+                    self._log_once(
+                        f"Failed to duplicate scene '{base_physics_scene.GetPath()}' to '{tmp_scene_path}'. Falling back to default scene simulation.",
+                        "warn",
                     )
                     physics_scene = None  # Fallback
                     self._temp_grasping_physics_scene = None
             else:
-                carb.log_warn(
-                    f"Could not get valid base UsdPhysics.Scene at '{physics_scene_path}'. Using default scene simulation."
+                self._log_once(
+                    f"Could not get valid base UsdPhysics.Scene at '{physics_scene_path}'. Using default scene simulation.",
+                    "warn",
                 )
                 physics_scene = None  # Fallback
         else:
-            print("No custom physics scene path provided. Using default scene simulation.")
+            self._log_once("No custom physics scene path provided. Using default scene simulation.", "print")
             physics_scene = None  # Use default
 
         # --- Simulation Execution --- #
@@ -696,9 +772,6 @@ class GraspingManager:
                 joint_drive_targets = phase.joint_drive_targets
                 simulation_steps = phase.simulation_steps
                 simulation_step_dt = phase.simulation_step_dt
-                print(
-                    f"Phase {i+1}/{len(self.grasp_phases)}: {phase_name} (Steps/Frames: {simulation_steps}) - Scene: {physics_scene.GetPath() if physics_scene else 'Default'}"
-                )
 
                 # Set joint targets before starting simulation for this phase
                 for joint_path, target_position in joint_drive_targets.items():
@@ -725,22 +798,23 @@ class GraspingManager:
                         render=render,
                     )
 
-            print("Grasp phases simulation completed.")
             return True
         finally:
             # Cleanup temp scene if it was created and used
             if self._temp_grasping_physics_scene:
                 scene_to_clear = self._temp_grasping_physics_scene
                 scene_path = scene_to_clear.GetPath()
-                print(f"Cleaning up temporary grasping physics scene: {scene_path}")
+                self._log_once(f"Cleaning up temporary grasping physics scene: {scene_path}", "print")
                 # Clear owners only if isolation was actually performed
                 if is_isolated:
-                    print(f"Removing {len(isolated_rigid_body_prims)} owners from temporary scene.")
+                    self._log_once(
+                        f"Removing {len(isolated_rigid_body_prims)} owners from temporary scene {scene_path}.", "print"
+                    )
                     grasping_utils.clear_isolated_simulation_owners(isolated_rigid_body_prims, scene_to_clear)
                 # Delete the temporary scene prim
                 if stage and stage.GetPrimAtPath(scene_path):
                     stage.RemovePrim(scene_path)
-                    print(f"Removed temporary grasping physics scene: {scene_path}")
+                    self._log_once(f"Removed temporary grasping physics scene: {scene_path}", "print")
                 # Clear the reference
                 self._temp_grasping_physics_scene = None
 
@@ -851,9 +925,6 @@ class GraspingManager:
             joint_drive_targets = phase.joint_drive_targets
             simulation_steps = phase.simulation_steps
             simulation_step_dt = phase.simulation_step_dt
-            print(
-                f"Simulating phase: {phase.name} (Steps/Frames: {simulation_steps}) - Scene: {physics_scene.GetPath() if physics_scene else 'Default'}"
-            )
 
             # Set joint targets before simulation
             for joint_path, target_position in joint_drive_targets.items():
@@ -906,6 +977,7 @@ class GraspingManager:
         physics_scene_path: str | None = None,
         isolate_simulation: bool = False,
         simulate_using_timeline: bool = False,
+        progress_callback: callable = None,
     ):
         """Evaluates a list of grasp poses by simulating the grasp phases for each.
 
@@ -915,14 +987,22 @@ class GraspingManager:
             physics_scene_path: Optional path to a specific UsdPhysics.Scene prim for simulation.
             isolate_simulation: Isolate gripper/object to the scene if `physics_scene_path` is used. Ignored if `simulate_using_timeline` is True.
             simulate_using_timeline: Use the main timeline for simulation.
+            progress_callback: Optional async callable that takes the number of evaluated poses as an argument.
 
         """
         initial_pose = self.get_initial_gripper_pose()
         self._write_frame_counter = 0  # Reset counter for this workflow
+        self._workflow_stop_requested = False  # Reset stop flag at the start of a new workflow
+        self._workflow_printed_messages.clear()  # Clear printed messages for new workflow
+        self._first_write_failure_logged_this_workflow = False  # Reset write failure log flag
 
         # Run the workflow for each grasp pose
         for idx, (world_location, world_orientation) in enumerate(grasp_poses):
-            print(f"Executing grasp {idx + 1}/{len(grasp_poses)}")
+            if self._workflow_stop_requested:
+                # This print is event-driven and specific to the loop break, so direct print is fine.
+                print("Workflow stopped by request during evaluation loop.")
+                break
+            print(f"  Executing grasp {idx + 1}/{len(grasp_poses)}")
             await self.evaluate_grasp_pose(
                 world_location,
                 world_orientation,
@@ -932,15 +1012,20 @@ class GraspingManager:
                 physics_scene_path=physics_scene_path,
                 simulate_using_timeline=simulate_using_timeline,
             )
+            if progress_callback:
+                await progress_callback(idx + 1)
 
-            # Write the results using
-            self.write_grasp_results(world_location, world_orientation)
-
-        # Reset to initial pose after the loop finishes
+        # Reset to initial pose after the loop finishes or is stopped
         if initial_pose:
             self.set_gripper_pose(initial_pose[0], initial_pose[1])
         self.clear_simulation(simulate_using_timeline=simulate_using_timeline)
-        print("Grasping workflow execution finished.")
+        if self._workflow_stop_requested:
+            print("Grasping workflow execution stopped by request.")
+        else:
+            # This is an end-of-workflow summary, direct print is fine.
+            print("Grasping workflow execution finished.")
+        # Reset flag in case it was set during the final phase of a stopped workflow
+        self._workflow_stop_requested = False
 
     async def evaluate_grasp_pose(
         self,
@@ -1002,8 +1087,10 @@ class GraspingManager:
     # --- Results ---
     def write_grasp_results(self, location: Gf.Vec3d, orientation: Gf.Quatd):
         """Write the grasp results to the results output path."""
-        if not self._results_output_path:
-            carb.log_warn("No results output path set in GraspingManager.")
+        if not self._results_output_dir:
+            self._log_once(
+                "Results output directory is not set. Grasp results will not be written for this workflow.", "warn"
+            )
             return
 
         if not self.gripper_path:
@@ -1021,23 +1108,17 @@ class GraspingManager:
                 "gripper_path": self.gripper_path,
                 "object_path": self.get_object_prim_path(),
                 "gripper_location": list(location),
-                "gripper_orientation": [orientation.GetReal(), *orientation.GetImaginary()],
+                "gripper_orientation": {"w": orientation.GetReal(), "xyz": list(orientation.GetImaginary())},
                 "joint_states": joint_states,
             }
         }
 
         try:
             # Ensure the base output directory exists
-            output_dir = self._results_output_path
-            if output_dir:
-                os.makedirs(output_dir, exist_ok=True)
-            else:
-                # Default to current directory if path is empty, though log warning suggests it shouldn't be
-                output_dir = "."
-                os.makedirs(output_dir, exist_ok=True)
+            output_dir = self._results_output_dir
+            os.makedirs(output_dir, exist_ok=True)
 
             # Construct the filename using the counter
-            # Assuming .yaml extension based on previous usage
             output_filename = f"capture_{self._write_frame_counter}.yaml"
             full_output_path = os.path.join(output_dir, output_filename)
 
@@ -1049,7 +1130,6 @@ class GraspingManager:
                     current_index += 1
                     output_filename = f"capture_{current_index}.yaml"
                     full_output_path = os.path.join(output_dir, output_filename)
-                # Use the found index for this write
                 self._write_frame_counter = current_index
             # If overwriting, full_output_path already uses self._write_frame_counter
 
@@ -1257,7 +1337,7 @@ class GraspingManager:
             object_prim = self.get_object_prim()
             if not object_prim:
                 carb.log_warn(
-                    f"Cannot transform pose at index {index} to world frame: Object prim at path '{self._object_prim_path}' is not valid or not found."
+                    f"Cannot transform pose at index {index} to world frame " f"for object '{self.object_path}': {e}"
                 )
                 return None
 

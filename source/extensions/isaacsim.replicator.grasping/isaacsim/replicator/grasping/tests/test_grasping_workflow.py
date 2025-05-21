@@ -11,26 +11,10 @@
 import os
 
 import omni.kit.app
-import omni.kit.commands
 import omni.usd
+from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.replicator.grasping.grasping_manager import GraspingManager
-from pxr import UsdGeom
-
-DEFAULT_SAMPLER_CONFIG = {
-    "sampler_type": "antipodal",
-    "num_candidates": 10,
-    "num_orientations": 1,
-    "gripper_maximum_aperture": 0.2,
-    "gripper_standoff_fingertips": 0.2,
-    "gripper_approach_direction": (0, 0, 1),
-    "grasp_align_axis": (0, 1, 0),
-    "orientation_sample_axis": (0, 1, 0),
-    "lateral_sigma": 0.0,
-    "random_seed": 12,
-    "verbose": True,
-}
-
-OBJECT_ASSET_URL = "Isaac/Props/YCB/Axis_Aligned/003_cracker_box.usd"
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
@@ -46,22 +30,111 @@ class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_grasp_pose_generation(self):
-        stage = omni.usd.get_context().get_stage()
-        await omni.kit.app.get_app().next_update_async()
+    async def test_grasping_workflow_example(self):
+        async def run_example_async(
+            stage_path,
+            config_path=None,
+            sampler_config=None,
+            physics_scene_path=None,
+            output_dir=None,
+            gripper_path=None,
+            object_prim_path=None,
+        ):
+            assets_root_path = await get_assets_root_path_async()
+            print(f"Assets root path: {assets_root_path}")
+            stage_url = assets_root_path + stage_path
+            print(f"Opening stage: {stage_url}")
+            await omni.usd.get_context().open_stage_async(stage_url)
+            stage = omni.usd.get_context().get_stage()
 
-        object_path = "/World/ObjectAsset"
-        omni.kit.commands.execute("CreateMeshPrimWithDefaultXformCommand", prim_type="Cube", prim_path=object_path)
-        await omni.kit.app.get_app().next_update_async()
-        object_prim = omni.usd.get_context().get_stage().GetPrimAtPath(object_path)
-        if not object_prim.HasAttribute("xformOp:scale"):
-            UsdGeom.Xformable(object_prim).AddScaleOp()
-        object_prim.GetAttribute("xformOp:scale").Set((0.1, 0.1, 0.1))
+            grasping_manager = GraspingManager()
 
-        grasping_manager = GraspingManager()
-        grasping_manager.set_object_prim_path(object_path)
-        self.assertEqual(grasping_manager.get_object_prim_path(), object_path)
+            if config_path is not None:
+                load_status = grasping_manager.load_config(config_path)
+                print(f"Config load status: {load_status}")
 
-        success_generation = grasping_manager.generate_grasp_poses(config=DEFAULT_SAMPLER_CONFIG)
-        print(f"Success generation: {success_generation}")
-        print(f"Grasp locations: {grasping_manager.grasp_locations}")
+            # Make sure the object to grasp is set (either from the config file or from the argument)
+            if not grasping_manager.get_object_prim_path() and object_prim_path:
+                grasping_manager.object_path = object_prim_path
+
+            if not grasping_manager.get_object_prim_path():
+                print("Warning: Object to grasp is not set (missing in config and argument). Aborting.")
+                return
+
+            # Make sure the gripper is set (either from the config file or from the argument)
+            if not grasping_manager.gripper_path and gripper_path:
+                grasping_manager.gripper_path = gripper_path
+
+            if not grasping_manager.gripper_path:
+                print("Warning: Gripper path is not set (missing in config and argument). Aborting.")
+                return
+
+            # If there are already grasp poses in the configuration, don't generate new ones
+            if grasping_manager.grasp_locations:
+                print(
+                    f"Found {len(grasping_manager.grasp_locations)} grasp poses in the configuration file. No new poses will be generated."
+                )
+            else:
+                print("No grasp poses found in configuration, generating new ones...")
+
+                # Determine Sampler Configuration
+                if not (grasping_manager.sampler_config and grasping_manager.sampler_config.get("sampler_type")):
+                    if sampler_config:
+                        grasping_manager.sampler_config = sampler_config.copy()
+                    else:
+                        print(
+                            "Warning: Sampler configuration is missing or invalid (not in config file and not provided as argument). Aborting pose generation."
+                        )
+                        return
+
+                # Generate the grasp poses
+                success_generation = grasping_manager.generate_grasp_poses()
+                if not success_generation or not grasping_manager.grasp_locations:
+                    print("Failed to generate grasp poses or no poses were generated.")
+                    return
+                print(f"Generated {len(grasping_manager.grasp_locations)} new grasp poses.")
+
+            # Store the initial gripper pose to be able to restore it after the evaluation
+            grasping_manager.store_initial_gripper_pose()
+
+            print("Evaluating grasp poses...")
+            poses_to_evaluate = grasping_manager.get_grasp_poses(in_world_frame=True)
+            if not poses_to_evaluate:
+                print("No poses available to evaluate..")
+                return
+
+            # Determine Output Path
+            if not output_dir:
+                print("Warning: Output path is not defined data will not be saved.")
+
+            # Set the output path and overwrite flag
+            grasping_manager.set_results_output_dir(output_dir)
+            grasping_manager.set_overwrite_results_output(True)
+
+            # Determine Physics Scene Path
+            physics_scene_path_for_eval = None
+            if physics_scene_path and stage.GetPrimAtPath(physics_scene_path):
+                physics_scene_path_for_eval = physics_scene_path
+            print(f"Physics scene path for evaluation: {physics_scene_path_for_eval}")
+
+            await grasping_manager.evaluate_grasp_poses(
+                grasp_poses=poses_to_evaluate,
+                render=True,
+                physics_scene_path=physics_scene_path_for_eval,
+                simulate_using_timeline=False,
+            )
+
+            print("Grasping workflow example finished.")
+            grasping_manager.clear()
+
+        stage_path = "/Isaac/Samples/Replicator/Stage/sdg_grasping_xarm.usd"
+
+        ext_path = get_extension_path_from_name("isaacsim.replicator.grasping")
+        config_path = os.path.join(ext_path, "data/gripper_configs/xarm_antipodal_soup_can.yaml")
+        output_dir = os.path.join(os.getcwd(), "xarm_antipodal")
+
+        await run_example_async(stage_path=stage_path, config_path=config_path, output_dir=output_dir)
+
+        # Check that the expected files are present in the output directory
+        expected_num_files = 4
+        self.assertEqual(len(os.listdir(output_dir)), expected_num_files)

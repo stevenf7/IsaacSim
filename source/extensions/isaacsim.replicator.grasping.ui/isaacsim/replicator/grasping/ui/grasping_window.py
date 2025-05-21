@@ -55,14 +55,13 @@ class GraspingWindow(ui.Window):
         self._render_simulation = True
         self._simulate_using_timeline = False
 
-        # Joints available in the gripper, visible in the UI, and UI settings to show/hide them
-        self._joint_ui_data = []
-        self._show_mimic_joints = True
-        self._show_non_drive_joints = False
-
         # UI
         # Keeps track of the collapsed state of the collapsable frames
         self._collapsed_states = {}
+
+        # Joints available in the gripper, visible in the UI, and UI settings to show/hide them
+        self._joint_ui_data = []
+        self._joint_filter_mode_int = 0  # 0: Drive (Non-Mimic), 1: All
 
         # Name for adding a new grasp phase
         self._new_grasp_phase_name = ""
@@ -74,7 +73,7 @@ class GraspingWindow(ui.Window):
         self._draw_poses_in_world_frame = True
         self._draw_trimesh_world_frame = True
 
-        # Initialize default grasp phases
+        # Initialize default grasp phases (open, close)
         self._create_default_grasp_phases()
 
         # Used when when iterating over grasp poses
@@ -83,6 +82,7 @@ class GraspingWindow(ui.Window):
         # Grasp evaluation workflow state
         self._num_grasps_to_evaluate = -1
         self._current_evaluated_grasp_idx = 0
+        self._is_workflow_running = False
 
         # Configurable fields for export/import
         # Maps config key (used in save/load) to UI label
@@ -104,7 +104,7 @@ class GraspingWindow(ui.Window):
         self._overwrite_results = False
 
         # Build the UI
-        self._build_window_ui()
+        asyncio.ensure_future(self._build_window_ui_async())
 
     def destroy(self):
         self.set_visibility_changed_listener(None)
@@ -122,8 +122,7 @@ class GraspingWindow(ui.Window):
         self._clear()
         self._clear_gripper_joints()
         self._joint_ui_data = []
-        self._show_mimic_joints = True
-        self._show_non_drive_joints = False
+        self._joint_filter_mode_int = 0  # Reset to default
         self._collapsed_states = {}
         self._new_grasp_phase_name = ""
         self._config_path = ""
@@ -203,17 +202,48 @@ class GraspingWindow(ui.Window):
         with joints_frame:
             joints_frame.set_collapsed_changed_fn(lambda collapsed: self._on_collapsed_changed(frame_name, collapsed))
             with ui.VStack(spacing=5):
-                with ui.HStack(height=0):
-                    ui.Spacer(width=15)
-                    ui.Label("Non-Drive", tooltip="Show non-drive joints, these are not included in the grasp phases")
-                    non_drive_joints = ui.CheckBox()
-                    non_drive_joints.model.set_value(self._show_non_drive_joints)
-                    non_drive_joints.model.add_value_changed_fn(self._on_show_non_drive_joints_changed)
+                joint_filter_collection = ui.RadioCollection()
 
-                    ui.Label("Mimic", tooltip="Show mimic joints, these are not included in the grasp phases")
-                    mimic_joints = ui.CheckBox()
-                    mimic_joints.model.set_value(self._show_mimic_joints)
-                    mimic_joints.model.add_value_changed_fn(self._on_show_mimic_joints_changed)
+                with ui.HStack(height=0, spacing=5):
+                    ui.Spacer(width=15)
+                    ui.Label("Show Joints:", tooltip="Select which joints to display and include in phases.")
+
+                    # Create RadioButtons and associate them with the collection and values directly
+                    rb_drive_non_mimic = ui.RadioButton(
+                        text="Drive (Non-Mimic)",
+                        radio_collection=joint_filter_collection,
+                        value=0,
+                        tooltip="Show only drive joints that are not mimic joints. These are used for grasping.",
+                    )
+
+                    rb_all = ui.RadioButton(
+                        text="All",
+                        radio_collection=joint_filter_collection,
+                        value=1,
+                        tooltip="Show all joints, regardless of their drive or mimic status.",
+                    )
+
+                    # Set initial selection state using the collection's model
+                    joint_filter_collection.model.set_value(self._joint_filter_mode_int)
+
+                    # Define callback function (takes the collection's model as argument)
+                    def on_joint_filter_mode_changed(model):  # model is the RadioCollection's model
+                        """Callback when the joint filter radio button selection changes."""
+                        new_mode_int = model.as_int  # Get value from the collection's model
+                        carb.log_info(
+                            f"Joint filter mode changed. New item value: {new_mode_int}, current internal mode: {self._joint_filter_mode_int}"
+                        )
+
+                        if self._joint_filter_mode_int != new_mode_int:
+                            self._joint_filter_mode_int = new_mode_int
+                            self._rebuild_ui_if_joints_changed()
+                        else:
+                            print(
+                                f"Joint filter mode re-confirmed to: {new_mode_int}. No change in value, UI rebuild not re-triggered from here."
+                            )
+
+                    # Register callback to the collection's model
+                    joint_filter_collection.model.add_value_changed_fn(on_joint_filter_mode_changed)
 
                 with ui.VStack(spacing=5):
                     for joint_data in self._joint_ui_data:
@@ -429,10 +459,16 @@ class GraspingWindow(ui.Window):
             is_drive = core_info["is_drive"]
             can_be_included = core_info["is_valid_grasp_joint"]
 
-            # Determine UI visibility based on window flags
-            show_in_ui = not (
-                (is_mimic and not self._show_mimic_joints) or (not is_drive and not self._show_non_drive_joints)
-            )
+            # Determine UI visibility based on the new filter mode
+            if self._joint_filter_mode_int == 0:  # Drive (Non-Mimic)
+                show_in_ui = is_drive and not is_mimic
+            elif self._joint_filter_mode_int == 1:  # All
+                show_in_ui = True
+            else:  # Default/fallback
+                carb.log_warn(
+                    f"Unknown joint filter mode: {self._joint_filter_mode_int}. Defaulting to Drive (Non-Mimic)."
+                )
+                show_in_ui = is_drive and not is_mimic
 
             # Determine UI inclusion state based on capability and previous selection
             include_in_grasp = False
@@ -700,7 +736,7 @@ class GraspingWindow(ui.Window):
                     lateral_sigma.model.set_value(self._grasping_manager.sampler_config["lateral_sigma"])
                     lateral_sigma.model.add_value_changed_fn(self._on_lateral_sigma_changed)
 
-                # Verbose checkbox (assuming it was part of the original intent, based on ANTIPODAL_GRASP_SAMPLER_CONFIG)
+                # Verbose checkbox
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=10)
                     ui.Label("Verbose Logging:", tooltip="Enable detailed logging during grasp generation.")
@@ -864,11 +900,14 @@ class GraspingWindow(ui.Window):
                     num_grasps_field.model.add_value_changed_fn(self._on_num_grasps_to_evaluate_changed)
 
                 with ui.HStack(spacing=5):
-                    ui.Label("Output Path:", tooltip="File path to save evaluation results (.csv, .jsonl)")
+                    ui.Label(
+                        "Output Directory:",
+                        tooltip="Directory path to save grasp evaluation results (e.g., `capture_N.yaml`).",
+                    )
                     results_path_field = ui.StringField()
-                    output_file_path = self._grasping_manager._results_output_path or ""
+                    output_file_path = self._grasping_manager.get_results_output_dir() or ""
                     results_path_field.model.set_value(output_file_path)
-                    results_path_field.model.add_value_changed_fn(self._on_results_output_path_changed)
+                    results_path_field.model.add_value_changed_fn(self._on_results_output_dir_changed)
 
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=15)
@@ -883,19 +922,26 @@ class GraspingWindow(ui.Window):
 
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=15)
-                    ui.Button(
-                        "Start Workflow",
-                        clicked_fn=lambda: asyncio.ensure_future(self._on_evaluate_grasp_poses_async()),
-                    )
-                    ui.Label(
-                        f"Grasps: {self._current_evaluated_grasp_idx} / {self._get_num_grasps_to_evaluate_display()}"
+
+                    # Determine if Start button should be enabled
+                    can_start_workflow = (
+                        (not self._is_workflow_running)
+                        and (len(self._grasping_manager.grasp_locations) > 0)
+                        and bool(self._grasping_manager.gripper_path)
+                        and bool(self._grasping_manager.get_object_prim_path())
+                        and (self._grasping_manager.get_object_prim() is not None)
                     )
 
-    def _get_num_grasps_to_evaluate_display(self):
-        total = len(self._grasping_manager.grasp_locations)
-        if self._num_grasps_to_evaluate == -1 or self._num_grasps_to_evaluate > total:
-            return total
-        return self._num_grasps_to_evaluate
+                    ui.Button(
+                        "Start",
+                        clicked_fn=lambda: asyncio.ensure_future(self._on_evaluate_grasp_poses_async()),
+                        enabled=can_start_workflow,
+                    )
+                    ui.Button(
+                        "Stop",
+                        clicked_fn=lambda: asyncio.ensure_future(self._on_stop_workflow_clicked_async()),
+                        enabled=self._is_workflow_running,
+                    )
 
     # ==============================================================================
     # Configuration UI Building and Logic
@@ -961,6 +1007,7 @@ class GraspingWindow(ui.Window):
             self._rebuild_ui_if_joints_changed()
         else:
             self._clear_gripper_joints()
+            # Ensure UI (like start button) updates even if gripper set fails
             asyncio.ensure_future(self._build_window_ui_async())
 
     def _on_include_joint_in_grasp_changed(self, model, joint_data):
@@ -980,14 +1027,6 @@ class GraspingWindow(ui.Window):
                         phase.add_joint(absolute_path)
 
             asyncio.ensure_future(self._build_window_ui_async())
-
-    def _on_show_mimic_joints_changed(self, model):
-        self._show_mimic_joints = model.get_value_as_bool()
-        self._rebuild_ui_if_joints_changed()
-
-    def _on_show_non_drive_joints_changed(self, model):
-        self._show_non_drive_joints = model.get_value_as_bool()
-        self._rebuild_ui_if_joints_changed()
 
     def _on_set_joint_pregrasp_state(self, model, joint_path):
         position_value = model.get_value_as_float()
@@ -1030,6 +1069,7 @@ class GraspingWindow(ui.Window):
     # --- Object Event Handlers ---
     def _on_object_path_changed(self, model):
         self._grasping_manager.set_object_prim_path(model.as_string)
+        asyncio.ensure_future(self._build_window_ui_async())
 
     def _on_num_candidates_changed(self, model):
         self._grasping_manager.sampler_config["num_candidates"] = model.as_int
@@ -1075,7 +1115,6 @@ class GraspingWindow(ui.Window):
             config["random_seed"] = None
 
         self._grasping_manager.generate_grasp_poses(config)
-
         asyncio.ensure_future(self._build_window_ui_async())
 
     def _on_clear_grasp_poses(self):
@@ -1213,17 +1252,29 @@ class GraspingWindow(ui.Window):
         self._num_grasps_to_evaluate = model.as_int
 
     async def _on_evaluate_grasp_poses_async(self):
+        if self._is_workflow_running:
+            carb.log_warn("Workflow is already running.")
+            return
+
+        self._is_workflow_running = True
+        await self._build_window_ui_async()
+
         if self._grasping_manager.get_initial_gripper_pose() is None:
             self._grasping_manager.store_initial_gripper_pose()
+
         if not self._grasping_manager.grasp_locations:
-            carb.log_warn("No grasp poses available to evaluate.")
+            carb.log_warn("No grasp poses available in manager to evaluate.")
+            self._is_workflow_running = False
+            self._current_evaluated_grasp_idx = 0
+            self._on_reset_grasp_pose()
+            await self._build_window_ui_async()
             return
+
         total = len(self._grasping_manager.grasp_locations)
         num_to_evaluate = self._num_grasps_to_evaluate
         if num_to_evaluate == -1 or num_to_evaluate > total:
             num_to_evaluate = total
         self._current_evaluated_grasp_idx = 0
-        await self._build_window_ui_async()
 
         poses_to_evaluate = [
             self._grasping_manager.get_grasp_pose_at_index(i, in_world_frame=True)
@@ -1232,6 +1283,16 @@ class GraspingWindow(ui.Window):
         ]
         if len(poses_to_evaluate) != num_to_evaluate:
             carb.log_warn("Some grasp poses could not be retrieved for evaluation.")
+            # Update num_to_evaluate if some poses were invalid, so the UI is consistent
+            num_to_evaluate = len(poses_to_evaluate)
+
+        if num_to_evaluate == 0:
+            carb.log_warn("Number of grasps to evaluate is 0. No poses will be evaluated.")
+            self._is_workflow_running = False
+            self._current_evaluated_grasp_idx = 0
+            self._on_reset_grasp_pose()
+            await self._build_window_ui_async()
+            return
 
         scene_path_to_use = None
         if self._physics_scene_path:
@@ -1240,6 +1301,12 @@ class GraspingWindow(ui.Window):
                 await self._build_window_ui_async()
                 return
             scene_path_to_use = self._physics_scene_path
+
+        async def progress_update_callback(evaluated_count: int):
+            self._current_evaluated_grasp_idx = evaluated_count
+            # Update current grasp pose index for visualization to follow along, if desired
+            if evaluated_count > 0:
+                self._current_grasp_pose_idx = evaluated_count - 1  # It's 0-indexed
 
         try:
             self._grasping_manager.set_overwrite_results_output(self._overwrite_results)
@@ -1250,22 +1317,36 @@ class GraspingWindow(ui.Window):
                 isolate_simulation=self._isolate_grasp_simulation,
                 physics_scene_path=scene_path_to_use,
                 simulate_using_timeline=self._simulate_using_timeline,
+                progress_callback=progress_update_callback,
             )
-            self._current_evaluated_grasp_idx = num_to_evaluate
+            # If num_to_evaluate was 0, callback won't run, ensure idx is 0.
+            if num_to_evaluate == 0:
+                self._current_evaluated_grasp_idx = 0
+
             if num_to_evaluate > 0:
-                self._current_grasp_pose_idx = num_to_evaluate - 1
+                # self._current_grasp_pose_idx is already set by the callback to the last evaluated index
+                pass
+            else:
+                self._current_grasp_pose_idx = 0  # Reset if no poses were evaluated
+
         except Exception as e:
             carb.log_warn(f"Error during grasp poses evaluation: {e}")
-            self._current_evaluated_grasp_idx = 0
+            # _current_evaluated_grasp_idx will reflect the last successfully reported count by callback
         finally:
+            # Ensure UI is consistent with the final state, especially if an error occurred
+            # or if num_to_evaluate was 0 and no callbacks ran.
+            self._is_workflow_running = False
+            # Reset counters and gripper position if workflow stopped or completed
+            self._current_evaluated_grasp_idx = 0
+            self._on_reset_grasp_pose()  # Resets self._current_grasp_pose_idx and moves gripper
             await self._build_window_ui_async()
 
     # --- Config Event Handlers ---
     def _on_config_path_changed(self, model):
         self._config_path = model.get_value_as_string()
 
-    def _on_results_output_path_changed(self, model):
-        self._grasping_manager._results_output_path = model.get_value_as_string()
+    def _on_results_output_dir_changed(self, model):
+        self._grasping_manager.set_results_output_dir(model.get_value_as_string())
 
     def _on_overwrite_config_changed(self, model):
         self._overwrite_config = model.get_value_as_bool()
@@ -1275,6 +1356,13 @@ class GraspingWindow(ui.Window):
 
     def _on_overwrite_results_changed(self, model):
         self._overwrite_results = model.get_value_as_bool()
+
+    async def _on_stop_workflow_clicked_async(self):
+        if not self._is_workflow_running:
+            carb.log_warn("Workflow is not running.")
+            return
+        self._grasping_manager.request_workflow_stop()
+        # The main workflow loop in _on_evaluate_grasp_poses_async will handle UI updates and state resetting in its finally block.
 
     def _on_save_config(self):
         file_path = self._config_path
@@ -1326,8 +1414,6 @@ class GraspingWindow(ui.Window):
             self._update_ui_joint_selection_from_loaded_phases()
         elif any(comp in successful_loads for comp in ["object", "poses"]) or sampler_config_loaded_ui:
             asyncio.ensure_future(self._build_window_ui_async())
-        else:
-            pass
 
     # --- General UI Event Handlers ---
     def _on_set_field_from_selection(self, model):
