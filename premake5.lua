@@ -18,7 +18,7 @@ function isaacsim_build_settings()
     defines { "__STDC_VERSION__=0" } -- Define this to zero to prevent errors
 
     filter { "system:windows" }
-    defines { "HAVE_SNPRINTF", "HAVE_COPYSIGN", "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS", 'BOOST_LIB_TOOLSET="vc142"', "_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH" }
+    defines { "HAVE_SNPRINTF", "HAVE_COPYSIGN", "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS", 'BOOST_LIB_TOOLSET="vc142"', "_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", "_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR" }
     disablewarnings { "4996" }
     -- Linux platform settings
     filter { "system:linux" }
