@@ -16,3 +16,8 @@ and any modifications thereto. Any use, reproduction, disclosure or
 distribution of this software and related documentation without an express
 license agreement from NVIDIA CORPORATION is strictly prohibited.
 """
+
+import carb
+
+# Provide deprecation warning to user
+carb.log_warn(f"isacsim.replicator.scene_blox has been deprecated since Isaac Sim 5.0.0.")

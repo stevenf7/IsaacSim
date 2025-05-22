@@ -385,10 +385,10 @@ inventory.include = [
     "exts/isaacsim.replicator.mobility_gen",
     "exts/isaacsim.replicator.mobility_gen.examples",
     "exts/isaacsim.replicator.mobility_gen.ui",
-    "exts/isaacsim.replicator.scene_blox",
     "exts/isaacsim.replicator.synthetic_recorder",
     "exts/isaacsim.replicator.writers",
     # deprecated extensions
+    "extsDeprecated/isaacsim.replicator.scene_blox",
     "extsDeprecated/omni.isaac.scene_blox",
     "extsDeprecated/omni.isaac.synthetic_recorder",
     "extsDeprecated/omni.replicator.isaac",
