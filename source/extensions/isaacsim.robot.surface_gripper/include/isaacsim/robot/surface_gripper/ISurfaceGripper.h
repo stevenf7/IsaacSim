@@ -29,6 +29,7 @@ struct SurfaceGripperInterface
     const char*(CARB_ABI* GetGripperStatus)(const char* primPath);
     bool(CARB_ABI* OpenGripper)(const char* primPath);
     bool(CARB_ABI* CloseGripper)(const char* primPath);
+    bool(CARB_ABI* SetGripperAction)(const char* primPath, const float action);
     std::vector<std::string>(CARB_ABI* GetGrippedObjects)(const char* primPath);
 };
 

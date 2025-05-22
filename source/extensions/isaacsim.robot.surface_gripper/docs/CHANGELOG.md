@@ -11,6 +11,10 @@
 ### Changed
 - UsdUtilities.h was updated
 
+## [3.1.0] - 2025-05-15
+### Added
+- Tensor API for surface gripper control
+
 ## [3.0.2] - 2025-05-11
 ### Changed
 - Enable FSD in test settings

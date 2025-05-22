@@ -10,3 +10,4 @@
 
 from .commands import *
 from .extension import *
+from .gripper_view import GripperView
