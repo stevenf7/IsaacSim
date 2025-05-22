@@ -1393,6 +1393,12 @@ extension_folder = [
   "${root}/source/extensions",
   "${root}/source/deprecated",
 ]
+python_dependency_files = [
+  "${root}/deps/pip.toml",  # omni.isaac.core_archive
+  "${root}/deps/pip_ml.toml",  # omni.isaac.ml_archive
+  "${root}/deps/pip_compute.toml",  # omni.pip.compute
+  "${root}/deps/pip_cloud.toml",  # omni.pip.cloud
+]
 kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
 omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
 
