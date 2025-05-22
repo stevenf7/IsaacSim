@@ -153,10 +153,7 @@ inventory.include = [
 pyproject.description = "Isaac Sim components for application setup"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "app"]
 pyproject.dependencies = [
-    # isaacsim packages
     "isaacsim-kernel==${version}",
-    # python packages
-    "pyperclip",
 ]
 # inventory (relative to the build config)
 inventory.include = [
@@ -181,7 +178,6 @@ inventory.include = [
 pyproject.description = "Isaac Sim components for asset import, creation and management"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "asset"]
 pyproject.dependencies = [
-    # isaacsim packages
     "isaacsim-utils==${version}",
     "isaacsim-storage==${version}",
 ]
@@ -255,13 +251,68 @@ pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
 pyproject.dependencies = [
     # isaacsim packages
     "isaacsim-kernel==${version}",
-    # python packages
-    "scipy",
-    "matplotlib",
+    # archives (omni.isaac.core_archive)
+    "numpy-quaternion==2023.0.3",
+    "numba==0.59.1",
+    "webbot==0.34",
+    "selenium==4.14.0",
+    "construct==2.10.68",
+    "llvmlite==0.42.0",
+    "nest_asyncio==1.5.6",
+    # "jinja2==3.1.4",  # "Jinja2==3.1.6" already defined in isaacsim-kernel
+    "markupsafe==2.1.3",
+    "matplotlib==3.10.0",
+    "contourpy==1.3.1",
+    "fonttools==4.55.3",
+    "pyparsing==3.0.9",
+    "cycler==0.11.0",
+    "kiwisolver==1.4.4",
+    "pint==0.20.1",
+    "packaging==23.0",
+    "gunicorn==22.0.0",
+    "osqp<1.0.0",  # 0.6.5 (osqp 0.6.5 depends on scipy<1.12.0 and >=0.13.2, scipy==1.15.3 already defined)
+    "qdldl==0.1.7.post1",
+    "nvsmi==0.4.2",
+    "tornado==6.4.2",
+    "plotly==5.3.1",
+    "pyperclip==1.8.0",
+    "python-dateutil==2.9.0.post0",
+    "six==1.17.0",
+    # archives (omni.isaac.ml_archive)
     "torch==2.7.0",
-    "opencv-python",
-    "boto3",
-    "pyyaml",
+    "torchvision==0.22.0",
+    "torchaudio==2.7.0",
+    "filelock==3.13.1",
+    "fsspec==2024.6.1",
+    "mpmath==1.3.0",
+    "networkx==3.3",
+    "sympy==1.13.3",
+    # archives (omni.pip.compute)
+    "imageio==2.37.0",
+    "scipy==1.15.3",
+    "pyyaml==6.0.2",
+    "opencv-python-headless==4.11.0.86",
+    "trimesh==4.5.1",
+    "rtree==1.3.0",
+    # archives (omni.pip.cloud)
+    "boto3[crt]==1.36.1",
+    "s3transfer==0.11.0",  # 0.6.1 (boto3 1.36.1 depends on s3transfer<0.12.0 and >=0.11.0)
+    "azure-storage-blob==12.17.0",
+    "azure-identity==1.13.0",
+    "requests==2.32.3",
+    "oauthlib==3.2.2",
+    "requests-oauthlib==1.3.1",
+    "isodate==0.6.1",
+    "cryptography==44.0.0",
+    # "typing-extensions==4.10.0",  # "typing_extensions==4.12.2" already defined in isaacsim-kernel
+    "azure-core==1.28.0",
+    "msal==1.27.0",  # 1.23.0 (msal 1.23.0 depends on cryptography<44)
+    "msal-extensions==1.0.0",
+    "portalocker==2.7.0",
+    "botocore==1.36.1",
+    "jmespath==1.0.1",
+    "python-dateutil==2.9.0.post0",
+    "six==1.17.0",
 ]
 # inventory (relative to the build config)
 inventory.include = [
@@ -367,7 +418,6 @@ inventory.include = [
 pyproject.description = "Isaac Sim components to enable the Replicator framework for synthetic data generation pipelines and services"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "replicator"]
 pyproject.dependencies = [
-    # isaacsim packages
     "isaacsim-core==${version}",
     "isaacsim-storage==${version}",
 ]
@@ -399,11 +449,8 @@ inventory.include = [
 pyproject.description = "Isaac Sim components for reinforcement learning"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "rl"]
 pyproject.dependencies = [
-    # isaacsim packages
     "isaacsim-robot==${version}",
     "isaacsim-benchmark==${version}",
-    # python packages
-    "gymnasium",
 ]
 # inventory (relative to the build config)
 inventory.include = [
@@ -416,11 +463,8 @@ inventory.include = [
 pyproject.description = "Isaac Sim's robot models and APIs"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot"]
 pyproject.dependencies = [
-    # isaacsim packages
     "isaacsim-sensor==${version}",
     "isaacsim-robot-motion==${version}",
-    # python packages
-    "osqp<1.0.0",
 ]
 # inventory (relative to the build config)
 inventory.include = [
@@ -536,7 +580,6 @@ inventory.include = [
 pyproject.description = "Isaac Sim components to simulate sensors"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "sensor"]
 pyproject.dependencies = [
-    # isaacsim packages
     "isaacsim-utils==${version}",
     "isaacsim-gui==${version}",
     "isaacsim-storage==${version}",
