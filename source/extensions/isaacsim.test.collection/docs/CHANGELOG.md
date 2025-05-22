@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.18] - 2025-05-21
+### Changed
+- Fix test failures
+
 ## [2.0.17] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version

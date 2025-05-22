@@ -1,4 +1,7 @@
 # Changelog
+## [4.6.3] - 2025-05-21
+### Changed
+- Fix test failures
 
 ## [4.6.2] - 2025-05-16
 ### Changed
