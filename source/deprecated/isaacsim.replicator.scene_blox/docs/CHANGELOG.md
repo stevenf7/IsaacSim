@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.7] - 2025-05-21
+### Changed
+- Extension deprecated since Isaac Sim 5.0.0.
+
 ## [1.0.6] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
