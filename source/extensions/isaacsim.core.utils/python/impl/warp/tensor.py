@@ -131,6 +131,13 @@ def to_list(data):
     return data
 
 
+def to_numpy(data):
+    try:
+        return data.numpy()
+    except:
+        return data
+
+
 @wp.kernel
 def _assign11(src: Any, dst: wp.array(dtype=Any), indices: wp.array(dtype=int)):
     tid = wp.tid()
