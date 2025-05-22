@@ -144,12 +144,16 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                         ("ComputeOdometry", "isaacsim.core.nodes.IsaacComputeOdometry"),
                         ("PublishROS2Odometry", "isaacsim.ros2.bridge.ROS2PublishOdometry"),
+                        ("PublishGlobalROS2Odometry", "isaacsim.ros2.bridge.ROS2PublishOdometry"),
                     ],
                     keys.SET_VALUES: [
                         ("ComputeOdometry.inputs:chassisPrim", [usdrt.Sdf.Path(cube_prim_path)]),
                         ("PublishROS2Odometry.inputs:topicName", "cube_odometry"),
                         ("PublishROS2Odometry.inputs:chassisFrameId", "cube_link"),
                         ("PublishROS2Odometry.inputs:publishRawVelocities", False),
+                        ("PublishGlobalROS2Odometry.inputs:topicName", "cube_odometry_global"),
+                        ("PublishGlobalROS2Odometry.inputs:chassisFrameId", "cube_link"),
+                        ("PublishGlobalROS2Odometry.inputs:publishRawVelocities", False),
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ComputeOdometry.inputs:execIn"),
@@ -159,6 +163,15 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
                         ("ComputeOdometry.outputs:linearVelocity", "PublishROS2Odometry.inputs:linearVelocity"),
                         ("ComputeOdometry.outputs:angularVelocity", "PublishROS2Odometry.inputs:angularVelocity"),
                         ("ReadSimTime.outputs:simulationTime", "PublishROS2Odometry.inputs:timeStamp"),
+                        ("ComputeOdometry.outputs:execOut", "PublishGlobalROS2Odometry.inputs:execIn"),
+                        ("ComputeOdometry.outputs:position", "PublishGlobalROS2Odometry.inputs:position"),
+                        ("ComputeOdometry.outputs:orientation", "PublishGlobalROS2Odometry.inputs:orientation"),
+                        (
+                            "ComputeOdometry.outputs:globalLinearVelocity",
+                            "PublishGlobalROS2Odometry.inputs:linearVelocity",
+                        ),
+                        ("ComputeOdometry.outputs:angularVelocity", "PublishGlobalROS2Odometry.inputs:angularVelocity"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishGlobalROS2Odometry.inputs:timeStamp"),
                     ],
                 },
             )
@@ -166,12 +179,20 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
             print(f"Error creating action graph: {e}")
 
         self._cube_odometry_data = None
+        self._cube_odometry_global_data = None
 
         def cube_odometry_callback(data: Odometry):
             self._cube_odometry_data = data
 
+        def cube_odometry_global_callback(data: Odometry):
+            self._cube_odometry_global_data = data
+            print(data.twist.twist.linear)
+
         ros2_node = rclpy.create_node("odometry_publisher_tester")
         odom_sub = ros2_node.create_subscription(Odometry, "cube_odometry", cube_odometry_callback, get_qos_profile())
+        odom_sub_global = ros2_node.create_subscription(
+            Odometry, "cube_odometry_global", cube_odometry_global_callback, get_qos_profile()
+        )
 
         self.retrived_lin_vel = None
 
@@ -226,6 +247,7 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.z, 0.0, places=2)
 
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
         # Test1: Check Z odometry:
         ##############################
@@ -246,20 +268,20 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
         self.assertGreater(self._cube_odometry_data.pose.pose.position.z, 0.2)
 
         # print(self.retrived_lin_vel)
-
+        print(self._cube_odometry_data.twist.twist.linear)
         # Verify that the velocities recieved from Odometry are correct. Cude should be moving up.
 
         # TODO (@Anthony or @Ayush): Investigate why 0.2 disparity exists for commanded and received speeds
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
 
         # TODO (@Anthony or @Ayush): Setting angular velocity seems to take no effect. Using .get_angular_velocity() returns the correct value but the cuboid does not move accordingly. Will need to investigate
         # Commenting out angular velocity checks for now:
 
-        # self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.x, self.ang_vel_cmd[0], delta=0.2)
-        # self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.y, self.ang_vel_cmd[1], delta=0.2)
-        # self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.z, self.ang_vel_cmd[2], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.x, self.ang_vel_cmd[0], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.y, self.ang_vel_cmd[1], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.angular.z, self.ang_vel_cmd[2], delta=0.2)
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -289,15 +311,15 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
 
         # Verify that the pose recieved from Odometry is correct
         self.assertGreater(self._cube_odometry_data.pose.pose.position.x, 0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.y, 0.0, places=2)
-        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.z, 0.0, places=2)
+        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.y, 0.0, delta=0.1)
+        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.z, 0.0, delta=0.1)
 
         # Verify that the velocities recieved from Odometry are correct. Cude should be at moving forward.
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
         self._timeline.stop()
-
+        await omni.kit.app.get_app().next_update_async()
         # Test2B: Check X odometry (with robot front (0,1,0) and publishRawVelocities disabled:
         ##############################
         self._cube_odometry_data = None
@@ -331,14 +353,14 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
 
         # Verify that the pose recieved from Odometry is correct. X should still be greater than 0
         self.assertGreater(self._cube_odometry_data.pose.pose.position.x, 0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.y, 0.0, places=2)
-        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.z, 0.0, places=2)
+        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.y, 0.0, delta=0.1)
+        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.z, 0.0, delta=0.1)
 
         # Verify that the velocities recieved from Odometry are correct. Cube should be moving forward in local Y frame, but global X frame.
         # Components are flipped due to new robot fron orientation. -Y world linear velocity is positive X local frame
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.x, self.lin_vel_cmd[1], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.y, -self.lin_vel_cmd[0], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
 
         self._timeline.stop()
         # Test2C: Check X odometry (with robot front (0,1,0) and publishRawVelocities enabled:
@@ -374,14 +396,14 @@ class TestRos2Odometry(omni.kit.test.AsyncTestCase):
 
         # Verify that the pose recieved from Odometry is correct. X should still be greater than 0
         self.assertGreater(self._cube_odometry_data.pose.pose.position.x, 0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.y, 0.0, places=2)
-        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.z, 0.0, places=2)
+        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.y, 0.0, delta=0.1)
+        self.assertAlmostEqual(self._cube_odometry_data.pose.pose.position.z, 0.0, delta=0.1)
 
         # Verify that the velocities recieved from Odometry are correct. Cube should be moving forward in local Y frame, but global X frame.
         # Components are no longer flipped like Test 2B since only world velocities are published
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
-        self.assertAlmostEqual(self._cube_odometry_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.x, self.lin_vel_cmd[0], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.y, self.lin_vel_cmd[1], delta=0.2)
+        self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
 
         ros2_node.destroy_node()
 

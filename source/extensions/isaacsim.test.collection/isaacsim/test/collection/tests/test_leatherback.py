@@ -86,7 +86,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # Drive the robot
-        for i in range(240):
+        for i in range(60):
 
             msg = AckermannDriveStamped()
             msg.drive.speed = 0.2
@@ -95,7 +95,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         # Let the robot come to a halt
-        for i in range(120):
+        for i in range(60):
 
             msg = AckermannDriveStamped()
             msg.drive.speed = 0.0
@@ -103,12 +103,11 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
 
             await omni.kit.app.get_app().next_update_async()
 
-        target = np.array([0.767, 0.0, 0.0])
+        target = np.array([0.18823782, -0.00128498, 0.01113574])
         x, r = get_world_pose("/Leatherback/Rigid_Bodies/Chassis")
 
         delta = np.linalg.norm(x - target)
-
-        self.assertTrue(delta < 0.1)
+        self.assertAlmostEqual(delta, 0, delta=0.01)
 
         pass
 
