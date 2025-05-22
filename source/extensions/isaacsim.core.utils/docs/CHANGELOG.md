@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.3.0] - 2025-05-22
+### Added
+- Add missing to_numpy function to warp utils
+
 ## [3.2.1] - 2025-05-13
 ### Fixed
 - Fixed usdrt API mixup in usd workflow.
