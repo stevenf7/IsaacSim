@@ -127,19 +127,17 @@ public:
         }
 
         const float* rangePoints = static_cast<const float*>(db.inputs.linearDepthData().data());
-        float* rangeData = (float*)malloc(sizeof(float) * buffSize);
-        memcpy(rangeData, rangePoints, sizeof(float) * buffSize);
+        m_rangeData.resize(buffSize);
+        memcpy(m_rangeData.data(), rangePoints, sizeof(float) * buffSize);
 
         const uint8_t* intensityPointsCpu = static_cast<const uint8_t*>(db.inputs.intensitiesData().data());
-        float* intensityData = (float*)malloc(sizeof(float) * buffSize);
+        m_intensityData.resize(buffSize);
 
-        for (size_t i = 0; i < buffSize; i++)
-        {
-            intensityData[i] = static_cast<float>(intensityPointsCpu[i]);
-        }
+        std::transform(intensityPointsCpu, intensityPointsCpu + buffSize, m_intensityData.begin(),
+                       [](uint8_t val) { return static_cast<float>(val); });
 
         state.m_message->writeData(db.inputs.timeStamp(), state.m_frameId, db.inputs.azimuthRange(), rotationRate,
-                                   db.inputs.depthRange(), buffSize, rangeData, intensityData,
+                                   db.inputs.depthRange(), buffSize, m_rangeData.data(), m_intensityData.data(),
                                    db.inputs.horizontalResolution(), db.inputs.horizontalFov());
 
         state.m_publisher.get()->publish(state.m_message->getPtr());
@@ -163,6 +161,9 @@ public:
 private:
     std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
     std::shared_ptr<Ros2LaserScanMessage> m_message = nullptr;
+    std::vector<float> m_rangeData;
+    std::vector<float> m_intensityData;
+
 
     std::string m_frameId = "sim_lidar";
 };

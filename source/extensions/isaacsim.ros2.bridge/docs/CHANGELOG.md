@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.6.4] - 2025-05-22
+### Fixded
+- Fix memory leak in laser scan publisher
+
 ## [4.6.3] - 2025-05-21
 ### Changed
 - Fix test failures
