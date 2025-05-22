@@ -75,6 +75,11 @@ PYBIND11_MODULE(_surface_gripper, m)
     defineInterfaceClass<SurfaceGripperInterface>(
         m, "SurfaceGripperInterface", "acquire_surface_gripper_interface", "release_surface_gripper_interface")
         .def(
+            "set_gripper_action",
+            [](const SurfaceGripperInterface* iface, const char* primPath, const float action) -> bool
+            { return iface ? iface->SetGripperAction(primPath, action) : false; },
+            py::arg("prim_path"), py::arg("action"), "Sets the action of a surface gripper at the specified USD path.")
+        .def(
             "open_gripper",
             [](const SurfaceGripperInterface* iface, const char* primPath) -> bool
             { return iface ? iface->OpenGripper(primPath) : false; },

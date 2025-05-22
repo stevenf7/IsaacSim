@@ -147,6 +147,26 @@ bool CARB_ABI closeGripper(const char* primPath)
 }
 
 /**
+ * @brief Sets the action of a surface gripper
+ * @param[in] primPath USD path of the gripper
+ * @param[in] action Action value (-1.0 to 1.0)
+ * @return True if successful, false otherwise
+ */
+bool CARB_ABI setGripperAction(const char* primPath, const float action)
+{
+    if (action < -0.3f)
+    {
+        return openGripper(primPath);
+    }
+    else if (action > 0.3f)
+    {
+        return closeGripper(primPath);
+    }
+    return false;
+}
+
+
+/**
  * @brief Gets a list of objects currently gripped by a specific gripper
  * @param[in] primPath USD path of the gripper
  * @return Vector of prim paths for gripped objects
@@ -430,6 +450,7 @@ void fillInterface(isaacsim::robot::surface_gripper::SurfaceGripperInterface& if
     iface.GetGripperStatus = surface_gripper::getGripperStatus;
     iface.OpenGripper = surface_gripper::openGripper;
     iface.CloseGripper = surface_gripper::closeGripper;
+    iface.SetGripperAction = surface_gripper::setGripperAction;
     iface.GetGrippedObjects = surface_gripper::getGrippedObjects;
 }
 
