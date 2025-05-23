@@ -301,15 +301,9 @@ inline static const bool jsonToRos2QoSProfile(Ros2QoSProfile& qos, const std::st
         return false;
     }
 
-    /**
-     * @brief Lambda function to convert seconds to ROS 2 time format
-     * @details
-     * Creates a Ros2QoSTime struct from a floating-point value representing seconds,
-     * splitting it into seconds and nanoseconds components.
-     *
-     * @param[in] totalSeconds Time in seconds as a floating-point value
-     * @return Ros2QoSTime Struct with separate seconds and nanoseconds components
-     */
+    // Lambda function to convert seconds to ROS 2 time format
+    // Creates a Ros2QoSTime struct from a floating-point value representing seconds,
+    // splitting it into seconds and nanoseconds components.
     auto createRos2QoSTimeType = [](double totalSeconds) -> Ros2QoSTime
     {
         uint64_t secs = static_cast<uint64_t>(totalSeconds);

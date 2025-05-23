@@ -26,15 +26,33 @@ namespace robot
 namespace surface_gripper
 {
 
-
+/**
+ * @struct SurfaceGripperInterface
+ * @brief Interface for controlling surface gripper functionality.
+ * @details
+ * Provides function pointers for controlling surface grippers in the simulation.
+ * Surface grippers can attach to and manipulate objects through surface contact
+ * rather than traditional mechanical gripping.
+ *
+ * All functions operate on grippers identified by their USD prim path.
+ */
 struct SurfaceGripperInterface
 {
     CARB_PLUGIN_INTERFACE("isaacsim::robot::surface_gripper::ISurfaceGripper", 0, 1);
 
+    /** @brief Function pointer to get the current status of a surface gripper */
     const char*(CARB_ABI* GetGripperStatus)(const char* primPath);
+
+    /** @brief Function pointer to open/release a surface gripper */
     bool(CARB_ABI* OpenGripper)(const char* primPath);
+
+    /** @brief Function pointer to close/activate a surface gripper */
     bool(CARB_ABI* CloseGripper)(const char* primPath);
+
+    /** @brief Function pointer to set a specific gripper action value */
     bool(CARB_ABI* SetGripperAction)(const char* primPath, const float action);
+
+    /** @brief Function pointer to get the list of objects currently gripped */
     std::vector<std::string>(CARB_ABI* GetGrippedObjects)(const char* primPath);
 };
 

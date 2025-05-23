@@ -106,8 +106,10 @@ inline bool hasTimeSample(const pxr::UsdAttribute& attribute, pxr::UsdTimeCode t
 /**
  * check if attribute has efficient timesample and
  * these data are on currentlayer/strongerlayer/weakerlayer
- * @tparam Stage  Current Working Stage.
- * @param attribute The attribute to check.
+ * @param[in] stage Current Working Stage.
+ * @param[in] attr The attribute to check.
+ * @param[out] outLayer Optional pointer to receive the layer containing time samples
+ * @return TimeSamplesOnLayer enum indicating where time samples are located
  */
 inline TimeSamplesOnLayer getAttributeEffectiveTimeSampleLayerInfo(const pxr::UsdStage& stage,
                                                                    const pxr::UsdAttribute& attr,
@@ -157,8 +159,8 @@ inline TimeSamplesOnLayer getAttributeEffectiveTimeSampleLayerInfo(const pxr::Us
 /**
  * Copy TimeSample From Waker Layer.
  *
- * @param Stage  Current Working Stage.
- * @param attribute The attribute to check.
+ * @param[in,out] stage Current Working Stage.
+ * @param[in] attr The attribute to check.
  */
 inline void copyTimeSamplesFromWeakerLayer(pxr::UsdStage& stage, const pxr::UsdAttribute& attr)
 {
@@ -220,8 +222,8 @@ inline PXR_NS::SdfLayerRefPtr getLayerIfSpecOnSessionOrItsSublayers(
  * Finds if the given *prim* path has a "def" *primSpec* on session layer or its sublayers.
  * If you want to find attributeSpec use @ref getLayerIfSpecOnSessionOrItsSublayers instead.
  *
- * @stage stage of the prim.
- * @param path The path to be checked for "def" primSpec.
+ * @param[in] stage Stage of the prim.
+ * @param[in] path The path to be checked for "def" primSpec.
  *
  * @return the layer that has "def" prim spec, or nullptr if not found.
  */
@@ -587,8 +589,12 @@ inline bool setValueWithPrecision(pxr::UsdGeomXformOp& xformOp,
 /**
  * Sets local transform matrix of a prim.
  *
- * @param prim The prim to set local transform matrix to.
- * @param mtx The local transform matrix.
+ * @param[in,out] prim The prim to set local transform matrix to.
+ * @param[in] mtxIn The local transform matrix.
+ * @param[in] timecode Time code for the transform operation.
+ * @param[in] skipEqualSetForTimeSample Whether to skip setting if value is equal.
+ * @param[in,out] parentChangeBlock Optional parent change block for batching operations.
+ * @return true if the operation was successful, false otherwise.
  */
 inline bool setLocalTransformMatrix(pxr::UsdPrim prim,
                                     const pxr::GfMatrix4d& mtxIn,

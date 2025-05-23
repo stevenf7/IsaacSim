@@ -603,7 +603,7 @@ public:
      * @param[in] messageType Message type specification.
      * @param[in] showLoadingError Whether to print ROS IDL libraries load errors to the console.
      *
-     * @note The full message type is constructed as <pkgName>/<msgSubfolder>/<msgName>.
+     * @note The full message type is constructed as `pkgName`/`msgSubfolder`/`msgName`.
      */
     Ros2MessageInterface(std::string pkgName,
                          std::string msgSubfolder,

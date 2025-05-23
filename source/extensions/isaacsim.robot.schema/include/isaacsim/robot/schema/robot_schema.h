@@ -91,9 +91,27 @@ inline const pxr::TfToken className(Classes name)
 
 namespace custom
 {
+/**
+ * @struct hash
+ * @brief Hash function object for enum types.
+ * @details
+ * Provides a hash function for enum types by casting them to size_t.
+ * This allows enums to be used as keys in unordered containers.
+ *
+ * @tparam E The enum type to provide hashing for
+ */
 template <typename E>
 struct hash
 {
+    /**
+     * @brief Hash function operator for enum values.
+     * @details
+     * Converts an enum value to its underlying integer representation
+     * and casts it to size_t for use as a hash value.
+     *
+     * @param[in] e The enum value to hash
+     * @return size_t Hash value for the enum
+     */
     size_t operator()(const E& e) const
     {
         return static_cast<size_t>(e);

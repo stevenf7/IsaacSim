@@ -77,10 +77,10 @@ public:
      * @details Initializes the PoseTree with USD stage and dynamic control references.
      *
      * @param[in] stageId The unique identifier for the USD stage
-     * @param[in] dynamicControlPtr Pointer to the DynamicControl instance for physics interactions
+     * @param[in] simulationView Pointer to the simulation view instance for physics interactions
      *
      * @pre stageId must be valid and correspond to an existing USD stage
-     * @pre dynamicControlPtr must be a valid pointer to a DynamicControl instance
+     * @pre simulationView must be a valid pointer to a simulation view instance
      */
     PoseTree(const uint64_t& stageId, ISimulationView* simulationView)
     {
@@ -276,10 +276,10 @@ public:
      * @brief Retrieves the physics-based pose of a rigid body.
      * @details Queries the DynamicControl system for the current pose of a rigid body prim.
      *
-     * @param[in] path SDF path to the rigid body prim
+     * @param[in] rb Pointer to the rigid body view interface
      * @return PxTransform representing the world-space pose of the rigid body
      *
-     * @pre The prim at the specified path must be a valid rigid body
+     * @pre The rigid body view must be valid or nullptr (returns identity transform)
      */
     ::physx::PxTransform getRigidBodyPose(IRigidBodyView* rb)
     {
@@ -395,10 +395,19 @@ private:
     /** @brief Set of published frame names */
     std::map<std::string, bool> m_publishedFrames;
 
+    /** @brief Pointer to the simulation view interface for physics queries */
     ISimulationView* m_simView = nullptr;
+
+    /** @brief Tensor descriptor for rigid body transform data */
     TensorDesc m_rigidTransformTensor;
+
+    /** @brief Tensor descriptor for articulation transform data */
     TensorDesc m_artiTransformTensor;
+
+    /** @brief Storage for rigid body transform data (7 floats: position + quaternion) */
     std::vector<float> m_rigidXformData;
+
+    /** @brief Storage for articulation link transform data */
     std::vector<float> m_linkXformData;
 };
 }

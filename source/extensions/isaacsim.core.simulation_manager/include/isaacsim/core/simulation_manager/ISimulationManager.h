@@ -49,6 +49,19 @@ namespace core
 namespace simulation_manager
 {
 
+/**
+ * @struct ISimulationManager
+ * @brief Interface for managing simulation state and callbacks.
+ * @details
+ * Provides functionality for:
+ * - Registering and managing callbacks for simulation events
+ * - Controlling simulation state and timing
+ * - Managing USD notice handlers
+ * - Querying simulation and system time information
+ *
+ * This interface serves as the main entry point for simulation management
+ * operations in Isaac Sim.
+ */
 struct ISimulationManager
 {
     CARB_PLUGIN_INTERFACE("isaacsim::core::simulation_manager::ISimulationManager", 2, 0);
@@ -151,7 +164,7 @@ struct ISimulationManager
      * @brief Gets simulation time at a specific rational time.
      * @details Returns the simulation time corresponding to a specific rational time.
      *
-     * @param[in] time Rational time to query simulation time for.
+     * @param[in] rtime Rational time to query simulation time for.
      * @return Simulation time in seconds at the specified time.
      */
     DLL_EXPORT virtual double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime) = 0;
@@ -160,7 +173,7 @@ struct ISimulationManager
      * @brief Gets monotonic simulation time at a specific rational time.
      * @details Returns the monotonically increasing simulation time corresponding to a specific rational time.
      *
-     * @param[in] time Rational time to query monotonic simulation time for.
+     * @param[in] rtime Rational time to query monotonic simulation time for.
      * @return Monotonic simulation time in seconds at the specified time.
      */
     DLL_EXPORT virtual double getSimulationTimeMonotonicAtTime(const omni::fabric::RationalTime& rtime) = 0;
@@ -169,7 +182,7 @@ struct ISimulationManager
      * @brief Gets system time at a specific rational time.
      * @details Returns the system (real-world) time corresponding to a specific rational time.
      *
-     * @param[in] time Rational time to query system time for.
+     * @param[in] rtime Rational time to query system time for.
      * @return System time in seconds at the specified time.
      */
     DLL_EXPORT virtual double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime) = 0;
