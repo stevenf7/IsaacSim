@@ -516,8 +516,6 @@ void RunLoopSynchronizer::_setupPresentThread()
     }
     else if ((!m_presentPreSubscription || !m_presentPostSubscription) && needPresentThreadUpdate)
     {
-        omni::kit::IApp* app = carb::getCachedInterface<omni::kit::IApp>();
-        // omni::kit::RunLoop* presentRunLoop = app->getRunLoop("present");
 
         auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
 

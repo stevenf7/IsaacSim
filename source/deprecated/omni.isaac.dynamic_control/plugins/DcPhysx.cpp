@@ -236,7 +236,17 @@ inline DcD6Joint* lookupD6Joint(DcHandle handle, const char* funcname)
 template <typename T>
 inline void ZeroArray(T* arr, size_t count)
 {
-    std::memset(arr, 0, count * sizeof(*arr));
+    if constexpr (std::is_trivially_copyable_v<T>)
+    {
+        std::memset(arr, 0, count * sizeof(*arr));
+    }
+    else
+    {
+        for (size_t i = 0; i < count; ++i)
+        {
+            arr[i] = T{};
+        }
+    }
 }
 
 inline carb::Float3 asFloat3(const PxVec3& v)
@@ -280,41 +290,7 @@ std::unique_ptr<DcContext> createContext(long stageId)
     ctx->physxSceneQuery = gPhysxSceneQuery;
     ctx->mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-    /*
-    // get scene pointer
-    PxScene* scene = nullptr;
-    if (scenePath)
-    {
-        scene = (PxScene*)ctx->physx->getPhysXPtr(SdfPath(scenePath), omni::physx::PhysXType::ePTScene);
-        printf("Got scene ptr %p\n", (void*)scene);
-    }
-
-    ctx->pxScene = scene;
-
-    if (scene)
-    {
-        PxU32 numArts = scene->getNbArticulations();
-        printf("Found %u articulation%s\n", numArts, numArts == 1 ? "" : "s");
-        if (numArts > 0)
-        {
-            std::vector<PxArticulationReducedCoordinate*> arts(numArts);
-            scene->getArticulations(arts.data(), numArts);
-            for (PxU32 i = 0; i < numArts; i++)
-            {
-                if (arts[i]->getConcreteType() == PxConcreteType::eARTICULATION_REDUCED_COORDINATE)
-                {
-                    PxArticulationReducedCoordinate* arc = static_cast<PxArticulationReducedCoordinate*>(arts[i]);
-
-                    // look up the USD path
-                    size_t objId = (size_t)arc->userData;
-                    printf("Found articulation id %llu\n", (unsigned long long)objId);
-                }
-            }
-        }
-    }
-    */
-
-    return std::move(ctx);
+    return ctx;
 }
 
 void destroyContext(std::unique_ptr<DcContext>& ctx)

@@ -293,8 +293,15 @@ std::string LidarConfigHelper::ReadWholeTextFile(std::string fullPath)
 
     std::string str(size + 1, '\0');
 
-    std::fread(&str[0], 1, size, f);
+    size_t bytesRead = std::fread(&str[0], 1, size, f);
     std::fclose(f);
+
+    if (bytesRead != size)
+    {
+        CARB_LOG_WARN("ReadWholeTextFile: Expected to read %zu bytes but read %zu bytes from file: %s", size, bytesRead,
+                      fullPath.c_str());
+        return {};
+    }
 
     return str;
 }

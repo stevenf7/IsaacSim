@@ -30,7 +30,7 @@ function isaacsim_build_settings()
     -- Linux platform settings
     filter { "system:linux" }
     disablewarnings { "error=unused-function" }
-    buildoptions { "-Wno-error" }
+    buildoptions { "-Wno-error", "-Wno-deprecated" }
 
     filter {}
 end
