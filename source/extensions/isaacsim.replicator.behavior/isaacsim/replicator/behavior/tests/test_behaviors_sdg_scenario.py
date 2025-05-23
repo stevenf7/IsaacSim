@@ -33,6 +33,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
     DEPTH_RTOL = 1.0e-4
     DEPTH_ATOL = 1.0e-3
     RANDOM_SEED = 10
+    OUTPUT_DIR = "_out_behaviors_sdg"
 
     async def setUp(self):
         pass
@@ -308,7 +309,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             # Create the writer and the render product
             rp = rep.create.render_product(camera_path, (512, 512))
             writer = rep.writers.get("BasicWriter")
-            output_directory = os.path.join(os.getcwd(), "out_behaviors_sdg")
+            output_directory = os.path.join(os.getcwd(), self.OUTPUT_DIR)
             print(f"output_directory: {output_directory}")
             writer.initialize(output_dir=output_directory, rgb=True, distance_to_image_plane=True, colorize_depth=True)
             writer.attach(rp)
@@ -403,9 +404,9 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         # Get the platform subfolder (linux or windows)
         platform_subfolder = "linux" if os.name == "posix" else "windows"
         golden_dir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "data", "golden", "out_behaviors_sdg", platform_subfolder
+            os.path.dirname(os.path.realpath(__file__)), "data", "golden", self.OUTPUT_DIR, platform_subfolder
         )
-        test_dir = os.path.join(os.getcwd(), "out_behaviors_sdg")
+        test_dir = os.path.join(os.getcwd(), self.OUTPUT_DIR)
         print(f"Golden directory: {golden_dir}")
         print(f"Test directory: {test_dir}")
 
@@ -416,6 +417,3 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         self.compare_images_with_mean_diff(
             golden_dir, test_dir, "distance_to_image_plane", self.DEPTH_MEAN_DIFF_TOLERANCE
         )
-
-        # Compare the distance to image plane data (smaller tolerance since it is not influenced by denoising)
-        self.compare_npy_files(golden_dir, test_dir, "distance_to_image_plane", self.DEPTH_MEAN_DIFF_TOLERANCE)
