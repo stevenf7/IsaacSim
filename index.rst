@@ -93,7 +93,6 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.replicator.domain_randomization/docs/index
    source/extensions/isaacsim.replicator.examples/docs/index
    source/extensions/isaacsim.replicator.mobility_gen/docs/index
-   source/extensions/isaacsim.replicator.scene_blox/docs/index
    source/extensions/isaacsim.replicator.synthetic_recorder/docs/index
    source/extensions/isaacsim.replicator.writers/docs/index
 
@@ -195,3 +194,9 @@ Isaac Sim: Extensions API
    :caption: Standalone Examples
 
    docs/source/standalone_examples_list
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Generic Model Output
+
+   docs/source/generic_model_output/generic_model_output
