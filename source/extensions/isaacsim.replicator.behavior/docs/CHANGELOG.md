@@ -1,4 +1,11 @@
 # Changelog
+
+## [1.1.7] - 2025-05-23
+### Changed
+- New sdg pipeline golden images
+- Removed npy comparison because of redunancy with png depth comparison
+- Renamed output folder to _out_behaviors_sdg with leading underscore for consistency
+
 ## [1.1.6] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

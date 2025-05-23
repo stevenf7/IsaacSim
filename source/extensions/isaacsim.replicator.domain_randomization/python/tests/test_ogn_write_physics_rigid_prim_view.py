@@ -74,6 +74,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         omni.usd.get_context().close_stage()
 
     async def _setup_random_attribute(self, attribute_name, value):
+        print(f"Setting attribute: {attribute_name}, value: {value}")
         self._distribution_node.get_attribute("inputs:numSamples").set(1)
         self._distribution_node.get_attribute("inputs:lower").set([value])
         self._distribution_node.get_attribute("inputs:upper").set([value])
@@ -99,6 +100,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         await self._setup_random_attribute(attribute_name="position", value=value)
         position, _ = self._rb_view.get_world_poses()
         position = position.clone().cpu().numpy()
+        print(f"value: {value}, position: {position}")
         self.assertTrue(np.all(np.isclose(position, value)))
 
     async def test_randomize_orientation(self):
@@ -106,18 +108,21 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         await self._setup_random_attribute(attribute_name="orientation", value=value)
         _, orientation = self._rb_view.get_world_poses()
         orientation = orientation.clone().cpu().numpy()
+        print(f"value: {value}, orientation: {orientation}")
         self.assertTrue(np.all(np.isclose(orientation, [0, 0, 1, 0], atol=1e-04)))
 
     async def test_randomize_linear_velocity(self):
         value = [100, 200, 300]
         await self._setup_random_attribute(attribute_name="linear_velocity", value=value)
         linear_velocity = self._rb_view.get_linear_velocities().clone().cpu().numpy()
+        print(f"value: {value}, linear_velocity: {linear_velocity}")
         self.assertTrue(np.all(np.isclose(linear_velocity, value)))
 
     async def test_randomize_angular_velocity(self):
         value = [100, 200, 300]
         await self._setup_random_attribute(attribute_name="angular_velocity", value=value)
         angular_velocity = self._rb_view.get_angular_velocities().clone().cpu().numpy()
+        print(f"value: {value}, angular_velocity: {angular_velocity}")
         self.assertTrue(np.all(np.isclose(angular_velocity, value)))
 
     async def test_randomize_forces(self):
@@ -129,6 +134,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
             value = [100] * self._rb_view.count
             await self._setup_random_attribute(attribute_name="mass", value=value)
             new_value = self._rb_view.get_masses().clone().cpu().numpy()
+            print(f"value: {value}, new_value: {new_value}")
             self.assertTrue(np.all(np.isclose(new_value, value)))
 
     async def test_randomize_inertias(self):
@@ -137,19 +143,21 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._setup_random_attribute(attribute_name="inertia", value=inertias)
             new_value = self._rb_view.get_inertias().clone().cpu().numpy()
             diagonal = new_value[:, [0, 4, 8]]
+            print(f"inertias: {inertias}, diagonal: {diagonal}")
             self.assertTrue(np.all(np.isclose(diagonal.flatten(), inertias)))
 
     async def test_randomize_material_properties(self):
-        value = [100] * self._rb_view.count * 3 * self._rb_view.num_shapes
+        value = [0.5] * self._rb_view.count * 3 * self._rb_view.num_shapes
         await self._setup_random_attribute(attribute_name="material_properties", value=value)
-        new_value = self._rb_view._physics_view.get_material_properties().clone().cpu().numpy()
-        print(value, new_value)
-        self.assertTrue(np.all(np.isclose(new_value.flatten(), value)))
+        new_value = self._rb_view._physics_view.get_material_properties().clone().cpu().numpy().flatten()
+        print(f"value: {value}, new_value: {new_value}")
+        self.assertTrue(np.all(np.isclose(new_value, value)))
 
     async def test_randomize_contact_offsets(self):
-        value = [100] * self._rb_view.count * self._rb_view.num_shapes
+        value = [0.05] * self._rb_view.count * self._rb_view.num_shapes
         await self._setup_random_attribute(attribute_name="contact_offset", value=value)
         new_value = self._rb_view._physics_view.get_contact_offsets().clone().cpu().numpy()
+        print(f"value: {value}, new_value: {new_value}")
         self.assertTrue(np.all(np.isclose(new_value, value)))
 
     async def test_randomize_rest_offset(self):
@@ -157,4 +165,5 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         value = self._rb_view._physics_view.get_contact_offsets().clone().cpu().numpy() / 2
         await self._setup_random_attribute(attribute_name="rest_offset", value=value)
         new_value = self._rb_view._physics_view.get_rest_offsets().clone().cpu().numpy()
+        print(f"value: {value}, new_value: {new_value}")
         self.assertTrue(np.all(np.isclose(new_value, value)))
