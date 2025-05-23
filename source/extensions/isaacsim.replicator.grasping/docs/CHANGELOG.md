@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [1.0.2] - 2025-05-20
 ### Changed
 - Workflow fixes and improvements

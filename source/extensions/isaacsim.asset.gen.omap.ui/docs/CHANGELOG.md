@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.1] - 2025-05-19
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [2.2.0] - 2025-04-28
 ### Changed
 - Updated image visualization window to show ROS yaml file and 180 degree rotation as default config for image generation

@@ -39,7 +39,6 @@ includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
 }
 
-
 filter { "system:linux" }
 includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.8"
+version = "1.0.9"
 category = "Utility"
 title = "VS Code integration"
 description = "VS Code version of Omniverse's script editor"

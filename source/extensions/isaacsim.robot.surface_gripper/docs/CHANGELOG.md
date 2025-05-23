@@ -1,4 +1,12 @@
 # Changelog
+## [3.1.1] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
+## [3.1.0] - 2025-05-20
+### Added
+- Tensor API for surface gripper control
+
 ## [3.0.5] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
@@ -10,10 +18,6 @@
 ## [3.0.3] - 2025-05-15
 ### Changed
 - UsdUtilities.h was updated
-
-## [3.1.0] - 2025-05-15
-### Added
-- Tensor API for surface gripper control
 
 ## [3.0.2] - 2025-05-11
 ### Changed

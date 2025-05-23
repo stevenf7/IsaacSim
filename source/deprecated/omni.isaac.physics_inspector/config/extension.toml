@@ -1,5 +1,5 @@
 [package]
-version = "0.1.10"
+version = "0.1.11"
 category = "Simulation"
 title = "Isaac Sim Physics Inspector"
 description = "Inspect Physics Objects During Simulation"

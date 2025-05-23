@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Simulation"
 title = "Replicator Grasping Workflow"
 description = "Synthetic data generation workflow for grasping scenarios"
@@ -28,8 +28,8 @@ name = "isaacsim.replicator.grasping"
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.storage.native",
     "isaacsim.core.utils",
+    "isaacsim.storage.native",
     "omni.kit.primitive.mesh",
 ]
 

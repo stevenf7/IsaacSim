@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.7] - 2025-05-20
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [2.4.6] - 2025-05-19
 ### Changed
 - Remove usage of strlen

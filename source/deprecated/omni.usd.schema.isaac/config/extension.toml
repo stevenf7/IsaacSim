@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "3.0.4"
+version = "3.0.5"
 category = "Simulation"
 title = "USD Isaac schema"
 description="USD Isaac schema"

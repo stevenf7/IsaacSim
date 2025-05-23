@@ -1,7 +1,13 @@
 # Changelog
+
+## [15.0.6] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [15.0.5] - 2025-05-20
 ### Changed
 - OmniSensor auxiliary data level now controlled by prim attributes, rather than carb setting
+
 ### Fixed
 - LidarRtx no longer throws error if deprecated methods are called
 - isaacsim.sensors.rtx.get_gmo_data guards against null input

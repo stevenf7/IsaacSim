@@ -1,7 +1,11 @@
 # Changelog
 
+## [4.6.5] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [4.6.4] - 2025-05-22
-### Fixded
+### Fixed
 - Fix memory leak in laser scan publisher
 
 ## [4.6.3] - 2025-05-21
