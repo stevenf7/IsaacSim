@@ -109,6 +109,7 @@ def get_style():
         "Image::add_sensors": {"image_url": f"{EXTENSION_FOLDER_PATH}/icons/add_sensors.svg"},
         "Image::attach_robots": {"image_url": f"{EXTENSION_FOLDER_PATH}/icons/attach_robots.svg"},
         "Image::convert_to_rigid_body": {"image_url": f"{EXTENSION_FOLDER_PATH}/icons/convert_to_rigid_body.svg"},
+        "Image::generic_tool": {"image_url": f"{EXTENSION_FOLDER_PATH}/icons/icoGeneric.svg"},
         "Image::define": {"image_url": f"{EXTENSION_FOLDER_PATH}/icons/prepare_files.png"},
         "Image::drag_and_drop": {
             "image_url": f"{EXTENSION_FOLDER_PATH}/icons/drag_and_drop.png",

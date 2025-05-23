@@ -94,11 +94,12 @@ class ExtendedFileInfo(DetailFrameController):
 
             # check for variants
             variant_set_names = []
-            if entry.size < 50000 and entry.relative_path.endswith(USD_FILETYPES):
-                stage = Usd.Stage.Open(self._current_url, load=Usd.Stage.LoadNone)
-                if stage.HasDefaultPrim():
-                    vset = stage.GetDefaultPrim().GetVariantSets()
-                    variant_set_names = vset.GetNames()
+            if entry:
+                if entry.size < 50000 and entry.relative_path.endswith(USD_FILETYPES):
+                    stage = Usd.Stage.Open(self._current_url, load=Usd.Stage.LoadNone)
+                    if stage.HasDefaultPrim():
+                        vset = stage.GetDefaultPrim().GetVariantSets()
+                        variant_set_names = vset.GetNames()
 
             entry = entry or self._empty_list_entry
             with self._widget:
