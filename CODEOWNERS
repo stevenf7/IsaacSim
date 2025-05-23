@@ -52,7 +52,6 @@ source/extensions/isaacsim.replicator.behavior.ui/ hmazhar@nvidia.com ahaidu@nvi
 source/extensions/isaacsim.replicator.behavior/ ahaidu@nvidia.com hmazhar@nvidia.com
 source/extensions/isaacsim.replicator.domain_randomization/ hmazhar@nvidia.com ahaidu@nvidia.com
 source/extensions/isaacsim.replicator.examples/ hmazhar@nvidia.com ahaidu@nvidia.com
-source/extensions/isaacsim.replicator.scene_blox/ hmazhar@nvidia.com ahaidu@nvidia.com
 source/extensions/isaacsim.replicator.synthetic_recorder/ hmazhar@nvidia.com ahaidu@nvidia.com
 source/extensions/isaacsim.replicator.writers/ hmazhar@nvidia.com ahaidu@nvidia.com
 source/extensions/isaacsim.robot.manipulators.examples/ hmazhar@nvidia.com qwan@nvidia.com

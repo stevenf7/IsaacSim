@@ -37,6 +37,12 @@ version_file = "${root}/VERSION"
 [repo_build.premake]
 linux_x86_64_cxx_abi=true
 
+[repo_build.stage_files]
+allowed_paths=[
+  "${root}/_build",
+  "${root}/docs/source",
+]
+
 [repo_build.docker]
 "platform:linux-x86_64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00"
 "platform:linux-aarch64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00"
