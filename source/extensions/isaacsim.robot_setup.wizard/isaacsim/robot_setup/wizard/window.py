@@ -242,7 +242,7 @@ class RobotWizardWindow:
                 with ui.ZStack(width=36):
                     if use_img:
                         # ui.Image(name=step_name.lower().replace(" ", "_"))
-                        ui.Image(name="add_sensors", image_url=f"{EXTENSION_FOLDER_PATH}/icons/urdf_importer.svg")
+                        ui.Image(name="generic_tool", image_url=f"{EXTENSION_FOLDER_PATH}/icons/icoGeneric.svg")
                     else:
                         with ui.VStack():
                             if step_num == 1:
@@ -282,7 +282,7 @@ class RobotWizardWindow:
 
     def _open_robot_assembler(self, *args, **kwargs):
         omni.kit.actions.core.get_action_registry().execute_action(
-            "isaacsim.robot_setup.assembler-2.1.13", "isaacsim.robot_setup.assembler-2.1.13Robot_Assembler"
+            "isaacsim.robot_setup.assembler", "CreateUIExtension:Robot Assembler"
         )
 
     def _open_usd_to_urdf_exporter(self, *args, **kwargs):

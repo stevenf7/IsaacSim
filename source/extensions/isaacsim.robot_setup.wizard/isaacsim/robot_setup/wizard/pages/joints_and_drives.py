@@ -606,6 +606,8 @@ class CreateJointWindow:
         self._parent_xform_model = None
         self._child_xform_stack = None
         self._joint_name_widget = None
+        self._drive_widget = None
+        self._axis_widget = None
         self._drive_type_widget = None
         self._joint_type_widget = None
         self._create_button = None
@@ -695,6 +697,12 @@ class CreateJointWindow:
         if joint_type == "Fixed":
             self._parent_xform_model.set_value("World")
             self._parent_xform_widget.enabled = False  # don't need parent xform for fixed joint
+            self._axis_widget.visible = False
+            self._drive_widget.visible = False
+        else:
+            self._parent_xform_widget.enabled = True
+            self._axis_widget.visible = True
+            self._drive_widget.visible = True
 
     def _on_create_clicked(self, closed=False):
         # when create clicked, update the joint model
@@ -829,7 +837,8 @@ class CreateJointWindow:
                         idx = AXIS_LIST.index(axis_value)
                         self._axis_collection.model.set_value(idx)
 
-                with ui.HStack(height=30):
+                self._drive_widget = ui.HStack(enabled=True, height=30, spacing=4)
+                with self._drive_widget:
                     ui.Label("Drive Type", width=80, height=20)
                     idx = (
                         DRIVE_TYPES.index(self._current_joint_item.drive_type.get_value_as_string())

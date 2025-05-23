@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.7] - 2025-05-22
+### Changed
+- fix for empty entry paramtere when building ui
 
 ## [0.1.6] - 2025-05-20
 ### Changed

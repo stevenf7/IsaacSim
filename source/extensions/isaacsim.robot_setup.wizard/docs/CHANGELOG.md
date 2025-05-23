@@ -1,4 +1,10 @@
 # Changelog
+
+## [0.0.5] - 2025-05-22
+### Changed
+- Hide drive type and axis for fixed joints
+- new icon for "additional tools"
+
 ## [0.0.4] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version
