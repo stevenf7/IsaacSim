@@ -1514,7 +1514,7 @@ output_file = "${root}/docs/source/standalone_examples_list.rst"
 [repo_stage_for_github]
 enabled = true
 
-github_repo_url = "https://gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
+github_repo_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
 
 exclude = [
     ".git",
