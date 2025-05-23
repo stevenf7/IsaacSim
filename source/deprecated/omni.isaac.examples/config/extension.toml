@@ -1,5 +1,5 @@
 [package]
-version = "4.0.6"
+version = "4.0.7"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.8] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [1.0.7] - 2025-05-21
 ### Changed
 - Extension deprecated since Isaac Sim 5.0.0.

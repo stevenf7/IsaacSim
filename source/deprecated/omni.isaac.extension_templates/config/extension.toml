@@ -1,5 +1,5 @@
 [package]
-version = "2.0.6"
+version = "2.0.7"
 category = "Simulation"
 title = "Generate Extension"
 description = "UI tool for generating extension templates for different common workflows"

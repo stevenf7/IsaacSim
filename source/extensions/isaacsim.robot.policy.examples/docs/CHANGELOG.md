@@ -1,4 +1,8 @@
 # Changelog
+## [4.1.6] - 2025-05-19
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [4.1.5] - 2025-05-16
 ### Changed
 - Make extension target a specific kit version

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.20] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [1.1.19] - 2025-05-21
 ### Changed
 - Added simready assets example snippettest

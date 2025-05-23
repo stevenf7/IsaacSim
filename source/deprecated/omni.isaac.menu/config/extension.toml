@@ -1,5 +1,5 @@
 [package]
-version = "1.0.5"
+version = "1.0.6"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Isaac Sim Utility Extensions"

@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.19] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [2.0.18] - 2025-05-21
 ### Changed
 - Fix test failures

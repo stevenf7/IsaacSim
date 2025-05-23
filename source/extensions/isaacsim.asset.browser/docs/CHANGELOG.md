@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.13] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [1.3.12] - 2025-05-20
 ### Changed
 - Update assets path to staging

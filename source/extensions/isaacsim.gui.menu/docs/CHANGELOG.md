@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.3] - 2025-05-19
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [2.3.2] - 2025-05-10
 ### Added
 - SDG Grasping menu item in Replicator submenu

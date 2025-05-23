@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [1.2.2] - 2025-05-20
 ### Changed
 - Update urdf exporter pip prebundle

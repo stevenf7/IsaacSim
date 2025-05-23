@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.6] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [0.0.5] - 2025-05-22
 ### Changed
 - Hide drive type and axis for fixed joints

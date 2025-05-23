@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.5] - 2025-05-19
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [3.0.4] - 2025-04-04
 ### Changed
 - Version bump to fix extension publishing issues

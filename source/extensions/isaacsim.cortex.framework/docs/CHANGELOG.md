@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.8] - 2025-05-19
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [1.0.7] - 2025-05-10
 ### Changed
 - Enable FSD in test settings

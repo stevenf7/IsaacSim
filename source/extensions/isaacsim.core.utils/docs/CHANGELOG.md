@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.1] - 2025-05-22
+### Changed
+- Update copyright and license to apache v2.0
+
 ## [3.3.0] - 2025-05-22
 ### Added
 - Add missing to_numpy function to warp utils
