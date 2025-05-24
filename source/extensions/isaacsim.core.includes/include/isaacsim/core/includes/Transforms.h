@@ -75,8 +75,8 @@ static void createTensorDesc(TensorDesc& tensorDesc, void* dataPtr, int numEleme
  *    - Handles parent space correctly
  *
  * @param[in,out] prim USD prim to transform
- * @param[in] pxBodyTranslation New position in world space
- * @param[in] pxBodyRotation New rotation in world space
+ * @param[in] bodyTranslation New position in world space
+ * @param[in] bodyRotation New rotation in world space
  *
  * @note For physics objects, this function only works during simulation
  * @warning Resets linear and angular velocities to zero for physics objects
