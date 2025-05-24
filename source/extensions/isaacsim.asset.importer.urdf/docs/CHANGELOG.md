@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.8] - 2025-05-22
+### Fixed
+- Importer was setting the base pose at the wrong layer. 
+
 ## [2.4.7] - 2025-05-20
 ### Changed
 - Update copyright and license to apache v2.0

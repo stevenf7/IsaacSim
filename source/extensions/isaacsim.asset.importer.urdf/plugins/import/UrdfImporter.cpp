@@ -1426,7 +1426,7 @@ std::string UrdfImporter::addToStage(std::unordered_map<std::string, pxr::UsdSta
         pxr::UsdPrim prim = stages["stage"]->GetPrimAtPath(robotPrim.GetPrim().GetPath());
         isaacsim::robot::schema::ApplyRobotAPI(prim);
     }
-    setAuthoringLayer(stages["stage"], stages["stage"]->GetRootLayer()->GetIdentifier());
+    setAuthoringLayer(stages["stage"], stages["base_stage"]->GetRootLayer()->GetIdentifier());
 
     pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(robotPrim);
     gprim.ClearXformOpOrder();

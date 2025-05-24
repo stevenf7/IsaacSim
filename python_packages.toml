@@ -195,6 +195,7 @@ inventory.include = [
     "exts/isaacsim.asset.importer.heightmap",
     "exts/isaacsim.asset.importer.urdf",
     "exts/isaacsim.asset.importer.mjcf",
+    "exts/isaacsim.asset.validation",
     # deprecated extensions
     "extsDeprecated/omni.exporter.urdf",
     "extsDeprecated/omni.isaac.asset_browser",
