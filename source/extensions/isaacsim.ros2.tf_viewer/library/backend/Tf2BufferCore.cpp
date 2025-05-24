@@ -75,7 +75,7 @@ bool Ros2BufferCoreImpl::setTransform(void* msg, const std::string& authority, b
         catch (tf2::TransformException& ex)
         {
             std::string errorString = ex.what();
-            CARB_LOG_ERROR(errorString.c_str());
+            CARB_LOG_ERROR("%s", errorString.c_str());
             return false;
         }
     }
@@ -134,7 +134,7 @@ bool Ros2BufferCoreImpl::getTransform(const std::string& targetFrame,
     catch (...)
     {
         std::string errorString = "UNKNOW EXCEPTION";
-        CARB_LOG_ERROR(errorString.c_str());
+        CARB_LOG_ERROR("%s", errorString.c_str());
         return false;
     }
     return true;

@@ -355,7 +355,7 @@ inline bool createOgAttributesForFields(OgnROS2DatabaseDerivedType& db,
         if (!status)
         {
             CARB_LOG_ERROR(
-                ("Unable to create attribute " + messageField.name + " of type " + messageField.ognType).c_str());
+                "Unable to create attribute %s of type %s", messageField.name.c_str(), messageField.ognType.c_str());
             removeDynamicAttributes<!isOutput && clearExistingAttrs, isOutput && clearExistingAttrs>(nodeObj);
             return false;
         }
@@ -402,7 +402,7 @@ inline bool createOgAttributesForMessage(OgnROS2DatabaseDerivedType& db,
     bool status = std::static_pointer_cast<Ros2DynamicMessage>(message)->isValid();
     if (!status)
     {
-        CARB_LOG_ERROR((messageType + " does not exist or is not available in the ROS 2 environment").c_str());
+        CARB_LOG_ERROR("%s does not exist or is not available in the ROS 2 environment", messageType.c_str());
         message.reset();
         return false;
     }

@@ -323,9 +323,6 @@ bool MJCFImporter::AddPhysicsEntities(std::unordered_map<std::string, pxr::UsdSt
                             pxr::GfVec3f(jointDef.position.x, jointDef.position.y, jointDef.position.z)) *
             body1Transform;
 
-        // Calculate relative transforms from each body to the joint
-        pxr::GfMatrix4f poseJointToParentBody = jointWorldTransform * body1Transform.GetInverse();
-
         pxr::GfMatrix4f poseJointToChildBody = jointWorldTransform * body2Transform.GetInverse();
 
         if (jointDef.type == "revolute")

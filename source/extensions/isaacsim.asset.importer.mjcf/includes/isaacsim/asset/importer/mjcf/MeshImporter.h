@@ -257,7 +257,7 @@ public:
                     OMNI_CONVERTER_FLAGS_FBX_BAKING_SCALES_INTO_MESH | OMNI_CONVERTER_FLAGS_IGNORE_PIVOTS;
 
         // Set up the log and progress callbacks for the Omni Converter
-        omniConverterSetLogCallback([](const char* message) { CARB_LOG_INFO(message); });
+        omniConverterSetLogCallback([](const char* message) { CARB_LOG_INFO("%s", message); });
         omniConverterSetProgressCallback([](OmniConverterFuture* future, uint32_t progress, uint32_t total)
                                          { CARB_LOG_INFO("Progress: %d / %d", progress, total); });
 
