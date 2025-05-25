@@ -18,11 +18,17 @@ from isaacsim import SimulationApp
 # Test app startup without creating new stage
 kit = SimulationApp({"create_new_stage": False})
 
+import isaacsim.core.utils.stage as stage_utils
 import omni
 
 for i in range(100):
     kit.update()
 
 omni.kit.app.get_app().print_and_log("Config: No empty stage was created")
+
+stage_utils.create_new_stage()
+
+for i in range(100):
+    kit.update()
 
 kit.close()  # Cleanup application

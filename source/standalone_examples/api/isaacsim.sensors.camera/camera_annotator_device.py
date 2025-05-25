@@ -831,9 +831,10 @@ for camera in [camera_default, camera_cpu, camera_cuda]:
     camera.add_occlusion_to_frame()
     camera.add_distance_to_image_plane_to_frame()
     camera.add_distance_to_camera_to_frame()
-    camera.add_bounding_box_2d_tight_to_frame()
-    camera.add_bounding_box_2d_loose_to_frame()
-    camera.add_bounding_box_3d_to_frame()
+    if camera._annotator_device is not None and camera._annotator_device != "cuda":
+        camera.add_bounding_box_2d_tight_to_frame()
+        camera.add_bounding_box_2d_loose_to_frame()
+        camera.add_bounding_box_3d_to_frame()
     camera.add_semantic_segmentation_to_frame()
     camera.add_instance_id_segmentation_to_frame()
     camera.add_instance_segmentation_to_frame()
