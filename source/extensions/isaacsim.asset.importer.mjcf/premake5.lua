@@ -24,7 +24,7 @@ includedirs {
     target_deps .. "/omni_client_library/include",
     target_deps .. "/omniverse_asset_converter/include",
     extsbuild_dir .. "%{root}/source/extensions/isaacsim.robot.schema/include",
-    "%{root}/source/extensions/isaacsim.asset.importer.mjcf/includes",
+    "%{root}/source/extensions/isaacsim.asset.importer.mjcf/include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
 }
 
@@ -80,7 +80,7 @@ project_ext_bindings {
 }
 
 includedirs {
-    "%{root}/source/extensions/isaacsim.asset.importer.mjcf/includes",
+    "%{root}/source/extensions/isaacsim.asset.importer.mjcf/include",
     "%{root}/source/extensions/isaacsim.core.includes/include",
 }
 

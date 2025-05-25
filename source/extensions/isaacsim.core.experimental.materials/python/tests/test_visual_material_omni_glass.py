@@ -21,7 +21,7 @@ import omni.kit.test
 import omni.usd
 import warp as wp
 from isaacsim.core.experimental.materials import OmniGlassMaterial
-from isaacsim.core.experimental.prims.tests.utils import (
+from isaacsim.core.experimental.prims.tests.common import (
     check_allclose,
     check_array,
     check_lists,

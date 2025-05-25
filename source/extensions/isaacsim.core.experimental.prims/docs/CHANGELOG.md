@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.2] - 2025-05-23
+### Changed
+- rename test utils.py to common.py
+
 ## [0.4.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

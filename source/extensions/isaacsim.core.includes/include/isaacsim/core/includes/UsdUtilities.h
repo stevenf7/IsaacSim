@@ -177,13 +177,19 @@ inline void copyTimeSamplesFromWeakerLayer(pxr::UsdStage& stage, const pxr::UsdA
 
 
 /**
- * Finds if the given path (prim/attribute/property/object/etc) has a spec on session layer or its sublayers.
+ * @brief Finds if the given path has a spec on session layer or its sublayers
+ * @details
+ * Searches through session layer and its sublayers to find if a specification (prim, attribute,
+ * property, or other USD object) exists at the given path. Optionally applies a predicate
+ * function to validate the found specification.
  *
- * @param stage of the prim.
- * @param path The path to be checked for spec.
- * @param predicate additional predicate to be called if spec is found on the layer.
+ * @param[in] stage USD stage containing the layers to search
+ * @param[in] path The USD path to check for specification existence
+ * @param[in] predicate Optional validation function called if spec is found on the layer
+ * @return SdfLayerRefPtr Layer that contains the spec at given path, or nullptr if not found
  *
- * @return the layer that has spec at given path, or nullptr if not found.
+ * @note Searches only session layers and their sublayers, stops at root layer
+ * @see getLayerIfDefOnSessionOrItsSublayers for prim-specific "def" search
  */
 inline PXR_NS::SdfLayerRefPtr getLayerIfSpecOnSessionOrItsSublayers(
     PXR_NS::UsdStageRefPtr stage,
@@ -219,13 +225,18 @@ inline PXR_NS::SdfLayerRefPtr getLayerIfSpecOnSessionOrItsSublayers(
 }
 
 /**
- * Finds if the given *prim* path has a "def" *primSpec* on session layer or its sublayers.
- * If you want to find attributeSpec use @ref getLayerIfSpecOnSessionOrItsSublayers instead.
+ * @brief Finds if the given prim path has a "def" primSpec on session layer or its sublayers
+ * @details
+ * Specialized version of getLayerIfSpecOnSessionOrItsSublayers that specifically looks for
+ * prim specifications with "def" specifier type. This excludes "over" prims and focuses
+ * only on defining prim specifications.
  *
- * @param[in] stage Stage of the prim.
- * @param[in] path The path to be checked for "def" primSpec.
+ * @param[in] stage USD stage containing the layers to search
+ * @param[in] path The prim path to check for "def" primSpec
+ * @return SdfLayerRefPtr Layer that contains the "def" prim spec, or nullptr if not found
  *
- * @return the layer that has "def" prim spec, or nullptr if not found.
+ * @note If you want to find attributeSpec use getLayerIfSpecOnSessionOrItsSublayers instead
+ * @see getLayerIfSpecOnSessionOrItsSublayers for general spec search
  */
 inline PXR_NS::SdfLayerRefPtr getLayerIfDefOnSessionOrItsSublayers(PXR_NS::UsdStageRefPtr stage,
                                                                    const PXR_NS::SdfPath& path)
@@ -241,13 +252,23 @@ inline PXR_NS::SdfLayerRefPtr getLayerIfDefOnSessionOrItsSublayers(PXR_NS::UsdSt
 
 
 /**
- * Sets attribute value.
+ * @brief Sets attribute value with optional time sampling and session layer targeting
+ * @details
+ * Provides functionality to set USD attribute values with advanced features:
+ * - Automatic session layer targeting for better edit workflow
+ * - Time sample management and optimization
+ * - Value comparison to avoid redundant writes
  *
- * @tparam T The data type of the attribute.
- * @param attribute The attribute to set value to.
- * @param val The value to set.
- * @param autoTargetSessionLayer whether the edit target should auto switch to session layer.
- * @return true if set is successfully.
+ * @tparam ValueType The data type of the attribute value
+ * @param[in] attribute The USD attribute to set value on
+ * @param[in] val The value to set
+ * @param[in] timeCode Time code for time-sampled attributes (default: UsdTimeCode::Default())
+ * @param[in] skipEqualSetForTimeSample Whether to skip setting if value is equal for time samples
+ * @param[in] autoTargetSessionLayer Whether the edit target should auto switch to session layer
+ * @return True if the value was successfully set, false otherwise
+ *
+ * @note For time-sampled attributes, will copy time samples from weaker layers if needed
+ * @warning Requires valid USD context and stage
  */
 template <class ValueType>
 inline bool setAttribute(const pxr::UsdAttribute& attribute,

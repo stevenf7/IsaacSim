@@ -21,7 +21,7 @@ import omni.kit.test
 import omni.usd
 import warp as wp
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
-from isaacsim.core.experimental.prims.tests.utils import check_allclose, check_array, draw_indices, draw_sample
+from isaacsim.core.experimental.prims.tests.common import check_allclose, check_array, draw_indices, draw_sample
 from isaacsim.core.simulation_manager import SimulationManager
 from pxr import UsdShade
 

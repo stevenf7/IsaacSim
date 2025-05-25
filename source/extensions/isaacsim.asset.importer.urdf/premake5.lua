@@ -26,6 +26,8 @@ includedirs {
     target_deps .. "/omniverse_asset_converter/include",
     "%{target_deps}/rapidjson/include",
     extsbuild_dir .. "%{root}/source/extensions/isaacsim.robot.schema/include",
+    "%{root}/source/extensions/isaacsim.asset.importer.urdf/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
 }
 
 libdirs {
@@ -78,9 +80,14 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "isaacsim/asset/importer/urdf",
 }
+includedirs {
+    "%{root}/source/extensions/isaacsim.asset.importer.urdf/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+}
+
 cppdialect("C++17")
 repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir .. "/isaacsim/asset/importer/urdf/scripts" },
+    { "python/impl", ext.target_dir .. "/isaacsim/asset/importer/urdf/impl" },
     { "python/tests", ext.target_dir .. "/isaacsim/asset/importer/urdf/tests" },
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },

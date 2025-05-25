@@ -9,7 +9,7 @@
 # its affiliates is strictly prohibited.
 
 [package]
-version = "2.4.8"  # Semantic Versionning is used: https://semver.org/
+version = "2.4.9"  # Semantic Versionning is used: https://semver.org/
 category = "Simulation"
 title = "Urdf Importer Extension"
 description = "URDF Importer"
@@ -17,7 +17,7 @@ authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
 repository = ""
 keywords = ["urdf", "importer", "isaac"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/Overview.md"
+readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -47,19 +47,19 @@ name = "isaacsim.asset.importer.urdf"
 name = "isaacsim.asset.importer.urdf.tests"
 
 [[python.module]]
-name = "isaacsim.asset.importer.urdf.scripts.ui"
+name = "isaacsim.asset.importer.urdf.impl.ui"
 
 [[python.module]]
-name = "isaacsim.asset.importer.urdf.scripts.samples.import_carter"
+name = "isaacsim.asset.importer.urdf.impl.samples.import_carter"
 
 [[python.module]]
-name = "isaacsim.asset.importer.urdf.scripts.samples.import_franka"
+name = "isaacsim.asset.importer.urdf.impl.samples.import_franka"
 
 [[python.module]]
-name = "isaacsim.asset.importer.urdf.scripts.samples.import_kaya"
+name = "isaacsim.asset.importer.urdf.impl.samples.import_kaya"
 
 [[python.module]]
-name = "isaacsim.asset.importer.urdf.scripts.samples.import_ur10"
+name = "isaacsim.asset.importer.urdf.impl.samples.import_ur10"
 
 [[native.plugin]]
 path = "bin/*.plugin"

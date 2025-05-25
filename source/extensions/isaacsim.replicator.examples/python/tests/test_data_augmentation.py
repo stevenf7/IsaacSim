@@ -20,7 +20,7 @@ import omni.kit
 import omni.usd
 from PIL import Image
 
-from .utils import print_diff_histogram
+from .common import print_diff_histogram
 
 
 class TestDataAugmentation(omni.kit.test.AsyncTestCase):

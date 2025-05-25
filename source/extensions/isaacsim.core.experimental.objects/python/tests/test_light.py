@@ -28,9 +28,9 @@ from isaacsim.core.experimental.objects import (
     RectLight,
     SphereLight,
 )
-from isaacsim.core.experimental.prims.tests.utils import check_allclose, check_array, draw_indices, draw_sample
+from isaacsim.core.experimental.prims.tests.common import check_allclose, check_array, draw_indices, draw_sample
 
-from .utils import parametrize
+from .common import parametrize
 
 TargetLight = SphereLight
 

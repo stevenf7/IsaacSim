@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .scripts.commands import *
-from .scripts.extension import *
+from .impl.commands import *
+from .impl.extension import *

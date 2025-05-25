@@ -18,7 +18,7 @@ import omni.kit.test
 import warp as wp
 from isaacsim.core.experimental.prims.impl import _ops
 
-from .utils import check_array, check_equal
+from .common import check_array, check_equal
 
 
 class TestOps(omni.kit.test.AsyncTestCase):

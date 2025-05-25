@@ -20,9 +20,9 @@ import omni.kit.test
 import omni.usd
 import warp as wp
 from isaacsim.core.experimental.objects import DiskLight as TargetLight
-from isaacsim.core.experimental.prims.tests.utils import check_allclose, check_array, draw_indices, draw_sample
+from isaacsim.core.experimental.prims.tests.common import check_allclose, check_array, draw_indices, draw_sample
 
-from .utils import parametrize
+from .common import parametrize
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"]) -> None:

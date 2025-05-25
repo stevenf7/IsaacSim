@@ -1,8 +1,13 @@
 # Changelog
+## [2.4.9] - 2025-05-23
+### Changed
+- Refactor headers into isaacsim.core.includes
+- Restructure to follow extension structure guidelines
+- Add docstrings
 
 ## [2.4.8] - 2025-05-22
 ### Fixed
-- Importer was setting the base pose at the wrong layer. 
+- Importer was setting the base pose at the wrong layer.
 
 ## [2.4.7] - 2025-05-20
 ### Changed

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.15] - 2025-05-24
+### Changed
+- Update to work with changes to urdf importer
+
 ## [1.1.14] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
