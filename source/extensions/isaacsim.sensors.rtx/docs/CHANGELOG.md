@@ -1,4 +1,7 @@
 # Changelog
+## [15.0.7] - 2025-05-23
+### Changed
+- Add docstrings
 
 ## [15.0.6] - 2025-05-22
 ### Changed

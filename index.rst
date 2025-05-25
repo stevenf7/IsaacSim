@@ -27,6 +27,8 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.asset.gen.omap/docs/index
    source/extensions/isaacsim.asset.gen.omap.ui/docs/index
    source/extensions/isaacsim.asset.importer.heightmap/docs/index
+   source/extensions/isaacsim.asset.importer.urdf/docs/index
+   source/extensions/isaacsim.asset.importer.mjcf/docs/index
 
 .. toctree::
    :maxdepth: 1
@@ -92,6 +94,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.replicator.behavior.ui/docs/index
    source/extensions/isaacsim.replicator.domain_randomization/docs/index
    source/extensions/isaacsim.replicator.examples/docs/index
+   source/extensions/isaacsim.replicator.grasping/docs/index
    source/extensions/isaacsim.replicator.mobility_gen/docs/index
    source/extensions/isaacsim.replicator.synthetic_recorder/docs/index
    source/extensions/isaacsim.replicator.writers/docs/index

@@ -22,7 +22,7 @@ import carb
 import omni
 import omni.ui as ui
 from isaacsim.asset.importer.urdf import UrdfImporter
-from isaacsim.asset.importer.urdf.scripts.ui import cb_builder, get_option_style, str_builder
+from isaacsim.asset.importer.urdf.impl.ui import cb_builder, get_option_style, str_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 # from std_msgs.msg import String

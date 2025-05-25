@@ -25,7 +25,7 @@ from isaacsim.core.experimental.prims import XformPrim, use_backend
 from isaacsim.core.simulation_manager import IsaacEvents
 from pxr import UsdPhysics
 
-from .utils import (
+from .common import (
     check_allclose,
     check_array,
     check_equal,

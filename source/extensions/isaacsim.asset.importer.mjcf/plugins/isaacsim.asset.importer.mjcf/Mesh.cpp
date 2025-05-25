@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <isaacsim/asset/importer/mjcf/core/Mesh.h>
-#include <isaacsim/asset/importer/mjcf/core/Platform.h>
+#include <isaacsim/asset/importer/mjcf/Mesh.h>
+#include <isaacsim/core/includes/core/Platform.h>
 
 #include <fstream>
 #include <iostream>

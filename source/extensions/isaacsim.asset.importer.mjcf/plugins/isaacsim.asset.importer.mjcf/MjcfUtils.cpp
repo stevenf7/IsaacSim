@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #include <isaacsim/asset/importer/mjcf/MjcfUtils.h>
-#include <isaacsim/asset/importer/mjcf/math/core/Maths.h>
+#include <isaacsim/core/includes/math/core/Maths.h>
 
 namespace isaacsim
 {

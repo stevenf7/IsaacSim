@@ -15,6 +15,7 @@
 
 import omni
 import omni.graph.core as og
+import omni.kit.commands
 import pxr
 from pxr import PhysxSchema, UsdPhysics
 

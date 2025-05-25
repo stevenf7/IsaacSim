@@ -1,4 +1,9 @@
 # Changelog
+## [2.0.7] - 2025-05-23
+### Changed
+- Refactor and add common headers from mjcf importer and urdf importer
+- Add docstrings
+
 ## [2.0.6] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

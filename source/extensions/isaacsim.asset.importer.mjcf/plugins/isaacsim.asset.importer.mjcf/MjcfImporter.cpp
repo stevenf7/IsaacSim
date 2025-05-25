@@ -17,8 +17,8 @@
 #include "isaacsim/robot/schema/robot_schema.h"
 
 #include <isaacsim/asset/importer/mjcf/MjcfImporter.h>
-#include <isaacsim/asset/importer/mjcf/math/core/Maths.h>
-#include <isaacsim/asset/importer/mjcf/utils/Path.h>
+#include <isaacsim/core/includes/math/core/Maths.h>
+#include <isaacsim/core/includes/utils/Path.h>
 #include <pxr/usd/usdGeom/plane.h>
 #include <pxr/usd/usdPhysics/fixedJoint.h>
 #include <pxr/usd/usdPhysics/sphericalJoint.h>
@@ -132,7 +132,7 @@ MJCFImporter::MJCFImporter(const std::string fullPath, ImportConfig& config)
     defaultClassName = "main";
 
     std::string filePath = fullPath;
-    baseDirPath = isaacsim::asset::utils::path::MakeRelativePath(filePath, "");
+    baseDirPath = isaacsim::core::includes::utils::path::MakeRelativePath(filePath, "");
 
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* root = LoadFile(doc, filePath);
@@ -312,9 +312,9 @@ bool MJCFImporter::AddPhysicsEntities(std::unordered_map<std::string, pxr::UsdSt
             continue;
         }
         pxr::GfMatrix4f body1Transform =
-            pxr::GfMatrix4f(isaacsim::asset::importer::mjcf::usd::GetGlobalTransform(body1Prim));
+            pxr::GfMatrix4f(isaacsim::core::includes::utils::usd::GetGlobalTransform(body1Prim));
         pxr::GfMatrix4f body2Transform =
-            pxr::GfMatrix4f(isaacsim::asset::importer::mjcf::usd::GetGlobalTransform(body2Prim));
+            pxr::GfMatrix4f(isaacsim::core::includes::utils::usd::GetGlobalTransform(body2Prim));
 
         // Joint position in world space
         pxr::GfMatrix4f jointWorldTransform =

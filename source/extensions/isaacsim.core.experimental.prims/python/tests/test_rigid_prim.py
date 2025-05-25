@@ -23,7 +23,7 @@ import warp as wp
 from isaacsim.core.experimental.prims import RigidPrim, use_backend
 from pxr import UsdPhysics
 
-from .utils import check_allclose, check_array, cprint, draw_indices, draw_sample, parametrize
+from .common import check_allclose, check_array, cprint, draw_indices, draw_sample, parametrize
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:

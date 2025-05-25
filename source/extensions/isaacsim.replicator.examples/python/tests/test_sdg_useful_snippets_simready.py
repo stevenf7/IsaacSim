@@ -11,7 +11,7 @@
 import omni.kit
 import omni.usd
 
-from .utils import validate_folder_contents
+from .common import validate_folder_contents
 
 
 class TestSDGUsefulSnippetsSimready(omni.kit.test.AsyncTestCase):

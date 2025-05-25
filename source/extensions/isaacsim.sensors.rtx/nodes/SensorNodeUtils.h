@@ -31,10 +31,28 @@ namespace rtx
 {
 using namespace omni::sensors;
 
+/**
+ * @brief Converts degrees to radians
+ * @param[in] deg Angle in degrees
+ * @return Angle converted to radians
+ */
 inline constexpr float deg2Rad(float deg)
 {
     return (deg / 180.f) * 3.141592653589f;
 }
+/**
+ * @brief Calculates the index of a specific return in a flattened array
+ * @details
+ * Computes the linear index for accessing a specific echo return from a multi-dimensional
+ * LiDAR data structure that has been flattened into a 1D array.
+ *
+ * @param[in] beamId Identifier of the laser beam
+ * @param[in] echoId Identifier of the echo/return within the beam
+ * @param[in] numEchos Total number of echoes per beam
+ * @param[in] numBeams Total number of beams (default: 0)
+ * @param[in] tick Time tick identifier (default: 0)
+ * @return Linear index for accessing the specified return in flattened array
+ */
 inline uint32_t idxOfReturn(const uint32_t beamId,
                             const uint32_t echoId,
                             const uint32_t numEchos,
@@ -44,6 +62,21 @@ inline uint32_t idxOfReturn(const uint32_t beamId,
     return beamId * numEchos + echoId + tick * numEchos * numBeams;
 }
 
+/**
+ * @brief Wraps CUDA asynchronous memory copy with spillover handling
+ * @details
+ * Template function for performing CUDA memory copies that can handle data spillover
+ * when the destination buffer is smaller than the source data, implementing a circular
+ * buffer pattern.
+ *
+ * @tparam T Data type being copied
+ * @param[out] dst Destination pointer for the copied data
+ * @param[in] src Source pointer containing data to copy
+ * @param[in] startLoc Starting location in destination buffer
+ * @param[in] num Number of elements to copy to primary location
+ * @param[in] numSpillover Number of elements to copy to beginning of buffer (spillover)
+ * @param[in] kind Type of memory copy operation (host-to-device, device-to-host, etc.)
+ */
 template <class T>
 void wrapCudaMemcpyAsync(T* dst, const T* src, uint32_t startLoc, uint32_t num, uint32_t numSpillover, cudaMemcpyKind kind)
 {
@@ -54,6 +87,15 @@ void wrapCudaMemcpyAsync(T* dst, const T* src, uint32_t startLoc, uint32_t num, 
 }
 
 
+/**
+ * @brief Extracts transformation matrix from sensor pose information
+ * @details
+ * Converts sensor pose data from FrameAtTime structure into a 4x4 transformation matrix
+ * suitable for coordinate system transformations in 3D graphics and robotics applications.
+ *
+ * @param[in] parm Sensor pose information containing position and orientation
+ * @param[out] matrixOutput Resulting 4x4 transformation matrix
+ */
 void getTransformFromSensorPose(const omni::sensors::FrameAtTime& parm, omni::math::linalg::matrix4d& matrixOutput);
 
 
@@ -81,8 +123,21 @@ public:
     // /** @brief Buffer storing the raw profile data */
     // std::vector<uint8_t> profileBuffer;
 
+    /**
+     * @struct EmitterState
+     * @brief Configuration state for individual LiDAR emitters
+     * @details
+     * Contains the angular configuration for LiDAR emitters, defining their pointing directions
+     * in spherical coordinates. This structure stores elevation and azimuth angles that determine
+     * where each emitter points in 3D space.
+     */
     struct EmitterState
     {
+        /**
+         * @brief Elevation angles for each emitter in degrees
+         * @details Array of elevation angles (vertical angles) for LiDAR emitters, measured from horizontal plane.
+         *          Negative values point downward, positive values point upward.
+         */
         std::vector<float> elevationDeg{
             -15.0f,  -14.19f, -13.39f, -12.58f, -11.77f, -10.97f, -10.16f, -9.35f,  -8.55f,  -7.74f,  -6.94f,  -6.13f,
             -5.32f,  -4.52f,  -3.71f,  -2.9f,   -2.1f,   -1.29f,  -0.48f,  0.32f,   1.13f,   1.94f,   2.74f,   3.55f,
@@ -96,6 +151,11 @@ public:
             -5.32f,  -4.52f,  -3.71f,  -2.9f,   -2.1f,   -1.29f,  -0.48f,  0.32f,   1.13f,   1.94f,   2.74f,   3.55f,
             4.35f,   5.16f,   5.97f,   6.77f,   7.58f,   8.39f,   9.19f,   10.0f
         };
+        /**
+         * @brief Azimuth angles for each emitter in degrees
+         * @details Array of azimuth angles (horizontal angles) for LiDAR emitters, measured from forward direction.
+         *          Negative values point to the left, positive values point to the right.
+         */
         std::vector<float> azimuthDeg{
             -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f,
             -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f, -3.0f,
@@ -108,9 +168,20 @@ public:
             3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f,  3.0f
         };
     };
+    /**
+     * @enum LidarRotationDirection
+     * @brief Defines the rotation direction of the LiDAR scanner
+     * @details Specifies whether the LiDAR sensor rotates clockwise or counterclockwise during scanning.
+     */
     enum class LidarRotationDirection
     {
+        /**
+         * @brief Clockwise rotation direction
+         */
         CW,
+        /**
+         * @brief Counterclockwise rotation direction
+         */
         CCW
     };
     /** @brief Minimum range of the LiDAR sensor */
@@ -129,16 +200,44 @@ public:
     uint32_t scanRateBaseHz{ 10 };
     /** @brief Number of emitters in the LiDAR sensor */
     uint32_t numberOfEmitters{ 128 };
+    /**
+     * @brief Number of configured emitter states
+     * @details Count of valid entries in the emitterStates vector that define emitter configurations.
+     */
     uint32_t emitterStateCount{ 0 };
+    /**
+     * @brief Maximum number of returns per laser beam
+     * @details Specifies the maximum number of echo returns that can be detected from a single laser pulse.
+     */
     uint32_t maxReturns{ 2 };
+    /**
+     * @brief Number of rays per scan line
+     * @details Vector specifying the number of laser rays for each horizontal scan line in the LiDAR pattern.
+     */
     std::vector<uint32_t> numRaysPerLine;
+    /**
+     * @brief Configuration states for all emitters
+     * @details Vector containing EmitterState configurations that define the angular positioning of each emitter.
+     */
     std::vector<EmitterState> emitterStates;
+    /**
+     * @brief Number of vertical scan lines
+     * @details Total number of horizontal scan lines that make up the complete LiDAR scan pattern.
+     */
     uint32_t numLines{ 1 };
+    /**
+     * @brief Rotation direction of the LiDAR scanner
+     * @details Specifies whether the scanner rotates clockwise or counterclockwise during operation.
+     */
     LidarRotationDirection rotationDirection{ LidarRotationDirection::CW };
     /** @brief Whether the LiDAR sensor is 2D */
     bool is2D{ false };
 
 
+    /**
+     * @brief JSON document for configuration parsing
+     * @details Smart pointer to rapidjson document used for parsing LiDAR configuration files.
+     */
     std::unique_ptr<rapidjson::Document> m_doc{ nullptr };
 
 
@@ -172,11 +271,23 @@ public:
     // json
 
     /**
-     * get json from given filename -- looking at internal path or at given paths
-     * @param json [in] json file name with path
+     * @brief Get json from given filename -- looking at internal path or at given paths
+     * @param[in] fileName JSON file name with path
+     * @return String containing the JSON content from the file
      */
     omni::string getProfileJsonAtPaths(const char* fileName);
 
+    /**
+     * @brief Reads the entire contents of a text file
+     * @details
+     * Utility function for reading complete text files into memory as a string.
+     * Used for loading configuration files and other text-based data.
+     *
+     * @param[in] fullPath Complete file path to the text file to read
+     * @return String containing the complete file contents
+     *
+     * @throws std::runtime_error If file cannot be opened or read
+     */
     static std::string ReadWholeTextFile(std::string fullPath);
 };
 
@@ -212,6 +323,11 @@ private:
     enum cudaMemcpyKind m_kind;
     /** @brief Pointer to raw data buffer */
     uint8_t* m_data;
+    /**
+     * @brief Current offset position in the data buffer
+     * @details Tracks the current position when parsing through the contiguous data buffer
+     *          during pointer setup operations.
+     */
     size_t m_offset;
 
 public:

@@ -24,7 +24,7 @@
 
 #include <isaacsim/asset/importer/mjcf/IMjcf.h>
 #include <isaacsim/asset/importer/mjcf/MjcfImporter.h>
-#include <isaacsim/asset/importer/mjcf/utils/Path.h>
+#include <isaacsim/core/includes/utils/Path.h>
 #include <isaacsim/robot/schema/robot_schema.h>
 #include <omni/ext/IExt.h>
 #include <omni/kit/IApp.h>
@@ -39,7 +39,7 @@
 #define EXTENSION_NAME "isaacsim.asset.importer.mjcf.plugin"
 
 using namespace carb;
-using namespace isaacsim::asset::utils::path;
+using namespace isaacsim::core::includes::utils::path;
 const struct carb::PluginImplDesc kPluginImpl = { EXTENSION_NAME, "MJCF Utilities", "NVIDIA",
                                                   carb::PluginHotReload::eEnabled, "dev" };
 

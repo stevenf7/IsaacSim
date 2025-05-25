@@ -18,11 +18,11 @@
 #include <isaacsim/asset/importer/mjcf/MeshImporter.h>
 #include <isaacsim/asset/importer/mjcf/MjcfParser.h>
 #include <isaacsim/asset/importer/mjcf/MjcfUtils.h>
-#include <isaacsim/asset/importer/mjcf/utils/Path.h>
+#include <isaacsim/core/includes/utils/Path.h>
 
 #include <string>
 
-using namespace isaacsim::asset::utils::path;
+using namespace isaacsim::core::includes::utils::path;
 
 namespace isaacsim
 {

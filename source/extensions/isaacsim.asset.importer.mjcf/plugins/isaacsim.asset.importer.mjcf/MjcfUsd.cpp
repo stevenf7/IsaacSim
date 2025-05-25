@@ -17,8 +17,8 @@
 
 #include <isaacsim/asset/importer/mjcf/MeshImporter.h>
 #include <isaacsim/asset/importer/mjcf/MjcfUsd.h>
-#include <isaacsim/asset/importer/mjcf/utils/Path.h>
-#include <isaacsim/asset/importer/mjcf/utils/Usd.h>
+#include <isaacsim/core/includes/utils/Path.h>
+#include <isaacsim/core/includes/utils/Usd.h>
 #include <physxSchema/physxMeshMergeCollisionAPI.h>
 
 namespace isaacsim
@@ -29,6 +29,7 @@ namespace importer
 {
 namespace mjcf
 {
+using namespace isaacsim::core::includes::utils::usd;
 
 pxr::SdfPath getNextFreePath(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& primPath)
 {
@@ -45,21 +46,6 @@ pxr::SdfPath getNextFreePath(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& pri
     }
 
     return uniquePath;
-}
-
-std::string makeValidUSDIdentifier(const std::string& name)
-{
-    auto validName = pxr::TfMakeValidIdentifier(name);
-    if (validName[0] == '_')
-    {
-        validName = "a" + validName;
-    }
-    if (pxr::TfIsValidIdentifier(name) == false)
-    {
-        CARB_LOG_WARN("The path %s is not a valid usd path, modifying to %s", name.c_str(), validName.c_str());
-    }
-
-    return validName;
 }
 
 void setStageMetadata(pxr::UsdStageWeakPtr stage, const isaacsim::asset::importer::mjcf::ImportConfig config)
