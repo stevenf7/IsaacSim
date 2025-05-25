@@ -174,13 +174,11 @@ function create_tests()
     -- isaacsim.sensors.camera
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.camera.camera_opencv_fisheye",
-        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py",
-        "--test"
+        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py"
     )
     python_sample_test(
-        "tests-nativepython-isaacsim.sensors.camera.camera_opencv",
-        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv.py",
-        "--test"
+        "tests-nativepython-isaacsim.sensors.camera.camera_opencv_pinhole",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_pinhole.py"
     )
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.camera.camera_ros",
@@ -523,15 +521,15 @@ function create_tests()
             "standalone_examples/testing/isaacsim.core.api/tensor_api_handles.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.behavior.behaviors",
+            "tests-nativepython-isaacsim.replicator.behavior.behaviors",
             "/standalone_examples/api/isaacsim.replicator.behavior/behaviors.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.cosmos_writer_warehouse",
+            "tests-nativepython-isaacsim.replicator.examples.cosmos_writer_warehouse",
             "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_warehouse.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.custom_event_and_write",
+            "tests-nativepython-isaacsim.replicator.examples.custom_event_and_write",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
         },
         {
@@ -539,43 +537,43 @@ function create_tests()
             "/standalone_examples/testing/isaacsim.replicator.examples/motion_blur_short.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.subscribers_and_events",
+            "tests-nativepython-isaacsim.replicator.examples.subscribers_and_events",
             "/standalone_examples/api/isaacsim.replicator.examples/subscribers_and_events.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.custom_fps_writer_annotator",
+            "tests-nativepython-isaacsim.replicator.examples.custom_fps_writer_annotator",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_fps_writer_annotator.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_01",
+            "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_01",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_01.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_02",
+            "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_02",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_02.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_03",
+            "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_03",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_03.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.sdg_getting_started_04",
+            "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_04",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_04.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.simready_assets_sdg",
+            "tests-nativepython-isaacsim.replicator.examples.simready_assets_sdg",
             "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.multi_camera",
+            "tests-nativepython-isaacsim.replicator.examples.multi_camera",
             "standalone_examples/api/isaacsim.replicator.examples/multi_camera.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.simulation_get_data",
+            "tests-nativepython-isaacsim.replicator.examples.simulation_get_data",
             "standalone_examples/api/isaacsim.replicator.examples/simulation_get_data.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.grasping.grasping_workflow_sdg",
+            "tests-nativepython-isaacsim.replicator.grasping.grasping_workflow_sdg",
             "standalone_examples/api/isaacsim.replicator.grasping/grasping_workflow_sdg.py",
         },
         {
@@ -583,20 +581,8 @@ function create_tests()
             "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.sensors.camera.camera_annotator_device",
+            "tests-nativepython-isaacsim.sensors.camera.camera_annotator_device",
             "standalone_examples/api/isaacsim.sensors.camera/camera_annotator_device.py",
-        },
-        {
-            "tests-nativepython-testing-isaacsim.sensors.camera.camera_opencv_fisheye",
-            "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py",
-        },
-        {
-            "tests-nativepython-testing-isaacsim.sensors.camera.camera_opencv",
-            "standalone_examples/api/isaacsim.sensors.camera/camera_opencv.py",
-        },
-        {
-            "tests-nativepython-testing-isaacsim.sensors.camera.camera_view",
-            "standalone_examples/api/isaacsim.sensors.camera/camera_view.py",
         },
         {
             "tests-nativepython-testing-python_sh.import_torch",
