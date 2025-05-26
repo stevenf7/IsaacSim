@@ -1,4 +1,8 @@
 # Changelog
+## [15.0.8] - 2025-05-25
+### Changed
+- Update replicator api calls to use create.omni_lidar and create.omni_radar
+
 ## [15.0.7] - 2025-05-23
 ### Changed
 - Add docstrings
