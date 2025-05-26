@@ -140,7 +140,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
 
 
 class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
-    _replicator_api = staticmethod(rep.functional.create.lidar)
+    _replicator_api = staticmethod(rep.functional.create.omni_lidar)
     _sensor_type = "lidar"
     _supported_configs = carb.settings.get_settings().get("exts/isaacsim.sensors.rtx/supportedLidarConfigs")
     _schema = IsaacSensorSchema.IsaacRtxLidarSensorAPI
@@ -156,7 +156,7 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
 
 
 class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
-    _replicator_api = staticmethod(rep.functional.create.radar)
+    _replicator_api = staticmethod(rep.functional.create.omni_radar)
     _sensor_type = "radar"
     _schema = IsaacSensorSchema.IsaacRtxRadarSensorAPI
     _sensor_plugin_name = "omni.sensors.nv.radar.wpm_dmatapprox.plugin"
