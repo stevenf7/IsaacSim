@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.2] - 2025-05-26
+### Fixed
+- Metrics assembler unit test
+
 ## [3.3.1] - 2025-05-22
 ### Changed
 - Update copyright and license to apache v2.0
