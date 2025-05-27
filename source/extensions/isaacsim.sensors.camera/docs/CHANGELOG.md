@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.2] - 2025-05-27
+### Fixed
+- Bug causing downstream graphs to be ticked twice per frame
+
 ## [1.1.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
