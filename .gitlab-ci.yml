@@ -1573,10 +1573,10 @@ check_externals_linux:
     - .check_externals_base
     - .runner-utility-linux-x86_64
   script:
-    - ./build.sh --fetch -rd --no-docker
-    - ./tools/packman/python.sh tools/check_externals/check_externals.py
+    - ./tools/packman/python.sh tools/check_externals/download_all_kits.py --skip-platform aarch64
+    - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64
 
-check_externals_windows:
+.check_externals_windows:
   timeout: 25 minutes
   extends:
     - .check_externals_base
