@@ -1,4 +1,17 @@
 # Changelog
+## [15.1.0] - 2025-05-23
+### Changed
+- IsaacComputeRTXLidarFlatScan inputs include cudaStream
+- IsaacExtractRTXSensorPointCloud inputs changed to dataPtr and cudaStream
+- IsaacExtractRTXSensorPointCloud outputs include cudaStream
+- Annotators updated to connect cudaStreams
+- IsaacComputeRTXLidarFlatScan shifts compute work to enqueued host function in stream
+- Automatically sets LidarPointAccumulator output to CPU for IsaacComputeRTXLidarFlatScan
+- Automatically sets LidarPointAccumulator output to CPU or GPU based on carb setting for IsaacExtractRTXSensorPointCloud
+### Removed
+- IsaacTransformRTXSensorReturns node - functionality handled by omni.sensors.* carb settings.
+- IsaacExtractRTXSensorPointCloud no longer outputs azimuth/elevation/range
+
 ## [15.0.8] - 2025-05-25
 ### Changed
 - Update replicator api calls to use create.omni_lidar and create.omni_radar

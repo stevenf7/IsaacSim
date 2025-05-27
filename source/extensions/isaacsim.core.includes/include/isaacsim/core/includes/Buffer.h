@@ -237,10 +237,13 @@ public:
      * @param[in] size Number of elements to copy
      * @param[in] kind Type of memory copy operation
      */
-    virtual void copyAsync(const void* src, size_t size, enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost)
+    virtual void copyAsync(const void* src,
+                           size_t size,
+                           enum cudaMemcpyKind kind = cudaMemcpyDeviceToHost,
+                           cudaStream_t cudaStream = 0)
     {
         ScopedDevice scopedDevice(m_device);
-        CUDA_CHECK(cudaMemcpyAsync(m_buffer, src, size * sizeof(T), kind));
+        CUDA_CHECK(cudaMemcpyAsync(m_buffer, src, size * sizeof(T), kind, cudaStream));
     }
 
     /**

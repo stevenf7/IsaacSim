@@ -36,10 +36,7 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
     # Class constants
     ALLOWED_ANNOTATORS = [
         "GenericModelOutputLidarPointAccumulator",
-        "IsaacTransformRTXSensorReturnsNoAccumulator",
-        "IsaacTransformRTXSensorReturns",
-        "IsaacComputeRTXLidarFlatScanSimulationTime",
-        "IsaacComputeRTXLidarFlatScanSystemTime",
+        "IsaacComputeRTXLidarFlatScan",
         "IsaacExtractRTXSensorPointCloudNoAccumulator",
         "IsaacExtractRTXSensorPointCloud",
     ]
@@ -48,14 +45,11 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         "rendering_time",
         "rendering_frame",
         "point_cloud_data",
-        "info",
         "linear_depth_data",
         "intensities_data",
         "azimuth_range",
         "horizontal_resolution",
     ]
-
-    INFO_KEYS = ["range", "azimuth", "elevation"]
 
     async def setUp(self):
         """Set up the test environment with a new stage and world"""
@@ -321,11 +315,6 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         for annotator_name in self.ALLOWED_ANNOTATORS:
             self.assertIn(annotator_name, current_frame, f"Missing annotator data: {annotator_name}")
 
-        # Confirm current_frame["info"] is a dict containing expected keys
-        self.assertIsInstance(current_frame["info"], dict)
-        for key in self.INFO_KEYS:
-            self.assertIn(key, current_frame["info"], f"Missing info key: {key}")
-
         # Test pause functionality
         lidar.pause()
         self.assertTrue(lidar.is_paused())
@@ -376,12 +365,6 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
             self.assertIsInstance(current_frame[annotator_name], dict, f"{annotator_name} value is not a dictionary")
             self.assertNotEqual(len(current_frame[annotator_name]), 0, f"{annotator_name} dictionary is empty")
 
-        # Confirm current_frame["info"] is a non-empty dict containing expected keys
-        self.assertIsInstance(current_frame["info"], dict)
-        self.assertNotEqual(len(current_frame["info"]), 0, "info dictionary is empty")
-        for key in self.INFO_KEYS:
-            self.assertIn(key, current_frame["info"], f"Missing info key: {key}")
-
         # Check that expected keys contain meaningful data
         for key in self.EXPECTED_FRAME_KEYS:
             if key != "rendering_time" and key != "rendering_frame":
@@ -411,25 +394,6 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
             "point_cloud_data does not match IsaacExtractRTXSensorPointCloud data",
         )
 
-        # Info field checks
-        self.assertEqual(
-            current_frame["info"]["range"],
-            current_frame["IsaacExtractRTXSensorPointCloud"]["range"],
-            "info range does not match IsaacExtractRTXSensorPointCloud range",
-        )
-
-        self.assertEqual(
-            current_frame["info"]["azimuth"],
-            current_frame["IsaacExtractRTXSensorPointCloud"]["azimuth"],
-            "info azimuth does not match IsaacExtractRTXSensorPointCloud azimuth",
-        )
-
-        self.assertEqual(
-            current_frame["info"]["elevation"],
-            current_frame["IsaacExtractRTXSensorPointCloud"]["elevation"],
-            "info elevation does not match IsaacExtractRTXSensorPointCloud elevation",
-        )
-
     def verify_flat_scan_data(self, current_frame):
         """Helper method to verify flat scan data
 
@@ -438,26 +402,26 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         """
         np.testing.assert_array_equal(
             current_frame["linear_depth_data"],
-            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["linearDepthData"],
-            "linear_depth_data does not match IsaacComputeRTXLidarFlatScanSimulationTime linearDepthData",
+            current_frame["IsaacComputeRTXLidarFlatScan"]["linearDepthData"],
+            "linear_depth_data does not match IsaacComputeRTXLidarFlatScan linearDepthData",
         )
 
         np.testing.assert_array_equal(
             current_frame["intensities_data"],
-            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["intensitiesData"],
-            "intensities_data does not match IsaacComputeRTXLidarFlatScanSimulationTime intensitiesData",
+            current_frame["IsaacComputeRTXLidarFlatScan"]["intensitiesData"],
+            "intensities_data does not match IsaacComputeRTXLidarFlatScan intensitiesData",
         )
 
         self.assertEqual(
             current_frame["azimuth_range"],
-            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["azimuthRange"],
-            "azimuth_range does not match IsaacComputeRTXLidarFlatScanSimulationTime azimuthRange",
+            current_frame["IsaacComputeRTXLidarFlatScan"]["azimuthRange"],
+            "azimuth_range does not match IsaacComputeRTXLidarFlatScan azimuthRange",
         )
 
         self.assertEqual(
             current_frame["horizontal_resolution"],
-            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"]["horizontalResolution"],
-            "horizontal_resolution does not match IsaacComputeRTXLidarFlatScanSimulationTime horizontalResolution",
+            current_frame["IsaacComputeRTXLidarFlatScan"]["horizontalResolution"],
+            "horizontal_resolution does not match IsaacComputeRTXLidarFlatScan horizontalResolution",
         )
 
     def verify_getter_methods(self, lidar, current_frame):
@@ -472,42 +436,38 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(horizontal_resolution)
         self.assertEqual(
             horizontal_resolution,
-            current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("horizontalResolution"),
+            current_frame["IsaacComputeRTXLidarFlatScan"].get("horizontalResolution"),
         )
 
         # Test get_horizontal_fov
         horizontal_fov = lidar.get_horizontal_fov()
         self.assertIsNotNone(horizontal_fov)
-        self.assertEqual(
-            horizontal_fov, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("horizontalFov")
-        )
+        self.assertEqual(horizontal_fov, current_frame["IsaacComputeRTXLidarFlatScan"].get("horizontalFov"))
 
         # Test get_num_rows
         num_rows = lidar.get_num_rows()
         self.assertIsNotNone(num_rows)
-        self.assertEqual(num_rows, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("numRows"))
+        self.assertEqual(num_rows, current_frame["IsaacComputeRTXLidarFlatScan"].get("numRows"))
 
         # Test get_num_cols
         num_cols = lidar.get_num_cols()
         self.assertIsNotNone(num_cols)
-        self.assertEqual(num_cols, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("numCols"))
+        self.assertEqual(num_cols, current_frame["IsaacComputeRTXLidarFlatScan"].get("numCols"))
 
         # Test get_rotation_frequency
         rotation_frequency = lidar.get_rotation_frequency()
         self.assertIsNotNone(rotation_frequency)
-        self.assertEqual(
-            rotation_frequency, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("rotationRate")
-        )
+        self.assertEqual(rotation_frequency, current_frame["IsaacComputeRTXLidarFlatScan"].get("rotationRate"))
 
         # Test get_depth_range
         depth_range = lidar.get_depth_range()
         self.assertIsNotNone(depth_range)
-        self.assertEqual(depth_range, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("depthRange"))
+        self.assertEqual(depth_range, current_frame["IsaacComputeRTXLidarFlatScan"].get("depthRange"))
 
         # Test get_azimuth_range
         azimuth_range = lidar.get_azimuth_range()
         self.assertIsNotNone(azimuth_range)
-        self.assertEqual(azimuth_range, current_frame["IsaacComputeRTXLidarFlatScanSimulationTime"].get("azimuthRange"))
+        self.assertEqual(azimuth_range, current_frame["IsaacComputeRTXLidarFlatScan"].get("azimuthRange"))
 
     async def test_getter_methods_after_detach(self):
         """Test getter methods after detaching annotator"""
@@ -520,7 +480,7 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         lidar.initialize()
 
         # Add the required annotator
-        lidar.attach_annotator("IsaacComputeRTXLidarFlatScanSimulationTime")
+        lidar.attach_annotator("IsaacComputeRTXLidarFlatScan")
 
         # Run the timeline to populate data
         self._timeline.play()
@@ -536,7 +496,7 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(lidar.get_azimuth_range())
 
         # Detach the annotator
-        lidar.detach_annotator("IsaacComputeRTXLidarFlatScanSimulationTime")
+        lidar.detach_annotator("IsaacComputeRTXLidarFlatScan")
 
         # Advance frames
         await self.advance_frames(lidar.get_render_product_path(), 3)

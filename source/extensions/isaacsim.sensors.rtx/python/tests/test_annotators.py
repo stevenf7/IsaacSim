@@ -190,26 +190,11 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
         )
 
 
-class TestIsaacTransformRTXSensorReturnsNoAccumulator(TestRTXSensorAnnotator):
-    """Test the Isaac Transform RTX Sensor Returns annotator without accumulator"""
+class TestIsaacComputeRTXLidarFlatScan(TestRTXSensorAnnotator):
+    """Test the Isaac Compute RTX Lidar Flat Scan annotator"""
 
     __test__ = True
-    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacTransformRTXSensorReturnsNoAccumulator")
-
-
-class TestIsaacTransformRTXSensorReturns(TestRTXSensorAnnotator):
-    """Test the Isaac Transform RTX Sensor Returns annotator"""
-
-    __test__ = True
-    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacTransformRTXSensorReturns")
-    _accumulate_returns = True
-
-
-class TestIsaacComputeRTXLidarFlatScanSimulationTime(TestRTXSensorAnnotator):
-    """Test the Isaac Compute RTX Lidar Flat Scan Simulation Time annotator"""
-
-    __test__ = True
-    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacComputeRTXLidarFlatScan" + "SimulationTime")
+    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacComputeRTXLidarFlatScan")
     _accumulate_returns = True
 
     async def _test_annotator_result(self):
@@ -269,9 +254,6 @@ class TestIsaacExtractRTXSensorPointCloudNoAccumulator(TestRTXSensorAnnotator):
         for expected_key in [
             "transform",
             "sensorOutputBuffer",
-            "azimuth",
-            "elevation",
-            "range",
         ]:
             self.assertIn(expected_key, self._annotator_data["info"])
             setattr(self, expected_key, self._annotator_data["info"][expected_key])
@@ -297,12 +279,6 @@ class TestIsaacExtractRTXSensorPointCloudNoAccumulator(TestRTXSensorAnnotator):
         self.assertEqual(self.data.shape[1], 3)
         await self._test_returns(self.data[:, 0], self.data[:, 1], self.data[:, 2], flags=gmo.flags, cartesian=True)
 
-        # Test azimuth, elevation, range (spherical)
-        self.assertEqual(self.azimuth.shape[0], gmo.numElements)
-        self.assertEqual(self.elevation.shape[0], gmo.numElements)
-        self.assertEqual(self.range.shape[0], gmo.numElements)
-        await self._test_returns(self.azimuth, self.elevation, self.range, flags=gmo.flags)
-
         # # Test buffer size
         # self.assertEqual(self.bufferSize, gmo.numElements * 3 * 8)
 
@@ -323,9 +299,7 @@ class TestIsaacExtractRTXSensorPointCloud(TestIsaacExtractRTXSensorPointCloudNoA
 
 # Map annotator classes to their corresponding sensor types
 annotators = {
-    TestIsaacTransformRTXSensorReturnsNoAccumulator: ["lidar", "radar"],
-    TestIsaacTransformRTXSensorReturns: ["lidar"],
-    TestIsaacComputeRTXLidarFlatScanSimulationTime: ["lidar"],
+    TestIsaacComputeRTXLidarFlatScan: ["lidar"],
     TestIsaacExtractRTXSensorPointCloudNoAccumulator: ["lidar", "radar"],
     TestIsaacExtractRTXSensorPointCloud: ["lidar"],
 }
@@ -422,8 +396,8 @@ def _create_test_for_annotator(
 
     async def test_function(self):
 
-        # Set the data source setting
-        carb.settings.get_settings().set_bool(f"/app/sensors/nv/{sensor_type}/outputBufferOnGPU", data_source == "gpu")
+        # # Set the data source setting
+        # carb.settings.get_settings().set_bool(f"/app/sensors/nv/{sensor_type}/outputBufferOnGPU", data_source == "gpu")
 
         # Create sensor prim
         kwargs = {
