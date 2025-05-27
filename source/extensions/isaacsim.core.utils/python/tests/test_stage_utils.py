@@ -73,13 +73,14 @@ class TestStage(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             raise Exception("Asset root path doesn't exist")
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+
+        # use just hand to avoid scene graph instancing
+        # omniverse://ov-isaac-dev.nvidia.com/Isaac/Robots/FrankaRobotics/FrankaPanda/Props/panda_hand.usd
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/Props/panda_hand.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
 
         xform_ref = stage.GetPrimAtPath("/World/Franka")
-        self.assertEqual(xform_ref.GetAttribute("xformOp:scale").Get(), [1.0, 1.0, 1.0])
-        scale_attr = xform_ref.GetAttribute("xformOp:scale:unitsResolve")
-        self.assertTrue(not scale_attr)
+        self.assertTrue(not xform_ref.GetAttribute("xformOp:scale:unitsResolve"))
 
         clear_stage()
 
@@ -91,10 +92,6 @@ class TestStage(omni.kit.test.AsyncTestCase):
         stage = omni.usd.get_context().get_stage()
         UsdGeom.SetStageMetersPerUnit(stage, 0.01)
 
-        assets_root_path = await get_assets_root_path_async()
-        if assets_root_path is None:
-            raise Exception("Asset root path doesn't exist")
-        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
 
         xform_ref = stage.GetPrimAtPath("/World/Franka")
