@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.9] - 2025-05-27
+### Changed
+- Minor sensor name changes 
+
 ## [1.0.8] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

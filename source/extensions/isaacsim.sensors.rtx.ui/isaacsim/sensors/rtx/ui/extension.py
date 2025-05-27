@@ -63,11 +63,11 @@ class Extension(omni.ext.IExt):
         {"name": "RPLIDAR S2E", "filepath": "/Isaac/Sensors/Slamtec/RPLidar_S2e.usd"},
     ]
     Velodyne = [
-        {"name": "VLS 128", "filepath": "/Isaac/Sensors/Velodyne/vls-128/vls_128.usd"},
+        {"name": "VLS-128", "filepath": "/Isaac/Sensors/Velodyne/vls-128/vls_128.usd"},
     ]
     ZVISION = [
-        {"name": "ML305", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda", "prim_type": "OmniLidar"},
-        {"name": "MLXS", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda", "prim_type": "OmniLidar"},
+        {"name": "ML-30s+", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda", "prim_type": "OmniLidar"},
+        {"name": "ML-Xs", "filepath": "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda", "prim_type": "OmniLidar"},
     ]
 
     LIDAR_DICT = {
