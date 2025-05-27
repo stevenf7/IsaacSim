@@ -10,8 +10,52 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "GenericModelOutput.h"
+#include "isaacsim/core/includes/ScopedCudaDevice.h"
+
+namespace isaacsim
+{
+namespace sensors
+{
+namespace rtx
+{
+
 #define DEG2RAD(deg) ((deg) / 180.f * 3.14159265358979323846f)
 #define RAD2DEG(rad) ((rad) / 3.14159265358979323846f * 180.f)
+
+__global__ void retrieveGMOBuffer_CUDA(void* dataPtr, omni::sensors::GenericModelOutput outBuffer) {
+    outBuffer = omni::sensors::getModelOutputFromBuffer(dataPtr);
+}
+
+void retrieveGMOBufferFromDevice(void* dataPtr, omni::sensors::GenericModelOutput outBuffer, const cudaStream_t& cudaStream) {
+    // cudaMalloc some memory for the output buffer
+    // cuda copy everything in dataPtr into the output buffer
+    // then get that buffer?
+
+    void* gmoBufferDevice;
+    CUDA_CHECK(cudaMalloc(&gmoBufferDevice, omni::sensors::sizeBasics()));
+    CUDA_CHECK(cudaMemcpyAsync(gmoBufferDevice, dataPtr, omni::sensors::sizeBasics(), cudaMemcpyKind::cudaMemcpyDeviceToDevice, cudaStream));
+    CUDA_CHECK(cudaStreamSynchronize(cudaStream));
+    retrieveGMOBuffer_CUDA<<<1, 1, 0, cudaStream>>>(gmoBufferDevice, outBuffer);
+
+    // retrieveGMOBuffer_CUDA<<<1, 1, 0, cudaStream>>>(dataPtr, outBuffer);
+}
+
+__global__ void getGMODevicePointer_CUDA(void* dataPtr, omni::sensors::GenericModelOutput** devicePtr) {
+    // Get a device pointer to the GMO buffer
+    *devicePtr = omni::sensors::getModelOutputPtrFromBuffer(dataPtr);
+}
+
+void getGMOBufferFromDevice(void* dataPtr, omni::sensors::GenericModelOutput& hostBuffer, const int cudaDevice, const cudaStream_t& cudaStream) {
+    omni::sensors::GenericModelOutput** devicePtr;
+    CUDA_CHECK(cudaMallocAsync((void**)&devicePtr, sizeof(omni::sensors::GenericModelOutput*), cudaStream));
+    getGMODevicePointer_CUDA<<<1, 1, 0, cudaStream>>>(dataPtr, devicePtr);
+    omni::sensors::GenericModelOutput* hostPointerToDeviceBuffer;
+    CUDA_CHECK(cudaMemcpyAsync(&hostPointerToDeviceBuffer, devicePtr, sizeof(omni::sensors::GenericModelOutput*), cudaMemcpyKind::cudaMemcpyDeviceToHost, cudaStream));
+    CUDA_CHECK(cudaStreamSynchronize(cudaStream));
+    omni::sensors::cpyGMOToGMO(hostBuffer, *hostPointerToDeviceBuffer, cudaDevice, cudaStream);
+    CUDA_CHECK(cudaFreeAsync(devicePtr, cudaStream));
+}
 
 __global__ void cartesianToSphericalKernel(float3* srcDest, float* azimuth, float* elevation, float* range, int N)
 {
@@ -32,14 +76,14 @@ __global__ void cartesianToSphericalKernel(float3* srcDest, float* azimuth, floa
     range[idx] = RAD2DEG(rangeRad);
 }
 
-extern "C" void cartesianToSpherical(float3* srcDest, float* azimuth, float* elevation, float* range, int N, int cdi)
+void cartesianToSpherical(float3* srcDest, float* azimuth, float* elevation, float* range, int N, int cdi, const cudaStream_t& cudaStream)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (N + nt - 1) / nt;
 
-    cartesianToSphericalKernel<<<nb, nt>>>(srcDest, azimuth, elevation, range, N);
+    cartesianToSphericalKernel<<<nb, nt, 0, cudaStream>>>(srcDest, azimuth, elevation, range, N);
 }
 
 // uses the destination and a scratch area to compte and store for use computing pc
@@ -59,14 +103,14 @@ __global__ void azimuthDegToRadKernel(float* srcDest, float3* scratch, float acc
     scratch[idx].y = cosf(srcDest[idx]); // notice.y
 }
 
-extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int N, int cdi)
+void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int N, int cdi, const cudaStream_t& cudaStream)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (N + nt - 1) / nt;
 
-    azimuthDegToRadKernel<<<nb, nt>>>(srcDest, scratch, accuracyError, N);
+    azimuthDegToRadKernel<<<nb, nt, 0, cudaStream>>>(srcDest, scratch, accuracyError, N);
 }
 
 // uses destination and scrath to compute and store
@@ -90,14 +134,14 @@ __global__ void elevationKernel(float* srcDest, float3* scratch, float* scratch2
     scratch2[idx] = cosf(elevationRad);
 }
 
-extern "C" void elevation(float* srcDest, float3* scratch, float* scratch2, float accuracyError, int N, int cdi)
+void elevation(float* srcDest, float3* scratch, float* scratch2, float accuracyError, int N, int cdi, const cudaStream_t& cudaStream)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (N + nt - 1) / nt;
 
-    elevationKernel<<<nb, nt>>>(srcDest, scratch, scratch2, accuracyError, N);
+    elevationKernel<<<nb, nt, 0, cudaStream>>>(srcDest, scratch, scratch2, accuracyError, N);
 }
 
 //    const float rayDirectionX{ cosElevation * cosAzimuth };
@@ -122,8 +166,8 @@ __global__ void pointCloudWithTransformKernel(
                                t3.x * X + t3.y * Y + t3.z * Z + t3.w);
 }
 
-extern "C" void pointCloudWithTransform(
-    float3* srcDest, const float* cosEle, const float* dist, const float3& accuracyError, const double* T, int N, int cdi)
+void pointCloudWithTransform(
+    float3* srcDest, const float* cosEle, const float* dist, const float3& accuracyError, const double* T, int N, int cdi, const cudaStream_t& cudaStream)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
@@ -146,7 +190,7 @@ extern "C" void pointCloudWithTransform(
     t1.w += accuracyError.x;
     t2.w += accuracyError.y;
     t3.w += accuracyError.z;
-    pointCloudWithTransformKernel<<<nb, nt>>>(srcDest, cosEle, dist, t1, t2, t3, N);
+    pointCloudWithTransformKernel<<<nb, nt, 0, cudaStream>>>(srcDest, cosEle, dist, t1, t2, t3, N);
 }
 
 __global__ void timestampKernel(int32_t* dest, int32_t* src, uint64_t tickStartTime, int N)
@@ -158,12 +202,16 @@ __global__ void timestampKernel(int32_t* dest, int32_t* src, uint64_t tickStartT
     dest[idx] = src[idx] + tickStartTime;
 }
 
-extern "C" void timestamp(int32_t* dest, int32_t* src, uint64_t tickStartTime, int N, int cdi)
+void timestamp(int32_t* dest, int32_t* src, uint64_t tickStartTime, int N, int cdi, const cudaStream_t& cudaStream)
 {
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cdi);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (N + nt - 1) / nt;
 
-    timestampKernel<<<nb, nt>>>(dest, src, tickStartTime, N);
+    timestampKernel<<<nb, nt, 0, cudaStream>>>(dest, src, tickStartTime, N);
 }
+
+}   // namespace isaacsim
+}   // namespace sensors
+}   // namespace rtx

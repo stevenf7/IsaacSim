@@ -18,18 +18,12 @@
 // clang-format on
 
 #include "GenericModelOutput.h"
+#include "IsaacSimSensorsRTXCuda.cuh"
 #include "OgnIsaacExtractRTXSensorPointCloudDatabase.h"
 #include "SensorNodeUtils.h"
 #include "isaacsim/core/includes/Buffer.h"
 #include "isaacsim/core/includes/ScopedCudaDevice.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
-
-extern "C" void azimuthDegToRad(float* srcDest, float3* scratch, float accuracyError, int n, int cdi);
-extern "C" void elevation(float* srcDest, float3* scratch, float* scratch2, float accuracyError, int n, int cdi);
-extern "C" void pointCloudWithTransform(
-    float3* srcDest, const float* cosEle, const float* dist, const float3& accuracyError, const double* t, int n, int cdi);
-
-extern "C" void cartesianToSpherical(float3* srcDest, float* azimuth, float* elevation, float* range, int N, int cdi);
 
 namespace isaacsim
 {
@@ -54,28 +48,32 @@ public:
         // Disable downstream execution by default
         db.outputs.exec() = kExecutionAttributeStateDisabled;
 
-        uint8_t* gmoBufferPointer = reinterpret_cast<uint8_t*>(db.inputs.gmoBufferPointer());
-        // no reason to update the scan buffer if there is no dataHost
-        if (!gmoBufferPointer)
+        // Retrieve and test input data pointer
+        void* dataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
+        if (!dataPtr)
         {
-            CARB_LOG_WARN("IsaacExtractRTXSensorPointCloud: gmoBufferPointer input is empty.");
+            CARB_LOG_WARN("IsaacExtractRTXSensorPointCloud: dataPtr input is empty.");
             return false;
         }
-        // This is a GPU buffer generating node.  If the input cudaHandle is -1 (CPU), then just use the host device.
-        int gmoDeviceIndex = db.inputs.gmoDeviceIndex();
-        cudaDeviceProp cudaDeviceProperties;
-        if (gmoDeviceIndex != -1 &&
-            cudaGetDeviceProperties(&cudaDeviceProperties, gmoDeviceIndex) != cudaError::cudaSuccess)
+
+        // Determine if input data pointer is on device or host
+        cudaStream_t cudaStream = (cudaStream_t)db.inputs.cudaStream();
+        cudaPointerAttributes attributes;
+        CUDA_CHECK(cudaPointerGetAttributes(&attributes, dataPtr));
+        const bool isDevicePtr{ attributes.type == cudaMemoryTypeDevice };
+
+        if (isDevicePtr)
         {
-            CARB_LOG_ERROR("IsaacComputeRTXLidarFlatScan can't find CUDA device %d.", gmoDeviceIndex);
+            CARB_LOG_ERROR(
+                "IsaacExtractRTXSensorPointCloud.inputs:dataPtr unexpectedly on device. Expecting input on host.");
             return false;
         }
 
         // Retrieve GMO struct from buffer, then validate it
-        omni::sensors::GenericModelOutput* gmo = omni::sensors::getModelOutputPtrFromBuffer(gmoBufferPointer);
+        omni::sensors::GenericModelOutput* gmo = omni::sensors::getModelOutputPtrFromBuffer(dataPtr);
         if (gmo->numElements == 0)
         {
-            CARB_LOG_WARN("IsaacTransformRTXSensorReturns: gmo->numElements is 0. Skipping execution.");
+            CARB_LOG_WARN("IsaacExtractRTXSensorPointCloud: gmo->numElements is 0. Skipping execution.");
             return false;
         }
         if (gmo->modality != omni::sensors::Modality::LIDAR && gmo->modality != omni::sensors::Modality::RADAR)
@@ -91,10 +89,10 @@ public:
         getTransformFromSensorPose(gmo->frameEnd, matrixOutput);
 
         // If the source GMO buffer is on the host, we'll use the first device (0) for the scratch buffers
-        int localGmoDeviceIndex = gmoDeviceIndex == -1 ? 0 : gmoDeviceIndex;
+        int localGmoDeviceIndex = attributes.device == -1 ? 0 : attributes.device;
         // Set cudaMemcpyKinds based on whether the source GMO buffer is on the host or device
-        cudaMemcpyKind cudaMemcpyKindInput = gmoDeviceIndex == -1 ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToDevice;
-        cudaMemcpyKind cudaMemcpyKindOutput = gmoDeviceIndex == -1 ? cudaMemcpyDeviceToHost : cudaMemcpyDeviceToDevice;
+        cudaMemcpyKind cudaMemcpyKindInput = attributes.device == -1 ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToDevice;
+        cudaMemcpyKind cudaMemcpyKindOutput = attributes.device == -1 ? cudaMemcpyDeviceToHost : cudaMemcpyDeviceToDevice;
 
         isaacsim::core::includes::ScopedDevice scopedDev(localGmoDeviceIndex);
 
@@ -111,47 +109,32 @@ public:
         state.m_scratchBuffer3.resize(gmo->numElements);
         state.m_scratchBuffer4.resize(gmo->numElements);
 
-        db.outputs.azimuth().resize(gmo->numElements);
-        db.outputs.elevation().resize(gmo->numElements);
-        db.outputs.range().resize(gmo->numElements);
-
         if (gmo->elementsCoordsType == omni::sensors::CoordsType::SPHERICAL)
         {
 
             // TODO (adevalla): Assumes incoming GMO is on host, but that's not guaranteed
             // Copy x, y, z to scratch buffers (az/el/dist)
-            state.m_scratchBuffer1.copyAsync(gmo->elements.x, gmo->numElements, cudaMemcpyKindInput);
-            state.m_scratchBuffer2.copyAsync(gmo->elements.y, gmo->numElements, cudaMemcpyKindInput);
-            state.m_scratchBuffer3.copyAsync(gmo->elements.z, gmo->numElements, cudaMemcpyKindInput);
-
-            // Copy azimuth to host
-            cudaMemcpyAsync(db.outputs.azimuth().data(), state.m_scratchBuffer1.data(),
-                            gmo->numElements * sizeof(float), cudaMemcpyKindOutput);
-
-            // Copy elevation to host
-            cudaMemcpyAsync(db.outputs.elevation().data(), state.m_scratchBuffer2.data(),
-                            gmo->numElements * sizeof(float), cudaMemcpyKindOutput);
-
-            // Copy range to host
-            cudaMemcpyAsync(db.outputs.range().data(), state.m_scratchBuffer3.data(), gmo->numElements * sizeof(float),
-                            cudaMemcpyKindOutput);
+            state.m_scratchBuffer1.copyAsync(gmo->elements.x, gmo->numElements, cudaMemcpyKindInput, cudaStream);
+            state.m_scratchBuffer2.copyAsync(gmo->elements.y, gmo->numElements, cudaMemcpyKindInput, cudaStream);
+            state.m_scratchBuffer3.copyAsync(gmo->elements.z, gmo->numElements, cudaMemcpyKindInput, cudaStream);
 
             // Store sin(elevation) in pcBuffer.z, and cos(elevation) in scratchBuffer4
             elevation(state.m_scratchBuffer2.data(), state.m_pcBuffer.data(), state.m_scratchBuffer4.data(), 0.0f,
-                      gmo->numElements, localGmoDeviceIndex);
+                      gmo->numElements, localGmoDeviceIndex, cudaStream);
 
             // Store sin(azimuth) in pcBuffer.x, and cos(azimuth) in pcBuffer.y
-            azimuthDegToRad(
-                state.m_scratchBuffer1.data(), state.m_pcBuffer.data(), 0.0f, gmo->numElements, localGmoDeviceIndex);
+            azimuthDegToRad(state.m_scratchBuffer1.data(), state.m_pcBuffer.data(), 0.0f, gmo->numElements,
+                            localGmoDeviceIndex, cudaStream);
 
             // Store transformed Cartesian points in pcBuffer
-            pointCloudWithTransform(state.m_pcBuffer.data(), state.m_scratchBuffer4.data(), state.m_scratchBuffer3.data(),
-                                    make_float3(0.0f, 0.0f, 0.0f), nullptr, gmo->numElements, localGmoDeviceIndex);
+            pointCloudWithTransform(state.m_pcBuffer.data(), state.m_scratchBuffer4.data(),
+                                    state.m_scratchBuffer3.data(), make_float3(0.0f, 0.0f, 0.0f), nullptr,
+                                    gmo->numElements, localGmoDeviceIndex, cudaStream);
 
             // Copy pcBuffer to host
             // TODO (adevalla): Keep buffer on device
             cudaMemcpyAsync(state.hostPcBuffer.data(), state.m_pcBuffer.data(), gmo->numElements * sizeof(float3),
-                            cudaMemcpyKindOutput);
+                            cudaMemcpyKindOutput, cudaStream);
         }
         else
         {
@@ -164,25 +147,15 @@ public:
                 // {
                 //     continue;
                 // }
-                state.m_pcBuffer.data()[i] = make_float3(gmo->elements.x[i], gmo->elements.y[i], gmo->elements.z[i]);
+                state.hostPcBuffer.data()[i] = make_float3(gmo->elements.x[i], gmo->elements.y[i], gmo->elements.z[i]);
             }
-
-            cartesianToSpherical(state.m_pcBuffer.data(), state.m_scratchBuffer1.data(), state.m_scratchBuffer2.data(),
-                                 state.m_scratchBuffer3.data(), gmo->numElements, localGmoDeviceIndex);
-            cudaMemcpyAsync(db.outputs.azimuth().data(), state.m_scratchBuffer1.data(),
-                            gmo->numElements * sizeof(float), cudaMemcpyDeviceToHost);
-            cudaMemcpyAsync(db.outputs.elevation().data(), state.m_scratchBuffer2.data(),
-                            gmo->numElements * sizeof(float), cudaMemcpyDeviceToHost);
-            cudaMemcpyAsync(db.outputs.range().data(), state.m_scratchBuffer3.data(), gmo->numElements * sizeof(float),
-                            cudaMemcpyDeviceToHost);
         }
-
-        cudaDeviceSynchronize();
 
         // Set output metadata
         db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.hostPcBuffer.data());
-        db.outputs.sensorOutputBuffer() = db.inputs.gmoBufferPointer();
-        db.outputs.cudaDeviceIndex() = gmoDeviceIndex;
+        db.outputs.sensorOutputBuffer() = db.inputs.dataPtr();
+        db.outputs.cudaDeviceIndex() = isDevicePtr ? attributes.device : -1;
+        db.outputs.cudaStream() = db.inputs.cudaStream();
         db.outputs.bufferSize() = gmo->numElements * sizeof(float3);
         db.outputs.width() = gmo->numElements;
         db.outputs.height() = 1;

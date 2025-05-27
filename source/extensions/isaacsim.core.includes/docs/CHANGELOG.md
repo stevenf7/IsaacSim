@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.0] - 2025-05-24
+### Changed
+- DeviceBufferBase<T>.copyAsync accepts passthrough cudaStream argument for cudaMemcpyAsync
+
 ## [2.0.7] - 2025-05-23
 ### Changed
 - Refactor and add common headers from mjcf importer and urdf importer

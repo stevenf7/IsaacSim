@@ -358,7 +358,7 @@ class ROS2BridgeExtension(omni.ext.IExt):
                 name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
                 node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
                 annotators=[
-                    "IsaacComputeRTXLidarFlatScan" + f"S{time_type[0]}",
+                    "IsaacComputeRTXLidarFlatScan",
                     "PostProcessDispatchIsaacSimulationGate",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}

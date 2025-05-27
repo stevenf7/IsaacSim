@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.6] - 2025-05-23
+### Changed
+- Use single IsaacComputeRTXLidarFlatScan annotator for LaserScan publisher.
+
 ## [4.6.5] - 2025-05-22
 ### Changed
 - Update copyright and license to apache v2.0

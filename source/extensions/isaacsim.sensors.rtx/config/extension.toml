@@ -1,5 +1,5 @@
 [package]
-version = "15.0.8"
+version = "15.1.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -65,8 +65,9 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${isaacsim.sensors.rtx}/data/lidar_configs/"
 ]
 
-# app.sensors.nv.lidar.outputBufferOnGPU = true
+app.sensors.nv.lidar.outputBufferOnGPU = false
 app.sensors.nv.lidar.enableVelocity = true
+app.sensors.nv.radar.outputBufferOnGPU = false
 app.sensors.nv.radar.runWithoutMBVH = false
 rtx.rtxsensor.coordinateFrameQuaternion = "0.0,0.0,0.0,1.0"
 # sensor material mapping is hard coded for now, and this is needed to enable sensor materials.

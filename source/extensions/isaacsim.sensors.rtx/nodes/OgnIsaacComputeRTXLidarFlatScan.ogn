@@ -20,20 +20,26 @@
             "dataPtr": {
                 "type": "uint64",
                 "description": "Pointer to LiDAR render result.",
-                "uiName": "Data Pointer"
+                "uiName": "Data Pointer",
+                "default": 0
             },
             "cudaDeviceIndex": {
                 "type": "int",
-                "description": "Index of the device where the data lives (-1 for host data)",
+                "description": "DEPRECATED - Index of the device where the data lives (-1 for host data)",
                 "default": -1
             },
             "bufferSize": {
                 "type": "uint64",
-                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+                "description": "DEPRECATED - Size (in bytes) of the buffer (0 if the input is a texture)"
             },
             "renderProductPath": {
                 "type": "token",
                 "description": "Used to retrieve lidar configuration."
+            },
+            "cudaStream": {
+                "description" : "Cuda Stream Input",
+                "type" : "uint64",
+                "default" : 0
             }
         },
         "outputs": {
