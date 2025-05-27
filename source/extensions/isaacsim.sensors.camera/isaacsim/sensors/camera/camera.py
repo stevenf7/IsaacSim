@@ -385,6 +385,10 @@ class Camera(BaseSensor):
             self.attach_annotator(annotator_name="rgb")
         self._fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
         self._fabric_time_annotator.attach([self._render_product_path])
+
+        # Must initialize here after an annotator has been attached so the graph exists
+        self._sdg_graph_pipeline = self._og_controller.graph("/Render/PostProcess/SDGPipeline")
+
         self._acquisition_callback = (
             omni.usd.get_context()
             .get_rendering_event_stream()

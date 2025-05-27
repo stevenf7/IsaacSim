@@ -15,6 +15,7 @@
 
 """Asset validation test script that checks USD assets for common issues."""
 
+import argparse
 import csv
 
 # Standard library imports
@@ -23,7 +24,17 @@ import os
 # Initialize simulation app first
 from isaacsim import SimulationApp
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="USD Asset Validator Script")
+parser.add_argument("--use-validation-engine", action="store_true", help="Run Omniverse ValidationEngine")
+args = parser.parse_args()
+
 kit = SimulationApp(launch_config={"disable_viewport_updates": True})
+
+# Enable the asset_validator extension for the Validation Engine
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("omni.asset_validator.core")
 
 # Isaac Sim imports
 import carb
@@ -37,12 +48,33 @@ from isaacsim.storage.native import (
     is_valid_usd_file,
     prim_has_missing_references,
 )
+
+# Omniverse Validation Engine
+from omni.asset_validator.core import IssueSeverity, OmniDefaultPrimChecker, ValidationEngine
 from omni.physx import get_physx_interface
 from pxr import PhysxSchema, Sdf, UsdGeom
 
 # Configuration
 RESULTS_FILE = "asset_validation_results.txt"
 CSV_RESULTS_FILE = "asset_validation_results.csv"
+
+
+def run_validation_engine_on_usd(usd_path):
+    """Run Omniverse ValidationEngine on a USD file."""
+    engine = ValidationEngine(initRules=False)
+
+    # Enable only the desired custom rule (optional)
+    # engine.enable_rule(OmniDefaultPrimChecker)
+
+    issues = engine.validate(usd_path)
+
+    errors = []
+    for issue in issues:
+        if issue.severity == IssueSeverity.FAILURE:
+            msg = f"[{issue.severity.name}] {issue.message}"
+            errors.append(msg)
+
+    return errors
 
 
 def check_stage_units(stage, usd_path):
@@ -253,7 +285,7 @@ def validate_usd_file(usd_path, root_path):
 
     stage = get_current_stage()
     if not stage:
-        return [f"Failed to open stage: {usd_path}"]
+        return ["Failed to open stage"]
 
     # Check stage-level issues
     # file_results.extend(check_stage_units(stage, usd_path))
@@ -281,7 +313,7 @@ try:
     # Setup paths and filters
     root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     search_paths = [
-        root_path + "/Isaac",
+        root_path + "/Isaac/Robots/FrankaRobotics",
     ]
     exclude_paths = ["Environments/Outdoor/Rivermark", ".thumbs"]
 
@@ -298,7 +330,7 @@ try:
     # Create/clear CSV results file
     with open(CSV_RESULTS_FILE, "w", newline="") as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(["USD File", "Error"])
+        csv_writer.writerow(["USD File", "Error", "Source"])
 
     # Process each USD file and collect validation results
     all_errors = []
@@ -310,28 +342,43 @@ try:
         for i, usd_path in enumerate(usd_files):
             print(f"[{i+1}/{total_files}] Validating: {usd_path}")
 
-            # Validate the file
-            file_errors = validate_usd_file(usd_path, root_path)
+            try:
+                print(f"Opening stage: {usd_path}")
 
-            # Write errors to results file immediately
-            if file_errors:
-                results_file.write(f"\n--- {usd_path} ---\n")
+                # Validate the file (custom checks)
+                file_errors = validate_usd_file(usd_path, root_path)
                 for error in file_errors:
-                    results_file.write(f"  • {error}\n")
-                    # Write to CSV file
-                    csv_writer.writerow([usd_path, error])
+                    results_file.write(f"\n--- {usd_path} ---\n  • {error}\n")
+                    csv_writer.writerow([usd_path, error, "Custom"])
+                results_file.flush()
+                csvfile.flush()
 
-            # Add to overall results
-            all_errors.extend(file_errors)
+                # Optionally run ValidationEngine
+                if args.use_validation_engine:
+                    print(f"Running ValidationEngine on: {usd_path}")
+                    engine_errors = run_validation_engine_on_usd(usd_path)
+                    for error in engine_errors:
+                        results_file.write(f"\n--- {usd_path} ---\n  • {error}\n")
+                        csv_writer.writerow([usd_path, error, "ValidationEngine"])
+                    results_file.flush()
+                    csvfile.flush()
+
+                # Add to overall results
+                all_errors.extend(file_errors)
+                if args.use_validation_engine:
+                    all_errors.extend(engine_errors)
+
+            except Exception as e:
+                err_msg = f"Error validating {usd_path}: {e}"
+                carb.log_error(err_msg)
+                csv_writer.writerow([usd_path, err_msg, "Internal"])
+                results_file.write(f"\n--- {usd_path} ---\n  • {err_msg}\n")
+                results_file.flush()
+                csvfile.flush()
 
     # Report overall validation results
     print(f"\nValidation complete. Found {len(all_errors)} errors.")
     print(f"Results saved to: {RESULTS_FILE} and {CSV_RESULTS_FILE}")
-
-    # Log all errors to console
-    if all_errors:
-        for error in all_errors:
-            carb.log_error(error)
 
 finally:
     # Ensure clean application shutdown
