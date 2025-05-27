@@ -1,5 +1,5 @@
 [package]
-version = "1.3.13"
+version = "1.3.14"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
@@ -46,7 +46,7 @@ exts."isaacsim.asset.browser".instanceable = []
 # Number of seconds to wait for the folder to be listed/read from.
 exts."isaacsim.asset.browser".data.timeout = 10
 # Whether the browser window is visible when the extension starts up.
-exts."isaacsim.asset.browser".visible_after_startup = true
+exts."isaacsim.asset.browser".visible_after_startup = false
 # Filter for USD Types only
 exts."isaacsim.asset.browser".data.filter_file_suffixes = [
     ".usd",

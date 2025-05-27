@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.14] - 2025-05-27
+### Changed
+- Browser not visible after startup
+
 ## [1.3.13] - 2025-05-22
 ### Changed
 - Update copyright and license to apache v2.0
