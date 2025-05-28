@@ -531,26 +531,35 @@ public:
     virtual const void* getTypeSupportHandle();
 
     /**
+     * @brief Write the message header.
+     * @details
+     * Sets the header fields in a ROS 2 LaserScan message.
+     *
+     * @param[in] timeStamp Time (seconds).
+     * @param[in] frameId Transform frame with which this data is associated.
+     */
+    virtual void writeHeader(const double timeStamp, const std::string& frameId) override;
+
+    /**
+     * @brief Generate the buffers according to the LaserScan metadata.
+     * @details
+     * It allocates memory for the range and intensities data.
+     *
+     * @param[in] buffSize buffer size.
+     */
+    virtual void generateBuffers(const size_t buffSize) override;
+
+    /**
      * @brief Sets the laser scan data
-     * @param[in] timeStamp Time in seconds
-     * @param[in] frameId Frame ID for the laser scan
      * @param[in] azimuthRange Min and max angles in degrees
      * @param[in] rotationRate Scan frequency in Hz
      * @param[in] depthRange Min and max range values
-     * @param[in] buffSize Size of range and intensity arrays
-     * @param[in] rangeData Array of range measurements
-     * @param[in] intensitiesData Array of intensity measurements
      * @param[in] horizontalResolution Angular resolution in degrees
      * @param[in] horizontalFov Horizontal field of view in degrees
      */
-    virtual void writeData(const double& timeStamp,
-                           const std::string& frameId,
-                           const pxr::GfVec2f& azimuthRange,
+    virtual void writeData(const pxr::GfVec2f& azimuthRange,
                            const float& rotationRate,
                            const pxr::GfVec2f& depthRange,
-                           size_t buffSize,
-                           float* rangeData,
-                           float* intensitiesData,
                            float horizontalResolution,
                            float horizontalFov) override;
 };
