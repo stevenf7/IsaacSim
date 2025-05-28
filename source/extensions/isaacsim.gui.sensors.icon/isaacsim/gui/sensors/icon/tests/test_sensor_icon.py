@@ -227,7 +227,9 @@ class TestSensorIcon(OmniUiTest):
         # Globally turn off icon visibility
         settings.set("/persistent/app/viewport/sensor_icon/visible", False)
         await ui_test.wait_n_updates(30)
-        self.assertFalse(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
+        self.assertIsNone(
+            model.get_item(TEST_OBJECT_PRIM_PATH), "Icon item should be None after hide_all as _icons is cleared"
+        )
         # Ensure USD Listening is off
         self.assertFalse(model._usd_listening_active)
         # Turn on USD listening

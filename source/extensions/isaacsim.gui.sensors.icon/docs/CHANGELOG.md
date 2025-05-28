@@ -1,4 +1,10 @@
 # Changelog
+## [1.2.0] - 2025-05-27
+### Added
+- Subscription to TimelineEvents.STOP to force reposition icons
+### Changed
+- Delete icons when disabling visibility to prevent visibility update timing issues
+
 ## [1.1.3] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
