@@ -89,6 +89,6 @@ repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },
     {
         "%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/omni/sensors",
-        ogn.python_target_path .. "/generic_model_output",
+        ogn.python_target_path,
     },
 }
