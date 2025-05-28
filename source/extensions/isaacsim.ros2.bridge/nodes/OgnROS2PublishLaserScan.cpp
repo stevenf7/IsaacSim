@@ -17,6 +17,10 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
+#include <carb/profiler/Profile.h>
+#include <carb/tasking/ITasking.h>
+#include <carb/tasking/TaskingUtils.h>
+
 #include <isaacsim/ros2/bridge/Ros2Node.h>
 
 #include <OgnROS2PublishLaserScanDatabase.h>
@@ -53,6 +57,7 @@ public:
         // Publisher was not valid, create a new one
         if (!state.m_publisher)
         {
+            CARB_PROFILE_ZONE(0, "setup publisher");
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
             std::string fullTopicName = addTopicPrefix(state.m_namespaceName, topicName);
@@ -80,18 +85,29 @@ public:
 
             state.m_publisher = state.m_factory->createPublisher(
                 state.m_nodeHandle.get(), fullTopicName.c_str(), state.m_message->getTypeSupportHandle(), qos);
+
             state.m_frameId = db.inputs.frameId();
+
+            // Get extension settings for multithreading
+            carb::settings::ISettings* threadSettings = carb::getCachedInterface<carb::settings::ISettings>();
+            static constexpr char s_kThreadDisable[] = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled";
+            state.m_multithreadingDisabled = threadSettings->getAsBool(s_kThreadDisable);
             return true;
         }
-
         return state.publishLidar(db);
     }
 
     bool publishLidar(OgnROS2PublishLaserScanDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "Lidar 2D Pub");
+        CARB_PROFILE_ZONE(1, "publish laserscan function");
         auto& state = db.perInstanceState<OgnROS2PublishLaserScan>();
+        auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
+        {
+            CARB_PROFILE_ZONE(1, "wait for previous publish");
+            // Wait for last message to publish before starting next
+            state.m_tasks.wait();
+        }
         // Check if subscription count is 0
         if (!m_publishWithoutVerification && !state.m_publisher.get()->getSubscriptionCount())
         {
@@ -109,8 +125,6 @@ public:
                 "Number of rows must be equal to 1. High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan. Please disable Lidar High LOD setting");
             return false;
         }
-
-        float rotationRate = db.inputs.rotationRate();
 
         if (!db.inputs.linearDepthData.isValid() || !db.inputs.intensitiesData.isValid())
         {
@@ -131,22 +145,33 @@ public:
             return false;
         }
 
-        const float* rangePoints = static_cast<const float*>(db.inputs.linearDepthData().data());
-        m_rangeData.resize(buffSize);
-        memcpy(m_rangeData.data(), rangePoints, sizeof(float) * buffSize);
+        state.m_message->writeHeader(db.inputs.timeStamp(), state.m_frameId);
+        state.m_message->writeData(db.inputs.azimuthRange(), db.inputs.rotationRate(), db.inputs.depthRange(),
+                                   db.inputs.horizontalResolution(), db.inputs.horizontalFov());
+        state.m_message->generateBuffers(buffSize);
+
+        std::vector<float>& rangeData = state.m_message->getRangeData();
+        memcpy(rangeData.data(), db.inputs.linearDepthData().data(), sizeof(float) * buffSize);
 
         const uint8_t* intensityPointsCpu = static_cast<const uint8_t*>(db.inputs.intensitiesData().data());
-        m_intensityData.resize(buffSize);
-
-        std::transform(intensityPointsCpu, intensityPointsCpu + buffSize, m_intensityData.begin(),
+        std::vector<float>& intensitiesData = state.m_message->getIntensitiesData();
+        std::transform(intensityPointsCpu, intensityPointsCpu + buffSize, intensitiesData.begin(),
                        [](uint8_t val) { return static_cast<float>(val); });
 
-        state.m_message->writeData(db.inputs.timeStamp(), state.m_frameId, db.inputs.azimuthRange(), rotationRate,
-                                   db.inputs.depthRange(), buffSize, m_rangeData.data(), m_intensityData.data(),
-                                   db.inputs.horizontalResolution(), db.inputs.horizontalFov());
-
-        state.m_publisher.get()->publish(state.m_message->getPtr());
-
+        if (state.m_multithreadingDisabled)
+        {
+            CARB_PROFILE_ZONE(1, "LaserScan publisher publish");
+            state.m_publisher.get()->publish(state.m_message->getPtr());
+        }
+        else
+        {
+            tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
+                             [&state]
+                             {
+                                 CARB_PROFILE_ZONE(1, "LaserScan publisher publish");
+                                 state.m_publisher.get()->publish(state.m_message->getPtr());
+                             });
+        }
         return true;
     }
 
@@ -158,6 +183,11 @@ public:
 
     virtual void reset()
     {
+        {
+            CARB_PROFILE_ZONE(1, "wait for previous publish");
+            // Wait for last message to publish before starting next
+            m_tasks.wait();
+        }
         m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
     }
@@ -166,11 +196,12 @@ public:
 private:
     std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
     std::shared_ptr<Ros2LaserScanMessage> m_message = nullptr;
-    std::vector<float> m_rangeData;
-    std::vector<float> m_intensityData;
-
 
     std::string m_frameId = "sim_lidar";
+
+    carb::tasking::TaskGroup m_tasks;
+
+    bool m_multithreadingDisabled = false;
 };
 
 REGISTER_OGN_NODE()

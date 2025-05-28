@@ -1067,14 +1067,38 @@ const void* Ros2LaserScanMessageImpl::getTypeSupportHandle()
     return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserScan);
 }
 
-void Ros2LaserScanMessageImpl::writeData(const double& timeStamp,
-                                         const std::string& frameId,
-                                         const pxr::GfVec2f& azimuthRange,
+void Ros2LaserScanMessageImpl::writeHeader(const double timeStamp, const std::string& frameId)
+{
+    if (!m_msg)
+    {
+        return;
+    }
+    sensor_msgs__msg__LaserScan* laserScanMsg = static_cast<sensor_msgs__msg__LaserScan*>(m_msg);
+    Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), laserScanMsg->header);
+}
+
+void Ros2LaserScanMessageImpl::generateBuffers(const size_t buffSize)
+{
+    if (!m_msg)
+    {
+        return;
+    }
+    sensor_msgs__msg__LaserScan* laserScanMsg = static_cast<sensor_msgs__msg__LaserScan*>(m_msg);
+
+    laserScanMsg->ranges.size = buffSize;
+    laserScanMsg->ranges.capacity = buffSize;
+    m_rangeData.resize(buffSize);
+    laserScanMsg->ranges.data = m_rangeData.data();
+
+    laserScanMsg->intensities.size = buffSize;
+    laserScanMsg->intensities.capacity = buffSize;
+    m_intensitiesData.resize(buffSize);
+    laserScanMsg->intensities.data = m_intensitiesData.data();
+}
+
+void Ros2LaserScanMessageImpl::writeData(const pxr::GfVec2f& azimuthRange,
                                          const float& rotationRate,
                                          const pxr::GfVec2f& depthRange,
-                                         size_t buffSize,
-                                         float* rangeData,
-                                         float* intensitiesData,
                                          float horizontalResolution,
                                          float horizontalFov)
 {
@@ -1085,21 +1109,12 @@ void Ros2LaserScanMessageImpl::writeData(const double& timeStamp,
     sensor_msgs__msg__LaserScan* laserScanMsg = static_cast<sensor_msgs__msg__LaserScan*>(m_msg);
     float degToRadF = static_cast<float>(M_PI / 180.0f);
 
-    Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), laserScanMsg->header);
     laserScanMsg->angle_min = azimuthRange[0] * degToRadF;
     laserScanMsg->angle_max = azimuthRange[1] * degToRadF;
 
     laserScanMsg->scan_time = rotationRate ? 1.0f / rotationRate : 0.0f;
     laserScanMsg->range_min = depthRange[0];
     laserScanMsg->range_max = depthRange[1];
-
-    laserScanMsg->ranges.size = buffSize;
-    laserScanMsg->ranges.capacity = buffSize;
-    laserScanMsg->ranges.data = rangeData;
-
-    laserScanMsg->intensities.size = buffSize;
-    laserScanMsg->intensities.capacity = buffSize;
-    laserScanMsg->intensities.data = intensitiesData;
 
     laserScanMsg->angle_increment = horizontalResolution * degToRadF;
     laserScanMsg->time_increment = (horizontalFov / 360.0f * laserScanMsg->scan_time) / laserScanMsg->ranges.size;
@@ -1111,7 +1126,15 @@ Ros2LaserScanMessageImpl::~Ros2LaserScanMessageImpl()
     {
         return;
     }
-    sensor_msgs__msg__LaserScan__destroy(static_cast<sensor_msgs__msg__LaserScan*>(m_msg));
+    sensor_msgs__msg__LaserScan* laserScanMsg = static_cast<sensor_msgs__msg__LaserScan*>(m_msg);
+    // Lifetime of memory is not managed by the message as we use std vectors
+    laserScanMsg->ranges.size = 0;
+    laserScanMsg->ranges.capacity = 0;
+    laserScanMsg->ranges.data = nullptr;
+    laserScanMsg->intensities.size = 0;
+    laserScanMsg->intensities.capacity = 0;
+    laserScanMsg->intensities.data = nullptr;
+    sensor_msgs__msg__LaserScan__destroy(laserScanMsg);
 }
 
 // Full TFMessage message

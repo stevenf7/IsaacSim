@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.6.7] - 2025-05-27
+### Added
+- Multithreaded publishing for LaserScan publisher
+### Fixed
+- Fix memory lifetimes in LaserSCan publisher.
+
 ## [4.6.6] - 2025-05-23
 ### Changed
 - Use single IsaacComputeRTXLidarFlatScan annotator for LaserScan publisher.

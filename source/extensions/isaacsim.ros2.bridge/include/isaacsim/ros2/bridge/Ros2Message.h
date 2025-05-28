@@ -489,12 +489,29 @@ class Ros2LaserScanMessage : public Ros2Message
 {
 public:
     /**
+     * @brief Write the message header.
+     * @details
+     * Sets the header fields in a ROS 2 LaserScan message.
+     *
+     * @param[in] timeStamp Time (seconds).
+     * @param[in] frameId Transform frame with which this data is associated.
+     */
+    virtual void writeHeader(const double timeStamp, const std::string& frameId) = 0;
+
+    /**
+     * @brief Generate the buffers according to the LaserScan metadata.
+     * @details
+     * It allocates memory for the range and intensities data.
+     *
+     * @param[in] buffSize buffer size.
+     */
+    virtual void generateBuffers(const size_t buffSize) = 0;
+
+    /**
      * @brief Write the message field values from the given arguments.
      * @details
      * Sets all fields in a ROS 2 LaserScan message.
      *
-     * @param[in] timeStamp Time (seconds).
-     * @param[in] frameId Transform frame with which this data is associated.
      * @param[in] azimuthRange Start (`angle_min`) and end (`angle_max`) angles of the scan in degrees.
      * @param[in] rotationRate Scan frequency in Hz (`1 / scan_time`).
      * @param[in] depthRange Minimum (`range_min`) and maximum (`range_max`) range values.
@@ -504,16 +521,46 @@ public:
      * @param[in] horizontalResolution Angular distance (`angle_increment`) between measurements in degrees.
      * @param[in] horizontalFov Horizontal field of view (`360 * time_increment * ranges.size / scan_time`) in degrees.
      */
-    virtual void writeData(const double& timeStamp,
-                           const std::string& frameId,
-                           const pxr::GfVec2f& azimuthRange,
+    virtual void writeData(const pxr::GfVec2f& azimuthRange,
                            const float& rotationRate,
                            const pxr::GfVec2f& depthRange,
-                           size_t buffSize,
-                           float* rangeData,
-                           float* intensitiesData,
                            float horizontalResolution,
                            float horizontalFov) = 0;
+
+    /**
+     * @brief Get the buffer (range data).
+     * @details
+     * Provides direct access to the underlying buffer containing the range data.
+     *
+     * @return Buffer.
+     */
+    std::vector<float>& getRangeData()
+    {
+        return m_rangeData;
+    }
+
+    /**
+     * @brief Get the buffer (intensities data).
+     * @details
+     * Provides direct access to the underlying buffer containing the intensities data.
+     *
+     * @return Buffer.
+     */
+    std::vector<float>& getIntensitiesData()
+    {
+        return m_intensitiesData;
+    }
+
+protected:
+    /**
+     * @brief Buffer (range data).
+     */
+    std::vector<float> m_rangeData;
+
+    /**
+     * @brief Buffer (intensities data).
+     */
+    std::vector<float> m_intensitiesData;
 };
 
 /**
