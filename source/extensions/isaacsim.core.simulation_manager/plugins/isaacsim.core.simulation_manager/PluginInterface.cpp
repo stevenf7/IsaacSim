@@ -26,6 +26,16 @@
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
+#include <omni/usd/UsdContext.h>
+#pragma once
+#if defined(_WIN32)
+#    include <usdrt/scenegraph/usd/usd/stage.h>
+#else
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wunused-variable"
+#    include <usdrt/scenegraph/usd/usd/stage.h>
+#    pragma GCC diagnostic pop
+#endif
 
 #include <algorithm>
 
@@ -88,6 +98,36 @@ public:
         m_usdNoticeListener = new UsdNoticeListener();
         m_usdNoticeListenerKey =
             pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener), &UsdNoticeListener::handle);
+        m_stageEventSubscription = carb::events::createSubscriptionToPopByType(
+            omni::usd::UsdContext::getContext()->getStageEventStream().get(),
+            static_cast<carb::events::EventType>(omni::usd::StageEventType::eOpened),
+            [this](carb::events::IEvent* e)
+            {
+                auto stage = omni::usd::UsdContext::getContext()->getStage();
+                PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
+                omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(stage).ToLongInt()) };
+                omni::fabric::IStageReaderWriter* iStageReaderWriter =
+                    carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+                omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
+                usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
+                for (auto& usdrtPath : usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("UsdPhysicsScene")))
+                {
+                    const omni::fabric::PathC pathC(usdrtPath);
+                    const pxr::SdfPath primPath = omni::fabric::toSdfPath(pathC);
+                    pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
+                    if (m_usdNoticeListener->getPhysicsScenes().count(primPath) == 0)
+                    {
+                        m_usdNoticeListener->getPhysicsScenes().emplace(
+                            primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
+                        for (auto const& [key, AdditionFunc] : m_usdNoticeListener->getPhysicsSceneAdditionCallbacks())
+                        {
+                            (void)key;
+                            AdditionFunc(primPath.GetString());
+                        }
+                    }
+                }
+            },
+            1000, "IsaacSimStageOpenedUsdNoticeListener");
     }
 
     /**
@@ -98,6 +138,7 @@ public:
     ~SimulationManagerImpl()
     {
         delete m_usdNoticeListener;
+        m_stageEventSubscription->unsubscribe();
     }
 
     /**
@@ -428,6 +469,11 @@ private:
      * @brief Key for the registered USD notice listener.
      */
     pxr::TfNotice::Key m_usdNoticeListenerKey;
+
+    /**
+     * @brief Subscription for stage opened events.
+     */
+    carb::events::ISubscriptionPtr m_stageEventSubscription = nullptr;
 };
 
 /**
