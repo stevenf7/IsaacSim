@@ -1,4 +1,9 @@
 # Changelog
+## [2.2.11] - 2025-05-28
+### Changed
+- added new semantics API check
+- warning messages are now prefixed with [SDR][Warn] to make it clear that they are recorder related
+
 ## [2.2.10] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
