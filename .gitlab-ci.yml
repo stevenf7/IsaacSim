@@ -1594,7 +1594,8 @@ stage-for-github:
       - .runner-utility-linux-x86_64
     timeout: 1 hour
     interruptible: false
-    # allow_failure: true
+    allow_failure: true
+    needs: []
     before_script:
       - set -eu
       - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
@@ -1612,8 +1613,9 @@ stage-for-github:
       - git push
       # - git tag -f $STAGED_VERSION
       # - git push origin $STAGED_VERSION
-    rules:
-      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH !~ /^release\/.*/)
-        when: manual
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
+    when: manual
+    # rules:
+    #   - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH !~ /^release\/.*/)
+    #     when: manual
+    #   - !reference [.rules-version-changed, rules]
+    #   - !reference [.rules-push-manual, rules]
