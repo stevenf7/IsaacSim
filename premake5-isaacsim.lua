@@ -414,6 +414,24 @@ KIT_RUNNER_SHELL_TEMPLATE = {
     ["windows"] = [[
 @echo off
 setlocal
+set SCRIPT_DIR=%%~dp0
+set NO_ROS_ENV=false
+
+REM Check args for a flag to disable ROS environment setup
+for %%%%a in (%%*) do (
+    if "%%%%a"=="--no-ros-env" (
+        set NO_ROS_ENV=true
+        echo Skipping automatic ROS environment setup
+        goto :continue
+    )
+)
+
+:continue
+REM Source ROS environment setup script if flag was not found
+if "%%NO_ROS_ENV%%"=="false" if exist "%%SCRIPT_DIR%%setup_ros_env.bat" (
+    call "%%SCRIPT_DIR%%setup_ros_env.bat"
+)
+
 call "%%~dp0%s\%s" %s %s %%*
 ]],
     ["linux"] = [[
@@ -422,6 +440,22 @@ set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 export RESOURCE_NAME="IsaacSim"
 export OLD_PYTHONPATH=$PYTHONPATH
+
+# Check args for a flag to disable ROS environment setup
+NO_ROS_ENV=false
+for arg in "$@"; do
+    if [ "$arg" == "--no-ros-env" ]; then
+        NO_ROS_ENV=true
+        echo "Skipping automatic ROS environment setup"
+        break
+    fi
+done
+
+# Source ROS environment setup script if flag was not found
+if [ "$NO_ROS_ENV" == "false" ] && [ -f "$SCRIPT_DIR/setup_ros_env.sh" ]; then
+    source "$SCRIPT_DIR/setup_ros_env.sh"
+fi
+
 exec "$SCRIPT_DIR/%s/%s" %s %s "$@"
 ]],
     ["macosx"] = [[

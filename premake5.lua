@@ -101,6 +101,7 @@ function setup_isaacsim_folder_links()
         { "source/scripts/post_install*${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/vscode/%{platform}", "_build/%{platform}/%{config}/.vscode" },
         { "source/scripts/telemetry/*", "_build/%{platform}/%{config}/config" },
+        { "source/scripts/setup_ros_env${shell_ext}", "_build/%{platform}/%{config}" },
     }
 end
 
