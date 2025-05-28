@@ -16,6 +16,7 @@ __all__ = ["IconScene"]
 
 import carb.input
 import carb.settings
+import omni.timeline
 import omni.ui as ui
 from omni.ui import scene as sc
 
@@ -96,6 +97,16 @@ class SensorIcon:
         self._settings = carb.settings.get_settings()
         self._visible_sub = self._settings.subscribe_to_node_change_events(VISIBLE_SETTING, self._on_visible_changed)
         self.toggle_all_fn = []
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        self.timeline_event_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._on_timeline_event, name="SensorIconTimelineEventHandler"
+        )
+
+    def _on_timeline_event(self, event):
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
+            if self.model:
+                self.model.refresh_all_icon_visuals()
 
     def _on_visible_changed(self, *args):
         if not self.model:
@@ -122,6 +133,9 @@ class SensorIcon:
         return SensorIcon._instance
 
     def destroy(self):
+        if self.timeline_event_sub:
+            self.timeline_event_sub = None
+
         self.clear()
         self.model = None
         SensorIcon._instance = None

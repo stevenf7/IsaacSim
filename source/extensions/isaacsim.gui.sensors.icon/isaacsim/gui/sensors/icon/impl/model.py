@@ -137,6 +137,10 @@ class IconModel(sc.AbstractManipulatorModel):
             except Exception as e:
                 carb.log_warn(f"[Warning] Failed to compute visibility/activation for {prim_path}: {e}")
 
+            # Ignore hidden sensors
+            if not should_be_visible:
+                continue
+
             item = IconModel.IconItem(prim_path, self._sensor_icon_path)
             item.visible = should_be_visible if self._usd_listening_active else False
             self._icons[prim_path] = item
@@ -491,13 +495,19 @@ class IconModel(sc.AbstractManipulatorModel):
             self._usd_listener.Revoke()
             self._usd_listener = None
 
-        # Hide existing icons
-        items_changed = []
-        for prim_path, item in self._icons.items():
-            if item.visible:
-                item.visible = False
-                items_changed.append(item)
+        # Forcefully clear all icons from the model.
+        if self._icons:
+            self._icons = {}
+            self._item_changed(None)
 
-        if items_changed:
-            for item in items_changed:
-                self._item_changed(item)
+    def refresh_all_icon_visuals(self):
+        """Force a refresh notification for all currently tracked icon items."""
+        if not self._usd_listening_active:
+            return
+
+        # carb.log_info("Forcing refresh of all sensor icon visuals due to simulation state change.")
+        # Destroy existing icons and repopulate
+        if self._icons:
+            self._icons = {}
+            self._item_changed(None)
+            self._populate_initial_icons()
