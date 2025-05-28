@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.5] - 2025-05-27
+### Fixed
+- Fixed typo in extension title
+
 ## [2.1.4] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
