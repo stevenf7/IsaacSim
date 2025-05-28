@@ -1,4 +1,4 @@
-# all folders starting with _ are local
+﻿# all folders starting with _ are local
 _*/
 !_impl/
 # exclude local website repo, used for publishing
@@ -128,7 +128,9 @@ source/deprecated/**/docs/index.rst
 
 output
 
-!chema.usda
+!schema.usda
+!RobotSchema.usda
+generatedSchema.usda
 
 # ignore crash logs from streaming client sessions
 NvStreamer-*.etli

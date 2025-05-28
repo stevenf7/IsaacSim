@@ -1524,7 +1524,10 @@ exclude = [
 ]
 
 [[repo_stage_for_github.trim]]
-files = ["repo.toml"]
+files = [
+    "repo.toml",
+    "deps/repo-deps.packman.xml",
+]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
 
