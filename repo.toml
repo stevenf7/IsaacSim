@@ -1523,7 +1523,6 @@ exclude = [
     "tools/container",
     "tools/docs",
     "tools/internal",
-    "tools/internal-licenses",
     "tools/python_packages",
     "tools/build_docs.*",
     "tools/package.*",
