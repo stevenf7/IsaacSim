@@ -4,7 +4,7 @@
 
 [publish_packages]
 command = "publish_packages"
-entry_point = "${config_root}/tools/repoman/publish_packages.py:setup_repo_tool"
+entry_point = "${config_root}/tools/ci/publish_packages.py:setup_repo_tool"
 
 ########################################################################################################################
 # Isaac Sim Assets package publish tool
@@ -12,15 +12,15 @@ entry_point = "${config_root}/tools/repoman/publish_packages.py:setup_repo_tool"
 
 [publish_assets_package_1]
 command = "publish_assets_package_1"
-entry_point = "${config_root}/tools/repoman/publish_assets_package_1.py:setup_repo_tool"
+entry_point = "${config_root}/tools/ci/publish_assets_package_1.py:setup_repo_tool"
 
 [publish_assets_package_2]
 command = "publish_assets_package_2"
-entry_point = "${config_root}/tools/repoman/publish_assets_package_2.py:setup_repo_tool"
+entry_point = "${config_root}/tools/ci/publish_assets_package_2.py:setup_repo_tool"
 
 [publish_assets_package_3]
 command = "publish_assets_package_3"
-entry_point = "${config_root}/tools/repoman/publish_assets_package_3.py:setup_repo_tool"
+entry_point = "${config_root}/tools/ci/publish_assets_package_3.py:setup_repo_tool"
 
 ########################################################################################################################
 # Bump version
@@ -28,7 +28,7 @@ entry_point = "${config_root}/tools/repoman/publish_assets_package_3.py:setup_re
 
 [bump_version]
 command = "bump_version"
-entry_point = "${config_root}/tools/repoman/bump_version.py:setup_repo_tool"
+entry_point = "${config_root}/tools/ci/bump_version.py:setup_repo_tool"
 
 ########################################################################################################################
 # Generate extension docs

@@ -47,7 +47,7 @@ Current public release: **4.2.0-rc.18**
 
 * [Isaac Sim Public](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim): ``nvcr.io/nvidia/isaac-sim:x.y.z``
 * [Isaac Sim Internal](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) For anyone in the ``nvidian`` org in NGC.
-  * Latest RC: ``nvcr.io/nvidian/isaac-sim:latest-x.y`` Built from the Release branch. 
+  * Latest RC: ``nvcr.io/nvidian/isaac-sim:latest-x.y`` Built from the Release branch.
   * Latest Daily: ``nvcr.io/nvidian/isaac-sim:latest-develop`` Built from the Develop branch.
 * [Isaac Sim Internal-only](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim-internal/tags): ``nvcr.io/nvidian/isaac-sim/isaac-sim-internal:latest-develop`` Built from the Develop branch (for internal tests/benchmarking). For anyone in the ``nvidian`` org in NGC.
 
@@ -267,7 +267,7 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 ## Building Isaac Sim container
 
 - Execute `./build.sh -r` (Linux) (needs VPN)
-- Execute `./container_build.sh` (Linux) (may need to disconnect VPN if you have errors)
+- Execute `./tools/internal/container_build.sh` (Linux) (may need to disconnect VPN if you have errors)
 
 To run the container and start Isaac Sim as a headless app:
 

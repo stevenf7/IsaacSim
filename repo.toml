@@ -1516,11 +1516,19 @@ exclude = [
     "PACKAGE-INFO.yaml",
     "package.toml",
     "python_packages.toml",
-    "tools/ci/*",
-    "docs",
-    "tools/deps/repo-deps-nv.packman.xml",
     "index.rst",
-    "README_internal.md"
+    "README.md",
+    "docs",
+    "tools/ci",
+    "tools/container",
+    "tools/docs",
+    "tools/internal",
+    "tools/internal-licenses",
+    "tools/python_packages",
+    "tools/build_docs.*",
+    "tools/package.*",
+    "tools/publish*",
+    "tools/test_*",
 ]
 
 [[repo_stage_for_github.trim]]

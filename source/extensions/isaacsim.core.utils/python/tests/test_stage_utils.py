@@ -75,7 +75,6 @@ class TestStage(omni.kit.test.AsyncTestCase):
             raise Exception("Asset root path doesn't exist")
 
         # use just hand to avoid scene graph instancing
-        # omniverse://ov-isaac-dev.nvidia.com/Isaac/Robots/FrankaRobotics/FrankaPanda/Props/panda_hand.usd
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/Props/panda_hand.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
 
