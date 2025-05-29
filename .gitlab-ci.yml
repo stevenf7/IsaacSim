@@ -1603,6 +1603,8 @@ stage-for-github:
       - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
     script:
       - ./repo.sh stage_for_github _git/isaacsim_staging
+      # Custom Cleanup - clean extension.toml files to remove authors and repository
+      - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - cd _git/isaacsim_staging
       - git lfs fetch --all
       - STAGED_VERSION=$(cat VERSION)
@@ -1613,9 +1615,11 @@ stage-for-github:
       - git push
       # - git tag -f $STAGED_VERSION
       # - git push origin $STAGED_VERSION
-    when: manual
-    # rules:
-    #   - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH !~ /^release\/.*/)
-    #     when: manual
-    #   - !reference [.rules-version-changed, rules]
-    #   - !reference [.rules-push-manual, rules]
+    # when: manual
+    rules:
+      - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+        when: manual
+      - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+        when: manual
+      # - !reference [.rules-version-changed, rules]
+      # - !reference [.rules-push-manual, rules]
