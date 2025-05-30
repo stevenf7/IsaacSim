@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.4] - 2025-05-30
+### Changed
+- Update nvidia-srl-usd-to-urdf==1.0.1
+
 ## [1.2.3] - 2025-05-22
 ### Changed
 - Update copyright and license to apache v2.0
