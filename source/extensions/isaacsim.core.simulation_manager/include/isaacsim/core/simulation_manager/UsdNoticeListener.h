@@ -54,12 +54,6 @@ public:
     void enable(const bool& flag);
 
     /**
-     * @brief Checks if the listener is enabled.
-     * @return True if the listener is enabled, false otherwise.
-     */
-    bool isEnabled();
-
-    /**
      * @brief Gets the map of deletion callbacks.
      * @return Reference to the map of deletion callbacks, keyed by callback ID.
      */

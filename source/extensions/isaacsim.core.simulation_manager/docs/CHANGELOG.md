@@ -1,9 +1,4 @@
 # Changelog
-
-## [1.0.2] - 2025-05-27
-### Fixed
-- Add physice scene prim paths in the tracked physics scenes in SimulationManager when openning a usd asset.
-
 ## [1.0.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

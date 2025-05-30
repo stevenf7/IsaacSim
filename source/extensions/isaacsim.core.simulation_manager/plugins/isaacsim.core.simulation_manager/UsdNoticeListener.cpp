@@ -119,11 +119,6 @@ void UsdNoticeListener::enable(const bool& flag)
     this->m_enableFlag = flag;
 }
 
-bool UsdNoticeListener::isEnabled()
-{
-    return this->m_enableFlag;
-}
-
 }
 }
 }
