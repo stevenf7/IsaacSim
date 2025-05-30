@@ -63,11 +63,28 @@ class Extension(omni.ext.IExt):
                     omni.kit.app.get_app().print_and_log(f"Could not import internal rclpy: {e}")
                     if sys.platform == "linux":
                         omni.kit.app.get_app().print_and_log(
-                            f"To use the internal libraries included with the extension please set the following environment variables to use with FastDDS (default) or CycloneDDS (ROS2 Humble only): \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\n\nOR \n\nRMW_IMPLEMENTATION=rmw_cyclonedds_cpp\nLD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                            f"To use the internal libraries included with the extension please set the following environment variables to use with FastDDS (default) or CycloneDDS (ROS2 Humble only) before starting Isaac Sim:\n\n"
+                            f"FastDDS (default):\n"
+                            f"export ROS_DISTRO={ros_distro}\n"
+                            f"export RMW_IMPLEMENTATION=rmw_fastrtps_cpp\n"
+                            f"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\n\n"
+                            f"OR\n\n"
+                            f"CycloneDDS (ROS2 Humble only):\n"
+                            f"export ROS_DISTRO={ros_distro}\n"
+                            f"export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp\n"
+                            f"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{self._extension_path}/{ros_distro}/lib\n\n"
                         )
                     else:
                         omni.kit.app.get_app().print_and_log(
-                            f"To use the internal libraries included with the extension please set: \nRMW_IMPLEMENTATION=rmw_fastrtps_cpp\nPATH=%PATH%;{self._extension_path}/{ros_distro}/lib\nBefore starting Isaac Sim"
+                            f"To use the internal libraries included with the extension, please set the environment variables using one of the following methods before starting Isaac Sim:\n\n"
+                            f"Command Prompt (CMD):\n"
+                            f"set ROS_DISTRO={ros_distro}\n"
+                            f"set RMW_IMPLEMENTATION=rmw_fastrtps_cpp\n"
+                            f"set PATH=%PATH%;{self._extension_path}/{ros_distro}/lib\n\n"
+                            f"PowerShell:\n"
+                            f'$env:ROS_DISTRO = "{ros_distro}"\n'
+                            f'$env:RMW_IMPLEMENTATION = "rmw_fastrtps_cpp"\n'
+                            f'$env:PATH = "$env:PATH;{self._extension_path}/{ros_distro}/lib"\n\n'
                         )
                 try:
                     import rclpy
