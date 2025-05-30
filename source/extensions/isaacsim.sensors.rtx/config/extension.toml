@@ -1,5 +1,5 @@
 [package]
-version = "15.1.0"
+version = "15.1.1"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -77,8 +77,13 @@ renderer.raytracingMotion.enabled=true
 # List of supported Lidar asset paths
 exts."isaacsim.sensors.rtx".supportedLidarConfigs=[
     "/Isaac/Sensors/HESAI/Hesai_XT32_SD10.usda",
+    "/Isaac/Sensors/NVIDIA/Debug_Rotary.usda",
     "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda",
+    "/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda",
     "/Isaac/Sensors/NVIDIA/Example_Rotary.usda",
+    "/Isaac/Sensors/NVIDIA/Example_Solid_State_BEAMS.usda",
+    "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda",
+    "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
     "/Isaac/Sensors/Ouster/OS0/OS0.usd",
     "/Isaac/Sensors/Ouster/OS1/OS1.usd",
     "/Isaac/Sensors/Ouster/OS2/OS2.usd",

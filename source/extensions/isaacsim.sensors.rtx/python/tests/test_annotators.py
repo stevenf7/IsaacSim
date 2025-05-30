@@ -417,14 +417,6 @@ def _create_test_for_annotator(
         _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtx{sensor_type.capitalize()}", **kwargs)
         self.assertIsNotNone(self.sensor)
 
-        if prim_type == "sensor":
-            if self.sensor.GetTypeName() == "Xform":
-                # Find OmniLidar prim by traversing the stage
-                for child_prim in Usd.PrimRange(self.sensor):
-                    if child_prim.GetTypeName() == expected_prim_type:
-                        self.sensor = child_prim
-                        break
-
         # Create render product and attach to sensor
         self.hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),

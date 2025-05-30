@@ -92,7 +92,7 @@ for i in range(n_sensor):
     hydra_textures.append(hydra)
 
     # Post-process graph to publish the render var
-    writer = rep.writers.get("Writer" + "IsaacPrintRTXSensorInfo")
+    writer = rep.writers.get("RtxRadarDebugDrawPointCloud")
     writer.initialize()
     writer.attach([hydra])
     writers.append(writer)
@@ -121,10 +121,6 @@ timeline.stop()
 # Destroy sensor components
 for writer in writers:
     writer.detach()
-omni.kit.app.get_app().update()
-
-for sensor in sensors:
-    delete_prim(sensor.GetPath())
 omni.kit.app.get_app().update()
 
 for texture in hydra_textures:

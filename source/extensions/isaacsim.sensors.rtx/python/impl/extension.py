@@ -42,7 +42,7 @@ EXTENSION_NAME = "Isaac Sensor"
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self.__interface = _acquire()
-
+        self._lidar_point_accumulator_count = 0
         self.registered_templates = []
         self.registered_annotators = []
         try:
@@ -156,6 +156,13 @@ class Extension(omni.ext.IExt):
                 value=output_lidar_buffer_on_gpu,
                 node=node,
             )
+            self._update_upstream_node_attributes(
+                upstream_node_type_name="omni.sensors.nv.lidar.LidarPointAccumulator",
+                attribute="inputs:sendDataId",
+                value=self._lidar_point_accumulator_count,
+                node=node,
+            )
+            self._lidar_point_accumulator_count += 1
             # Draw upstream connections
             return self._on_attach_callback_base(
                 annotator_name=annotator_name,
@@ -204,6 +211,13 @@ class Extension(omni.ext.IExt):
                 value=False,
                 node=node,
             )
+            self._update_upstream_node_attributes(
+                upstream_node_type_name="omni.sensors.nv.lidar.LidarPointAccumulator",
+                attribute="inputs:sendDataId",
+                value=self._lidar_point_accumulator_count,
+                node=node,
+            )
+            self._lidar_point_accumulator_count += 1
             return self._on_attach_callback_base(
                 annotator_name=annotator_name,
                 connections=[
@@ -295,6 +309,13 @@ class Extension(omni.ext.IExt):
                 value=output_lidar_buffer_on_gpu,
                 node=node,
             )
+            self._update_upstream_node_attributes(
+                upstream_node_type_name="omni.sensors.nv.lidar.LidarPointAccumulator",
+                attribute="inputs:sendDataId",
+                value=self._lidar_point_accumulator_count,
+                node=node,
+            )
+            self._lidar_point_accumulator_count += 1
             # self._update_upstream_node_attributes(
             #     upstream_node_type_name="omni.sensors.nv.lidar.LidarPointAccumulator",
             #     attribute="inputs:desiredCoordsType",

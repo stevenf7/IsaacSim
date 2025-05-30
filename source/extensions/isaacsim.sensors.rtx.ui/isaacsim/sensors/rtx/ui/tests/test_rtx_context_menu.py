@@ -95,7 +95,7 @@ class TestRTXContextMenu(OmniUiTest):
         n_items_viewport_menu = count_menu_items(rtx_viewport_menu_dict)
 
         # number of sensors currently hardcoded in the extension
-        n_configs = 18
+        n_configs = 20
 
         self.assertEqual(
             n_items_viewport_menu,

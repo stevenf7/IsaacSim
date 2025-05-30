@@ -1,7 +1,11 @@
 # Changelog
 
+## [4.6.9] - 2025-05-30
+### Removed
+- No longer traverse stage to find OmniSensor prims in test_rtx_sensor (returned by command).
+
 ## [4.6.8] - 2025-05-29
-### Updated
+### Added
 - ROS2 common OG utils unit tests have been added to test graph creation, null conditions, and data publishing
 
 ## [4.6.7] - 2025-05-27

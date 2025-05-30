@@ -100,12 +100,6 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         _, self._sensor = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar", path="/sim_lidar", config=sensor_config
         )
-
-        # Find OmniLidar prim by traversing the stage
-        for child_prim in Usd.PrimRange(self._sensor):
-            if child_prim.GetTypeName() == "OmniLidar":
-                self._sensor = child_prim
-                break
         self.assertEqual(self._sensor.GetTypeName(), "OmniLidar")
         self._sensor_prim_path = self._sensor.GetPath()
 
