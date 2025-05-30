@@ -203,16 +203,7 @@ folders = [
 "omni.importer.onshape" = {}
 
 # Isaac Sim Additional Dependencies
-"isaacsim.anim.robot" = { version = "0.0.7", exact = true }
-"isaacsim.replicator.agent.core" = { version = "0.7.6", exact = true }
-"isaacsim.replicator.agent.ui" = {  version = "0.7.4", exact = true }
-"isaacsim.replicator.caption.core" = { version = "0.0.18", exact = true}
-"isaacsim.replicator.object" = { version = "0.4.4", exact = true }
-"isaacsim.replicator.incident" = { version = "0.1.8", exact = true }
-"isaacsim.sensors.rtx.placement" = { version = "0.6.4", exact = true }
-"isaacsim.spatial.sdg.setup" = { version = "0.0.6", exact = true }
-"omni.anim.people" = { version = "0.7.3", exact = true}
-"omni.metropolis.utils" = { version = "0.1.6", exact = true }
+"isaacsim.exp.spatial.sdg.full" = {}
 "omni.cuopt.examples" = {}
 "omni.cuopt.service" = {}
 "omni.cuopt.visualization" = {}
@@ -364,9 +355,6 @@ folders = [
 [dependencies."filter:platform"."windows-x86_64"]
 "omni.kit.window.modifier.titlebar" = { version = "105.2.16", exact = true }
 
-
-
-
 ########################################################################################################################
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
 ########################################################################################################################
@@ -374,18 +362,8 @@ folders = [
 # Kit SDK Version: 107.3.0+feature.198851.5db453fa.gl
 
 # Exact Version dependencies:
-# 	isaacsim.anim.robot-0.0.7
-# 	isaacsim.replicator.agent.core-0.7.6
-# 	isaacsim.replicator.agent.ui-0.7.4
-# 	isaacsim.replicator.caption.core-0.0.18
-# 	isaacsim.replicator.incident-0.1.8
-# 	isaacsim.replicator.object-0.4.4
-# 	isaacsim.sensors.rtx.placement-0.6.4
-# 	isaacsim.spatial.sdg.setup-0.0.6
 # 	omni.anim.navigation.bundle-107.3.0
-# 	omni.anim.people-0.7.3
 # 	omni.kit.converter.cad-203.0.2
-# 	omni.metropolis.utils-0.1.6
 # 	omni.physics.tensors-107.3.8
 # 	omni.physx.bundle-107.3.8
 # 	omni.physx.fabric-107.3.8
@@ -408,6 +386,14 @@ folders = [
 # Version lock for all dependencies:
 [settings.app.exts]
 enabled = [
+	"isaacsim.anim.robot-0.0.8",
+	"isaacsim.replicator.agent.core-0.7.7",
+	"isaacsim.replicator.agent.ui-0.7.5",
+	"isaacsim.replicator.caption.core-0.0.20",
+	"isaacsim.replicator.incident-0.1.9",
+	"isaacsim.replicator.object-0.4.6",
+	"isaacsim.sensors.rtx.placement-0.6.6",
+	"isaacsim.spatial.sdg.setup-0.0.7",
 	"isaacsim.util.debug_draw-3.0.1",
 	"isaacsim.xr.openxr-1.0.0",
 	"omni.anim.asset-107.3.0",
@@ -425,10 +411,15 @@ enabled = [
 	"omni.anim.navigation.meshtools-107.3.0",
 	"omni.anim.navigation.schema-107.3.0",
 	"omni.anim.navigation.ui-107.3.0",
+	"omni.anim.people-0.7.4",
+	"omni.anim.retarget.bundle-107.3.0",
 	"omni.anim.retarget.core-107.3.0",
+	"omni.anim.retarget.preview-107.3.0",
+	"omni.anim.retarget.ui-107.3.0",
 	"omni.anim.shared.core-107.0.1",
 	"omni.anim.skelJoint-107.3.0",
 	"omni.anim.timeline-107.0.0",
+	"omni.anim.widget.timeline-0.1.14",
 	"omni.anim.window.timeline-106.5.0",
 	"omni.asset_validator.core-0.27.0",
 	"omni.asset_validator.ui-0.27.0",
@@ -550,6 +541,7 @@ enabled = [
 	"omni.kit.xr.ui.window.viewport-107.3.4",
 	"omni.kvdb-107.3.8",
 	"omni.localcache-107.3.8",
+	"omni.metropolis.utils-0.1.8",
 	"omni.no_code_ui.bundle-1.1.2",
 	"omni.physics-107.3.8",
 	"omni.physics.physx-107.3.8",
