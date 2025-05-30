@@ -114,10 +114,6 @@ for writer in writers:
     writer.detach()
 omni.kit.app.get_app().update()
 
-for sensor in sensors:
-    delete_prim(sensor.GetPath())
-omni.kit.app.get_app().update()
-
 for texture in hydra_textures:
     omni.kit.app.get_app().update()
     texture.destroy()

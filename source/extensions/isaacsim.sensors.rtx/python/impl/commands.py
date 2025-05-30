@@ -58,6 +58,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         self._prim_creation_kwargs = kwargs
         self._prim = None
         self._path = path or f"/Rtx{self._sensor_type.capitalize()}"
+        self._desired_prim_type = f"Omni{self._sensor_type.capitalize()}"
         self._camera_config = self._config
 
     def _add_reference(self) -> Usd.Prim:
@@ -67,14 +68,10 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
             for config in self._supported_configs:
                 if os.path.splitext(os.path.basename(config))[0] == self._config:
                     found_config = True
-                    if config.endswith(".usd"):
-                        prim_type = "Xform"
-                    else:
-                        prim_type = f"Omni{self._sensor_type.capitalize()}"
                     prim = add_reference_to_stage(
                         usd_path=get_assets_root_path() + config,
                         prim_path=self._prim_path,
-                        prim_type=prim_type,
+                        prim_type=self._desired_prim_type if config.endswith(".usda") else "Xform",
                     )
                     reset_and_set_xform_ops(prim.GetPrim(), self._translation, self._orientation)
                     if self._variant:
@@ -87,6 +84,13 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
                             carb.log_warn(
                                 f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
                             )
+                    # If necessary, traverse children of referenced asset to find OmniSensor prim
+                    # Note: if multiple children of the referenced asset are OmniSensor types, this will select the first one
+                    if prim.GetTypeName() == "Xform":
+                        for child in Usd.PrimRange(prim):
+                            if child.GetTypeName() == self._desired_prim_type:
+                                carb.log_info(f"Using {self._desired_prim_type} prim at path {child.GetPath()}")
+                                prim = child
                     return prim
             if not found_config:
                 carb.log_warn(
@@ -114,6 +118,9 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         return None
 
     def _create_camera_prim(self) -> Usd.Prim:
+        carb.log_warn(
+            "Support for creating RTX sensors as camera prims is deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniSensor prim instead."
+        )
         prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
         if self._schema:
             self._schema.Apply(prim)
@@ -149,10 +156,16 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if self._config and self._config.startswith("OS"):
+            carb.log_warn(
+                "Support for adding variant lidar models to the stage via config name only has been deprecated in Isaac Sim 5.0. Please use the config (model name) and variant (model variant) arguments instead."
+            )
             # In Isaac Sim 5.0, Ouster lidar configs were implemented as variants on the same prim in the main USD file
             self._variant = self._config
             self._config = self._config[:3]  # truncate to OS0, OS1, or OS2
             self._camera_config = self._variant
+            carb.log_warn(
+                f"Example: omni.kit.commands.execute('IsaacSensorCreateRtxLidar', config='{self._config}', variant='{self._variant}')"
+            )
 
 
 class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):

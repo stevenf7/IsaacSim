@@ -49,7 +49,7 @@ public:
         void* dataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
         if (!dataPtr)
         {
-            CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: dataPtr input is empty.");
+            CARB_LOG_INFO("IsaacComputeRTXLidarFlatScan: dataPtr input is empty.");
             return false;
         }
 
@@ -85,7 +85,7 @@ public:
 
                 if (hostGMO->numElements == 0)
                 {
-                    CARB_LOG_WARN("IsaacComputeRTXLidarFlatScan: hostGMO->numElements is 0. Skipping execution.");
+                    CARB_LOG_INFO("IsaacComputeRTXLidarFlatScan: hostGMO->numElements is 0. Skipping execution.");
                     returnVal = false;
                     return;
                 }
@@ -114,7 +114,7 @@ public:
                 if (lidarPrim.IsA<pxr::UsdGeomCamera>())
                 {
                     auto& state = db->perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
-                    CARB_LOG_WARN_ONCE(
+                    CARB_LOG_INFO(
                         "RTX sensors as camera prims are deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniLidar prim with the new OmniSensorGenericLidarCoreAPI schema.");
                     bool updatedConfig = state.updateLidarConfig(renderProductPath.c_str());
                     if (state.scanType == LidarScanType::kUnknown)

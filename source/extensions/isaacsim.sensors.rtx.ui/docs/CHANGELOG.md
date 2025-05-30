@@ -1,8 +1,13 @@
 # Changelog
 
+## [1.0.10] - 2025-05-27
+### Added
+- More NVIDIA lidar examples available in menu
+- RTX Radar menu option
+
 ## [1.0.9] - 2025-05-27
 ### Changed
-- Minor sensor name changes 
+- Minor sensor name changes
 
 ## [1.0.8] - 2025-05-19
 ### Changed

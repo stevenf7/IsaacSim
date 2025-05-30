@@ -20,6 +20,7 @@ Tests the functionality of creating different types of RTX sensors through comma
 import omni.kit.commands
 import omni.kit.test
 import omni.usd
+from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import traverse_stage
 from pxr import Gf, Sdf, Usd, UsdGeom
 
@@ -107,17 +108,11 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
             )
 
             self.assertIsNotNone(prim, f"Failed to create prim for config {config}")
+            self.assertEqual(prim.GetTypeName(), "OmniLidar")
 
-            # Find OmniLidar prim by traversing the stage
-            found_lidar = False
-            for child_prim in traverse_stage():
-                if child_prim.GetTypeName() == "OmniLidar":
-                    found_lidar = True
-                    break
-
-            self.assertTrue(found_lidar, f"Failed to find OmniLidar prim for config {config}")
             # For OS sensors, verify variant selection
             if config.startswith("OS"):
+                prim = get_prim_at_path(path)
                 variant_set = prim.GetVariantSet("Sensor")
                 self.assertIsNotNone(variant_set, f"Variant set not found for OS config {config}")
                 current_variant = variant_set.GetVariantSelection()

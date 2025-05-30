@@ -101,12 +101,6 @@ class LidarRtx(BaseSensor):
                 config=config_file_name,
                 **kwargs,
             )
-            if sensor.GetTypeName() == "Xform":
-                # Traverse children of referenced asset to find OmniLidar prim
-                for child in Usd.PrimRange(sensor):
-                    if child.GetTypeName() == "OmniLidar":
-                        carb.log_warn("Using OmniLidar prim at path {}".format(child.GetPath()))
-                        sensor = child
             prim_path = str(sensor.GetPath())
 
         # Move the sensor again

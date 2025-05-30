@@ -638,27 +638,27 @@ function create_tests()
         {
             "tests-standalone_benchmarks-benchmark_camera",
             "standalone_examples/benchmarks/benchmark_camera.py",
-            "--num-frames 10 -num-cameras 2",
+            "--num-frames 10 --num-cameras 2",
         },
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py",
-            "--num-frames 10 -num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 ",
+            "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 ",
         },
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter.py",
-            "--num-frames 10 -num-robots 2",
+            "--num-frames 10 --num-robots 2",
         },
         {
             "tests-standalone_benchmarks-benchmark_rtx_lidar_rotary",
             "standalone_examples/benchmarks/benchmark_rtx_lidar.py",
-            "--num-frames 10 -num-sensors 8 --lidar-type Rotary",
+            "--num-frames 10 --num-sensors 8 --lidar-type Rotary",
         },
         {
             "tests-standalone_benchmarks-benchmark_rtx_lidar_solid_state",
             "standalone_examples/benchmarks/benchmark_rtx_lidar.py",
-            "--num-frames 10 -num-sensors 8 --lidar-type Solid_State",
+            "--num-frames 10 --num-sensors 8 --lidar-type Solid_State",
         },
         {
             "tests-standalone_benchmarks-benchmark_sdg_simple",
@@ -673,22 +673,22 @@ function create_tests()
         {
             "tests-standalone_benchmarks-benchmark_robots_ur10",
             "standalone_examples/benchmarks/benchmark_robots_ur10.py",
-            "--num-frames 10 -num-robots 10",
+            "--num-frames 10 --num-robots 10",
         },
         {
             "tests-standalone_benchmarks-benchmark_rtx_radar",
             "standalone_examples/benchmarks/benchmark_rtx_radar.py",
-            "--num-frames 10 -num-sensors 4",
+            "--num-frames 10 --num-sensors 4",
         },
         {
             "tests-standalone_benchmarks-benchmark_physx_lidar",
             "standalone_examples/benchmarks/benchmark_physx_lidar.py",
-            "--num-frames 10 -num-sensors 4",
+            "--num-frames 10 --num-sensors 4",
         },
         {
             "tests-standalone_benchmarks-benchmark_robots_o3dyn",
             "standalone_examples/benchmarks/benchmark_robots_o3dyn.py",
-            "--num-frames 10 -num-robots 2",
+            "--num-frames 10 --num-robots 2",
         },
         {
             "tests-standalone_benchmarks-benchmark_scene_loading",

@@ -42,6 +42,16 @@ class Extension(omni.ext.IExt):
         },
         {"name": "Example Rotary", "filepath": "/Isaac/Sensors/NVIDIA/Example_Rotary.usda", "prim_type": "OmniLidar"},
         {
+            "name": "Example Solid State Beams",
+            "filepath": "/Isaac/Sensors/NVIDIA/Example_Solid_State_BEAMS.usda",
+            "prim_type": "OmniLidar",
+        },
+        {
+            "name": "Example Solid State",
+            "filepath": "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda",
+            "prim_type": "OmniLidar",
+        },
+        {
             "name": "Simple Example Solid State",
             "filepath": "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
             "prim_type": "OmniLidar",
@@ -113,6 +123,7 @@ class Extension(omni.ext.IExt):
             "name": {
                 "Sensors": [
                     rtx_lidar_menu_dict,
+                    {"name": "RTX Radar", "onclick_fn": (lambda *_: self._create_radar())},
                 ]
             },
             "glyph": sensor_icon_path,
@@ -180,3 +191,7 @@ class Extension(omni.ext.IExt):
             prim_path=get_next_free_path("/" + Tf.MakeValidIdentifier(sensor_name), None),
             prim_type=sensor_prim_type,
         )
+
+    def _create_radar(self):
+        selected_prim = self._get_stage_and_path()
+        _, radar_prim = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/RtxRadar", parent=selected_prim)

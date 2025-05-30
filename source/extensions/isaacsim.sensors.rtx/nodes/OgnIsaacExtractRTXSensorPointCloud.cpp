@@ -52,7 +52,7 @@ public:
         void* dataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
         if (!dataPtr)
         {
-            CARB_LOG_WARN("IsaacExtractRTXSensorPointCloud: dataPtr input is empty.");
+            CARB_LOG_INFO("IsaacExtractRTXSensorPointCloud: dataPtr input is empty.");
             return false;
         }
 
@@ -65,7 +65,7 @@ public:
         if (isDevicePtr)
         {
             CARB_LOG_ERROR(
-                "IsaacExtractRTXSensorPointCloud.inputs:dataPtr unexpectedly on device. Expecting input on host.");
+                "IsaacExtractRTXSensorPointCloud: dataPtr input unexpectedly on device. Expecting input on host.");
             return false;
         }
 
@@ -79,7 +79,7 @@ public:
         if (gmo->modality != omni::sensors::Modality::LIDAR && gmo->modality != omni::sensors::Modality::RADAR)
         {
             CARB_LOG_WARN(
-                "IsaacExtractRTXSensorPointCloud: gmoBufferPointer input is not from a Lidar or Radar prim. Buffer will not be parsed.");
+                "IsaacExtractRTXSensorPointCloud: dataPtr input is not from a Lidar or Radar prim. Buffer will not be parsed.");
             return false;
         }
         auto& state = db.perInstanceState<OgnIsaacExtractRTXSensorPointCloud>();
