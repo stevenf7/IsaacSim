@@ -880,7 +880,7 @@ class EditMenuExtension:
         """Focuses the viewport camera on the selected prim(s)."""
         from omni.kit.viewport.utility import frame_viewport_selection
 
-        frame_viewport_selection(force_legacy_api=True)
+        frame_viewport_selection()
 
     @staticmethod
     def toggle_visibillity():
