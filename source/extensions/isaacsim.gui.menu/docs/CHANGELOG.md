@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.4] - 2025-05-29
+### Fixed
+- Error due to usage of force_legacy_api
+
 ## [2.3.3] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
