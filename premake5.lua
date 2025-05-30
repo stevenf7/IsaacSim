@@ -211,6 +211,7 @@ function group_apps(kit)
     define_local_experience("isaac-sim.selector", "isaacsim.exp.selector")
     define_local_experience("isaac-sim.streaming", "isaacsim.exp.full.streaming", "--no-window ")
     define_local_experience("isaac-sim.xr.vr", "isaacsim.exp.base.xr.vr")
+    define_local_experience("isaac-sim.spatial.sdg", "isaacsim.exp.spatial.sdg.full")
 end
 
 nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc")
