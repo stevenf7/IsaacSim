@@ -34,7 +34,7 @@ from pxr import UsdGeom
 
 class Ros2CameraGraph(MenuHelperWindow):
     def __init__(self):
-        super().__init__("ROS2 Camera Graph", width=400, height=300)
+        super().__init__("ROS2 Camera Graph", width=500, height=600)
         # Initialize parameters
         self._og_path = "/Graph/ROS_Camera"
         self._camera_prim = "/OmniverseKit_Persp"  # default camera prim is the perspective camera
