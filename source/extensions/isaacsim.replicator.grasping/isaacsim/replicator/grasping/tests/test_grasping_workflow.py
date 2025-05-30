@@ -21,6 +21,8 @@ from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.replicator.grasping.grasping_manager import GraspingManager
 from isaacsim.storage.native import get_assets_root_path_async
 
+from .common import check_grasp_pose_generation_dependencies
+
 
 class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
     async def setUp(self):
@@ -139,6 +141,10 @@ class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
         output_dir = os.path.join(os.getcwd(), "xarm_antipodal")
 
         await run_example_async(stage_path=stage_path, config_path=config_path, output_dir=output_dir)
+
+        if not check_grasp_pose_generation_dependencies():
+            print("Warning: Skipping test because grasp pose generation dependencies are not installed.")
+            return
 
         # Check that the expected files are present in the output directory
         expected_num_files = 4
