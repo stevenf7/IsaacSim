@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import os
 from enum import Enum
 
@@ -24,7 +23,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 import Semantics
-from pxr import UsdGeom, UsdSkel
+from pxr import UsdGeom, UsdSemantics, UsdSkel
 
 # If both width and height are larger than this value, warn the user
 MAX_RESOLUTION_WARN = 8000
@@ -120,18 +119,18 @@ class SyntheticRecorder:
             try:
                 self._writer = rep.WriterRegistry.get(self.writer_name)
             except Exception as e:
-                carb.log_warn(f"Could not create writer {self.writer_name}: {e}")
+                print(f"[SDR][Warn] Could not create writer {self.writer_name}: {e}")
                 return False
 
         if carb.settings.get_settings().get("/omni/replicator/captureOnPlay"):
             rep.orchestrator.set_capture_on_play(False)
-            carb.log_warn("Disabling replicator capture on play flag for synthetic data recorder.")
+            print("[SDR][Warn] Disabling replicator capture on play flag for synthetic data recorder.")
 
         writer_params = {}
         if self.writer_name == "BasicWriter":
             if self.use_s3:
-                if not self.s3_params["s3_bucket"]:
-                    carb.log_warn("Could not initialize writer, s3_bucket parameter is missing.")
+                if not self.s3_params.get("s3_bucket", None):
+                    print("[SDR][Warn] Could not initialize writer, s3_bucket parameter is missing.")
                     return False
                 for key, value in self.s3_params.items():
                     if value == "":
@@ -143,14 +142,14 @@ class SyntheticRecorder:
             # If the stage is not semantically labeled, disable any semantics related annotators
             stage_is_labeled = self._check_if_stage_is_semantically_labeled()
             if not stage_is_labeled:
-                carb.log_warn(
-                    "Stage does not have any semantically labeled prims, semantics related annotators will not work."
+                print(
+                    "[SDR][Warn] Stage is not semantically labeled, semantics related annotators will not work, removing them."
                 )
                 self._disable_semantics_annotators(writer_params)
 
             # If the stage does not have any skeleton prims, disable the skeleton_data annotator
-            if writer_params["skeleton_data"] and not self._check_if_stage_has_skeleton_prims():
-                carb.log_warn("Stage does not have any skeleton prims, disabling skeleton annotator.")
+            if writer_params.get("skeleton_data", False) and not self._check_if_stage_has_skeleton_prims():
+                print(f"[SDR][Warn] Stage does not have any skeleton prims, disabling skeleton annotator.")
                 writer_params["skeleton_data"] = False
         else:
             # If a custom writer is used instead of the BasicWriter, load the given custom parameters
@@ -163,12 +162,12 @@ class SyntheticRecorder:
         try:
             self._writer.initialize(output_dir=output_dir, **writer_params)
         except Exception as e:
-            carb.log_warn(f"Could not initialize writer {self.writer_name}: {e}")
+            print(f"[SDR][Warn] Could not initialize writer {self.writer_name}: {e}")
             return False
 
         for rp_entry in self.rp_data:
             if not self._check_if_valid_rp_entry(rp_entry):
-                carb.log_warn(f"Invalid render product entry {rp_entry}.")
+                print(f"[SDR][Warn] Invalid render product entry {rp_entry}.")
                 continue
             camera_path = rp_entry[0]
             resolution = (rp_entry[1], rp_entry[2])
@@ -177,13 +176,13 @@ class SyntheticRecorder:
             self._render_products.append(rp)
 
         if not self._render_products:
-            carb.log_warn("No valid render products found to initialize the writer.")
+            print(f"[SDR][Warn] No valid render products found to initialize the writer.")
             return False
 
         try:
             self._writer.attach(self._render_products)
         except Exception as e:
-            carb.log_warn(f"Could not attach render products to writer: {e}")
+            print(f"[SDR][Warn] Could not attach render products to writer: {e}")
             return False
 
         if self.verbose:
@@ -263,7 +262,7 @@ class SyntheticRecorder:
             num_frames = self.num_frames if self.num_frames > 0 else MAX_NUM_FRAMES
             await self._run_recording_loop_async(num_frames)
         else:
-            carb.log_warn(f"Recorder is in an unexpected state ({self._state.name}), try again.")
+            print(f"[SDR][Warn] Recorder is in an unexpected state ({self._state.name}), try again.")
 
     def _check_if_valid_camera(self, path):
         """Check if the camera path is valid for the render product."""
@@ -272,23 +271,23 @@ class SyntheticRecorder:
         prim = stage.GetPrimAtPath(path)
 
         if not prim.IsValid():
-            carb.log_warn(f"{path} is not a valid prim path.")
+            print(f"[SDR][Warn] {path} is not a valid prim path.")
             return False
 
         if UsdGeom.Camera(prim):
             return True
         else:
-            carb.log_warn(f"{prim} is not a valid 'Camera' type.")
+            print(f"[SDR][Warn] {prim.GetPath()} is not a valid 'Camera' type.")
             return False
 
     def _check_if_valid_resolution(self, width, height):
         """Check if the resolution is valid for the render product."""
         if width > 0 and height > 0:
             if width > MAX_RESOLUTION_WARN and height > MAX_RESOLUTION_WARN:
-                carb.log_warn(f"Using a large resolution {width}x{height} might lead to out of memory issues.")
+                print(f"[SDR][Warn] Using a large resolution {width}x{height} might lead to out of memory issues.")
             return True
         else:
-            carb.log_warn(f"Invalid resolution: {width}x{height}. Width and height must be larger than 0.")
+            print(f"[SDR][Warn] Invalid resolution: {width}x{height}. Width and height must be larger than 0.")
         return False
 
     def _check_if_valid_rp_entry(self, entry):
@@ -303,6 +302,11 @@ class SyntheticRecorder:
         """Check if the stage has any semantically labeled prims."""
         stage = omni.usd.get_context().get_stage()
         for prim in stage.Traverse():
+            # Check the new semantics API
+            if prim.HasAPI(UsdSemantics.LabelsAPI):
+                print(f"Prim {prim.GetPath()} has the new semantics API")
+                return True
+            # Check the old semantics API
             if prim.HasAPI(Semantics.SemanticsAPI):
                 return True
         return False
@@ -326,7 +330,7 @@ class SyntheticRecorder:
                 writer_params[annotator] = False
                 disabled_annotators.append(annotator)
         if disabled_annotators:
-            carb.log_warn(f"Disabled the following semantics related annotators: {disabled_annotators}.")
+            print(f"[SDR][Warn] Disabled the following semantics related annotators: {disabled_annotators}.")
 
     async def _run_recording_loop_async(self, num_frames):
         """Run the recording loop for the specified number of frames."""
