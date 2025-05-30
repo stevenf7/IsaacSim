@@ -1,4 +1,7 @@
 # Changelog
+## [1.0.4] - 2025-05-30
+### Changed
+- Check if rtree/libspatialindex is installed, if not skip tests
 
 ## [1.0.3] - 2025-05-22
 ### Changed

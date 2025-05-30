@@ -1265,8 +1265,11 @@ class GraspingManager:
                 return False
 
         except Exception as e:
-            carb.log_warn(f"Failed to generate grasp poses for '{self._object_prim_path}': {e}")
             self.clear_grasp_poses()
+            warn_msg = f"Failed to generate grasp poses for '{self._object_prim_path}': {e}"
+            if "spatialindex" in str(e).lower():
+                warn_msg += "\n  'libspatialindex' is required for grasp sampling. Install via 'sudo apt install libspatialindex-dev' on Ubuntu."
+            carb.log_warn(warn_msg)
             return False
 
     def clear_grasp_poses(self):

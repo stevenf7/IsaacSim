@@ -15,6 +15,8 @@ from isaacsim.replicator.grasping.grasping_manager import GraspingManager
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdGeom
 
+from .common import check_grasp_pose_generation_dependencies
+
 DEFAULT_SAMPLER_CONFIG = {
     "sampler_type": "antipodal",
     "num_candidates": 10,
@@ -46,6 +48,10 @@ class TestGraspingManager((omni.kit.test.AsyncTestCase)):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_grasp_pose_generation_cube(self):
+        if not check_grasp_pose_generation_dependencies():
+            print("Warning: Skipping test because grasp pose generation dependencies are not installed.")
+            return
+
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         stage = omni.usd.get_context().get_stage()
@@ -67,6 +73,10 @@ class TestGraspingManager((omni.kit.test.AsyncTestCase)):
         self.assertTrue(len(grasping_manager.grasp_locations) > 0)
 
     async def test_grasp_pose_generation_assets(self):
+        if not check_grasp_pose_generation_dependencies():
+            print("Warning: Skipping test because grasp pose generation dependencies are not installed.")
+            return
+
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         stage = omni.usd.get_context().get_stage()
