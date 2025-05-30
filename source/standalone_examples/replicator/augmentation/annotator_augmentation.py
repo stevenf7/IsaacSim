@@ -173,7 +173,7 @@ start_time = time.time()
 
 # The `step()` function will trigger the randomization graph, feed annotators with new data, and trigger the writers
 for i in range(NUM_FRAMES):
-    rep.orchestrator.step()
+    rep.orchestrator.step(rt_subframes=32)
     rgb_data = rgb_to_bgr_annot.get_data()
     depth_data_1 = depth_annot_1.get_data()
     depth_data_2 = depth_annot_2.get_data()

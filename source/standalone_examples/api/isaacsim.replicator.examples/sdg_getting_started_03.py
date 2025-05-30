@@ -71,7 +71,7 @@ def run_example():
         randomize_location(cube)
 
         # Since the replicator randomizer is set to trigger on custom events, step will only trigger the writer
-        rep.orchestrator.step()
+        rep.orchestrator.step(rt_subframes=32)
 
     # Destroy the render product to release resources by detaching it from the writer first
     writer.detach()

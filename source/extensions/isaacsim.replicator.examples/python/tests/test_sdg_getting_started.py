@@ -217,7 +217,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
             randomize_location(cube)
 
             # Since the replicator randomizer is set to trigger on custom events, step will only trigger the writer
-            await rep.orchestrator.step_async()
+            await rep.orchestrator.step_async(rt_subframes=32)
 
         # Destroy the render product to release resources by detaching it from the writer first
         writer.detach()
