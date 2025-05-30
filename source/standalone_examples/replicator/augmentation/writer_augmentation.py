@@ -162,7 +162,7 @@ start_time = time.time()
 
 # The `step()` function will trigger the randomization graph, feed annotators with new data, and trigger the writers
 for i in range(NUM_FRAMES):
-    rep.orchestrator.step()
+    rep.orchestrator.step(rt_subframes=32)
 
 print(
     f"The duration for capturing {NUM_FRAMES} frames using '{'warp' if USE_WARP else 'numpy'}' was: {time.time() - start_time:.4f} seconds, with an average of {(time.time() - start_time) / NUM_FRAMES:.4f} seconds per frame."

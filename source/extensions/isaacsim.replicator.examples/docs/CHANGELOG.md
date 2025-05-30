@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.22] - 2025-05-30
+### Changed
+- increase rt_subframes in examples for more consistent results between updates
+
 ## [1.1.21] - 2025-05-23
 ### Changed
 - rename test utils.py to common.py

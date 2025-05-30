@@ -284,7 +284,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             # Measure the duration of capturing the data
             start_time = time.time()
             for i in range(num_frames):
-                await rep.orchestrator.step_async()
+                await rep.orchestrator.step_async(rt_subframes=32)
                 rgb_data = rgb_to_bgr_annot.get_data()
                 depth_data_1 = depth_annot_1.get_data()
                 depth_data_2 = depth_annot_2.get_data()
@@ -431,7 +431,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             # Measure the duration of capturing the data
             start_time = time.time()
             for _ in range(num_frames):
-                await rep.orchestrator.step_async()
+                await rep.orchestrator.step_async(rt_subframes=32)
             return start_time
 
         start_time = await run_example_async(num_frames)
