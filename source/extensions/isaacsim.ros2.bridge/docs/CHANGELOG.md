@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.8] - 2025-05-29
+### Updated
+- ROS2 common OG utils unit tests have been added to test graph creation, null conditions, and data publishing
+
 ## [4.6.7] - 2025-05-27
 ### Added
 - Multithreaded publishing for LaserScan publisher
