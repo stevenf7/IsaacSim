@@ -110,7 +110,7 @@ class IconManipulator(sc.Manipulator):
 
         self._icons[prim_path] = icon_trans
         with icon_trans:
-            with sc.Transform(scale_to=sc.Space.NDC):
+            with sc.Transform():
                 # Click gesture prevents other gestures from hiding it
                 icons_image = sc.Image(
                     icon_url,

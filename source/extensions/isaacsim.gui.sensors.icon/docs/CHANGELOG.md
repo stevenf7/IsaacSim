@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.1] - 2025-05-29
+### Changed
+- ISIM-3688: Allow sensor icon scale with distance
+
 ## [1.2.0] - 2025-05-27
 ### Added
 - Subscription to TimelineEvents.STOP to force reposition icons
