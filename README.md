@@ -147,9 +147,13 @@ After a reboot you will need to:
         * check the "Overwrite diverged branches" checkbox.
     * go to "Settings->General->Visibility, project features, permissions"
         * ensure "Project Visibility" is set to "Public".
-- Clone your fork to a local hard drive, make sure to use a NTFS drive on Windows (Carbonite uses symbolic links)
+- Clone your fork to a local hard drive, make sure to use a NTFS drive on Windows (Carbonite uses symbolic links). 
+    * Prefer to clone the fork to the shortest file path possible (such as cloning directly to C:\\) as long file paths can lead to errors when building.
 - Execute `./setup.sh` (Linux) which will install Docker. Logging out and back
   in is required to update your account's group membership to include "docker".
+- Download Visual Studio Community 2022. Choose "Desktop development with C++". Use the default checklist.
+    * Note that the Windows 11 SDK may take a while to fully install.
+    * You may need to restart Visual Studio Code (or whatever IDE is in use) for Visual Studio and the SDK to process in terminal.
 
 ## Building Isaac Sim
 
