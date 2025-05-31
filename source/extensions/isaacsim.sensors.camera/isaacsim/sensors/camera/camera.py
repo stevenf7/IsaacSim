@@ -224,13 +224,13 @@ class Camera(BaseSensor):
         if resolution is None:
             resolution = (128, 128)
         if is_prim_path_valid(prim_path):
-            self._camera_prim = get_prim_at_path(prim_path)
+            self._prim = get_prim_at_path(prim_path)
             if get_prim_type_name(prim_path) != "Camera":
                 raise Exception("prim path does not correspond to a Camera prim.")
         else:
             # create a camera prim
             carb.log_info("Creating a new Camera prim at path {}".format(prim_path))
-            self._camera_prim = UsdGeom.Camera(define_prim(prim_path=prim_path, prim_type="Camera"))
+            self._prim = UsdGeom.Camera(define_prim(prim_path=prim_path, prim_type="Camera"))
             if orientation is None:
                 orientation = [1, 0, 0, 0]
         self._render_product_path = render_product_path
@@ -286,7 +286,7 @@ class Camera(BaseSensor):
         """detach annotators on destroy and destroy the internal render product if it exists"""
         custom_annotators = list(self._custom_annotators.keys())
         for annotator_name in custom_annotators:
-            getattr(self, "remove_{}_from_frame".format(annotator_name))()
+            self.detach_annotator(annotator_name)
         if self._render_product is not None:
             self._render_product.destroy()
 
@@ -701,7 +701,6 @@ class Camera(BaseSensor):
                 annotator_name, device=self._annotator_device, init_params=kwargs
             )
         except rep.annotators.AnnotatorRegistryError as e:
-            carb.log_error(f"Annotator {annotator_name} not found")
             raise e
 
         # Attach the annotator to the render product

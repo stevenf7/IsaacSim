@@ -16,3 +16,4 @@
 from .camera import *
 from .camera_view import CameraView
 from .extension import *
+from .single_view_depth_sensor import *
