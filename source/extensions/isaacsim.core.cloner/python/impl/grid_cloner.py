@@ -137,6 +137,7 @@ class GridCloner(Cloner):
         root_path: str = None,
         copy_from_source: bool = False,
         enable_env_ids: bool = False,
+        clone_in_fabric: bool = False,
     ):
         """Creates clones in a grid fashion. Positions of clones are computed automatically.
 
@@ -171,6 +172,7 @@ class GridCloner(Cloner):
             root_path=root_path,
             copy_from_source=copy_from_source,
             enable_env_ids=enable_env_ids,
+            clone_in_fabric=clone_in_fabric,
         )
 
         return positions

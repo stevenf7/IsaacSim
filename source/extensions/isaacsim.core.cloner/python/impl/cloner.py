@@ -19,6 +19,8 @@ import carb.settings
 import numpy as np
 import omni.usd
 import torch
+import usdrt
+from isaacsim.core.cloner._isaac_cloner import _fabric_clone
 from isaacsim.core.simulation_manager import SimulationManager
 from omni.physx import get_physx_replicator_interface, get_physx_simulation_interface
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt
@@ -69,7 +71,13 @@ class Cloner:
         return [f"{root_path}_{i}" for i in range(num_paths)]
 
     def replicate_physics(
-        self, source_prim_path: str, prim_paths: list, base_env_path: str, root_path: str, enable_env_ids: bool = False
+        self,
+        source_prim_path: str,
+        prim_paths: list,
+        base_env_path: str,
+        root_path: str,
+        enable_env_ids: bool = False,
+        clone_in_fabric: bool = False,
     ):
         """Replicates physics properties directly in omni.physics to avoid performance bottlenecks when parsing physics.
 
@@ -95,12 +103,24 @@ class Cloner:
         clone_root = self._base_env_path if base_env_path is None else base_env_path
         num_replications = len(prim_paths) if replicate_first else len(prim_paths) - 1
 
+        stageId = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+
+        # if enable_env_ids, set the envIdInBoundsBitCount to 4
+        if enable_env_ids:
+            usdrt_stage = usdrt.Usd.Stage.Attach(stageId)
+            for prim_path in usdrt_stage.GetPrimsWithTypeName("UsdPhysicsScene"):
+                prim = self._stage.GetPrimAtPath(str(prim_path))
+                attr = prim.CreateAttribute("physxScene:envIdInBoundsBitCount", Sdf.ValueTypeNames.Int)
+                attr.Set(4)
+
         def replicationAttachFn(stageId):
             exclude_paths = [clone_root]
             return exclude_paths
 
         def replicationAttachEndFn(stageId):
-            get_physx_replicator_interface().replicate(stageId, source_prim_path, num_replications, enable_env_ids)
+            get_physx_replicator_interface().replicate(
+                stageId, source_prim_path, num_replications, enable_env_ids, clone_in_fabric
+            )
 
         def hierarchyRenameFn(replicatePath, index):
             if replicate_first:
@@ -108,8 +128,6 @@ class Cloner:
             else:
                 stringPath = clone_base_path + str(index + 1)
             return stringPath
-
-        stageId = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
 
         get_physx_replicator_interface().register_replicator(
             stageId, replicationAttachFn, replicationAttachEndFn, hierarchyRenameFn
@@ -165,6 +183,7 @@ class Cloner:
         copy_from_source: bool = False,
         unregister_physics_replication: bool = False,
         enable_env_ids: bool = False,
+        clone_in_fabric: bool = False,
     ):
         """Clones a source prim at user-specified destination paths.
             Clones will be placed at user-specified positions and orientations.
@@ -297,64 +316,112 @@ class Cloner:
             prim.GetPrim().GetAttribute("xformOp:orient").Set(orientation)
 
         has_clones = False
-        with Sdf.ChangeBlock():
-            for i, prim_path in enumerate(prim_paths):
-                if prim_path != source_prim_path:
-                    has_clones = True
 
-                    env_spec = Sdf.CreatePrimInLayer(self._stage.GetRootLayer(), prim_path)
-                    stack = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
+        if clone_in_fabric:
+            stageId = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+            ret_val = _fabric_clone(stageId, source_prim_path, prim_paths)
+            if ret_val:
+                usdrt_stage = usdrt.Usd.Stage.Attach(stageId)
+                for i, prim_path in enumerate(prim_paths):
+                    if prim_path != source_prim_path:
+                        has_clones = True
+                        # setup transformations for cloned environments
+                        prim = usdrt_stage.GetPrimAtPath(prim_path)
+                        attr = prim.GetAttribute("omni:fabric:localMatrix")
 
-                    if copy_from_source:
-                        Sdf.CopySpec(env_spec.layer, Sdf.Path(source_prim_path), env_spec.layer, Sdf.Path(prim_path))
-                    else:
-                        env_spec.inheritPathList.Prepend(source_prim_path)
+                        local_matrix = attr.Get()
 
-                    if positions is not None:
-                        translation = positions[i]  # use specified translation
-                    else:
-                        translation = current_translation  # use the same translation as source
+                        transform = usdrt.Gf.Transform(local_matrix)
 
-                    if orientations is not None:
-                        orientation = orientations[i]  # use specified orientation
-                    else:
-                        orientation = current_orientation  # use the same orientation as source
+                        if positions is not None:
+                            translation = positions[i]  # use specified translation
+                        else:
+                            translation = current_translation  # use the same translation as source
 
-                    translate_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:translate")
-                    if translate_spec is None:
-                        translate_spec = Sdf.AttributeSpec(env_spec, "xformOp:translate", Sdf.ValueTypeNames.Double3)
-                    translate_spec.default = translation
+                        if orientations is not None:
+                            orientation = orientations[i]  # use specified orientation
+                        else:
+                            orientation = current_orientation  # use the same orientation as source
 
-                    orient_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:orient")
-                    default_precision = carb.settings.get_settings().get_as_string(
-                        "app/primCreation/DefaultXformOpPrecision"
-                    )
-                    if orient_spec is None:
-                        if len(default_precision) > 0 and default_precision == "Float":
-                            orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatf)
+                        transform.SetTranslation(usdrt.Gf.Vec3d(translation))
+                        gf_quat = Gf.Quatd(orientation)
+
+                        transform.SetRotation(
+                            usdrt.Gf.Rotation(usdrt.Gf.Quatd(gf_quat.GetReal(), usdrt.Gf.Vec3d(gf_quat.GetImaginary())))
+                        )
+                        attr.Set(transform.GetMatrix())
+
+                # update fabric hierarchy
+                fabric_id = usdrt_stage.GetFabricId()
+                hier = usdrt.hierarchy.IFabricHierarchy().get_fabric_hierarchy(fabric_id, stageId)
+                hier.update_world_xforms()
+            else:
+                carb.log_error("Failed to clone in Fabric")
+        else:
+            with Sdf.ChangeBlock():
+                for i, prim_path in enumerate(prim_paths):
+                    if prim_path != source_prim_path:
+                        has_clones = True
+
+                        env_spec = Sdf.CreatePrimInLayer(self._stage.GetRootLayer(), prim_path)
+                        stack = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
+
+                        if copy_from_source:
+                            Sdf.CopySpec(
+                                env_spec.layer, Sdf.Path(source_prim_path), env_spec.layer, Sdf.Path(prim_path)
+                            )
+                        else:
+                            env_spec.inheritPathList.Prepend(source_prim_path)
+
+                        if positions is not None:
+                            translation = positions[i]  # use specified translation
+                        else:
+                            translation = current_translation  # use the same translation as source
+
+                        if orientations is not None:
+                            orientation = orientations[i]  # use specified orientation
+                        else:
+                            orientation = current_orientation  # use the same orientation as source
+
+                        translate_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:translate")
+                        if translate_spec is None:
+                            translate_spec = Sdf.AttributeSpec(
+                                env_spec, "xformOp:translate", Sdf.ValueTypeNames.Double3
+                            )
+                        translate_spec.default = translation
+
+                        orient_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:orient")
+                        default_precision = carb.settings.get_settings().get_as_string(
+                            "app/primCreation/DefaultXformOpPrecision"
+                        )
+                        if orient_spec is None:
+                            if len(default_precision) > 0 and default_precision == "Float":
+                                orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatf)
+                                orient_spec.default = Gf.Quatf(orientation)
+                            else:
+                                orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
+                                orient_spec.default = Gf.Quatd(orientation)
+                        elif orient_spec.default is not None and type(orient_spec.default) == Gf.Quatf:
                             orient_spec.default = Gf.Quatf(orientation)
                         else:
-                            orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
                             orient_spec.default = Gf.Quatd(orientation)
-                    elif orient_spec.default is not None and type(orient_spec.default) == Gf.Quatf:
-                        orient_spec.default = Gf.Quatf(orientation)
-                    else:
-                        orient_spec.default = Gf.Quatd(orientation)
 
-                    scale_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:scale")
-                    if scale_spec is None:
-                        scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
-                    scale_spec.default = current_scale
+                        scale_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:scale")
+                        if scale_spec is None:
+                            scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
+                        scale_spec.default = current_scale
 
-                    op_order_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOpOrder")
-                    if op_order_spec is None:
-                        op_order_spec = Sdf.AttributeSpec(
-                            env_spec, UsdGeom.Tokens.xformOpOrder, Sdf.ValueTypeNames.TokenArray
-                        )
-                    op_order_spec.default = Vt.TokenArray(["xformOp:translate", "xformOp:orient", "xformOp:scale"])
+                        op_order_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOpOrder")
+                        if op_order_spec is None:
+                            op_order_spec = Sdf.AttributeSpec(
+                                env_spec, UsdGeom.Tokens.xformOpOrder, Sdf.ValueTypeNames.TokenArray
+                            )
+                        op_order_spec.default = Vt.TokenArray(["xformOp:translate", "xformOp:orient", "xformOp:scale"])
 
         if replicate_physics and has_clones:
-            self.replicate_physics(source_prim_path, prim_paths, base_env_path, root_path, enable_env_ids)
+            self.replicate_physics(
+                source_prim_path, prim_paths, base_env_path, root_path, enable_env_ids, clone_in_fabric
+            )
         elif unregister_physics_replication:
             get_physx_replicator_interface().unregister_replicator(
                 UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()

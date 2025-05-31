@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.0] - 2025-05-30
+### Changed
+- Support for clone in fabric added
+
 ## [1.3.12] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
