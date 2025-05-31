@@ -36,7 +36,7 @@ RUN apt-get update && \
 
 # WORKDIR /home/ubuntu/
 RUN mkdir -p /root/.nvidia-omniverse/config
-COPY data/ov_config /root/.nvidia-omniverse/config
+# COPY data/ov_config /root/.nvidia-omniverse/config
 
 # # Switch to root user
 # USER root
