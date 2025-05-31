@@ -648,7 +648,7 @@ function create_tests()
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py",
-            "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 ",
+            "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 --non-headless",
         },
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter",
