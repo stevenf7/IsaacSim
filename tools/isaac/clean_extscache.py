@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 
 
 def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
@@ -238,33 +239,157 @@ def check_version_locks(kit_file, verbose=False, dry_run=False, update_locks=Fal
         return True
 
 
+def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=False):
+    """
+    Extract the physics version from the packman XML file and update physics extensions
+    in the kit file to match that version.
+
+    Args:
+        kit_file (str): Path to the kit file
+        packman_xml_file (str): Path to the omni-physics.packman.xml file
+        verbose (bool): If True, print detailed debug information
+        dry_run (bool): If True, don't modify the file, just report what would be done
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    log("Updating physics extension versions...")
+
+    # Check if packman XML file exists
+    if not os.path.isfile(packman_xml_file):
+        log(f"Packman XML file {packman_xml_file} does not exist, skipping physics version update")
+        return True
+
+    # Extract version from packman XML
+    try:
+        tree = ET.parse(packman_xml_file)
+        root = tree.getroot()
+
+        # Find the package element with name="omni_physics"
+        physics_version = None
+        for dependency in root.findall(".//dependency"):
+            for package in dependency.findall(".//package"):
+                if package.get("name") == "omni_physics":
+                    version_attr = package.get("version")
+                    if version_attr:
+                        # Extract main version (e.g., "107.3.8" from "107.3.8-29124867-release_107.3-0ea8a1d1-${platform_target_abi}")
+                        version_match = re.match(r"^(\d+\.\d+\.\d+)", version_attr)
+                        if version_match:
+                            physics_version = version_match.group(1)
+                            log(f"Extracted physics version: {physics_version} from {version_attr}")
+                            break
+            if physics_version:
+                break
+
+        if not physics_version:
+            log("Could not find omni_physics version in packman XML file")
+            return True
+
+    except Exception as e:
+        print(f"Error parsing packman XML file: {e}")
+        return False
+
+    # Read the kit file
+    try:
+        with open(kit_file, "r") as f:
+            content = f.read()
+    except Exception as e:
+        print(f"Error reading kit file: {e}")
+        return False
+
+    # Define physics extensions that should be updated
+    physics_extensions = [
+        "omni.physx.bundle",
+        "omni.physx.fabric",
+        "omni.physx.pvd",
+        "omni.physics.tensors",
+        "omni.physx.tensors",
+        "omni.physx.tests",
+        "omni.physx.tests.visual",
+    ]
+
+    # Track updates made
+    updates_made = []
+    updated_content = content
+
+    # Update each physics extension version
+    for ext_name in physics_extensions:
+        # Pattern to match the extension with its current version
+        # Matches: "omni.physx.bundle" = {version = "107.3.7", exact = true}
+        pattern = r'("' + re.escape(ext_name) + r'"\s*=\s*\{\s*version\s*=\s*")([^"]+)(".*?\})'
+
+        def replace_version(match):
+            prefix = match.group(1)
+            old_version = match.group(2)
+            suffix = match.group(3)
+
+            if old_version != physics_version:
+                updates_made.append((ext_name, old_version, physics_version))
+                log(f"Updating {ext_name}: {old_version} → {physics_version}")
+                return f"{prefix}{physics_version}{suffix}"
+            else:
+                log(f"Extension {ext_name} already has correct version {physics_version}")
+                return match.group(0)
+
+        updated_content = re.sub(pattern, replace_version, updated_content)
+
+    # Write updated content if changes were made
+    if updates_made and not dry_run:
+        try:
+            with open(kit_file, "w") as f:
+                f.write(updated_content)
+            print(f"Updated {len(updates_made)} physics extension versions to {physics_version}:")
+            for ext_name, old_version, new_version in updates_made:
+                print(f"   - {ext_name}: {old_version} → {new_version}")
+        except Exception as e:
+            print(f"Error writing updated kit file: {e}")
+            return False
+    elif updates_made and dry_run:
+        print(f"Would update {len(updates_made)} physics extension versions to {physics_version}:")
+        for ext_name, old_version, new_version in updates_made:
+            print(f"   - {ext_name}: {old_version} → {new_version}")
+    elif not updates_made:
+        log("All physics extensions already have the correct version")
+
+    return True
+
+
 def clean_extscache(
     kit_file_path=None,
     build_dir_path=None,
     deprecated_dir_path=None,
     apps_dir_path=None,
+    packman_xml_path=None,
     create_dir=False,
     verbose=False,
     dry_run=False,
     check_deps=True,
     check_locks=True,
     update_locks=False,
+    update_physics=True,
 ):
     """
     Removes extensions from the enabled section in the kit file if they exist in the build directory,
-    the deprecated directory, or the apps directory.
+    the deprecated directory, or the apps directory. Also performs various validation and update tasks.
 
     Args:
         kit_file_path (str): Path to the kit file (default: source/apps/isaacsim.exp.extscache.kit)
         build_dir_path (str): Path to the build directory (default: _build/linux-x86_64/release/exts)
         deprecated_dir_path (str): Path to the deprecated directory (default: _build/linux-x86_64/release/extsDeprecated)
         apps_dir_path (str): Path to the apps directory (default: _build/linux-x86_64/release/apps)
+        packman_xml_path (str): Path to the omni-physics.packman.xml file (default: deps/omni-physics.packman.xml)
         create_dir (bool): If True, create the build directory if it doesn't exist
         verbose (bool): If True, print detailed debug information
         dry_run (bool): If True, don't modify the file, just report what would be done
         check_deps (bool): If True, check that all extensions are listed in dependencies
         check_locks (bool): If True, check that version locks match the SDK hash
         update_locks (bool): If True, update any mismatched version locks to match the SDK hash
+        update_physics (bool): If True, update physics extension versions to match packman XML
 
     Returns:
         bool: True if successful, False otherwise
@@ -279,17 +404,20 @@ def clean_extscache(
     default_build_dir = "_build/linux-x86_64/release/exts"
     default_deprecated_dir = "_build/linux-x86_64/release/extsDeprecated"
     default_apps_dir = "_build/linux-x86_64/release/apps"
+    default_packman_xml = "deps/omni-physics.packman.xml"
 
     # Use provided paths or defaults
     kit_file = kit_file_path or default_kit_file
     build_dir = build_dir_path or default_build_dir
     deprecated_dir = deprecated_dir_path or default_deprecated_dir
     apps_dir = apps_dir_path or default_apps_dir
+    packman_xml = packman_xml_path or default_packman_xml
 
     log(f"Using kit file: {os.path.abspath(kit_file)}")
     log(f"Using build directory: {os.path.abspath(build_dir)}")
     log(f"Using deprecated directory: {os.path.abspath(deprecated_dir)}")
     log(f"Using apps directory: {os.path.abspath(apps_dir)}")
+    log(f"Using packman XML: {os.path.abspath(packman_xml)}")
 
     if dry_run:
         print("Running in dry-run mode - no changes will be made to files")
@@ -575,6 +703,12 @@ def clean_extscache(
         if not locks_ok and not dry_run:
             print("WARNING: Some extensions have version locks that don't match the SDK hash.")
 
+    # Update physics versions if requested
+    if update_physics:
+        update_physics_ok = update_physics_versions(kit_file, packman_xml, verbose, dry_run)
+        if not update_physics_ok and not dry_run:
+            print("WARNING: Failed to update physics extension versions.")
+
     return True
 
 
@@ -592,6 +726,10 @@ are properly listed in the [dependencies] section.
 This script can also verify that extension version locks match the Kit SDK Version hash,
 and optionally update them to match the current SDK hash.
 
+Additionally, this script can synchronize physics extension versions with the version
+specified in the omni-physics.packman.xml file to ensure consistency between the
+physics package and extension versions.
+
 This is useful for development when you want to avoid loading both the built and the prebuilt 
 versions of the same extension, and to ensure deprecated extensions aren't loaded.
         """,
@@ -605,6 +743,9 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         help="Path to the deprecated directory (default: _build/linux-x86_64/release/extsDeprecated)",
     )
     parser.add_argument("--apps-dir", help="Path to the apps directory (default: _build/linux-x86_64/release/apps)")
+    parser.add_argument(
+        "--packman-xml", help="Path to the omni-physics.packman.xml file (default: deps/omni-physics.packman.xml)"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output for debugging")
     parser.add_argument(
         "--dry-run", action="store_true", help="Show what would be done without actually modifying files"
@@ -620,6 +761,11 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         action="store_true",
         help="Update extension version locks to match the SDK hash when they don't match",
     )
+    parser.add_argument(
+        "--update-physics",
+        action="store_true",
+        help="Update physics extension versions to match packman XML",
+    )
 
     args = parser.parse_args()
 
@@ -628,12 +774,14 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         build_dir_path=args.build_dir,
         deprecated_dir_path=args.deprecated_dir,
         apps_dir_path=args.apps_dir,
+        packman_xml_path=args.packman_xml,
         create_dir=args.create_dir,
         verbose=args.verbose,
         dry_run=args.dry_run,
         check_deps=not args.no_deps_check,
         check_locks=not args.no_locks_check,
         update_locks=args.update_locks,
+        update_physics=args.update_physics,
     )
 
     if not success:

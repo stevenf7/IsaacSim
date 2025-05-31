@@ -8,15 +8,30 @@ set -e
 # Disable filename expansion (globbing)
 set -f
 
+# Function to run extension cache cleaning and building
+run_extscache_operations() {
+  echo "Running build and cleaning extscache..."
+  pushd ../
+  # update extensions to match kit and physics versions
+  python3 tools/isaac/clean_extscache.py --update-locks --kit-file="source/apps/isaacsim.exp.extscache.kit" --update-physics
+
+  # Build with update flag to update extension cache
+  ./repo.sh build -ur
+
+  # Cleanup extension cache
+  python3 tools/isaac/clean_extscache.py --update-locks --kit-file="source/apps/isaacsim.exp.extscache.kit" --update-physics
+  popd
+}
+
 # Help function
 print_help() {
   echo "Usage: $0 [options]"
   echo ""
   echo "Options:"
-  echo "  -h, --help     Show this help message and exit"
-  echo "  --repo         Run repo update"
-  echo "  --packman      Run packman update"
-  echo "  --extscache    Run build and clean extscache"
+  echo "  -h, --help         Show this help message and exit"
+  echo "  --repo             Run repo update"
+  echo "  --packman          Run packman update"
+  echo "  --only-extscache   Only run extension cache cleaning and building"
   echo ""
   exit 0
 }
@@ -24,7 +39,7 @@ print_help() {
 # Default values for command line options
 RUN_REPO_UPDATE=false
 RUN_PACKMAN_UPDATE=false
-RUN_EXTSCACHE=false
+ONLY_EXTSCACHE=false
 
 # Parse command line arguments
 for arg in "$@"; do
@@ -40,8 +55,8 @@ for arg in "$@"; do
       RUN_PACKMAN_UPDATE=true
       shift
       ;;
-    --extscache)
-      RUN_EXTSCACHE=true
+    --only-extscache)
+      ONLY_EXTSCACHE=true
       shift
       ;;
   esac
@@ -51,8 +66,14 @@ done
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 cd "$SCRIPT_DIR"
 
+# If only-extscache mode, skip all other updates and go straight to extscache operations
+if [ "$ONLY_EXTSCACHE" = true ]; then
+  run_extscache_operations
+  exit 0
+fi
+
 # Update components
-../repo.sh update kit-kernel --patch
+# ../repo.sh update kit-kernel --patch
 ../repo.sh update omni_physics --include-pre-release --patch
 ../repo.sh check_python_package_definitions --update-omniverse-kit
 python3 isaac/update_isaac_sim_deps.py --mode version
@@ -61,19 +82,10 @@ pushd ../
 python3 tools/isaac/generate_doxygen_input.py --root ./
 popd
 
+# Run build and clean extscache (now runs by default)
+run_extscache_operations
+
 # Run conditional updates based on command line arguments
-if [ "$RUN_EXTSCACHE" = true ]; then
-  echo "Running build and cleaning extscache..."
-  pushd ../
-  # Build with update flag
-  ./repo.sh build -ur
-  
-
-  # Cleanup
-  python3 tools/isaac/clean_extscache.py --update-locks --kit-file="source/apps/isaacsim.exp.extscache.kit"
-  popd
-fi
-
 if [ "$RUN_REPO_UPDATE" = true ]; then
   echo "Running repo update..."
   ../repo.sh update repo_
