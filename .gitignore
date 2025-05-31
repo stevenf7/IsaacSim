@@ -156,3 +156,7 @@ Temp_Config*.json
 packman_verification_results.json
 packman_full_results.json
 packman_full_results.csv
+
+# Ignore results from banned word check
+results.json
+results_by_file.json
