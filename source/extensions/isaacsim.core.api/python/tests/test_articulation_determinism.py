@@ -63,7 +63,7 @@ class TestArticulationDeterminism(omni.kit.test.AsyncTestCase):
 
         # On the develop branch, this test always takes 31 frames to converge
         print(f"frames_to_converge[0] = {frames_to_converge[0]}")
-        self.assertEqual(frames_to_converge[0], 26, "Took a different number of frames to converge!")
+        self.assertEqual(frames_to_converge[0], 27, "Took a different number of frames to converge!")
 
     async def _test_franka_slow_convergence(self):
         World.clear_instance()

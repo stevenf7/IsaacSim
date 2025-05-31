@@ -1,4 +1,7 @@
 # Changelog
+## [2.3.5] - 2025-05-30
+### Changed
+- Update timeouts to fix test
 
 ## [2.3.4] - 2025-05-29
 ### Fixed

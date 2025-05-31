@@ -11,6 +11,7 @@
 ## [4.6.7] - 2025-05-27
 ### Added
 - Multithreaded publishing for LaserScan publisher
+
 ### Fixed
 - Fix memory lifetimes in LaserSCan publisher.
 

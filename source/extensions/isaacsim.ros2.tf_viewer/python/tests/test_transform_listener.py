@@ -102,7 +102,6 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
             "panda_link5",
             "panda_link6",
             "panda_link7",
-            "panda_link8",
             "panda_hand",
             "panda_leftfinger",
             "panda_rightfinger",
@@ -122,8 +121,7 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
             ("panda_link5", "panda_link4"),
             ("panda_link6", "panda_link5"),
             ("panda_link7", "panda_link6"),
-            ("panda_link8", "panda_link7"),
-            ("panda_hand", "panda_link8"),
+            ("panda_hand", "panda_link7"),
             ("panda_leftfinger", "panda_hand"),
             ("panda_rightfinger", "panda_hand"),
         ]

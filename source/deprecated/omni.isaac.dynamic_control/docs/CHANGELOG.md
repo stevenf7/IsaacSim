@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.6] - 2025-05-30
+### Changed
+- Update golden values for unit test
+
 ## [2.0.5] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

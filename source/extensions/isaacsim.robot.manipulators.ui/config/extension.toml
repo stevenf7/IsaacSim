@@ -1,5 +1,5 @@
 [package]
-version = "2.1.14"
+version = "2.1.15"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
 description = "Manipulators"
