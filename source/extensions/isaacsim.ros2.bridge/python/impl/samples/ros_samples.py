@@ -31,12 +31,23 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self._ext_id = ext_id
 
-        carter_name = "Carter"
+        nova_carter_name = "Nova Carter"
         get_browser_instance().register_example(
-            name=carter_name,
+            name=nova_carter_name,
             execute_entrypoint=self.build_window,
             ui_hook=lambda a=weakref.proxy(self): a.build_ui(
-                carter_name, "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
+                nova_carter_name, "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
+            ),
+            category="ROS2/Navigation",
+        )
+
+        nova_carter_joint_states_name = "Nova Carter Joint States"
+        get_browser_instance().register_example(
+            name=nova_carter_joint_states_name,
+            execute_entrypoint=self.build_window,
+            ui_hook=lambda a=weakref.proxy(self): a.build_ui(
+                nova_carter_joint_states_name,
+                "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation_joint_states.usd",
             ),
             category="ROS2/Navigation",
         )
