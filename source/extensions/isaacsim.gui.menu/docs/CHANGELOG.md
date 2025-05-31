@@ -3,6 +3,10 @@
 ### Changed
 - Update timeouts to fix test
 
+## [2.3.5] - 2025-05-29
+### Changed
+- Added Sensors and Spatial SDG to the Tools menu
+
 ## [2.3.4] - 2025-05-29
 ### Fixed
 - Error due to usage of force_legacy_api

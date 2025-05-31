@@ -51,22 +51,15 @@ class ToolsMenuExtension:
                     MenuLayout.SubMenu(
                         "Replicator",
                         [
-                            MenuLayout.Item(name="Replicator YAML", source="Replicator/Replicator YAML"),
-                            MenuLayout.Item(
-                                name="Semantics Schema Editor", source="Replicator/Semantics Schema Editor"
-                            ),
+                            MenuLayout.Item(name="Replicator YAML"),
+                            MenuLayout.Item(name="Semantics Schema Editor"),
                             MenuLayout.Item(name="Synthetic Data Recorder"),
                             MenuLayout.Seperator("Orchestrator"),
-                            MenuLayout.Item(name="Preview", source="Replicator/Preview"),
-                            MenuLayout.Item(name="Start", source="Replicator/Start"),
-                            MenuLayout.Item(name="Step", source="Replicator/Step"),
-                            MenuLayout.Seperator("Agent SDG"),
-                            MenuLayout.Item("Agent SDG"),
-                            MenuLayout.Item("Calibration Tool"),
-                            MenuLayout.Item("Command Injection"),
-                            MenuLayout.Item("Custom Command"),
+                            MenuLayout.Item(name="Preview"),
+                            MenuLayout.Item(name="Start"),
+                            MenuLayout.Item(name="Step"),
                             MenuLayout.Seperator("Grasping"),
-                            MenuLayout.Item(name="Grasping", source="Replicator/Grasping"),
+                            MenuLayout.Item(name="Grasping"),
                         ],
                     ),
                     MenuLayout.SubMenu(
@@ -97,8 +90,31 @@ class ToolsMenuExtension:
                             MenuLayout.Item("Grasp Editor"),
                             MenuLayout.Item("Lula Robot Description Editor"),
                             MenuLayout.Item("Lula Test Widget"),
-                            MenuLayout.Seperator("Sensors"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Sensors",
+                        [
+                            MenuLayout.Item("Camera Calibration"),
+                            MenuLayout.Item("Camera Placement"),
                             MenuLayout.Item("Camera Inspector"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Spatial SDG",
+                        [
+                            MenuLayout.Seperator("Actor Simulation and SDG"),
+                            MenuLayout.Item("Actor SDG"),
+                            MenuLayout.Item("Command Injection"),
+                            MenuLayout.Item("Command Setting"),
+                            MenuLayout.Seperator("Object Simulation and SDG"),
+                            MenuLayout.Item("Object SDG"),
+                            MenuLayout.Item("Distribution Visualizer"),
+                            MenuLayout.Seperator("VLM Scene Captioning"),
+                            MenuLayout.Item("VLM Scene Captioning"),
+                            MenuLayout.Seperator("Physical Space Event Generation"),
+                            MenuLayout.Item("Event Scene Tagger"),
+                            MenuLayout.Item("Event Config File"),
                         ],
                     ),
                     MenuLayout.SubMenu(

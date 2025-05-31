@@ -34,9 +34,9 @@ class FixmeMenuExtension:
             MenuLayout.Menu(
                 "FixMe",
                 [
-                    MenuLayout.Item("Replicator", source="Replicator"),
+                    MenuLayout.Item("Replicators", source="Replicator"),
                     MenuLayout.SubMenu(
-                        "Replicator",
+                        "Replicators",
                         [
                             # have to remove hidden menu items too...
                             MenuLayout.Item("Capture On Play", source="Replicator/Capture On Play"),

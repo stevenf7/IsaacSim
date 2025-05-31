@@ -69,7 +69,7 @@ class Extension(omni.ext.IExt):
         menu_items = [
             make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=menu_items)]
+        self._menu_items = [MenuItemDescription(name="Sensors", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Tools")
         self._all_cameras = []
         self._all_viewports = []
