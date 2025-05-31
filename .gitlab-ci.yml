@@ -47,6 +47,7 @@ stages:
   - prod-test
   - check-externals
   - stage-github
+  - verify-github-staging
   - pages
 
 # ==============================================================================================================
@@ -1623,3 +1624,26 @@ stage-for-github:
         when: manual
       # - !reference [.rules-version-changed, rules]
       # - !reference [.rules-push-manual, rules]
+
+verify-github-staging:
+    stage: verify-github-staging
+    timeout: 1 hour
+    interruptible: true
+    allow_failure: true
+    extends:
+      - .runner-utility-linux-x86_64
+    script:
+      - ./tools/ci/check_github_staging/check_github_staging.sh _git/isaacsim_staging
+    needs: 
+      - job: stage-for-github
+        optional: true
+    rules:
+      - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+      - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+    artifacts:
+      expire_in: 2 weeks
+      when: always
+      paths:
+        - results.json
+        - results_by_file.json
+        
