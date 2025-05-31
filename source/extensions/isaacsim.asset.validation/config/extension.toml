@@ -13,12 +13,12 @@ icon = "data/icon.png"
 writeTarget.platform = true # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 
 [dependencies]
-"omni.asset_validator.core" = {}
-"omni.usd.schema.physx" = {}
-"omni.hydra.usdrt_delegate" = {}
 "isaacsim.robot.schema" = {}
-"omni.usd" = {}
+"omni.asset_validator.core" = {}
+"omni.hydra.usdrt_delegate" = {}
 "omni.physx"={}
+"omni.usd" = {}
+"omni.usd.schema.physx" = {}
 
 [[python.module]]
 name = "isaacsim.asset.validation"

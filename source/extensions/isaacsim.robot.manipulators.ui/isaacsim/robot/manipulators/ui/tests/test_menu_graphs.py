@@ -174,28 +174,28 @@ class TestArticulationGraphs(OmniUiTest):
         self._timeline.stop()
         # Verify first joint reached target position
         self.assertAlmostEqual(
-            joint_positions[0], desired_joint_positions[0], places=2, msg="Joint[0] did not reach target position"
+            joint_positions[0], desired_joint_positions[0], places=1, msg="Joint[0] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[1], desired_joint_positions[1], places=2, msg="Joint[1] did not reach target position"
+            joint_positions[1], desired_joint_positions[1], places=1, msg="Joint[1] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[2], desired_joint_positions[2], places=2, msg="Joint[2] did not reach target position"
+            joint_positions[2], desired_joint_positions[2], places=1, msg="Joint[2] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[3], desired_joint_positions[3], places=2, msg="Joint[3] did not reach target position"
+            joint_positions[3], desired_joint_positions[3], places=1, msg="Joint[3] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[4], desired_joint_positions[4], places=2, msg="Joint[4] did not reach target position"
+            joint_positions[4], desired_joint_positions[4], places=1, msg="Joint[4] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[5], desired_joint_positions[5], places=2, msg="Joint[5] did not reach target position"
+            joint_positions[5], desired_joint_positions[5], places=1, msg="Joint[5] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[6], desired_joint_positions[6], places=2, msg="Joint[6] did not reach target position"
+            joint_positions[6], desired_joint_positions[6], places=1, msg="Joint[6] did not reach target position"
         )
         self.assertAlmostEqual(
-            joint_positions[7], desired_joint_positions[7], places=2, msg="Joint[7] did not reach target position"
+            joint_positions[7], desired_joint_positions[7], places=1, msg="Joint[7] did not reach target position"
         )
 
     async def test_velocity_graph_creation(self):

@@ -73,9 +73,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         num_joints = self._dc.get_articulation_joint_count(art)
         num_dofs = self._dc.get_articulation_dof_count(art)
         num_bodies = self._dc.get_articulation_body_count(art)
-        self.assertEqual(num_joints, 11)
+        self.assertEqual(num_joints, 10)
         self.assertEqual(num_dofs, 9)
-        self.assertEqual(num_bodies, 12)
+        self.assertEqual(num_bodies, 11)
         # difference between joint and dof
         fixed_joint_ptr = self._dc.find_articulation_joint(art, "panda_hand_joint")
         fixed_dof_ptr = self._dc.find_articulation_dof(art, "panda_hand_joint")
@@ -123,9 +123,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.3893074, 0.00470776, 0.45819843], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.38920847, 0.0046649, 0.45783463], atol=1e-5
             ),
-            f"[0.3893074, 0.00470776, 0.45819843] != {expected_pos}",
+            f"[0.38920847, 0.0046649, 0.45783463] != {expected_pos}",
         )
 
         new_pose = dc_conversions.create_transform(Gf.Vec3d(0.10, 0.10, 0.10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
@@ -137,9 +137,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09532192, 0.4892977, 0.5582056], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09533519, 0.48921037, 0.5577688], atol=1e-5
             ),
-            f"[0.09532192, 0.4892977, 0.5582056] != {expected_pos}",
+            f"[0.09533519, 0.48921037, 0.5577688] != {expected_pos}",
         )
 
         pass

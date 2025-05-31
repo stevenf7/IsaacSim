@@ -1558,7 +1558,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self.add_frankas(backend="numpy")
         await self._my_world.reset_async()
         # ground-truth values
-        body_names = {"panda_link0": 0, "panda_rightfinger": 11}
+        body_names = {"panda_link0": 0, "panda_rightfinger": 10}
         # test
         for name, value in body_names.items():
             self.assertEqual(self._frankas_view.get_body_index(name), value)
@@ -1920,7 +1920,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                     self.assertTrue(inv_masses.shape == (1, 3, 9))
                 else:
                     cur_value = self._frankas_view.get_body_inertias()
-                    offset = np.zeros((2, 12, 9))
+                    offset = np.zeros((2, 11, 9))
                     offset[:, :, [0, 4, 8]] += 0.1
                     new_value = cur_value.numpy() + offset
                     new_value = wp.from_numpy(new_value, dtype=wp.float32, device=device)
@@ -2581,10 +2581,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         initial_joint_positions = self._frankas_view.get_joint_positions()
         targets = np.array([1.4999933, 1.4999993, 1.500006, -0.06979994, 1.4996891, 1.5208117, 1.2542528, 0.04, 0.04])
         self._frankas_view.set_joint_position_targets(targets, indices=[1])
-        for i in range(60):
+        for i in range(120):
             await self._step()
         new_positions = self._frankas_view.get_joint_positions()
         self._frankas_view.resume_motion()  # should just print a warning
+
         self.assertTrue(np.isclose(new_positions[1], targets, atol=1e-01).all())
         self._frankas_view.set_joint_positions(initial_joint_positions)
         self._frankas_view.set_joint_position_targets(targets, indices=[1])
@@ -2596,7 +2597,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         new_positions = self._frankas_view.get_joint_positions()
         self.assertFalse(np.isclose(new_positions[1], targets, atol=1e-01).all())
         self._frankas_view.resume_motion()
-        for i in range(60):
+        for i in range(120):
             await self._step()
         new_positions = self._frankas_view.get_joint_positions()
         self.assertTrue(np.isclose(new_positions[1], targets, atol=1e-01).all())

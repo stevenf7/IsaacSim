@@ -1,4 +1,8 @@
 # Changelog
+## [4.5.3] - 2025-05-30
+### Changed
+- Update golden values for unit test
+
 ## [4.5.2] - 2025-05-28
 ### Changed
 - Support stage in memory in SimulationContext
