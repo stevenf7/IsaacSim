@@ -22,5 +22,5 @@ carb.log_warn(
     f"{old_extension_name} has been deprecated in favor of {new_extension_name}. Please update your code accordingly."
 )
 
-from isaacsim.core.cloner.cloner import Cloner
-from isaacsim.core.cloner.grid_cloner import GridCloner
+from isaacsim.core.cloner.impl.cloner import Cloner
+from isaacsim.core.cloner.impl.grid_cloner import GridCloner

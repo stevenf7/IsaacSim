@@ -17,9 +17,11 @@ import os
 
 import numpy as np
 import omni.kit
+import usdrt
 from isaacsim.core.cloner import Cloner, GridCloner
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf, Usd, UsdGeom, UsdPhysics, Vt
+from omni.physx import get_physx_simulation_interface, get_physxunittests_interface
+from pxr import Gf, Usd, UsdGeom, UsdPhysics, UsdUtils, Vt
 
 
 class TestSimpleCloner(omni.kit.test.AsyncTestCase):
@@ -524,3 +526,180 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
                 stage.GetPrimAtPath(f"/World/Cube_{i}").GetAttribute("xformOp:translate").Get()
                 == target_translations[i]
             )
+
+    async def test_fabric_cloner(self):
+        stage = Usd.Stage.CreateInMemory()
+
+        cache = UsdUtils.StageCache.Get()
+        cache.Insert(stage)
+
+        stage_id = cache.GetId(stage).ToLongInt()
+
+        # create our base environment with one cube
+        base_env_path = "/World/Cube_0"
+        UsdGeom.Cube.Define(stage, base_env_path)
+
+        # create a Cloner instance
+        cloner = Cloner(stage=stage)
+
+        # generate 4 paths that begin with "/World/Cube" - path will be appended with _{index}
+        target_paths = cloner.generate_paths("/World/Cube", 4)
+
+        cloner.clone(
+            source_prim_path=base_env_path, prim_paths=target_paths, replicate_physics=False, clone_in_fabric=True
+        )
+
+        # check that the prims are not in USD
+        for path in target_paths:
+            if path != base_env_path:
+                prim = stage.GetPrimAtPath(str(path))
+                self.assertTrue(not prim.IsValid())
+
+        usdrt_stage = usdrt.Usd.Stage.Attach(stage_id)
+        for path in target_paths:
+            prim = usdrt_stage.GetPrimAtPath(str(path))
+            self.assertTrue(prim is not None)
+            self.assertTrue(prim.IsValid())
+            self.assertTrue(prim.GetTypeName() == "Cube")
+
+        cache.Erase(stage)
+
+    async def test_fabric_grid_cloner_offsets(self):
+        stage = omni.usd.get_context().get_stage()
+
+        # create our base environment with one ant
+        base_env_path = "/World/envs"
+
+        cloner = GridCloner(spacing=3)
+        cloner.define_base_env(base_env_path + "/env_0")
+        UsdGeom.Xform.Define(stage, base_env_path + "/env_0")
+        prim = stage.DefinePrim(base_env_path + "/env_0/Ant", "Xform")
+        asset_root_path = await get_assets_root_path_async()
+        prim.GetReferences().AddReference(asset_root_path + "/Isaac/Robots/IsaacSim/Ant/ant_instanceable.usd")
+
+        target_paths = cloner.generate_paths("/World/envs/env", 100)
+
+        position_offsets = [[0, 0, 1.0]] * 100
+        orientation_offsets = [[0, 0, 0, 1.0]] * 100
+
+        # clone the ants at target paths
+        target_translations = cloner.clone(
+            source_prim_path="/World/envs/env_0",
+            prim_paths=target_paths,
+            replicate_physics=True,
+            base_env_path="/World/envs",
+            copy_from_source=False,
+            position_offsets=position_offsets,
+            orientation_offsets=orientation_offsets,
+            clone_in_fabric=True,
+        )
+
+        for i in range(100):
+            usdrt_stage = usdrt.Usd.Stage.Attach(omni.usd.get_context().get_stage_id())
+            prim = usdrt_stage.GetPrimAtPath(f"/World/envs/env_{i}")
+            self.assertTrue(prim is not None)
+            self.assertTrue(prim.IsValid())
+
+            world_matrix_attr = prim.GetAttribute("omni:fabric:worldMatrix")
+            self.assertTrue(world_matrix_attr is not None)
+
+            transform = usdrt.Gf.Transform(world_matrix_attr.Get())
+            self.assertTrue(transform.GetTranslation() == usdrt.Gf.Vec3d(Gf.Vec3d(*target_translations[i])))
+
+            self.assertTrue(transform.GetTranslation()[2] == 1.0)
+            self.assertTrue(
+                transform.GetRotation() == usdrt.Gf.Rotation(usdrt.Gf.Quatd(0.0, usdrt.Gf.Vec3d(0.0, 0.0, 1.0)))
+            )
+
+    def get_num_dynamic_rigid_bodies(self):
+        sim_stats = get_physxunittests_interface().get_physics_stats()
+        return sim_stats["numDynamicRigids"]
+
+    async def test_fabric_physics_cloner(self):
+        stage = Usd.Stage.CreateInMemory()
+
+        cache = UsdUtils.StageCache.Get()
+        cache.Insert(stage)
+
+        stage_id = cache.GetId(stage).ToLongInt()
+
+        # create our base environment with one cube
+        base_env_path = "/World/envs"
+        UsdGeom.Xform.Define(stage, base_env_path)
+        source_prim_path = "/World/envs/Cube_0"
+        cube = UsdGeom.Cube.Define(stage, source_prim_path)
+        UsdPhysics.RigidBodyAPI.Apply(cube.GetPrim())
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+
+        # create a Cloner instance
+        cloner = Cloner(stage=stage)
+
+        # generate 4 paths that begin with "/World/envs/Cube" - path will be appended with _{index}
+        target_paths = cloner.generate_paths("/World/envs/Cube", 4)
+
+        cloner.clone(
+            source_prim_path=source_prim_path,
+            base_env_path=base_env_path,
+            prim_paths=target_paths,
+            replicate_physics=True,
+            clone_in_fabric=True,
+        )
+
+        # attach physics to the stage
+        get_physx_simulation_interface().attach_stage(stage_id)
+
+        # check that the prims are in physics
+        num_dynamic_rigid_bodies = self.get_num_dynamic_rigid_bodies()
+        self.assertTrue(num_dynamic_rigid_bodies == 4)
+
+        get_physx_simulation_interface().detach_stage()
+
+        cache.Erase(stage)
+
+    async def test_fabric_physics_cloner_usd_context(self):
+
+        await omni.usd.get_context().new_stage_async()
+
+        stage = Usd.Stage.CreateInMemory()
+
+        cache = UsdUtils.StageCache.Get()
+        cache.Insert(stage)
+
+        stage_id = cache.GetId(stage).ToLongInt()
+
+        # create our base environment with one cube
+        base_env_path = "/World/envs"
+        UsdGeom.Xform.Define(stage, base_env_path)
+        source_prim_path = "/World/envs/Cube_0"
+        cube = UsdGeom.Cube.Define(stage, source_prim_path)
+        UsdPhysics.RigidBodyAPI.Apply(cube.GetPrim())
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+
+        # create a Cloner instance
+        cloner = Cloner(stage=stage)
+
+        # generate 4 paths that begin with "/World/envs/Cube" - path will be appended with _{index}
+        target_paths = cloner.generate_paths("/World/envs/Cube", 4)
+
+        cloner.clone(
+            source_prim_path=source_prim_path,
+            base_env_path=base_env_path,
+            prim_paths=target_paths,
+            replicate_physics=True,
+            clone_in_fabric=True,
+        )
+
+        omni.usd.get_context().attach_stage_with_callback(stage_id, None)
+
+        # attach physics to the stage
+        get_physx_simulation_interface().attach_stage(stage_id)
+
+        # check that the prims are in physics
+        num_dynamic_rigid_bodies = self.get_num_dynamic_rigid_bodies()
+        self.assertTrue(num_dynamic_rigid_bodies == 4)
+
+        get_physx_simulation_interface().detach_stage()
+
+        await omni.usd.get_context().new_stage_async()
+
+        cache.Erase(stage)
