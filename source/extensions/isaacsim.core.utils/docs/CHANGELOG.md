@@ -1,4 +1,7 @@
 # Changelog
+## [3.4.0] - 2025-05-28
+### Added
+- Add create stage in memory to stage utils
 
 ## [3.3.2] - 2025-05-26
 ### Fixed

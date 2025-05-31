@@ -23,6 +23,8 @@ import omni.kit
 import omni.physx
 import omni.timeline
 import omni.usd
+from isaacsim.core.utils.prims import get_prim_at_path
+from isaacsim.core.utils.stage import get_current_stage, get_current_stage_id
 from pxr import PhysxSchema
 
 from .isaac_events import IsaacEvents
@@ -122,7 +124,7 @@ class SimulationManager:
 
     def _track_physics_scenes() -> None:
         def add_physics_scenes(physics_scene_prim_path):
-            prim = omni.usd.get_context().get_stage().GetPrimAtPath(physics_scene_prim_path)
+            prim = get_prim_at_path(physics_scene_prim_path)
             if prim.GetTypeName() == "PhysicsScene":
                 SimulationManager._physics_scene_apis[physics_scene_prim_path] = PhysxSchema.PhysxSceneAPI.Apply(prim)
 
@@ -157,9 +159,13 @@ class SimulationManager:
         if "cuda" in SimulationManager.get_physics_sim_device() and SimulationManager._backend == "numpy":
             SimulationManager._backend = "torch"
             carb.log_warn("changing backend from numpy to torch since numpy backend cannot be used with GPU piplines")
-        SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(SimulationManager._backend)
+        SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(
+            SimulationManager.get_backend(), stage_id=get_current_stage_id()
+        )
         SimulationManager._physics_sim_view.set_subspace_roots("/")
-        SimulationManager._physics_sim_view__warp = omni.physics.tensors.create_simulation_view("warp")
+        SimulationManager._physics_sim_view__warp = omni.physics.tensors.create_simulation_view(
+            "warp", stage_id=get_current_stage_id()
+        )
         SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
         SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
         SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
@@ -185,7 +191,7 @@ class SimulationManager:
             if len(SimulationManager._physics_scene_apis) > 0:
                 physics_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
             else:
-                carb.log_warn("Physics scene is not found in stage")
+                # carb.log_warn("Physics scene is not found in stage")
                 return None
         else:
             if physics_scene in SimulationManager._physics_scene_apis:
@@ -294,7 +300,7 @@ class SimulationManager:
             if dt < 0:
                 raise ValueError("physics dt cannot be <0")
             # if no stage or no change in physics timestep, exit.
-            if omni.usd.get_context().get_stage() is None:
+            if get_current_stage() is None:
                 return
             if dt == 0:
                 physics_scene_api.GetTimeStepsPerSecondAttr().Set(0)

@@ -18,11 +18,12 @@ import asyncio
 import carb
 import omni.kit.test
 import usdrt
-from isaacsim.core.utils.prims import define_prim
+from isaacsim.core.utils.prims import create_prim, define_prim, get_prim_at_path
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     clear_stage,
     create_new_stage_async,
+    create_new_stage_in_memory,
     get_current_stage,
     get_current_stage_id,
     update_stage_async,
@@ -35,6 +36,11 @@ from pxr import Usd, UsdGeom, UsdUtils
 class TestStage(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled("omni.physx.fabric", True)
+        await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
@@ -44,6 +50,47 @@ class TestStage(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
         pass
+
+    def is_current_stage_in_memory() -> bool:
+        """This function checks if the current stage is in memory.
+
+        Compares the stage id of the current stage with the stage id of the context stage.
+
+        Returns:
+            If the current stage is in memory.
+        """
+
+        # grab current stage id
+        stage_id = get_current_stage_id()
+
+        # grab context stage id
+        context_stage = omni.usd.get_context().get_stage()
+        with use_stage(context_stage):
+            context_stage_id = get_current_stage_id()
+
+        # check if stage ids are the same
+        return stage_id != context_stage_id
+
+    def attach_stage_to_usd_context():
+        """Attaches stage in memory to usd context.
+
+        This function should be called during or after scene is created and before stage is simulated or rendered.
+
+        Note:
+            If the stage is not in memory, this function will return without doing anything.
+        """
+        import omni.physxfabric
+
+        # is stage is not in memory, we don't need to attach it
+        if not TestStage.is_current_stage_in_memory():
+            return
+
+        stage = get_current_stage()
+        stage_id = get_current_stage_id()
+
+        omni.usd.get_context().attach_stage_with_callback(stage_id)
+        physx_sim_interface = omni.physx.get_physx_simulation_interface()
+        physx_sim_interface.attach_stage(stage_id)
 
     async def test_clear_stage(self):
         await create_new_stage_async()
@@ -116,3 +163,36 @@ class TestStage(omni.kit.test.AsyncTestCase):
         with use_stage(stage_in_memory):
             self.assertIsInstance(get_current_stage(fabric=True), usdrt.Usd.Stage)
         self.assertIsInstance(get_current_stage(fabric=True), usdrt.Usd.Stage)
+
+    async def test_stage_in_memory(self):
+        # create stage in memory
+        stage_in_memory = create_new_stage_in_memory()
+
+        prim_path = "/World/Test"
+        # set-up with context to use stage in memory
+        with use_stage(stage_in_memory):
+            # create test prim
+            create_prim(prim_path)
+
+            # verify stage is in memory
+            self.assertTrue(TestStage.is_current_stage_in_memory())
+
+            # verify prim exists in stage in memory
+            prim = get_prim_at_path(prim_path)
+            self.assertTrue(prim.IsValid())
+
+            # verify prim does not exist in context stage
+            context_stage = omni.usd.get_context().get_stage()
+            with use_stage(context_stage):
+                prim = get_prim_at_path(prim_path)
+                self.assertFalse(prim.IsValid())
+
+            # attach stage to context
+            TestStage.attach_stage_to_usd_context()
+
+        # verify stage is no longer in memory
+        self.assertFalse(TestStage.is_current_stage_in_memory())
+
+        # verify prim now exists in context stage
+        prim = get_prim_at_path(prim_path)
+        self.assertTrue(prim.IsValid())

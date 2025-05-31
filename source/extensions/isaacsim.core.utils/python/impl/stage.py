@@ -361,7 +361,7 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
 
 
 def create_new_stage() -> Usd.Stage:
-    """Create a new stage.
+    """Create a new stage attached to the USD context.
 
     Returns:
         Usd.Stage: The created USD stage.
@@ -373,9 +373,31 @@ def create_new_stage() -> Usd.Stage:
         >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> stage_utils.create_new_stage()
-        True
+        Usd.Stage.Open(rootLayer=Sdf.Find('anon:0x7fba6c04f840:World7.usd'),
+                        sessionLayer=Sdf.Find('anon:0x7fba6c01c5c0:World7-session.usda'),
+                        pathResolverContext=<invalid repr>)
     """
     return omni.usd.get_context().new_stage()
+
+
+def create_new_stage_in_memory() -> Usd.Stage:
+    """Create a new stage in memory.
+
+    Returns:
+        Usd.Stage: The created USD stage.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.utils.stage as stage_utils
+        >>>
+        >>> stage_utils.create_new_stage_in_memory()
+        Usd.Stage.Open(rootLayer=Sdf.Find('anon:0xf7b00e0:tmp.usda'),
+                        sessionLayer=Sdf.Find('anon:0xf7cd2e0:tmp-session.usda'),
+                        pathResolverContext=<invalid repr>)
+    """
+    return Usd.Stage.CreateInMemory()
 
 
 async def create_new_stage_async() -> None:
