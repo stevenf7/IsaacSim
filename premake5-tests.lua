@@ -195,6 +195,11 @@ function create_tests()
         "standalone_examples/api/isaacsim.sensors.camera/camera.py",
         "--test"
     )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_stereoscopic_depth.py",
+        "--test"
+    )
 
     -- isaacsim.sensors.rtx
     python_sample_test(
@@ -699,6 +704,11 @@ function create_tests()
             "tests-standalone_benchmarks-benchmark_robots_evobot",
             "standalone_examples/benchmarks/benchmark_robots_evobot.py",
             "--num-frames 10 --num-robots 1 1 1",
+        },
+        {
+            "tests-standalone_benchmarks-benchmark_single_view_depth_sensor",
+            "standalone_examples/benchmarks/benchmark_single_view_depth_sensor.py",
+            "--num-frames 10 --num-cameras 2",
         },
     }
 

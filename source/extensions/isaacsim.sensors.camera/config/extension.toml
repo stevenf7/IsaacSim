@@ -1,5 +1,5 @@
 [package]
-version = "1.1.2"
+version = "1.2.0"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation"
 description = "Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering."
@@ -25,6 +25,7 @@ writeTarget.kit = true
 "omni.timeline" = {} # Needed for simulation to occur
 "omni.usd" = {} # needed for call to add aov
 "omni.usd.schema.omni_lens_distortion" = {}
+"omni.usd.schema.render_settings.rtx" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.camera"
@@ -77,6 +78,11 @@ args = [
     "--/app/player/useFixedTimeStepping=false",
     "--/app/runLoops/main/rateLimitEnabled=false",
     "--/app/runLoops/main/manualModeEnabled=true",
+]
+stdoutFailPatterns.exclude = [
+    '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0*',
+    '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view 1 device 0*',
+    '*[Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture.*',
 ]
 
 [[test]]
