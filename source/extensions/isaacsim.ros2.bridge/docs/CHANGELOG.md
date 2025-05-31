@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.7.0] - 2025-05-30
+### Addded
+- New Nova Carter Joint States sample
+
 ## [4.6.9] - 2025-05-30
 ### Removed
 - No longer traverse stage to find OmniSensor prims in test_rtx_sensor (returned by command).
