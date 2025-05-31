@@ -429,6 +429,7 @@ doxygen_input = [
   "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/UrdfImporter.h",
   "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/UrdfParser.h",
   "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/UrdfTypes.h",
+  "source/extensions/isaacsim.core.cloner/include/isaacsim/core/cloner/Cloner.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Buffer.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Color.h",
