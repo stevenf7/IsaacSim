@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.4.3] - 2025-05-29
+### Changed
+- Update replicator menu entry name to match Isaac Sim menu
+- removed Isaac Sim Assets [Beta] from default layouts
+
 ## [1.4.2] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

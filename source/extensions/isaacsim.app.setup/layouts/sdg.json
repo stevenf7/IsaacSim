@@ -71,22 +71,10 @@
             "children": [
               {
                 "dock_id": 4,
-                "dock_tab_bar_enabled": true,
-                "dock_tab_bar_visible": true,
                 "height": 299.0,
                 "position_x": 0.0,
                 "position_y": 1014.0,
                 "selected_in_dock": true,
-                "title": "Isaac Sim Assets [Beta]",
-                "visible": true,
-                "width": 1854.0
-              },
-              {
-                "dock_id": 4,
-                "height": 299.0,
-                "position_x": 0.0,
-                "position_y": 1014.0,
-                "selected_in_dock": false,
                 "title": "Content",
                 "visible": true,
                 "width": 1854.0

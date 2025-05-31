@@ -31,8 +31,11 @@ class LayoutMenuExtension:
                     MenuLayout.Seperator("Templates"),
                     MenuLayout.Item("Default"),
                     MenuLayout.Item("Visual Scripting"),
-                    MenuLayout.Item("Synthetic Data Generation"),
+                    MenuLayout.Item(
+                        "Replicator "
+                    ),  # the space after the name is intentional, otherwise it gets confused about the replicator in the tools menu
                     MenuLayout.Item("Occupancy Map Generation"),
+                    MenuLayout.Item("Spatial SDG"),
                     MenuLayout.Seperator("Save/Load"),
                     MenuLayout.Item("Save Layout", source="Window/Layout/Save Layout..."),
                     MenuLayout.Item("Load Layout", source="Window/Layout/Load Layout..."),

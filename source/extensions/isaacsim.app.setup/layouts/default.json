@@ -63,16 +63,6 @@
                 "position_x": 0.0,
                 "position_y": 22.666667938232422,
                 "selected_in_dock": false,
-                "title": "Isaac Sim Assets [Beta]",
-                "visible": true,
-                "width": 1866.666748046875
-              },
-              {
-                "dock_id": 4,
-                "height": 554.6666870117188,
-                "position_x": 0.0,
-                "position_y": 22.666667938232422,
-                "selected_in_dock": false,
                 "title": "Robotics Examples",
                 "visible": true,
                 "width": 1866.666748046875

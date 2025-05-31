@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.11] - 2025-05-29
+### Changed
+- Update menu name to Sensors
+
 ## [1.0.10] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
