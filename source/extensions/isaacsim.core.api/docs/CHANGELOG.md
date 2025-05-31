@@ -1,4 +1,8 @@
 # Changelog
+## [4.5.2] - 2025-05-28
+### Changed
+- Support stage in memory in SimulationContext
+
 ## [4.5.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

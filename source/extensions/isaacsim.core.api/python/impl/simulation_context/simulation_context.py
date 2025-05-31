@@ -43,6 +43,7 @@ from isaacsim.core.utils.stage import (
     set_stage_units,
     set_stage_up_axis,
     update_stage_async,
+    use_stage,
 )
 from pxr import Usd
 
@@ -81,6 +82,7 @@ class SimulationContext:
                                         solver type is TGS]. Defaults to True.
         backend (str, optional): specifies the backend to be used (numpy or torch or warp). Defaults to numpy.
         device (Optional[str], optional): specifies the device to be used if running on the gpu with torch or warp backend.
+        stage (Optional[Usd.Stage], optional): specifies the stage to be used. Defaults to None.
 
     Example:
 
@@ -106,6 +108,7 @@ class SimulationContext:
         set_defaults: bool = True,
         backend: str = "numpy",
         device: Optional[str] = None,
+        stage: Optional[Usd.Stage] = None,
     ) -> None:
         if SimulationContext._sim_context_initialized:
             return
@@ -121,6 +124,7 @@ class SimulationContext:
         self._sim_params = sim_params
         SimulationManager.set_backend(backend)
         self._device = device
+        self._stage = stage
         self._settings = carb.settings.get_settings()
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
@@ -132,6 +136,7 @@ class SimulationContext:
         self._render_callback_functions = dict()
         self._physics_context = None
         self._current_time = 0
+        self._skip_next_stage_open_callback_fn = False
         if self._set_defaults:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
@@ -285,7 +290,9 @@ class SimulationContext:
                            sessionLayer=Sdf.Find('anon:0x...:World...-session.usda'),
                            pathResolverContext=<invalid repr>)
         """
-        return get_current_stage()
+        if self._stage is None:
+            return get_current_stage()
+        return self._stage
 
     @property
     def backend(self) -> str:
@@ -1288,6 +1295,10 @@ class SimulationContext:
         gc.collect()
         return
 
+    def skip_next_stage_open_callback(self):
+        """Skip the next stage_open_callback_fn trigger"""
+        self._skip_next_stage_open_callback_fn = True
+
     """
     Private helpers.
     """
@@ -1303,22 +1314,24 @@ class SimulationContext:
         backend: str = "numpy",
         device: Optional[str] = None,
     ) -> Usd.Stage:
-        if get_current_stage() is None:
+        if self.stage is None:
             create_new_stage()
             SimulationContext.render(self)
-        set_stage_up_axis("z")
-        if stage_units_in_meters is not None:
-            set_stage_units(stage_units_in_meters=stage_units_in_meters)
-        SimulationContext.render(self)
-        self._physics_context = PhysicsContext(
-            physics_dt=physics_dt,
-            prim_path=physics_prim_path,
-            sim_params=sim_params,
-            set_defaults=set_defaults,
-        )
-        if device is not None:
-            SimulationManager.set_physics_sim_device(device)
-        self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
+
+        with use_stage(self.stage):
+            set_stage_up_axis("z")
+            if stage_units_in_meters is not None:
+                set_stage_units(stage_units_in_meters=stage_units_in_meters)
+            SimulationContext.render(self)
+            self._physics_context = PhysicsContext(
+                physics_dt=physics_dt,
+                prim_path=physics_prim_path,
+                sim_params=sim_params,
+                set_defaults=set_defaults,
+            )
+            if device is not None:
+                SimulationManager.set_physics_sim_device(device)
+            self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         return self.stage
 
     async def _initialize_stage_async(
@@ -1380,6 +1393,11 @@ class SimulationContext:
             del self._physics_callback_functions[callback_name]
 
     def _stage_open_callback_fn(self, event):
+        # skip the callback if required
+        if self._skip_next_stage_open_callback_fn:
+            self._skip_next_stage_open_callback_fn = False
+            return
+
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
         self._stage_callback_functions = dict()
