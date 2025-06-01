@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.5.0] - 2025-05-30
+### Changed
+- Added Isaac prefix to Robot Schema classes
+
 ## [3.4.2] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

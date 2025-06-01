@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.2] - 2025-05-30
+### Changed
+- Update to typed name for schema instead of hard-coded strings
+
 ## [3.0.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

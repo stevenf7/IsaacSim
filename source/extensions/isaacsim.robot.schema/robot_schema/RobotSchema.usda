@@ -19,7 +19,7 @@ over "GLOBAL"(
 {
 
 }
-class "RobotAPI"
+class "IsaacRobotAPI"
 (
     inherits = </APISchemaBase>
     customData = {
@@ -43,7 +43,7 @@ class "RobotAPI"
     )
 }
 
-class "LinkAPI"
+class "IsaacLinkAPI"
 (
     inherits = </APISchemaBase>
     customData = {
@@ -55,7 +55,7 @@ class "LinkAPI"
 }
 
 
-class "ReferencePointAPI"
+class "IsaacReferencePointAPI"
 (
     inherits = </APISchemaBase>
     customData = {
@@ -71,7 +71,7 @@ class "ReferencePointAPI"
 
 
 
-class "JointAPI"
+class "IsaacJointAPI"
 (
 inherits = </APISchemaBase>
     customData = {
@@ -91,7 +91,7 @@ inherits = </APISchemaBase>
     bool[] isaac:actuator = [0,0,0,0,0,0]
 }
 
-class "SurfaceGripper"
+class "IsaacSurfaceGripper"
 (
 	  inherits = </Typed>
 )
@@ -150,7 +150,7 @@ class "SurfaceGripper"
     )
 }
 
-class "AttachmentPointAPI"
+class "IsaacAttachmentPointAPI"
 (
 inherits = </APISchemaBase>
     customData = {

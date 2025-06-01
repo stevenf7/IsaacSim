@@ -19,12 +19,12 @@ import pxr
 
 class Classes(Enum):
 
-    ROBOT_API = "RobotAPI"
-    LINK_API = "LinkAPI"
-    REFERENCE_POINT_API = "ReferencePointAPI"
-    JOINT_API = "JointAPI"
-    SURFACE_GRIPPER = "SurfaceGripper"
-    ATTACHMENT_POINT_API = "AttachmentPointAPI"
+    ROBOT_API = "IsaacRobotAPI"
+    LINK_API = "IsaacLinkAPI"
+    REFERENCE_POINT_API = "IsaacReferencePointAPI"
+    JOINT_API = "IsaacJointAPI"
+    SURFACE_GRIPPER = "IsaacSurfaceGripper"
+    ATTACHMENT_POINT_API = "IsaacAttachmentPointAPI"
 
 
 _attr_prefix = "isaac"
