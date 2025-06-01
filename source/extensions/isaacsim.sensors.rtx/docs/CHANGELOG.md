@@ -1,4 +1,8 @@
 # Changelog
+## [15.1.2] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [15.1.1] - 2025-05-30
 ### Changed
 - Prim creation commands automatically return OmniSensor prim, even if adding USD as reference

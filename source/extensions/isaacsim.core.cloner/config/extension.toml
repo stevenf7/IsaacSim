@@ -1,5 +1,5 @@
 [package]
-version = "1.4.0"
+version = "1.4.1"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "The Cloner extension provides a set of APIs to clone prims and environments in an efficient way as well as filtering the collisions across the clones if needed."
@@ -15,9 +15,9 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.simulation_manager" = {}
-"omni.population" = {}
 "omni.isaac.ml_archive" = {}  # needed for torch
 "omni.physx" = {}
+"omni.population" = {}
 "omni.usd" = {}
 "omni.usd.libs" = {}
 
@@ -48,7 +48,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

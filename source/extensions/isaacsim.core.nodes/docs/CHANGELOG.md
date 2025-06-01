@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.4] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [3.2.3] - 2025-05-30
 ### Changed
 - Update golden values for unit test

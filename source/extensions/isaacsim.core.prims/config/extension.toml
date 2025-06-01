@@ -1,5 +1,5 @@
 [package]
-version = "0.3.17"
+version = "0.3.18"
 category = "Simulation"
 title = "Isaac Sim Core API (Prims)"
 description = "The Core Prims extension provides a set of APIs to read and write state information to the different types of prims."
@@ -55,7 +55,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

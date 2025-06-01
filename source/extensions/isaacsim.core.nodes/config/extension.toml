@@ -1,5 +1,5 @@
 [package]
-version = "3.2.3"
+version = "3.2.4"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Common Isaac Sim OmniGraph nodes"
@@ -61,7 +61,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",
@@ -83,9 +82,6 @@ args = [
     "--/app/player/useFixedTimeStepping=false",
     "--/app/runLoops/main/rateLimitEnabled=false",
     "--/app/runLoops/main/manualModeEnabled=true",
-    ### Extension specific settings
-    "--/app/hydraEngine/waitIdle=true", # Make annotator tests deterministic
-    "--/app/updateOrder/checkForHydraRenderComplete=1000",
 ]
 stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacComputeOdometry: [/TestGraph] Omnigraph Error: no chassis prim found*',

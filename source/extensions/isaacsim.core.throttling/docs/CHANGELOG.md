@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.6] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [2.1.5] - 2025-05-27
 ### Fixed
 - Fixed typo in extension title

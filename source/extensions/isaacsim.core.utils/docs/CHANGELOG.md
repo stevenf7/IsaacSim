@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.1] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [3.4.0] - 2025-05-28
 ### Added
 - Add create stage in memory to stage utils
