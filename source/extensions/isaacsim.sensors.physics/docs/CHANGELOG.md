@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.22] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [0.3.21] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

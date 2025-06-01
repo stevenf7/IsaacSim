@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.1] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
 
 ## [1.4.0] - 2025-05-30
 ### Changed

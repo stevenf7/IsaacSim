@@ -1,5 +1,5 @@
 [package]
-version = "1.0.1"
+version = "1.0.2"
 category = "Simulation"
 title = "ROS2 Simulation Control"
 description = "Extension that provides ROS2 services to control (play/pause) Isaac Sim"
@@ -40,7 +40,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

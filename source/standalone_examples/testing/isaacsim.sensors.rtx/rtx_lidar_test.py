@@ -222,7 +222,7 @@ simulation_app.close()
 """
 # Snippet of similar code to use in script editor.
 from isaacsim.core.utils import stage
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdGeom, Gf
 
 #omni.kit.commands.execute('ToolbarPlayButtonClicked')
@@ -277,7 +277,8 @@ NUM_RP = 6
 async def create_new_stage_with_rp_async():
     omni.usd.get_context().new_stage()
     from isaacsim.core.utils import stage
-    stage.add_reference_to_stage("omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background")
+    assets_root_path = await get_assets_root_path_async()
+    stage.add_reference_to_stage(assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background")
     # None (`0`), TAA (`1`), FXAA (`2`), DLSS (`3`) and DLAA (`4`)
     # carb.settings.get_settings().set("/rtx/post/aa/op", 4)
     for i in range(NUM_RP):

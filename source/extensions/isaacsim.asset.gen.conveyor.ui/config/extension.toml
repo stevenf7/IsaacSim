@@ -1,5 +1,5 @@
 [package]
-version = "2.1.12"
+version = "2.1.13"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility UI"
 description="UI components for isaacsim.asset.gen.conveyor. It provides menu entries to support UI-based creation of Custom Conveyor Bodies, and a Conveyor Track tool that creates a system of fixed conveyor belts from a dataset."
@@ -53,7 +53,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

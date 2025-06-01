@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.5] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [1.0.4] - 2025-05-30
 ### Changed
 - Check if rtree/libspatialindex is installed, if not skip tests

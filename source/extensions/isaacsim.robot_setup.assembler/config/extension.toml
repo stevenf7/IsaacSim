@@ -1,5 +1,5 @@
 [package]
-version = "3.0.2"
+version = "3.0.3"
 category = "Simulation"
 title = "Robot Assembler"
 description = "Alpha version of Robot Assembler Extension: Assemble multiple Articulations into a single robot"
@@ -45,7 +45,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

@@ -1,5 +1,5 @@
 [package]
-version = "8.0.19"
+version = "8.0.20"
 category = "Simulation"
 title = "Isaac Sim Motion Generation"
 description = "Extension that provides support for generating motion with Lula-based motion policies and an interface for writing arbitrary motion policies"
@@ -47,7 +47,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

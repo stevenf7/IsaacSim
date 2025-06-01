@@ -1,5 +1,5 @@
 [package]
-version = "1.0.8"
+version = "1.0.9"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Isaac Cortex is a framework within NVIDIA's Isaac Sim that integrates various robotics tools into a unified system, facilitating the development of collaborative robotic applications. It emphasizes reactivity and adaptability, enabling robots to operate safely alongside humans without the need for physical barriers."
@@ -45,7 +45,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

@@ -1,7 +1,10 @@
 # Changelog
+## [4.7.1] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
 
 ## [4.7.0] - 2025-05-30
-### Addded
+### Added
 - New Nova Carter Joint States sample
 
 ## [4.6.9] - 2025-05-30

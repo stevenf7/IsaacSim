@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.23] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [1.1.22] - 2025-05-30
 ### Changed
 - increase rt_subframes in examples for more consistent results between updates

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.10"
+version = "1.0.11"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation UI Components"
 description = "Provides UI components for Isaac Sim RTX-based sensor simulation, eg. menu options."
@@ -44,7 +44,6 @@ args = [
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
     "--/persistent/omni/replicator/captureOnPlay=1",
     "--/persistent/omnigraph/updateToUsd=0",
     "--/persistent/physics/visualizationDisplayJoints=0",

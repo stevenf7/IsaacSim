@@ -1,7 +1,12 @@
 # Changelog
-## [1.2.0] - 2025-05-15
+## [1.2.1] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
+## [1.2.0] - 2025-05-30
 ### Added
 - SingleViewDepthSensor API
+
 ### Changed
 - Camera class consistently updates internal _prim member.
 
@@ -12,6 +17,7 @@
 ## [1.1.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
+
 ### Changed
 - Camera.initialize() now optionally attaches RGB annotator
 - Camera constructor no longer sets default lens distortion model to OmniLensDistortionFthetaAPI

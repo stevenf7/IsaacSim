@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.12] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [2.2.11] - 2025-05-28
 ### Changed
 - added new semantics API check

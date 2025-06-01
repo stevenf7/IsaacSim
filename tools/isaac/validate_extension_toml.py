@@ -9,21 +9,53 @@
 # its affiliates is strictly prohibited.
 
 """
-Validate extension.toml files to ensure they follow the specified structure and ordering rules.
+Validate and fix extension.toml files to ensure they follow the specified structure and ordering rules.
 
-This script checks:
-1. Sections appear in the correct order as defined in the rules
-2. Fields in the [package] section appear in the correct order
-3. Settings entries have descriptive comments above them
-4. Proper spacing between sections (one blank line)
-5. Dependencies in the [dependencies] section are alphabetically sorted
-6. Dependencies in the [[test]] section are alphabetically sorted
-7. Ensures there is exactly one empty line at the end of the file
-8. (Optional) Required field writeTarget.kit is present and set to true in the [package] section
-   (only when --check-write-target is specified)
+This comprehensive validation script checks and can automatically fix multiple aspects of extension.toml files:
 
-When run without arguments, it validates all extension.toml files in the repository
-against all validation rules. It can also fix various issues automatically with the --fix option.
+## Structure and Ordering Validation:
+1. **Section Order**: Ensures sections appear in the correct order as defined in SECTION_ORDER
+2. **Package Field Order**: Validates that fields in the [package] section follow the expected order
+3. **Test Field Order**: Ensures fields in [[test]] sections are properly ordered
+4. **Test Section Organization**: Validates that unnamed test sections appear before named ones, 
+   ensures only one unnamed test section exists, and sorts named test sections alphabetically
+
+## Content Validation:
+5. **Dependencies Sorting**: Verifies dependencies in [dependencies] and [[test]] sections are alphabetically sorted
+6. **Settings Documentation**: Checks that each setting in [settings] sections has descriptive comments above it
+7. **Required Fields**: Optionally validates presence of required fields like writeTarget.kit = true
+8. **Deprecation Section**: Validates structure and content of [deprecation] sections
+9. **Core Section Cleanup**: Removes redundant [core] sections that only contain default values (reloadable = true, order = 0)
+
+## Formatting and Spacing:
+10. **Section Spacing**: Ensures exactly one blank line between sections (not more, not less)
+11. **File Boundaries**: Removes extra empty lines at start/end of file, ensures exactly one empty line at EOF
+12. **Whitespace Standardization**: Converts lines with only whitespace characters to empty lines
+13. **Line Ending Normalization**: Standardizes line endings to Unix format (\n)
+
+## Automatic Fixing Capabilities:
+- **--fix**: Applies all available fixes automatically
+- **--fix-whitespace**: Fixes spacing and formatting issues
+- **--fix-section-order**: Reorders sections and test sections to match standards
+- **--fix-package-order**: Reorders fields within [package] and [[test]] sections
+- **--fix-dependencies-order**: Sorts dependencies alphabetically
+- **--check-write-target**: Adds missing writeTarget.kit = true field when needed
+
+## Advanced Features:
+- **Dry Run Mode**: Preview changes without applying them (--dry-run)
+- **Diff Display**: Shows unified diffs of proposed changes with color coding
+- **Verbose Output**: Detailed logging for debugging and analysis
+- **Diagnostics**: Special diagnostic mode for analyzing whitespace and encoding issues
+- **Selective Processing**: Can validate specific files or directories
+- **Error Reporting**: Comprehensive error messages with line numbers and context
+
+## Platform Support:
+- Handles platform-specific settings sections (e.g., settings."filter:platform=linux*")
+- Preserves comments and maintains proper TOML structure
+- Supports both regular sections [name] and array sections [[name]]
+
+When run without arguments, validates all extension.toml files in the repository.
+Supports both validation-only mode and automatic fixing with various granularity levels.
 """
 
 import argparse
@@ -1004,6 +1036,20 @@ class ExtensionTomlValidator:
         fixed = False
         fixed_content = content
 
+        # Check for redundant [core] section and fix if requested
+        if fix_section_order:  # Reuse fix_section_order flag for core section removal
+            core_fixed, fixed_content = self._validate_and_fix_core_section(
+                file_path, fixed_content, toml_data, line_mapping, True
+            )
+            if core_fixed:
+                fixed = True
+                # Reload TOML data and line mapping since content has changed
+                try:
+                    toml_data = toml.loads(fixed_content)
+                    line_mapping = self._create_line_mapping(fixed_content)
+                except Exception:
+                    pass
+
         # Check for whitespace issues and fix if requested
         if fix_whitespace:
             fixed_whitespace = self._fix_whitespace(fixed_content)
@@ -1063,6 +1109,13 @@ class ExtensionTomlValidator:
 
         # Check spacing between sections
         self._check_section_spacing(file_path, fixed_content)
+
+        # Check for redundant [core] section (validation only when not fixing)
+        if not fix_section_order:
+            self._validate_and_fix_core_section(file_path, fixed_content, toml_data, line_mapping, False)
+
+        # Check that [package] is the first section if there's no [core] section
+        self._validate_package_first_section(file_path, fixed_content, toml_data)
 
         # Check [settings] section comments
         if check_settings_comments and "settings" in toml_data:
@@ -2440,6 +2493,148 @@ class ExtensionTomlValidator:
                 self.fixes_applied.append("Fixed 'writeTarget.kit' value to true in [package] section")
 
         return fixed, fixed_content
+
+    def _validate_and_fix_core_section(
+        self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
+    ) -> Tuple[bool, str]:
+        """
+        Validate the [core] section and remove it if it only contains default values.
+
+        If the [core] section only contains reloadable = true and order = 0 (or just one of these),
+        it should be removed as these are default values.
+
+        Args:
+            file_path: Path to the TOML file
+            content: Raw TOML content
+            toml_data: Parsed TOML data
+            line_mapping: Mapping of section names to line numbers
+            fix: Whether to fix found issues
+
+        Returns:
+            Tuple of (was_fixed, fixed_content)
+        """
+        # If there's no core section, nothing to do
+        if "core" not in toml_data:
+            return False, content
+
+        core_data = toml_data["core"]
+
+        # Check if the core section only contains default values
+        has_only_defaults = True
+        non_default_fields = []
+
+        for key, value in core_data.items():
+            if key == "reloadable" and value is True:
+                continue  # This is a default value
+            elif key == "order" and value == 0:
+                continue  # This is a default value
+            else:
+                # This is a non-default field
+                has_only_defaults = False
+                non_default_fields.append(f"{key} = {value}")
+
+        # If the section only contains default values, it should be removed
+        if has_only_defaults and core_data:  # Make sure it's not empty
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "Redundant Core Section",
+                    f"[core] section contains only default values (reloadable = true, order = 0) and should be removed",
+                    line_mapping.get("core", 0),
+                )
+            )
+
+            if fix:
+                # Remove the [core] section from the content
+                lines = content.split("\n")
+                core_section_start = None
+                core_section_end = None
+
+                # Find the [core] section boundaries
+                for i, line in enumerate(lines):
+                    line_stripped = line.strip()
+
+                    if line_stripped == "[core]":
+                        core_section_start = i
+                        continue
+                    elif core_section_start is not None and (
+                        (line_stripped.startswith("[") and not line_stripped.startswith("[["))
+                        or line_stripped.startswith("[[")
+                    ):
+                        core_section_end = i
+                        break
+
+                # If we didn't find the end, it goes to the end of file
+                if core_section_end is None:
+                    core_section_end = len(lines)
+
+                if core_section_start is not None:
+                    # Remove the core section and any trailing empty lines
+                    # Also remove any leading empty lines that would be left behind
+                    section_start = core_section_start
+                    section_end = core_section_end
+
+                    # Check if there are empty lines before the core section that should also be removed
+                    while section_start > 0 and not lines[section_start - 1].strip():
+                        section_start -= 1
+
+                    # Remove the section
+                    fixed_content = "\n".join(lines[:section_start] + lines[section_end:])
+
+                    # Clean up any excessive whitespace that might result
+                    fixed_content = self._fix_whitespace(fixed_content)
+
+                    self.fixes_applied.append("Removed redundant [core] section with default values")
+                    return True, fixed_content
+
+        return False, content
+
+    def _validate_package_first_section(self, file_path: str, content: str, toml_data: Dict) -> None:
+        """
+        Validate that [package] is the first section if there's no [core] section.
+
+        Args:
+            file_path: Path to the TOML file
+            content: Raw TOML content
+            toml_data: Parsed TOML data
+        """
+        # If there's a [core] section, this check doesn't apply
+        if "core" in toml_data:
+            return
+
+        # If there's no [package] section, this check doesn't apply
+        if "package" not in toml_data:
+            return
+
+        lines = content.split("\n")
+        first_section_found = None
+        first_section_line = None
+
+        # Find the first section in the file
+        for i, line in enumerate(lines):
+            line_stripped = line.strip()
+
+            # Skip comments and empty lines
+            if not line_stripped or line_stripped.startswith("#"):
+                continue
+
+            # Check if this is a section header
+            is_header, section_name, section_type = self._is_section_header(line)
+            if is_header:
+                first_section_found = section_name
+                first_section_line = i + 1
+                break
+
+        # If the first section is not [package], report an error
+        if first_section_found and first_section_found != "package":
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "Package Section Order",
+                    f"[package] section must be the first section when there is no [core] section. Found [{first_section_found}] first at line {first_section_line}",
+                    first_section_line,
+                )
+            )
 
 
 def find_extension_toml_files(root_dir: str, specific_dir: Optional[str] = None) -> List[str]:

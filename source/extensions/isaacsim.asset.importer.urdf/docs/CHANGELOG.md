@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.10] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [2.4.9] - 2025-05-23
 ### Changed
 - Refactor headers into isaacsim.core.includes

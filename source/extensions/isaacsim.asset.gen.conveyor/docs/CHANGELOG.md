@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.17] - 2025-05-31
+### Changed
+- Use default nucleus server for all tests
+
 ## [1.0.16] - 2025-05-23
 ### Changed
 - Fix docstring error

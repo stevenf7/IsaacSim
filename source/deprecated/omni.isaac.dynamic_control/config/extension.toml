@@ -1,5 +1,5 @@
 [package]
-version = "2.0.6"
+version = "2.0.7"
 category = "Simulation"
 title = "Isaac Sim Dynamic Control"
 description = "The Dynamic Control extension provides a set of utilities to control physics objects. It provides opaque handles for different physics objects that remain valid between PhysX scene resets, which occur whenever play or stop is pressed."
@@ -49,5 +49,4 @@ args = [
     "--/app/file/ignoreUnsavedOnExit=1",
     '--/persistent/simulation/defaultMetersPerUnit = 1.0',
     '--/persistent/app/stage/upAxis = "Z"',
-    '--/persistent/isaac/asset_root/default = "omniverse://isaac-dev.ov.nvidia.com"',
 ]
