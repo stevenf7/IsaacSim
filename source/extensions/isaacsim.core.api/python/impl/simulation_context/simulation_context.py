@@ -456,6 +456,12 @@ class SimulationContext:
             _loop_runner.set_manual_step_size(rendering_dt)
             _loop_runner.set_manual_mode(True)
         except Exception:
+            carb.log_warn(
+                "Isaac Sim loop runner not found, enabling rate limiting to support rendering at specified rate"
+            )
+            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
+            set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
+            self._timeline.set_target_framerate(rendering_hz)
             pass
 
         return
@@ -498,8 +504,22 @@ class SimulationContext:
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
-        frequency = get_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency")
-        return 1.0 / frequency if frequency else 0
+
+        # Helper function to get dt from frequency
+        def _get_dt_from_frequency():
+            frequency = get_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency")
+            return 1.0 / frequency if frequency else 0
+
+        if get_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled"):
+            return _get_dt_from_frequency()
+
+        try:
+            import omni.kit.loop._loop as omni_loop
+
+            _loop_runner = omni_loop.acquire_loop_interface()
+            return _loop_runner.get_manual_step_size()
+        except Exception:
+            return _get_dt_from_frequency()
 
     def set_block_on_render(self, block: bool) -> None:
         """Set block on render flag for the simulation thread

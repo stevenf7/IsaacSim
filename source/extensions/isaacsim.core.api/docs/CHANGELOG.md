@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.5.5] - 2025-05-31
+### Changed
+- Fix bug with getting rendering dt when not using fixed time stepping
+
 ## [4.5.4] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

@@ -34,6 +34,12 @@ struct IRunLoopRunnerImpl
     CARB_PLUGIN_INTERFACE("omni::kit::IRunLoopRunnerImpl", 1, 1);
 
     /**
+     * @brief Enables or disables manual stepping mode
+     * @param[in] enabled True to enable manual stepping, false for automatic
+     * @param[in] name Identifier for the run loop instance
+     */
+    void(CARB_ABI* setManualMode)(const bool enabled, const std::string& name);
+    /**
      * @brief Sets the time step size for manual stepping
      * @param[in] dt Time step size in seconds
      * @param[in] name Identifier for the run loop instance
@@ -41,18 +47,17 @@ struct IRunLoopRunnerImpl
     void(CARB_ABI* setManualStepSize)(const double dt, const std::string& name);
 
     /**
-     * @brief Enables or disables manual stepping mode
-     * @param[in] enabled True to enable manual stepping, false for automatic
-     * @param[in] name Identifier for the run loop instance
-     */
-    void(CARB_ABI* setManualMode)(const bool enabled, const std::string& name);
-
-    /**
      * @brief Gets the manual mode for the run loop
      * @param[in] name Identifier for the run loop instance
      * @return True if manual mode is enabled, false otherwise
      */
     bool(CARB_ABI* getManualMode)(const std::string& name);
+    /**
+     * @brief Gets the manual step size for the run loop
+     * @param[in] name Identifier for the run loop instance
+     * @return Manual step size in seconds
+     */
+    double(CARB_ABI* getManualStepSize)(const std::string& name);
 };
 }
 }
