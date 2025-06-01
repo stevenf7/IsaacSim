@@ -500,10 +500,6 @@ public:
             m_runLoopSynchronizer->setActive(syncToPresent && syncToPresentGlobal);
         }
     }
-    void setManualStepSize(const double dt)
-    {
-        m_deltaTime = dt;
-    }
     void setManualMode(const bool enabled)
     {
         m_manualModeString = fmt::format("{0}/{1}/manualModeEnabled", kAppRunLoops, name);
@@ -514,10 +510,19 @@ public:
         }
         m_manualMode = enabled;
     }
+    void setManualStepSize(const double dt)
+    {
+        m_deltaTime = dt;
+    }
     bool getManualMode()
     {
         return m_manualMode;
     }
+    double getManualStepSize()
+    {
+        return m_deltaTime;
+    }
+
 
 private:
     void _initialize()
@@ -830,6 +835,24 @@ static void SetManualMode(const bool enabled, const std::string& name = "")
         }
     }
 }
+static double GetManualStepSize(const std::string& name = "")
+{
+    for (auto& l : m_runLoops)
+    {
+        if (name.compare("") != 0)
+        {
+            if (l.first.compare(name) == 0)
+            {
+                return l.second.getManualStepSize();
+            }
+        }
+        else
+        {
+            return l.second.getManualStepSize();
+        }
+    }
+    return 0;
+}
 
 static bool GetManualMode(const std::string& name = "")
 {
@@ -887,6 +910,7 @@ void fillInterface(omni::kit::IRunLoopRunnerImpl& iface)
     iface.setManualMode = SetManualMode;
     iface.setManualStepSize = SetManualStepSize;
     iface.getManualMode = GetManualMode;
+    iface.getManualStepSize = GetManualStepSize;
 }
 
 void fillInterface(omni::kit::IExtensionPluginImpl& iface)

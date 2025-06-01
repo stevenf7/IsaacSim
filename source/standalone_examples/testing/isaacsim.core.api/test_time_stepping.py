@@ -29,15 +29,15 @@ asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka
 
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 if not math.isclose(simulation_context.get_physics_dt(), 1.0 / 60.0):
-    raise ValueError()
+    raise ValueError(f"Physics dt mismatch: expected {1.0 / 60.0}, got {simulation_context.get_physics_dt()}")
 if not math.isclose(simulation_context.get_rendering_dt(), 1.0 / 60.0):
-    raise ValueError()
+    raise ValueError(f"Rendering dt mismatch: expected {1.0 / 60.0}, got {simulation_context.get_rendering_dt()}")
 simulation_context.clear_instance()
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 if not math.isclose(simulation_context.get_physics_dt(), 1.0 / 60.0):
-    raise ValueError()
+    raise ValueError(f"Physics dt mismatch: expected {1.0 / 60.0}, got {simulation_context.get_physics_dt()}")
 if not math.isclose(simulation_context.get_rendering_dt(), 1.0 / 60.0):
-    raise ValueError()
+    raise ValueError(f"Rendering dt mismatch: expected {1.0 / 60.0}, got {simulation_context.get_rendering_dt()}")
 add_reference_to_stage(asset_path, "/Franka")
 # need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
@@ -154,6 +154,14 @@ simulation_context.step(render=False)
 simulation_context.render()
 tester.check_dt(1.0 / 60.0, 1.0 / 600.0)
 tester.check_steps(1, 1)
+tester.reset_values()
+
+render_hz = 20
+print("step physics once 1/60s per step and rendering once at 1.0/20s by explicitly calling step and render")
+simulation_context.set_simulation_dt(physics_dt=1.0 / (render_hz * 5), rendering_dt=1.0 / render_hz)
+simulation_context.step(render=True)
+tester.check_dt(1.0 / (render_hz * 5), 1.0 / render_hz)
+tester.check_steps(5, 1)
 tester.reset_values()
 
 print("step physics once 1/60s per step, rendering a frame does not move editor timeline forward")

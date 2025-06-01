@@ -48,17 +48,7 @@ PYBIND11_MODULE(_loop, m)
 
     defineInterfaceClass<IRunLoopRunnerImpl>(m, "RunLoopRunner", "acquire_loop_interface", "release_loop_interface")
 
-        .def("set_manual_step_size", wrapInterfaceFunction(&IRunLoopRunnerImpl::setManualStepSize),
-             R"pbdoc(
-                Sets dt for run loop.
 
-                Args: 
-                    arg0 (:obj:`double`): The dt value to set to.
-
-                    arg1 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
-
-                )pbdoc",
-             py::arg("dt") = "0.01667", py::arg("name") = "")
         .def("set_manual_mode", wrapInterfaceFunction(&IRunLoopRunnerImpl::setManualMode),
              R"pbdoc(
                 Sets dt for run loop.
@@ -70,6 +60,17 @@ PYBIND11_MODULE(_loop, m)
 
                 )pbdoc",
              py::arg("enabled") = "True", py::arg("name") = "")
+        .def("set_manual_step_size", wrapInterfaceFunction(&IRunLoopRunnerImpl::setManualStepSize),
+             R"pbdoc(
+                Sets dt for run loop.
+
+                Args: 
+                    arg0 (:obj:`double`): The dt value to set to.
+
+                    arg1 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
+
+                )pbdoc",
+             py::arg("dt") = "0.01667", py::arg("name") = "")
         .def("get_manual_mode", wrapInterfaceFunction(&IRunLoopRunnerImpl::getManualMode),
              R"pbdoc(
                 Gets the manual mode for the run loop.
@@ -79,6 +80,18 @@ PYBIND11_MODULE(_loop, m)
 
                 Returns:
                     :obj:`bool`: True if manual mode is enabled, false otherwise.
+
+                )pbdoc",
+             py::arg("name") = "")
+        .def("get_manual_step_size", wrapInterfaceFunction(&IRunLoopRunnerImpl::getManualStepSize),
+             R"pbdoc(
+                Gets dt for run loop.
+
+                Args: 
+                    arg0 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
+
+                Returns:
+                    :obj:`double`: The dt value for the run loop.
 
                 )pbdoc",
              py::arg("name") = "");
