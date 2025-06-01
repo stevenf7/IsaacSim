@@ -81,8 +81,8 @@ enum class Relations
 const std::string _attrPrefix("isaac");
 
 // Map of class names
-const std::string classNames[] = { "RobotAPI", "LinkAPI",        "ReferencePointAPI",
-                                   "JointAPI", "SurfaceGripper", "SurfaceGripper:AttachmentPointAPI" };
+const std::string classNames[] = { "IsaacRobotAPI", "IsaacLinkAPI",        "IsaacReferencePointAPI",
+                                   "IsaacJointAPI", "IsaacSurfaceGripper", "IsaacAttachmentPointAPI" };
 
 inline const pxr::TfToken className(Classes name)
 {

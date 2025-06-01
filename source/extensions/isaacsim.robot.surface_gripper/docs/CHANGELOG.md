@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.3] - 2025-06-01
+### Changed
+- Schema rename
+
 ## [3.1.2] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

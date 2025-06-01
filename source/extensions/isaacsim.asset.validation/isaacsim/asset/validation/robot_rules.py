@@ -281,7 +281,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
             )
             return
 
-        if prim.HasAPI("RobotAPI"):
+        if prim.HasAPI(robot_schema.Classes.ROBOT_API.value):
             relationship_name_list = [robot_schema.Relations.ROBOT_LINKS.name, robot_schema.Relations.ROBOT_JOINTS.name]
             fix_methods = [self.create_link_relationship, self.create_joint_relationship]
             make_methods = [self.make_link_relationship_prepended, self.make_joint_relationship_prepended]

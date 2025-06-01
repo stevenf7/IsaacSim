@@ -126,7 +126,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
             stage = self._payload.get_stage()
             if stage:
                 prim = stage.GetPrimAtPath(prim_path)
-                if prim and prim.GetTypeName() == "SurfaceGripper":
+                if prim and prim.GetTypeName() == robot_schema.Classes.SURFACE_GRIPPER.value:
                     return prim
         return None
 
