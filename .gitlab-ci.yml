@@ -1604,10 +1604,10 @@ stage-for-github:
       - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
     script:
       - ./repo.sh stage_for_github _git/isaacsim_staging
-      # Custom Cleanup - clean extension.toml files to remove authors and repository
-      - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - cd _git/isaacsim_staging
       - git lfs fetch --all
+      # Custom Cleanup - clean extension.toml files to remove authors and repository
+      - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - STAGED_VERSION=$(cat VERSION)
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
