@@ -716,6 +716,8 @@ function create_tests()
         python_sample_test(test[1], test[2], test[3])
     end
 
+-- AUTOREMOVE: BEGIN
+
     -- Nightly tests from external repos
     group("external")
 
@@ -741,8 +743,6 @@ function create_tests()
         "tests-nativepython-validation-test_deprecated",
         "standalone_examples/testing/validation/test_deprecated.py"
     )
-
--- AUTOREMOVE: BEGIN
 
     -- Linux-specific docker tests
     if os.target() == "linux" then
