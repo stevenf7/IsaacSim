@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.2] - 2025-06-02
+### Changed
+- Removed omni.population dependency
+
 ## [1.4.1] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

@@ -2,7 +2,7 @@
 
 ## [1.0.7] - 2025-05-30
 ### Changed
-- Update copyright and license to apache v2.0
+- Update to match API changes in isaacsim.core.cloner
 
 ## [1.0.6] - 2025-05-19
 ### Changed
