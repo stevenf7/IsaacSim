@@ -38,6 +38,8 @@ entry_point = "${config_root}/tools/ci/bump_version.py:setup_repo_tool"
 command = "extension_docs"
 entry_point = "${config_root}/tools/docs/extension_docs_generator.py:setup_repo_tool"
 
+# AUTOREMOVE: BEGIN
+
 ########################################################################################################################
 # Generate Vscode Settings
 ########################################################################################################################
@@ -142,9 +144,12 @@ entry_point = "${config_root}/tools/isaac/check_extension_structure.py:setup_rep
 command = "format_lua"
 entry_point = "${config_root}/tools/isaac/format_lua.py:setup_repo_tool"
 
+# AUTOREMOVE: END
+
 ########################################################################################################################
 # Generate Examples List
 ########################################################################################################################
+
 
 [examples_list]
 command = "examples_list"

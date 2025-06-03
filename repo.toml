@@ -9,6 +9,10 @@ import_configs = [
   "${root}/_repo/deps/repo_kit_tools/kit-template/repo.toml",
   # Shared config for kit extensions repos that also publish an app to the Launcher
   "${root}/_repo/deps/repo_kit_tools/kit-template/repo-app.toml",
+# AUTOREMOVE: BEGIN
+  # Configuration for internal tools
+  "${root}/repo_internal.toml",
+# AUTOREMOVE: END
 ]
 
 # Repository Name. It is used for solution name and final package name
@@ -137,12 +141,14 @@ post_build.commands = [
   # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
   # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
   # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
+# AUTOREMOVE: BEGIN
   [
     "${root}/repo${shell_ext}",
     "generate_vscode_settings",
     "-c",
     "${config}",
   ],
+# AUTOREMOVE: END
   [
     "${root}/repo${shell_ext}",
     "edit_sysconfig",
@@ -260,277 +266,6 @@ links.exts.include = [
 ]
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
 
-# AUTOREMOVE: BEGIN
-
-########################################################################################################################
-# Documentation building
-########################################################################################################################
-
-[repo_docs]
-
-config = "release"
-enabled = true
-
-# the name of you project.  should be a single word. used to name files.
-project = "isaac_sim"
-
-# a slightly more descriptive name for your project. user visible. keep it short.
-long_name = "Isaac Sim"
-
-# first year in your projects copyright.
-copyright_start = 2018
-
-# Use python from kit sdk
-# python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
-
-# our api docs are not versioned
-version_selector_enabled = false
-
-# Move api docs to build directory
-# docs_dst = "${root}/_build/${platform}/${config}/docs"
-
-# Add all extensions to docs sys.path
-
-library_paths = [
-  "$root/_build/$platform/$config/kit",
-  "$root/_build/$platform/$config/extscache/omni.usd*/bin",
-  "$root/_build/$platform/$config/extscache/omni.usd.schema*/lib",
-]
-python_paths = [
-  "${root}/_build/${platform}/${config}/exts/*",
-  "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
-  "${root}/_build/${platform}/${config}/extsDeprecated/*",
-  "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
-  "${root}/_build/${platform}/${config}/extscache/omni.kit.commands*",
-  # archives
-  "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
-  "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
-  "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",  # PIL
-]
-
-sphinx_conf_py_extra = """
-    add_module_names = False
-    html_logo = "docs/media/main_ov_logo_square.png"
-    html_favicon = "docs/media/favicon.ico"
-    html_static_path += [
-        "docs/media/NVIDIA-LogoBlack.svg",
-    ]
-    autodoc_member_order = 'groupwise'
-    autodoc_mock_imports = [
-        "carb",
-        "omni.appwindow",
-        "omni.client",
-        "omni.ext",
-        "omni.graph",
-        # don't mock 'omni.kit' (needed for 'omni.kit.loop-isaac'),
-        "omni.kit.app",
-        "omni.kit.commands",
-        "omni.kit.menu",
-        "omni.kit.property",
-        "omni.kit.test",
-        "omni.kit.tool",
-        "omni.kit.usd",
-        "omni.kit.utils",
-        "omni.kit.viewport",
-        "omni.kit.widget",
-        "omni.kit.window",
-        "omni.metrics",
-        "omni.physics",
-        "omni.physx",
-        "omni.physxclashdetectioncore",
-        "omni.replicator",
-        "omni.stats",
-        "omni.syntheticdata",
-        "omni.timeline",
-        "omni.ui",
-        "omni.usd",
-        "pxr",
-        "Semantics",
-        "usdrt",
-        "warp",
-        "omni.isaac.IsaacSensorSchema", # This cannot be documented because usd plugin needs to be loaded first
-        "omni.isaac.RangeSensorSchema", # This cannot be documented because usd plugin needs to be loaded first
-    ]
-
-    rst_prolog = '''
-    .. |br| raw:: html
-
-        <br>
-
-    .. |physx_docs| replace:: `PhysX docs <https://nvidia-omniverse.github.io/PhysX/physx>`__
-
-    '''
-
-    # hack to suppress 'WARNING: duplicate object description... use :no-index:'
-    import logging
-
-    class DuplicateObjectDescriptionFilter(logging.Filter):
-        def filter(self, record):
-            return "duplicate object description" not in record.getMessage()
-
-    logging.getLogger("sphinx.sphinx.domains.python").addFilter(DuplicateObjectDescriptionFilter())
-"""
-
-sphinx_exclude_patterns = [
-  "**/omni.isaac.app",
-  "**/omni.isaac.assets_check",
-  "**/omni.isaac.core_archive",
-  "**/omni.isaac.ml_archive",
-  "**/omni.pip.compute",
-  "**/omni.pip.cloud",
-  "**/omni.isaac.tests",
-  "**/omni.usd.schema.isaac",         #TODO?
-  "**/omni.isaac.window.about",
-  "**/omni.isaac.unit_converter",
-  "include",
-  "tools",
-  "tests",
-  "**/README.md",
-  "TESTING.md",
-  "**/CHANGELOG.md",
-  "CHANGELOG.md",
-  "**/*LICENSE.md",
-  "_deps_acl",
-  "source/deprecated_extensions",
-  "schemas",
-  ".cache",
-  ".local",
-  ".vscode",
-  ".nvidia-omniverse",
-  "_build",
-  ".cursor",
-  "CODING.md"
-]
-
-doxygen_input = [
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Conversions.h",
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/DynamicControl.h",
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/DynamicControlTypes.h",
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Math.h",
-  "source/deprecated/omni.isaac.dynamic_control/plugins/DcCommon.h",
-  "source/deprecated/omni.isaac.dynamic_control/plugins/DcPhysx.h",
-  "source/deprecated/omni.isaac.dynamic_control/plugins/DcTypes.h",
-  "source/extensions/isaacsim.asset.gen.conveyor/include/isaacsim/asset/gen/conveyor/IOmniIsaacConveyor.h",
-  "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/IOccupancyMap.h",
-  "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/MapGenerator.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/IMjcf.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/Mesh.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/MeshImporter.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/MjcfImporter.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/MjcfParser.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/MjcfTypes.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/MjcfUsd.h",
-  "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/MjcfUtils.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/IUrdf.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/ImportHelpers.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/KinematicChain.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/MeshImporter.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/UrdfImporter.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/UrdfParser.h",
-  "source/extensions/isaacsim.asset.importer.urdf/include/isaacsim/asset/importer/urdf/UrdfTypes.h",
-  "source/extensions/isaacsim.core.cloner/include/isaacsim/core/cloner/Cloner.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Buffer.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Color.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Component.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ComponentManager.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Conversions.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/LibraryLoader.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Math.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Pose.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PoseTree.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PrimManager.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ScopedCudaDevice.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/ScopedTimer.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Transforms.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/UsdNoticeListener.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/UsdUtilities.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/core/Platform.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/CommonMath.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Core.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Mat22.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Mat33.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Mat44.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Maths.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Matnn.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Point3.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Quat.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Types.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Vec2.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Vec3.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/math/core/Vec4.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/utils/Path.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/utils/Usd.h",
-  "source/extensions/isaacsim.core.nodes/include/isaacsim/core/nodes/ICoreNodes.h",
-  "source/extensions/isaacsim.core.simulation_manager/include/isaacsim/core/simulation_manager/ISimulationManager.h",
-  "source/extensions/isaacsim.core.simulation_manager/include/isaacsim/core/simulation_manager/UsdNoticeListener.h",
-  "source/extensions/isaacsim.core.utils/include/isaacsim/core/utils/PrimUtils.h",
-  "source/extensions/isaacsim.robot.schema/include/isaacsim/robot/schema/robot_schema.h",
-  "source/extensions/isaacsim.robot.surface_gripper/include/isaacsim/robot/surface_gripper/ISurfaceGripper.h",
-  "source/extensions/isaacsim.robot.surface_gripper/include/isaacsim/robot/surface_gripper/SurfaceGripperComponent.h",
-  "source/extensions/isaacsim.robot.surface_gripper/include/isaacsim/robot/surface_gripper/SurfaceGripperManager.h",
-  "source/extensions/isaacsim.robot.wheeled_robots/include/isaacsim/robot/wheeled_robots/IWheeledRobots.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IRos2Bridge.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IpcBufferManager.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Distro.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Factory.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2FactoryImpl.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Macros.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Message.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Node.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2OgnUtils.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2QoS.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Types.h",
-  "source/extensions/isaacsim.ros2.bridge/library/backend/Ros2Impl.h",
-  "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/ITransformListener.h",
-  "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/Tf2Factory.h",
-  "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/Tf2FactoryImpl.h",
-  "source/extensions/isaacsim.ros2.tf_viewer/library/backend/Tf2Impl.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ContactManager.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ContactSensor.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IPhysicsSensor.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ImuSensor.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IsaacSensorComponent.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IsaacSensorManager.h",
-  "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IsaacSensorTypes.h",
-  "source/extensions/isaacsim.sensors.physx/include/isaacsim/sensors/physx/IPhysxSensorInterface.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/core/RangeSensorComponent.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/core/RangeSensorManager.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/generic/GenericSensor.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lidar/LidarSensor.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lightbeam_sensor/LightBeamSensor.h",
-  "source/extensions/isaacsim.sensors.rtx/include/isaacsim/sensors/rtx/IIsaacSimSensorsRtx.h",
-  "source/extensions/isaacsim.sensors.rtx/nodes/SensorNodeUtils.h",
-  "source/extensions/omni.kit.loop-isaac/include/RunLoopRunner.h",
-  "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
-]
-
-doxygen_predefined = ["CARB_PLUGIN_INTERFACE="]
-
-
-doxygen_conf_extra = """
-WARN_IF_UNDOCUMENTED  = YES
-WARN_IF_INCOMPLETE_DOC= YES
-WARN_IF_UNDOC_ENUM_VAL= YES
-CASE_SENSE_NAMES=NO
-"""
-
-api_output_directory = "api"
-use_fast_doxygen_conversion = true
-
-[repo_docs.editions.production]
-bucket_dir = "py/isaacsim/"
-bucket_name = "omniverse-docs-production"
-formats_to_publish = ["html"]
-protocol = "s3"
-region = "us-west-1"
-s3_exclude_patterns = []
-
-# AUTOREMOVE: END
 
 # #####################################################################
 # # schema
@@ -983,20 +718,6 @@ stdout_fail_patterns.exclude = [
 tc_report_enabled = false
 timeout = 100000
 
-# AUTOREMOVE: BEGIN
-
-########################################################################################################################
-# Bump version
-########################################################################################################################
-
-[bump_version]
-git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
-# FOR DEVELOPMENT #
-branch_name = "develop"
-# # FOR PRODUCTION #
-# branch_name = "release/5.0"
-
-# AUTOREMOVE: END
 
 ########################################################################################################################
 # Extensions publisher
@@ -1234,27 +955,6 @@ ogn_exts_includes = [
   "isaacsim.robot.wheeled_robots",
 ]
 
-[repo_generate_vscode_settings]
-
-output_paths = ["${root}/", "${root}/_build/${platform}/${config}"]
-template_paths = [
-  "${root}/.vscode/settings.template.json",
-  "${root}/source/scripts/vscode/${platform}/settings.json",
-]
-
-# paths specific to python autocomplete, not added to pythonpath/env
-python_analysis_extra_mapping = [
-  "$root/_build/$platform/$config/exts/*",
-  "$root/_build/$platform/$config/extsDeprecated/*",
-  "$root/_build/$platform/$config/extscache/*",
-  "$root/_build/$platform/$config/kit/exts/*",
-  "$root/_build/$platform/$config/kit/extscore/*",
-]
-
-[repo_generate_changelog]
-exts_exclude = []
-extscache_paths = ["${root}/source/apps/isaacsim.exp.extscache.kit"]
-home_path = "${root}/source/extensions/"
 
 [repo_lint.flake8]
 # most people coming to repo_lint will expect flake8 on by default as the bare minimun
@@ -1279,8 +979,7 @@ files.exclude = [
   "tools/packman/*",
   "tools/container/*"
 ]
-[repo_edit_sysconfig]
-sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_x86_64-linux-gnu.py"
+
 
 ########################################################################################################################
 # Clang-Tidy
@@ -1304,15 +1003,6 @@ extra_args = [
   "--warnings-as-errors=-*"
 ]
 
-########################################################################################################################
-# Find duplicate files
-########################################################################################################################
-
-[repo_find_duplicate_files]
-
-min_file_size_to_warn = 0
-
-min_file_size_to_fail = 5242880 # 5 MB
 
 ########################################################################################################################
 # Custom scripts for repo_ci
@@ -1340,168 +1030,6 @@ precache_exts_enabled = false
 [repo_deploy_exts.pipeline_repo.branch.prod]
 fail_if_exts_are_missing = false
 
-# AUTOREMOVE: BEGIN
-
-########################################################################################################################
-# Tool to sign package
-########################################################################################################################
-[repo_codesign]
-enabled = true
-folder_input = "${root}/_unsignedpackages"
-folder_output = "${root}/_signedpackages"
-
-
-########################################################################################################################
-# Python packages generation
-########################################################################################################################
-[repo_python_package]
-enabled = true
-
-templates.pyproject = """
-[build-system]
-requires = [ "setuptools >= 70.0" ]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-include-package-data = true
-package-dir = { "" = "src" }
-
-[project.scripts]
-isaacsim = "isaacsim:main"
-"""
-
-# package generation
-definition_paths = ["${root}/python_packages.toml"]
-distributions_folder = "${root}/_build/packages/dist"
-namespace = "isaacsim"
-packages_folder = "${root}/_build/packages/python"
-source_folder = "${root}/_build/${platform}/release"
-
-# package metadata (common)
-# pyproject.toml
-pyproject.authors = [{name = "Isaac Sim team"}]
-pyproject.classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "License :: Other/Proprietary License",
-]
-pyproject.license = {text = "NVIDIA Proprietary Software"}
-pyproject.readme = """
-See [Install Isaac Sim using PIP](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_python.html)
-for details on how to install and run Isaac Sim in a (virtual) Python environment.
-"""
-pyproject.requires-python = "==3.11.*"
-pyproject.urls = [
-  {"Home page" = "https://developer.nvidia.com/isaac-sim"},
-  {"Documentation" = "https://docs.isaacsim.omniverse.nvidia.com"},
-  {"Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"},
-]
-pyproject.version = "${build_string}"
-
-wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64"}
-
-# whl publishing (pypi)
-[[repo_python_package.publish.task]]
-packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
-pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
-pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
-pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
-
-# check python package definitions
-[repo_check_python_package_definitions]
-excluded_extensions = [
-  # archives
-  "omni.isaac.core_archive",
-  "omni.isaac.ml_archive",
-  "omni.pip.compute",
-  "omni.pip.cloud",
-  # others
-  "omni.isaac.common_includes",
-  "omni.isaac.unit_converter",
-]
-extension_folder = [
-  "${root}/source/extensions",
-  "${root}/source/deprecated",
-]
-python_dependency_files = [
-  "${root}/deps/pip.toml",  # omni.isaac.core_archive
-  "${root}/deps/pip_ml.toml",  # omni.isaac.ml_archive
-  "${root}/deps/pip_compute.toml",  # omni.pip.compute
-  "${root}/deps/pip_cloud.toml",  # omni.pip.cloud
-]
-kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
-omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
-
-# comment archive extension dependencies
-[repo_comment_archive_deps]
-archives = [
-  "omni.isaac.core_archive",
-  "omni.isaac.ml_archive",
-  "omni.pip.compute",
-  "omni.pip.cloud",
-  "omni.kit.pip_archive",
-]
-search_folder = "${root}/_build/packages/python"
-[repo_dump_extensions]
-root_folder = "${root}/_build/${platform}/${config}"
-
-[repo_generate_doxygen_input]
-scan_dirs = [
-  "${root}/source/extensions",
-  "${root}/source/deprecated"
-]
-ignore_folders = ["isaac_ros2_messages"]
-ignore_files = ["UsdPCH.h"]
-
-# AUTOREMOVE: END
-
-########################################################################################################################
-# Validate changelogs
-########################################################################################################################
-
-[repo_update_changelogs]
-# Default configuration for changelog updating and validation
-check_unreleased = false
-check_references = false
-check_all = false
-format = true
-verbose = false
-# Update options
-update = false
-# Path to extensions directories (relative to repo root)
-extensions_dir = [
-  "source/extensions",
-  "source/deprecated"
-]
-
-########################################################################################################################
-# Check extension structure
-########################################################################################################################
-
-[repo_check_extension_structure]
-# Extensions to ignore during validation
-ignored_extensions = [
-  "isaacsim.robot.schema",
-  "isaacsim.app.selector",
-]
-
-########################################################################################################################
-# Lua formatting
-########################################################################################################################
-
-[repo_format_lua]
-# Path to stylua executable (default: "stylua" in PATH)
-stylua_path = "stylua"
-# Optional path to stylua config file
-config_path = "${root}/.stylua.toml"
-# Directories to exclude from formatting
-exclude_dirs = [
-  "_build",
-  "_repo",
-  ".git",
-  ".vscode",
-  ".nvidia-omniverse",
-]
 
 ########################################################################################################################
 # Examples List Generator
@@ -1512,84 +1040,3 @@ exclude_dirs = [
 examples_dir = "${root}/source/standalone_examples"
 # Output RST file path (relative to workspace root or absolute)
 output_file = "${root}/docs/source/standalone_examples_list.rst"
-
-# AUTOREMOVE: BEGIN
-#----------------------------------------------------------------------------------------------------------------------#
-#----------------------------------------------------------------------------------------------------------------------#
-#----------------------------------------------------------------------------------------------------------------------#
-
-
-########################################################################################################################
-# Tool to strip down parts of repo and git push to github
-########################################################################################################################
-
-[repo_stage_for_github]
-enabled = true
-
-github_repo_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
-
-exclude = [
-    ".cursor",
-    ".git",
-    ".gitlab-ci.yml",
-    ".nspect-vuln-allowlist.toml",
-    ".omni-pulse.toml",
-    "PACKAGE-INFO.yaml",
-    "package.toml",
-    "python_packages.toml",
-    "index.rst",
-    "CHANGELOG.md",
-    "CODEOWNERS",
-    "CODING.md",
-    "README.md",
-    "TESTING.md",
-    "docs",
-    "tools/ci",
-    "tools/container",
-    "tools/docs",
-    "tools/internal",
-    "tools/internal-licenses",
-    "tools/python_packages",
-    "tools/build_docs.*",
-    "tools/package.*",
-    "tools/publish*",
-    "tools/test_*",
-    "tools/isaac",
-    "tools/thumbnail_generator",
-]
-
-[[repo_stage_for_github.trim]]
-files = [
-    "repo.toml",
-]
-begin_marker = "# AUTOREMOVE: BEGIN"
-end_marker = "# AUTOREMOVE: END"
-
-[[repo_stage_for_github.trim]]
-files = [
-    "source/apps/isaacsim.exp.base.kit",
-]
-begin_marker = "# FOR DEVELOPMENT - START #"
-end_marker = "# FOR DEVELOPMENT - END #"
-
-[[repo_stage_for_github.trim]]
-files = [
-    "tools/packman/config.packman.xml",
-    "deps/repo-deps.packman.xml",
-]
-begin_marker = "<!-- AUTOREMOVE: BEGIN -->"
-end_marker = "<!-- AUTOREMOVE: END -->"
-
-[[repo_stage_for_github.trim]]
-files = [
-    "premake5-isaacsim.lua",
-    "premake5-tests.lua",
-    "premake5.lua",
-]
-begin_marker = "-- AUTOREMOVE: BEGIN"
-end_marker = "-- AUTOREMOVE: END"
-
-#----------------------------------------------------------------------------------------------------------------------#
-#----------------------------------------------------------------------------------------------------------------------#
-#----------------------------------------------------------------------------------------------------------------------#
-# AUTOREMOVE: END
