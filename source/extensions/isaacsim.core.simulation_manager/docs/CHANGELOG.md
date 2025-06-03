@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.2] - 2025-06-02
+### Fixed
+- Add physics scene prim paths in the tracked physics scenes in SimulationManager when openning a usd asset.
+
 ## [1.1.1] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

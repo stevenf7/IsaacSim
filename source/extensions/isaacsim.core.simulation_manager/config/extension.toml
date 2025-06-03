@@ -1,12 +1,5 @@
-# Extension configuration file.
-# Visit the "Extension configuration file (extension.toml)" section for more details:
-# https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
-#
-
-
-
 [package]
-version = "1.1.1"
+version = "1.1.2"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
