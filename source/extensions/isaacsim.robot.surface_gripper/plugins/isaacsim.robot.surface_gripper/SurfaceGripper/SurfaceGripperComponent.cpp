@@ -174,6 +174,7 @@ bool SurfaceGripperComponent::setGripperStatus(const std::string& status)
 
         if (gripperStatus == GripperStatus::Open)
         {
+            updateOpenGripper();
             m_status = GripperStatus::Open;
             m_retryCloseActive = false;
         }

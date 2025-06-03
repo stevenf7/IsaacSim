@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.1.4] - 2025-06-02
+### Fixed
+- Ensure Reset Gripper is called at the same time frame as the Open Command. 
+
 ## [3.1.3] - 2025-06-01
 ### Changed
 - Schema rename
