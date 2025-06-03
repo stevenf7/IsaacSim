@@ -1,4 +1,7 @@
 # Changelog
+## [1.0.2] - 2025-06-03
+### Changed
+- Fix incorrect licenses and add missing licenses
 
 ## [1.0.1] - 2025-05-30
 ### Changed

@@ -1,4 +1,8 @@
 # Changelog
+## [4.7.2] - 2025-06-03
+### Changed
+- Fix incorrect licenses and add missing licenses
+
 ## [4.7.1] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
