@@ -1529,6 +1529,7 @@ enabled = true
 github_repo_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
 
 exclude = [
+    ".cursor",
     ".git",
     ".gitlab-ci.yml",
     ".nspect-vuln-allowlist.toml",
@@ -1537,12 +1538,17 @@ exclude = [
     "package.toml",
     "python_packages.toml",
     "index.rst",
+    "CHANGELOG.md",
+    "CODEOWNERS",
+    "CODING.md",
     "README.md",
+    "TESTING.md",
     "docs",
     "tools/ci",
     "tools/container",
     "tools/docs",
     "tools/internal",
+    "tools/internal-licenses",
     "tools/python_packages",
     "tools/build_docs.*",
     "tools/package.*",
@@ -1578,6 +1584,7 @@ end_marker = "<!-- AUTOREMOVE: END -->"
 files = [
     "premake5-isaacsim.lua",
     "premake5-tests.lua",
+    "premake5.lua",
 ]
 begin_marker = "-- AUTOREMOVE: BEGIN"
 end_marker = "-- AUTOREMOVE: END"

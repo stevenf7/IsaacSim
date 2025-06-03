@@ -63,6 +63,7 @@ function setup_isaacsim_folder_links()
         { "%{root}/source/apps", bin_dir .. "/apps" },
     }
 
+-- AUTOREMOVE: BEGIN
     -- Link all licenses (if not present just link empty dir)
     if not os.isdir(root .. "/_build/PACKAGE-LICENSES") then os.mkdir(root .. "/_build/PACKAGE-LICENSES") end
     repo_build.prebuild_copy {
@@ -71,6 +72,7 @@ function setup_isaacsim_folder_links()
         { "_build/PACKAGE-LICENSES", bin_dir .. "/PACKAGE-LICENSES" },
         { "tools/internal-licenses/omniverse-LICENSE.txt", bin_dir .. "/LICENSE.txt" },
     }
+-- AUTOREMOVE: END
 
     repo_build.prebuild_link {
         { "source/python_packages", "_build/%{platform}/%{config}/python_packages" },
