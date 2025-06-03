@@ -5,9 +5,7 @@
         <transport actions="list" protocol="http" packageLocation="omnipackages.nvidia.com/api/v1/list/cloudfront" />
         <transport actions="get-tag" protocol="https" packageLocation="omnipackages.nvidia.com/api/v1/tags/cloudfront" />
     </remote2>
-<!-- AUTOREMOVE: BEGIN -->
     <remote2 name="urm">
         <transport actions="download" protocol="https" packageLocation="urm.nvidia.com/artifactory/ct-omniverse-generic/pkgs/${name}/${name}@${version}" />
     </remote2>
-<!-- AUTOREMOVE: END -->
 </config>
