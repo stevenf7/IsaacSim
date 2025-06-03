@@ -1,5 +1,5 @@
 [package]
-version = "1.2.2"
+version = "1.2.3"
 category = "other"
 title = "Sensor Icon"
 description = "sensor icon in viewport"
@@ -39,12 +39,15 @@ exts."isaacsim.gui.sensors.icon".timeout = 5
 # show prim name with the sensor icon, default to false
 exts."omni.kit.prim.sensor".showTitle = false
 
+# show sensor icon in viewport, default to false
+persistent.exts."isaacsim.gui.sensors.icon".visible_on_startup=false
+
 [[test]]
 enabled = true
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
     "omni.hydra.usdrt_delegate",
-    "omni.kit.ui_test",
+    "omni.kit.ui_test", 
 ]
 args = [
     "--/app/asyncRendering=0",

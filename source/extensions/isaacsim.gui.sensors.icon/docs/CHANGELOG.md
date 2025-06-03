@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.3] - 2025-06-02
+### Changed
+- Set default sensor icon visibility to false
+
 ## [1.2.2] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
