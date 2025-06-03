@@ -138,13 +138,10 @@ class SimulationManager:
         SimulationManager._simulation_manager_interface.register_deletion_callback(remove_physics_scenes)
 
     def _warm_start(event) -> None:
-        if SimulationManager._warmup_needed:
-            SimulationManager._physx_interface.force_load_physics_from_usd()
-            SimulationManager._physx_interface.start_simulation()
-            SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
-            SimulationManager._physx_sim_interface.fetch_results()
-            SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
-            SimulationManager._warmup_needed = False
+        print("========================================WARMSTART======================================================")
+        if SimulationManager._carb_settings.get_as_bool("/app/player/playSimulations"):
+            print("========================================HERE======================================================")
+            SimulationManager.initialize_physics()
 
     def _on_stop(event) -> None:
         SimulationManager._warmup_needed = True
@@ -211,6 +208,16 @@ class SimulationManager:
     @classmethod
     def get_backend(cls) -> str:
         return SimulationManager._backend
+
+    @classmethod
+    def initialize_physics(cls) -> None:
+        if SimulationManager._warmup_needed:
+            SimulationManager._physx_interface.force_load_physics_from_usd()
+            SimulationManager._physx_interface.start_simulation()
+            SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
+            SimulationManager._physx_sim_interface.fetch_results()
+            SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
+            SimulationManager._warmup_needed = False
 
     @classmethod
     def get_simulation_time(cls):

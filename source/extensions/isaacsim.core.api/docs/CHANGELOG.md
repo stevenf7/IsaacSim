@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.7] - 2025-06-02
+### Fixed
+- Added initialize_physics() call in SimulationContext.reset and .reset_async in case it wasn't triggered on play event.
+
 ## [4.5.6] - 2025-06-02
 ### Fixed
 - Explicitly setting the physics scene prim path in SimulationManager through PhysicsContext

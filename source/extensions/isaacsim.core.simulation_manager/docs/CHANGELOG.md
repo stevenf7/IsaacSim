@@ -1,4 +1,10 @@
 # Changelog
+## [1.2.0] - 2025-05-30
+### Changed
+- Disable physics warmup/ initialize to be triggered on play when /app/player/playSimulations=False
+
+### Added
+- SimulationManger.initialize_physics() for users to control when should initialization happen which will execute 2 physics steps internally
 
 ## [1.1.2] - 2025-06-02
 ### Fixed
