@@ -610,9 +610,8 @@ class SimulationContext:
         """
         if self.is_stopped() and not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
-        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-            SimulationContext.step(self, render=False)
-            carb.log_warn("Deprecation warning: ``initialize_physics`` is not needed anymore.")
+        if SimulationManager.get_physics_sim_view() is None:
+            SimulationManager.initialize_physics()
         return
 
     def reset(self, soft: bool = False) -> None:
@@ -636,6 +635,8 @@ class SimulationContext:
             if not self.is_stopped():
                 self.stop()
             self.play()
+            if SimulationManager.get_physics_sim_view() is None:
+                SimulationManager.initialize_physics()
 
     async def reset_async(self, soft: bool = False) -> None:
         """Reset the physics simulation view (asynchronous version).
@@ -658,6 +659,8 @@ class SimulationContext:
             if not self.is_stopped():
                 await self.stop_async()
             await self.play_async()
+            if SimulationManager.get_physics_sim_view() is None:
+                SimulationManager.initialize_physics()
 
     def step(self, render: bool = True) -> None:
         """Steps the physics simulation while rendering or without.
