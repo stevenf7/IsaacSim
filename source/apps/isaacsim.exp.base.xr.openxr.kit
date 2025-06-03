@@ -25,6 +25,10 @@ omni.replicator.asyncRendering = true
 app.asyncRendering = true
 app.asyncRenderingLowLatency = true
 
+# work around for kitxr issue
+app.hydra.renderSettings.useUsdAttributes = false
+app.hydra.renderSettings.useFabricAttributes = false
+
 # For XR, set this back to default "#define OMNI_MAX_DEVICE_GROUP_DEVICE_COUNT 16"
 renderer.multiGpu.maxGpuCount = 16
 renderer.gpuEnumeration.glInterop.enabled = true # Allow Kit XR OpenXR to render headless
