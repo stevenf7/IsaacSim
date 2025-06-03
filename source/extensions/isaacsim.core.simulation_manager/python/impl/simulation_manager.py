@@ -138,9 +138,7 @@ class SimulationManager:
         SimulationManager._simulation_manager_interface.register_deletion_callback(remove_physics_scenes)
 
     def _warm_start(event) -> None:
-        print("========================================WARMSTART======================================================")
         if SimulationManager._carb_settings.get_as_bool("/app/player/playSimulations"):
-            print("========================================HERE======================================================")
             SimulationManager.initialize_physics()
 
     def _on_stop(event) -> None:
