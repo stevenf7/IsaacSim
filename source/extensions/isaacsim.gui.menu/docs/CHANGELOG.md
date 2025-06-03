@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.8] - 2025-06-03
+### Changed
+- Add missing Replicator menu items
+
 ## [2.3.7] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
