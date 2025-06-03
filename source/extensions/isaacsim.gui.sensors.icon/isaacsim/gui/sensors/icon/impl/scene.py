@@ -23,7 +23,7 @@ from omni.ui import scene as sc
 from .manipulator import IconManipulator, PreventOthers
 from .model import IconModel
 
-VISIBLE_SETTING = "/persistent/app/viewport/sensor_icon/visible"
+VISIBLE_SETTING = "/persistent/exts/isaacsim.gui.sensors.icon/visible_on_startup"
 
 
 class IconScene:  # pragma: no cover

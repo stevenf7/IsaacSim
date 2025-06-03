@@ -51,10 +51,8 @@ class SensorIconExtension(omni.ext.IExt):
         # TODO: should we distinguish different viewport?
         # viewport_api_id = str(get_active_viewport().id)
         # sensor_icon_visible_setting = f"/persistent/app/viewport/{viewport_api_id}/sensor_icon/visible"
-        sensor_icon_visible_setting = VISIBLE_SETTING
-        carb.settings.get_settings().set(sensor_icon_visible_setting, True)
         self._menubar_display_inst = get_menubar_display_instance()
-        self._custom_item = CategoryStateItem("Sensors", setting_path=sensor_icon_visible_setting)
+        self._custom_item = CategoryStateItem("Sensors", setting_path=VISIBLE_SETTING)
         self._menubar_display_inst.register_custom_category_item("Show By Type", self._custom_item)
 
     def on_shutdown(self):  # pragma: no cover
