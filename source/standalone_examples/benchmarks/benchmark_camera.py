@@ -103,7 +103,8 @@ benchmark.store_measurements()
 # perform benchmark
 timeline.play()
 benchmark.set_phase("benchmark")
-rep.orchestrator.run_until_complete(num_frames=n_frames)
+for _ in range(n_frames):
+    omni.kit.app.get_app().update()
 benchmark.store_measurements()
 benchmark.stop()
 
