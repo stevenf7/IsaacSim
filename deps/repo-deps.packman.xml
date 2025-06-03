@@ -27,7 +27,7 @@
   <dependency name="repo_usd" linkPath="../_repo/deps/repo_usd">
     <package name="repo_usd" version="5.0.12" />
   </dependency>
-# AUTOREMOVE: BEGIN
+<!-- AUTOREMOVE: BEGIN -->
 <!-- Public packages that are optional in OSS repo -->
   <!-- For format code lua files-->
   <dependency name="repo_lint" linkPath="../_repo/deps/repo_lint">
@@ -50,5 +50,5 @@
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">
     <package name="repo_licensing" version="1.17.0" />
   </dependency>
-# AUTOREMOVE: END
+<!-- AUTOREMOVE: END -->
 </project>
