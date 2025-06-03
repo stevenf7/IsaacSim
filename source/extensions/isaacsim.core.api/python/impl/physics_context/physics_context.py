@@ -79,6 +79,8 @@ class PhysicsContext(object):
                 self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
             else:
                 self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(current_physics_prim)
+        # set the default physics scene
+        SimulationManager.set_default_physics_scene(self._prim_path)
         self._physx_interface = omni.physx.get_physx_interface()
         self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
         self._timeline = omni.timeline.get_timeline_interface()

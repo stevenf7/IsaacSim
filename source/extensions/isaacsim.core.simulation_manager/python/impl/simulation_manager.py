@@ -56,6 +56,7 @@ class SimulationManager:
     _assets_loaded = True
     _assets_loading_callback = None
     _assets_loaded_callback = None
+    _default_physics_scene_idx = -1
 
     @classmethod
     def _initialize(cls) -> None:
@@ -189,7 +190,9 @@ class SimulationManager:
     def _get_physics_scene_api(cls, physics_scene: str = None):
         if physics_scene is None:
             if len(SimulationManager._physics_scene_apis) > 0:
-                physics_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
+                physics_scene_api = list(SimulationManager._physics_scene_apis.values())[
+                    SimulationManager._default_physics_scene_idx
+                ]
             else:
                 # carb.log_warn("Physics scene is not found in stage")
                 return None
@@ -228,6 +231,23 @@ class SimulationManager:
     @classmethod
     def get_physics_sim_view(cls):
         return SimulationManager._physics_sim_view
+
+    @classmethod
+    def set_default_physics_scene(cls, physics_scene_prim_path: str):
+        if physics_scene_prim_path in SimulationManager._physics_scene_apis:
+            SimulationManager._default_physics_scene_idx = list(SimulationManager._physics_scene_apis.keys()).index(
+                physics_scene_prim_path
+            )
+        else:
+            raise Exception("physics scene specified {} doesn't exist".format(physics_scene_prim_path))
+
+    @classmethod
+    def get_default_physics_scene(cls) -> str:
+        if len(SimulationManager._physics_scene_apis) > 0:
+            return list(SimulationManager._physics_scene_apis.keys())[SimulationManager._default_physics_scene_idx]
+        else:
+            carb.log_warn("No physics scene is found in stage")
+            return None
 
     @classmethod
     def step(cls, render: bool = False):
@@ -460,7 +480,7 @@ class SimulationManager:
         """
         if physics_scene is None:
             if len(SimulationManager._physics_scene_apis) > 0:
-                physx_scene_api = list(SimulationManager._physics_scene_apis.values())[-1]
+                physx_scene_api = SimulationManager._get_physics_scene_api(physics_scene=physics_scene)
                 return physx_scene_api.GetEnableCCDAttr().Get()
             else:
                 return False
