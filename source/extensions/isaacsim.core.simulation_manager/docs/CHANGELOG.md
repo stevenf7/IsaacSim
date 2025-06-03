@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.1] - 2025-06-03
+### Changed
+- Removed debugging prints
+
 ## [1.2.0] - 2025-05-30
 ### Changed
 - Disable physics warmup/ initialize to be triggered on play when /app/player/playSimulations=False
