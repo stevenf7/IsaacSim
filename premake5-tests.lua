@@ -742,6 +742,8 @@ function create_tests()
         "standalone_examples/testing/validation/test_deprecated.py"
     )
 
+-- AUTOREMOVE: BEGIN
+
     -- Linux-specific docker tests
     if os.target() == "linux" then
         group("docker_tests")
@@ -773,4 +775,5 @@ function create_tests()
     --     jupyter_sample_test("tests-jupyter-startup", "standalone_examples/testing/notebooks/basic_notebook.ipynb")
     --     jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
     --     jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
+-- AUTOREMOVE: END
 end

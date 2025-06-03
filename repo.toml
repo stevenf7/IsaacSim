@@ -43,10 +43,11 @@ allowed_paths=[
   "${root}/docs/source",
 ]
 
+# AUTOREMOVE: BEGIN
 [repo_build.docker]
 "platform:linux-x86_64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00"
 "platform:linux-aarch64".image_url = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00"
-
+# AUTOREMOVE: END
 
 [repo_build]
 # List of packman projects to pull (in order)
@@ -258,6 +259,8 @@ links.exts.include = [
   "isaacsim.util.debug_draw"
 ]
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
+
+# AUTOREMOVE: BEGIN
 
 ########################################################################################################################
 # Documentation building
@@ -526,6 +529,8 @@ formats_to_publish = ["html"]
 protocol = "s3"
 region = "us-west-1"
 s3_exclude_patterns = []
+
+# AUTOREMOVE: END
 
 # #####################################################################
 # # schema
@@ -978,6 +983,8 @@ stdout_fail_patterns.exclude = [
 tc_report_enabled = false
 timeout = 100000
 
+# AUTOREMOVE: BEGIN
+
 ########################################################################################################################
 # Bump version
 ########################################################################################################################
@@ -988,6 +995,8 @@ git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omni
 branch_name = "develop"
 # # FOR PRODUCTION #
 # branch_name = "release/5.0"
+
+# AUTOREMOVE: END
 
 ########################################################################################################################
 # Extensions publisher
@@ -1039,9 +1048,14 @@ use_packman_to_upload_archive = true
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim-standalone@*${publish_platform_target_abi}.${config}.*"
 
+
+# AUTOREMOVE: BEGIN
+
 # ETM (extension test matrix) settings
 enroll_in_etm = false
 etm_emails = ["hmazhar@nvidia.com"]
+
+# AUTOREMOVE: END
 
 ########################################################################################################################
 # Code formatting
@@ -1326,6 +1340,8 @@ precache_exts_enabled = false
 [repo_deploy_exts.pipeline_repo.branch.prod]
 fail_if_exts_are_missing = false
 
+# AUTOREMOVE: BEGIN
+
 ########################################################################################################################
 # Tool to sign package
 ########################################################################################################################
@@ -1333,6 +1349,7 @@ fail_if_exts_are_missing = false
 enabled = true
 folder_input = "${root}/_unsignedpackages"
 folder_output = "${root}/_signedpackages"
+
 
 ########################################################################################################################
 # Python packages generation
@@ -1436,6 +1453,8 @@ scan_dirs = [
 ignore_folders = ["isaac_ros2_messages"]
 ignore_files = ["UsdPCH.h"]
 
+# AUTOREMOVE: END
+
 ########################################################################################################################
 # Validate changelogs
 ########################################################################################################################
@@ -1529,12 +1548,13 @@ exclude = [
     "tools/package.*",
     "tools/publish*",
     "tools/test_*",
+    "tools/isaac",
+    "tools/thumbnail_generator",
 ]
 
 [[repo_stage_for_github.trim]]
 files = [
     "repo.toml",
-    "deps/repo-deps.packman.xml",
 ]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
@@ -1545,6 +1565,22 @@ files = [
 ]
 begin_marker = "# FOR DEVELOPMENT - START #"
 end_marker = "# FOR DEVELOPMENT - END #"
+
+[[repo_stage_for_github.trim]]
+files = [
+    "tools/packman/config.packman.xml",
+    "deps/repo-deps.packman.xml",
+]
+begin_marker = "<!-- AUTOREMOVE: BEGIN -->"
+end_marker = "<!-- AUTOREMOVE: END -->"
+
+[[repo_stage_for_github.trim]]
+files = [
+    "premake5-isaacsim.lua",
+    "premake5-tests.lua",
+]
+begin_marker = "-- AUTOREMOVE: BEGIN"
+end_marker = "-- AUTOREMOVE: END"
 
 #----------------------------------------------------------------------------------------------------------------------#
 #----------------------------------------------------------------------------------------------------------------------#

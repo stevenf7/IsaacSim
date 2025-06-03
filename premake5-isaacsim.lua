@@ -530,6 +530,8 @@ setlocal
     end
 end
 
+-- AUTOREMOVE: BEGIN
+
 function docker_test(name, script, args)
     local extra_args = args or ""
     for _, config in ipairs(ALL_CONFIGS) do
@@ -566,3 +568,5 @@ gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-de
         os.chmod(sh_file_path, 755)
     end
 end
+
+-- AUTOREMOVE: END
