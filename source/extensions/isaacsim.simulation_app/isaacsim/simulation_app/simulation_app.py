@@ -590,8 +590,6 @@ class SimulationApp:
             This should be used in case a new stage is opened and the desired config needs
             to be re-applied.
         """
-        # Set rtx-default renderder settings
-        self._set_render_settings(default=True)
         # Set rtx settings renderer settings
         self._set_render_settings(default=False)
 

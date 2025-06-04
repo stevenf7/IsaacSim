@@ -1,4 +1,8 @@
 # Changelog
+## [2.8.2] - 2025-06-02
+### Removed
+- No longer set /rtx-default settings
+
 ## [2.8.1] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

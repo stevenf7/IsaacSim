@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.3] - 2025-06-04
+### Changed
+- Switch to get_lens_distortion_model in deprecated methods
+
 ## [1.2.2] - 2025-06-03
 ### Changed
 - Fix incorrect licenses and add missing licenses
