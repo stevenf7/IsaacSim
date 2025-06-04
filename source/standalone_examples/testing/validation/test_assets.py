@@ -153,6 +153,28 @@ def check_abs_refs(usd_path):
     return []
 
 
+def check_rel_refs_scope(usd_path):
+    """Check if USD file has relative references that are outside of our asset server.
+
+    Args:
+        usd_path: Path to the USD file.
+
+    Returns:
+        List of error messages if USD file has relative references.
+    """
+    rel_refs = [i for i in get_stage_references(usd_path) if not is_absolute_path(i)]
+    rel_refs_outside_asset_server = []
+    if len(rel_refs) != 0:
+        for ref in rel_refs:
+            if "../Isaac/" in ref:
+                rel_refs_outside_asset_server.append(ref)
+        if len(rel_refs_outside_asset_server) != 0:
+            return [
+                f"stage: {usd_path}, has relative references outside of asset server {rel_refs_outside_asset_server}"
+            ]
+    return []
+
+
 def check_properties(usd_path, prim):
     """Check if prim properties contain absolute references.
 
@@ -291,6 +313,7 @@ def validate_usd_file(usd_path, root_path):
     # file_results.extend(check_stage_units(stage, usd_path))
     file_results.extend(check_abs_refs(usd_path))
     file_results.extend(check_external_refs(root_path, usd_path))
+    file_results.extend(check_rel_refs_scope(usd_path))
 
     # Check prim-level issues
     for prim in stage.Traverse():
@@ -313,7 +336,7 @@ try:
     # Setup paths and filters
     root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     search_paths = [
-        root_path + "/Isaac/Robots/FrankaRobotics",
+        root_path + "/Isaac/Robots",
     ]
     exclude_paths = ["Environments/Outdoor/Rivermark", ".thumbs"]
 
