@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.7.3] - 2025-06-04
+### Removed
+- Unused headers
+
 ## [4.7.2] - 2025-06-03
 ### Changed
 - Fix incorrect licenses and add missing licenses
