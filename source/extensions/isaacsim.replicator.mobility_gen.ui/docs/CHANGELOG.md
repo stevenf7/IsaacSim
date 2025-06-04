@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.4] - 2025-06-4
+### Changed
+- Added fix for saving stage by setting save_and_reload_in_place=False
+
 ## [0.1.3] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
