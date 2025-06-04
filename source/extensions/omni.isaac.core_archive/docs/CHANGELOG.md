@@ -1,4 +1,10 @@
 # Changelog
+
+## [2.6.0] - 2025-06-02
+### Changed
+- Remove webbot==0.34
+- Update matplotlib==3.10.0, gunicorn==22.0.0, tornado==6.4.2
+
 ## [2.5.5] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
