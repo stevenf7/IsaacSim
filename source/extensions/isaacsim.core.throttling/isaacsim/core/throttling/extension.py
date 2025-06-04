@@ -37,7 +37,9 @@ class Extension(omni.ext.IExt):
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
             _settings.set("/rtx/ecoMode/enabled", False)
             _settings.set("/exts/omni.kit.hydra_texture/gizmos/enabled", False)
-        elif event.type == int(omni.timeline.TimelineEventType.STOP):
+        elif event.type == int(omni.timeline.TimelineEventType.STOP) or event.type == int(
+            omni.timeline.TimelineEventType.PAUSE
+        ):
             _settings.set("/rtx/ecoMode/enabled", True)
             _settings.set("/exts/omni.kit.hydra_texture/gizmos/enabled", True)
         pass

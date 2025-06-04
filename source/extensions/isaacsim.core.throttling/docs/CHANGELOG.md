@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.7] - 2025-06-04
+### Fixed
+- Grids are available while paused, if Grid Mode is ON
+
 ## [2.1.6] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
