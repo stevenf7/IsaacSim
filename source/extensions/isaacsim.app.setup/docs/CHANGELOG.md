@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.5] - 2025-06-04
+### Changed
+- Force persistent/exts/omni.anim.navigation.core/navMesh/config/autoRebakeOnChanges to false when extension starts
+
 ## [1.4.4] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

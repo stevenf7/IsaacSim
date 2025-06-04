@@ -87,6 +87,9 @@ class CreateSetupExtension(omni.ext.IExt):
         # Increase hang detection timeout
         omni.client.set_hang_detection_time_ms(10000)
 
+        # Force navmesh baking false
+        self._settings.set("/persistent/exts/omni.anim.navigation.core/navMesh/config/autoRebakeOnChanges", False)
+
     async def __new_stage(self):
 
         from omni.kit.viewport.utility import get_active_viewport, next_viewport_frame_async
