@@ -245,7 +245,7 @@ class MobilityGenExtension(omni.ext.IExt):
             # Open stage and save local copy
             open_stage(scene_usd_str)
             self.cached_stage_path = os.path.join(tempfile.mkdtemp(), "stage.usd")
-            save_stage(self.cached_stage_path)
+            save_stage(self.cached_stage_path, save_and_reload_in_place=False)
 
             # Initialize world
             world = new_world(physics_dt=robot_type.physics_dt)
