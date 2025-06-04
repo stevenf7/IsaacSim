@@ -1,5 +1,5 @@
 [package]
-version = "15.1.2"
+version = "15.1.3"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -51,6 +51,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [settings]
+# List of directories which renderer will search to find Lidar profile for (deprecated) camera-based Lidar
 app.sensors.nv.lidar.profileBaseFolder=[
     "${omni.sensors.nv.common}/data/lidar/",
     "${isaacsim.sensors.rtx}/data/lidar_configs/HESAI/",
@@ -65,14 +66,12 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${isaacsim.sensors.rtx}/data/lidar_configs/"
 ]
 
+# Renderer copies Lidar return buffer onto CPU before postprocessing
 app.sensors.nv.lidar.outputBufferOnGPU = false
-app.sensors.nv.lidar.enableVelocity = true
+# Renderer copies Radar return buffer onto CPU before postprocessing
 app.sensors.nv.radar.outputBufferOnGPU = false
-app.sensors.nv.radar.runWithoutMBVH = false
-rtx.rtxsensor.coordinateFrameQuaternion = "0.0,0.0,0.0,1.0"
-# sensor material mapping is hard coded for now, and this is needed to enable sensor materials.
+# Enable non-visual materials using default hard-coded map of material names to material IDs
 rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;AsphaltWeatheredMaterial:2;VegetationGrassMaterial:3;WaterStandardMaterial:4;GlassStandardMaterial:5;FiberGlassMaterial:6;MetalAlloyMaterial:7;MetalAluminumMaterial:8;MetalAluminumOxidizedMaterial:9;PlasticStandardMaterial:10;RetroMarkingsMaterial:11;RetroSignMaterial:12;RubberStandardMaterial:13;SoilClayMaterial:14;ConcreteRoughMaterial:15;ConcreteSmoothMaterial:16;OakTreeBarkMaterial:17;FabricStandardMaterial:18;PlexiGlassStandardMaterial:19;MetalSilverMaterial:20"
-renderer.raytracingMotion.enabled=true
 
 # List of supported Lidar asset paths
 exts."isaacsim.sensors.rtx".supportedLidarConfigs=[

@@ -392,11 +392,13 @@ The extension-specific settings can be either specified (set) or retrieved (get)
                 ".. list-table::",
                 "    :header-rows: 1\n",
                 "    * - Application/extension setting",
+                "      - Description",
                 "      - Value",
             ]
             for item in app_result:
                 content += [
                     f"    * - ``{item['entry']['toml']}``",
+                    f"      - {textwrap.indent(item['description'], prefix=' ' * 8)[8:]}",
                     f"      - ``{item['value']}``",
                 ]
 

@@ -1,4 +1,8 @@
 # Changelog
+## [15.1.3] - 2025-06-03
+### Changed
+- Cleaned up and updated extension setting documentation
+
 ## [15.1.2] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
