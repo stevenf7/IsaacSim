@@ -48,7 +48,7 @@
   </dependency>
   <!-- For building pip prebundles -->
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">
-    <package name="repo_licensing" version="1.17.0" />
+    <package name="repo_licensing" version="1.18.1" />
   </dependency>
 <!-- AUTOREMOVE: END -->
 </project>

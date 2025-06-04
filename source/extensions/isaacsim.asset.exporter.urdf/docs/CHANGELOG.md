@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.5] - 2025-06-02
+### Changed
+- Update lxml==5.4.0
+
 ## [1.2.4] - 2025-05-30
 ### Changed
 - Update nvidia-srl-usd-to-urdf==1.0.1
