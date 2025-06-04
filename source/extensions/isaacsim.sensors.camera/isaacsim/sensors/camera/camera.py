@@ -1397,7 +1397,8 @@ class Camera(BaseSensor):
         max_fov: Optional[float],
         polynomial: Optional[Sequence[float]],
     ) -> None:
-        """
+        """[DEPRECATED] Sets distortion parameters for the fisheyePolynomial projection model.
+
         Args:
             nominal_width (Optional[float]): Rendered Width (pixels)
             nominal_height (Optional[float]): Rendered Height (pixels)
@@ -1406,6 +1407,10 @@ class Camera(BaseSensor):
             max_fov (Optional[float]): maximum field of view (pixels)
             polynomial (Optional[Sequence[float]]): polynomial equation coefficients (sequence of 5 numbers) starting from A0, A1, A2, A3, A4
         """
+        omni.kit.app.log_deprecation(
+            "Camera.set_matching_fisheye_polynomial_properties is deprecated."
+            'Please use the the "opencvFisheye" distortion model to directly specify OpenCV distortion parameters.'
+        )
         if "fisheye" not in self.get_projection_type():
             raise Exception(
                 "fisheye projection type is not set to be able to use set_fisheye_polynomial_properties method."
@@ -1438,7 +1443,7 @@ class Camera(BaseSensor):
         distortion_model: Sequence[float],
         distortion_fn: Callable,
     ) -> None:
-        """[DEPRECATED] Approximates given distortion with ftheta fisheye polynomial coefficients.
+        """[DEPRECATED] Approximates provided OpenCV fisheye distortion with ftheta fisheye polynomial coefficients.
 
         Args:
             nominal_width (float): Rendered Width (pixels)
@@ -1653,7 +1658,7 @@ class Camera(BaseSensor):
         Returns:
             np.ndarray | torch.Tensor | wp.array: The intrinsics matrix of the camera (used for calibration)
         """
-        if "pinhole" not in self.get_projection_type():
+        if "pinhole" not in self.get_lens_distortion_model():
             raise Exception("pinhole projection type is not set to be able to use get_intrinsics_matrix method.")
 
         # Determine backend utilities
@@ -1693,7 +1698,7 @@ class Camera(BaseSensor):
         Returns:
             np.ndarray: 2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
         """
-        if "pinhole" not in self.get_projection_type():
+        if "pinhole" not in self.get_lens_distortion_model():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_image_coords_from_world_points method which use pinhole prespective projection."
             )
@@ -1719,7 +1724,7 @@ class Camera(BaseSensor):
             np.ndarray | torch.Tensor | wp.array: (n, 3) 3d points (X, Y, Z) in camera frame.
                 +Z points forward (optical axis), +X right, +Y down
         """
-        if "pinhole" not in self.get_projection_type():
+        if "pinhole" not in self.get_lens_distortion_model():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_camera_points_from_image_coords method."
             )
@@ -1761,7 +1766,7 @@ class Camera(BaseSensor):
         Returns:
             np.ndarray | torch.Tensor | wp.array: (n, 3) 3d points (X, Y, Z) in world frame.
         """
-        if "pinhole" not in self.get_projection_type():
+        if "pinhole" not in self.get_lens_distortion_model():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_world_points_from_image_coords method."
             )
