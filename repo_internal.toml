@@ -430,7 +430,7 @@ scan_dirs = [
   "${root}/source/extensions",
   "${root}/source/deprecated"
 ]
-ignore_folders = ["isaac_ros2_messages"]
+ignore_folders = []
 ignore_files = ["UsdPCH.h"]
 
 ########################################################################################################################

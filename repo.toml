@@ -785,23 +785,26 @@ etm_emails = ["hmazhar@nvidia.com"]
 [repo_format]
 
 cpp.files.exclude = [
-  "source/extensions/isaacsim.ros2.bridge/isaac_ros2_messages/**",
   "tools/container/**",
 ]
 
 python.files.exclude = [
-  ".vscode/*",
   "_build/*",
   "_compiler/*",
   "_repo/*",
-  ".git/*",
   ".eggs/*",
-  ".venv/*",
+  ".git/*",
   ".local/*",
   ".nvidia-omniverse/*",
-  "tools/packman/*",
+  ".venv/*",
+  ".vscode/*",
   "schemas/*",
+  "tools/autopull/**",
+  "tools/ci/**",
   "tools/container/**",
+  "tools/lib/**",
+  "tools/packman/*",
+  "tools/repoman/**",
 ]
 
 license_preamble = '''
@@ -992,7 +995,6 @@ config_file = "${root}/.clang-tidy"
 compile_commands = "${root}/_build/${platform}/${config}/compile_commands.json"
 # Paths to exclude from analysis (glob patterns)
 exclude_paths = [
-  "*/isaac_ros2_messages/*",
   "*/isaacsim.robot.schema/*"
 ]
 # Extra arguments to pass to clang-tidy
