@@ -1,4 +1,10 @@
 # Changelog
+
+## [2.3.9] - 2025-06-04
+### Changed
+- Fixed issue with duplicate "Spatial SDG" causing missing menu in tools
+- Fixed Replicator menu duplicate issue
+
 ## [2.3.8] - 2025-06-03
 ### Changed
 - Add missing Replicator menu items

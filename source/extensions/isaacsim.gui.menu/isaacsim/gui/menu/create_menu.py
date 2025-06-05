@@ -326,9 +326,12 @@ class CreateMenuExtension:
             "CREATE",
         )
 
+        self._menu_categories = [robot_menu, environment_menu, sensor_menu, apriltag_menu]
+
     def __del__(self):
         omni.kit.menu.utils.remove_layout(self.__menu_layout)
-        remove_menu_items(self._menu_items, "Create")
+        for menu_item in self._menu_categories:
+            remove_menu_items([menu_item], "Create")
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(

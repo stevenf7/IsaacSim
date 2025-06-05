@@ -32,16 +32,18 @@ class LayoutMenuExtension:
                     MenuLayout.Item("Default"),
                     MenuLayout.Item("Visual Scripting"),
                     MenuLayout.Item(
-                        "Replicator "
-                    ),  # the space after the name is intentional, otherwise it gets confused about the replicator in the tools menu
+                        "Replicator", source="Layouts/Replicator", source_search=LayoutSourceSearch.LOCAL_ONLY
+                    ),
                     MenuLayout.Item("Occupancy Map Generation"),
-                    MenuLayout.Item("Spatial SDG"),
+                    MenuLayout.Item(
+                        "Spatial SDG", source="Layouts/Spatial SDG", source_search=LayoutSourceSearch.LOCAL_ONLY
+                    ),
                     MenuLayout.Seperator("Save/Load"),
                     MenuLayout.Item("Save Layout", source="Window/Layout/Save Layout..."),
                     MenuLayout.Item("Load Layout", source="Window/Layout/Load Layout..."),
-                    MenuLayout.Seperator(),
-                    MenuLayout.Item("Quick Save"),
-                    MenuLayout.Item("Quick Load"),
+                    MenuLayout.Seperator("Quick Actions"),
+                    MenuLayout.Item("Quick Save", source="Layouts/Quick Save"),
+                    MenuLayout.Item("Quick Load", source="Layouts/Quick Load"),
                 ],
             )
         ]
