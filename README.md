@@ -127,10 +127,11 @@ After a reboot you will need to:
 # Using The Source Repository
 
 #### Linux/Windows
-- Install Ubuntu 20.04 (linux-x86_64) / Windows 10 version 1903 (windows-x86_64 and DXR)
-- Install NVIDIA driver 525.60 (Linux) / NVIDIA driver 527.37 (Windows)
-    * [Linux] (http://eris-dl-b006.nvidia.com)
+- Ubuntu 22.04 (linux-x86_64) / Ubuntu 24.04 (linux-x86_64) / Windows 10 version 1903 (windows-x86_64 and DXR) / Windows 11 Enterprise version 24H2 (windows-x86_64 and DXR)
+- Install NVIDIA driver 535.129.03 (Linux)/ NVIDIA driver 537.58 (Windows: GameReady, Studio) / NVIDIA driver 537.70 (Windows: RTX/Quadro, Grid/vGPU)
+    * [Linux] (https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html#ubuntu-installation)
     * [NVIDIA OMNIVERSE - Driver Requirements](https://developer.nvidia.com/omniverse/driver)
+- Open a terminal on Linux or Command Prompt/PowerShell on Windows, and run nvidia-smi to confirm that NVIDIA drivers are installed correctly.
 - Install [VS Code](https://code.visualstudio.com/)
 - Install "git".
 - Install "git-lfs":
@@ -168,6 +169,28 @@ The build output will be found in the generated
 `_build` folder and the make/solution files will be found in the generated `_compiler` directory. Occasionally, when
 drastic project level changes are made, you may have to regenerate these files using `-x` option with the build
 script.
+
+- When using OpenGL on Linux, especially in workstations or desktops, it often defaults to using the NVIDIA drivers. However, on laptops, it may fall back to using the CPU's integrated graphics (i.e., not using the NVIDIA GPU). To make sure OpenGL is using the NVIDIA driver, follow these steps:
+
+Install `mesa-utils` to get `glxinfo`: 
+```
+sudo apt update
+sudo apt install mesa-utils
+```
+Check if OpenGL is using the NVIDIA driver::
+```
+glxinfo | grep "OpenGL version"
+```
+The output should look like this: `OpenGL version string: <opengl_version> NVIDIA <nvidia_driver_version>`.
+If the output is empty, try opening a new terminal and run the command again, or reboot your system.
+If the output does not show "NVIDIA", then run the following commands:
+
+```
+sudo apt update
+sudo apt install nvidia-prime
+sudo prime-select nvidia
+```
+After that, check again with: `glxinfo | grep "OpenGL version"`, The output should now include "NVIDIA."
 
 
 > NOTE: To build the project minimal configuration is needed. Any version of Windows 10 or Linux with Docker will do. Then
