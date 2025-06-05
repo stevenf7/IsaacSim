@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.6] - 2025-06-05
+### Changed
+- removed the duplicated replicator menu hack
+
 ## [1.4.5] - 2025-06-04
 ### Changed
 - Force persistent/exts/omni.anim.navigation.core/navMesh/config/autoRebakeOnChanges to false when extension starts

@@ -119,6 +119,7 @@ class ToolsMenuExtension:
                             MenuLayout.Item("Event Scene Tagger"),
                             MenuLayout.Item("Event Config File"),
                         ],
+                        source_search=LayoutSourceSearch.LOCAL_ONLY,
                     ),
                     MenuLayout.SubMenu(
                         "USD",
