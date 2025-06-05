@@ -12,444 +12,426 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import argparse
-import json
-import os
-import re
 from pathlib import Path
+from typing import Any, Dict, List, Union
+
+USD_EXTENSION = ".usd"  # switch to .usda for debugging
 
 
-def json_value_to_usda(value, usd_type):
-    """Convert a JSON value to its USD representation.
+def convert_json_to_usd(json_path: Union[str, Path], usd_path: Union[str, Path], model_config: Dict[str, Any]) -> None:
+    """Convert a LiDAR configuration JSON file to a USD file.
 
-    Args:
-        value (Any): The value to convert
-        usd_type (str): The USD type to convert to
-
-    Returns:
-        str: The USD representation of the value
-    """
-    # Handle array types first
-    if usd_type.endswith("[]"):
-        if not value:
-            return "[]"
-        element_type = usd_type[:-2]  # Remove [] suffix
-        elements = [json_value_to_usda(x, element_type) for x in value]
-
-        # If array has more than 10 elements, format with line breaks
-        if len(elements) > 10:
-            # Find the maximum width needed for each element
-            max_width = max(len(str(e)) for e in elements)
-
-            # Format elements into groups of 10
-            lines = []
-            for i in range(0, len(elements), 10):
-                group = elements[i : i + 10]
-                # Pad each element to max_width and join with commas
-                padded = [str(e).rjust(max_width) for e in group]
-                lines.append(", ".join(padded))
-
-            # Join lines with newlines and proper indentation
-            array_content = ",\n        ".join(lines)
-            return f"[\n        {array_content}\n    ]"
-        else:
-            # For short arrays, keep them on one line
-            return f"[{', '.join(elements)}]"
-
-    # Handle scalar types
-    if usd_type == "uint":
-        # Convert any number to integer for uint type
-        return str(int(value))
-    elif usd_type == "float":
-        return str(value)
-    elif usd_type == "bool":
-        return "1" if value else "0"
-    elif usd_type == "token":  # Convert token values to uppercase
-        return f'"{str(value).upper()}"'
-    else:  # string type
-        return f'"{str(value)}"'
-
-
-# Schema-defined attribute types based on generatedSchema.usda
-SCHEMA_ATTRIBUTE_TYPES = {
-    # Core sensor attributes from OmniSensorAPI
-    "modelName": "string",
-    "marketName": "string",
-    "modelVendor": "string",
-    "modelVersion": "string",
-    "tickRate": "float",
-    # Token attributes from schema
-    "purpose": "token",  # allowedTokens = ["default", "render", "proxy", "guide"]
-    "visibility": "token",  # allowedTokens = ["inherited", "invisible"]
-    "xformOpOrder": "token[]",
-    # Attributes from OmniSensorGenericLidarCoreAPI
-    "aspectRatio": "float",
-    "auxOutputType": "token",  # allowedTokens = ["NONE", "BASIC", "EXTRA", "FULL"]
-    "avgPowerW": "float",
-    "azimuthErrorMean": "float",
-    "azimuthErrorStd": "float",
-    "beamWaistHorM": "float",
-    "beamWaistVerM": "float",
-    "bitDepthResolution": "float",
-    "calibrationGain": "float",
-    "customFrameOfReferenceTrafo": "float[]",
-    "divergenceHorDeg": "float",
-    "divergenceVerDeg": "float",
-    "effectiveApertureSizeM": "float",
-    "elementsCoordsType": "token",  # allowedTokens = ["CARTESIAN", "SPHERICAL"]
-    "elevationErrorMean": "float",
-    "elevationErrorStd": "float",
-    "emitterStatesFile": "string",
-    "farRangeM": "float",
-    "focusDistM": "float",
-    "intensityMappingDecoding": "float[]",
-    "intensityMappingEncoding": "float[]",
-    "intensityMappingType": "token",  # allowedTokens = ["LINEAR", "NONLINEAR", "NONLINEAR_ENCODING_ONLY", "NONLINEAR_DECODING_ONLY"]
-    "intensityProcessing": "token",  # allowedTokens = ["RAW", "NORMALIZATION", "CORRECTION"]
-    "intensityScalePercent": "float",
-    "maxAzimuthROI": "float",
-    "maxReturns": "uint",
-    "minAzimuthROI": "float",
-    "minDistBetweenEchosM": "float",
-    "minReflectance": "float",
-    "minReflectionRangeM": "float",
-    "Msquared": "float",
-    "nearRangeM": "float",
-    "numberOfChannels": "uint",
-    "numberOfEmitters": "uint",
-    "numLines": "uint",
-    "numRaysPerLine": "uint[]",
-    "originErrorMean": "float[]",
-    "originErrorStd": "float[]",
-    "outputFrameOfReference": "token",  # allowedTokens = ["SENSOR", "WORLD", "CUSTOM"]
-    "outputMotionCompensationState": "token",  # allowedTokens = ["NONCOMPENSATED", "COMPENSATED"]
-    "pixelPitch": "float",
-    "pulseTimeNs": "uint",
-    "quantumEfficiency": "float",
-    "rangeAccuracyM": "float",
-    "rangeCount": "uint",
-    "rangeOffsetM": "float",
-    "rangeResolutionM": "float",
-    "rangesMaxM": "float[]",
-    "rangesMinM": "float[]",
-    "rayType": "token",  # allowedTokens = ["IDEALIZED", "GAUSSIAN_BEAM", "UNIFORM_BEAM"]
-    "reflectionPowerFraction": "float",
-    "reportRateBaseHz": "uint",
-    "rotationDirection": "token",  # allowedTokens = ["CW", "CCW"]
-    "scanRateBaseHz": "uint",
-    "scanType": "token",  # allowedTokens = ["ROTARY", "SOLID_STATE"]
-    "skipDroppingInvalidPoints": "bool",
-    "startAzimuthOffsetDeg": "float",
-    "stateResolutionStep": "uint",
-    "transmissionPowerFraction": "float",
-    "validEndAzimuthDeg": "float",
-    "validStartAzimuthDeg": "float",
-    "waveLengthNm": "float",
-    # Emitter state attributes from OmniSensorGenericLidarCoreEmitterStateAPI
-    "azimuthDeg": "float[]",
-    "bank": "uint[]",
-    "channelId": "uint[]",
-    "distanceCorrectionM": "float[]",
-    "elevationDeg": "float[]",
-    "fireTimeNs": "uint[]",
-    "focalDistM": "float[]",
-    "focalSlope": "float[]",
-    "horOffsetM": "float[]",
-    "isROIState": "bool",
-    "rangeId": "uint[]",
-    "reportRateDiv": "float[]",
-    "roi": "bool[]",
-    "vertOffsetM": "float[]",
-}
-
-
-def get_schema_type(key):
-    """Get the type from schema for a given attribute key."""
-    # Extract the base attribute name (last part after colon)
-    base_key = key.split(":")[-1]
-    return SCHEMA_ATTRIBUTE_TYPES.get(base_key)
-
-
-def get_usd_type(key, value):
-    """Get the USD type for a given key-value pair.
+    This function reads a LiDAR configuration JSON file and creates a USD file containing
+    an OmniLidar prim with the specified configuration. It handles emitter states, attributes,
+    and model configuration.
 
     Args:
-        key (str): The attribute key
-        value (Any): The attribute value
+        param json_path (Union[str, Path]): Path to the input JSON configuration file.
+        param usd_path (Union[str, Path]): Path where the output USD file will be saved.
+        param model_config (Dict[str, Any]): Dictionary containing model configuration parameters.
 
-    Returns:
-        str: The USD type for this attribute
+    Raises:
+        FileNotFoundError: If the JSON file cannot be found.
+        Exception: If there are issues setting attributes or creating the USD prim.
     """
-    # Check schema first using base key (last part after colon)
-    base_key = key.split(":")[-1]
-    schema_type = SCHEMA_ATTRIBUTE_TYPES.get(base_key)
-    if schema_type:
-        return schema_type
+    import json
+    from itertools import cycle, islice
 
-    # For values not in schema, infer type based on Python type
-    if isinstance(value, bool):
-        return "bool"
-    elif isinstance(value, (int, float)):  # Simplify numeric type handling
-        return "float" if isinstance(value, float) else "uint"
-    elif isinstance(value, list):
-        if not value:
-            return "float[]"  # Default for empty arrays
-        # Get type of first element and append []
-        element_type = get_usd_type("", value[0]).replace("[]", "")
-        return f"{element_type}[]"
-    return "string"  # Default case
+    import carb
+    import omni.replicator.core as rep
+    from isaacsim.core.utils.stage import create_new_stage, get_current_stage
 
-
-def flatten_json(json_obj, prefix="", result=None, skip_emitter_states=False):
-    """Flatten nested JSON into dot-notation key-value pairs."""
-    if result is None:
-        result = {}
-
-    for key, value in json_obj.items():
-        # Skip comment fields for cleaner output
-        if "comment" in key.lower():
-            continue
-
-        # Skip emitterStates if requested (we'll handle them separately)
-        if skip_emitter_states and key == "emitterStates":
-            continue
-
-        # Handle rangeOffset to rangeOffsetM conversion
-        if key == "rangeOffset":
-            key = "rangeOffsetM"
-
-        # Handle scanType SOLIDSTATE to SOLID_STATE conversion
-        if key == "scanType" and value == "SOLIDSTATE":
-            value = "SOLID_STATE"
-
-        new_key = f"{prefix}:{key}" if prefix else key
-
-        if isinstance(value, dict):
-            flatten_json(value, new_key, result, skip_emitter_states)
-        else:
-            # Only include attributes that are in the schema (except for rangeOffsetM which we converted)
-            base_key = new_key.split(":")[-1]
-            if base_key in SCHEMA_ATTRIBUTE_TYPES or base_key == "rangeOffsetM":
-                result[new_key] = value
-
-    # After flattening, check if we need to add numberOfChannels
-    if "numberOfChannels" not in result and "numberOfEmitters" in result:
-        result["numberOfChannels"] = result["numberOfEmitters"]
-
-    return result
-
-
-def sanitize_name(name):
-    """Replace special characters with underscores and consolidate multiple underscores."""
-    # Replace special characters with underscores
-    sanitized = re.sub(r"[^a-zA-Z0-9]", "_", name)
-
-    # Replace multiple consecutive underscores with a single underscore
-    sanitized = re.sub(r"_+", "_", sanitized)
-
-    return sanitized
-
-
-def extract_model_info(config):
-    """Extract model name and optional tick rate from config.
-
-    Args:
-        config (dict): The JSON config
-
-    Returns:
-        tuple: (model_name, tick_rate or None)
-    """
-    profile = config.get("profile", {})
-    model_name = profile.get("name", config.get("name", "UnknownLidar"))
-    model_name = sanitize_name(model_name)
-
-    # Extract tick rate from name (e.g., "10hz" -> 10)
-    match = re.search(r"(\d+)hz", model_name.lower())
-    return model_name, int(match.group(1)) if match else None
-
-
-def process_emitter_states(emitter_states):
-    """Process emitter states into attributes and API schemas.
-
-    Args:
-        emitter_states (list): List of emitter state dictionaries
-
-    Returns:
-        tuple: (attributes, api_schemas)
-    """
-    attributes = []
-    api_schemas = ["OmniSensorGenericLidarCoreAPI"]
-
-    # Process each emitter state
-    for i, state in enumerate(emitter_states):
-        # First pass: find any float[] attributes and their length
-        float_array_length = None
-        for key, value in state.items():
-            if "comment" in key.lower():
-                continue
-
-            # Skip attributes not in schema
-            if key not in SCHEMA_ATTRIBUTE_TYPES:
-                continue
-
-            usd_type = get_usd_type(key, value)
-            if usd_type == "float[]" and value:
-                float_array_length = len(value)
-                break
-
-        # Second pass: process all attributes
-        processed_keys = set()
-        for key, value in state.items():
-            if "comment" in key.lower():
-                continue
-
-            # Skip attributes not in schema
-            if key not in SCHEMA_ATTRIBUTE_TYPES:
-                continue
-
-            emitter_key = f"emitterState:s{i+1:03d}:{key}"
-            usd_key = f"omni:sensor:Core:{emitter_key}"
-            usd_type = get_usd_type(key, value)
-
-            # Ensure array type for emitter state values
-            if not usd_type.endswith("[]"):
-                usd_type = f"{usd_type}[]"
-                value = [value]
-
-            usd_value = json_value_to_usda(value, usd_type)
-            attributes.append(f"    {usd_type} {usd_key} = {usd_value}")
-            processed_keys.add(key)
-
-        # If we found float arrays, populate missing float[] attributes with zeros
-        # and populate channelId with sequential numbers if not specified
-        if float_array_length is not None:
-            # Add channelId if not specified
-            if "channelId" not in processed_keys:
-                emitter_key = f"emitterState:s{i+1:03d}:channelId"
-                usd_key = f"omni:sensor:Core:{emitter_key}"
-                channel_array = list(range(1, float_array_length + 1))  # 1 to N
-                usd_value = json_value_to_usda(channel_array, "uint[]")
-                attributes.append(f"    uint[] {usd_key} = {usd_value}")
-                processed_keys.add("channelId")
-
-            # Add missing float[] attributes with zeros
-            for key, type_info in SCHEMA_ATTRIBUTE_TYPES.items():
-                if (
-                    type_info == "float[]"
-                    and key
-                    in [
-                        "azimuthDeg",
-                        "elevationDeg",
-                        "fireTimeNs",
-                        "bank",
-                        "timeOffsetNs",
-                        "distanceCorrectionM",
-                        "focalDistM",
-                        "focalSlope",
-                        "horOffsetM",
-                        "reportRateDiv",
-                        "vertOffsetM",
-                    ]
-                    and key not in processed_keys
-                ):
-                    emitter_key = f"emitterState:s{i+1:03d}:{key}"
-                    usd_key = f"omni:sensor:Core:{emitter_key}"
-                    zero_array = [0.0] * float_array_length
-                    usd_value = json_value_to_usda(zero_array, "float[]")
-                    attributes.append(f"    float[] {usd_key} = {usd_value}")
-
-    # Add schemas for additional emitter states
-    if len(emitter_states) > 1:
-        for i in range(1, len(emitter_states)):
-            api_schemas.append(f"OmniSensorGenericLidarCoreEmitterStateAPI:s{i+1:03d}")
-
-    return attributes, api_schemas
-
-
-def convert_json_to_usda(json_path, usda_path):
-    """Convert a JSON config file to USDA format."""
     with open(json_path, "r") as f:
         config = json.load(f)
 
-    # Extract basic information
-    model_name, tick_rate = extract_model_info(config)
+    profile = config["profile"]
+    if "numberOfEmitters" not in profile:
+        raise KeyError("numberOfEmitters not found in profile. This field is required.")
 
-    # Process main attributes
-    attributes = []
-    if "profile" in config:
-        flattened = flatten_json(config["profile"], skip_emitter_states=True)
-        for key, value in flattened.items():
-            usd_key = f"omni:sensor:Core:{key}"
-            usd_type = get_usd_type(key, value)
-            usd_value = json_value_to_usda(value, usd_type)
-            attributes.append(f"    {usd_type} {usd_key} = {usd_value}")
+    # Test number of emitter states
+    emitter_state_count = profile["emitterStateCount"]
+    num_emitter_states = len(profile["emitterStates"])
+    if emitter_state_count != num_emitter_states:
+        carb.log_warn(
+            f"Emitter state count {emitter_state_count} does not match the number of emitter states {num_emitter_states}. Using minimum of the two."
+        )
+        emitter_state_count = min(emitter_state_count, num_emitter_states)
 
-    # Process emitter states
-    emitter_states = config.get("profile", {}).get("emitterStates", [])
-    emitter_attrs, api_schemas = process_emitter_states(emitter_states)
-    attributes.extend(emitter_attrs)
+    prim_creation_kwargs = {}
+    for i in range(emitter_state_count):
+        if i < 2:
+            continue
+        # Get first provided field in emitter state
+        emitter_state_key = next(iter(profile["emitterStates"][i]))
+        # Specify a new object of the same type as the value for the keyword argument
+        # This value will be populated later
+        prim_creation_kwargs[f"omni:sensor:Core:emitterState:s{i+1:03}:{emitter_state_key}"] = type(
+            profile["emitterStates"][i][emitter_state_key]
+        )()
 
-    # Format API schemas
-    api_schemas_str = ", ".join(f'"{schema}"' for schema in api_schemas)
+    # Create a new stage
+    create_new_stage()
 
-    # Generate USDA content
-    usda_content = f"""#usda 1.0
-(
-    doc = "Generated from {os.path.basename(json_path)}"
-    defaultPrim = "{model_name}"
-)
+    # Create the lidar prim
+    prim = rep.functional.create.omni_lidar(**prim_creation_kwargs)
 
-def OmniLidar "{model_name}" (
-    prepend apiSchemas = [{api_schemas_str}]
-)
-{{
-    string omni:sensor:modelName = "{model_name}"
-{f'    float omni:sensor:tickRate = {tick_rate}' if tick_rate is not None else ''}
+    def set_attribute(prim, attribute, value):
+        if prim.HasAttribute(attribute):
+            try:
+                prim.GetAttribute(attribute).Set(value)
+                return True
+            except Exception as e:
+                carb.log_warn(f"Error setting attribute {attribute} to {value}: {e}. Skipping.")
+        return False
 
-    # Configuration parameters from JSON
-{chr(10).join(attributes)}
+    # Set attributes which are emitter states
+    # azimuthDeg, channelId, elevationDeg, fireTimeNs must all be specifieid
+    required_emitter_state_fields = {"azimuthDeg", "channelId", "elevationDeg", "fireTimeNs"}
+    for i in range(emitter_state_count):
+        # Determine which of the required fields are missing from the JSON profile,
+        # then populate the missing fields with a list of zeros of the appropriate length
+        emitter_state_fields_as_list = list(profile["emitterStates"][i].keys())
+        emitter_state_fields = set(emitter_state_fields_as_list)
+        missing_fields = required_emitter_state_fields - emitter_state_fields
+        num_emitters = profile["numberOfEmitters"]
+        for field in missing_fields:
+            if field == "channelId":
+                if "numberOfChannels" in profile:
+                    carb.log_warn(
+                        f"numberOfChannels found in profile, but channelId not found in emitterStates[{i}]. Autogenerating channelId by repeating the range 1 to numberOfChannels."
+                    )
+                    profile["emitterStates"][i][field] = list(
+                        islice(cycle(range(1, profile["numberOfChannels"] + 1)), num_emitters)
+                    )
+                else:
+                    carb.log_warn(
+                        f"numberOfChannels not found in profile, and channelId not found in emitterStates[{i}]. Autogenerating channelId by repeating the range 1 to numberOfEmitters."
+                    )
+                    profile["emitterStates"][i][field] = list(range(1, num_emitters + 1))
+                    carb.log_warn(f"Setting numberOfChannels to numberOfEmitters {num_emitters}.")
+                    profile["numberOfChannels"] = num_emitters
+            else:
+                profile["emitterStates"][i][field] = [0] * num_emitters
+        # Now iterate over the specified fields and set the attributes
+        for field in profile["emitterStates"][i]:
+            attribute = f"omni:sensor:Core:emitterState:s{i+1:03}:{field}"
+            value = get_usd_value(profile["emitterStates"][i][field])
+            if set_attribute(prim, attribute, value):
+                continue
+            carb.log_warn(
+                f"Field emitterState[{i}].{field} found in profile, without corresponding prim attribute {attribute}. Skipping."
+            )
 
-}}
-"""
-    with open(usda_path, "w") as f:
-        f.write(usda_content)
+    # Set attributes which are not emitter states
+    # Note we do this second, to catch any fields that may have been added or changed when iterating over emitter states
+    for field in profile:
+        if field == "emitterStates":
+            continue
+        attribute = f"omni:sensor:Core:{field}"
+        value = get_usd_value(profile[field])
+        if set_attribute(prim, attribute, value):
+            continue
+        carb.log_warn(f"Field {field} found in profile, without corresponding prim attribute {attribute}. Skipping.")
+
+    # Set model config
+    for key, value in model_config.items():
+        attribute = f"omni:sensor:{key}"
+        if set_attribute(prim, attribute, value):
+            continue
+        carb.log_warn(f"Field {key} found in model config, without corresponding prim attribute {attribute}. Skipping.")
+
+    # Save the stage as a USD file
+    stage = get_current_stage()
+    stage.SetDefaultPrim(prim)
+    stage.Export(str(usd_path))
 
 
-def convert_single_json(json_path):
-    """Convert a single JSON file to USDA."""
+def get_usd_value(value: Any) -> Any:
+    """Convert a value to its USD-compatible format.
+
+    This function handles special cases for string values and ensures values are in the
+    correct format for USD attributes.
+
+    Args:
+        param value (Any): The value to convert to USD format.
+
+    Returns:
+        Any: The converted value in USD-compatible format.
+    """
+    if isinstance(value, str):
+        if value == "solidState":
+            value = "solid_state"
+        return value.upper()
+    return value
+
+
+def convert_single_json(json_path: Union[str, Path], model_config: Dict[str, Any]) -> Path:
+    """Convert a single JSON file to USD.
+
+    This function converts a single LiDAR configuration JSON file to a USD file,
+    maintaining the same base name but changing the extension.
+
+    Args:
+        param json_path (Union[str, Path]): Path to the input JSON configuration file.
+        param model_config (Dict[str, Any]): Dictionary containing model configuration parameters.
+
+    Returns:
+        Path: Path object pointing to the generated USD file.
+
+    Raises:
+        FileNotFoundError: If the JSON file cannot be found.
+    """
     json_path = Path(json_path)
-    usda_path = json_path.with_suffix(".usda")
-    convert_json_to_usda(json_path, usda_path)
-    return usda_path
+    usd_path = json_path.with_suffix(USD_EXTENSION)
+    convert_json_to_usd(json_path, usd_path, model_config)
+    return usd_path
 
 
-def process_lidar_configs(config_dir):
-    """Process all JSON files in a directory and convert them to USDA."""
+def process_lidar_configs(config_dir: Union[str, Path], model_config: Dict[str, Any]) -> List[Path]:
+    """Process all JSON files in a directory and convert them to USD.
+
+    This function recursively searches for JSON files in the specified directory
+    and converts each one to a USD file.
+
+    Args:
+        param config_dir (Union[str, Path]): Directory containing JSON configuration files.
+        param model_config (Dict[str, Any]): Dictionary containing model configuration parameters.
+
+    Returns:
+        List[Path]: List of paths to the generated USD files.
+
+    Raises:
+        FileNotFoundError: If the config directory cannot be found.
+    """
     config_path = Path(config_dir)
     converted_files = []
     for json_file in config_path.glob("**/*.json"):
-        usda_path = json_file.with_suffix(".usda")
-        convert_json_to_usda(json_file, usda_path)
-        converted_files.append(usda_path)
-        print(f"Generated: {usda_path}")
+        usd_path = json_file.with_suffix(USD_EXTENSION)
+        convert_json_to_usd(json_file, usd_path, model_config)
+        converted_files.append(usd_path)
+        print(f"Generated: {usd_path}")
     return converted_files
 
 
+# Read variant to JSON file map
+def build_variant_to_usd_map(variant_to_json_map: Union[str, Path], converted_files: List[Path]) -> Dict[str, Path]:
+    """Build a mapping from variant names to USD file paths.
+
+    This function reads a mapping file that associates variant names with JSON files
+    and converts it to a mapping of variant names to USD files.
+
+    Args:
+        param variant_to_json_map (Union[str, Path]): Path to the variant-to-JSON mapping file.
+        param converted_files (List[Path]): List of paths to converted USD files.
+
+    Returns:
+        Dict[str, Path]: Dictionary mapping variant names to USD file paths.
+
+    Raises:
+        FileNotFoundError: If a referenced JSON file is not found in the converted files.
+    """
+    variant_to_usd_map = {}
+    with open(variant_to_json_map, "r") as f:
+        for line in f.readlines():
+            variant_name, json_file = line.strip().split(",")
+            if variant_name[0].isdigit():
+                carb.log_warn(f"Variant name {variant_name} starts with a digit. This is not allowed. Skipping.")
+                continue
+            if " " in variant_name:
+                carb.log_warn(f"Variant name {variant_name} contains space(s). Converting to underscore(s).")
+                variant_name = variant_name.replace(" ", "_")
+
+            # Find matching JSON file in converted files
+            matching_file = [file for file in converted_files if Path(file).stem == Path(json_file).stem]
+            if len(matching_file) == 0:
+                raise FileNotFoundError(f"JSON file {json_file} not found in converted files.")
+            else:
+                matching_file = matching_file[0]
+            variant_to_usd_map[variant_name] = matching_file.with_suffix(USD_EXTENSION)
+    return variant_to_usd_map
+
+
+def build_lidar_usd_with_variants(
+    case_usd: Path, variant_to_usd_map: Dict[str, Path], model_config: Dict[str, Any]
+) -> Path:
+    """Build a USD file with variants from a case USD file and variant mappings.
+
+    This function creates a new USD file that includes a case reference and sets up
+    variants for different LiDAR configurations.
+
+    Args:
+        param case_usd (Path): Path to the case USD file.
+        param variant_to_usd_map (Dict[str, Path]): Dictionary mapping variant names to USD file paths.
+        param model_config (Dict[str, Any]): Dictionary containing model configuration parameters.
+
+    Returns:
+        Path: Path object pointing to the generated USD file with variants.
+
+    Raises:
+        Exception: If there are issues creating the USD prim or setting up variants.
+    """
+
+    import numpy as np
+    from isaacsim.core.utils.rotations import euler_angles_to_quat
+    from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage, get_current_stage
+    from pxr import Gf, Sdf, UsdGeom
+
+    # Create a new stage
+    create_new_stage()
+    stage = get_current_stage()
+
+    root_prim_path = f"/{model_config['modelVendor']}_{model_config['modelName']}"
+    root_prim = stage.DefinePrim(root_prim_path, "Xform")
+
+    # Add reference to case USD, assuming it is in the same directory as the USD we're building
+    add_reference_to_stage(usd_path=str(case_usd), prim_path=f"{root_prim_path}/case")
+
+    # Add an OmniLidar prim
+    sensor = stage.DefinePrim(f"{root_prim_path}/sensor", "OmniLidar")
+    UsdGeom.Xformable(sensor).AddTranslateOp()
+    sensor.GetAttribute("xformOp:translate").Set(Gf.Vec3d(*model_config["sensorTranslation"]))
+    quat = euler_angles_to_quat(np.array([*model_config["sensorOrientation"]]))
+    UsdGeom.Xformable(sensor).AddOrientOp()
+    sensor.GetAttribute("xformOp:orient").Set(Gf.Quatf(*quat))
+
+    # Add a variant set
+    variant_set = root_prim.GetVariantSets().AddVariantSet("sensor")
+
+    # Iterate over variant names, adding referenced as absolute paths for each one.
+    from omni.kit.variant.editor.commands import EditVariantCommand
+
+    for variant, usd_file in variant_to_usd_map.items():
+        variant_set.AddVariant(variant)
+        cmd = EditVariantCommand(
+            prim_path=root_prim.GetPath(),
+            variant_set_name="sensor",
+            cmd_name="AddReference",
+            cmd_args={"stage": stage, "prim_path": sensor.GetPath(), "reference": Sdf.Reference(str(usd_file))},
+            target_variant=variant,
+        )
+        variant_set.SetVariantSelection(variant)
+        cmd.do()
+
+    # Save the USD file
+    stage.SetDefaultPrim(root_prim)
+    usd_path = case_usd.parent / Path(f"{model_config['modelVendor']}_{model_config['modelName']}{USD_EXTENSION}")
+    stage.GetRootLayer().Export(str(usd_path))
+    return usd_path
+
+
+def make_references_relative(usd_path: Union[str, Path]) -> None:
+    """Convert absolute references in a USD file to relative references.
+
+    This function processes a USD file and converts any absolute references to
+    relative references, making the file more portable.
+
+    Args:
+        param usd_path (Union[str, Path]): Path to the USD file to process.
+
+    Raises:
+        Exception: If there are issues opening or modifying the USD file.
+    """
+    # Reopen the USD file and make all the references relative
+    from isaacsim.storage.native import get_stage_references, is_absolute_path, path_dirname, path_relative
+    from pxr import Usd, UsdUtils
+
+    stage = Usd.Stage.Open(str(usd_path))
+    stage_path = stage.GetRootLayer().realPath
+
+    abs_refs = [i for i in get_stage_references(stage_path) if is_absolute_path(i)]
+    if not abs_refs:
+        return
+
+    base_dir = path_dirname(stage_path)
+
+    (all_layers, _, _) = UsdUtils.ComputeAllDependencies(stage_path)
+
+    def make_relative(asset_path):
+        if is_absolute_path(asset_path):
+            new_path = path_relative(asset_path, base_dir)
+            print(f"Updating absolute path {asset_path} to relative path {new_path}")
+            return new_path
+        # Also check that relative paths stay in scope
+        if "../Isaac/" in asset_path:
+            new_path = asset_path.replace("../Isaac/", "", 1)
+            print(f"Updating relative path {asset_path} to relative path {new_path}")
+            return new_path
+        return asset_path
+
+    for layer in all_layers:
+        UsdUtils.ModifyAssetPaths(layer, make_relative)
+
+    stage.GetRootLayer().Export(str(usd_path))
+
+
 if __name__ == "__main__":
+    import argparse
+
     parser = argparse.ArgumentParser(
-        description="Convert LiDAR configuration JSON files to USDA file containing OmniLidar prim."
+        description="Convert LiDAR configuration JSON files to USD files containing OmniLidar prim."
     )
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--dir", "-d", help="Directory containing JSON files to convert")
+    group.add_argument("--dir", help="Directory containing JSON files to convert")
     group.add_argument("--files", "-f", nargs="+", help="Specific JSON files to convert")
+    parser.add_argument("--market-name", "-m", help="Market name", type=str, default="Generic")
+    parser.add_argument("--model-name", "-n", help="Model name", type=str, default="LidarCore")
+    parser.add_argument("--model-vendor", "-v", help="Model vendor", type=str, default="NVIDIA")
+    parser.add_argument("--model-version", "-r", help="Model version", type=str, default="0.0.0")
+    parser.add_argument("--case-usd", help="Case USD file", type=str, default=None)
+    parser.add_argument("--variant-to-json-map", help="Variant to JSON file map", type=str, default=None)
+    parser.add_argument(
+        "--sensor-translation",
+        nargs=3,
+        type=float,
+        default=[0.0, 0.0, 0.0],
+        help="Sensor position in stage, in world coordinates",
+    )
+    parser.add_argument(
+        "--sensor-orientation",
+        nargs=3,
+        type=float,
+        default=[0.0, 0.0, 0.0],
+        help="Sensor orientation in stage as Euler angles, in degrees",
+    )
+    args, _ = parser.parse_known_args()
 
-    args = parser.parse_args()
+    from isaacsim import SimulationApp
+
+    kit = SimulationApp()
+    import carb
+    from isaacsim.core.utils.extensions import enable_extension
+
+    enable_extension("omni.kit.variant.editor")
+
+    model_config = {
+        "marketName": args.market_name,
+        "modelName": args.model_name,
+        "modelVendor": args.model_vendor,
+        "modelVersion": args.model_version,
+        "sensorTranslation": args.sensor_translation,
+        "sensorOrientation": args.sensor_orientation,
+    }
 
     if args.dir:
         # Process all files in directory
-        process_lidar_configs(args.dir)
+        converted_files = process_lidar_configs(args.dir, model_config)
     else:
         # Process specific files
+        converted_files = []
         for json_file in args.files:
-            usda_path = convert_single_json(json_file)
-            print(f"Generated: {usda_path}")
+            usd_path = convert_single_json(json_file, model_config)
+            converted_files.append(usd_path)
+            print(f"Generated: {usd_path}")
+
+    if args.case_usd and args.variant_to_json_map:
+        if not Path(args.variant_to_json_map).exists():
+            raise FileNotFoundError(f"Variant to JSON file map {args.variant_to_json_map} does not exist.")
+        if not Path(args.case_usd).exists():
+            raise FileNotFoundError(f"Case USD file {args.case_usd} does not exist.")
+
+        variant_to_usd_map = build_variant_to_usd_map(args.variant_to_json_map, converted_files)
+        usd_with_variants = build_lidar_usd_with_variants(Path(args.case_usd), variant_to_usd_map, model_config)
+        make_references_relative(usd_with_variants)
+        print(f"Generated: {usd_with_variants}")
+
+    kit.close()
