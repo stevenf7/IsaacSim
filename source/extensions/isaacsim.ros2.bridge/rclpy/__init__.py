@@ -43,7 +43,7 @@ class Extension(omni.ext.IExt):
                 omni.kit.app.get_app().print_and_log("rclpy loaded")
             except Exception as e:
                 omni.kit.app.get_app().print_and_log(f"Could not import system rclpy: {e}")
-                omni.kit.app.get_app().print_and_log("Attempting to load internal rclpy")
+                omni.kit.app.get_app().print_and_log(f"Attempting to load internal rclpy for ROS Distro: {ros_distro}")
                 sys.path.append(os.path.join(os.path.dirname(__file__)))
                 ext_manager = omni.kit.app.get_app().get_extension_manager()
                 self._extension_path = ext_manager.get_extension_path(ext_id)

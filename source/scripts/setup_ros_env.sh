@@ -16,6 +16,11 @@
 
 # Script to check ROS environment and source internal libraries if needed
 
+# Exit early if called by isaac-sim.selector.sh
+if [ ${#BASH_SOURCE[@]} -gt 1 ] && [ "$(basename "${BASH_SOURCE[1]}")" == "isaac-sim.selector.sh" ]; then
+    return 2>/dev/null || exit 0
+fi
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ISAAC_SIM_ROOT="$SCRIPT_DIR" 
 

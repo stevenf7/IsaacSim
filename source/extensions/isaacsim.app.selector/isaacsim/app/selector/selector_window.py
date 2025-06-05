@@ -190,7 +190,7 @@ class SelectorWindow:
                     )
         # Linux
         else:
-            if ros_bridge_selection == 2:
+            if ros_bridge_selection == 1:
 
                 # No internal libs selected. Check if ROS2 is sourced.
                 if internal_libs_selection == 0:
@@ -591,6 +591,7 @@ class SelectorWindow:
                         self._settings.get_as_int(PERSISTENT_ROS_INTERNAL_LIBS_SETTING),
                         "",
                         "humble",
+                        "jazzy",
                         tooltip=textwrap.fill(
                             "Select the distro for the internal ROS2 library. Leave blank to use source installed ROS. (Only applicable for ROS2 Bridge)",
                             80,

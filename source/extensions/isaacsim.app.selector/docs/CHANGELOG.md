@@ -1,4 +1,8 @@
 # Changelog
+## [2.9.5] - 2025-06-04
+### Fixed
+- App selector can now load ROS 2 Jazzy internal libraries in Ubuntu
+
 ## [2.9.4] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
