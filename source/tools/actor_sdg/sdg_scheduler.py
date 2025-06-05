@@ -15,10 +15,11 @@
 
 
 """
-Standalone script to run a people sdg job in a local env.
+Standalone script to run an actor sdg job
 
-Usage:
-    python sdg_scheduler.py -c default_config.yaml
+Example:
+    ./python.sh tools/actor_sdg/sdg_scheduler.py -c tools/actor_sdg/default_config.yaml
+
 Optional params:
     --sensor_placment_file sensor_placements.json
     --crash_report_path /home/xxx
@@ -35,11 +36,11 @@ import sys
 import numpy as np
 from isaacsim import SimulationApp
 
-BASE_EXP_PATH = "apps/isaacsim.exp.full.kit"
+BASE_EXP_PATH = os.path.join(os.environ["EXP_PATH"], "isaacsim.exp.spatial.sdg.base.kit")
 APP_CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 
 
-class AgentSDG:
+class ActorSDG:
     def __init__(
         self, sim_app, config_file_path, camera_file_path, crash_report_path, no_random_commands, debug_print, save_usd
     ):
@@ -257,7 +258,7 @@ class AgentSDG:
 
 
 def get_args():
-    parser = argparse.ArgumentParser("Agent SDG")
+    parser = argparse.ArgumentParser("Actor SDG")
     parser.add_argument("-c", "--config_file", required=True, help="Path to a IRA config file")
     # Optional config
     parser.add_argument(
@@ -331,7 +332,7 @@ def main():
     sim_app = SimulationApp(launch_config=APP_CONFIG, experience=BASE_EXP_PATH)
 
     # Start SDG
-    sdg = AgentSDG(
+    sdg = ActorSDG(
         sim_app,
         os.path.abspath(config_file_path),
         camera_file_path,
