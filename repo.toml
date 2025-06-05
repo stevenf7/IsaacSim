@@ -375,7 +375,9 @@ env_vars = [
     "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib",
   ],
 ]
+# AUTOREMOVE: BEGIN
 test_root = "$root/_build/$platform/$config/tests"
+# AUTOREMOVE: END
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim*.7z"
