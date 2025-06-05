@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.5] - 2025-06-04
+### Changed
+- Changed CUDA_CHECK in ScopedCudaDevice.h to indicate file and line for more verbose error logging
+
 ## [3.2.4] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
