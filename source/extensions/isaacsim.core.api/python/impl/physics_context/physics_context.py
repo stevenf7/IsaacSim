@@ -104,7 +104,7 @@ class PhysicsContext(object):
         if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
             self.set_gravity(value=-9.81 / meters_per_unit)
-            self.enable_stablization(flag=True)
+            self.enable_stablization(flag=False)
             if self._use_gpu_pipeline:
                 self.enable_ccd(flag=False)
                 self._carb_settings.set_bool("/physics/suppressReadback", True)

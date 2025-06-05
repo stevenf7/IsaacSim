@@ -51,7 +51,7 @@ default_sim_params = {
     # distance between the contacts is smaller than correlation distance.
     # disabling these can be useful for debugging
     "enable_sleeping": True,
-    "enable_stabilization": True,
+    "enable_stabilization": False,
     # GPU buffers
     "gpu_max_rigid_contact_count": 512 * 1024,
     "gpu_max_rigid_patch_count": 80 * 1024,
