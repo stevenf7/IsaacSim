@@ -147,13 +147,13 @@ post_build.commands = [
     "-c",
     "${config}",
   ],
-# AUTOREMOVE: END
   [
     "${root}/repo${shell_ext}",
     "edit_sysconfig",
     "-c",
     "${config}",
   ],
+# AUTOREMOVE: END
   [
     "${root}/repo${shell_ext}",
     "usd",
