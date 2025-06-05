@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2025-06-05
+### Fixed
+- Added a warning if warmup is not enabled when calling SimulationManager.set_default_physics_scene 
+
 ## [1.2.1] - 2025-06-03
 ### Changed
 - Removed debugging prints

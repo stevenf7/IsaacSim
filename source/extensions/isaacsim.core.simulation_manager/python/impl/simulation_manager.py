@@ -239,6 +239,9 @@ class SimulationManager:
 
     @classmethod
     def set_default_physics_scene(cls, physics_scene_prim_path: str):
+        if SimulationManager._warm_start_callback is None:
+            carb.log_warn("Calling set_default_physics_scene while SimulationManager is not tracking physics scenes")
+            return
         if physics_scene_prim_path in SimulationManager._physics_scene_apis:
             SimulationManager._default_physics_scene_idx = list(SimulationManager._physics_scene_apis.keys()).index(
                 physics_scene_prim_path
