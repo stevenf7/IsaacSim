@@ -1,4 +1,8 @@
 # Changelog
+## [15.1.4] - 2025-06-04
+### Changed
+- Changed CUDA_CHECK in ScopedCudaDevice.h to indicate file and line for more verbose error logging
+
 ## [15.1.3] - 2025-06-03
 ### Changed
 - Cleaned up and updated extension setting documentation

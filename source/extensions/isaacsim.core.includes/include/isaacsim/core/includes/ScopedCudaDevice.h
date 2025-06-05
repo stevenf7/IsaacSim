@@ -34,8 +34,8 @@ namespace includes
         cudaError_t _result = (result);                                                                                \
         if (CUDA_FAILED(_result))                                                                                      \
         {                                                                                                              \
-            CARB_LOG_ERROR(                                                                                            \
-                "CUDA error %d: %s - %s)", (_result), cudaGetErrorName(_result), cudaGetErrorString(_result));         \
+            CARB_LOG_ERROR("CUDA error %d: %s - %s at %s:%d", (_result), cudaGetErrorName(_result),                    \
+                           cudaGetErrorString(_result), __FILE__, __LINE__);                                           \
         }                                                                                                              \
     }
 

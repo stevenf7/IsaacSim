@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2025-06-04
+### Changed
+- Changed CUDA_CHECK in ScopedCudaDevice.h to indicate file and line for more verbose error logging
+
 ## [2.1.0] - 2025-05-24
 ### Changed
 - DeviceBufferBase<T>.copyAsync accepts passthrough cudaStream argument for cudaMemcpyAsync

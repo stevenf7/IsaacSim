@@ -1,4 +1,7 @@
 # Changelog
+## [4.7.4] - 2025-06-04
+### Changed
+- Changed CUDA_CHECK in ScopedCudaDevice.h to indicate file and line for more verbose error logging
 
 ## [4.7.3] - 2025-06-04
 ### Removed
