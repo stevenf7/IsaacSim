@@ -1,5 +1,5 @@
 # Changelog
-## [0.1.4] - 2025-06-4
+## [0.1.4] - 2025-06-04
 ### Changed
 - Added fix for saving stage by setting save_and_reload_in_place=False
 
