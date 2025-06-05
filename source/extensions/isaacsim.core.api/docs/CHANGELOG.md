@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.0] - 2025-06-05
+### Changed
+- Disable PhysX scene's stabilization flag by default
+
 ## [4.5.8] - 2025-06-05
 ### Fixed
 - Added timeline.commit() in SimulationContext.play() to trigger warmup directly.
