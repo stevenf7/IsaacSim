@@ -899,6 +899,7 @@ class SimulationContext:
             >>> simulation_context.play()
         """
         self._timeline.play()
+        self._timeline.commit()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             set_carb_setting(self._settings, "/app/player/playSimulations", False)
             self._app.update()
