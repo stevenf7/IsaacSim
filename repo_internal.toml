@@ -507,7 +507,7 @@ exclude = [
     "CHANGELOG.md",
     "CODEOWNERS",
     "CODING.md",
-    "README.md",
+    "README_INTERNAL.md",
     "TESTING.md",
     "docs",
     "tools/ci",
