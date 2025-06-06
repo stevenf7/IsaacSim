@@ -1,4 +1,9 @@
 # Changelog
+
+## [8.0.21] - 2025-06-05
+### Fixed
+- Fixed broken test
+
 ## [8.0.20] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
