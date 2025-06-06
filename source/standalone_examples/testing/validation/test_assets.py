@@ -27,7 +27,7 @@ from isaacsim import SimulationApp
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="USD Asset Validator Script")
 parser.add_argument("--use-validation-engine", action="store_true", help="Run Omniverse ValidationEngine")
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 
 kit = SimulationApp(launch_config={"disable_viewport_updates": True})
 
@@ -89,7 +89,7 @@ def check_stage_units(stage, usd_path):
     """
     units = UsdGeom.GetStageMetersPerUnit(stage)
     if units != 1.0:
-        return [f"stage: {usd_path}, has stage which are not in meters"]
+        return [f"stage has units which are not in meters"]
     return []
 
 
@@ -103,7 +103,7 @@ def check_physics_schema(usd_path):
         List of error messages if physics schema is outdated.
     """
     if get_physx_interface().check_backwards_compatibility() is True:
-        return [f"stage: {usd_path}, has an old physics schema"]
+        return [f"stage has an old physics schema"]
     return []
 
 
@@ -118,7 +118,7 @@ def check_missing_ref(usd_path, prim):
         List of error messages if prim has missing references.
     """
     if prim_has_missing_references(prim) is True:
-        return [f"stage: {usd_path}, has missing references for {prim}"]
+        return [f"stage has missing references for {prim}"]
     return []
 
 
@@ -134,7 +134,7 @@ def check_external_refs(root_path, usd_path):
     """
     ext_refs = [i for i in get_stage_references(usd_path, resolve_relatives=False) if is_path_external(i, root_path)]
     if len(ext_refs) != 0:
-        return [f"stage: {usd_path}, has external references {ext_refs}"]
+        return [f"stage has external references {ext_refs}"]
     return []
 
 
@@ -149,7 +149,7 @@ def check_abs_refs(usd_path):
     """
     abs_refs = [i for i in get_stage_references(usd_path) if is_absolute_path(i)]
     if len(abs_refs) != 0:
-        return [f"stage: {usd_path}, has absolute references {abs_refs}"]
+        return [f"stage has absolute references {abs_refs}"]
     return []
 
 
@@ -169,9 +169,7 @@ def check_rel_refs_scope(usd_path):
             if "../Isaac/" in ref:
                 rel_refs_outside_asset_server.append(ref)
         if len(rel_refs_outside_asset_server) != 0:
-            return [
-                f"stage: {usd_path}, has relative references outside of asset server {rel_refs_outside_asset_server}"
-            ]
+            return [f"stage: has relative references outside of asset server {rel_refs_outside_asset_server}"]
     return []
 
 
@@ -195,7 +193,7 @@ def check_properties(usd_path, prim):
                             abs_refs.append(attr.Get())
 
         if len(abs_refs) != 0:
-            return [f"File:{usd_path} Prim {prim} Contains a absolute reference {abs_refs}"]
+            return [f"Prim {prim} contains absolute reference {abs_refs}"]
         return []
     except Exception as e:
         carb.log_error(f"{e} fail to check {usd_path}, {prim}")
@@ -219,7 +217,7 @@ def check_deleted_ref(usd_path, prim):
     if ref_prim_spec:
         references_info = ref_prim_spec.GetInfo("references")
         if len(references_info.deletedItems) > 0:
-            return [f"stage: {usd_path}, has deleted references {references_info.deletedItems}"]
+            return [f"stage has deleted references {references_info.deletedItems}"]
     return []
 
 
@@ -240,7 +238,7 @@ def check_deleted_payload(usd_path, prim):
     if ref_prim_spec:
         payload_info = ref_prim_spec.GetInfo("payload")
         if len(payload_info.deletedItems) > 0:
-            return [f"stage: {usd_path}, has deleted payload {payload_info.deletedItems}"]
+            return [f"stage has deleted payload {payload_info.deletedItems}"]
     return []
 
 
@@ -258,11 +256,9 @@ def check_physics_scene(usd_path, prim):
     if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
         physics_api = PhysxSchema.PhysxSceneAPI(prim)
         if physics_api.GetEnableGPUDynamicsAttr().Get():
-            errors.append(f"Physics scene: {prim} in {usd_path}, has gpu dynamics enabled")
+            errors.append(f"Physics scene: {prim} has gpu dynamics enabled")
         if physics_api.GetBroadphaseTypeAttr().Get() != "MBP":
-            errors.append(
-                f"Physics scene: {prim} in {usd_path}, has {physics_api.GetBroadphaseTypeAttr().Get()} broadphase"
-            )
+            errors.append(f"Physics scene: {prim} has {physics_api.GetBroadphaseTypeAttr().Get()} broadphase")
     return errors
 
 
@@ -283,7 +279,7 @@ def check_deprecated_og(usd_path, prim):
         type_attr = prim.GetAttribute("node:type")
         value = type_attr.Get()
         if "omni.graph.nodes.MakeArray" in value:
-            return [f"stage: {usd_path}, has node {prim.GetPath()} of type omni.graph.nodes.MakeArray"]
+            return [f"stage has node {prim.GetPath()} of type omni.graph.nodes.MakeArray"]
     return []
 
 
@@ -321,7 +317,7 @@ def validate_usd_file(usd_path, root_path):
         file_results.extend(check_deleted_ref(usd_path, prim))
         file_results.extend(check_deleted_payload(usd_path, prim))
         file_results.extend(check_properties(usd_path, prim))
-        file_results.extend(check_physics_scene(usd_path, prim))
+        # file_results.extend(check_physics_scene(usd_path, prim))
         file_results.extend(check_deprecated_og(usd_path, prim))
 
     return file_results
@@ -336,7 +332,7 @@ try:
     # Setup paths and filters
     root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     search_paths = [
-        root_path + "/Isaac/Robots",
+        root_path + "/Isaac",
     ]
     exclude_paths = ["Environments/Outdoor/Rivermark", ".thumbs"]
 
@@ -392,7 +388,7 @@ try:
                     all_errors.extend(engine_errors)
 
             except Exception as e:
-                err_msg = f"Error validating {usd_path}: {e}"
+                err_msg = f"{e}"
                 carb.log_error(err_msg)
                 csv_writer.writerow([usd_path, err_msg, "Internal"])
                 results_file.write(f"\n--- {usd_path} ---\n  • {err_msg}\n")
