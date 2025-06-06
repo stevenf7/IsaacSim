@@ -27,8 +27,8 @@ from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdGeom
 
-STAGE_URL = "Isaac/Samples/Replicator/Stage/full_warehouse_worker_and_anim_cameras.usd"
-CARTER_NAV_ASSET_URL = "Isaac/Samples/Replicator/OmniGraph/nova_carter_nav_only.usd"
+STAGE_URL = "/Isaac/Samples/Replicator/Stage/full_warehouse_worker_and_anim_cameras.usd"
+CARTER_NAV_ASSET_URL = "/Isaac/Samples/Replicator/OmniGraph/nova_carter_nav_only.usd"
 CARTER_NAV_PATH = "/NavWorld/CarterNav"
 CARTER_CHASSIS_PATH = f"{CARTER_NAV_PATH}/chassis_link"
 CARTER_NAV_TARGET_PATH = f"{CARTER_NAV_PATH}/targetXform"
@@ -108,7 +108,7 @@ def run_sdg_pipeline(camera_path, num_frames, capture_interval, use_instance_id=
 
 def run_example(num_frames, capture_interval=1, start_delay=None, use_instance_id=True, segmentation_mapping=None):
     assets_root_path = get_assets_root_path()
-    stage_path = os.path.join(assets_root_path, STAGE_URL)
+    stage_path = assets_root_path + STAGE_URL
     print(f"Opening stage: '{stage_path}'")
     omni.usd.get_context().open_stage(stage_path)
     stage = omni.usd.get_context().get_stage()
@@ -120,8 +120,8 @@ def run_example(num_frames, capture_interval=1, start_delay=None, use_instance_i
     rep.orchestrator.set_capture_on_play(False)
 
     # Load carter nova asset with its navigation graph
-    print(f"Loading carter nova asset: '{CARTER_NAV_ASSET_URL}'")
-    carter_url_path = os.path.join(assets_root_path, CARTER_NAV_ASSET_URL)
+    carter_url_path = assets_root_path + CARTER_NAV_ASSET_URL
+    print(f"Loading carter nova asset: '{carter_url_path}' at prim path: '{CARTER_NAV_PATH}'")
     carter_nav_prim = add_reference_to_stage(usd_path=carter_url_path, prim_path=CARTER_NAV_PATH)
     if not carter_nav_prim.GetAttribute("xformOp:translate"):
         UsdGeom.Xformable(carter_nav_prim).AddTranslateOp()
