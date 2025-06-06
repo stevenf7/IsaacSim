@@ -24,7 +24,7 @@ from omni.ui.tests.test_base import OmniUiTest
 from pxr import Gf, Sdf, Usd
 
 from ..impl.manipulator import SHOW_TITLE_PATH
-from ..impl.scene import SensorIcon
+from ..impl.scene import VISIBLE_SETTING, SensorIcon
 
 CURRENT_PATH = Path(__file__).parent
 TEST_DATA_PATH = CURRENT_PATH.parent.parent.parent.parent.parent.joinpath("data").joinpath("tests")
@@ -225,7 +225,7 @@ class TestSensorIcon(OmniUiTest):
         self.assertTrue(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
         settings = carb.settings.get_settings()
         # Globally turn off icon visibility
-        settings.set("/persistent/app/viewport/sensor_icon/visible", False)
+        settings.set(VISIBLE_SETTING, False)
         await ui_test.wait_n_updates(30)
         self.assertIsNone(
             model.get_item(TEST_OBJECT_PRIM_PATH), "Icon item should be None after hide_all as _icons is cleared"
@@ -233,7 +233,7 @@ class TestSensorIcon(OmniUiTest):
         # Ensure USD Listening is off
         self.assertFalse(model._usd_listening_active)
         # Turn on USD listening
-        settings.set("/persistent/app/viewport/sensor_icon/visible", True)
+        settings.set(VISIBLE_SETTING, True)
         await ui_test.wait_n_updates(30)
         self.assertTrue(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
 
