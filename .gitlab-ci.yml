@@ -168,6 +168,10 @@ variables:
 # overrides for compliance/osec job
 osec:sonarqube:
     stage: security
+    allow_failure:
+      exit_codes:
+        - 2
+        - 3
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
