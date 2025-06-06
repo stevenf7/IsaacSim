@@ -15,17 +15,17 @@
 
 import asyncio
 import threading
-from functools import partial
-from typing import Any, Dict, List, Optional
 
 import carb
+import isaacsim.core.utils.stage as stage_utils
 import nest_asyncio
 import omni
 import omni.timeline
+from isaacsim.core.experimental.prims import RigidPrim, XformPrim
+from pxr import Sdf
+from usdrt import Usd
 
-# Import the entity utilities
-from isaacsim.ros2.sim_control.entity_utils import create_empty_entity_state, get_entity_state, get_filtered_entities
-from pxr import Usd
+from .entity_utils import create_empty_entity_state, get_entity_state, get_filtered_entities
 
 
 # Define the Singleton decorator
@@ -470,7 +470,7 @@ class SimulationControl:
                 carb.log_error("GetSimulatorFeatures service type not available")
 
             self.is_initialized = True
-            carb.log_info("ROS2 simulation control services initialized")
+            carb.log_info("ROS 2 Simulation Control services initialized")
 
         except ImportError as e:
             carb.log_error(f"Failed to import required ROS2 types: {e}")
@@ -478,105 +478,6 @@ class SimulationControl:
         except Exception as e:
             carb.log_error(f"Error initializing ROS2 services: {e}")
             self.is_initialized = False
-
-    async def _handle_play_service(self, request, response):
-        """Handle a request to play the simulation
-
-        Args:
-            request: Service request
-            response: Service response
-
-        Returns:
-            response: Updated service response
-        """
-        try:
-            if not self.timeline.is_playing():
-                self.timeline.play()
-                response.success = True
-                response.message = "Simulation started successfully"
-            else:
-                response.success = True
-                response.message = "Simulation is already playing"
-        except Exception as e:
-            response.success = False
-            response.message = f"Failed to play simulation: {str(e)}"
-            carb.log_error(f"Error in play service: {e}")
-
-        return response
-
-    async def _handle_pause_service(self, request, response):
-        """Handle a request to pause the simulation
-
-        Args:
-            request: Service request
-            response: Service response
-
-        Returns:
-            response: Updated service response
-        """
-        try:
-            if self.timeline.is_playing():
-                self.timeline.pause()
-                response.success = True
-                response.message = "Simulation paused successfully"
-            else:
-                response.success = True
-                response.message = "Simulation is already paused"
-        except Exception as e:
-            response.success = False
-            response.message = f"Failed to pause simulation: {str(e)}"
-            carb.log_error(f"Error in pause service: {e}")
-
-        return response
-
-    async def _handle_stop_service(self, request, response):
-        """Handle a request to stop the simulation
-
-        Args:
-            request: Service request
-            response: Service response
-
-        Returns:
-            response: Updated service response
-        """
-        try:
-            self.timeline.stop()
-            response.success = True
-            response.message = "Simulation stopped successfully"
-
-        except Exception as e:
-            response.success = False
-            response.message = f"Failed to stop simulation: {str(e)}"
-            carb.log_error(f"Error in stop service: {e}")
-
-        return response
-
-    async def _handle_toggle_service(self, request, response):
-        """Handle a request to toggle the simulation play/pause state
-
-        Args:
-            request: Service request
-            response: Service response
-
-        Returns:
-            response: Updated service response
-        """
-        try:
-            if self.timeline.is_playing():
-                self.timeline.pause()
-                action = "paused"
-            else:
-                self.timeline.play()
-                action = "started"
-
-            response.success = True
-            response.message = f"Simulation {action} successfully"
-        except Exception as e:
-            response.success = False
-            response.message = f"Failed to toggle simulation: {str(e)}"
-            carb.log_error(f"Error in toggle service: {e}")
-
-        return response
 
     async def _handle_get_simulation_state(self, request, response):
         """Handle simulation state query request"""
@@ -664,11 +565,18 @@ class SimulationControl:
             response.result.result = Result.RESULT_OK
             response.result.error_message = ""
 
+            # Get usdrt stage for traversing
+            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            if not usdrt_stage:
+                response.result.result = Result.RESULT_OPERATION_FAILED
+                response.result.error_message = "usdrt Stage not available for traversing"
+                return response
+
             # Get filtered entities using external helper function
             filter_pattern = (
                 request.filters.filter if hasattr(request, "filters") and hasattr(request.filters, "filter") else None
             )
-            filtered_entities, error = get_filtered_entities(filter_pattern)
+            filtered_entities, error = get_filtered_entities(usdrt_stage, filter_pattern)
 
             if error:
                 response.result.result = Result.RESULT_OPERATION_FAILED
@@ -704,6 +612,14 @@ class SimulationControl:
             import isaacsim.core.utils.prims as prim_utils
             from simulation_interfaces.msg import Result
 
+            # First check if the entity exists
+            if not prim_utils.is_prim_path_valid(request.entity):
+                response.result = Result(
+                    result=Result.RESULT_NOT_FOUND,
+                    error_message=f"Entity '{request.entity}' does not exist",
+                )
+                return response
+
             # Check if prim can be deleted
             if prim_utils.is_prim_no_delete(request.entity):
                 response.result = Result(
@@ -719,7 +635,7 @@ class SimulationControl:
             else:
                 response.result = Result(
                     result=Result.RESULT_OPERATION_FAILED,
-                    error_message=f"Entity '{request.entity}' could not be deleted (protected or not found)",
+                    error_message=f"Entity '{request.entity}' could not be deleted (protected)",
                 )
 
         except Exception as e:
@@ -784,14 +700,13 @@ class SimulationControl:
         """
 
         try:
-            from pxr import Gf, Sdf, Usd, UsdGeom
             from simulation_interfaces.msg import Result
 
-            # Get stage
-            stage = omni.usd.get_context().get_stage()
+            # Get regular stage for prim operations
+            stage = stage_utils.get_current_stage()
             if not stage:
                 response.result.result = Result.RESULT_OPERATION_FAILED
-                response.result.error_message = "USD Stage not available"
+                response.result.error_message = "Stage not available"
                 return response
 
             # Check name validity and try to get default prim name from URI if possible
@@ -812,7 +727,7 @@ class SimulationControl:
                 except Exception as e:
                     carb.log_warn(f"Could not extract default prim name from USD: {e}")
 
-            # Now check if name is still empty
+            # Check if name is still empty
             if not entity_name:
                 if not request.allow_renaming:
                     response.result.result = response.NAME_INVALID
@@ -820,8 +735,19 @@ class SimulationControl:
                         "Entity name is empty, no default prim found, and allow_renaming is false"
                     )
                     return response
-                # Generate a unique name
-                entity_name = f"SpawnedEntity_{len([p for p in stage.Traverse() if p.GetPath().pathString.startswith('/SpawnedEntity_') or p.GetPath().pathString.startswith('SpawnedEntity_')])}"
+                # Generate a unique name by counting existing spawned entities
+                spawned_count = 0
+                # Get usdrt stage for traversing to count spawned entities
+                usdrt_stage = stage_utils.get_current_stage(fabric=True)
+                if usdrt_stage:
+                    for prim in usdrt_stage.Traverse():
+                        if prim.HasAttribute("simulationInterfacesSpawned"):
+                            attr = prim.GetAttribute("simulationInterfacesSpawned")
+                            if attr and attr.Get():
+                                spawned_count += 1
+                else:
+                    carb.log_warn("usdrt stage not available for counting spawned entities, using 0 as count")
+                entity_name = f"SpawnedEntity_{spawned_count}"
             elif not entity_name.startswith("/"):
                 # Name provided
                 # The stage will handle the proper path creation based on where this is added
@@ -863,51 +789,36 @@ class SimulationControl:
 
             # Create the entity based on URI or create a new Xform
             if request.uri:
-
-                # TODO investigate if omni.client can be used rather than try to open a stage
-                # First, check if the URI can be opened before trying to spawn it
+                # Check if the URI is accessible without opening the stage
                 try:
-                    temp_stage = Usd.Stage.Open(request.uri)
-                    if not temp_stage:
+                    result, _ = omni.client.stat(request.uri)
+                    if result != omni.client.Result.OK:
                         response.result.result = response.RESOURCE_PARSE_ERROR
-                        response.result.error_message = f"Failed to open USD file: {request.uri}"
+                        response.result.error_message = f"Cannot access USD file: {request.uri}"
                         return response
-                    # If we got here, the stage was opened successfully, so we can close it
-                    del temp_stage
+
                 except Exception as e:
                     response.result.result = response.RESOURCE_PARSE_ERROR
-                    response.result.error_message = f"Failed to open USD file: {e}"
+                    response.result.error_message = f"Failed to validate USD file: {e}"
                     return response
 
                 # Load USD file as reference
                 try:
-                    # Create a reference - let the USD system handle validation
+                    # Create a reference
                     prim = stage.DefinePrim(entity_name)
                     prim.GetReferences().AddReference(request.uri)
 
-                    # TODO: Use experimental.prims xform prim to automatically handle xform ops
-
-                    # Set transform - check first if transform ops already exist
-                    xformable = UsdGeom.Xformable(prim)
-
-                    # Try to modify existing transform ops if they exist
                     try:
-                        # Check for existing transform ops
-                        xform_ops = xformable.GetOrderedXformOps()
+                        # Create XformPrim wrapper for the spawned entity
+                        xform_prim = XformPrim(entity_name, reset_xform_op_properties=True)
 
-                        # If we have existing transform ops, find and modify them
-                        if xform_ops:
-                            # Find and modify translate op if it exists
-                            for op in xform_ops:
-                                if op.GetOpName() == "xformOp:translate":
-                                    op.Set(Gf.Vec3d(position[0], position[1], position[2]))
-                                    carb.log_info(f"Modified existing translate op for {entity_name}")
-                                    break
-                        else:
-                            # No existing ops, add new ones
-                            xformable.AddTranslateOp().Set(Gf.Vec3d(position[0], position[1], position[2]))
+                        # Set position and orientation
+                        xform_prim.set_world_poses(positions=position, orientations=orientation)
+
+                        carb.log_info(f"Set transform for {entity_name}")
+
                     except Exception as e:
-                        carb.log_warn(f"Could not set transform for {entity_name}: {e}")
+                        carb.log_error(f"Error setting transform for {entity_name}: {e}")
 
                     carb.log_info(
                         f"Successfully spawned entity from URI: {entity_name} with reference to {request.uri}"
@@ -918,30 +829,30 @@ class SimulationControl:
                     return response
             else:
                 # Create a new Xform prim
-                xform = UsdGeom.Xform.Define(stage, entity_name)
-                xformable = UsdGeom.Xformable(xform)
+                stage.DefinePrim(entity_name, "Xform")
 
-                # For new Xforms, we can safely add transform ops
-                xformable.AddTranslateOp().Set(Gf.Vec3d(position[0], position[1], position[2]))
-                # To handle rotation, we would convert quaternion to appropriate transform
-                # For now just use a simple approximation with orient op if needed
-                if orientation != [0, 0, 0, 1]:  # If not default orientation
-                    xformable.AddOrientOp().Set(
-                        Gf.Quatd(orientation[0], orientation[1], orientation[2], orientation[3])
-                    )
+                # Use XformPrim to set the transform
+                xform_prim = XformPrim(entity_name, reset_xform_op_properties=True)
+
+                xform_prim.set_world_poses(positions=position, orientations=orientation)
 
                 carb.log_info(f"Successfully spawned empty Xform entity: {entity_name}")
 
-            # Track the spawned entities (This would be your tracking mechanism)
-            # For simplicity, we could add an attribute to mark it as spawned via this service
+            # Track the spawned entities by adding an attribute to mark it as spawned via this service
             prim = stage.GetPrimAtPath(entity_name)
-            if prim:
-                prim.CreateAttribute("simulationInterfacesSpawned", Sdf.ValueTypeNames.Bool).Set(True)
+            attr1 = prim.CreateAttribute("simulationInterfacesSpawned", Sdf.ValueTypeNames.Bool, custom=True)
+            attr1.Set(True)
 
-                # Add namespace attribute if specified in the request
-                if request.entity_namespace:
-                    prim.CreateAttribute("isaac:namespace", Sdf.ValueTypeNames.String).Set(request.entity_namespace)
-                    carb.log_info(f"Set namespace '{request.entity_namespace}' for entity: {entity_name}")
+            # Add namespace attribute if specified in the request
+            if hasattr(request, "entity_namespace") and request.entity_namespace:
+                try:
+                    # Create and set the namespace attribute
+                    attr = prim.CreateAttribute("isaac:namespace", Sdf.ValueTypeNames.String, custom=True)
+                    result = attr.Set(request.entity_namespace)
+                except Exception as e:
+                    carb.log_error(f"Error setting namespace attribute: {e}")
+
+            await omni.kit.app.get_app().next_update_async()
 
             # Set the response
             response.entity_name = entity_name
@@ -970,7 +881,7 @@ class SimulationControl:
         """
 
         try:
-            from pxr import Sdf, Usd
+            import isaacsim.core.utils.prims as prim_utils
             from simulation_interfaces.msg import Result
 
             # Set the response result
@@ -979,11 +890,11 @@ class SimulationControl:
             # Ignore specific scope values - always use SCOPE_DEFAULT (full reset)
             carb.log_info("Resetting simulation with SCOPE_DEFAULT (full reset)")
 
-            # Get stage for prim operations
-            stage = omni.usd.get_context().get_stage()
-            if not stage:
+            # Get usdrt stage for traversing to find spawned entities
+            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            if not usdrt_stage:
                 response.result.result = Result.RESULT_OPERATION_FAILED
-                response.result.error_message = "USD Stage not available"
+                response.result.error_message = "usdrt Stage not available for traversing"
                 return response
 
             # First stop the simulation
@@ -999,13 +910,12 @@ class SimulationControl:
             # Find all prims with the simulationInterfacesSpawned attribute
             spawned_entities = []
 
-            # TODO: Use usdrt instead of traversing through the stage
-            for prim in stage.Traverse():
-                if (
-                    prim.HasAttribute("simulationInterfacesSpawned")
-                    and prim.GetAttribute("simulationInterfacesSpawned").Get()
-                ):
-                    spawned_entities.append(prim.GetPath().pathString)
+            # Find spawned entities using usdrt stage traversal
+            for prim in usdrt_stage.Traverse():
+                if prim.HasAttribute("simulationInterfacesSpawned"):
+                    attr = prim.GetAttribute("simulationInterfacesSpawned")
+                    if attr and attr.Get():  # Check if the attribute value is True
+                        spawned_entities.append(str(prim.GetPath()))
 
             # Delete the spawned entities
             for entity_path in spawned_entities:
@@ -1171,11 +1081,19 @@ class SimulationControl:
             response.entities = []
             response.states = []
 
+            # Get usdrt stage for traversing
+            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            if not usdrt_stage:
+                response.result = Result(
+                    result=Result.RESULT_OPERATION_FAILED, error_message="usdrt Stage not available for traversing"
+                )
+                return response
+
             # Get filtered entities using external helper function
             filter_pattern = (
                 request.filters.filter if hasattr(request, "filters") and hasattr(request.filters, "filter") else None
             )
-            filtered_entities, error = get_filtered_entities(filter_pattern)
+            filtered_entities, error = get_filtered_entities(usdrt_stage, filter_pattern)
 
             if error:
                 response.result = Result(result=Result.RESULT_OPERATION_FAILED, error_message=error)
@@ -1242,17 +1160,11 @@ class SimulationControl:
             linear_velocity = entity_state.twist.linear
             angular_velocity = entity_state.twist.angular
 
-            # Check if entity has RigidBodyAPI to determine if we can set velocities
             try:
-                from isaacsim.core.prims import RigidPrim
-                from pxr import Gf, UsdGeom, UsdPhysics
-
-                # Get stage and prim
-                stage = omni.usd.get_context().get_stage()
+                # Get regular stage for prim operations
+                stage = stage_utils.get_current_stage()
                 if not stage:
-                    response.result = Result(
-                        result=Result.RESULT_OPERATION_FAILED, error_message="USD Stage not available"
-                    )
+                    response.result = Result(result=Result.RESULT_OPERATION_FAILED, error_message="Stage not available")
                     return response
 
                 prim = stage.GetPrimAtPath(request.entity)
@@ -1262,90 +1174,68 @@ class SimulationControl:
                     )
                     return response
 
-                has_rigid_body = prim.HasAPI(UsdPhysics.RigidBodyAPI)
+                # Check for PhysicsRigidBodyAPI
+                applied_apis = prim.GetAppliedSchemas()
+                has_rigid_body = "PhysicsRigidBodyAPI" in applied_apis
 
-                # Set position and orientation using USD transform operations
-                try:
-                    xformable = UsdGeom.Xformable(prim)
-
-                    # Set transform using the simplest approach for setting translation and orientation
-                    if not prim.HasAttribute("xformOp:translate"):
-                        xformable.AddTranslateOp()
-                    prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(position.x, position.y, position.z))
-
-                    if not prim.HasAttribute("xformOp:orient"):
-                        xformable.AddOrientOp()
-                    prim.GetAttribute("xformOp:orient").Set(
-                        Gf.Quatd(orientation.w, orientation.x, orientation.y, orientation.z)
-                    )
-
-                    # Update the xform order attribute to ensure proper order of operations
-                    if not prim.HasAttribute("xformOpOrder"):
-                        # Create a list of all transform operations in the correct order
-                        op_order = []
-                        if prim.HasAttribute("xformOp:translate"):
-                            op_order.append("xformOp:translate")
-                        if prim.HasAttribute("xformOp:orient"):
-                            op_order.append("xformOp:orient")
-                        if op_order:
-                            xformable.CreateXformOpOrderAttr().Set(op_order)
-
-                    carb.log_info(f"Set position and orientation for '{request.entity}'")
-                except Exception as transform_error:
-                    carb.log_error(f"Error setting transform for '{request.entity}': {transform_error}")
-                    response.result = Result(
-                        result=Result.RESULT_OPERATION_FAILED,
-                        error_message=f"Error setting transform: {transform_error}",
-                    )
-                    return response
-
-                # Set velocities if rigid body API exists
                 velocity_message = ""
+
                 if has_rigid_body:
+                    # Use RigidPrim for rigid bodies - can set both pose and velocities
                     try:
-                        # Use RigidPrim from isaacsim.core.prims (the non-deprecated version)
-                        from isaacsim.core.prims import RigidPrim
+                        # Initialize RigidPrim for the entity
+                        rigid_prim = RigidPrim(paths=request.entity, reset_xform_op_properties=True)
 
-                        # Create a RigidPrim instance for this entity
-                        try:
-                            # Initialize RigidPrim for the entity
-                            rigid_prim = RigidPrim(prim_paths_expr=request.entity)
+                        # Set position and orientation
+                        rigid_prim.set_world_poses(
+                            positions=np.array([position.x, position.y, position.z]),
+                            orientations=np.array([orientation.w, orientation.x, orientation.y, orientation.z]),
+                        )
 
-                            # Set linear velocity
-                            linear_vel = np.array([linear_velocity.x, linear_velocity.y, linear_velocity.z])
-                            # RigidPrim expects a tensor with shape [n, 3] for velocities
-                            rigid_prim.set_linear_velocities(velocities=np.expand_dims(linear_vel, axis=0))
+                        # Set linear and angular velocities using the combined method
+                        linear_vel = np.array([linear_velocity.x, linear_velocity.y, linear_velocity.z])
+                        angular_vel = np.array([angular_velocity.x, angular_velocity.y, angular_velocity.z])
+                        rigid_prim.set_velocities(linear_velocities=linear_vel, angular_velocities=angular_vel)
 
-                            # Set angular velocity
-                            angular_vel = np.array([angular_velocity.x, angular_velocity.y, angular_velocity.z])
-                            # RigidPrim expects a tensor with shape [n, 3] for velocities
-                            rigid_prim.set_angular_velocities(velocities=np.expand_dims(angular_vel, axis=0))
+                        # Log based on timeline state
+                        if not self.timeline.is_playing():
+                            velocity_message = "Position, orientation, and velocities set while simulation is paused. Velocities will take effect when simulation resumes."
+                            carb.log_info(
+                                f"Set pose and velocities for rigid body '{request.entity}' while simulation is paused"
+                            )
+                        else:
+                            velocity_message = "Position, orientation, and velocities set successfully."
+                            carb.log_info(f"Set pose and velocities for rigid body '{request.entity}'")
 
-                            # Log differently based on timeline state
-                            if not self.timeline.is_playing():
-                                velocity_message = "Velocities set while simulation is paused. They will take effect when simulation resumes."
-                                carb.log_info(
-                                    f"Set velocities for '{request.entity}' while simulation is not playing. "
-                                    "Velocities will take effect when simulation resumes."
-                                )
-                            else:
-                                velocity_message = "Velocities set successfully."
-                                carb.log_info(f"Set velocities for '{request.entity}'")
-                        except Exception as init_error:
-                            velocity_message = f"Could not create RigidPrim: {str(init_error)}"
-                            carb.log_warn(f"Error creating RigidPrim for '{request.entity}': {init_error}")
-                    except ImportError as import_error:
-                        # Fall back to original approach if RigidPrim is not available
-                        velocity_message = f"Could not import RigidPrim: {str(import_error)}"
-                        carb.log_warn(f"Error importing RigidPrim: {import_error}")
-                    except Exception as velocity_error:
-                        velocity_message = f"Could not set velocities: {str(velocity_error)}"
-                        carb.log_warn(f"Error setting velocities for '{request.entity}': {velocity_error}")
+                    except Exception as rigid_error:
+                        response.result = Result(
+                            result=Result.RESULT_OPERATION_FAILED,
+                            error_message=f"Error setting rigid body state: {rigid_error}",
+                        )
+                        carb.log_error(f"Error setting rigid body state for '{request.entity}': {rigid_error}")
+                        return response
+
                 else:
-                    velocity_message = "Entity doesn't have rigid body API, only position and orientation were set."
-                    carb.log_info(
-                        f"Entity '{request.entity}' doesn't have rigid body API, only position and orientation were set"
-                    )
+                    # Non-rigid bodies - can only set pose
+                    try:
+                        xform_prim = XformPrim(request.entity, resolve_paths=False, reset_xform_op_properties=True)
+
+                        # Set position and orientation
+                        xform_prim.set_world_poses(
+                            positions=[position.x, position.y, position.z],
+                            orientations=[orientation.w, orientation.x, orientation.y, orientation.z],
+                        )
+
+                        velocity_message = "Entity doesn't have rigid body API, only position and orientation were set."
+                        carb.log_info(f"Set pose for '{request.entity}'")
+
+                    except Exception as xform_error:
+                        response.result = Result(
+                            result=Result.RESULT_OPERATION_FAILED,
+                            error_message=f"Error setting transform: {xform_error}",
+                        )
+                        carb.log_error(f"Error setting transform for '{request.entity}': {xform_error}")
+                        return response
 
                 # Check acceleration values and add message if they are non-zero
                 acceleration_message = ""
@@ -1363,7 +1253,7 @@ class SimulationControl:
                         carb.log_warn("Setting accelerations is not supported in SetEntityState service.")
 
                 # Success - include appropriate messages
-                response_message = f"Successfully set position and orientation for entity: {request.entity}."
+                response_message = f"Successfully set state for entity: {request.entity}."
                 if velocity_message:
                     response_message += f" {velocity_message}"
                 if acceleration_message:
