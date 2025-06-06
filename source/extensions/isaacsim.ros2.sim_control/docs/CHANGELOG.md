@@ -1,4 +1,12 @@
 # Changelog
+## [1.1.0] - 2025-06-03
+### Changed
+- Use isaacsim.core.experimental for prim operations
+- Reshuffled extension files
+
+### Added
+- Unit tests
+
 ## [1.0.2] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

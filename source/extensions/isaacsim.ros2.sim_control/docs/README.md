@@ -100,10 +100,10 @@ The GetEntities service retrieves a list of all entities present in the simulati
    ```bash
    ros2 service call /isaacsim/GetEntities simulation_interfaces/srv/GetEntities "{filters: {filter: ''}}"
    ```
-
-2. Filter entities by name (using regex pattern):
+   
+2. Get entities with full paths or partial paths. In this case filter for prims containing 'camera' in the path:
    ```bash
-   ros2 service call /isaacsim/GetEntities simulation_interfaces/srv/GetEntities "{filters: {filter: 'robot'}}"
+   ros2 service call /isaacsim/GetEntities simulation_interfaces/srv/GetEntities "{filters: {filter: 'camera'}}"
    ```
 
 3. Get entities with paths starting with '/World':
@@ -111,12 +111,7 @@ The GetEntities service retrieves a list of all entities present in the simulati
    ros2 service call /isaacsim/GetEntities simulation_interfaces/srv/GetEntities "{filters: {filter: '^/World'}}"
    ```
 
-4. Get entities with paths containing 'camera':
-   ```bash
-   ros2 service call /isaacsim/GetEntities simulation_interfaces/srv/GetEntities "{filters: {filter: 'camera'}}"
-   ```
-
-5. Get entities with paths ending with 'mesh':
+4. Get entities with paths ending with 'mesh':
    ```bash
    ros2 service call /isaacsim/GetEntities simulation_interfaces/srv/GetEntities "{filters: {filter: 'mesh$'}}"
    ```
@@ -137,14 +132,13 @@ Notes:
 - Returns `RESULT_OK` with EntityInfo if the entity exists
 - Returns `RESULT_OPERATION_FAILED` if the entity doesn't exist
 - The EntityInfo contains:
-  - category: Currently always set to OBJECT (EntityCategory.OBJECT) as per REQ-3
-  - name: The full prim path of the entity
+  - category: Currently always set to OBJECT (EntityCategory.OBJECT)
   - description: Empty string (reserved for future use)
   - tags: Empty array (reserved for future use)
 
 ### Using the GetEntityState Service
 
-The GetEntityState service gets the pose, twist, acceleration of a specific entity relative to a given reference frame.
+The GetEntityState service gets the pose, twist, acceleration of a specific entity relative to a given reference frame. Currently only world frames are supported.
 
 ```bash
 ros2 service call /isaacsim/GetEntityState simulation_interfaces/srv/GetEntityState "{entity: '/World/robot'}"
@@ -258,7 +252,7 @@ Notes:
 
 ### Using the SetEntityState Service
 
-The SetEntityState service sets the state (pose, twist) of a specific entity in the simulation.
+The SetEntityState service sets the state (pose, twist) of a specific entity in the simulation. Only transforms in the **world** frame are currently accepted.
 
 1. Set only position and orientation:
    ```bash

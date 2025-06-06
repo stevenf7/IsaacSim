@@ -1,7 +1,7 @@
 [package]
-version = "1.0.2"
+version = "1.1.0"
 category = "Simulation"
-title = "ROS2 Simulation Control"
+title = "ROS 2 Simulation Control"
 description = "Extension that provides ROS2 services to control (play/pause) Isaac Sim"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.sim_control"
@@ -14,12 +14,21 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.ros2.bridge" = {}
+"isaacsim.core.experimental.prims" = {}
+"isaacsim.core.utils" = {}
 
 [[python.module]]
 name = "isaacsim.ros2.sim_control" 
 
+[[python.module]]
+name = "isaacsim.ros2.sim_control.tests" 
+
 [[test]]
 timeout = 900
+
+dependencies = [
+    "isaacsim.robot.wheeled_robots",
+]
 
 args = [
     "--/app/asyncRendering=0",
