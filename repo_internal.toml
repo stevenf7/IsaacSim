@@ -492,6 +492,8 @@ exclude_dirs = [
 enabled = true
 
 github_repo_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
+# github_repo_url = "https://github.com/isaac-sim/IsaacSim-Internal.git"
+# github_repo_url = "https://github.com/isaac-sim/IsaacSim.git"
 
 exclude = [
     ".cursor",
