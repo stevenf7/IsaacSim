@@ -405,17 +405,6 @@ stdout_fail_patterns.exclude = [
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 tests_per_process = 1
-# publish_artifacts = ["${test_root}/_build/**/*.log", "${test_root}/**/*.dmp"]
-
-# fnmatch module is used, matching is case insensitive. Refer to: https://docs.python.org/3/library/fnmatch.html
-# notice: to escape [ and ] symbols wrap them in [].
-stdout_fail_patterns.exclude = [
-  "*Leaking graphics objects*",                                                                        # Exclude grahics leaks until fixed
-  "*leaking memory. Missing call to destroyResourceBindingSignature*",
-  "*extension object is still alive*",                                                                 # Ignore any leaks for startup tests to not block pipeline
-  "*Failed to obtain username for current process, using cache directory without username as suffix*", # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
-  "*USD stage detach not called, holding a loose ptr to a stage!*",                                    # caused by fast exit
-]
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -442,12 +431,6 @@ timeout = 500
 [repo_test.suites.selectortests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
-stdout_fail_patterns.exclude = [
-  "*Leaking graphics objects*",                                                                        # Exclude grahics leaks until fixed
-  "*leaking memory. Missing call to destroyResourceBindingSignature*",
-  "*extension object is still alive*",                                                                 # Ignore any leaks for startup tests to not block pipeline
-  "*Failed to obtain username for current process, using cache directory without username as suffix*", # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
-]
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 tests_per_process = 1
 [[repo_test.suites.selectortests.group]]

@@ -3,7 +3,8 @@
         "@nvidia.com",
         "gitlab-master.nvidia.com",
         "isaac-dev.ov.nvidia.com",
-        "urm.nvidia.com"
+        "urm.nvidia.com",
+        "nvidia.slack.com"
     ],
     "whitelisted_files": [
         "tools/internal-licenses/omniverse-LICENSE.txt"

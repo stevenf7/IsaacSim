@@ -55,12 +55,5 @@ def sign_binaries():
     os.rename(src, dst)
     # packmanapi.push(path=dst, remotes=["cloudfront_upload"], container="zip", force=False)
 
-
-def upload_artifacts():
-    print("##teamcity[publishArtifacts '_signedpackages/*']")
-
-
 if __name__ == "__main__" or __name__ == "__mp_main__":
     sign_binaries()
-
-    upload_artifacts()
