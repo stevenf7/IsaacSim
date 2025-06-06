@@ -1,3 +1,4 @@
+# AUTOREMOVE: BEGIN
 ########################################################################################################################
 # Isaac Sim package publish tool
 ########################################################################################################################
@@ -29,6 +30,7 @@ entry_point = "${config_root}/tools/ci/publish_assets_package_3.py:setup_repo_to
 [bump_version]
 command = "bump_version"
 entry_point = "${config_root}/tools/ci/bump_version.py:setup_repo_tool"
+# AUTOREMOVE: END
 
 ########################################################################################################################
 # Generate extension docs

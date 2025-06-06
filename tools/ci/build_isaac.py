@@ -70,7 +70,3 @@ def main(args: argparse.Namespace):
 
     # Package release
     omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])
-
-    # publish artifacts to teamcity
-    print("##teamcity[publishArtifacts '_build/packages']")
-    print("##teamcity[publishArtifacts '_build/**/*.log']")

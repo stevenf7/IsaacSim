@@ -78,7 +78,3 @@ main() {
         exit 1
     fi
 }
-
-# Skip trying to install system packages on TeamCity agents. That's bad.
-[[ "x${TEAMCITY_BUILDCONF_NAME:-}" = "x" ]] && main || echo "TeamCity! Skipping setup."
-
