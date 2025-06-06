@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.4] - 2025-06-06
+### Changed
+- ISIM-3831: Fix test failed.
+
 ## [1.2.3] - 2025-06-02
 ### Changed
 - Set default sensor icon visibility to false
