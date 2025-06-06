@@ -155,6 +155,7 @@ After a reboot you will need to:
 - Download Visual Studio Community 2022. Choose "Desktop development with C++". Use the default checklist.
     * Note that the Windows 11 SDK may take a while to fully install.
     * You may need to restart Visual Studio Code (or whatever IDE is in use) for Visual Studio and the SDK to process in terminal.
+    * If build errors persist, please download Visual Studio Professional 2022 instead. Choose "Desktop development with C++" and use the default checklist.
 
 ## Building Isaac Sim
 
