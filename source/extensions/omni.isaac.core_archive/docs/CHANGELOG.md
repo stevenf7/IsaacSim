@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.1] - 2025-06-05
+### Fixed
+- Fixed broken test
+
 ## [2.6.0] - 2025-06-02
 ### Changed
 - Remove webbot==0.34

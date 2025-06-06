@@ -27,7 +27,7 @@
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdContext.h>
-#pragma once
+
 #if defined(_WIN32)
 #    include <usdrt/scenegraph/usd/usd/stage.h>
 #else

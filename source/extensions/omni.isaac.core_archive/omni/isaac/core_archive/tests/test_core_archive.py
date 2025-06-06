@@ -40,11 +40,9 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import quaternion
         import selenium
         import tornado
-        import webbot
 
         self.assertIsNotNone(quaternion)
         self.assertIsNotNone(numba)
-        self.assertIsNotNone(webbot)
         self.assertIsNotNone(selenium)
         self.assertIsNotNone(construct)
         self.assertIsNotNone(llvmlite)

@@ -2,13 +2,13 @@
 
 ## [1.2.2] - 2025-06-05
 ### Fixed
-- Added a warning if warmup is not enabled when calling SimulationManager.set_default_physics_scene 
+- Added a warning if warmup is not enabled when calling SimulationManager.set_default_physics_scene
 
 ## [1.2.1] - 2025-06-03
 ### Changed
 - Removed debugging prints
 
-## [1.2.0] - 2025-05-30
+## [1.2.0] - 2025-06-03
 ### Changed
 - Disable physics warmup/ initialize to be triggered on play when /app/player/playSimulations=False
 
