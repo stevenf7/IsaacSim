@@ -171,7 +171,7 @@ osec:sonarqube:
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
-      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=900 -Dsonar.branch.name=$CI_COMMIT_REF_NAME"
+      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=1000 -Dsonar.branch.name=$CI_COMMIT_REF_NAME"
       SONAR_EXCLUSIONS:  "**/_build/**,**/_repo/**,**/_compiler/**,\
         \
         **/*.js,**/*.ts,**/*.css,**/*.html,\
