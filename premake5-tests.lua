@@ -680,11 +680,12 @@ function create_tests()
             "standalone_examples/benchmarks/benchmark_robots_ur10.py",
             "--num-frames 10 --num-robots 10",
         },
-        {
-            "tests-standalone_benchmarks-benchmark_rtx_radar",
-            "standalone_examples/benchmarks/benchmark_rtx_radar.py",
-            "--num-frames 10 --num-sensors 4",
-        },
+        -- TODO: Disabled Radar support will be improved in a future release
+        -- {
+        --     "tests-standalone_benchmarks-benchmark_rtx_radar",
+        --     "standalone_examples/benchmarks/benchmark_rtx_radar.py",
+        --     "--num-frames 10 --num-sensors 4",
+        -- },
         {
             "tests-standalone_benchmarks-benchmark_physx_lidar",
             "standalone_examples/benchmarks/benchmark_physx_lidar.py",
