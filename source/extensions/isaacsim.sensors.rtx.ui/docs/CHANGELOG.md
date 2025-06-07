@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.12] - 2025-06-06
+### Changed
+- increase timeout for UI tests
+
 ## [1.0.11] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
