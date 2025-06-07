@@ -1,4 +1,3 @@
-
 # Isaac Sim
 
 This repository contains the source code and build tools required to compile and run Isaac Sim. 
@@ -13,11 +12,26 @@ Ensure your system is set up with the following before building Isaac Sim:
 
 - **Operating System**: Windows 10/11 or Linux (Ubuntu 22.04 or newer)
 
-- **GPU**: NVIDIA RTX capable GPU (RTX 3070 or Better recommended)
+- **GPU**: For additional information on GPU features and requirements, see [NVIDIA GPU Requirements](https://docs.omniverse.nvidia.com/materials-and-rendering/latest/common/technical-requirements.html)
 
-- **Driver**: Minimum and recommended - 537.58. Newer versions may work but are not equally validated.
+  #### Local Workstation
+
+  | Min | Recommended | Best |
+  |-----|-------------|------|
+  | RTX 4080 | RTX 5080 | RTX PRO 6000 Blackwell Workstation |
+
+  #### Datacenter
+
+  | Min | Recommended | Best |
+  |-----|-------------|------|
+  | A40 | L40S | RTX PRO 6000 Blackwell Server |
+
+
+- **Driver**: See [NVIDIA Driver Requirements](https://docs.omniverse.nvidia.com/materials-and-rendering/latest/common/technical-requirements.html)
 
 - **Internet Access**: Required for downloading the Omniverse Kit SDK, extensions, and tools.
+
+
 
 ### Required Software Dependencies
 
