@@ -195,12 +195,11 @@ end
 
 -- Helper to create bat/sh files to run local kit files
 function define_local_experience(app_name, kit_file, extra_args)
-    local script_dir_token = (os.target() == "windows") and "%~dp0" or "$SCRIPT_DIR"
     local extra_args = extra_args or ""
     local kit_file = kit_file or app_name
     define_experience(app_name, {
         config_path = "apps/" .. kit_file .. ".kit",
-        extra_args = '--ext-folder "' .. script_dir_token .. '/apps" ' .. extra_args,
+        extra_args = extra_args,
     })
 end
 
