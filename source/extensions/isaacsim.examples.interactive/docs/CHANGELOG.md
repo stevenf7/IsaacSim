@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.6.5] - 2025-06-06
+### Fixed
+- Removed the lingering physics callback after stop is pressed
+
 ## [4.6.4] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
