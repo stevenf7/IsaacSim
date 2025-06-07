@@ -262,7 +262,6 @@ folders = [
 "omni.kit.browser.folder.core" = {}
 "omni.kit.browser.material" = {}
 "omni.kit.browser.sample" = {}
-"omni.kit.converter.cad" = { version = "203.0.2", exact = true }
 "omni.kit.core.collection" = {}
 "omni.kit.data2ui.core" = {}
 "omni.kit.data2ui.usd" = {}
@@ -282,7 +281,6 @@ folders = [
 "omni.kit.profiler.window" = {}
 "omni.kit.property.collection" = {}
 "omni.kit.property.environment" = {}
-# "omni.kit.property.sbsar" = {} # TODO: Causes extension caching issues
 "omni.kit.scripting" = {}
 "omni.kit.search.files" = {}
 "omni.kit.search.service" = {}
@@ -296,7 +294,7 @@ folders = [
 "omni.kit.thumbnails.mdl" = {}
 "omni.kit.timeline.minibar" = {}
 "omni.kit.tool.asset_exporter" = {}
-# "omni.kit.tool.asset_importer" = {} # TODO: Causes extension caching issues
+"omni.kit.tool.asset_importer" = {}
 "omni.kit.tool.collect" = {}
 "omni.kit.tool.measure" = {}
 "omni.kit.tool.remove_unused.controller" = {}
@@ -347,7 +345,6 @@ folders = [
 "omni.simready.explorer" = {}
 "omni.usd.fileformat.e57" = {}
 "omni.usd.fileformat.pts" = {}
-# "omni.usd.fileformat.sbsar" = {} # TODO: Causes extension caching issues
 "omni.usd.metrics.assembler.physics" = {}
 "omni.usd.metrics.assembler.ui" = {}
 "omni.usd.metrics.assembler" = {}
@@ -373,7 +370,6 @@ folders = [
 
 # Exact Version dependencies:
 # 	omni.anim.navigation.bundle-107.3.0
-# 	omni.kit.converter.cad-203.0.2
 # 	omni.physics.tensors-107.3.10
 # 	omni.physx.bundle-107.3.10
 # 	omni.physx.fabric-107.3.10
@@ -447,10 +443,11 @@ enabled = [
 	"omni.graph.bundle.action-2.30.0",
 	"omni.graph.examples.cpp-1.50.2",
 	"omni.graph.io-1.30.0",
-	"omni.graph.nodes-1.170.10",
+	"omni.graph.nodes-1.171.0",
+	"omni.graph.nodes_core-1.1.0",
 	"omni.graph.scriptnode-1.50.0",
 	"omni.graph.telemetry-2.40.2",
-	"omni.graph.ui-1.101.6",
+	"omni.graph.ui-1.101.7",
 	"omni.graph.ui_nodes-1.50.5",
 	"omni.graph.visualization.nodes-2.1.3",
 	"omni.graph.window.action-1.50.2",
@@ -463,13 +460,14 @@ enabled = [
 	"omni.kit.browser.folder.core-1.10.9",
 	"omni.kit.browser.material-1.6.2",
 	"omni.kit.browser.sample-1.4.9",
-	"omni.kit.converter.common-506.1.0",
-	"omni.kit.converter.dgn-506.1.0",
-	"omni.kit.converter.dgn_core-506.1.0",
-	"omni.kit.converter.hoops-507.1.0",
-	"omni.kit.converter.hoops_core-507.1.1",
-	"omni.kit.converter.jt-506.1.0",
-	"omni.kit.converter.jt_core-506.1.1",
+	"omni.kit.converter.cad-203.1.4",
+	"omni.kit.converter.common-506.2.0",
+	"omni.kit.converter.dgn-507.2.2",
+	"omni.kit.converter.dgn_core-508.0.1",
+	"omni.kit.converter.hoops-507.4.4",
+	"omni.kit.converter.hoops_core-507.5.3",
+	"omni.kit.converter.jt-506.4.2",
+	"omni.kit.converter.jt_core-506.4.1",
 	"omni.kit.core.collection-0.2.0",
 	"omni.kit.data2ui.core-1.1.2",
 	"omni.kit.data2ui.usd-1.1.2",
@@ -510,7 +508,7 @@ enabled = [
 	"omni.kit.thumbnails.mdl-1.0.28",
 	"omni.kit.timeline.minibar-1.2.11",
 	"omni.kit.tool.asset_exporter-3.1.1",
-	"omni.kit.tool.asset_importer-4.0.4",
+	"omni.kit.tool.asset_importer-4.3.2",
 	"omni.kit.tool.measure-107.0.2",
 	"omni.kit.tool.remove_unused.controller-0.1.4",
 	"omni.kit.tool.remove_unused.core-0.1.3",
@@ -579,7 +577,7 @@ enabled = [
 	"omni.scene.visualization.core-107.0.2",
 	"omni.scene.visualization.ui-107.0.1",
 	"omni.services.client-0.5.3",
-	"omni.services.convert.cad-506.1.0",
+	"omni.services.convert.cad-506.2.4",
 	"omni.services.core-1.9.1",
 	"omni.services.facilities.base-1.0.4",
 	"omni.services.facilities.monitoring.progress-0.2.4",
