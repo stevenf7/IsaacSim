@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.3] - 2025-06-06
+### Changed
+- Make the cloner extension platform specific
+
 ## [1.4.2] - 2025-06-02
 ### Changed
 - Removed omni.population dependency
