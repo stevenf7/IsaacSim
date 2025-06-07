@@ -14,9 +14,8 @@
 # limitations under the License.
 
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
-import omni.usd
 from isaacsim.core.experimental.prims import Prim
 
 
@@ -35,10 +34,9 @@ class TestPrim(omni.kit.test.AsyncTestCase):
         # create new stage
         await stage_utils.create_new_stage_async()
         # define prims
-        stage = omni.usd.get_context().get_stage()
         for i in range(3):
-            stage.DefinePrim(f"/World/A_{i}", "Xform")
-            stage.DefinePrim(f"/World/A_{i}/B", "Cube")
+            stage_utils.define_prim(f"/World/A_{i}", "Xform")
+            stage_utils.define_prim(f"/World/A_{i}/B", "Cube")
         # test cases (valid results)
         # - single path
         existing_paths, nonexistent_paths = Prim.resolve_paths("/World/A_0")

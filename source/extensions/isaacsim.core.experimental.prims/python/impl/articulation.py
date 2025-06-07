@@ -18,6 +18,9 @@ from __future__ import annotations
 import weakref
 
 import carb
+import isaacsim.core.experimental.utils.backend as backend_utils
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.utils.numpy as numpy_utils
 import numpy as np
 import omni.kit.app
@@ -25,13 +28,11 @@ import omni.physics.tensors
 import omni.physx
 import omni.physx.bindings
 import omni.physx.bindings._physx
-import omni.usd
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.prims import get_articulation_root_api_prim_path, get_prim_at_path, get_prim_parent
+from isaacsim.core.utils.prims import get_articulation_root_api_prim_path
 from pxr import PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
-from . import _backend, _ops
 from .prim import _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED, _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID, _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
@@ -279,7 +280,7 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> prims.num_joints
-            11
+            10
         """
         if self._num_joints is None:
             self._query_articulation_properties()
@@ -300,7 +301,7 @@ class Articulation(XformPrim):
 
             >>> prims.joint_names
             ['panda_joint1', 'panda_joint2', 'panda_joint3', 'panda_joint4',
-             'panda_joint5', 'panda_joint6', 'panda_joint7', 'panda_joint8',
+             'panda_joint5', 'panda_joint6', 'panda_joint7',
              'panda_hand_joint', 'panda_finger_joint1', 'panda_finger_joint2']
         """
         if self._joint_names is None:
@@ -323,15 +324,15 @@ class Articulation(XformPrim):
             >>> prims.joint_paths
             [['/World/prim_0/panda_link0/panda_joint1', '/World/prim_0/panda_link1/panda_joint2', '/World/prim_0/panda_link2/panda_joint3',
               '/World/prim_0/panda_link3/panda_joint4', '/World/prim_0/panda_link4/panda_joint5', '/World/prim_0/panda_link5/panda_joint6',
-              '/World/prim_0/panda_link6/panda_joint7', '/World/prim_0/panda_link7/panda_joint8', '/World/prim_0/panda_link8/panda_hand_joint',
+              '/World/prim_0/panda_link6/panda_joint7', '/World/prim_0/panda_link7/panda_hand_joint',
               '/World/prim_0/panda_hand/panda_finger_joint1', '/World/prim_0/panda_hand/panda_finger_joint2'],
              ['/World/prim_1/panda_link0/panda_joint1', '/World/prim_1/panda_link1/panda_joint2', '/World/prim_1/panda_link2/panda_joint3',
               '/World/prim_1/panda_link3/panda_joint4', '/World/prim_1/panda_link4/panda_joint5', '/World/prim_1/panda_link5/panda_joint6',
-              '/World/prim_1/panda_link6/panda_joint7', '/World/prim_1/panda_link7/panda_joint8', '/World/prim_1/panda_link8/panda_hand_joint',
+              '/World/prim_1/panda_link6/panda_joint7', '/World/prim_1/panda_link7/panda_hand_joint',
               '/World/prim_1/panda_hand/panda_finger_joint1', '/World/prim_1/panda_hand/panda_finger_joint2'],
              ['/World/prim_2/panda_link0/panda_joint1', '/World/prim_2/panda_link1/panda_joint2', '/World/prim_2/panda_link2/panda_joint3',
               '/World/prim_2/panda_link3/panda_joint4', '/World/prim_2/panda_link4/panda_joint5', '/World/prim_2/panda_link5/panda_joint6',
-              '/World/prim_2/panda_link6/panda_joint7', '/World/prim_2/panda_link7/panda_joint8', '/World/prim_2/panda_link8/panda_hand_joint',
+              '/World/prim_2/panda_link6/panda_joint7', '/World/prim_2/panda_link7/panda_hand_joint',
               '/World/prim_2/panda_hand/panda_finger_joint1', '/World/prim_2/panda_hand/panda_finger_joint2']]
         """
         if self._joint_paths is None:
@@ -355,9 +356,9 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> prims.joint_types
-            [<JointType.Revolute: 1>, <JointType.Revolute: 1>, <JointType.Revolute: 1>,
-             <JointType.Revolute: 1>, <JointType.Revolute: 1>, <JointType.Revolute: 1>, <JointType.Revolute: 1>,
-             <JointType.Fixed: 0>, <JointType.Fixed: 0>, <JointType.Prismatic: 2>, <JointType.Prismatic: 2>]
+            [<JointType.Revolute: 1>, <JointType.Revolute: 1>, <JointType.Revolute: 1>, <JointType.Revolute: 1>,
+             <JointType.Revolute: 1>, <JointType.Revolute: 1>, <JointType.Revolute: 1>,
+             <JointType.Fixed: 0>, <JointType.Prismatic: 2>, <JointType.Prismatic: 2>]
         """
         assert self._physics_tensor_entity_initialized, _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED
         return self._joint_types
@@ -376,7 +377,7 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> prims.num_links
-            12
+            11
         """
         if self._num_links is None:
             self._query_articulation_properties()
@@ -398,7 +399,7 @@ class Articulation(XformPrim):
             >>> prims.link_names
             ['panda_link0', 'panda_link1', 'panda_link2', 'panda_link3',
              'panda_link4', 'panda_link5', 'panda_link6', 'panda_link7',
-             'panda_link8', 'panda_hand', 'panda_leftfinger', 'panda_rightfinger']
+             'panda_hand', 'panda_leftfinger', 'panda_rightfinger']
         """
         if self._link_names is None:
             self._query_articulation_properties()
@@ -420,13 +421,13 @@ class Articulation(XformPrim):
             >>> prims.link_paths
             [['/World/prim_0/panda_link0', '/World/prim_0/panda_link1', '/World/prim_0/panda_link2', '/World/prim_0/panda_link3',
               '/World/prim_0/panda_link4', '/World/prim_0/panda_link5', '/World/prim_0/panda_link6', '/World/prim_0/panda_link7',
-              '/World/prim_0/panda_link8', '/World/prim_0/panda_hand', '/World/prim_0/panda_leftfinger', '/World/prim_0/panda_rightfinger'],
+              '/World/prim_0/panda_hand', '/World/prim_0/panda_leftfinger', '/World/prim_0/panda_rightfinger'],
              ['/World/prim_1/panda_link0', '/World/prim_1/panda_link1', '/World/prim_1/panda_link2', '/World/prim_1/panda_link3',
               '/World/prim_1/panda_link4', '/World/prim_1/panda_link5', '/World/prim_1/panda_link6', '/World/prim_1/panda_link7',
-              '/World/prim_1/panda_link8', '/World/prim_1/panda_hand', '/World/prim_1/panda_leftfinger', '/World/prim_1/panda_rightfinger'],
+              '/World/prim_1/panda_hand', '/World/prim_1/panda_leftfinger', '/World/prim_1/panda_rightfinger'],
              ['/World/prim_2/panda_link0', '/World/prim_2/panda_link1', '/World/prim_2/panda_link2', '/World/prim_2/panda_link3',
               '/World/prim_2/panda_link4', '/World/prim_2/panda_link5', '/World/prim_2/panda_link6', '/World/prim_2/panda_link7',
-              '/World/prim_2/panda_link8', '/World/prim_2/panda_hand', '/World/prim_2/panda_leftfinger', '/World/prim_2/panda_rightfinger']]
+              '/World/prim_2/panda_hand', '/World/prim_2/panda_leftfinger', '/World/prim_2/panda_rightfinger']]
         """
         if self._link_paths is None:
             self._query_articulation_properties()
@@ -449,7 +450,7 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> prims.num_shapes
-            29
+            13
         """
         assert self._physics_tensor_entity_initialized, _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED
         return self._num_shapes
@@ -503,10 +504,10 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> # for the Franka Panda (a robotic manipulator with fixed base):
-            >>> # - num_links: 12
+            >>> # - num_links: 11
             >>> # - num_dofs: 9
             >>> prims.jacobian_matrix_shape
-            (11, 6, 9)
+            (10, 6, 9)
         """
         assert self._physics_tensor_entity_initialized, _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
@@ -590,21 +591,20 @@ class Articulation(XformPrim):
             [5] panda_link5
             [6] panda_link6
             [7] panda_link7
-            [8] panda_link8
-            [9] panda_hand
-            [10] panda_leftfinger
-            [11] panda_rightfinger
+            [8] panda_hand
+            [9] panda_leftfinger
+            [10] panda_rightfinger
             >>>
             >>> # get the indices of Franka Panda's finger links
             >>> indices = prims.get_link_indices(["panda_leftfinger", "panda_rightfinger"])
             >>> print(indices)
-            [10 11]
+            [ 9 10]
         """
         indices = []
         for name in [names] if isinstance(names, str) else names:
             assert name in self.link_names, f"Invalid link name ({name}). Available links: {self.link_names}"
             indices.append(self._link_index_dict[name])
-        return _ops.place(indices, dtype=wp.int32, device=self._device)
+        return ops_utils.place(indices, dtype=wp.int32, device=self._device)
 
     def get_joint_indices(self, names: str | list[str]) -> wp.array:
         """Get the indices of one or more joints of the prims.
@@ -631,21 +631,20 @@ class Articulation(XformPrim):
             [4] panda_joint5
             [5] panda_joint6
             [6] panda_joint7
-            [7] panda_joint8
-            [8] panda_hand_joint
-            [9] panda_finger_joint1
-            [10] panda_finger_joint2
+            [7] panda_hand_joint
+            [8] panda_finger_joint1
+            [9] panda_finger_joint2
             >>>
             >>> # get the indices of Franka Panda's finger joints
             >>> indices = prims.get_joint_indices(["panda_finger_joint1", "panda_finger_joint2"])
             >>> print(indices)
-            [ 9 10]
+            [8 9]
         """
         indices = []
         for name in [names] if isinstance(names, str) else names:
             assert name in self.joint_names, f"Invalid joint name ({name}). Available joints: {self.joint_names}"
             indices.append(self._joint_index_dict[name])
-        return _ops.place(indices, dtype=wp.int32, device=self._device)
+        return ops_utils.place(indices, dtype=wp.int32, device=self._device)
 
     def get_dof_indices(self, names: str | list[str]) -> wp.array:
         """Get the indices of one or more degrees of freedom (DOFs) of the prims.
@@ -684,7 +683,7 @@ class Articulation(XformPrim):
         for name in [names] if isinstance(names, str) else names:
             assert name in self.dof_names, f"Invalid DOF name ({name}). Available DOFs: {self.dof_names}"
             indices.append(self._dof_index_dict[name])
-        return _ops.place(indices, dtype=wp.int32, device=self._device)
+        return ops_utils.place(indices, dtype=wp.int32, device=self._device)
 
     def get_dof_limits(
         self,
@@ -721,12 +720,12 @@ class Articulation(XformPrim):
             ((2, 9), (2, 9))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_limits()  # shape: (N, max_dofs, 2)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return (
                 data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)]
                 .contiguous()
@@ -739,13 +738,14 @@ class Articulation(XformPrim):
             )
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             lower = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             upper = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     if self.dof_types[dof_index] == omni.physics.tensors.DofType.Translation:
                         joint_api = UsdPhysics.PrismaticJoint(dof_prim)
                         lower[i][j] = joint_api.GetLowerLimitAttr().Get()
@@ -754,7 +754,7 @@ class Articulation(XformPrim):
                         joint_api = UsdPhysics.RevoluteJoint(dof_prim)
                         lower[i][j] = np.deg2rad(joint_api.GetLowerLimitAttr().Get())
                         upper[i][j] = np.deg2rad(joint_api.GetUpperLimitAttr().Get())
-            return _ops.place(lower, device=self._device), _ops.place(upper, device=self._device)
+            return ops_utils.place(lower, device=self._device), ops_utils.place(upper, device=self._device)
 
     def set_dof_limits(
         self,
@@ -791,44 +791,45 @@ class Articulation(XformPrim):
             lower is not None or upper is not None
         ), "Both 'lower' and 'upper' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_limits()  # shape: (N, max_dofs, 2)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             if lower is not None:
-                lower = _ops.broadcast_to(
+                lower = ops_utils.broadcast_to(
                     lower, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
                 ).reshape((indices.shape[0], dof_indices.shape[0], 1))
                 wp.copy(data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)], lower)
             if upper is not None:
-                upper = _ops.broadcast_to(
+                upper = ops_utils.broadcast_to(
                     upper, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
                 ).reshape((indices.shape[0], dof_indices.shape[0], 1))
                 wp.copy(data[indices, dof_indices, wp.array([1], dtype=wp.int32, device=data.device)], upper)
             self._physics_articulation_view.set_dof_limits(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             if lower is not None:
-                lower = _ops.broadcast_to(
+                lower = ops_utils.broadcast_to(
                     lower,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
             if upper is not None:
-                upper = _ops.broadcast_to(
+                upper = ops_utils.broadcast_to(
                     upper,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     if self.dof_types[dof_index] == omni.physics.tensors.DofType.Translation:
                         joint_api = UsdPhysics.PrismaticJoint(dof_prim)
                         drive_type = "linear"
@@ -882,12 +883,12 @@ class Articulation(XformPrim):
             ((2, 9), (2, 9), (2, 9))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_friction_properties()  # shape: (N, max_dofs, 3)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return (
                 data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)]
                 .contiguous()
@@ -904,14 +905,15 @@ class Articulation(XformPrim):
             )
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             static_frictions = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             dynamic_frictions = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             viscous_frictions = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     _, drive_type = self._get_drive_api_and_type(index, dof_index)
                     dof_prim.ApplyAPI("PhysxJointAxisAPI", drive_type)
                     static_frictions[i][j] = dof_prim.GetAttribute(
@@ -927,9 +929,9 @@ class Articulation(XformPrim):
                         viscous_friction = np.rad2deg(viscous_friction)
                     viscous_frictions[i][j] = viscous_friction
             return (
-                _ops.place(static_frictions, device=self._device),
-                _ops.place(dynamic_frictions, device=self._device),
-                _ops.place(viscous_frictions, device=self._device),
+                ops_utils.place(static_frictions, device=self._device),
+                ops_utils.place(dynamic_frictions, device=self._device),
+                ops_utils.place(viscous_frictions, device=self._device),
             )
 
     def set_dof_friction_properties(
@@ -974,14 +976,14 @@ class Articulation(XformPrim):
             static_frictions is not None or dynamic_frictions is not None or viscous_frictions is not None
         ), "All 'static_frictions', 'dynamic_frictions', and 'viscous_frictions' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_friction_properties()  # shape: (N, max_dofs, 3)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             if static_frictions is not None:
-                static_frictions = _ops.broadcast_to(
+                static_frictions = ops_utils.broadcast_to(
                     static_frictions,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -989,7 +991,7 @@ class Articulation(XformPrim):
                 ).reshape((indices.shape[0], dof_indices.shape[0], 1))
                 wp.copy(data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)], static_frictions)
             if dynamic_frictions is not None:
-                dynamic_frictions = _ops.broadcast_to(
+                dynamic_frictions = ops_utils.broadcast_to(
                     dynamic_frictions,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -999,7 +1001,7 @@ class Articulation(XformPrim):
                     data[indices, dof_indices, wp.array([1], dtype=wp.int32, device=data.device)], dynamic_frictions
                 )
             if viscous_frictions is not None:
-                viscous_frictions = _ops.broadcast_to(
+                viscous_frictions = ops_utils.broadcast_to(
                     viscous_frictions,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -1011,32 +1013,33 @@ class Articulation(XformPrim):
             self._physics_articulation_view.set_dof_friction_properties(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             if static_frictions is not None:
-                static_frictions = _ops.broadcast_to(
+                static_frictions = ops_utils.broadcast_to(
                     static_frictions,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
             if dynamic_frictions is not None:
-                dynamic_frictions = _ops.broadcast_to(
+                dynamic_frictions = ops_utils.broadcast_to(
                     dynamic_frictions,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
             if viscous_frictions is not None:
-                viscous_frictions = _ops.broadcast_to(
+                viscous_frictions = ops_utils.broadcast_to(
                     viscous_frictions,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     _, drive_type = self._get_drive_api_and_type(index, dof_index)
                     dof_prim.ApplyAPI("PhysxJointAxisAPI", drive_type)
                     if static_frictions is not None:
@@ -1091,12 +1094,12 @@ class Articulation(XformPrim):
             ((2, 9), (2, 9), (2, 9))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_drive_model_properties()  # shape: (N, max_dofs, 3)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return (
                 data[indices, dof_indices, wp.array([0], dtype=wp.int32, device=data.device)]
                 .contiguous()
@@ -1113,14 +1116,15 @@ class Articulation(XformPrim):
             )
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             speed_effort_gradients = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             maximum_actuator_velocities = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             velocity_dependent_resistances = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     _, drive_type = self._get_drive_api_and_type(index, dof_index)
                     dof_prim.ApplyAPI("PhysxDrivePerformanceEnvelopeAPI", drive_type)
                     speed_effort_gradient = dof_prim.GetAttribute(
@@ -1140,9 +1144,9 @@ class Articulation(XformPrim):
                     maximum_actuator_velocities[i][j] = maximum_actuator_velocity
                     velocity_dependent_resistances[i][j] = velocity_dependent_resistance
             return (
-                _ops.place(speed_effort_gradients, device=self._device),
-                _ops.place(maximum_actuator_velocities, device=self._device),
-                _ops.place(velocity_dependent_resistances, device=self._device),
+                ops_utils.place(speed_effort_gradients, device=self._device),
+                ops_utils.place(maximum_actuator_velocities, device=self._device),
+                ops_utils.place(velocity_dependent_resistances, device=self._device),
             )
 
     def set_dof_drive_model_properties(
@@ -1193,14 +1197,14 @@ class Articulation(XformPrim):
             "Define at least one of them"
         )
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_drive_model_properties()  # shape: (N, max_dofs, 3)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             if speed_effort_gradients is not None:
-                speed_effort_gradients = _ops.broadcast_to(
+                speed_effort_gradients = ops_utils.broadcast_to(
                     speed_effort_gradients,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -1211,7 +1215,7 @@ class Articulation(XformPrim):
                     speed_effort_gradients,
                 )
             if maximum_actuator_velocities is not None:
-                maximum_actuator_velocities = _ops.broadcast_to(
+                maximum_actuator_velocities = ops_utils.broadcast_to(
                     maximum_actuator_velocities,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -1222,7 +1226,7 @@ class Articulation(XformPrim):
                     maximum_actuator_velocities,
                 )
             if velocity_dependent_resistances is not None:
-                velocity_dependent_resistances = _ops.broadcast_to(
+                velocity_dependent_resistances = ops_utils.broadcast_to(
                     velocity_dependent_resistances,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -1235,32 +1239,33 @@ class Articulation(XformPrim):
             self._physics_articulation_view.set_dof_drive_model_properties(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             if speed_effort_gradients is not None:
-                speed_effort_gradients = _ops.broadcast_to(
+                speed_effort_gradients = ops_utils.broadcast_to(
                     speed_effort_gradients,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
             if maximum_actuator_velocities is not None:
-                maximum_actuator_velocities = _ops.broadcast_to(
+                maximum_actuator_velocities = ops_utils.broadcast_to(
                     maximum_actuator_velocities,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
             if velocity_dependent_resistances is not None:
-                velocity_dependent_resistances = _ops.broadcast_to(
+                velocity_dependent_resistances = ops_utils.broadcast_to(
                     velocity_dependent_resistances,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     _, drive_type = self._get_drive_api_and_type(index, dof_index)
                     dof_prim.ApplyAPI("PhysxDrivePerformanceEnvelopeAPI", drive_type)
                     if speed_effort_gradients is not None:
@@ -1318,30 +1323,31 @@ class Articulation(XformPrim):
             >>> prims.set_dof_armatures([1.5], indices=[0, 2], dof_indices=[7, 8])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_armatures()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            armatures = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            armatures = ops_utils.broadcast_to(
                 armatures, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, dof_indices], armatures)
             self._physics_articulation_view.set_dof_armatures(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            armatures = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            armatures = ops_utils.broadcast_to(
                 armatures,
                 shape=(indices.shape[0], dof_indices.shape[0]),
                 dtype=wp.float32,
                 device=self._device,
             ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     physx_joint_api = Articulation.ensure_api([dof_prim], PhysxSchema.PhysxJointAPI)[0]
                     physx_joint_api.GetArmatureAttr().Set(float(armatures[i][j].item()))
 
@@ -1382,24 +1388,25 @@ class Articulation(XformPrim):
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_armatures()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             data = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     physx_joint_api = Articulation.ensure_api([dof_prim], PhysxSchema.PhysxJointAPI)[0]
                     data[i][j] = physx_joint_api.GetArmatureAttr().Get()
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def set_dof_position_targets(
         self,
@@ -1445,22 +1452,22 @@ class Articulation(XformPrim):
             >>> prims.set_dof_position_targets([0.04], dof_indices=[7, 8])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_position_targets()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            positions = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            positions = ops_utils.broadcast_to(
                 positions, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, dof_indices], positions)
             self._physics_articulation_view.set_dof_position_targets(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            positions = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            positions = ops_utils.broadcast_to(
                 positions,
                 shape=(indices.shape[0], dof_indices.shape[0]),
                 dtype=wp.float32,
@@ -1514,9 +1521,9 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_positions()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-        positions = _ops.broadcast_to(
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        positions = ops_utils.broadcast_to(
             positions, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
         )
         wp.copy(data[indices, dof_indices], positions)
@@ -1564,22 +1571,22 @@ class Articulation(XformPrim):
             >>> prims.set_dof_velocity_targets(np.random.uniform(low=-10, high=10, size=(3, 9)))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_velocity_targets()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            velocities = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            velocities = ops_utils.broadcast_to(
                 velocities, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, dof_indices], velocities)
             self._physics_articulation_view.set_dof_velocity_targets(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            velocities = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            velocities = ops_utils.broadcast_to(
                 velocities,
                 shape=(indices.shape[0], dof_indices.shape[0]),
                 dtype=wp.float32,
@@ -1630,9 +1637,9 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_velocities()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-        velocities = _ops.broadcast_to(
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        velocities = ops_utils.broadcast_to(
             velocities, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
         )
         wp.copy(data[indices, dof_indices], velocities)
@@ -1684,9 +1691,9 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_actuation_forces()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-        efforts = _ops.broadcast_to(
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        efforts = ops_utils.broadcast_to(
             efforts, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
         )
         wp.copy(data[indices, dof_indices], efforts)
@@ -1731,8 +1738,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_actuation_forces()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
 
     def get_dof_projected_joint_forces(
@@ -1777,8 +1784,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_projected_joint_forces()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
 
     def get_link_incoming_joint_force(
@@ -1813,10 +1820,10 @@ class Articulation(XformPrim):
             >>> # get the incoming joint forces and torques of the links of all prims
             >>> forces, torques = prims.get_link_incoming_joint_force()
             >>> forces.shape, torques.shape
-            ((3, 12, 3), (3, 12, 3))
+            ((3, 11, 3), (3, 11, 3))
             >>>
             >>> # get the incoming joint forces and torques of the first and last prims' finger links
-            >>> forces, torques = prims.get_link_incoming_joint_force(indices=[0, 2], link_indices=[10, 11])
+            >>> forces, torques = prims.get_link_incoming_joint_force(indices=[0, 2], link_indices=[9, 10])
             >>> forces.shape, torques.shape
             ((2, 2, 3), (2, 2, 3))
         """
@@ -1824,8 +1831,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_link_incoming_joint_force()  # shape: (N, max_links, 6)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
         return (
             data[indices, link_indices, :3].contiguous().to(self._device),
             data[indices, link_indices, 3:].contiguous().to(self._device),
@@ -1870,8 +1877,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_positions()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
 
     def get_dof_position_targets(
@@ -1909,17 +1916,17 @@ class Articulation(XformPrim):
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_position_targets()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             data = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
@@ -1928,7 +1935,7 @@ class Articulation(XformPrim):
                     if drive_type == "angular":
                         position = np.deg2rad(position)
                     data[i][j] = position
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def get_dof_velocities(
         self,
@@ -1969,8 +1976,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_velocities()  # shape: (N, max_dofs)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
 
     def get_dof_velocity_targets(
@@ -2008,17 +2015,17 @@ class Articulation(XformPrim):
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_velocity_targets()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             data = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
@@ -2027,7 +2034,7 @@ class Articulation(XformPrim):
                     if drive_type == "angular":
                         velocity = np.deg2rad(velocity)
                     data[i][j] = velocity
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def set_world_poses(
         self,
@@ -2069,18 +2076,20 @@ class Articulation(XformPrim):
             positions is not None or orientations is not None
         ), "Both 'positions' and 'orientations' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_root_transforms()  # shape: (N, 7)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             if positions is not None:
-                positions = _ops.broadcast_to(
+                positions = ops_utils.broadcast_to(
                     positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
                 )
                 wp.copy(data[indices, :3], positions)
             if orientations is not None:
-                orientations = _ops.broadcast_to(
+                orientations = ops_utils.broadcast_to(
                     orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=data.device
                 )
                 wp.copy(data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)], orientations)
@@ -2119,11 +2128,13 @@ class Articulation(XformPrim):
             ((1, 3), (1, 4))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_root_transforms()  # shape: (N, 7), quaternion is xyzw
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             return (
                 data[indices, :3].contiguous().to(self._device),
                 data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)].contiguous().to(self._device),
@@ -2162,15 +2173,17 @@ class Articulation(XformPrim):
             ((1, 3), (1, 4))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             world_positions, world_orientations = self.get_world_poses(indices=indices)
             parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 parent_transforms[i] = np.array(
-                    UsdGeom.Xformable(get_prim_parent(self.prims[index])).ComputeLocalToWorldTransform(
+                    UsdGeom.Xformable(self.prims[index].GetParent()).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype=np.float32,
@@ -2179,8 +2192,8 @@ class Articulation(XformPrim):
                 parent_transforms, world_positions.numpy(), world_orientations.numpy()
             )
             return (
-                _ops.place(local_translations, device=self._device),
-                _ops.place(local_orientations, device=self._device),
+                ops_utils.place(local_translations, device=self._device),
+                ops_utils.place(local_orientations, device=self._device),
             )
         # USD/USDRT/Fabric API
         else:
@@ -2226,25 +2239,27 @@ class Articulation(XformPrim):
             translations is not None or orientations is not None
         ), "Both 'translations' and 'orientations' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             if translations is None or orientations is None:
                 current_translations, current_orientations = self.get_local_poses(indices=indices)
                 translations = current_translations if translations is None else translations
                 orientations = current_orientations if orientations is None else orientations
-            translations = _ops.broadcast_to(
+            translations = ops_utils.broadcast_to(
                 translations, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
             )
-            orientations = _ops.broadcast_to(
+            orientations = ops_utils.broadcast_to(
                 orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=self._device
             )
             # compute transforms
             parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 parent_transforms[i] = np.array(
-                    UsdGeom.Xformable(get_prim_parent(self.prims[index])).ComputeLocalToWorldTransform(
+                    UsdGeom.Xformable(self.prims[index].GetParent()).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype=np.float32,
@@ -2296,14 +2311,14 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_root_velocities()  # shape: (N, 6)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         if linear_velocities is not None:
-            linear_velocities = _ops.broadcast_to(
+            linear_velocities = ops_utils.broadcast_to(
                 linear_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, :3], linear_velocities)
         if angular_velocities is not None:
-            angular_velocities = _ops.broadcast_to(
+            angular_velocities = ops_utils.broadcast_to(
                 angular_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, 3:], angular_velocities)
@@ -2347,7 +2362,7 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_root_velocities()  # shape: (N, 6)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return data[indices, :3].contiguous().to(self._device), data[indices, 3:].contiguous().to(self._device)
 
     def get_solver_residual_reports(
@@ -2397,7 +2412,7 @@ class Articulation(XformPrim):
         ), "Enable residual reporting in Articulation class constructor to use residuals API"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         position_residuals = np.zeros(shape=(indices.shape[0], 1), dtype=np.float32)
         velocity_residuals = np.zeros(shape=(indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
@@ -2408,7 +2423,10 @@ class Articulation(XformPrim):
             else:
                 position_residuals[i] = residual_api.GetPhysxResidualReportingRmsResidualPositionIterationAttr().Get()
                 velocity_residuals[i] = residual_api.GetPhysxResidualReportingRmsResidualVelocityIterationAttr().Get()
-        return _ops.place(position_residuals, device=self._device), _ops.place(velocity_residuals, device=self._device)
+        return (
+            ops_utils.place(position_residuals, device=self._device),
+            ops_utils.place(velocity_residuals, device=self._device),
+        )
 
     def set_default_state(
         self,
@@ -2454,8 +2472,8 @@ class Articulation(XformPrim):
             AssertionError: Wrapped prims are not valid.
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=self._device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=self._device)
         # update default values
         # - positions and orientations
         if positions is not None or orientations is not None:
@@ -2464,7 +2482,7 @@ class Articulation(XformPrim):
         if linear_velocities is not None:
             if self._default_linear_velocities is None:
                 self._default_linear_velocities = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            linear_velocities = _ops.broadcast_to(
+            linear_velocities = ops_utils.broadcast_to(
                 linear_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_linear_velocities[indices], linear_velocities)
@@ -2472,7 +2490,7 @@ class Articulation(XformPrim):
         if angular_velocities is not None:
             if self._default_angular_velocities is None:
                 self._default_angular_velocities = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            angular_velocities = _ops.broadcast_to(
+            angular_velocities = ops_utils.broadcast_to(
                 angular_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_angular_velocities[indices], angular_velocities)
@@ -2482,7 +2500,7 @@ class Articulation(XformPrim):
                 self._default_dof_positions = wp.zeros(
                     (len(self), self.num_dofs), dtype=wp.float32, device=self._device
                 )
-            dof_positions = _ops.broadcast_to(
+            dof_positions = ops_utils.broadcast_to(
                 dof_positions, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_dof_positions[indices, dof_indices], dof_positions)
@@ -2492,7 +2510,7 @@ class Articulation(XformPrim):
                 self._default_dof_velocities = wp.zeros(
                     (len(self), self.num_dofs), dtype=wp.float32, device=self._device
                 )
-            dof_velocities = _ops.broadcast_to(
+            dof_velocities = ops_utils.broadcast_to(
                 dof_velocities, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_dof_velocities[indices, dof_indices], dof_velocities)
@@ -2500,7 +2518,7 @@ class Articulation(XformPrim):
         if dof_efforts is not None:
             if self._default_dof_efforts is None:
                 self._default_dof_efforts = wp.zeros((len(self), self.num_dofs), dtype=wp.float32, device=self._device)
-            dof_efforts = _ops.broadcast_to(
+            dof_efforts = ops_utils.broadcast_to(
                 dof_efforts, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_dof_efforts[indices, dof_indices], dof_efforts)
@@ -2541,8 +2559,8 @@ class Articulation(XformPrim):
             AssertionError: Physics tensor entity is not initialized.
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=self._device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=self._device)
         # get default values
         # - positions and orientations
         default_positions, default_orientations = super().get_default_state(indices=indices)
@@ -2576,7 +2594,7 @@ class Articulation(XformPrim):
             default_dof_efforts,
         )
 
-    def reset_to_default_state(self) -> None:
+    def reset_to_default_state(self, *, warn_on_non_default_state: bool = False) -> None:
         """Reset the prims to the specified default state.
 
         Backends: :guilabel:`tensor`.
@@ -2590,7 +2608,11 @@ class Articulation(XformPrim):
 
         .. warning::
 
-            This method has no effect when no default state is set. In this case, a warning message is logged.
+            This method has no effect when no default state is set.
+            In this case, a warning message is logged if ``warn_on_non_default_state`` is ``True``.
+
+        Args:
+            warn_on_non_default_state: Whether to log a warning message when no default state is set.
 
         Raises:
             AssertionError: Wrapped prims are not valid.
@@ -2639,35 +2661,41 @@ class Articulation(XformPrim):
         if self._non_root_articulation_link:
             carb.log_warn("The prim is a non-root link in an articulation. The default state will not be set")
             return
-        if self._default_linear_velocities is None and self._default_angular_velocities is None:
-            carb.log_error("The default state is not initialized. Call '.set_default_state(..)' first to initialize it")
-            return
         if self._default_positions is not None or self._default_orientations is not None:
             self.set_world_poses(self._default_positions, self._default_orientations)
         else:
-            carb.log_warn(
-                "No default positions or orientations to reset. Call '.set_default_state(..)' first to initialize them"
-            )
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default positions or orientations to reset. Call '.set_default_state(..)' first to initialize them"
+                )
         if self._default_linear_velocities is not None or self._default_angular_velocities is not None:
             self.set_velocities(self._default_linear_velocities, self._default_angular_velocities)
         else:
-            carb.log_warn(
-                "No default linear or angular velocities to reset. Call '.set_default_state(..)' first to initialize them"
-            )
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default linear or angular velocities to reset. Call '.set_default_state(..)' first to initialize them"
+                )
         if self._default_dof_positions is not None:
             self.set_dof_positions(self._default_dof_positions)
             self.set_dof_position_targets(self._default_dof_positions)
         else:
-            carb.log_warn("No default DOF positions to reset. Call '.set_default_state(..)' first to initialize them")
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default DOF positions to reset. Call '.set_default_state(..)' first to initialize them"
+                )
         if self._default_dof_velocities is not None:
             self.set_dof_velocities(self._default_dof_velocities)
             self.set_dof_velocity_targets(self._default_dof_velocities)
         else:
-            carb.log_warn("No default DOF velocities to reset. Call '.set_default_state(..)' first to initialize them")
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default DOF velocities to reset. Call '.set_default_state(..)' first to initialize them"
+                )
         if self._default_dof_efforts is not None:
             self.set_dof_efforts(self._default_dof_efforts)
         else:
-            carb.log_warn("No default DOF efforts to reset. Call '.set_default_state(..)' first to initialize them")
+            if warn_on_non_default_state:
+                carb.log_warn("No default DOF efforts to reset. Call '.set_default_state(..)' first to initialize them")
 
     def get_dof_drive_types(
         self,
@@ -2699,12 +2727,12 @@ class Articulation(XformPrim):
             [['force', 'force', 'force', 'force', 'force', 'force', 'force', 'force', 'none']]
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_drive_types()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             data = data[indices, dof_indices].numpy()
             types = np.full_like(data, "none", dtype=object)
             types = np.where(data == 1, "force", types)
@@ -2712,8 +2740,8 @@ class Articulation(XformPrim):
             return types.tolist()
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             data = np.empty((indices.shape[0], dof_indices.shape[0]), dtype=object)
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
@@ -2754,8 +2782,8 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
         types = [types] if isinstance(types, str) else types
         types = np.broadcast_to(np.array(types, dtype=object), (indices.shape[0], dof_indices.shape[0]))
         for i, index in enumerate(indices.numpy()):
@@ -2791,22 +2819,22 @@ class Articulation(XformPrim):
             >>> prims.set_dof_max_efforts([1000])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_max_forces()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            max_efforts = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            max_efforts = ops_utils.broadcast_to(
                 max_efforts, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, dof_indices], max_efforts)
             self._physics_articulation_view.set_dof_max_forces(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            max_efforts = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            max_efforts = ops_utils.broadcast_to(
                 max_efforts,
                 shape=(indices.shape[0], dof_indices.shape[0]),
                 dtype=wp.float32,
@@ -2852,23 +2880,23 @@ class Articulation(XformPrim):
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_max_forces()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             data = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
                     drive_api, _ = self._get_drive_api_and_type(index, dof_index)
                     data[i][j] = drive_api.GetMaxForceAttr().Get()
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def set_dof_max_velocities(
         self,
@@ -2898,30 +2926,31 @@ class Articulation(XformPrim):
             >>> prims.set_dof_max_velocities([100])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_max_velocities()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
-            max_velocities = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            max_velocities = ops_utils.broadcast_to(
                 max_velocities, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, dof_indices], max_velocities)
             self._physics_articulation_view.set_dof_max_velocities(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
-            max_velocities = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            max_velocities = ops_utils.broadcast_to(
                 max_velocities,
                 shape=(indices.shape[0], dof_indices.shape[0]),
                 dtype=wp.float32,
                 device=self._device,
             ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     physx_joint_api = Articulation.ensure_api([dof_prim], PhysxSchema.PhysxJointAPI)[0]
                     max_velocity = max_velocities[i][j].item()
                     if self.dof_types[dof_index] == omni.physics.tensors.DofType.Rotation:
@@ -2963,27 +2992,28 @@ class Articulation(XformPrim):
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_max_velocities()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             data = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, dof_index in enumerate(dof_indices.numpy()):
-                    dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+                    dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     physx_joint_api = Articulation.ensure_api([dof_prim], PhysxSchema.PhysxJointAPI)[0]
                     max_velocity = physx_joint_api.GetMaxJointVelocityAttr().Get()
                     if self.dof_types[dof_index] == omni.physics.tensors.DofType.Rotation:
                         max_velocity = np.deg2rad(max_velocity)
                     data[i][j] = max_velocity
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def set_dof_gains(
         self,
@@ -3025,39 +3055,39 @@ class Articulation(XformPrim):
             stiffnesses is not None or dampings is not None
         ), "Both 'stiffnesses' and 'dampings' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             view_stiffnesses = self._physics_articulation_view.get_dof_stiffnesses()  # shape: (N, max_dofs)
             view_dampings = self._physics_articulation_view.get_dof_dampings()  # shape: (N, max_dofs)
             device = view_stiffnesses.device
-            indices = _ops.resolve_indices(indices, count=len(self), device=device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=device)
             if stiffnesses is not None:
-                stiffnesses = _ops.broadcast_to(
+                stiffnesses = ops_utils.broadcast_to(
                     stiffnesses, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=device
                 )
                 wp.copy(view_stiffnesses[indices, dof_indices], stiffnesses)
                 self._physics_articulation_view.set_dof_stiffnesses(view_stiffnesses, indices)
             if dampings is not None:
-                dampings = _ops.broadcast_to(
+                dampings = ops_utils.broadcast_to(
                     dampings, shape=(indices.shape[0], dof_indices.shape[0]), dtype=wp.float32, device=device
                 )
                 wp.copy(view_dampings[indices, dof_indices], dampings)
                 self._physics_articulation_view.set_dof_dampings(view_dampings, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             if stiffnesses is not None:
-                stiffnesses = _ops.broadcast_to(
+                stiffnesses = ops_utils.broadcast_to(
                     stiffnesses,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
                     device=self._device,
                 ).numpy()
             if dampings is not None:
-                dampings = _ops.broadcast_to(
+                dampings = ops_utils.broadcast_to(
                     dampings,
                     shape=(indices.shape[0], dof_indices.shape[0]),
                     dtype=wp.float32,
@@ -3116,21 +3146,21 @@ class Articulation(XformPrim):
             ((2, 2), (2, 2))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             view_stiffnesses = self._physics_articulation_view.get_dof_stiffnesses()  # shape: (N, max_dofs)
             view_dampings = self._physics_articulation_view.get_dof_dampings()  # shape: (N, max_dofs)
-            indices = _ops.resolve_indices(indices, count=len(self), device=view_stiffnesses.device)
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=view_stiffnesses.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=view_stiffnesses.device)
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=view_stiffnesses.device)
             return (
                 view_stiffnesses[indices, dof_indices].contiguous().to(self._device),
                 view_dampings[indices, dof_indices].contiguous().to(self._device),
             )
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
             stiffnesses = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             dampings = np.zeros((indices.shape[0], dof_indices.shape[0]), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
@@ -3144,7 +3174,7 @@ class Articulation(XformPrim):
                     else:
                         stiffnesses[i][j] = 1.0 / np.deg2rad(1.0 / stiffness) if stiffness else 0.0
                         dampings[i][j] = 1.0 / np.deg2rad(1.0 / damping) if damping else 0.0
-            return _ops.place(stiffnesses, device=self._device), _ops.place(dampings, device=self._device)
+            return ops_utils.place(stiffnesses, device=self._device), ops_utils.place(dampings, device=self._device)
 
     def switch_dof_control_mode(
         self,
@@ -3204,8 +3234,8 @@ class Articulation(XformPrim):
             if self._default_dof_dampings is None:
                 self._default_dof_dampings = dampings
         # switch control mode
-        indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=self._device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=self._device)
         if mode == "position":
             stiffnesses = self._default_dof_stiffnesses[indices, dof_indices].contiguous()
             dampings = self._default_dof_dampings[indices, dof_indices].contiguous()
@@ -3265,11 +3295,11 @@ class Articulation(XformPrim):
         ), "Both 'position_counts' and 'velocity_counts' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if position_counts is not None:
-            position_counts = _ops.place(position_counts, device="cpu").numpy().reshape((-1, 1))
+            position_counts = ops_utils.place(position_counts, device="cpu").numpy().reshape((-1, 1))
         if velocity_counts is not None:
-            velocity_counts = _ops.place(velocity_counts, device="cpu").numpy().reshape((-1, 1))
+            velocity_counts = ops_utils.place(velocity_counts, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             prim = self.prims[index]
             if position_counts is not None:
@@ -3316,14 +3346,17 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         position_counts = np.zeros(shape=(indices.shape[0], 1), dtype=np.int32)
         velocity_counts = np.zeros(shape=(indices.shape[0], 1), dtype=np.int32)
         for i, index in enumerate(indices.numpy()):
             prim = self.prims[index]
             position_counts[i] = prim.GetAttribute("physxArticulation:solverPositionIterationCount").Get()
             velocity_counts[i] = prim.GetAttribute("physxArticulation:solverVelocityIterationCount").Get()
-        return _ops.place(position_counts, device=self._device), _ops.place(velocity_counts, device=self._device)
+        return (
+            ops_utils.place(position_counts, device=self._device),
+            ops_utils.place(velocity_counts, device=self._device),
+        )
 
     def set_stabilization_thresholds(
         self,
@@ -3357,8 +3390,8 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        thresholds = _ops.place(thresholds, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        thresholds = ops_utils.place(thresholds, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.prims[index].GetAttribute("physxArticulation:stabilizationThreshold").Set(
                 float(thresholds[0 if thresholds.shape[0] == 1 else i].item())
@@ -3397,11 +3430,11 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i] = self.prims[index].GetAttribute("physxArticulation:stabilizationThreshold").Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_enabled_self_collisions(
         self,
@@ -3430,8 +3463,8 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.prims[index].GetAttribute("physxArticulation:enabledSelfCollisions").Set(
                 bool(enabled[0 if enabled.shape[0] == 1 else i].item())
@@ -3467,11 +3500,11 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.bool_)
         for i, index in enumerate(indices.numpy()):
             data[i] = self.prims[index].GetAttribute("physxArticulation:enabledSelfCollisions").Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_sleep_thresholds(
         self,
@@ -3505,8 +3538,8 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        thresholds = _ops.place(thresholds, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        thresholds = ops_utils.place(thresholds, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.prims[index].GetAttribute("physxArticulation:sleepThreshold").Set(
                 float(thresholds[0 if thresholds.shape[0] == 1 else i].item())
@@ -3548,11 +3581,11 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i] = self.prims[index].GetAttribute("physxArticulation:sleepThreshold").Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def get_jacobian_matrices(self, *, indices: list | np.ndarray | wp.array | None = None) -> wp.array:
         """Get the Jacobian matrices of the prims.
@@ -3581,13 +3614,13 @@ class Articulation(XformPrim):
             >>> # get the Jacobian matrices of all prims
             >>> jacobians = prims.get_jacobian_matrices()
             >>> jacobians.shape
-            (3, 11, 6, 9)
+            (3, 10, 6, 9)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_jacobians()
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return data[indices].contiguous().to(self._device)
 
     def get_mass_matrices(self, *, indices: list | np.ndarray | wp.array | None = None) -> wp.array:
@@ -3623,7 +3656,7 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_generalized_mass_matrices()
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return data[indices].contiguous().to(self._device)
 
     def get_dof_coriolis_and_centrifugal_compensation_forces(
@@ -3667,8 +3700,8 @@ class Articulation(XformPrim):
         data = (
             self._physics_articulation_view.get_coriolis_and_centrifugal_compensation_forces()
         )  # shape: (N, max_dofs) or (N, max_dofs + 6)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
 
     def get_dof_gravity_compensation_forces(
@@ -3717,8 +3750,8 @@ class Articulation(XformPrim):
         data = (
             self._physics_articulation_view.get_gravity_compensation_forces()
         )  # shape: (N, max_dofs) or (N, max_dofs + 6)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        dof_indices = _ops.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
 
     def get_link_masses(
@@ -3750,37 +3783,38 @@ class Articulation(XformPrim):
             >>> # get the masses of the links of all prims
             >>> masses = prims.get_link_masses()
             >>> masses.shape
-            (3, 12)
+            (3, 11)
             >>>
             >>> # get the inverse masses of the first and last prims' finger links
-            >>> inverse_masses = prims.get_link_masses(indices=[0, 2], link_indices=[10, 11], inverse=True)
+            >>> inverse_masses = prims.get_link_masses(indices=[0, 2], link_indices=[9, 10], inverse=True)
             >>> inverse_masses.shape
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             if inverse:
                 data = self._physics_articulation_view.get_inv_masses()  # shape: (N, max_links)
             else:
                 data = self._physics_articulation_view.get_masses()  # shape: (N, max_links)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
             return data[indices, link_indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device="cpu")
             data = np.zeros((indices.shape[0], link_indices.shape[0]), dtype=np.float32)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, link_index in enumerate(link_indices.numpy()):
-                    link_prim = get_prim_at_path(self.link_paths[index][link_index])
+                    link_prim = stage.GetPrimAtPath(self.link_paths[index][link_index])
                     mass_api = Articulation.ensure_api([link_prim], UsdPhysics.MassAPI)[0]
                     data[i][j] = mass_api.GetMassAttr().Get()
             if inverse:
                 data = 1.0 / (data + 1e-8)
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def get_link_coms(
         self,
@@ -3811,10 +3845,10 @@ class Articulation(XformPrim):
             >>> # get the COM poses of the links of all prims
             >>> positions, orientations = prims.get_link_coms()
             >>> positions.shape, orientations.shape
-            ((3, 12, 3), (3, 12, 4))
+            ((3, 11, 3), (3, 11, 4))
             >>>
             >>> # get the COM poses of the first and last prims' finger links
-            >>> positions, orientations = prims.get_link_coms(indices=[0, 2], link_indices=[10, 11])
+            >>> positions, orientations = prims.get_link_coms(indices=[0, 2], link_indices=[9, 10])
             >>> positions.shape, orientations.shape
             ((2, 2, 3), (2, 2, 4))
         """
@@ -3822,8 +3856,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_coms()  # shape: (N, max_links, 7), quaternion is xyzw
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
         return (
             data[indices, link_indices, :3].contiguous().to(self._device),
             data[indices, link_indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)]
@@ -3861,10 +3895,10 @@ class Articulation(XformPrim):
             >>> # get the inertia tensors of the links of all prims
             >>> inertias = prims.get_link_inertias()
             >>> inertias.shape
-            (3, 12, 9)
+            (3, 11, 9)
             >>>
             >>> # get the inverse inertia tensors of the first and last prims' finger links
-            >>> inertias = prims.get_link_inertias(indices=[0, 2], link_indices=[10, 11], inverse=True)
+            >>> inertias = prims.get_link_inertias(indices=[0, 2], link_indices=[9, 10], inverse=True)
             >>> inertias.shape
             (2, 2, 9)
         """
@@ -3875,8 +3909,8 @@ class Articulation(XformPrim):
             data = self._physics_articulation_view.get_inv_inertias()  # shape: (N, max_links, 9)
         else:
             data = self._physics_articulation_view.get_inertias()  # shape: (N, max_links, 9)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
         return data[indices, link_indices].contiguous().to(self._device)
 
     def get_link_enabled_gravities(
@@ -3906,33 +3940,34 @@ class Articulation(XformPrim):
             >>> # get the gravity enabled state of the links of all prims
             >>> enabled = prims.get_link_enabled_gravities()
             >>> enabled.shape
-            (3, 12)
+            (3, 11)
             >>>
             >>> # get the gravity enabled state of the first and last prims' finger links
-            >>> enabled = prims.get_link_enabled_gravities(indices=[0, 2], link_indices=[10, 11])
+            >>> enabled = prims.get_link_enabled_gravities(indices=[0, 2], link_indices=[9, 10])
             >>> enabled.shape
             (2, 2)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_disable_gravities()  # shape: (N, max_links)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
             enabled = np.logical_not(data[indices, link_indices].contiguous().numpy()).astype(np.bool_)  # negate values
-            return _ops.place(enabled, device=self._device)
+            return ops_utils.place(enabled, device=self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device="cpu")
             data = np.zeros((indices.shape[0], link_indices.shape[0]), dtype=np.bool_)
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, link_index in enumerate(link_indices.numpy()):
-                    link_prim = get_prim_at_path(self.link_paths[index][link_index])
+                    link_prim = stage.GetPrimAtPath(self.link_paths[index][link_index])
                     rigid_body_api = Articulation.ensure_api([link_prim], PhysxSchema.PhysxRigidBodyAPI)[0]
                     data[i][j] = not rigid_body_api.GetDisableGravityAttr().Get()
-            return _ops.place(data, device=self._device)
+            return ops_utils.place(data, device=self._device)
 
     def set_link_masses(
         self,
@@ -3962,33 +3997,34 @@ class Articulation(XformPrim):
             >>> prims.set_link_masses([10.0])
             >>>
             >>> # set the masses for the first and last prims' finger links
-            >>> prims.set_link_masses([0.5], indices=[0, 2], link_indices=[10, 11])
+            >>> prims.set_link_masses([0.5], indices=[0, 2], link_indices=[9, 10])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_masses()  # shape: (N, max_links)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
-            masses = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
+            masses = ops_utils.broadcast_to(
                 masses, shape=(indices.shape[0], link_indices.shape[0]), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, link_indices], masses)
             self._physics_articulation_view.set_masses(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device="cpu")
-            masses = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device="cpu")
+            masses = ops_utils.broadcast_to(
                 masses,
                 shape=(indices.shape[0], link_indices.shape[0]),
                 dtype=wp.float32,
                 device="cpu",
             ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, link_index in enumerate(link_indices.numpy()):
-                    link_prim = get_prim_at_path(self.link_paths[index][link_index])
+                    link_prim = stage.GetPrimAtPath(self.link_paths[index][link_index])
                     mass_api = Articulation.ensure_api([link_prim], UsdPhysics.MassAPI)[0]
                     mass_api.GetMassAttr().Set(float(masses[i][j].item()))
 
@@ -4023,15 +4059,15 @@ class Articulation(XformPrim):
             >>>
             >>> # set the inertia tensors for the first and last prims' finger links
             >>> inertias = np.diag([0.2, 0.2, 0.2]).flatten()  # shape: (9,)
-            >>> prims.set_link_inertias(inertias, indices=[0, 2], link_indices=[10, 11])
+            >>> prims.set_link_inertias(inertias, indices=[0, 2], link_indices=[9, 10])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_inertias()  # shape: (N, max_links, 9)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
-        inertias = _ops.broadcast_to(
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
+        inertias = ops_utils.broadcast_to(
             inertias, shape=(indices.shape[0], link_indices.shape[0], 9), dtype=wp.float32, device=data.device
         )
         wp.copy(data[indices, link_indices], inertias)
@@ -4067,7 +4103,7 @@ class Articulation(XformPrim):
         .. code-block:: python
 
             >>> # set random COM link positions for all prims
-            >>> positions = np.random.uniform(low=-1, high=1, size=(3, 12, 3))
+            >>> positions = np.random.uniform(low=-1, high=1, size=(3, 11, 3))
             >>> prims.set_link_coms(positions)
         """
         assert (
@@ -4077,15 +4113,15 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_coms()  # shape: (N, max_links, 7)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
         if positions is not None:
-            positions = _ops.broadcast_to(
+            positions = ops_utils.broadcast_to(
                 positions, shape=(indices.shape[0], link_indices.shape[0], 3), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, link_indices, :3], positions)
         if orientations is not None:
-            orientations = _ops.broadcast_to(
+            orientations = ops_utils.broadcast_to(
                 orientations, shape=(indices.shape[0], link_indices.shape[0], 4), dtype=wp.float32, device=data.device
             )
             wp.copy(
@@ -4121,18 +4157,18 @@ class Articulation(XformPrim):
             >>> prims.set_link_enabled_gravities([True])
             >>>
             >>> # disable the gravity for the first and last prims' finger links
-            >>> prims.set_link_enabled_gravities([False], indices=[0, 2], link_indices=[10, 11])
+            >>> prims.set_link_enabled_gravities([False], indices=[0, 2], link_indices=[9, 10])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_disable_gravities()  # shape: (N, max_links)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device=data.device)
-            enabled = _ops.place(enabled, dtype=wp.uint8, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
+            enabled = ops_utils.place(enabled, dtype=wp.uint8, device=data.device)
             disabled = np.logical_not(enabled.numpy()).astype(np.uint8)  # negate input values
-            disabled = _ops.broadcast_to(
+            disabled = ops_utils.broadcast_to(
                 disabled,
                 shape=(indices.shape[0], link_indices.shape[0]),
                 dtype=wp.uint8,
@@ -4142,17 +4178,18 @@ class Articulation(XformPrim):
             self._physics_articulation_view.set_disable_gravities(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            link_indices = _ops.resolve_indices(link_indices, count=self.num_links, device="cpu")
-            enabled = _ops.broadcast_to(
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device="cpu")
+            enabled = ops_utils.broadcast_to(
                 enabled,
                 shape=(indices.shape[0], link_indices.shape[0]),
                 dtype=wp.bool,
                 device="cpu",
             ).numpy()
+            stage = stage_utils.get_current_stage(backend="usd")
             for i, index in enumerate(indices.numpy()):
                 for j, link_index in enumerate(link_indices.numpy()):
-                    link_prim = get_prim_at_path(self.link_paths[index][link_index])
+                    link_prim = stage.GetPrimAtPath(self.link_paths[index][link_index])
                     rigid_body_api = Articulation.ensure_api([link_prim], PhysxSchema.PhysxRigidBodyAPI)[0]
                     rigid_body_api.GetDisableGravityAttr().Set(not enabled[i][j].item())
 
@@ -4182,8 +4219,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_fixed_tendon_stiffnesses()  # shape: (N, num_fixed_tendons)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
         return data[indices, tendon_indices].contiguous().to(self._device)
 
     def get_fixed_tendon_dampings(
@@ -4212,8 +4249,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_fixed_tendon_dampings()  # shape: (N, num_fixed_tendons)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
         return data[indices, tendon_indices].contiguous().to(self._device)
 
     def get_fixed_tendon_limit_stiffnesses(
@@ -4242,8 +4279,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_fixed_tendon_limit_stiffnesses()  # shape: (N, num_fixed_tendons)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
         return data[indices, tendon_indices].contiguous().to(self._device)
 
     def get_fixed_tendon_limits(
@@ -4273,8 +4310,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_fixed_tendon_limits()  # shape: (N, num_fixed_tendons, 2)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
         return (
             data[indices, tendon_indices, wp.array([0], dtype=wp.int32, device=data.device)]
             .contiguous()
@@ -4312,8 +4349,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_fixed_tendon_rest_lengths()  # shape: (N, num_fixed_tendons)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
         return data[indices, tendon_indices].contiguous().to(self._device)
 
     def get_fixed_tendon_offsets(
@@ -4342,8 +4379,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_fixed_tendon_offsets()  # shape: (N, num_fixed_tendons)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=data.device)
         return data[indices, tendon_indices].contiguous().to(self._device)
 
     def set_fixed_tendon_properties(
@@ -4413,31 +4450,31 @@ class Articulation(XformPrim):
         )  # shape: (N, max_fixed_tendons)
         view_offsets = self._physics_articulation_view.get_fixed_tendon_offsets()  # shape: (N, max_fixed_tendons)
         device = view_stiffnesses.device
-        indices = _ops.resolve_indices(indices, count=len(self), device=device)
-        tendon_indices = _ops.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=device)
+        tendon_indices = ops_utils.resolve_indices(tendon_indices, count=self._num_fixed_tendons, device=device)
         shape = (indices.shape[0], tendon_indices.shape[0])
         if stiffnesses is not None:
-            stiffnesses = _ops.broadcast_to(stiffnesses, shape=shape, dtype=wp.float32, device=device)
+            stiffnesses = ops_utils.broadcast_to(stiffnesses, shape=shape, dtype=wp.float32, device=device)
             wp.copy(view_stiffnesses[indices, tendon_indices], stiffnesses)
         if dampings is not None:
-            dampings = _ops.broadcast_to(dampings, shape=shape, dtype=wp.float32, device=device)
+            dampings = ops_utils.broadcast_to(dampings, shape=shape, dtype=wp.float32, device=device)
             wp.copy(view_dampings[indices, tendon_indices], dampings)
         if limit_stiffnesses is not None:
-            limit_stiffnesses = _ops.broadcast_to(limit_stiffnesses, shape=shape, dtype=wp.float32, device=device)
+            limit_stiffnesses = ops_utils.broadcast_to(limit_stiffnesses, shape=shape, dtype=wp.float32, device=device)
             wp.copy(view_limit_stiffnesses[indices, tendon_indices], limit_stiffnesses)
         if lower_limits is not None:
-            lower_limits = _ops.broadcast_to(lower_limits, shape=shape, dtype=wp.float32, device=device)
+            lower_limits = ops_utils.broadcast_to(lower_limits, shape=shape, dtype=wp.float32, device=device)
             lower_limits = lower_limits.reshape((*shape, 1))
             wp.copy(view_limits[indices, tendon_indices, wp.array([0], dtype=wp.int32, device=device)], lower_limits)
         if upper_limits is not None:
-            upper_limits = _ops.broadcast_to(upper_limits, shape=shape, dtype=wp.float32, device=device)
+            upper_limits = ops_utils.broadcast_to(upper_limits, shape=shape, dtype=wp.float32, device=device)
             upper_limits = upper_limits.reshape((*shape, 1))
             wp.copy(view_limits[indices, tendon_indices, wp.array([1], dtype=wp.int32, device=device)], upper_limits)
         if rest_lengths is not None:
-            rest_lengths = _ops.broadcast_to(rest_lengths, shape=shape, dtype=wp.float32, device=device)
+            rest_lengths = ops_utils.broadcast_to(rest_lengths, shape=shape, dtype=wp.float32, device=device)
             wp.copy(view_rest_lengths[indices, tendon_indices], rest_lengths)
         if offsets is not None:
-            offsets = _ops.broadcast_to(offsets, shape=shape, dtype=wp.float32, device=device)
+            offsets = ops_utils.broadcast_to(offsets, shape=shape, dtype=wp.float32, device=device)
             wp.copy(view_offsets[indices, tendon_indices], offsets)
         self._physics_articulation_view.set_fixed_tendon_properties(
             view_stiffnesses,
@@ -4456,8 +4493,8 @@ class Articulation(XformPrim):
     def _check_for_tensor_backend(self, backend: str, *, fallback_backend: str = "usd") -> str:
         """Check if the tensor backend is valid."""
         if backend == "tensor" and not self.is_physics_tensor_entity_valid():
-            if _backend.is_backend_set():
-                if _backend.should_raise_on_fallback():
+            if backend_utils.is_backend_set():
+                if backend_utils.should_raise_on_fallback():
                     raise RuntimeError(
                         f"Physics tensor entity is not valid. Fallback set to '{fallback_backend}' backend."
                     )
@@ -4484,7 +4521,7 @@ class Articulation(XformPrim):
         else:
             carb.log_warn(f"Invalid DOF type ({self.dof_types[dof_index]}) at index {dof_index}")
             drive_type = ""
-        dof_prim = get_prim_at_path(self.dof_paths[index][dof_index])
+        dof_prim = stage_utils.get_current_stage(backend="usd").GetPrimAtPath(self.dof_paths[index][dof_index])
         return Articulation.ensure_api([dof_prim], UsdPhysics.DriveAPI, drive_type)[0], drive_type
 
     def _query_articulation_properties(self) -> None:
@@ -4532,8 +4569,8 @@ class Articulation(XformPrim):
 
         self._link_paths, self._joint_paths, self._dof_paths = [], [], []
         # query articulation metadata for each prim
-        stage = omni.usd.get_context().get_stage()
-        stage_id = omni.usd.get_context().get_stage_id()
+        stage = stage_utils.get_current_stage(backend="usd")
+        stage_id = stage_utils.get_stage_id(stage)
         for path in self.paths:
             omni.physx.get_physx_property_query_interface().query_prim(
                 stage_id=stage_id,

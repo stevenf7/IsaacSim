@@ -16,7 +16,6 @@
 from typing import Callable, Literal
 
 import omni.kit.test
-import omni.usd
 from isaacsim.core.simulation_manager import SimulationManager
 
 

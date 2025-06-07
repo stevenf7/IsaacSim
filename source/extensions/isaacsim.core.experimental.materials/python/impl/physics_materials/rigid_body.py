@@ -17,10 +17,10 @@ from __future__ import annotations
 
 from typing import Literal
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import PhysxSchema, Usd, UsdPhysics, UsdShade
 
@@ -69,7 +69,7 @@ class RigidBodyMaterial(PhysicsMaterial):
     ) -> None:
         # get or create prims
         self._materials = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = self.resolve_paths(paths)
         if existent_paths:
             paths = existent_paths
@@ -136,11 +136,11 @@ class RigidBodyMaterial(PhysicsMaterial):
         ), "Both 'static_frictions' and 'dynamic_frictions' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if static_frictions is not None:
-            static_frictions = _ops.place(static_frictions, device="cpu").numpy().reshape((-1, 1))
+            static_frictions = ops_utils.place(static_frictions, device="cpu").numpy().reshape((-1, 1))
         if dynamic_frictions is not None:
-            dynamic_frictions = _ops.place(dynamic_frictions, device="cpu").numpy().reshape((-1, 1))
+            dynamic_frictions = ops_utils.place(dynamic_frictions, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             physics_material_api = PhysicsMaterial.ensure_api([self.prims[index]], UsdPhysics.MaterialAPI)[0]
             if static_frictions is not None:
@@ -187,14 +187,17 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         static_frictions = np.zeros((indices.shape[0], 1), dtype=np.float32)
         dynamic_frictions = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             physics_material_api = PhysicsMaterial.ensure_api([self.prims[index]], UsdPhysics.MaterialAPI)[0]
             static_frictions[i][0] = physics_material_api.GetStaticFrictionAttr().Get()
             dynamic_frictions[i][0] = physics_material_api.GetDynamicFrictionAttr().Get()
-        return _ops.place(static_frictions, device=self._device), _ops.place(dynamic_frictions, device=self._device)
+        return (
+            ops_utils.place(static_frictions, device=self._device),
+            ops_utils.place(dynamic_frictions, device=self._device),
+        )
 
     def set_restitution_coefficients(
         self,
@@ -226,8 +229,8 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        restitutions = _ops.place(restitutions, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        restitutions = ops_utils.place(restitutions, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             physics_material_api = PhysicsMaterial.ensure_api([self.prims[index]], UsdPhysics.MaterialAPI)[0]
             physics_material_api.GetRestitutionAttr().Set(restitutions[0 if restitutions.shape[0] == 1 else i].item())
@@ -266,12 +269,12 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             physics_material_api = PhysicsMaterial.ensure_api([self.prims[index]], UsdPhysics.MaterialAPI)[0]
             data[i][0] = physics_material_api.GetRestitutionAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_densities(
         self,
@@ -303,8 +306,8 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        densities = _ops.place(densities, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        densities = ops_utils.place(densities, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             physics_material_api = PhysicsMaterial.ensure_api([self.prims[index]], UsdPhysics.MaterialAPI)[0]
             physics_material_api.GetDensityAttr().Set(densities[0 if densities.shape[0] == 1 else i].item())
@@ -343,12 +346,12 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             physics_material_api = PhysicsMaterial.ensure_api([self.prims[index]], UsdPhysics.MaterialAPI)[0]
             data[i][0] = physics_material_api.GetDensityAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_combine_modes(
         self,
@@ -394,7 +397,7 @@ class RigidBodyMaterial(PhysicsMaterial):
         ), "All 'frictions', 'restitutions' and 'dampings' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if frictions is not None:
             frictions = [frictions] if isinstance(frictions, str) else frictions
             frictions = np.broadcast_to(np.array(frictions, dtype=object), (indices.shape[0],))
@@ -452,7 +455,7 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         frictions = np.empty((indices.shape[0],), dtype=object)
         restitutions = np.empty((indices.shape[0],), dtype=object)
         dampings = np.empty((indices.shape[0],), dtype=object)
@@ -498,8 +501,8 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             physx_material_api = PhysicsMaterial.ensure_api([self.prims[index]], PhysxSchema.PhysxMaterialAPI)[0]
             physx_material_api.GetCompliantContactAccelerationSpringAttr().Set(
@@ -537,12 +540,12 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
         for i, index in enumerate(indices.numpy()):
             physx_material_api = PhysicsMaterial.ensure_api([self.prims[index]], PhysxSchema.PhysxMaterialAPI)[0]
             enabled[i] = physx_material_api.GetCompliantContactAccelerationSpringAttr().Get()
-        return _ops.place(enabled, device=self._device)
+        return ops_utils.place(enabled, device=self._device)
 
     def set_compliant_contact_gains(
         self,
@@ -585,11 +588,11 @@ class RigidBodyMaterial(PhysicsMaterial):
         ), "Both 'stiffnesses' and 'dampings' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if stiffnesses is not None:
-            stiffnesses = _ops.place(stiffnesses, device="cpu").numpy().reshape((-1, 1))
+            stiffnesses = ops_utils.place(stiffnesses, device="cpu").numpy().reshape((-1, 1))
         if dampings is not None:
-            dampings = _ops.place(dampings, device="cpu").numpy().reshape((-1, 1))
+            dampings = ops_utils.place(dampings, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             physx_material_api = PhysicsMaterial.ensure_api([self.prims[index]], PhysxSchema.PhysxMaterialAPI)[0]
             if stiffnesses is not None:
@@ -636,14 +639,14 @@ class RigidBodyMaterial(PhysicsMaterial):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         stiffnesses = np.zeros((indices.shape[0], 1), dtype=np.float32)
         dampings = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             physx_material_api = PhysicsMaterial.ensure_api([self.prims[index]], PhysxSchema.PhysxMaterialAPI)[0]
             stiffnesses[i][0] = physx_material_api.GetCompliantContactStiffnessAttr().Get()
             dampings[i][0] = physx_material_api.GetCompliantContactDampingAttr().Get()
-        return _ops.place(stiffnesses, device=self._device), _ops.place(dampings, device=self._device)
+        return ops_utils.place(stiffnesses, device=self._device), ops_utils.place(dampings, device=self._device)
 
     """
     Static methods.
@@ -676,7 +679,7 @@ class RigidBodyMaterial(PhysicsMaterial):
              [ True]]
         """
         data = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             status = False
             path = item if isinstance(item, str) else item.GetPath()
@@ -684,4 +687,4 @@ class RigidBodyMaterial(PhysicsMaterial):
             if material is not None:
                 status = True  # TODO: check if the material is a rigid body material
             data.append(status)
-        return _ops.place(data, device="cpu").reshape((-1, 1))
+        return ops_utils.place(data, device="cpu").reshape((-1, 1))

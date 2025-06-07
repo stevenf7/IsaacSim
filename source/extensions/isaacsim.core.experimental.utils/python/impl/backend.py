@@ -12,9 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from __future__ import annotations
+
 import contextlib
 import threading
-from typing import Literal
+from typing import Generator, Literal
 
 import carb
 
@@ -28,7 +31,7 @@ def use_backend(
     *,
     raise_on_unsupported: bool = False,
     raise_on_fallback: bool = False,
-) -> None:
+) -> Generator[None, None, None]:
     """Context manager that sets a thread-local backend value.
 
     .. warning::
@@ -44,6 +47,17 @@ def use_backend(
 
     Raises:
         RuntimeError: If the ``usdrt`` or ``fabric`` backend is specified but Fabric Scene Delegate (FSD) is disabled.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.backend as backend_utils
+        >>>
+        >>> with backend_utils.use_backend("usdrt"):
+        ...    # operate on the specified backend
+        ...    pass
+        >>> # operate on the default backend
     """
     # check if USDRT/fabric backend
     if backend in ["usdrt", "fabric"] and not _fsd_enabled:

@@ -16,11 +16,11 @@
 from __future__ import annotations
 
 import carb
+import isaacsim.core.experimental.utils.ops as ops_utils
 import numpy as np
 import warp as wp
 from pxr import PhysxSchema, UsdGeom, UsdPhysics, UsdShade
 
-from . import _ops
 from .prim import _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
@@ -186,11 +186,11 @@ class GeomPrim(XformPrim):
         ), "Both 'contact_offsets' and 'rest_offsets' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if contact_offsets is not None:
-            contact_offsets = _ops.place(contact_offsets, device="cpu").numpy().reshape((-1, 1))
+            contact_offsets = ops_utils.place(contact_offsets, device="cpu").numpy().reshape((-1, 1))
         if rest_offsets is not None:
-            rest_offsets = _ops.place(rest_offsets, device="cpu").numpy().reshape((-1, 1))
+            rest_offsets = ops_utils.place(rest_offsets, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             physx_collision_api = GeomPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxCollisionAPI)[0]
             if contact_offsets is not None:
@@ -234,14 +234,14 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         contact_offsets = np.zeros((indices.shape[0], 1), dtype=np.float32)
         rest_offsets = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             physx_collision_api = GeomPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxCollisionAPI)[0]
             contact_offsets[i] = physx_collision_api.GetContactOffsetAttr().Get()
             rest_offsets[i] = physx_collision_api.GetRestOffsetAttr().Get()
-        return _ops.place(contact_offsets, device=self._device), _ops.place(rest_offsets, device=self._device)
+        return ops_utils.place(contact_offsets, device=self._device), ops_utils.place(rest_offsets, device=self._device)
 
     def set_torsional_patch_radii(
         self,
@@ -277,8 +277,8 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        radii = _ops.place(radii, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        radii = ops_utils.place(radii, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             radius = radii[0 if radii.shape[0] == 1 else i].item()
             physx_collision_api = GeomPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxCollisionAPI)[0]
@@ -325,7 +325,7 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         radii = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             physx_collision_api = GeomPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxCollisionAPI)[0]
@@ -333,7 +333,7 @@ class GeomPrim(XformPrim):
                 radii[i] = physx_collision_api.GetMinTorsionalPatchRadiusAttr().Get()
             else:
                 radii[i] = physx_collision_api.GetTorsionalPatchRadiusAttr().Get()
-        return _ops.place(radii, device=self._device)
+        return ops_utils.place(radii, device=self._device)
 
     def set_collision_approximations(
         self, approximations: str | list[str], *, indices: list | np.ndarray | wp.array | None = None
@@ -393,7 +393,7 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         approximations = [approximations] if isinstance(approximations, str) else approximations
         broadcast = len(approximations) == 1
         for i, index in enumerate(indices.numpy()):
@@ -459,7 +459,7 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         approximations = []
         for index in indices.numpy():
             mesh_collision_api = GeomPrim.ensure_api([self.prims[index]], UsdPhysics.MeshCollisionAPI)[0]
@@ -498,8 +498,8 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             prim = self.prims[index]
             value = bool(enabled[0 if enabled.shape[0] == 1 else i].item())
@@ -544,14 +544,14 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
         for i, index in enumerate(indices.numpy()):
             prim = self.prims[index]
             if prim.HasAPI(UsdPhysics.CollisionAPI):
                 collision_api = UsdPhysics.CollisionAPI(prim)
                 enabled[i] = collision_api.GetCollisionEnabledAttr().Get()
-        return _ops.place(enabled, device=self._device)
+        return ops_utils.place(enabled, device=self._device)
 
     def apply_collision_apis(self, *, indices: list | np.ndarray | wp.array | None = None) -> None:
         """Apply collision APIs to enable collision detection for prims.
@@ -579,7 +579,7 @@ class GeomPrim(XformPrim):
             >>> prims.apply_collision_apis()
         """
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         for index in indices.numpy():
             GeomPrim.ensure_api([self.prims[index]], UsdPhysics.CollisionAPI)
             GeomPrim.ensure_api([self.prims[index]], UsdPhysics.MeshCollisionAPI)
@@ -628,14 +628,14 @@ class GeomPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         # accommodate values and determine broadcast status
         if not isinstance(materials, (list, tuple)):
             materials = [materials]
         broadcast_materials = len(materials) == 1
         if weaker_than_descendants is None:
             weaker_than_descendants = [False]
-        weaker_than_descendants = _ops.place(weaker_than_descendants, device="cpu").numpy().reshape((-1, 1))
+        weaker_than_descendants = ops_utils.place(weaker_than_descendants, device="cpu").numpy().reshape((-1, 1))
         broadcast_weaker_than_descendants = weaker_than_descendants.shape[0] == 1
         # set values
         for i, index in enumerate(indices.numpy()):
@@ -680,7 +680,7 @@ class GeomPrim(XformPrim):
         # USD API
         from isaacsim.core.experimental.materials import PhysicsMaterial  # defer imports to avoid circular dependencies
 
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         materials = []
         for index in indices.numpy():
             material_binding_api = GeomPrim.ensure_api([self.prims[index]], UsdShade.MaterialBindingAPI)[0]

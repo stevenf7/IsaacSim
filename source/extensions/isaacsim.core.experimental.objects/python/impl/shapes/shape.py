@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.prims import XformPrim
 from pxr import Usd, UsdGeom
@@ -143,14 +143,12 @@ class Shape(XformPrim, ABC):
 
         .. code-block:: python
 
-            >>> import omni.usd
+            >>> import isaacsim.core.experimental.utils.stage as stage_utils
             >>> from isaacsim.core.experimental.objects import Shape
             >>>
             >>> # given a USD stage with the prims at paths /World, /World/A (Cube), /World/B (Sphere)
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> stage.DefinePrim(f"/World", "Xform")  # doctest: +NO_CHECK
-            >>> stage.DefinePrim(f"/World/A", "Cube")  # doctest: +NO_CHECK
-            >>> stage.DefinePrim(f"/World/B", "Sphere")  # doctest: +NO_CHECK
+            >>> stage_utils.define_prim(f"/World/A", "Cube")  # doctest: +NO_CHECK
+            >>> stage_utils.define_prim(f"/World/B", "Sphere")  # doctest: +NO_CHECK
             >>>
             >>> # fetch shape instances
             >>> Shape.fetch_instances(["/World", "/World/A", "/World/B"])
@@ -168,7 +166,7 @@ class Shape(XformPrim, ABC):
         classes = [Capsule, Cone, Cube, Cylinder, Sphere]
 
         instances = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             prim = stage.GetPrimAtPath(item) if isinstance(item, str) else item
             instance = None

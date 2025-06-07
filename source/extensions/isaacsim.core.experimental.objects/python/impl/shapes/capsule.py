@@ -17,10 +17,10 @@ from __future__ import annotations
 
 from typing import Literal
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Gf, Usd, UsdGeom
 
@@ -91,7 +91,7 @@ class Capsule(Shape):
         reset_xform_op_properties: bool = False,
     ) -> None:
         self._geoms = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Shape.resolve_paths(paths)
         # get capsules
         if existent_paths:
@@ -174,8 +174,8 @@ class Capsule(Shape):
             >>> print(result)
             [False  True]
         """
-        stage = omni.usd.get_context().get_stage()
-        return _ops.place(
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
             [
                 (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdGeom.Capsule)
                 for item in (paths if isinstance(paths, (list, tuple)) else [paths])
@@ -218,8 +218,8 @@ class Capsule(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        radii = _ops.place(radii, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        radii = ops_utils.place(radii, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             geom = self.geoms[index]
             geom.GetRadiusAttr().Set(radii[0 if radii.shape[0] == 1 else i].item())
@@ -259,11 +259,11 @@ class Capsule(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.geoms[index].GetRadiusAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_heights(
         self,
@@ -295,8 +295,8 @@ class Capsule(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        heights = _ops.place(heights, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        heights = ops_utils.place(heights, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             geom = self.geoms[index]
             geom.GetHeightAttr().Set(heights[0 if heights.shape[0] == 1 else i].item())
@@ -336,11 +336,11 @@ class Capsule(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.geoms[index].GetHeightAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_axes(
         self,
@@ -373,7 +373,7 @@ class Capsule(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         axes = [axes] if isinstance(axes, str) else axes
         for axis in set(axes):
             assert axis in ["X", "Y", "Z"], f"Invalid axis token: {axis}"
@@ -417,7 +417,7 @@ class Capsule(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.empty((indices.shape[0],), dtype=object)
         for i, index in enumerate(indices.numpy()):
             data[i] = self.geoms[index].GetAxisAttr().Get()

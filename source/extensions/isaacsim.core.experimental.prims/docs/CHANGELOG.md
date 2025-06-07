@@ -1,11 +1,16 @@
 # Changelog
+
+## [0.5.0] - 2025-06-06
+### Changed
+- Update source code to use the experimental core utils API
+
 ## [0.4.3] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
 
 ## [0.4.2] - 2025-05-23
 ### Changed
-- rename test utils.py to common.py
+- Rename test utils.py to common.py
 
 ## [0.4.1] - 2025-05-19
 ### Changed

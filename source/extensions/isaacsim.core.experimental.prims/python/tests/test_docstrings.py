@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
-import omni.usd
 from isaacsim.core.experimental.prims import Articulation, GeomPrim, Prim, RigidPrim, XformPrim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path_async
@@ -27,6 +26,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
+        stage_utils.define_prim(f"/World", "Xform")
+        # configure simulation
         SimulationManager.set_physics_sim_device("cpu")
 
     async def tearDown(self):
@@ -35,39 +36,31 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
 
     async def test_prim_docstrings(self):
         # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
         for i in range(3):
-            stage.DefinePrim(f"/World/prim_{i}", "Xform")
+            stage_utils.define_prim(f"/World/prim_{i}", "Xform")
         # test case
         await self.assertDocTests(Prim)
 
     async def test_xform_prim_docstrings(self):
         # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
         for i in range(3):
-            stage.DefinePrim(f"/World/prim_{i}", "Xform")
+            stage_utils.define_prim(f"/World/prim_{i}", "Xform")
         # test case
         await self.assertDocTests(XformPrim)
 
     async def test_geom_prim_docstrings(self):
         # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
         for i in range(3):
-            stage.DefinePrim(f"/World/prim_{i}", "Xform")
-            stage.DefinePrim(f"/World/prim_{i}/Cube", "Cube")
+            stage_utils.define_prim(f"/World/prim_{i}", "Xform")
+            stage_utils.define_prim(f"/World/prim_{i}/Cube", "Cube")
         # test case
         await self.assertDocTests(GeomPrim)
 
     async def test_rigid_prim_docstrings(self):
         # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
         for i in range(3):
-            stage.DefinePrim(f"/World/prim_{i}", "Xform")
-            stage.DefinePrim(f"/World/prim_{i}/Cube", "Cube")
+            stage_utils.define_prim(f"/World/prim_{i}", "Xform")
+            stage_utils.define_prim(f"/World/prim_{i}/Cube", "Cube")
         # test case
         await self.assertDocTests(RigidPrim)
 
@@ -75,12 +68,11 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         # get assets root path
         assets_root_path = await get_assets_root_path_async()
         # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
         for i in range(3):
             stage_utils.add_reference_to_stage(
                 f"{assets_root_path}/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
-                prim_path=f"/World/prim_{i}",
-            ).GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
+                path=f"/World/prim_{i}",
+                variants=[("Gripper", "AlternateFinger"), ("Mesh", "Performance")],
+            )
         # test case
         await self.assertDocTests(Articulation, stop_on_failure=False)
