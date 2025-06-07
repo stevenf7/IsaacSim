@@ -44,6 +44,11 @@ class TestDifferentialRobotGraph(OmniUiTest):
         robot_prim.GetReferences().AddReference(assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd")
         await update_stage_async()
 
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("Loading...")
+            await asyncio.sleep(1.0)
+            await omni.kit.app.get_app().next_update_async()
+
     # After running each test
     async def tearDown(self):
         self._timeline.stop()
