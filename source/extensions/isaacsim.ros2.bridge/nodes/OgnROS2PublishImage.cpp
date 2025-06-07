@@ -171,7 +171,7 @@ public:
         status = state.publishImage(db);
         if (state.m_nitrosBridgePublisher)
         {
-            status = state.publishNitrosBridgeImage(db) && status;
+            state.publishNitrosBridgeImage(db);
         }
         return status;
     }
@@ -382,7 +382,7 @@ public:
         return threadData;
     }
 
-    bool publishNitrosBridgeImage(OgnROS2PublishImageDatabase& db)
+    void publishNitrosBridgeImage(OgnROS2PublishImageDatabase& db)
     {
 #if !defined(_WIN32)
         CARB_PROFILE_ZONE(1, "publish nitros bridge image function");
@@ -397,7 +397,7 @@ public:
         // Check if subscription count is 0
         if (!m_publishWithoutVerification && !state.m_nitrosBridgePublisher.get()->getSubscriptionCount())
         {
-            return false;
+            return;
         }
 
         state.m_nitrosBridgeMessage->writeHeader(db.inputs.timeStamp(), state.m_frameId);
@@ -405,18 +405,37 @@ public:
         if (db.inputs.width() == 0 || db.inputs.height() == 0)
         {
             db.logError("Width %d or height %d is not valid", db.inputs.width(), db.inputs.height());
-            return false;
+            return;
         }
 
         std::string encoding = db.tokenToString(db.inputs.encoding());
         state.m_nitrosBridgeMessage->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
         size_t totalBytes = state.m_nitrosBridgeMessage->getTotalBytes();
 
-        // IPC manager
+        // IPC manager initialization
+        // If initialization fails, the NITROS publisher will be disabled for this node instance
         if (!state.m_ipcBufferManager)
         {
-            state.m_ipcBufferManager = std::make_shared<IPCBufferManager>(40, totalBytes);
+            if (totalBytes == 0)
+            {
+                db.logWarning(
+                    "NITROS Bridge: Cannot initialize IPCBufferManager with zero totalBytes. Disabling NITROS publisher for this node instance.");
+                state.m_nitrosBridgePublisher.reset();
+                return;
+            }
+            try
+            {
+                state.m_ipcBufferManager = std::make_shared<IPCBufferManager>(40, totalBytes);
+            }
+            catch (const std::runtime_error& e)
+            {
+                db.logWarning(
+                    "NITROS Bridge: Failed to initialize IPCBufferManager. Disabling NITROS publisher for this node instance.");
+                state.m_nitrosBridgePublisher.reset();
+                return;
+            }
         }
+
         void* dataPtr = (void*)state.m_ipcBufferManager->getCurBufferPtr();
 
         // Data on host
@@ -441,7 +460,7 @@ public:
                             totalBytes, db.inputs.bufferSize());
                 db.logError("dataPtr null and expected size %d bytes does not match input data Size of %d bytes",
                             totalBytes, db.inputs.data.size());
-                return false;
+                return;
             }
 
             state.m_nitrosBridgeMessage->writeData(state.m_ipcBufferManager->getCurIpcMemHandle());
@@ -470,21 +489,20 @@ public:
 
             if (state.m_multithreadingDisabled)
             {
-                return publishNitrosBridgeHelper(publishNitrosBridgeImageThreadData);
+                publishNitrosBridgeHelper(publishNitrosBridgeImageThreadData);
             }
             else
             {
                 // In order to get the benefits of using a separate stream, do all of the work in a new thread
                 tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
                                  [data = publishNitrosBridgeImageThreadData]() mutable
-                                 { return publishNitrosBridgeHelper(data); });
+                                 { publishNitrosBridgeHelper(data); });
             }
         }
 #endif
-        return true;
     }
 
-    static bool publishNitrosBridgeHelper(PublishNitrosBridgeImageThreadData& data)
+    static void publishNitrosBridgeHelper(PublishNitrosBridgeImageThreadData& data)
     {
 #if !defined(_WIN32)
         CARB_PROFILE_ZONE(1, "publish nitros image thread");
@@ -533,7 +551,7 @@ public:
             default:
                 CARB_LOG_ERROR("SdRenderVarToRawArray : input texture format (%d) is not supported.",
                                static_cast<int>(data.resourceFormat));
-                return false;
+                return;
             }
         }
         // Data in CUDA memory
@@ -552,7 +570,6 @@ public:
             data.nitrosBridgePublisher.get()->publish(data.nitrosBridgeMessage->getPtr());
         }
 #endif
-        return true;
     }
 
     static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)

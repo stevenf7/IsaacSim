@@ -29,6 +29,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+#include <stdexcept>
 #include <stdio.h>
 #include <unistd.h>
 #include <vector>
@@ -56,6 +57,7 @@ public:
      *
      * @param[in] size Number of buffers to create in the pool.
      * @param[in] bufferStep Size of each buffer in bytes.
+     * @throws std::runtime_error If CUDA memory allocation granularity cannot be determined or is zero.
      */
     IPCBufferManager(size_t size, size_t bufferStep)
     {
@@ -73,7 +75,8 @@ public:
         {
             const char* errorStr = NULL;
             cuGetErrorString(cudaErr, &errorStr);
-            fprintf(stderr, "[Error] IPCBufferManager: Failed to call cuMemGetAllocationGranularity %s\n", errorStr);
+            throw std::runtime_error(std::string("IPCBufferManager: Failed to get CUDA memory allocation granularity: ") +
+                                     (errorStr ? errorStr : "Unknown CUDA error"));
         }
         m_allocSize = bufferStep - (bufferStep % granularity) + granularity;
 
