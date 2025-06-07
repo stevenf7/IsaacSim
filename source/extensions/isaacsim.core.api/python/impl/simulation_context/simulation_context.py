@@ -879,6 +879,7 @@ class SimulationContext:
             >>> run_coroutine(task())
         """
         self._timeline.play()
+        self._timeline.commit()
         self.get_physics_context().warm_start()
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         await omni.kit.app.get_app().next_update_async()
