@@ -23,9 +23,26 @@ class ToolsMenuExtension:
                 "Tools",
                 [
                     MenuLayout.SubMenu(
+                        "Action and Event Data Generation",
+                        [
+                            MenuLayout.Seperator("Actor Simulation and SDG"),
+                            MenuLayout.Item("Actor SDG"),
+                            MenuLayout.Item("Command Injection"),
+                            MenuLayout.Item("Command Setting"),
+                            MenuLayout.Seperator("Object Simulation and SDG"),
+                            MenuLayout.Item("Object SDG"),
+                            MenuLayout.Item("Distribution Visualizer"),
+                            MenuLayout.Seperator("VLM Scene Captioning"),
+                            MenuLayout.Item("VLM Scene Captioning"),
+                            MenuLayout.Seperator("Physical Space Event Generation"),
+                            MenuLayout.Item("Event Scene Tagger"),
+                            MenuLayout.Item("Event Config File"),
+                        ],
+                        source_search=LayoutSourceSearch.LOCAL_ONLY,
+                    ),
+                    MenuLayout.SubMenu(
                         "Animation",
                         [
-                            MenuLayout.Item("People Simulation", source="Window/People Simulation"),
                             MenuLayout.Item("Retargeting", source="Window/Animation/Retargeting"),  # ??
                             MenuLayout.Item(
                                 "Simplify Animation Curve", source="Tools/Animation/Curve Processing/Simplify Curve"
@@ -102,24 +119,6 @@ class ToolsMenuExtension:
                             MenuLayout.Item("Camera Placement"),
                             MenuLayout.Item("Camera Inspector"),
                         ],
-                    ),
-                    MenuLayout.SubMenu(
-                        "Spatial SDG",
-                        [
-                            MenuLayout.Seperator("Actor Simulation and SDG"),
-                            MenuLayout.Item("Actor SDG"),
-                            MenuLayout.Item("Command Injection"),
-                            MenuLayout.Item("Command Setting"),
-                            MenuLayout.Seperator("Object Simulation and SDG"),
-                            MenuLayout.Item("Object SDG"),
-                            MenuLayout.Item("Distribution Visualizer"),
-                            MenuLayout.Seperator("VLM Scene Captioning"),
-                            MenuLayout.Item("VLM Scene Captioning"),
-                            MenuLayout.Seperator("Physical Space Event Generation"),
-                            MenuLayout.Item("Event Scene Tagger"),
-                            MenuLayout.Item("Event Config File"),
-                        ],
-                        source_search=LayoutSourceSearch.LOCAL_ONLY,
                     ),
                     MenuLayout.SubMenu(
                         "USD",

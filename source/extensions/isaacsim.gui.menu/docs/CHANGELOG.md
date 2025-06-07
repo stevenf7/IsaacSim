@@ -1,4 +1,7 @@
 # Changelog
+## [2.3.10] - 2025-06-06
+### Changed
+- Rename "Spatial SDG" to "Action and Event Data Generation"
 
 ## [2.3.9] - 2025-06-04
 ### Changed
