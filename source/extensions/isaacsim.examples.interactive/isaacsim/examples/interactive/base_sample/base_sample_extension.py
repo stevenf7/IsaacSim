@@ -58,6 +58,7 @@ class BaseSampleUITemplate:
 
     def build_ui(self):
         # separating out building default frame and extra frames, so examples can override the extra frames function
+
         self.build_default_frame()
         self.build_extra_frames()
         return
@@ -169,7 +170,12 @@ class BaseSampleUITemplate:
 
     def _reset_on_stop_event(self, e):
         if e.type == int(omni.timeline.TimelineEventType.STOP):
+            world = World.instance()
+            if world is not None:
+                world.clear_physics_callbacks()
+
             self._buttons["Load World"].enabled = False
             self._buttons["Reset"].enabled = True
             self.post_clear_button_event()
+
         return

@@ -59,7 +59,8 @@ class BaseSample(object):
     async def reset_async(self):
         """Function called when clicking reset buttton"""
         if self._world.is_tasks_scene_built() and len(self._current_tasks) > 0:
-            self._world.remove_physics_callback("tasks_step")
+            if self._world.physics_callback_exists("tasks_step"):
+                self._world.remove_physics_callback("tasks_step")
         await self._world.play_async()
         await update_stage_async()
         await self.setup_pre_reset()
@@ -110,8 +111,9 @@ class BaseSample(object):
     #     return
 
     def _world_cleanup(self):
-        self._world.stop()
-        self._world.clear_all_callbacks()
+        if self._world is not None:
+            self._world.stop()
+            self._world.clear_all_callbacks()
         self._current_tasks = None
         self.world_cleanup()
         return
