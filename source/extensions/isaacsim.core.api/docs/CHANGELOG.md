@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.1] - 2025-06-06
+### Fixed
+- Force commit timeline changes on play_async to properly initialize views
+
 ## [4.6.0] - 2025-06-05
 ### Changed
 - Disable PhysX scene's stabilization flag by default
