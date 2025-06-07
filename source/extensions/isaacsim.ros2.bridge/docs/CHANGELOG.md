@@ -1,4 +1,12 @@
 # Changelog
+## [4.8.0] - 2025-06-05
+### Fixed
+- Added error handling for IPCBufferManager on vGPU setups
+### Changed
+- Converted NITROS functions to void
+- NITROS initialization failure disables NITROS for node lifetime
+- Publishing status is solely dependent on standard publishing (removed NITROS)
+
 ## [4.7.4] - 2025-06-04
 ### Changed
 - Changed CUDA_CHECK in ScopedCudaDevice.h to indicate file and line for more verbose error logging
