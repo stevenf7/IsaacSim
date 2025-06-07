@@ -71,6 +71,8 @@ function setup_isaacsim_folder_links()
         { "tools/internal-licenses/*", bin_dir .. "/PACKAGE-LICENSES" },
         { "_build/PACKAGE-LICENSES", bin_dir .. "/PACKAGE-LICENSES" },
         { "tools/internal-licenses/omniverse-LICENSE.txt", bin_dir .. "/LICENSE.txt" },
+        -- Copy GMO docs so we can use them in the docs build
+        { "_build/target-deps/generic_model_output/%{platform}/%{config}/docs", "docs/source/generic_model_output" },
     }
 -- AUTOREMOVE: END
 
@@ -104,7 +106,6 @@ function setup_isaacsim_folder_links()
         { "source/scripts/vscode/%{platform}", "_build/%{platform}/%{config}/.vscode" },
         { "source/scripts/telemetry/*", "_build/%{platform}/%{config}/config" },
         { "source/scripts/setup_ros_env${shell_ext}", "_build/%{platform}/%{config}" },
-        { "_build/target-deps/generic_model_output/%{platform}/%{config}/docs", "docs/source/generic_model_output" },
     }
 end
 
