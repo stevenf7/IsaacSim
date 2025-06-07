@@ -18,15 +18,15 @@ from __future__ import annotations
 import weakref
 
 import carb
+import isaacsim.core.experimental.utils.backend as backend_utils
+import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.utils.numpy as numpy_utils
 import numpy as np
 import omni.physics.tensors
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.prims import get_prim_parent
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
-from . import _backend, _ops
 from .prim import _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID, _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
@@ -210,18 +210,20 @@ class RigidPrim(XformPrim):
             positions is not None or orientations is not None
         ), "Both 'positions' and 'orientations' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_transforms()  # shape: (N, 7), quaternion is xyzw
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             if positions is not None:
-                positions = _ops.broadcast_to(
+                positions = ops_utils.broadcast_to(
                     positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
                 )
                 wp.copy(data[indices, :3], positions)
             if orientations is not None:
-                orientations = _ops.broadcast_to(
+                orientations = ops_utils.broadcast_to(
                     orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=data.device
                 )
                 wp.copy(data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)], orientations)
@@ -260,11 +262,13 @@ class RigidPrim(XformPrim):
             ((1, 3), (1, 4))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_transforms()  # shape: (N, 7), quaternion is xyzw
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             return (
                 data[indices, :3].contiguous().to(self._device),
                 data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)].contiguous().to(self._device),
@@ -303,15 +307,17 @@ class RigidPrim(XformPrim):
             ((1, 3), (1, 4))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             world_positions, world_orientations = self.get_world_poses(indices=indices)
             parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 parent_transforms[i] = np.array(
-                    UsdGeom.Xformable(get_prim_parent(self.prims[index])).ComputeLocalToWorldTransform(
+                    UsdGeom.Xformable(self.prims[index].GetParent()).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype=np.float32,
@@ -319,8 +325,9 @@ class RigidPrim(XformPrim):
             local_translations, local_orientations = numpy_utils.transformations.get_local_from_world(
                 parent_transforms, world_positions.numpy(), world_orientations.numpy()
             )
-            return _ops.place(local_translations, device=self._device), _ops.place(
-                local_orientations, device=self._device
+            return (
+                ops_utils.place(local_translations, device=self._device),
+                ops_utils.place(local_orientations, device=self._device),
             )
         # USD/USDRT/Fabric API
         else:
@@ -366,25 +373,27 @@ class RigidPrim(XformPrim):
             translations is not None or orientations is not None
         ), "Both 'translations' and 'orientations' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd", "usdrt", "fabric"]))
+        backend = self._check_for_tensor_backend(
+            backend_utils.get_current_backend(["tensor", "usd", "usdrt", "fabric"])
+        )
         # Tensor API
         if backend == "tensor":
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             if translations is None or orientations is None:
                 current_translations, current_orientations = self.get_local_poses(indices=indices)
                 translations = current_translations if translations is None else translations
                 orientations = current_orientations if orientations is None else orientations
-            translations = _ops.broadcast_to(
+            translations = ops_utils.broadcast_to(
                 translations, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
             )
-            orientations = _ops.broadcast_to(
+            orientations = ops_utils.broadcast_to(
                 orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=self._device
             )
             # compute transforms
             parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 parent_transforms[i] = np.array(
-                    UsdGeom.Xformable(get_prim_parent(self.prims[index])).ComputeLocalToWorldTransform(
+                    UsdGeom.Xformable(self.prims[index].GetParent()).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype=np.float32,
@@ -432,29 +441,29 @@ class RigidPrim(XformPrim):
             linear_velocities is not None or angular_velocities is not None
         ), "Both 'linear_velocities' and 'angular_velocities' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_velocities()  # shape: (N, 6)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             if linear_velocities is not None:
-                linear_velocities = _ops.broadcast_to(
+                linear_velocities = ops_utils.broadcast_to(
                     linear_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
                 )
                 wp.copy(data[indices, :3], linear_velocities)
             if angular_velocities is not None:
-                angular_velocities = _ops.broadcast_to(
+                angular_velocities = ops_utils.broadcast_to(
                     angular_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
                 )
                 wp.copy(data[indices, 3:], angular_velocities)
             self._physics_rigid_body_view.set_velocities(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             if linear_velocities is not None:
-                linear_velocities = _ops.place(linear_velocities, device="cpu").numpy().reshape((-1, 3))
+                linear_velocities = ops_utils.place(linear_velocities, device="cpu").numpy().reshape((-1, 3))
             if angular_velocities is not None:
-                angular_velocities = _ops.place(angular_velocities, device="cpu").numpy().reshape((-1, 3))
+                angular_velocities = ops_utils.place(angular_velocities, device="cpu").numpy().reshape((-1, 3))
             for i, index in enumerate(indices.numpy()):
                 rigid_body_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.RigidBodyAPI)[0]
                 if linear_velocities is not None:
@@ -499,23 +508,24 @@ class RigidPrim(XformPrim):
             ((1, 3), (1, 3))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_velocities()  # shape: (N, 6)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             return data[indices, :3].contiguous().to(self._device), data[indices, 3:].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             linear_velocities = np.zeros((indices.shape[0], 3), dtype=np.float32)
             angular_velocities = np.zeros((indices.shape[0], 3), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 rigid_body_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.RigidBodyAPI)[0]
                 linear_velocities[i] = np.array(rigid_body_api.GetVelocityAttr().Get(), dtype=np.float32)
                 angular_velocities[i] = np.array(rigid_body_api.GetAngularVelocityAttr().Get(), dtype=np.float32)
-            return _ops.place(linear_velocities, device=self._device), _ops.place(
-                np.deg2rad(angular_velocities), device=self._device
+            return (
+                ops_utils.place(linear_velocities, device=self._device),
+                ops_utils.place(np.deg2rad(angular_velocities), device=self._device),
             )
 
     def apply_forces(
@@ -551,8 +561,8 @@ class RigidPrim(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        forces = _ops.broadcast_to(forces, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        forces = ops_utils.broadcast_to(forces, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device)
         wp.copy(data[indices], forces)
         self._physics_rigid_body_view.apply_forces(data, indices, is_global=not local_frame)
 
@@ -602,20 +612,22 @@ class RigidPrim(XformPrim):
         view_forces = None
         view_torques = None
         view_positions = None
-        indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
         if forces is not None:
             view_forces = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            forces = _ops.broadcast_to(forces, shape=(indices.shape[0], 3), dtype=wp.float32, device=view_forces.device)
+            forces = ops_utils.broadcast_to(
+                forces, shape=(indices.shape[0], 3), dtype=wp.float32, device=view_forces.device
+            )
             wp.copy(view_forces[indices], forces)
         if torques is not None:
             view_torques = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            torques = _ops.broadcast_to(
+            torques = ops_utils.broadcast_to(
                 torques, shape=(indices.shape[0], 3), dtype=wp.float32, device=view_torques.device
             )
             wp.copy(view_torques[indices], torques)
         if positions is not None:
             view_positions = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            positions = _ops.broadcast_to(
+            positions = ops_utils.broadcast_to(
                 positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=view_positions.device
             )
             wp.copy(view_positions[indices], positions)
@@ -657,25 +669,25 @@ class RigidPrim(XformPrim):
             (2, 1)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             if inverse:
                 data = self._physics_rigid_body_view.get_inv_masses()  # shape: (N, 1)
             else:
                 data = self._physics_rigid_body_view.get_masses()  # shape: (N, 1)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             return data[indices].contiguous().to(self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             masses = np.zeros((indices.shape[0], 1), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 mass_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.MassAPI)[0]
                 masses[i] = mass_api.GetMassAttr().Get()
             if inverse:
                 masses = 1.0 / (masses + 1e-8)
-            return _ops.place(masses, device=self._device)
+            return ops_utils.place(masses, device=self._device)
 
     def get_coms(self, *, indices: list | np.ndarray | wp.array | None = None) -> tuple[wp.array, wp.array]:
         """Get the center of mass (COM) pose (position and orientation) of the prims.
@@ -711,7 +723,7 @@ class RigidPrim(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_rigid_body_view.get_coms()  # shape: (N, 7), quaternion is xyzw
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return (
             data[indices, :3].contiguous().to(self._device),
             data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)].contiguous().to(self._device),
@@ -754,7 +766,7 @@ class RigidPrim(XformPrim):
             data = self._physics_rigid_body_view.get_inv_inertias()  # shape: (N, 9)
         else:
             data = self._physics_rigid_body_view.get_inertias()  # shape: (N, 9)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return data[indices].contiguous().to(self._device)
 
     def set_masses(
@@ -786,18 +798,18 @@ class RigidPrim(XformPrim):
             >>> prims.set_masses([20.0], indices=[0, 2])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_masses()  # shape: (N, 1)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            masses = _ops.broadcast_to(masses, shape=(indices.shape[0], 1), dtype=wp.float32, device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            masses = ops_utils.broadcast_to(masses, shape=(indices.shape[0], 1), dtype=wp.float32, device=data.device)
             wp.copy(data[indices], masses)
             self._physics_rigid_body_view.set_masses(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            masses = _ops.place(masses, device="cpu").numpy().reshape((-1, 1))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            masses = ops_utils.place(masses, device="cpu").numpy().reshape((-1, 1))
             for i, index in enumerate(indices.numpy()):
                 mass_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.MassAPI)[0]
                 mass_api.GetMassAttr().Set(masses[0 if masses.shape[0] == 1 else i].item())
@@ -837,8 +849,8 @@ class RigidPrim(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_rigid_body_view.get_inertias()  # shape: (N, 9)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-        inertias = _ops.broadcast_to(inertias, shape=(indices.shape[0], 9), dtype=wp.float32, device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+        inertias = ops_utils.broadcast_to(inertias, shape=(indices.shape[0], 9), dtype=wp.float32, device=data.device)
         wp.copy(data[indices], inertias)
         self._physics_rigid_body_view.set_inertias(data, indices)
 
@@ -882,12 +894,14 @@ class RigidPrim(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_rigid_body_view.get_coms()  # shape: (N, 7)
-        indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         if positions is not None:
-            positions = _ops.broadcast_to(positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device)
+            positions = ops_utils.broadcast_to(
+                positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=data.device
+            )
             wp.copy(data[indices, :3], positions)
         if orientations is not None:
-            orientations = _ops.broadcast_to(
+            orientations = ops_utils.broadcast_to(
                 orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=data.device
             )
             wp.copy(data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)], orientations)
@@ -923,8 +937,8 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        densities = _ops.place(densities, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        densities = ops_utils.place(densities, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             mass_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.MassAPI)[0]
             mass_api.GetDensityAttr().Set(densities[0 if densities.shape[0] == 1 else i].item())
@@ -963,12 +977,12 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         densities = np.zeros(shape=(indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             mass_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.MassAPI)[0]
             densities[i] = mass_api.GetDensityAttr().Get()
-        return _ops.place(densities, device=self._device)
+        return ops_utils.place(densities, device=self._device)
 
     def set_sleep_thresholds(
         self,
@@ -1002,8 +1016,8 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        thresholds = _ops.place(thresholds, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        thresholds = ops_utils.place(thresholds, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             rigid_body_api = RigidPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxRigidBodyAPI)[0]
             rigid_body_api.GetSleepThresholdAttr().Set(thresholds[0 if thresholds.shape[0] == 1 else i].item())
@@ -1041,12 +1055,12 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         thresholds = np.zeros(shape=(indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             rigid_body_api = RigidPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxRigidBodyAPI)[0]
             thresholds[i] = rigid_body_api.GetSleepThresholdAttr().Get()
-        return _ops.place(thresholds, device=self._device)
+        return ops_utils.place(thresholds, device=self._device)
 
     def set_enabled_rigid_bodies(
         self,
@@ -1076,20 +1090,20 @@ class RigidPrim(XformPrim):
             >>> prims.set_enabled_rigid_bodies([True])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_disable_simulations()  # shape: (N, 1)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            enabled = _ops.place(enabled, dtype=wp.uint8, device=data.device).reshape((-1, 1))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            enabled = ops_utils.place(enabled, dtype=wp.uint8, device=data.device).reshape((-1, 1))
             disabled = np.logical_not(enabled.numpy()).astype(np.uint8)  # negate values
-            disabled = _ops.broadcast_to(disabled, shape=(indices.shape[0], 1), dtype=wp.uint8, device=data.device)
+            disabled = ops_utils.broadcast_to(disabled, shape=(indices.shape[0], 1), dtype=wp.uint8, device=data.device)
             wp.copy(data[indices], disabled)
             self._physics_rigid_body_view.set_disable_simulations(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
             for i, index in enumerate(indices.numpy()):
                 rigid_body_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.RigidBodyAPI)[0]
                 rigid_body_api.GetRigidBodyEnabledAttr().Set(bool(enabled[0 if enabled.shape[0] == 1 else i].item()))
@@ -1123,21 +1137,21 @@ class RigidPrim(XformPrim):
              [ True]]
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_disable_simulations()  # shape: (N, 1)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             enabled = np.logical_not(data[indices].contiguous().numpy()).astype(np.bool_)  # negate values
-            return _ops.place(enabled, device=self._device)
+            return ops_utils.place(enabled, device=self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
             for i, index in enumerate(indices.numpy()):
                 rigid_body_api = RigidPrim.ensure_api([self.prims[index]], UsdPhysics.RigidBodyAPI)[0]
                 enabled[i] = rigid_body_api.GetRigidBodyEnabledAttr().Get()
-            return _ops.place(enabled, device=self._device)
+            return ops_utils.place(enabled, device=self._device)
 
     def set_enabled_gravities(
         self,
@@ -1170,20 +1184,20 @@ class RigidPrim(XformPrim):
             >>> prims.set_enabled_gravities([False], indices=[0, 2])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_disable_gravities()  # shape: (N, 1)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
-            enabled = _ops.place(enabled, dtype=wp.uint8, device=data.device).reshape((-1, 1))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
+            enabled = ops_utils.place(enabled, dtype=wp.uint8, device=data.device).reshape((-1, 1))
             disabled = np.logical_not(enabled.numpy()).astype(np.uint8)  # negate values
-            disabled = _ops.broadcast_to(disabled, shape=(indices.shape[0], 1), dtype=wp.uint8, device=data.device)
+            disabled = ops_utils.broadcast_to(disabled, shape=(indices.shape[0], 1), dtype=wp.uint8, device=data.device)
             wp.copy(data[indices], disabled)
             self._physics_rigid_body_view.set_disable_gravities(data, indices)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
             for i, index in enumerate(indices.numpy()):
                 rigid_body_api = RigidPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxRigidBodyAPI)[0]
                 rigid_body_api.GetDisableGravityAttr().Set(not bool(enabled[0 if enabled.shape[0] == 1 else i].item()))
@@ -1218,21 +1232,21 @@ class RigidPrim(XformPrim):
              [ True]]
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = self._check_for_tensor_backend(_backend.get_current_backend(["tensor", "usd"]))
+        backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
             data = self._physics_rigid_body_view.get_disable_gravities()  # shape: (N, 1)
-            indices = _ops.resolve_indices(indices, count=len(self), device=data.device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             enabled = np.logical_not(data[indices].contiguous().numpy()).astype(np.bool_)  # negate values
-            return _ops.place(enabled, device=self._device)
+            return ops_utils.place(enabled, device=self._device)
         # USD API
         else:
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
             for i, index in enumerate(indices.numpy()):
                 rigid_body_api = RigidPrim.ensure_api([self.prims[index]], PhysxSchema.PhysxRigidBodyAPI)[0]
                 enabled[i] = not rigid_body_api.GetDisableGravityAttr().Get()
-            return _ops.place(enabled, device=self._device)
+            return ops_utils.place(enabled, device=self._device)
 
     def set_default_state(
         self,
@@ -1267,7 +1281,7 @@ class RigidPrim(XformPrim):
             AssertionError: If prims are non-root articulation links.
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
         # update default values
         # - positions and orientations
         if positions is not None or orientations is not None:
@@ -1276,7 +1290,7 @@ class RigidPrim(XformPrim):
         if linear_velocities is not None:
             if self._default_linear_velocities is None:
                 self._default_linear_velocities = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            linear_velocities = _ops.broadcast_to(
+            linear_velocities = ops_utils.broadcast_to(
                 linear_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_linear_velocities[indices], linear_velocities)
@@ -1284,7 +1298,7 @@ class RigidPrim(XformPrim):
         if angular_velocities is not None:
             if self._default_angular_velocities is None:
                 self._default_angular_velocities = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            angular_velocities = _ops.broadcast_to(
+            angular_velocities = ops_utils.broadcast_to(
                 angular_velocities, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_angular_velocities[indices], angular_velocities)
@@ -1313,7 +1327,7 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         if indices is not None:
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
         # get default values
         # - positions and orientations
         default_positions, default_orientations = super().get_default_state(indices=indices)
@@ -1327,7 +1341,7 @@ class RigidPrim(XformPrim):
             default_angular_velocities = default_angular_velocities[indices].contiguous()
         return default_positions, default_orientations, default_linear_velocities, default_angular_velocities
 
-    def reset_to_default_state(self) -> None:
+    def reset_to_default_state(self, *, warn_on_non_default_state: bool = False) -> None:
         """Reset the prims to the specified default state.
 
         Backends: :guilabel:`tensor`, :guilabel:`usd`.
@@ -1342,7 +1356,10 @@ class RigidPrim(XformPrim):
         .. warning::
 
             This method has no effect on non-root articulation links or when no default state is set.
-            In this case, a warning message is logged.
+            In this case, a warning message is logged if ``warn_on_non_default_state`` is ``True``.
+
+        Args:
+            warn_on_non_default_state: Whether to log a warning message when no default state is set.
 
         Raises:
             AssertionError: Wrapped prims are not valid.
@@ -1384,15 +1401,17 @@ class RigidPrim(XformPrim):
         if self._default_positions is not None or self._default_orientations is not None:
             self.set_world_poses(self._default_positions, self._default_orientations)
         else:
-            carb.log_warn(
-                "No default positions or orientations to reset. Call '.set_default_state(..)' first to initialize them"
-            )
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default positions or orientations to reset. Call '.set_default_state(..)' first to initialize them"
+                )
         if self._default_linear_velocities is not None or self._default_angular_velocities is not None:
             self.set_velocities(self._default_linear_velocities, self._default_angular_velocities)
         else:
-            carb.log_warn(
-                "No default linear or angular velocities to reset. Call '.set_default_state(..)' first to initialize them"
-            )
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default linear or angular velocities to reset. Call '.set_default_state(..)' first to initialize them"
+                )
 
     """
     Internal methods.
@@ -1401,8 +1420,8 @@ class RigidPrim(XformPrim):
     def _check_for_tensor_backend(self, backend: str, *, fallback_backend: str = "usd") -> str:
         """Check if the tensor backend is valid."""
         if backend == "tensor" and not self.is_physics_tensor_entity_valid():
-            if _backend.is_backend_set():
-                if _backend.should_raise_on_fallback():
+            if backend_utils.is_backend_set():
+                if backend_utils.should_raise_on_fallback():
                     raise RuntimeError(
                         f"Physics tensor entity is not valid. Fallback set to '{fallback_backend}' backend."
                     )

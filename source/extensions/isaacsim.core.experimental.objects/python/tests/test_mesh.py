@@ -15,10 +15,10 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
+import omni.kit.commands
 import omni.kit.test
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.objects import Mesh
 from isaacsim.core.experimental.prims.tests.common import (

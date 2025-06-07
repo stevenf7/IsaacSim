@@ -17,11 +17,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
+import omni.kit.commands
 import warp as wp
-from isaacsim.core.experimental.prims import GeomPrim, Prim, RigidPrim, XformPrim
-from isaacsim.core.experimental.prims.impl import _ops
+from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Usd, UsdGeom, Vt
 
@@ -107,8 +108,8 @@ class Mesh(XformPrim):
         reset_xform_op_properties: bool = False,
     ) -> None:
         self._geoms = []
-        stage = omni.usd.get_context().get_stage()
-        existent_paths, nonexistent_paths = Prim.resolve_paths(paths)
+        stage = stage_utils.get_current_stage(backend="usd")
+        existent_paths, nonexistent_paths = XformPrim.resolve_paths(paths)
         # get meshes
         if existent_paths:
             paths = existent_paths
@@ -245,8 +246,8 @@ class Mesh(XformPrim):
             >>> print(result)
             [False  True]
         """
-        stage = omni.usd.get_context().get_stage()
-        return _ops.place(
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
             [
                 (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdGeom.Mesh)
                 for item in (paths if isinstance(paths, (list, tuple)) else [paths])
@@ -271,20 +272,18 @@ class Mesh(XformPrim):
 
         .. code-block:: python
 
-            >>> import omni.usd
+            >>> import isaacsim.core.experimental.utils.stage as stage_utils
             >>> from isaacsim.core.experimental.objects import Mesh
             >>>
             >>> # given a USD stage with the prims at paths /World, /World/A (Mesh)
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> stage.DefinePrim(f"/World", "Xform")  # doctest: +NO_CHECK
-            >>> stage.DefinePrim(f"/World/A", "Mesh")  # doctest: +NO_CHECK
+            >>> stage_utils.define_prim(f"/World/A", "Mesh")  # doctest: +NO_CHECK
             >>>
             >>> # fetch mesh instances
             >>> Mesh.fetch_instances(["/World", "/World/A"])
             [None, <isaacsim.core.experimental.objects.impl.mesh.Mesh object at 0x...>]
         """
         instances = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             prim = stage.GetPrimAtPath(item) if isinstance(item, str) else item
             if Mesh.are_of_type(prim).numpy().item():
@@ -321,9 +320,9 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         for i, index in enumerate(indices.numpy()):
-            data = _ops.place(points[0 if len(points) == 1 else i], device="cpu").numpy().reshape((-1, 3))
+            data = ops_utils.place(points[0 if len(points) == 1 else i], device="cpu").numpy().reshape((-1, 3))
             self.geoms[index].GetPointsAttr().Set(Vt.Vec3fArray(data.tolist()))
 
     def get_points(self, *, indices: list | np.ndarray | wp.array | None = None) -> list[wp.array]:
@@ -351,13 +350,13 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = []
         for index in indices.numpy():
             points = self.geoms[index].GetPointsAttr().Get()
             if points is None:
                 points = []
-            data.append(_ops.place(np.array(points), device=self._device))
+            data.append(ops_utils.place(np.array(points), device=self._device))
         return data
 
     def set_normals(
@@ -389,9 +388,9 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         for i, index in enumerate(indices.numpy()):
-            data = _ops.place(normals[0 if len(normals) == 1 else i], device="cpu").numpy().reshape((-1, 3))
+            data = ops_utils.place(normals[0 if len(normals) == 1 else i], device="cpu").numpy().reshape((-1, 3))
             self.geoms[index].GetNormalsAttr().Set(Vt.Vec3fArray(data.tolist()))
 
     def get_normals(self, *, indices: list | np.ndarray | wp.array | None = None) -> list[wp.array]:
@@ -419,10 +418,10 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = []
         for index in indices.numpy():
-            data.append(_ops.place(np.array(self.geoms[index].GetNormalsAttr().Get()), device=self._device))
+            data.append(ops_utils.place(np.array(self.geoms[index].GetNormalsAttr().Get()), device=self._device))
         return data
 
     def set_face_specs(
@@ -477,17 +476,17 @@ class Mesh(XformPrim):
         )
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if vertex_indices is not None:
-            vertex_indices = [_ops.place(item, device="cpu").numpy().flatten() for item in vertex_indices]
+            vertex_indices = [ops_utils.place(item, device="cpu").numpy().flatten() for item in vertex_indices]
         if vertex_counts is not None:
-            vertex_counts = [_ops.place(item, device="cpu").numpy().flatten() for item in vertex_counts]
+            vertex_counts = [ops_utils.place(item, device="cpu").numpy().flatten() for item in vertex_counts]
         if varying_linear_interpolations is not None:
             varying_linear_interpolations = np.broadcast_to(
                 np.array(varying_linear_interpolations, dtype=object), (indices.shape[0],)
             )
         if hole_indices is not None:
-            hole_indices = [_ops.place(item, device="cpu").numpy().flatten() for item in hole_indices]
+            hole_indices = [ops_utils.place(item, device="cpu").numpy().flatten() for item in hole_indices]
         for i, index in enumerate(indices.numpy()):
             geom = self.geoms[index]
             if vertex_indices is not None:
@@ -543,14 +542,14 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         vertex_indices, vertex_counts, varying_linear_interpolation, hole_indices = [], [], [], []
         for index in indices.numpy():
             geom = self.geoms[index]
-            vertex_indices.append(_ops.place(np.array(geom.GetFaceVertexIndicesAttr().Get()), device=self._device))
-            vertex_counts.append(_ops.place(np.array(geom.GetFaceVertexCountsAttr().Get()), device=self._device))
+            vertex_indices.append(ops_utils.place(np.array(geom.GetFaceVertexIndicesAttr().Get()), device=self._device))
+            vertex_counts.append(ops_utils.place(np.array(geom.GetFaceVertexCountsAttr().Get()), device=self._device))
             varying_linear_interpolation.append(geom.GetFaceVaryingLinearInterpolationAttr().Get())
-            hole_indices.append(_ops.place(np.array(geom.GetHoleIndicesAttr().Get()), device=self._device))
+            hole_indices.append(ops_utils.place(np.array(geom.GetHoleIndicesAttr().Get()), device=self._device))
         return vertex_indices, vertex_counts, varying_linear_interpolation, hole_indices
 
     def set_crease_specs(
@@ -599,10 +598,10 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        crease_indices = [_ops.place(item, device="cpu").numpy().flatten() for item in crease_indices]
-        crease_lengths = [_ops.place(item, device="cpu").numpy().flatten() for item in crease_lengths]
-        crease_sharpnesses = [_ops.place(item, device="cpu").numpy().flatten() for item in crease_sharpnesses]
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        crease_indices = [ops_utils.place(item, device="cpu").numpy().flatten() for item in crease_indices]
+        crease_lengths = [ops_utils.place(item, device="cpu").numpy().flatten() for item in crease_lengths]
+        crease_sharpnesses = [ops_utils.place(item, device="cpu").numpy().flatten() for item in crease_sharpnesses]
         for i, index in enumerate(indices.numpy()):
             crease_index = crease_indices[0 if len(crease_indices) == 1 else i]
             crease_length = crease_lengths[0 if len(crease_lengths) == 1 else i]
@@ -652,13 +651,15 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         crease_indices, crease_lengths, crease_sharpnesses = [], [], []
         for index in indices.numpy():
             geom = self.geoms[index]
-            crease_indices.append(_ops.place(np.array(geom.GetCreaseIndicesAttr().Get()), device=self._device))
-            crease_lengths.append(_ops.place(np.array(geom.GetCreaseLengthsAttr().Get()), device=self._device))
-            crease_sharpnesses.append(_ops.place(np.array(geom.GetCreaseSharpnessesAttr().Get()), device=self._device))
+            crease_indices.append(ops_utils.place(np.array(geom.GetCreaseIndicesAttr().Get()), device=self._device))
+            crease_lengths.append(ops_utils.place(np.array(geom.GetCreaseLengthsAttr().Get()), device=self._device))
+            crease_sharpnesses.append(
+                ops_utils.place(np.array(geom.GetCreaseSharpnessesAttr().Get()), device=self._device)
+            )
         return crease_indices, crease_lengths, crease_sharpnesses
 
     def set_corner_specs(
@@ -694,10 +695,10 @@ class Mesh(XformPrim):
             >>> prims.set_corner_specs(corner_indices=[[1, 2]], corner_sharpnesses=[[5.0, 10.0]], indices=[1])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        corner_indices = [_ops.place(item, device="cpu").numpy().flatten() for item in corner_indices]
-        corner_sharpnesses = [_ops.place(item, device="cpu").numpy().flatten() for item in corner_sharpnesses]
+        corner_indices = [ops_utils.place(item, device="cpu").numpy().flatten() for item in corner_indices]
+        corner_sharpnesses = [ops_utils.place(item, device="cpu").numpy().flatten() for item in corner_sharpnesses]
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         for i, index in enumerate(indices.numpy()):
             corner_index = corner_indices[0 if len(corner_indices) == 1 else i]
             corner_sharpness = corner_sharpnesses[0 if len(corner_sharpnesses) == 1 else i]
@@ -735,12 +736,14 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         corner_indices, corner_sharpnesses = [], []
         for index in indices.numpy():
             geom = self.geoms[index]
-            corner_indices.append(_ops.place(np.array(geom.GetCornerIndicesAttr().Get()), device=self._device))
-            corner_sharpnesses.append(_ops.place(np.array(geom.GetCornerSharpnessesAttr().Get()), device=self._device))
+            corner_indices.append(ops_utils.place(np.array(geom.GetCornerIndicesAttr().Get()), device=self._device))
+            corner_sharpnesses.append(
+                ops_utils.place(np.array(geom.GetCornerSharpnessesAttr().Get()), device=self._device)
+            )
         return corner_indices, corner_sharpnesses
 
     def set_subdivision_specs(
@@ -786,7 +789,7 @@ class Mesh(XformPrim):
         )
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         for i, index in enumerate(indices.numpy()):
             geom = self.geoms[index]
             if subdivision_schemes is not None:
@@ -835,7 +838,7 @@ class Mesh(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         subdivision_schemes, interpolate_boundaries, triangle_subdivision_rules = [], [], []
         for index in indices.numpy():
             geom = self.geoms[index]

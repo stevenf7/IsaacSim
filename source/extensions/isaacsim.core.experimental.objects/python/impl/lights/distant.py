@@ -15,10 +15,10 @@
 
 from __future__ import annotations
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Usd, UsdLux
 
@@ -83,7 +83,7 @@ class DistantLight(Light):
         reset_xform_op_properties: bool = False,
     ) -> None:
         self._lights = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Light.resolve_paths(paths)
         # get lights
         if existent_paths:
@@ -143,8 +143,8 @@ class DistantLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        angles = _ops.place(angles, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        angles = ops_utils.place(angles, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.lights[index].GetAngleAttr().Set(angles[0 if angles.shape[0] == 1 else i].item())
 
@@ -178,11 +178,11 @@ class DistantLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.lights[index].GetAngleAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     """
     Static methods.
@@ -213,8 +213,8 @@ class DistantLight(Light):
             >>> print(result)
             [False  True]
         """
-        stage = omni.usd.get_context().get_stage()
-        return _ops.place(
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
             [
                 (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdLux.DistantLight)
                 for item in (paths if isinstance(paths, (list, tuple)) else [paths])

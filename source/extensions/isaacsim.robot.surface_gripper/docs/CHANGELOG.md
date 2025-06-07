@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.2.0] - 2025-06-06
+### Changed
+- Update source code to use ops from the experimental core utils extension
+
 ## [3.1.5] - 2025-06-03
 ### Changed
 - Fix incorrect licenses and add missing licenses

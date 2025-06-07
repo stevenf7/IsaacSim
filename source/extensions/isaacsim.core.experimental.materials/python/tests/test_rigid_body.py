@@ -15,10 +15,9 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 import omni.physxcommands
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.materials import RigidBodyMaterial
 from isaacsim.core.experimental.prims.tests.common import (
@@ -61,7 +60,7 @@ def parametrize(
                             if operation == "wrap":
                                 for i in range(max_num_prims):
                                     omni.physxcommands.AddRigidBodyMaterialCommand.execute(
-                                        stage=omni.usd.get_context().get_stage(),
+                                        stage=stage_utils.get_current_stage(),
                                         path=f"/World/A_{i}",
                                     )
                             # configure simulation manager

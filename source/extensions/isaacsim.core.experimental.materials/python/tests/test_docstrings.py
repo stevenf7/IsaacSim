@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
-import omni.usd
 from isaacsim.core.experimental.materials import (
     OmniGlassMaterial,
     OmniPbrMaterial,
@@ -33,6 +32,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
+        stage_utils.define_prim(f"/World", "Xform")
+        # configure simulation
         SimulationManager.set_physics_sim_device("cpu")
 
     async def tearDown(self):
@@ -42,35 +43,19 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     # --------------------------------------------------------------------
 
     async def test_physics_material_rigid_body_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(RigidBodyMaterial)
         await self.assertDocTests(PhysicsMaterial)
 
     # --------------------------------------------------------------------
 
     async def test_visual_material_omni_glass_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(OmniGlassMaterial)
         await self.assertDocTests(VisualMaterial)
 
     async def test_visual_material_omni_pbr_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(OmniPbrMaterial)
         await self.assertDocTests(VisualMaterial)
 
     async def test_visual_material_preview_surface_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(PreviewSurfaceMaterial)
         await self.assertDocTests(VisualMaterial)

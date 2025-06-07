@@ -16,23 +16,19 @@
 from __future__ import annotations
 
 import carb
+import isaacsim.core.experimental.utils.backend as backend_utils
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.utils.numpy as numpy_utils
 import numpy as np
 import usdrt
 import usdrt.Gf
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.prims import (
-    get_prim_at_path,
-    get_prim_parent,
-    is_prim_non_root_articulation_link,
-    is_prim_path_valid,
-)
-from isaacsim.core.utils.stage import get_current_stage
-from isaacsim.core.utils.xforms import get_local_pose, get_world_pose
+from isaacsim.core.utils.prims import is_prim_non_root_articulation_link
 from pxr import Gf, Usd, UsdGeom, UsdShade
 
-from . import _backend, _fabric, _ops
+from . import _fabric
 from .prim import _MSG_PRIM_NOT_VALID, Prim
 
 
@@ -183,8 +179,8 @@ class XformPrim(Prim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        visibilities = _ops.place(visibilities, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        visibilities = ops_utils.place(visibilities, device="cpu").numpy().reshape((-1, 1))
         broadcast = visibilities.shape[0] == 1
         for i, index in enumerate(indices.numpy()):
             imageable = UsdGeom.Imageable(self.prims[index])
@@ -220,14 +216,14 @@ class XformPrim(Prim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         visibilities = np.zeros((indices.shape[0], 1), dtype="bool")
         for i, index in enumerate(indices.numpy()):
             visibilities[i, 0] = (
                 UsdGeom.Imageable(self.prims[index]).ComputeVisibility(Usd.TimeCode.Default())
                 != UsdGeom.Tokens.invisible
             )
-        return _ops.place(visibilities, device=self._device)
+        return ops_utils.place(visibilities, device=self._device)
 
     def get_default_state(
         self,
@@ -256,7 +252,7 @@ class XformPrim(Prim):
         ), "This view corresponds to non root links that are included in an articulation"
         # USD API
         if indices is not None:
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
         default_positions = self._default_positions
         if default_positions is not None and indices is not None:
             default_positions = default_positions[indices].contiguous()
@@ -300,18 +296,20 @@ class XformPrim(Prim):
             not self._non_root_articulation_link
         ), "This view corresponds to non root links that are included in an articulation"
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
         if positions is not None:
             if self._default_positions is None:
                 self._default_positions = wp.zeros((len(self), 3), dtype=wp.float32, device=self._device)
-            positions = _ops.broadcast_to(positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device)
+            positions = ops_utils.broadcast_to(
+                positions, shape=(indices.shape[0], 3), dtype=wp.float32, device=self._device
+            )
             wp.copy(self._default_positions[indices], positions)
         if orientations is not None:
             if self._default_orientations is None:
                 default_orientations = np.zeros((len(self), 4), dtype=np.float32)
                 default_orientations[:, 0] = 1.0
                 self._default_orientations = wp.array(default_orientations, device=self._device)
-            orientations = _ops.broadcast_to(
+            orientations = ops_utils.broadcast_to(
                 orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=self._device
             )
             wp.copy(self._default_orientations[indices], orientations)
@@ -354,14 +352,14 @@ class XformPrim(Prim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         # accommodate values and determine broadcast status
         if not isinstance(materials, (list, tuple)):
             materials = [materials]
         broadcast_materials = len(materials) == 1
         if weaker_than_descendants is None:
             weaker_than_descendants = [False]
-        weaker_than_descendants = _ops.place(weaker_than_descendants, device="cpu").numpy().reshape((-1, 1))
+        weaker_than_descendants = ops_utils.place(weaker_than_descendants, device="cpu").numpy().reshape((-1, 1))
         broadcast_weaker_than_descendants = weaker_than_descendants.shape[0] == 1
         # set values
         for i, index in enumerate(indices.numpy()):
@@ -403,7 +401,7 @@ class XformPrim(Prim):
         # USD API
         from isaacsim.core.experimental.materials import VisualMaterial  # defer imports to avoid circular dependencies
 
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         materials = []
         for index in indices.numpy():
             material_binding_api = XformPrim.ensure_api([self.prims[index]], UsdShade.MaterialBindingAPI)[0]
@@ -446,18 +444,23 @@ class XformPrim(Prim):
             ((1, 3), (1, 4))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = _backend.get_current_backend(["usd", "usdrt", "fabric"])
+        backend = backend_utils.get_current_backend(["usd", "usdrt", "fabric"])
         # USD API
         if backend == "usd":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
-                positions[i], orientations[i] = get_world_pose(self.paths[index])
-            return _ops.place(positions, device=self._device), _ops.place(orientations, device=self._device)
+                transform = UsdGeom.Xformable(self.prims[index]).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+                transform.Orthonormalize()
+                positions[i] = transform.ExtractTranslation()
+                orientations[i] = np.array(
+                    [transform.ExtractRotationQuat().GetReal(), *transform.ExtractRotationQuat().GetImaginary()]
+                )
+            return ops_utils.place(positions, device=self._device), ops_utils.place(orientations, device=self._device)
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             positions = np.zeros((indices.shape[0], 3), dtype=np.float32)
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             fabric_hierarchy = self._get_fabric_hierarchy()
@@ -466,7 +469,7 @@ class XformPrim(Prim):
                 quaternion = matrix.RemoveScaleShear().ExtractRotationQuat()
                 positions[i] = matrix.ExtractTranslation()
                 orientations[i] = np.array([quaternion.GetReal(), *quaternion.GetImaginary()])
-            return _ops.place(positions, device=self._device), _ops.place(orientations, device=self._device)
+            return ops_utils.place(positions, device=self._device), ops_utils.place(orientations, device=self._device)
         # Fabric API
         elif backend == "fabric":
             self._get_fabric_hierarchy().update_world_xforms()
@@ -482,7 +485,7 @@ class XformPrim(Prim):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
                 return
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             positions = fabric_data["cache"]["positions"]
             orientations = fabric_data["cache"]["orientations"]
             wp.launch(
@@ -540,30 +543,30 @@ class XformPrim(Prim):
             positions is not None or orientations is not None
         ), "Both 'positions' and 'orientations' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = _backend.get_current_backend(["usd", "usdrt", "fabric"])
+        backend = backend_utils.get_current_backend(["usd", "usdrt", "fabric"])
         # there is no Fabric implementation (world-matrix is read-only), fall back to USDRT
         if backend == "fabric":
             backend = "usdrt"
         # USD API
         if backend == "usd":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             # get position or orientation if undefined
             if positions is None or orientations is None:
                 current_positions, current_orientations = self.get_world_poses(indices=indices)
                 positions = current_positions if positions is None else positions
                 orientations = current_orientations if orientations is None else orientations
             # accommodate and broadcast the pose
-            positions = _ops.place(positions, device="cpu").numpy().reshape((-1, 3))
+            positions = ops_utils.place(positions, device="cpu").numpy().reshape((-1, 3))
             if positions.shape[0] == 1:
                 positions = positions.repeat(indices.shape[0], axis=0)
-            orientations = _ops.place(orientations, device="cpu").numpy().reshape((-1, 4))
+            orientations = ops_utils.place(orientations, device="cpu").numpy().reshape((-1, 4))
             if orientations.shape[0] == 1:
                 orientations = orientations.repeat(indices.shape[0], axis=0)
             # compute parent transform
             parent_transforms = np.zeros((indices.shape[0], 4, 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 parent_transforms[i] = np.array(
-                    UsdGeom.Xformable(get_prim_parent(self.prims[index])).ComputeLocalToWorldTransform(
+                    UsdGeom.Xformable(self.prims[index].GetParent()).ComputeLocalToWorldTransform(
                         Usd.TimeCode.Default()
                     ),
                     dtype=np.float32,
@@ -575,12 +578,12 @@ class XformPrim(Prim):
             self.set_local_poses(translations=local_translations, orientations=local_orientations, indices=indices)
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             if positions is not None:
-                positions = _ops.place(positions, device="cpu").numpy().reshape((-1, 3))
+                positions = ops_utils.place(positions, device="cpu").numpy().reshape((-1, 3))
                 broadcast_positions = positions.shape[0] == 1
             if orientations is not None:
-                orientations = _ops.place(orientations, device="cpu").numpy().reshape((-1, 4))
+                orientations = ops_utils.place(orientations, device="cpu").numpy().reshape((-1, 4))
                 broadcast_orientations = orientations.shape[0] == 1
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
@@ -624,18 +627,26 @@ class XformPrim(Prim):
             ((1, 3), (1, 4))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = _backend.get_current_backend(["usd", "usdrt", "fabric"])
+        backend = backend_utils.get_current_backend(["usd", "usdrt", "fabric"])
         # USD API
         if backend == "usd":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             translations = np.zeros((indices.shape[0], 3), dtype=np.float32)
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
-                translations[i], orientations[i] = get_local_pose(self.paths[index])
-            return _ops.place(translations, device=self._device), _ops.place(orientations, device=self._device)
+                transform = UsdGeom.Xformable(self.prims[index]).GetLocalTransformation(Usd.TimeCode.Default())
+                transform.Orthonormalize()
+                translations[i] = transform.ExtractTranslation()
+                orientations[i] = np.array(
+                    [transform.ExtractRotationQuat().GetReal(), *transform.ExtractRotationQuat().GetImaginary()]
+                )
+            return (
+                ops_utils.place(translations, device=self._device),
+                ops_utils.place(orientations, device=self._device),
+            )
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             translations = np.zeros((indices.shape[0], 3), dtype=np.float32)
             orientations = np.zeros((indices.shape[0], 4), dtype=np.float32)
             fabric_hierarchy = self._get_fabric_hierarchy()
@@ -644,7 +655,10 @@ class XformPrim(Prim):
                 quaternion = matrix.RemoveScaleShear().ExtractRotationQuat()
                 translations[i] = matrix.ExtractTranslation()
                 orientations[i] = np.array([quaternion.GetReal(), *quaternion.GetImaginary()])
-            return _ops.place(translations, device=self._device), _ops.place(orientations, device=self._device)
+            return (
+                ops_utils.place(translations, device=self._device),
+                ops_utils.place(orientations, device=self._device),
+            )
         # Fabric API
         elif backend == "fabric":
             # ensure fabric data and update selection if needed
@@ -659,7 +673,7 @@ class XformPrim(Prim):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
                 return
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             translations = fabric_data["cache"]["translations"]
             orientations = fabric_data["cache"]["orientations"]
             wp.launch(
@@ -717,18 +731,18 @@ class XformPrim(Prim):
             translations is not None or orientations is not None
         ), "Both 'translations' and 'orientations' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = _backend.get_current_backend(["usd", "usdrt", "fabric"])
+        backend = backend_utils.get_current_backend(["usd", "usdrt", "fabric"])
         # USD API
         if backend == "usd":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             # accommodate and broadcast the pose
             if translations is not None:
-                translations = _ops.place(translations, device="cpu").numpy().reshape((-1, 3))
+                translations = ops_utils.place(translations, device="cpu").numpy().reshape((-1, 3))
                 if translations.shape[0] == 1:
                     translations = translations.repeat(indices.shape[0], axis=0)
                 translations = translations.tolist()
             if orientations is not None:
-                orientations = _ops.place(orientations, device="cpu").numpy().reshape((-1, 4))
+                orientations = ops_utils.place(orientations, device="cpu").numpy().reshape((-1, 4))
                 if orientations.shape[0] == 1:
                     orientations = orientations.repeat(indices.shape[0], axis=0)
                 orientations = orientations.tolist()
@@ -749,13 +763,13 @@ class XformPrim(Prim):
                     xform_op.Set((Gf.Quatf if xform_op.GetTypeName() == "quatf" else Gf.Quatd)(*orientations[i]))
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             # accommodate and broadcast the pose
             if translations is not None:
-                translations = _ops.place(translations, device="cpu").numpy().reshape((-1, 3))
+                translations = ops_utils.place(translations, device="cpu").numpy().reshape((-1, 3))
                 broadcast_translations = translations.shape[0] == 1
             if orientations is not None:
-                orientations = _ops.place(orientations, device="cpu").numpy().reshape((-1, 4))
+                orientations = ops_utils.place(orientations, device="cpu").numpy().reshape((-1, 4))
                 broadcast_orientations = orientations.shape[0] == 1
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
@@ -782,12 +796,12 @@ class XformPrim(Prim):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
                 return
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             # accommodate and broadcast the pose
             if translations is not None:
-                translations = _ops.place(translations, dtype=wp.float32, device=self._device).reshape((-1, 3))
+                translations = ops_utils.place(translations, dtype=wp.float32, device=self._device).reshape((-1, 3))
             if orientations is not None:
-                orientations = _ops.place(orientations, dtype=wp.float32, device=self._device).reshape((-1, 4))
+                orientations = ops_utils.place(orientations, dtype=wp.float32, device=self._device).reshape((-1, 4))
             wp.launch(
                 _fabric.wk_compose_fabric_transformation_matrix_from_warp_arrays,
                 dim=(indices.shape[0]),
@@ -832,11 +846,11 @@ class XformPrim(Prim):
             >>> prims.set_local_scales(scales)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = _backend.get_current_backend(["usd", "usdrt", "fabric"])
+        backend = backend_utils.get_current_backend(["usd", "usdrt", "fabric"])
         # USD API
         if backend == "usd":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            scales = _ops.place(scales, device="cpu").numpy().reshape((-1, 3))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            scales = ops_utils.place(scales, device="cpu").numpy().reshape((-1, 3))
             broadcast = scales.shape[0] == 1
             scales = scales.tolist()
             for i, index in enumerate(indices.numpy()):
@@ -848,8 +862,8 @@ class XformPrim(Prim):
                 prim.GetAttribute("xformOp:scale").Set(Gf.Vec3d(*scales[0 if broadcast else i]))
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-            scales = _ops.place(scales, device="cpu").numpy().reshape((-1, 3))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+            scales = ops_utils.place(scales, device="cpu").numpy().reshape((-1, 3))
             broadcast = scales.shape[0] == 1
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
@@ -871,8 +885,8 @@ class XformPrim(Prim):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
                 return
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
-            scales = _ops.place(scales, dtype=wp.float32, device=self._device).reshape((-1, 3))
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
+            scales = ops_utils.place(scales, dtype=wp.float32, device=self._device).reshape((-1, 3))
             wp.launch(
                 _fabric.wk_compose_fabric_transformation_matrix_from_warp_arrays,
                 dim=(indices.shape[0]),
@@ -914,10 +928,10 @@ class XformPrim(Prim):
             (3, 3)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
-        backend = _backend.get_current_backend(["usd", "usdrt", "fabric"])
+        backend = backend_utils.get_current_backend(["usd", "usdrt", "fabric"])
         # USD API
         if backend == "usd":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             scales = np.zeros((indices.shape[0], 3), dtype=np.float32)
             for i, index in enumerate(indices.numpy()):
                 prim = self.prims[index]
@@ -926,16 +940,16 @@ class XformPrim(Prim):
                     "xformOp:scale" in property_names
                 ), f"Undefined 'xformOp:scale' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
                 scales[i] = np.array(prim.GetAttribute("xformOp:scale").Get(), dtype=np.float32)
-            return _ops.place(scales, device=self._device)
+            return ops_utils.place(scales, device=self._device)
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
-            indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+            indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
             scales = np.zeros((indices.shape[0], 3), dtype=np.float32)
             fabric_hierarchy = self._get_fabric_hierarchy()
             for i, index in enumerate(indices.numpy()):
                 transform = usdrt.Gf.Transform(fabric_hierarchy.get_local_xform(usdrt.Sdf.Path(self.paths[index])))
                 scales[i] = transform.GetScale()
-            return _ops.place(scales, device=self._device)
+            return ops_utils.place(scales, device=self._device)
         # Fabric API
         elif backend == "fabric":
             # ensure fabric data and update selection if needed
@@ -950,7 +964,7 @@ class XformPrim(Prim):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
                 return
-            indices = _ops.resolve_indices(indices, count=len(self), device=self._device)
+            indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             scales = fabric_data["cache"]["scales"]
             wp.launch(
                 _fabric.wk_decompose_fabric_transformation_matrix_to_warp_arrays,
@@ -1049,7 +1063,7 @@ class XformPrim(Prim):
         positions, orientations = self.get_world_poses()
         self.set_world_poses(positions=positions, orientations=orientations)
 
-    def reset_to_default_state(self) -> None:
+    def reset_to_default_state(self, *, warn_on_non_default_state: bool = False) -> None:
         """Reset the prims to the specified default state.
 
         Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
@@ -1063,7 +1077,10 @@ class XformPrim(Prim):
         .. warning::
 
             This method has no effect on non-root articulation links or when no default state is set.
-            In this case, a warning message is logged.
+            In this case, a warning message is logged if ``warn_on_non_default_state`` is ``True``.
+
+        Args:
+            warn_on_non_default_state: Whether to log a warning message when no default state is set.
 
         Raises:
             AssertionError: Wrapped prims are not valid.
@@ -1096,9 +1113,10 @@ class XformPrim(Prim):
         if self._default_positions is not None or self._default_orientations is not None:
             self.set_world_poses(self._default_positions, self._default_orientations)
         else:
-            carb.log_warn(
-                "No default positions or orientations to reset. Call '.set_default_state(..)' first to initialize them"
-            )
+            if warn_on_non_default_state:
+                carb.log_warn(
+                    "No default positions or orientations to reset. Call '.set_default_state(..)' first to initialize them"
+                )
 
     """
     Internal methods.
@@ -1107,7 +1125,7 @@ class XformPrim(Prim):
     def _get_fabric_hierarchy(self) -> usdrt.hierarchy.IFabricHierarchy:
         """Get the IFabricHierarchy interface."""
         if self._fabric_hierarchy is None:
-            self._fabric_stage = get_current_stage(fabric=True)
+            self._fabric_stage = stage_utils.get_current_stage(backend="fabric")
             self._fabric_hierarchy = usdrt.hierarchy.IFabricHierarchy().get_fabric_hierarchy(
                 self._fabric_stage.GetFabricId(), self._fabric_stage.GetStageIdAsStageId()
             )
@@ -1116,7 +1134,7 @@ class XformPrim(Prim):
     def _ensure_fabric_data(self, key: str) -> dict:
         """Ensure fabric-related data is initialized."""
         if self._fabric_view_index_attr is None:
-            self._fabric_stage = get_current_stage(fabric=True)
+            self._fabric_stage = stage_utils.get_current_stage(backend="fabric")
             # create fabric's view indices attribute
             self._fabric_view_index_attr = f"isaacsim:fabric:index:{hash(self)}"
             fabric_prims = [self._fabric_stage.GetPrimAtPath(path) for path in self._paths]

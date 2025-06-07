@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.0] - 2025-06-06
+### Changed
+- Update source code to use the experimental core utils API
+
 ## [0.1.3] - 2025-05-23
 ### Changed
 - rename test utils.py to common.py

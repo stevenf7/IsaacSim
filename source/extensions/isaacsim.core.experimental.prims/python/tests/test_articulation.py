@@ -15,14 +15,13 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.test
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims import Articulation, use_backend
+from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.experimental.utils.backend import use_backend
 from isaacsim.storage.native import get_assets_root_path
-from pxr import UsdPhysics
 
 from .common import (
     check_allclose,
@@ -41,12 +40,11 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
-    stage = omni.usd.get_context().get_stage()
-    stage.DefinePrim(f"/World", "Xform")
-    UsdPhysics.Scene.Define(stage, "/World/PhysicsScene")
+    stage_utils.define_prim(f"/World", "Xform")
+    stage_utils.define_prim(f"/World/PhysicsScene", "PhysicsScene")
     usd_path = f"{get_assets_root_path()}/{kwargs.get('usd_path', 'Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd')}"
     for i in range(max_num_prims):
-        stage_utils.add_reference_to_stage(usd_path=usd_path, prim_path=f"/World/A_{i}")
+        stage_utils.add_reference_to_stage(usd_path=usd_path, path=f"/World/A_{i}")
 
 
 async def play_stop_timeline():

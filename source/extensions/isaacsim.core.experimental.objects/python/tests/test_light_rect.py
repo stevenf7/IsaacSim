@@ -15,9 +15,10 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
+import omni.kit.commands
 import omni.kit.test
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.objects import RectLight as TargetLight
 from isaacsim.core.experimental.prims.tests.common import (
@@ -64,12 +65,11 @@ class TestRectLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_classes=[TargetLight], populate_stage_func=populate_stage)
     async def test_are_of_type(self, prim, num_prims, device, backend):
-        stage = omni.usd.get_context().get_stage()
         self.assertFalse(TargetLight.are_of_type("/World").numpy().item())
         self.assertTrue(TargetLight.are_of_type("/World/A_0").numpy().item())
         self.assertTrue(TargetLight.are_of_type(["/World/A_0"]).numpy().item())
-        self.assertTrue(TargetLight.are_of_type(stage.GetPrimAtPath("/World/A_0")).numpy().item())
-        self.assertTrue(TargetLight.are_of_type([stage.GetPrimAtPath("/World/A_0")]).numpy().item())
+        self.assertTrue(TargetLight.are_of_type(prim_utils.get_prim_at_path("/World/A_0")).numpy().item())
+        self.assertTrue(TargetLight.are_of_type([prim_utils.get_prim_at_path("/World/A_0")]).numpy().item())
 
     @parametrize(backends=["usd"], prim_classes=[TargetLight], populate_stage_func=populate_stage)
     async def test_widths(self, prim, num_prims, device, backend):

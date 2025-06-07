@@ -15,10 +15,10 @@
 
 from __future__ import annotations
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Usd, UsdLux
 
@@ -88,7 +88,7 @@ class CylinderLight(Light):
         reset_xform_op_properties: bool = False,
     ) -> None:
         self._lights = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Light.resolve_paths(paths)
         # get lights
         if existent_paths:
@@ -149,8 +149,8 @@ class CylinderLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        lengths = _ops.place(lengths, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        lengths = ops_utils.place(lengths, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.lights[index].GetLengthAttr().Set(lengths[0 if lengths.shape[0] == 1 else i].item())
 
@@ -184,11 +184,11 @@ class CylinderLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.lights[index].GetLengthAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_radii(
         self, radii: list | np.ndarray | wp.array, *, indices: list | np.ndarray | wp.array | None = None
@@ -217,8 +217,8 @@ class CylinderLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        radii = _ops.place(radii, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        radii = ops_utils.place(radii, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.lights[index].GetRadiusAttr().Set(radii[0 if radii.shape[0] == 1 else i].item())
 
@@ -252,11 +252,11 @@ class CylinderLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.lights[index].GetRadiusAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_enabled_treat_as_lines(
         self, enabled: list | np.ndarray | wp.array, *, indices: list | np.ndarray | wp.array | None = None
@@ -289,8 +289,8 @@ class CylinderLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.lights[index].GetTreatAsLineAttr().Set(bool(enabled[0 if enabled.shape[0] == 1 else i].item()))
 
@@ -325,11 +325,11 @@ class CylinderLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
         for i, index in enumerate(indices.numpy()):
             enabled[i] = self.lights[index].GetTreatAsLineAttr().Get()
-        return _ops.place(enabled, device=self._device)
+        return ops_utils.place(enabled, device=self._device)
 
     """
     Static methods.
@@ -360,8 +360,8 @@ class CylinderLight(Light):
             >>> print(result)
             [False  True]
         """
-        stage = omni.usd.get_context().get_stage()
-        return _ops.place(
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
             [
                 (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdLux.CylinderLight)
                 for item in (paths if isinstance(paths, (list, tuple)) else [paths])

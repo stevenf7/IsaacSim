@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-import omni.usd
+import isaacsim.core.experimental.utils.stage as stage_utils
 import warp as wp
 from isaacsim.core.experimental.prims import Prim
 from pxr import Usd, UsdShade
@@ -91,15 +91,13 @@ class PhysicsMaterial(Prim, ABC):
 
         .. code-block:: python
 
-            >>> import omni.usd
             >>> import omni.kit.commands
+            >>> import isaacsim.core.experimental.utils.stage as stage_utils
             >>> from isaacsim.core.experimental.materials import PhysicsMaterial
             >>>
             >>> # given a USD stage with the prims at paths /World, /World/A (USD Preview Surface)
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> stage.DefinePrim(f"/World", "Xform")  # doctest: +NO_CHECK
             >>> omni.kit.commands.execute(
-            ...     "AddRigidBodyMaterialCommand", stage=stage, path="/World/A"
+            ...     "AddRigidBodyMaterialCommand", stage=stage_utils.get_current_stage(), path="/World/A"
             ... )  # doctest: +NO_CHECK
             >>>
             >>> # fetch physics material instances
@@ -112,7 +110,7 @@ class PhysicsMaterial(Prim, ABC):
         classes = [RigidBodyMaterial]
 
         instances = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             prim = stage.GetPrimAtPath(item) if isinstance(item, str) else item
             instance = None

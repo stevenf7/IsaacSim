@@ -15,10 +15,10 @@
 
 from __future__ import annotations
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Usd, UsdLux
 
@@ -91,7 +91,7 @@ class RectLight(Light):
         reset_xform_op_properties: bool = False,
     ) -> None:
         self._lights = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Light.resolve_paths(paths)
         # get lights
         if existent_paths:
@@ -154,8 +154,8 @@ class RectLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        widths = _ops.place(widths, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        widths = ops_utils.place(widths, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.lights[index].GetWidthAttr().Set(widths[0 if widths.shape[0] == 1 else i].item())
 
@@ -189,11 +189,11 @@ class RectLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.lights[index].GetWidthAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_heights(
         self, heights: list | np.ndarray | wp.array, *, indices: list | np.ndarray | wp.array | None = None
@@ -222,8 +222,8 @@ class RectLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        heights = _ops.place(heights, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        heights = ops_utils.place(heights, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             self.lights[index].GetHeightAttr().Set(heights[0 if heights.shape[0] == 1 else i].item())
 
@@ -257,11 +257,11 @@ class RectLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.lights[index].GetHeightAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_texture_files(
         self, texture_files: str | list[str], *, indices: list | np.ndarray | wp.array | None = None
@@ -292,7 +292,7 @@ class RectLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         texture_files = [texture_files] if isinstance(texture_files, str) else texture_files
         texture_files = np.broadcast_to(np.array(texture_files, dtype=object), (indices.shape[0],))
         for i, index in enumerate(indices.numpy()):
@@ -325,7 +325,7 @@ class RectLight(Light):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = []
         for index in indices.numpy():
             texture_file = self.lights[index].GetTextureFileAttr().Get()
@@ -361,8 +361,8 @@ class RectLight(Light):
             >>> print(result)
             [False  True]
         """
-        stage = omni.usd.get_context().get_stage()
-        return _ops.place(
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
             [
                 (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdLux.RectLight)
                 for item in (paths if isinstance(paths, (list, tuple)) else [paths])

@@ -17,11 +17,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.usd
 import warp as wp
 from isaacsim.core.experimental.prims import Prim
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Sdf, Usd, UsdShade
 
@@ -210,13 +211,10 @@ class VisualMaterial(Prim, ABC):
 
         .. code-block:: python
 
-            >>> import omni.usd
             >>> import omni.kit.commands
             >>> from isaacsim.core.experimental.materials import VisualMaterial
             >>>
             >>> # given a USD stage with the prims at paths /World, /World/A (USD Preview Surface)
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> stage.DefinePrim(f"/World", "Xform")  # doctest: +NO_CHECK
             >>> omni.kit.commands.execute(
             ...     "CreatePreviewSurfaceMaterialPrim",
             ...     mtl_path=f"/World/A",
@@ -235,7 +233,7 @@ class VisualMaterial(Prim, ABC):
         classes = [OmniGlassMaterial, OmniPbrMaterial, PreviewSurfaceMaterial]
 
         instances = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             prim = stage.GetPrimAtPath(item) if isinstance(item, str) else item
             instance = None
@@ -262,7 +260,7 @@ class VisualMaterial(Prim, ABC):
         sdf_type, sdf_type_class = self._parse_sdf_type(type_name)
         place_func, _, set_func, _, _ = self._get_sdf_type_spec(sdf_type, sdf_type_class)
         # set values
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         values = place_func(values, indices)
         for i, index in enumerate(indices.numpy()):
             shader = self.shaders[index]
@@ -277,7 +275,7 @@ class VisualMaterial(Prim, ABC):
         sdf_type, sdf_type_class = self._parse_sdf_type(type_name)
         _, create_func, _, get_func, return_func = self._get_sdf_type_spec(sdf_type, sdf_type_class)
         # get values
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = create_func(indices)
         for i, index in enumerate(indices.numpy()):
             shader = self.shaders[index]
@@ -356,19 +354,19 @@ class VisualMaterial(Prim, ABC):
         if hasattr(sdf_type_class, "__isGfVec"):
             dimension = sdf_type_class.dimension
             dtype = {"d": np.float64, "f": np.float32, "h": np.int32, "i": np.int32}[sdf_type.type.typeName[-1]]
-            place_func = lambda data, indices: _ops.place(data, device="cpu").numpy().reshape((-1, dimension))
+            place_func = lambda data, indices: ops_utils.place(data, device="cpu").numpy().reshape((-1, dimension))
             create_func = lambda indices: np.zeros((indices.shape[0], dimension), dtype=dtype)
             set_func = lambda data, index: sdf_type_class(*data[0 if data.shape[0] == 1 else index].tolist())
             get_func = lambda value: np.array(value, dtype=dtype)
-            return_func = lambda data, device: _ops.place(data, device=device)
+            return_func = lambda data, device: ops_utils.place(data, device=device)
         # bool, int, float
         elif sdf_type_class in [bool, int, float]:
             dtype = {bool: np.bool_, int: np.int32, float: np.float32}[sdf_type_class]
-            place_func = lambda data, indices: _ops.place(data, device="cpu").numpy().reshape((-1, 1))
+            place_func = lambda data, indices: ops_utils.place(data, device="cpu").numpy().reshape((-1, 1))
             create_func = lambda indices: np.zeros((indices.shape[0], 1), dtype=dtype)
             set_func = lambda data, index: sdf_type_class(data[0 if data.shape[0] == 1 else index].item())
             get_func = lambda value: sdf_type_class(value)
-            return_func = lambda data, device: _ops.place(data, device=device)
+            return_func = lambda data, device: ops_utils.place(data, device=device)
         # Asset
         elif sdf_type == Sdf.ValueTypeNames.Asset:
             place_func = lambda data, indices: np.broadcast_to(

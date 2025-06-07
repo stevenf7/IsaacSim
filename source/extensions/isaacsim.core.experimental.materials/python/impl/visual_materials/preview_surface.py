@@ -15,10 +15,10 @@
 
 from __future__ import annotations
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.commands
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from pxr import Sdf, Usd
 
 from .visual_material import VisualMaterial
@@ -122,7 +122,7 @@ class PreviewSurfaceMaterial(VisualMaterial):
         # get or create prims
         self._shaders = []
         self._materials = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = self.resolve_paths(paths)
         # - get prims
         if existent_paths:
@@ -202,7 +202,7 @@ class PreviewSurfaceMaterial(VisualMaterial):
              [ True]]
         """
         data = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             status = False
             path = item if isinstance(item, str) else item.GetPath()
@@ -211,4 +211,4 @@ class PreviewSurfaceMaterial(VisualMaterial):
                 shader_id = shader.GetIdAttr().Get()
                 status = shader_id == "UsdPreviewSurface"
             data.append(status)
-        return _ops.place(data, device="cpu").reshape((-1, 1))
+        return ops_utils.place(data, device="cpu").reshape((-1, 1))

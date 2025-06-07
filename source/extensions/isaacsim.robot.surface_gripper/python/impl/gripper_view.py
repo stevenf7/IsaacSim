@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import numpy as np
 import warp as wp
 from isaacsim.core.experimental.prims import XformPrim
-from isaacsim.core.experimental.prims.impl import _ops
 from usd.schema.isaac import robot_schema
 
 
@@ -93,7 +93,7 @@ class GripperView(XformPrim):
             list[str]: Status of the surface grippers ("Open", "Closing", or "Closed"). Shape (M,).
         """
         gripper_status = []
-        indices = _ops.resolve_indices(indices, count=self.count, device="cpu").numpy()
+        indices = ops_utils.resolve_indices(indices, count=self.count, device="cpu").numpy()
         for i in indices:
             gripper_status.append(self.surface_gripper_interface.get_gripper_status(self.prims[i].GetPath().pathString))
 
@@ -119,7 +119,7 @@ class GripperView(XformPrim):
         shear_force_limit = []
         retry_interval = []
 
-        indices = _ops.resolve_indices(indices, count=self.count, device="cpu").numpy()
+        indices = ops_utils.resolve_indices(indices, count=self.count, device="cpu").numpy()
         for i in indices:
             max_grip_distance.append(self.prims[i].GetAttribute(robot_schema.Attributes.MAX_GRIP_DISTANCE.name).Get())
             coaxial_force_limit.append(
@@ -150,7 +150,7 @@ class GripperView(XformPrim):
         if self.count != len(values):
             raise ValueError("Length of values must match number of grippers")
 
-        indices = _ops.resolve_indices(indices, count=self.count, device="cpu").numpy()
+        indices = ops_utils.resolve_indices(indices, count=self.count, device="cpu").numpy()
         for i in indices:
             # Ensure indice has a matching values
             if i >= len(values):
@@ -186,7 +186,7 @@ class GripperView(XformPrim):
             Exception: If the length of any properties does not match the number of encapsulated prims in the view.
             Exception: If a value in indices is larger then the number of encapsulated prims in the view.
         """
-        indices = _ops.resolve_indices(indices, count=self.count, device="cpu").numpy()
+        indices = ops_utils.resolve_indices(indices, count=self.count, device="cpu").numpy()
         # Setup max grip distance if provided
         if max_grip_distance is not None:
             # Ensure length of max_grip_distance matches number of gripper

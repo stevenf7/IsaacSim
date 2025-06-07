@@ -15,10 +15,9 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.commands
 import omni.kit.test
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.prims.tests.common import (
@@ -58,7 +57,6 @@ def parametrize(
                             # create new stage
                             await stage_utils.create_new_stage_async()
                             # define prims
-                            stage = omni.usd.get_context().get_stage()
                             if operation == "wrap":
                                 for i in range(max_num_prims):
                                     omni.kit.commands.execute(
