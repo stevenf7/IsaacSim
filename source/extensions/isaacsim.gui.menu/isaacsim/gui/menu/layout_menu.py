@@ -36,7 +36,9 @@ class LayoutMenuExtension:
                     ),
                     MenuLayout.Item("Occupancy Map Generation"),
                     MenuLayout.Item(
-                        "Spatial SDG", source="Layouts/Spatial SDG", source_search=LayoutSourceSearch.LOCAL_ONLY
+                        "Action and Event Data Generation",
+                        source="Layouts/Action and Event Data Generation",
+                        source_search=LayoutSourceSearch.LOCAL_ONLY,
                     ),
                     MenuLayout.Seperator("Save/Load"),
                     MenuLayout.Item("Save Layout", source="Window/Layout/Save Layout..."),

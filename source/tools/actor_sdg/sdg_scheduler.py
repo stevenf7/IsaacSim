@@ -36,7 +36,7 @@ import sys
 import numpy as np
 from isaacsim import SimulationApp
 
-BASE_EXP_PATH = os.path.join(os.environ["EXP_PATH"], "isaacsim.exp.spatial.sdg.base.kit")
+BASE_EXP_PATH = os.path.join(os.environ["EXP_PATH"], "isaacsim.exp.action_and_event_data_generation.base.kit")
 APP_CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
 
 

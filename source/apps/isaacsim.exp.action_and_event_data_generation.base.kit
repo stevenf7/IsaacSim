@@ -1,6 +1,6 @@
 [package]
-description = "Base Isaac Sim Spatial SDG App"
-title = "Isaac Sim Spatial SDG Base"
+description = "Base Isaac Sim Action and Event Data Generation App"
+title = "Isaac Sim Action and Event Data Generation Base"
 version = "0.1.4"
 keywords = ["experience", "app", "usd"]
 template_name = "spatial_sdg_base"
@@ -13,21 +13,21 @@ template_name = "spatial_sdg_base"
 "omni.kit.renderer.core" = {}
 "omni.kit.browser.sample" = {}	# needed by omni.warp
 
-# Spatial SDG extension additional dependencies
+# Action and Event Data Generation extension additional dependencies
 "omni.flowusd" = {}
 "omni.replicator.core" = {}
 "omni.anim.timeline" = {} # needed by sdg scheduler
 "omni.kit.scripting" = {}
 
-# Spatial SDG Headless Extensions
+# Action and Event Data Generation Headless Extensions
 #############################################
-"omni.metropolis.utils" = { version = "0.1.10", exact = true }
+"omni.metropolis.utils" = { version = "0.1.12", exact = true }
 "omni.anim.people" = { version = "0.7.5", exact = true }
 "isaacsim.anim.robot" = { version = "0.0.8", exact = true }
 "isaacsim.sensors.rtx.placement" = { version = "0.6.7", exact = true }
 "isaacsim.replicator.agent.core" = { version = "0.7.12", exact = true }
-"isaacsim.replicator.caption.core" = { version = "0.0.25", exact = true }
-"isaacsim.replicator.object" = { version = "0.4.6", exact = true }
+"isaacsim.replicator.caption.core" = { version = "0.0.27", exact = true }
+"isaacsim.replicator.object" = { version = "0.4.7", exact = true }
 
 [settings]
 # to pass tests on Gitlab CI - shader compilation progress bar
