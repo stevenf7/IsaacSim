@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.9] - 2025-06-08
+### Changed
+- Update sdg pipeline golden images on windows
+
 ## [1.1.8] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
