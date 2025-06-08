@@ -551,7 +551,6 @@ end_marker = "# FOR DEVELOPMENT - END #"
 
 [[repo_stage_for_github.trim]]
 files = [
-    "tools/packman/config.packman.xml",
     "deps/repo-deps.packman.xml",
 ]
 begin_marker = "<!-- AUTOREMOVE: BEGIN -->"

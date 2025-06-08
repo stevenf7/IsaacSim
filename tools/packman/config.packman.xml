@@ -1,3 +1,4 @@
+<!-- # FOR DEVELOPMENT # -->
 <config remotes="cloudfront urm">
     <remote2 name="cloudfront">
         <transport actions="download" protocol="http" packageLocation="d4i3qtqj3r0z5.cloudfront.net/${name}@${version}" />
@@ -9,3 +10,11 @@
         <transport actions="download" protocol="https" packageLocation="urm.nvidia.com/artifactory/ct-omniverse-generic/pkgs/${name}/${name}@${version}" />
     </remote2>
 </config>
+<!-- # FOR PRODUCTION # -->
+<!-- This file needs to be manually updated in the release branch for production -->
+<!-- <config remotes="cloudfront">
+    <remote2 name="cloudfront">
+        <transport actions="download" protocol="http" packageLocation="d4i3qtqj3r0z5.cloudfront.net/${name}@${version}" />
+        <transport actions="upload" protocol="s3" packageLocation="packages-for-cloudfront" />
+    </remote2>
+</config> -->
