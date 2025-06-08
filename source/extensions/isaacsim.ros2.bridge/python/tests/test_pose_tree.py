@@ -134,12 +134,12 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
         await simulate_async(1, 60, spin)
 
         # checks
-        self.assertEqual(len(self._tf_data.transforms), 15)  # there are 12 items in the tree.
+        self.assertEqual(len(self._tf_data.transforms), 14)  # there are 12 items in the tree.
         self.assertEqual(self._tf_data.transforms[12].header.frame_id, "world")  # check cube's parent is world
 
         # the pose of panda_hand (a rigid body) should match the pose of the geometry xform (non rigid body) child.
         self.assertEqual(
-            self._tf_data.transforms[13].transform.translation, self._tf_data.transforms[14].transform.translation
+            self._tf_data.transforms[12].transform.translation, self._tf_data.transforms[13].transform.translation
         )
         # print(self._tf_data.transforms)
 
@@ -254,12 +254,12 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
         await simulate_async(1, 60, spin)
 
         # checks
-        self.assertEqual(self._tf_data.transforms[12].header.frame_id, "cube")  # check the base is cube
+        self.assertEqual(self._tf_data.transforms[11].header.frame_id, "cube")  # check the base is cube
         self.assertEqual(
-            self._tf_data.transforms[12].child_frame_id, "cube1_cube"
+            self._tf_data.transforms[11].child_frame_id, "cube1_cube"
         )  # check the second cube got auto-set to cube_01
         self.assertEqual(
-            self._tf_data.transforms[13].child_frame_id, "Cube_override"
+            self._tf_data.transforms[12].child_frame_id, "Cube_override"
         )  # check the third cube got the right override frame ID
 
         self._timeline.stop()
