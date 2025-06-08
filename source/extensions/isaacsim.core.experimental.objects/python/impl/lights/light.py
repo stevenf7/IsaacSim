@@ -17,11 +17,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.prims import XformPrim
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Gf, Usd, UsdLux
 
@@ -137,8 +137,8 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        intensities = _ops.place(intensities, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        intensities = ops_utils.place(intensities, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             light_api.GetIntensityAttr().Set(intensities[0 if intensities.shape[0] == 1 else i].item())
@@ -177,12 +177,12 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             data[i][0] = light_api.GetIntensityAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_exposures(
         self,
@@ -216,8 +216,8 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        exposures = _ops.place(exposures, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        exposures = ops_utils.place(exposures, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             light_api.GetExposureAttr().Set(exposures[0 if exposures.shape[0] == 1 else i].item())
@@ -258,12 +258,12 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             data[i][0] = light_api.GetExposureAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_multipliers(
         self,
@@ -302,11 +302,11 @@ class Light(XformPrim, ABC):
         ), "Both 'diffuse_multipliers' and 'specular_multipliers' are not defined. Define at least one of them"
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         if diffuse_multipliers is not None:
-            diffuse_multipliers = _ops.place(diffuse_multipliers, device="cpu").numpy().reshape((-1, 1))
+            diffuse_multipliers = ops_utils.place(diffuse_multipliers, device="cpu").numpy().reshape((-1, 1))
         if specular_multipliers is not None:
-            specular_multipliers = _ops.place(specular_multipliers, device="cpu").numpy().reshape((-1, 1))
+            specular_multipliers = ops_utils.place(specular_multipliers, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             if diffuse_multipliers is not None:
@@ -353,7 +353,7 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         diffuse_multipliers = np.zeros((indices.shape[0], 1), dtype=np.float32)
         specular_multipliers = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
@@ -361,8 +361,8 @@ class Light(XformPrim, ABC):
             diffuse_multipliers[i][0] = light_api.GetDiffuseAttr().Get()
             specular_multipliers[i][0] = light_api.GetSpecularAttr().Get()
         return (
-            _ops.place(diffuse_multipliers, device=self._device),
-            _ops.place(specular_multipliers, device=self._device),
+            ops_utils.place(diffuse_multipliers, device=self._device),
+            ops_utils.place(specular_multipliers, device=self._device),
         )
 
     def set_enabled_normalizations(
@@ -395,8 +395,8 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             light_api.GetNormalizeAttr().Set(bool(enabled[0 if enabled.shape[0] == 1 else i].item()))
@@ -432,12 +432,12 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             enabled[i] = light_api.GetNormalizeAttr().Get()
-        return _ops.place(enabled, device=self._device)
+        return ops_utils.place(enabled, device=self._device)
 
     def set_enabled_color_temperatures(
         self,
@@ -469,8 +469,8 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        enabled = _ops.place(enabled, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             light_api.GetEnableColorTemperatureAttr().Set(bool(enabled[0 if enabled.shape[0] == 1 else i].item()))
@@ -506,12 +506,12 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             enabled[i] = light_api.GetEnableColorTemperatureAttr().Get()
-        return _ops.place(enabled, device=self._device)
+        return ops_utils.place(enabled, device=self._device)
 
     def set_color_temperatures(
         self,
@@ -547,8 +547,8 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        color_temperatures = _ops.place(color_temperatures, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        color_temperatures = ops_utils.place(color_temperatures, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             light_api.GetColorTemperatureAttr().Set(
@@ -593,12 +593,12 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             data[i][0] = light_api.GetColorTemperatureAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     def set_colors(
         self,
@@ -630,8 +630,8 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        colors = _ops.place(colors, device="cpu").numpy().reshape((-1, 3))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        colors = ops_utils.place(colors, device="cpu").numpy().reshape((-1, 3))
         broadcast = colors.shape[0] == 1
         colors = colors.tolist()
         for i, index in enumerate(indices.numpy()):
@@ -672,12 +672,12 @@ class Light(XformPrim, ABC):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 3), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             light_api = Light.ensure_api([self.prims[index]], UsdLux.LightAPI)[0]
             data[i] = np.array(light_api.GetColorAttr().Get(), dtype=np.float32)
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)
 
     """
     Static methods.
@@ -712,14 +712,12 @@ class Light(XformPrim, ABC):
 
         .. code-block:: python
 
-            >>> import omni.usd
+            >>> import isaacsim.core.experimental.utils.stage as stage_utils
             >>> from isaacsim.core.experimental.objects import Light
             >>>
             >>> # given a USD stage with the prims at paths /World, /World/A (Cylinder), /World/B (Sphere)
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> stage.DefinePrim(f"/World", "Xform")  # doctest: +NO_CHECK
-            >>> stage.DefinePrim(f"/World/A", "CylinderLight")  # doctest: +NO_CHECK
-            >>> stage.DefinePrim(f"/World/B", "SphereLight")  # doctest: +NO_CHECK
+            >>> stage_utils.define_prim(f"/World/A", "CylinderLight")  # doctest: +NO_CHECK
+            >>> stage_utils.define_prim(f"/World/B", "SphereLight")  # doctest: +NO_CHECK
             >>>
             >>> # fetch light instances
             >>> Light.fetch_instances(["/World", "/World/A", "/World/B"])
@@ -738,7 +736,7 @@ class Light(XformPrim, ABC):
         classes = [CylinderLight, DiskLight, DistantLight, DomeLight, RectLight, SphereLight]
 
         instances = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             prim = stage.GetPrimAtPath(item) if isinstance(item, str) else item
             instance = None

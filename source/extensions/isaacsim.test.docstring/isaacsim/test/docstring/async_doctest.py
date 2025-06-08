@@ -16,6 +16,7 @@
 import doctest
 import sys
 
+import isaacsim
 import omni
 import omni.kit.test
 
@@ -108,7 +109,7 @@ class AsyncDocTestCase(omni.kit.test.AsyncTestCase):
             ...
             >>> run_coroutine(task())  # doctest: +NO_CHECK
         """
-        objects = self._doctest_checker.get_members(expr, order, exclude, {"omni": omni})
+        objects = self._doctest_checker.get_members(expr, order, exclude, {"omni": omni, "isaacsim": isaacsim})
         print(f"class/module members to check: {len(objects)}")
         # test docstrings examples
         failures = 0

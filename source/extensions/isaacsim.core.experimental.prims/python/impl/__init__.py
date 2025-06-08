@@ -13,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ._backend import (
-    get_current_backend,
-    is_backend_set,
-    should_raise_on_fallback,
-    should_raise_on_unsupported,
-    use_backend,
-)
 from .articulation import Articulation
 from .geom_prim import GeomPrim
 from .prim import Prim

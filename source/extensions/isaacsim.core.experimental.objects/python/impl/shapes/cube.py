@@ -15,10 +15,10 @@
 
 from __future__ import annotations
 
+import isaacsim.core.experimental.utils.ops as ops_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims.impl import _ops
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Gf, Usd, UsdGeom
 
@@ -82,7 +82,7 @@ class Cube(Shape):
         reset_xform_op_properties: bool = False,
     ) -> None:
         self._geoms = []
-        stage = omni.usd.get_context().get_stage()
+        stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Shape.resolve_paths(paths)
         # get cubes
         if existent_paths:
@@ -153,8 +153,8 @@ class Cube(Shape):
             >>> print(result)
             [False  True]
         """
-        stage = omni.usd.get_context().get_stage()
-        return _ops.place(
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
             [
                 (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdGeom.Cube)
                 for item in (paths if isinstance(paths, (list, tuple)) else [paths])
@@ -197,8 +197,8 @@ class Cube(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
-        sizes = _ops.place(sizes, device="cpu").numpy().reshape((-1, 1))
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        sizes = ops_utils.place(sizes, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
             geom = self.geoms[index]
             geom.GetSizeAttr().Set(sizes[0 if sizes.shape[0] == 1 else i].item())
@@ -238,8 +238,8 @@ class Cube(Shape):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
-        indices = _ops.resolve_indices(indices, count=len(self), device="cpu")
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
             data[i][0] = self.geoms[index].GetSizeAttr().Get()
-        return _ops.place(data, device=self._device)
+        return ops_utils.place(data, device=self._device)

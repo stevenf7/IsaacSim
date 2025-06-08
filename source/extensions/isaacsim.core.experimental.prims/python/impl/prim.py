@@ -18,6 +18,7 @@ from __future__ import annotations
 import re
 from abc import ABC
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.utils.prims as prims_utils
 import warp as wp
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
@@ -75,7 +76,8 @@ class Prim(ABC):
         else:
             self._paths = self._raw_paths
         # get prims
-        self._prims = [prims_utils.get_prim_at_path(path) for path in self._paths]
+        stage = stage_utils.get_current_stage(backend="usd")
+        self._prims = [stage.GetPrimAtPath(path) for path in self._paths]
         # register internal callbacks
         self._callback_ids = getattr(self, "_callback_ids", [])  # avoid attribute overwriting in multiple inheritance
         self._callback_ids.extend(
@@ -190,14 +192,13 @@ class Prim(ABC):
 
         .. code-block:: python
 
-            >>> import omni.usd
+            >>> import isaacsim.core.experimental.utils.prim as prim_utils
             >>> from pxr import UsdPhysics
             >>> from isaacsim.core.experimental.prims import Prim
             >>>
-            >>> # given a USD stage with 3 prims at paths /World/prim_0, /World/prim_1, /World/prim_2
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> usd_prims = [stage.GetPrimAtPath(f"/World/prim_{i}") for i in range(3)]
+            >>> # given a USD stage with 3 prims at paths /World/prim_0, /World/prim_1, /World/prim_2,
             >>> # ensure all prims have physics API schema
+            >>> usd_prims = [prim_utils.get_prim_at_path(f"/World/prim_{i}") for i in range(3)]
             >>> physics_apis = Prim.ensure_api(usd_prims, UsdPhysics.RigidBodyAPI)
         """
         return [api(prim, *args, **kwargs) if prim.HasAPI(api) else api.Apply(prim, *args, **kwargs) for prim in prims]

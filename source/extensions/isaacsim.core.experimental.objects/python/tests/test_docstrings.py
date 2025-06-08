@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
-import omni.usd
 from isaacsim.core.experimental.objects import (
     Capsule,
     Cone,
@@ -41,6 +40,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
+        stage_utils.define_prim(f"/World", "Xform")
+        # configure simulation
         SimulationManager.set_physics_sim_device("cpu")
 
     async def tearDown(self):
@@ -50,100 +51,52 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     # --------------------------------------------------------------------
 
     async def test_mesh_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(Mesh)
 
     # --------------------------------------------------------------------
 
     async def test_capsule_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(Capsule)
         await self.assertDocTests(Shape)
 
     async def test_cone_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(Cone)
         await self.assertDocTests(Shape)
 
     async def test_cube_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(Cube)
         await self.assertDocTests(Shape)
 
     async def test_cylinder_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(Cylinder)
         await self.assertDocTests(Shape)
 
     async def test_sphere_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(Sphere)
         await self.assertDocTests(Shape)
 
     # --------------------------------------------------------------------
 
     async def test_cylinder_light_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(CylinderLight)
         await self.assertDocTests(Light)
 
     async def test_disk_light_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(DiskLight)
         await self.assertDocTests(Light)
 
     async def test_distant_light_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(DistantLight)
         await self.assertDocTests(Light)
 
     async def test_dome_light_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(DomeLight)
         await self.assertDocTests(Light)
 
     async def test_rect_light_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(RectLight)
         await self.assertDocTests(Light)
 
     async def test_sphere_light_docstrings(self):
-        # define prims
-        stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim(f"/World", "Xform")
-        # test case
         await self.assertDocTests(SphereLight)
         await self.assertDocTests(Light)

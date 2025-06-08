@@ -18,7 +18,6 @@ from typing import Callable, Literal
 
 import numpy as np
 import omni.kit.test
-import omni.usd
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
 

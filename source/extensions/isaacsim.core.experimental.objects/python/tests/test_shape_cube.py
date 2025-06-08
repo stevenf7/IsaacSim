@@ -15,9 +15,8 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
-import omni.usd
 import warp as wp
 from isaacsim.core.experimental.objects import Cube as TargetShape
 from isaacsim.core.experimental.prims.tests.common import check_allclose, check_array, draw_indices, draw_sample
@@ -31,9 +30,8 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
     await stage_utils.create_new_stage_async()
     # define prims
     if operation == "wrap":
-        stage = omni.usd.get_context().get_stage()
         for i in range(max_num_prims):
-            stage.DefinePrim(f"/World/A_{i}", "Cube")
+            stage_utils.define_prim(f"/World/A_{i}", "Cube")
 
 
 class TestCube(omni.kit.test.AsyncTestCase):

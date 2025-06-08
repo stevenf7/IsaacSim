@@ -16,14 +16,13 @@
 from typing import Literal
 
 import carb
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.test
-import omni.usd
 import warp as wp
-from isaacsim.core.experimental.prims import XformPrim, use_backend
+from isaacsim.core.experimental.prims import XformPrim
+from isaacsim.core.experimental.utils.backend import use_backend
 from isaacsim.core.simulation_manager import IsaacEvents
-from pxr import UsdPhysics
 
 from .common import (
     check_allclose,
@@ -43,12 +42,11 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
-    stage = omni.usd.get_context().get_stage()
-    stage.DefinePrim(f"/World", "Xform")
-    UsdPhysics.Scene.Define(stage, "/World/PhysicsScene")
+    stage_utils.define_prim(f"/World", "Xform")
+    stage_utils.define_prim(f"/World/PhysicsScene", "PhysicsScene")
     for i in range(max_num_prims):
-        stage.DefinePrim(f"/World/A_{i}", "Xform")
-        stage.DefinePrim(f"/World/A_{i}/B", "Cube")
+        stage_utils.define_prim(f"/World/A_{i}", "Xform")
+        stage_utils.define_prim(f"/World/A_{i}/B", "Cube")
 
 
 class TestXformPrim(omni.kit.test.AsyncTestCase):

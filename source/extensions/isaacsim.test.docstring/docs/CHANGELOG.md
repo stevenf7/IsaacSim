@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.8] - 2025-05-30
+### Fixed
+- Add 'isaacsim' module to global namespace when checking members
+
 ## [1.0.7] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

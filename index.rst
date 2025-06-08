@@ -54,6 +54,7 @@ Isaac Sim: Extensions API
    source/extensions/isaacsim.core.experimental.materials/docs/index
    source/extensions/isaacsim.core.experimental.objects/docs/index
    source/extensions/isaacsim.core.experimental.prims/docs/index
+   source/extensions/isaacsim.core.experimental.utils/docs/index
    source/extensions/isaacsim.core.includes/docs/index
    source/extensions/isaacsim.core.nodes/docs/index
    source/extensions/isaacsim.core.prims/docs/index

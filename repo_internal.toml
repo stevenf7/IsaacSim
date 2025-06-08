@@ -70,6 +70,7 @@ sphinx_conf_py_extra = """
         "omni.kit.commands",
         "omni.kit.menu",
         "omni.kit.property",
+        "omni.kit.stage_templates",
         "omni.kit.test",
         "omni.kit.tool",
         "omni.kit.usd",

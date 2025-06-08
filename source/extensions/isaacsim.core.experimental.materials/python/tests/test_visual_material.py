@@ -15,9 +15,8 @@
 
 from typing import Literal
 
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
-import omni.usd
 from isaacsim.core.experimental.materials import (
     OmniGlassMaterial,
     OmniPbrMaterial,
