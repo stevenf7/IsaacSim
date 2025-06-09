@@ -140,7 +140,6 @@ post_build.commands = [
   # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
   # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
   # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
-# AUTOREMOVE: BEGIN
   [
     "${root}/repo${shell_ext}",
     "generate_vscode_settings",
@@ -153,7 +152,6 @@ post_build.commands = [
     "-c",
     "${config}",
   ],
-# AUTOREMOVE: END
   [
     "${root}/repo${shell_ext}",
     "usd",
@@ -840,6 +838,7 @@ sections = [
   "settings",
 ]
 
+# These extensions are excluded as they do not contain any documentation
 excluded_extensions = [
     # archives
     "omni.isaac.core_archive",
