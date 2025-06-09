@@ -32,6 +32,7 @@ import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.usd
 from isaacsim.core.utils.stage import clear_stage, create_new_stage
+from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
 from omni.ui.tests.test_base import OmniUiTest
 
 
@@ -95,12 +96,12 @@ class TestRTXContextMenu(OmniUiTest):
         n_items_viewport_menu = count_menu_items(rtx_viewport_menu_dict)
 
         # number of sensors currently hardcoded in the extension
-        n_configs = 20
+        n_configs = len(SUPPORTED_LIDAR_CONFIGS)
 
         self.assertEqual(
             n_items_viewport_menu,
             n_configs,
-            "The number of items in the viewport context menu is not as expected",
+            f"There are {n_items_viewport_menu} items in the viewport context menu, expected {n_configs}.",
         )
 
     async def test_rtx_sensors_context_menu_click(self):
@@ -184,4 +185,6 @@ class TestRTXContextMenu(OmniUiTest):
                 if prim.GetTypeName() == "OmniLidar":
                     n_lidars += 1
 
-            self.assertEqual(n_lidars, 1, f"There is not exactly one OmniLidar prim on stage for {full_test_path}")
+            self.assertEqual(
+                n_lidars, 1, f"There are {n_lidars} OmniLidar prims on stage for {full_test_path}, expected 1."
+            )

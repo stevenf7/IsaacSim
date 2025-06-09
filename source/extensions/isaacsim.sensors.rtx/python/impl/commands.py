@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+from pathlib import Path
 from typing import Optional
 
 import carb
@@ -27,8 +27,25 @@ from isaacsim.core.utils.xforms import reset_and_set_xform_ops
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, Sdf, Usd, UsdGeom
 
+from .supported_lidar_configs import SUPPORTED_LIDAR_CONFIGS, SUPPORTED_LIDAR_VARIANT_SET_NAME
+
 
 class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
+    """Base class for creating RTX sensors in Isaac Sim.
+
+    This class provides functionality to create various types of RTX sensors (lidar, radar, etc.)
+    in the Isaac Sim environment. It handles sensor creation through either USD references,
+    Replicator API, or direct camera prim creation.
+
+    Attributes:
+        _replicator_api: Static method reference to the Replicator API for sensor creation.
+        _sensor_type: String identifier for the type of sensor.
+        _supported_configs: List of supported sensor configurations.
+        _schema: Schema for the sensor type.
+        _sensor_plugin_name: Name of the sensor plugin.
+        _camera_config_name: Name of the camera configuration.
+    """
+
     _replicator_api = None
     _sensor_type = "sensor"
     _supported_configs = []
@@ -45,9 +62,22 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
         visibility: Optional[bool] = False,
         variant: Optional[str] = None,
-        force_camera_prim=False,
+        force_camera_prim: bool = False,
         **kwargs,
     ):
+        """Initialize the RTX sensor creation command.
+
+        Args:
+            path: Optional path where the sensor will be created. If None, a default path will be used.
+            parent: Optional parent prim path for the sensor.
+            config: Optional configuration name for the sensor.
+            translation: Optional 3D translation vector for sensor placement.
+            orientation: Optional quaternion for sensor orientation.
+            visibility: Optional visibility flag for the sensor.
+            variant: Optional variant name for the sensor configuration.
+            force_camera_prim: If True, forces creation of a camera prim instead of using references or Replicator API.
+            **kwargs: Additional keyword arguments for prim creation.
+        """
         self._parent = parent
         self._config = config
         self._translation = translation
@@ -62,11 +92,19 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         self._camera_config = self._config
 
     def _add_reference(self) -> Usd.Prim:
-        """Adds a reference to the stage if a config is provided, and sets that prim's variant if provided. Otherwise, returns None."""
+        """Adds a reference to the stage if a config is provided.
+
+        If a config is provided, this method adds a reference to the stage and sets the prim's
+        variant if provided. It also handles finding the correct sensor prim within referenced assets.
+
+        Returns:
+            Usd.Prim: The created or found prim, or None if no config was provided or found.
+        """
         if self._config:
             found_config = False
             for config in self._supported_configs:
-                if os.path.splitext(os.path.basename(config))[0] == self._config:
+                config_path = Path(config)
+                if self._config == config_path.stem:
                     found_config = True
                     prim = add_reference_to_stage(
                         usd_path=get_assets_root_path() + config,
@@ -75,15 +113,21 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
                     )
                     reset_and_set_xform_ops(prim.GetPrim(), self._translation, self._orientation)
                     if self._variant:
-                        variant_set = prim.GetVariantSet("Sensor")
-                        if not variant_set:
+                        allowed_variants = self._supported_configs[config]
+                        if self._variant not in allowed_variants:
                             carb.log_warn(
-                                f"Variant set 'Sensor' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
+                                f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Allowed variants: {allowed_variants}."
                             )
-                        if not variant_set.SetVariantSelection(self._variant):
-                            carb.log_warn(
-                                f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
-                            )
+                        else:
+                            variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
+                            if len(variant_set.GetVariantNames()) == 0:
+                                carb.log_warn(
+                                    f"Variant set {SUPPORTED_LIDAR_VARIANT_SET_NAME} for Omni{self._sensor_type.capitalize()} at {self._prim_path} does not contain any variants."
+                                )
+                            elif not variant_set.SetVariantSelection(self._variant):
+                                carb.log_warn(
+                                    f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Mismatch between allowed variant list and available variants."
+                                )
                     # If necessary, traverse children of referenced asset to find OmniSensor prim
                     # Note: if multiple children of the referenced asset are OmniSensor types, this will select the first one
                     if prim.GetTypeName() == "Xform":
@@ -99,6 +143,14 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         return None
 
     def _call_replicator_api(self) -> Usd.Prim:
+        """Creates a sensor using the Replicator API.
+
+        Converts position and orientation into the format required by the Replicator API
+        and creates the sensor prim.
+
+        Returns:
+            Usd.Prim: The created prim, or None if no Replicator API is available.
+        """
         if self._replicator_api is not None:
             # Convert position and orientation into tuples for Replicator API.
             position = (self._translation[0], self._translation[1], self._translation[2])
@@ -118,6 +170,17 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         return None
 
     def _create_camera_prim(self) -> Usd.Prim:
+        """Creates a camera prim for the sensor.
+
+        This method is deprecated as of Isaac Sim 5.0. It creates a basic camera prim
+        with sensor-specific attributes.
+
+        Returns:
+            Usd.Prim: The created camera prim.
+
+        Raises:
+            Warning: If called, as this functionality is deprecated.
+        """
         carb.log_warn(
             "Support for creating RTX sensors as camera prims is deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniSensor prim instead."
         )
@@ -134,7 +197,15 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
             prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._camera_config)
         return prim
 
-    def do(self):
+    def do(self) -> Usd.Prim:
+        """Executes the sensor creation command.
+
+        Creates the sensor using the most appropriate method based on the configuration
+        and available APIs.
+
+        Returns:
+            Usd.Prim: The created sensor prim.
+        """
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = (
@@ -142,20 +213,41 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         ) or self._create_camera_prim()
         return self._prim
 
-    def undo(self):
+    def undo(self) -> None:
+        """Undoes the sensor creation command.
+
+        Currently not implemented.
+        """
         pass
 
 
 class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
+    """Command class for creating RTX Lidar sensors.
+
+    This class specializes the base RTX sensor creation for Lidar sensors, providing
+    specific configuration and plugin settings for Lidar functionality.
+
+    Attributes:
+        _replicator_api: Static method reference to the Lidar Replicator API.
+        _sensor_type: Set to "lidar".
+        _supported_configs: List of supported Lidar configurations.
+        _schema: Schema for Lidar sensors.
+        _sensor_plugin_name: Name of the Lidar sensor plugin.
+    """
+
     _replicator_api = staticmethod(rep.functional.create.omni_lidar)
     _sensor_type = "lidar"
-    _supported_configs = carb.settings.get_settings().get("exts/isaacsim.sensors.rtx/supportedLidarConfigs")
+    _supported_configs = SUPPORTED_LIDAR_CONFIGS
     _schema = IsaacSensorSchema.IsaacRtxLidarSensorAPI
     _sensor_plugin_name = "omni.sensors.nv.lidar.lidar_core.plugin"
 
     def __init__(self, **kwargs):
+        """Initialize the RTX Lidar sensor creation command.
+        Args:
+            **kwargs: Keyword arguments passed to the parent class constructor.
+        """
         super().__init__(**kwargs)
-        if self._config and self._config.startswith("OS"):
+        if self._config and self._config.startswith("OS") and len(self._config) > 3:
             carb.log_warn(
                 "Support for adding variant lidar models to the stage via config name only has been deprecated in Isaac Sim 5.0. Please use the config (model name) and variant (model variant) arguments instead."
             )
@@ -169,6 +261,18 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
 
 
 class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
+    """Command class for creating RTX Radar sensors.
+
+    This class specializes the base RTX sensor creation for Radar sensors, providing
+    specific configuration and plugin settings for Radar functionality.
+
+    Attributes:
+        _replicator_api: Static method reference to the Radar Replicator API.
+        _sensor_type: Set to "radar".
+        _schema: Schema for Radar sensors.
+        _sensor_plugin_name: Name of the Radar sensor plugin.
+    """
+
     _replicator_api = staticmethod(rep.functional.create.omni_radar)
     _sensor_type = "radar"
     _schema = IsaacSensorSchema.IsaacRtxRadarSensorAPI
@@ -176,10 +280,27 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
 
 
 class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
+    """Command class for creating RTX Idealized Depth Sensors (IDSs).
+
+    This class specializes the base RTX sensor creation for IDSs, providing
+    specific configuration and plugin settings for IDS functionality.
+
+    Attributes:
+        _sensor_type: Set to "ids".
+        _sensor_plugin_name: Name of the IDS sensor plugin.
+    """
+
     _sensor_type = "ids"
     _sensor_plugin_name = "omni.sensors.nv.ids.ids.plugin"
 
     def __init__(self, **kwargs):
+        """Initialize the RTX IDS sensor creation command.
+
+        Sets default configuration to "idsoccupancy" if no config is provided.
+
+        Args:
+            **kwargs: Keyword arguments passed to the parent class constructor.
+        """
         super().__init__(**kwargs)
         if self._config is None:
             self._config = "idsoccupancy"
@@ -187,6 +308,16 @@ class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
 
 
 class IsaacSensorCreateRtxUltrasonic(IsaacSensorCreateRtxSensor):
+    """Command class for creating RTX Ultrasonic sensors.
+
+    This class specializes the base RTX sensor creation for Ultrasonic sensors, providing
+    specific configuration and plugin settings for Ultrasonic functionality.
+
+    Attributes:
+        _sensor_type: Set to "ultrasonic".
+        _sensor_plugin_name: Name of the Ultrasonic sensor plugin.
+    """
+
     _sensor_type = "ultrasonic"
     _sensor_plugin_name = "omni.sensors.nv.ultrasonic.wpm_ultrasonic.plugin"
 

@@ -17,62 +17,15 @@
 Tests the functionality of creating different types of RTX sensors through commands.
 """
 
+from pathlib import Path
+
 import omni.kit.commands
 import omni.kit.test
 import omni.usd
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import traverse_stage
-from pxr import Gf, Sdf, Usd, UsdGeom
-
-# List of all supported lidar configurations
-LIDAR_CONFIGS = [
-    "Hesai_XT32_SD10",
-    "Example_Rotary_2D",
-    "Example_Rotary",
-    "Simple_Example_Solid_State",
-    "OS0_REV6_128ch10hz1024res",
-    "OS0_REV6_128ch10hz2048res",
-    "OS0_REV6_128ch10hz512res",
-    "OS0_REV6_128ch20hz1024res",
-    "OS0_REV6_128ch20hz512res",
-    "OS0_REV7_128ch10hz1024res",
-    "OS0_REV7_128ch10hz2048res",
-    "OS0_REV7_128ch10hz512res",
-    "OS0_REV7_128ch20hz1024res",
-    "OS0_REV7_128ch20hz512res",
-    "OS1_REV6_128ch10hz1024res",
-    "OS1_REV6_128ch10hz2048res",
-    "OS1_REV6_128ch10hz512res",
-    "OS1_REV6_128ch20hz1024res",
-    "OS1_REV6_128ch20hz512res",
-    "OS1_REV6_32ch10hz1024res",
-    "OS1_REV6_32ch10hz2048res",
-    "OS1_REV6_32ch10hz512res",
-    "OS1_REV6_32ch20hz1024res",
-    "OS1_REV6_32ch20hz512res",
-    "OS1_REV7_128ch10hz1024res",
-    "OS1_REV7_128ch10hz2048res",
-    "OS1_REV7_128ch10hz512res",
-    "OS1_REV7_128ch20hz1024res",
-    "OS1_REV7_128ch20hz512res",
-    "OS2_REV6_128ch10hz1024res",
-    "OS2_REV6_128ch10hz2048res",
-    "OS2_REV6_128ch10hz512res",
-    "OS2_REV6_128ch20hz1024res",
-    "OS2_REV6_128ch20hz512res",
-    "OS2_REV7_128ch10hz1024res",
-    "OS2_REV7_128ch10hz2048res",
-    "OS2_REV7_128ch10hz512res",
-    "OS2_REV7_128ch20hz1024res",
-    "OS2_REV7_128ch20hz512res",
-    "SICK_microscan3_ABAZ90ZA1P01",
-    "SICK_multiScan136",
-    "SICK_multiScan165",
-    "SICK_picoScan150",
-    "Velodyne_VLS128",
-    "ZVISION_ML30S",
-    "ZVISION_MLXS",
-]
+from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS, SUPPORTED_LIDAR_VARIANT_SET_NAME
+from pxr import Gf, Sdf, UsdGeom
 
 
 class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
@@ -92,31 +45,40 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
 
-        for config in LIDAR_CONFIGS:
+        for config_path in SUPPORTED_LIDAR_CONFIGS:
+            config = Path(config_path).stem
             # Create new stage for each config to avoid conflicts
             await omni.usd.get_context().new_stage_async()
             self.stage = omni.usd.get_context().get_stage()
 
-            path = f"/RtxLidar_{config}"
+            for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
+                path = f"/RtxLidar_{config}_{variant}"
+                _, prim = omni.kit.commands.execute(
+                    "IsaacSensorCreateRtxLidar",
+                    path=path,
+                    config=config,
+                    variant=variant,
+                    translation=translation,
+                    orientation=orientation,
+                )
 
-            _, prim = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar",
-                path=path,
-                config=config,
-                translation=translation,
-                orientation=orientation,
-            )
+                self.assertIsNotNone(prim, f"Failed to create prim for config {config} and variant {variant}")
+                self.assertEqual(prim.GetTypeName(), "OmniLidar")
 
-            self.assertIsNotNone(prim, f"Failed to create prim for config {config}")
-            self.assertEqual(prim.GetTypeName(), "OmniLidar")
-
-            # For OS sensors, verify variant selection
-            if config.startswith("OS"):
-                prim = get_prim_at_path(path)
-                variant_set = prim.GetVariantSet("Sensor")
-                self.assertIsNotNone(variant_set, f"Variant set not found for OS config {config}")
-                current_variant = variant_set.GetVariantSelection()
-                self.assertEqual(current_variant, config, f"Incorrect variant selection for config {config}")
+                if variant is not None:
+                    prim = get_prim_at_path(path)
+                    variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
+                    self.assertGreater(
+                        len(variant_set.GetVariantNames()),
+                        0,
+                        f"Variant set '{SUPPORTED_LIDAR_VARIANT_SET_NAME}' on prim {path} does not contain any variants.",
+                    )
+                    current_variant = variant_set.GetVariantSelection()
+                    self.assertEqual(
+                        current_variant,
+                        variant,
+                        f"Incorrect variant selection {current_variant} for config {config} and variant {variant}",
+                    )
 
     async def test_create_rtx_lidar_invalid_config(self):
         """Test creating an RTX Lidar sensor with an invalid configuration."""
@@ -343,7 +305,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         """Test RTX Lidar with force_camera_prim=True and config specified."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
-        config = LIDAR_CONFIGS[0]  # Use the first available config
+        config = Path(list(SUPPORTED_LIDAR_CONFIGS.keys())[0]).stem  # Use the first available config
 
         _, prim = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar",

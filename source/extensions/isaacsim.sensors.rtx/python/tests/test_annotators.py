@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,22 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ctypes
-import os
-from dataclasses import dataclass
-from typing import Literal, Tuple
+from pathlib import Path
 
 import carb
-import isaacsim.sensors.rtx.generic_model_output as gmo_utils
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
-from isaacsim.sensors.rtx import get_gmo_data
+from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS, get_gmo_data
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf, Usd
+from pxr import Gf
 
 # Number of extra frames to render to ensure sensor generates returns. Note increasing this number will increase the time it takes to run the tests.
 NUM_EXTRA_FRAMES = 8
@@ -217,8 +213,8 @@ class TestIsaacComputeRTXLidarFlatScan(TestRTXSensorAnnotator):
 
         # Confirm default values for 3D lidar
         if not self._is_2d_lidar:
-            self.assertTrue(np.allclose(np.zeros([1, 2]), self.azimuthRange))
-            self.assertTrue(np.allclose(np.zeros([1, 2]), self.depthRange))
+            self.assertTrue(np.allclose(np.zeros([1, 2]), self.azimuthRange), f"azimuthRange: {self.azimuthRange}")
+            self.assertTrue(np.allclose(np.zeros([1, 2]), self.depthRange), f"depthRange: {self.depthRange}")
             self.assertEqual(0.0, self.horizontalFov)
             self.assertEqual(0.0, self.horizontalResolution)
             self.assertEqual(0, self.intensitiesData.size)
@@ -305,116 +301,27 @@ annotators = {
 }
 
 
-@dataclass
-class SensorConfig:
-    asset_path: str
-    rotation_rate: float
-    is_2d_lidar: bool
-    expected_returns: int
-
-
-# Map sensor types to a list of tuples, specifying the config, rotation rate, whether the sensor is 2D, and expected returns per frame.
-# For lidars, expected returns per frame is number of emitters * returns per emitter * reportRateBaseHz * time step (s)
-# time step is assumed to be 1/60s
-sensor_configs = {
-    "lidar": [
-        SensorConfig("/Isaac/Sensors/HESAI/Hesai_XT32_SD10.usda", 10.0, False, 21333),
-        # SensorConfig("/Isaac/Sensors/NVIDIA/Debug_Rotary.usda", 10.0, True, 7), # TODO (adevalla): ISIM-3547
-        SensorConfig(
-            "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda", 10.0, False, 533
-        ),  # Despite the name, this config's emitter is at elevation -2 degrees, so it won't trigger flatscan
-        # SensorConfig("/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda", 10.0, False, 153600), # TODO (adevalla): ISIM-3548
-        SensorConfig("/Isaac/Sensors/NVIDIA/Example_Rotary.usda", 10.0, False, 153600),
-        SensorConfig("/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda", 10.0, False, 12),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV6_128ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV6_128ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV6_128ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV6_128ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV6_128ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV7_128ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV7_128ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV7_128ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV7_128ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS0/OS0_REV7_128ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_128ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_128ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_128ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_128ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_128ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_32ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_32ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_32ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_32ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV6_32ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS1/OS1_REV7_128ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV6_128ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV7_128ch10hz1024res.usda", 10.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV7_128ch10hz2048res.usda", 10.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV7_128ch10hz512res.usda", 10.0, False, 21845),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV7_128ch20hz1024res.usda", 20.0, False, 87380),
-        SensorConfig("/Isaac/Sensors/Ouster/OS2/OS2_REV7_128ch20hz512res.usda", 20.0, False, 43690),
-        SensorConfig("/Isaac/Sensors/SICK/SICK_microscan3_ABAZ90ZA1P01.usda", 20.0, True, 917),
-        SensorConfig("/Isaac/Sensors/SICK/SICK_multiScan136.usda", 20.0, False, 3600),
-        SensorConfig("/Isaac/Sensors/SICK/SICK_multiScan165.usda", 20.0, False, 3840),
-        SensorConfig("/Isaac/Sensors/SICK/SICK_picoScan150.usda", 20.0, True, 920),
-        SensorConfig("/Isaac/Sensors/SICK/SICK_tim781.usda", 10.0, True, 203),
-        SensorConfig("/Isaac/Sensors/Slamtec/RPLIDAR_S2E.usda", 10.0, True, 533),
-        SensorConfig("/Isaac/Sensors/Velodyne/vls-128/Velodyne_VLS128.usda", 10.0, False, 80047),
-        SensorConfig("/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda", 10.0, False, 17067),
-        SensorConfig("/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda", 10.0, False, 36000),
-    ],
-    "radar": [],
-}
-
-
-def _create_test_for_annotator(
-    sensor_type: Literal["lidar", "radar"] = "lidar",
-    prim_type: Literal["sensor", "camera"] = "sensor",
-    config: str = None,
-    data_source: Literal["cpu", "gpu"] = "cpu",
-    rotation_rate: float = 10.0,
-    is_2d_lidar: bool = False,
-    expected_returns: int = -1,
-):
-    """_summary_
+def _create_test_for_annotator_with_omni_lidar_prim(config: str = None, variant: str = None):
+    """Create OmniLidar prim with specified config and variants, then attach an annotator and run for several frames.
 
     Args:
         sensor_type (Literal[&quot;lidar&quot;, &quot;radar&quot;], optional): _description_. Defaults to "lidar".
         prim_type (Literal[&quot;sensor&quot;, &quot;camera&quot;], optional): _description_. Defaults to "sensor".
         config (str, optional): _description_. Defaults to None.
-        data_source (Literal[&quot;cpu&quot;, &quot;gpu&quot;], optional): _description_. Defaults to "cpu".
-        rotation_rate (int, optional): _description_. Defaults to 5.
     """
 
     async def test_function(self):
 
-        # # Set the data source setting
-        # carb.settings.get_settings().set_bool(f"/app/sensors/nv/{sensor_type}/outputBufferOnGPU", data_source == "gpu")
-
         # Create sensor prim
         kwargs = {
-            "path": f"/{sensor_type}",
+            "path": "lidar",
             "parent": None,
             "translation": Gf.Vec3d(0.0, 0.0, 0.0),
             "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
             "config": config,
-            "force_camera_prim": prim_type == "camera",
+            "variant": variant,
         }
-
-        if prim_type == "sensor":
-            expected_prim_type = f"Omni{sensor_type.capitalize()}"
-        else:
-            expected_prim_type = "Camera"
-
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtx{sensor_type.capitalize()}", **kwargs)
+        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
         self.assertIsNotNone(self.sensor)
 
         # Create render product and attach to sensor
@@ -427,9 +334,14 @@ def _create_test_for_annotator(
         # Attach annotator to render product
         self._annotator.attach([self.hydra_texture.path])
 
-        # Define some convenient test parameters
-        self._is_2d_lidar = is_2d_lidar
-        self._expected_returns = expected_returns
+        # Test attributes of the sensor prim
+        elevationDeg = self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:elevationDeg").Get()
+        rotation_rate = self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
+        report_rate_base_hz = self.sensor.GetAttribute("omni:sensor:Core:reportRateBaseHz").Get()
+        number_of_emitters = self.sensor.GetAttribute("omni:sensor:Core:numberOfEmitters").Get()
+        max_returns = self.sensor.GetAttribute("omni:sensor:Core:maxReturns").Get()
+        self._is_2d_lidar = all([abs(i) < 1e-3 for i in list(elevationDeg)])
+        self._expected_returns = report_rate_base_hz / rotation_rate * number_of_emitters * max_returns
         self._num_frames_for_test = (int(60.0 / rotation_rate) if self._accumulate_returns else 1) + NUM_EXTRA_FRAMES
         carb.log_warn("Rendering {} frames for test.".format(self._num_frames_for_test))
 
@@ -448,30 +360,14 @@ def _create_test_for_annotator(
     return test_function
 
 
-# Based on maps above, dynamically generate test methods for each annotator
-for test_class in annotators:
-    for sensor_type in annotators[test_class]:
-        for sensor_config in sensor_configs[sensor_type]:
-            profile_name = os.path.basename(sensor_config.asset_path).split(".")[0]
-            for data_source in ["cpu"]:
-                # for data_source in ["cpu", "gpu"]: # TODO (adevalla): GPU fails - ISIM-1994
-                for prim_type in ["sensor", "camera"]:
-                    # Create test function using sensor prim
-                    test_func = _create_test_for_annotator(
-                        sensor_type=sensor_type,
-                        prim_type=prim_type,
-                        config=profile_name,
-                        data_source=data_source,
-                        rotation_rate=sensor_config.rotation_rate,
-                        is_2d_lidar=sensor_config.is_2d_lidar,
-                        expected_returns=sensor_config.expected_returns,
-                    )
-                    # Set proper function name and docstring
-                    config_for_doc = sensor_config.asset_path
-                    if config_for_doc.endswith(".usda"):
-                        config_for_doc = os.path.basename(config_for_doc)[:-5]
-                    test_name = f"{sensor_type}_{prim_type}_{config_for_doc}_{data_source}"
-                    test_func.__name__ = f"test_{test_name}"
-                    test_func.__doc__ = f"Test {test_class.__name__} annotator results using {sensor_type} as {prim_type} prim, with config {config_for_doc} and data on {data_source.upper()}."
-
-                    setattr(test_class, test_func.__name__, test_func)
+# Iterate over all supported lidar configs and variants, creating a test for each as sensor prims
+data_source = "cpu"
+for config_path in SUPPORTED_LIDAR_CONFIGS:
+    config_name = Path(config_path).stem
+    for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
+        for test_class in annotators:
+            test_func = _create_test_for_annotator_with_omni_lidar_prim(config=config_name, variant=variant)
+            test_name = f"lidar_sensor_{config_name}_{variant}_{data_source}"
+            test_func.__name__ = f"test_{test_name}"
+            test_func.__doc__ = f"Test {test_class.__name__} annotator results using OmniLidar prim, with config {config_name} and variant {variant} and data on {data_source.upper()}."
+            setattr(test_class, test_func.__name__, test_func)

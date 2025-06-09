@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2025-06-06
+### Changed
+- Use isaacsim.sensors.rtx.SUPPORTED_LIDAR_CONFIGS to autogenerate menus, tests
+
 ## [1.0.12] - 2025-06-06
 ### Changed
 - increase timeout for UI tests
