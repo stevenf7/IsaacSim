@@ -1,4 +1,10 @@
 # Changelog
+## [15.2.0] - 2025-06-06
+### Added
+- SUPPORTED_LIDAR_CONFIGS maps official Lidar asset paths to variants
+### Changed
+- Autogenerate test structures, valid commands from SUPPORTED_LIDAR_CONFIGS
+
 ## [15.1.4] - 2025-06-04
 ### Changed
 - Changed CUDA_CHECK in ScopedCudaDevice.h to indicate file and line for more verbose error logging

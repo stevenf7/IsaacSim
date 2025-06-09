@@ -1,5 +1,5 @@
 [package]
-version = "15.1.4"
+version = "15.2.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -70,35 +70,17 @@ app.sensors.nv.lidar.profileBaseFolder=[
 app.sensors.nv.lidar.outputBufferOnGPU = false
 # Renderer copies Radar return buffer onto CPU before postprocessing
 app.sensors.nv.radar.outputBufferOnGPU = false
+# Enable motion BVH for sensor motion effects
+renderer.raytracingMotion.enabled=true
+# Enable motion raytracing Hydra engine masking support
+renderer.raytracingMotion.enableHydraEngineMasking=true
+# Enable motion raytracing for Hydra engines 0-4
+renderer.raytracingMotion.enabledForHydraengines="0,1,2,3,4"
 # Enable non-visual materials using default hard-coded map of material names to material IDs
 rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;AsphaltWeatheredMaterial:2;VegetationGrassMaterial:3;WaterStandardMaterial:4;GlassStandardMaterial:5;FiberGlassMaterial:6;MetalAlloyMaterial:7;MetalAluminumMaterial:8;MetalAluminumOxidizedMaterial:9;PlasticStandardMaterial:10;RetroMarkingsMaterial:11;RetroSignMaterial:12;RubberStandardMaterial:13;SoilClayMaterial:14;ConcreteRoughMaterial:15;ConcreteSmoothMaterial:16;OakTreeBarkMaterial:17;FabricStandardMaterial:18;PlexiGlassStandardMaterial:19;MetalSilverMaterial:20"
 
-# List of supported Lidar asset paths
-exts."isaacsim.sensors.rtx".supportedLidarConfigs=[
-    "/Isaac/Sensors/HESAI/Hesai_XT32_SD10.usda",
-    "/Isaac/Sensors/NVIDIA/Debug_Rotary.usda",
-    "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda",
-    "/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda",
-    "/Isaac/Sensors/NVIDIA/Example_Rotary.usda",
-    "/Isaac/Sensors/NVIDIA/Example_Solid_State_BEAMS.usda",
-    "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda",
-    "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
-    "/Isaac/Sensors/Ouster/OS0/OS0.usd",
-    "/Isaac/Sensors/Ouster/OS1/OS1.usd",
-    "/Isaac/Sensors/Ouster/OS2/OS2.usd",
-    "/Isaac/Sensors/SICK/SICK_microscan3_ABAZ90ZA1P01.usda",
-    "/Isaac/Sensors/SICK/SICK_multiScan136.usda",
-    "/Isaac/Sensors/SICK/SICK_multiScan165.usda",
-    "/Isaac/Sensors/SICK/SICK_picoScan150.usda",
-    "/Isaac/Sensors/SICK/SICK_tim781.usda",
-    "/Isaac/Sensors/Slamtec/RPLIDAR_S2E.usda",
-    "/Isaac/Sensors/Velodyne/vls-128/Velodyne_VLS128.usda",
-    "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda",
-    "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda",
-]
-
 [[test]]
-timeout = 1800
+timeout = 900
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",
@@ -106,7 +88,8 @@ stdoutFailPatterns.exclude = [
     "*RuntimeWarning: invalid value encountered in divide*"
 ]
 stdoutFailPatterns.include = [
-    "*Could not open asset * for reference*"
+    "*Could not open asset * for reference*",
+    "*CUDA error*"
 ]
 args = [
     "--/app/asyncRendering=0",
