@@ -3,7 +3,7 @@
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 
 # Check EULA acceptance first
-"${SCRIPT_DIR}/eula_check.sh"
+"${SCRIPT_DIR}/tools/eula_check.sh"
 EULA_STATUS=$?
 
 if [ $EULA_STATUS -ne 0 ]; then

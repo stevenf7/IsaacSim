@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Get script directory
+# Get script directory and repository root
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+REPO_ROOT="$( cd "${SCRIPT_DIR}/.." ; pwd -P )"
 
-# Check if EULA has already been accepted (either in current dir or script dir)
-if [ -f ".eula_accepted" ] || [ -f "${SCRIPT_DIR}/.eula_accepted" ]; then
+# Check if EULA has already been accepted (either in current dir or repo root)
+if [ -f ".eula_accepted" ] || [ -f "${REPO_ROOT}/.eula_accepted" ]; then
     exit 0
 fi
 
@@ -25,8 +26,8 @@ read response
 
 # Check response
 if [ "$response" = "YES" ]; then
-    # Create the acceptance file in the script directory to persist it
-    touch "${SCRIPT_DIR}/.eula_accepted"
+    # Create the acceptance file in the repository root to persist it
+    touch "${REPO_ROOT}/.eula_accepted"
     exit 0
 else
     exit 1
