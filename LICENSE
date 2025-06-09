@@ -13,6 +13,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Building or using the software requires additional components licenced under other terms.
+ * These additional components include dependencies such as the Omniverse Kit SDK, as well as 3D models and textures.
+ *
+ * License terms for these additional NVIDIA owned and licensed components can be found here:
+ *
+ * https://www.nvidia.com/en-us/agreements/enterprise-software/isaac-sim-additional-software-and-materials-license/
  */
 # SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
@@ -28,3 +35,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Building or using the software requires additional components licenced under other terms.
+# These additional components include dependencies such as the Omniverse Kit SDK, as well as 3D models and textures.
+#
+# License terms for these additional NVIDIA owned and licensed components can be found here:
+#
+# https://www.nvidia.com/en-us/agreements/enterprise-software/isaac-sim-additional-software-and-materials-license/
