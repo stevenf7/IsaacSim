@@ -16,6 +16,7 @@
 from __future__ import annotations  # This allows us to hint types that do not yet exist like omni.usd etc
 
 import argparse
+import asyncio
 import builtins
 import faulthandler
 import os
@@ -23,6 +24,7 @@ import re
 import signal
 import sys
 import time
+from typing import Any
 
 import carb
 import omni.kit.app
@@ -592,6 +594,34 @@ class SimulationApp:
         """
         # Set rtx settings renderer settings
         self._set_render_settings(default=False)
+
+    def run_coroutine(
+        self, coroutine: asyncio.Coroutine, run_until_complete: bool = True
+    ) -> asyncio.Task | asyncio.Future | Any:
+        """Run a coroutine using the Kit's asynchronous task engine.
+
+        Args:
+            coroutine: The coroutine to run.
+            run_until_complete: Whether to run the coroutine until it is complete.
+
+        Returns:
+            The result of the coroutine if ``run_until_complete`` is True,
+            otherwise an asyncio task (if called from the main thread)
+            or a future (if called from any other non-main thread) instance.
+
+        Raises:
+            Exception: Any exception raised by the coroutine.
+        """
+        task_or_future = omni.kit.async_engine.run_coroutine(coroutine)
+        if run_until_complete:
+            # Since Kit's asynchronous task engine runs the event loop every IApp update,
+            # it is necessary to call `app.update()` while waiting for the coroutine to complete.
+            while not task_or_future.done():
+                self._app.update()
+            # Even if the task/future does not return a value,
+            # `.result()` must be called to re-raise any exception raised by the coroutine.
+            return task_or_future.result()
+        return task_or_future
 
     def close(self, wait_for_replicator=True) -> None:
         """Close the running Omniverse Toolkit."""

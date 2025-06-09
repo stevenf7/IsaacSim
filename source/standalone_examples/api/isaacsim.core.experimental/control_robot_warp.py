@@ -189,7 +189,7 @@ stage_utils.create_new_stage(template="sunlight")
 # - Add robot (Franka Panda)
 robot_prim = stage_utils.add_reference_to_stage(
     usd_path=get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
-    prim_path="/World/robot",
+    path="/World/robot",
     variants=[("Gripper", "AlternateFinger"), ("Mesh", "Performance")],
 )
 # - Add red sphere

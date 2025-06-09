@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.9.0] - 2025-06-09
+### Added
+- Add `run_coroutine` method to allow running coroutines using the Kit's asynchronous task engine.
+
 ## [2.8.2] - 2025-06-02
 ### Removed
 - No longer set /rtx-default settings
