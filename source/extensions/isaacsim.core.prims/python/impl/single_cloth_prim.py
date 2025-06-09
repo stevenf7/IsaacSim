@@ -23,9 +23,9 @@ from isaacsim.core.utils.types import DynamicState
 from omni.physx.scripts import particleUtils, physicsUtils
 from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics, UsdShade
 
-from ._impl.single_prim_wrapper import _SinglePrimWrapper
 from .cloth_prim import ClothPrim
 from .single_particle_system import SingleParticleSystem
+from .single_prim_wrapper import _SinglePrimWrapper
 
 
 class SingleClothPrim(_SinglePrimWrapper):

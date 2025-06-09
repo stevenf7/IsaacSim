@@ -17,8 +17,8 @@ from typing import Optional, Sequence
 import numpy as np
 from isaacsim.core.utils.types import DynamicState
 
-from ._impl.single_prim_wrapper import _SinglePrimWrapper
 from .rigid_prim import RigidPrim
+from .single_prim_wrapper import _SinglePrimWrapper
 
 
 class SingleRigidPrim(_SinglePrimWrapper):

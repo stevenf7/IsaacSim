@@ -19,8 +19,8 @@ import numpy as np
 import omni.kit.app
 from isaacsim.core.utils.types import ArticulationAction, JointsState
 
-from ._impl.single_prim_wrapper import _SinglePrimWrapper
 from .articulation import Articulation
+from .single_prim_wrapper import _SinglePrimWrapper
 
 
 class SingleArticulation(_SinglePrimWrapper):
