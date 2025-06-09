@@ -19,8 +19,8 @@ import numpy as np
 import torch
 from pxr import UsdGeom
 
-from ._impl.single_prim_wrapper import _SinglePrimWrapper
 from .geometry_prim import GeometryPrim
+from .single_prim_wrapper import _SinglePrimWrapper
 
 
 class SingleGeometryPrim(_SinglePrimWrapper):

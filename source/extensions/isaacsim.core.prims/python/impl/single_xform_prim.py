@@ -17,7 +17,7 @@ from typing import Optional, Sequence
 import carb
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path, is_prim_path_valid
 
-from ._impl.single_prim_wrapper import _SinglePrimWrapper
+from .single_prim_wrapper import _SinglePrimWrapper
 from .xform_prim import XFormPrim
 
 

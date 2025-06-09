@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.4.0] - 2025-06-09
+### Changed
+- Move the `_impl/single_prim_wrapper` script to the `impl` folder and update import statements
+
 ## [0.3.18] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
