@@ -1025,3 +1025,32 @@ fail_if_exts_are_missing = false
 examples_dir = "${root}/source/standalone_examples"
 # Output RST file path (relative to workspace root or absolute)
 output_file = "${root}/docs/source/standalone_examples_list.rst"
+
+
+########################################################################################################################
+# Generate vscode settings
+########################################################################################################################
+
+[repo_generate_vscode_settings]
+
+output_paths = ["${root}/", "${root}/_build/${platform}/${config}"]
+template_paths = [
+  "${root}/.vscode/settings.template.json",
+  "${root}/source/scripts/vscode/${platform}/settings.json",
+]
+
+# paths specific to python autocomplete, not added to pythonpath/env
+python_analysis_extra_mapping = [
+  "$root/_build/$platform/$config/exts/*",
+  "$root/_build/$platform/$config/extsDeprecated/*",
+  "$root/_build/$platform/$config/extscache/*",
+  "$root/_build/$platform/$config/kit/exts/*",
+  "$root/_build/$platform/$config/kit/extscore/*",
+]
+
+########################################################################################################################
+# Edit sysconfig
+########################################################################################################################
+
+[repo_edit_sysconfig]
+sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_x86_64-linux-gnu.py"
