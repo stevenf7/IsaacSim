@@ -19,13 +19,14 @@ Ensure your system is set up with the following before building Isaac Sim:
   | Min | Recommended | Best |
   |-----|-------------|------|
   | RTX 4080 | RTX 5080 | RTX PRO 6000 Blackwell Workstation |
+  |  | RTX 5880 Ada | RTX PRO 5000 Blackwell Workstation |
 
   #### Datacenter
 
   | Min | Recommended | Best |
   |-----|-------------|------|
   | A40 | L40S | RTX PRO 6000 Blackwell Server |
-
+  |  | L20 | |
 
 - **Driver**: See [NVIDIA Driver Requirements](https://docs.omniverse.nvidia.com/materials-and-rendering/latest/common/technical-requirements.html)
 

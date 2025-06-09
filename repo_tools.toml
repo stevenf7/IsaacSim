@@ -1,3 +1,47 @@
+
+########################################################################################################################
+# Generate Examples List
+########################################################################################################################
+
+[examples_list]
+command = "examples_list"
+entry_point = "${config_root}/tools/docs/generate_examples_list.py:setup_repo_tool"
+
+[repo_package]
+# Hide default repo_package under internal command to be used by `repo_package_app`
+command = "_package"
+
+# Revert the override to the default command
+[repo_package_app]
+command = "package"
+entry_point = "omni.repo.package:setup_repo_tool"
+enabled = true
+
+########################################################################################################################
+# Generate extension docs
+########################################################################################################################
+
+[extension_docs]
+command = "extension_docs"
+entry_point = "${config_root}/tools/docs/extension_docs_generator.py:setup_repo_tool"
+
+########################################################################################################################
+# Edit sysconfig
+########################################################################################################################
+
+[edit_sysconfig]
+command = "edit_sysconfig"
+entry_point = "${config_root}/tools/isaac_build/edit_sysconfig.py:setup_repo_tool"
+
+########################################################################################################################
+# Generate Vscode Settings
+########################################################################################################################
+
+[generate_vscode_settings]
+command = "generate_vscode_settings"
+entry_point = "${config_root}/tools/isaac_build/generate_vscode_settings.py:setup_repo_tool"
+
+
 # AUTOREMOVE: BEGIN
 ########################################################################################################################
 # Isaac Sim package publish tool
@@ -30,25 +74,6 @@ entry_point = "${config_root}/tools/ci/publish_assets_package_3.py:setup_repo_to
 [bump_version]
 command = "bump_version"
 entry_point = "${config_root}/tools/ci/bump_version.py:setup_repo_tool"
-# AUTOREMOVE: END
-
-########################################################################################################################
-# Generate extension docs
-########################################################################################################################
-
-[extension_docs]
-command = "extension_docs"
-entry_point = "${config_root}/tools/docs/extension_docs_generator.py:setup_repo_tool"
-
-# AUTOREMOVE: BEGIN
-
-########################################################################################################################
-# Generate Vscode Settings
-########################################################################################################################
-
-[generate_vscode_settings]
-command = "generate_vscode_settings"
-entry_point = "${config_root}/tools/isaac/generate_vscode_settings.py:setup_repo_tool"
 
 ########################################################################################################################
 # Generate Changelog
@@ -57,14 +82,6 @@ entry_point = "${config_root}/tools/isaac/generate_vscode_settings.py:setup_repo
 [generate_changelog]
 command = "generate_changelog"
 entry_point = "${config_root}/tools/isaac/generate_changelog.py:setup_repo_tool"
-
-########################################################################################################################
-# Edit sysconfig
-########################################################################################################################
-
-[edit_sysconfig]
-command = "edit_sysconfig"
-entry_point = "${config_root}/tools/isaac/edit_sysconfig.py:setup_repo_tool"
 
 ########################################################################################################################
 # Clang-Tidy
@@ -147,22 +164,3 @@ command = "format_lua"
 entry_point = "${config_root}/tools/isaac/format_lua.py:setup_repo_tool"
 
 # AUTOREMOVE: END
-
-########################################################################################################################
-# Generate Examples List
-########################################################################################################################
-
-
-[examples_list]
-command = "examples_list"
-entry_point = "${config_root}/tools/docs/generate_examples_list.py:setup_repo_tool"
-
-[repo_package]
-# Hide default repo_package under internal command to be used by `repo_package_app`
-command = "_package"
-
-# Revert the override to the default command
-[repo_package_app]
-command = "package"
-entry_point = "omni.repo.package:setup_repo_tool"
-enabled = true
