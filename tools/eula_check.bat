@@ -1,10 +1,13 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-REM Check if EULA has already been accepted in either current directory or script's directory
+REM Get repository root (parent directory of script directory)
+set REPO_ROOT=%~dp0..
+
+REM Check if EULA has already been accepted in either current directory or repository root
 if exist ".eula_accepted" (
     exit /b 0
-) else if exist "%~dp0.eula_accepted" (
+) else if exist "%REPO_ROOT%\.eula_accepted" (
     exit /b 0
 )
 
@@ -21,8 +24,7 @@ set /p response="Do you accept the governing terms? (YES/NO): "
 
 REM Check response
 if /i "!response!"=="YES" (
-    type nul > ".eula_accepted"
-    type nul > "%~dp0.eula_accepted"
+    type nul > "%REPO_ROOT%\.eula_accepted"
     exit /b 0
 ) else (
     exit /b 1

@@ -3,7 +3,7 @@
 # Check EULA acceptance first
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 echo "Script dir: ${SCRIPT_DIR}"
-"${SCRIPT_DIR}/eula_check.sh"
+"${SCRIPT_DIR}/tools/eula_check.sh"
 EULA_STATUS=$?
 
 if [ $EULA_STATUS -ne 0 ]; then
