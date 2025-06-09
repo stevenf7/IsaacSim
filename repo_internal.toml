@@ -284,33 +284,14 @@ branch_name = "develop"
 # # FOR PRODUCTION #
 # branch_name = "release/5.0"
 
-
-
-[repo_generate_vscode_settings]
-
-output_paths = ["${root}/", "${root}/_build/${platform}/${config}"]
-template_paths = [
-  "${root}/.vscode/settings.template.json",
-  "${root}/source/scripts/vscode/${platform}/settings.json",
-]
-
-# paths specific to python autocomplete, not added to pythonpath/env
-python_analysis_extra_mapping = [
-  "$root/_build/$platform/$config/exts/*",
-  "$root/_build/$platform/$config/extsDeprecated/*",
-  "$root/_build/$platform/$config/extscache/*",
-  "$root/_build/$platform/$config/kit/exts/*",
-  "$root/_build/$platform/$config/kit/extscore/*",
-]
+########################################################################################################################
+# Generate changelog
+########################################################################################################################
 
 [repo_generate_changelog]
 exts_exclude = []
 extscache_paths = ["${root}/source/apps/isaacsim.exp.extscache.kit"]
 home_path = "${root}/source/extensions/"
-
-[repo_edit_sysconfig]
-sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_x86_64-linux-gnu.py"
-
 
 ########################################################################################################################
 # Find duplicate files
