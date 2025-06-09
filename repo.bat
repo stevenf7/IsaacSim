@@ -1,5 +1,12 @@
 @echo off
 
+:: Check EULA acceptance first
+call "%~dp0eula_check.bat"
+if %errorlevel% neq 0 (
+    echo Error: NVIDIA Software License Agreement and Product-Specific Terms for NVIDIA Omniverse must be accepted to proceed.
+    exit /b 1
+)
+
 :: Set OMNI_REPO_ROOT early so `repo` bootstrapping can target the repository
 :: root when writing out Python dependencies.
 :: Use SETLOCAL and ENDLOCAL to constrain these variables to this batch file.
