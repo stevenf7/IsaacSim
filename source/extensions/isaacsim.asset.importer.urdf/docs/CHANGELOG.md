@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.12] - 2025-06-10
+### Fixed
+- Cleanup preview.png
+
 ## [2.4.11] - 2025-06-09
 ### Fixed
 - Incorrect license header
