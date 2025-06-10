@@ -49,6 +49,41 @@ def detect_platform():
         raise RuntimeError(f"Unsupported platform: {system}")
 
 
+def should_filter_package(platform_filter, pkg):
+    """Check if a package should be filtered out based on platform filter.
+
+    The package is filtered out only if the platform_filter matches ALL platforms
+    listed in the package's platforms attribute.
+
+    Args:
+        platform_filter: String to filter out platforms
+        pkg: Package element with platforms and version attributes
+
+    Returns:
+        bool: True if the package should be filtered out, False otherwise
+    """
+    if not platform_filter:
+        return False
+
+    # Check version string for platform filter
+    version = pkg.get("version", "")
+    if platform_filter.lower() in version.lower():
+        return True
+
+    # Check platforms attribute
+    platforms = pkg.get("platforms", "")
+    if not platforms:
+        return False
+
+    # Split platforms by whitespace and check if platform_filter matches ALL of them
+    platform_list = platforms.split()
+    if not platform_list:
+        return False
+
+    # Only filter out if the platform_filter matches ALL platforms
+    return all(platform_filter.lower() in platform.lower() for platform in platform_list)
+
+
 def gather_package_data(files, config, platform_abi, platform_target, package=None, platform_filter=None):
     """Gather package data from XML files.
 
@@ -81,13 +116,7 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
             1
             for dep in root.findall(".//dependency")
             for pkg in dep.findall("package")
-            if not (
-                platform_filter
-                and (
-                    platform_filter.lower() in pkg.get("platforms", "").lower()
-                    or platform_filter.lower() in pkg.get("version", "").lower()
-                )
-            )
+            if not should_filter_package(platform_filter, pkg)
         )
         deps_count_by_file[file][config] = total_deps
         full_package_listing[file][config] = []
@@ -98,10 +127,7 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
             link_path = dep.get("linkPath")
             for pkg in dep.findall("package"):
                 # Skip if this package matches our filter
-                if platform_filter and (
-                    platform_filter.lower() in pkg.get("platforms", "").lower()
-                    or platform_filter.lower() in pkg.get("version", "").lower()
-                ):
+                if should_filter_package(platform_filter, pkg):
                     continue
                 package_paths[pkg.get("name")] = link_path
 
@@ -120,10 +146,7 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
         for dependency in root.findall(".//dependency"):
             for package_elem in dependency.findall("package"):
                 # Skip if this package matches our filter
-                if platform_filter and (
-                    platform_filter.lower() in package_elem.get("platforms", "").lower()
-                    or platform_filter.lower() in package_elem.get("version", "").lower()
-                ):
+                if should_filter_package(platform_filter, package_elem):
                     continue
 
                 name = package_elem.get("name")
