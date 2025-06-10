@@ -3,6 +3,7 @@
         "@nvidia.com",
         "gitlab-master.nvidia.com",
         "isaac-dev.ov.nvidia.com",
+        "content.ov.nvidia.com",
         "urm.nvidia.com",
         "nvidia.slack.com",
         "jirasw.nvidia.com"
