@@ -127,8 +127,8 @@ async def capture_next_frame(app, capture_file_path: str):
 
 def omni_url_parser(url: str):
     res = urllib.parse.urlparse(url)
-    username = os.getenv("OMNI_USER", default="test")
-    password = os.getenv("OMNI_PASS", default=username)
+    username = os.getenv("OMNI_USER")
+    password = os.getenv("OMNI_PASS")
     return res.netloc, username, password, res.path
 
 
