@@ -16,6 +16,7 @@
 """Script to check that all source files have the required SPDX license headers."""
 
 import argparse
+import json
 import os
 import re
 from datetime import datetime
@@ -34,6 +35,11 @@ FILE_EXTENSIONS = {
     ".h": "//",
     ".hpp": "//",
     ".hxx": "//",
+    # YAML files
+    ".yaml": "#",
+    ".yml": "#",
+    # Jupyter notebooks (special handling)
+    ".ipynb": "#",
     # Other common source files
     ".lua": "--",
     ".sh": "#",
@@ -125,6 +131,72 @@ def get_current_year() -> str:
     return str(datetime.now().year)
 
 
+def is_jupyter_notebook(file_path: Path) -> bool:
+    """Check if a file is a Jupyter notebook."""
+    return file_path.suffix.lower() == ".ipynb"
+
+
+def read_notebook(file_path: Path) -> Dict:
+    """Read and parse a Jupyter notebook file."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        raise Exception(f"Could not read notebook: {e}")
+
+
+def write_notebook(file_path: Path, notebook: Dict) -> bool:
+    """Write a Jupyter notebook to file."""
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(notebook, f, indent=2, ensure_ascii=False)
+            f.write("\n")  # Add trailing newline
+        return True
+    except Exception as e:
+        print(f"  Error writing notebook: {e}")
+        return False
+
+
+def get_notebook_header_lines(notebook: Dict) -> List[str]:
+    """Extract the first few lines from a Jupyter notebook for header checking."""
+    if "cells" not in notebook or not notebook["cells"]:
+        return []
+
+    first_cell = notebook["cells"][0]
+    if first_cell.get("cell_type") != "code" and first_cell.get("cell_type") != "markdown":
+        return []
+
+    source = first_cell.get("source", [])
+    if isinstance(source, str):
+        lines = source.split("\n")
+    else:
+        lines = [line.rstrip("\n") for line in source]
+
+    return lines[:20]  # Return first 20 lines for header checking
+
+
+def add_notebook_header(notebook: Dict, header_lines: List[str]) -> Dict:
+    """Add license header to a Jupyter notebook."""
+    # Create header cell content
+    header_content = "\n".join(header_lines) + "\n"
+
+    # Create new header cell
+    header_cell = {
+        "cell_type": "code",
+        "metadata": {},
+        "source": [header_content],
+        "outputs": [],
+        "execution_count": None,
+    }
+
+    # Insert at the beginning
+    if "cells" not in notebook:
+        notebook["cells"] = []
+
+    notebook["cells"].insert(0, header_cell)
+    return notebook
+
+
 def generate_license_header(file_path: Path, year: str = None) -> List[str]:
     """Generate the full license header for a file."""
     if year is None:
@@ -156,13 +228,19 @@ def check_file_header(file_path: Path) -> Tuple[bool, List[str]]:
         Tuple of (has_valid_header, list_of_issues)
     """
     try:
-        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-            lines = [line.rstrip() for line in f.readlines()[:20]]  # Check first 20 lines
+        if is_jupyter_notebook(file_path):
+            # Handle Jupyter notebooks
+            notebook = read_notebook(file_path)
+            lines = get_notebook_header_lines(notebook)
+        else:
+            # Handle regular text files
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                lines = [line.rstrip() for line in f.readlines()[:20]]  # Check first 20 lines
     except Exception as e:
         return False, [f"Could not read file: {e}"]
 
     if not lines:
-        return False, ["File is empty"]
+        return False, ["File is empty or has no content to check"]
 
     comment_symbol = get_comment_symbol(file_path)
     issues = []
@@ -217,14 +295,6 @@ def fix_file_header(file_path: Path) -> bool:
     Returns:
         True if the file was successfully fixed, False otherwise
     """
-    try:
-        # Read the entire file
-        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-            original_lines = f.readlines()
-    except Exception as e:
-        print(f"  Error reading file: {e}")
-        return False
-
     # Check if file already has proper headers
     has_valid_header, issues = check_file_header(file_path)
     if has_valid_header:
@@ -233,40 +303,68 @@ def fix_file_header(file_path: Path) -> bool:
     # Generate the license header
     license_header = generate_license_header(file_path)
 
-    # Determine where to insert the header
-    insert_index = 0
+    if is_jupyter_notebook(file_path):
+        # Handle Jupyter notebooks
+        try:
+            notebook = read_notebook(file_path)
 
-    # If the file starts with a shebang, insert after it
-    if original_lines and original_lines[0].startswith("#!"):
-        insert_index = 1
-        # Add an empty line after shebang if there isn't one
-        if len(original_lines) > 1 and original_lines[1].strip():
-            license_header.insert(0, "")
+            # Check if the first cell already has license header
+            if "cells" in notebook and notebook["cells"]:
+                first_cell_lines = get_notebook_header_lines(notebook)
+                # If first cell already has some license content, we might need to replace it
+                # For now, we'll add a new cell at the beginning
 
-    # Create the new file content
-    new_lines = []
+            # Add header to notebook
+            notebook = add_notebook_header(notebook, license_header)
+            return write_notebook(file_path, notebook)
 
-    # Add lines before the license header (e.g., shebang)
-    new_lines.extend(original_lines[:insert_index])
+        except Exception as e:
+            print(f"  Error processing notebook: {e}")
+            return False
+    else:
+        # Handle regular text files
+        try:
+            # Read the entire file
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                original_lines = f.readlines()
+        except Exception as e:
+            print(f"  Error reading file: {e}")
+            return False
 
-    # Add the license header
-    new_lines.extend([line + "\n" for line in license_header])
+        # Determine where to insert the header
+        insert_index = 0
 
-    # Add an empty line after the license header if the next line isn't empty
-    if insert_index < len(original_lines) and original_lines[insert_index].strip():
-        new_lines.append("\n")
+        # If the file starts with a shebang, insert after it
+        if original_lines and original_lines[0].startswith("#!"):
+            insert_index = 1
+            # Add an empty line after shebang if there isn't one
+            if len(original_lines) > 1 and original_lines[1].strip():
+                license_header.insert(0, "")
 
-    # Add the rest of the original file
-    new_lines.extend(original_lines[insert_index:])
+        # Create the new file content
+        new_lines = []
 
-    # Write the updated file
-    try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.writelines(new_lines)
-        return True
-    except Exception as e:
-        print(f"  Error writing file: {e}")
-        return False
+        # Add lines before the license header (e.g., shebang)
+        new_lines.extend(original_lines[:insert_index])
+
+        # Add the license header
+        new_lines.extend([line + "\n" for line in license_header])
+
+        # Add an empty line after the license header if the next line isn't empty
+        if insert_index < len(original_lines) and original_lines[insert_index].strip():
+            new_lines.append("\n")
+
+        # Add the rest of the original file
+        new_lines.extend(original_lines[insert_index:])
+
+        # Write the updated file
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.writelines(new_lines)
+            return True
+        except Exception as e:
+            print(f"  Error writing file: {e}")
+            return False
 
 
 def find_source_files(root_path: Path) -> List[Path]:

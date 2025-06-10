@@ -28,17 +28,7 @@ from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.filepicker import FilePickerDialog
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 
-# from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folder_clicked, on_open_IDE_clicked
 from .style import BUTTON_WIDTH, COLOR_W, COLOR_X, COLOR_Y, COLOR_Z, get_option_style, get_style
-
-# Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
 
 
 def on_copy_to_clipboard(to_copy: str) -> None:

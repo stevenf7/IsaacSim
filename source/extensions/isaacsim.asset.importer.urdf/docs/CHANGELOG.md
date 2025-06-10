@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.11] - 2025-06-09
+### Fixed
+- Incorrect license header
+
 ## [2.4.10] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
