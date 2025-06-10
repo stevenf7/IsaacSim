@@ -156,11 +156,6 @@ class ActorSDG:
 
         # Crash reporter
         self._settings.set("/crashreporter/enabled", True)
-        self._settings.set("/crashreporter/url", "https://services.nvidia.com/submit")
-        self._settings.set("/crashreporter/product", "agent-sdg-meshtool-debug")
-        self._settings.set("/crashreporter/version", "dev")
-        self._settings.set("/crashreporter/devOnlyOverridePrivacyAndForceUpload", True)
-        self._settings.set("/crashreporter/alwaysUpload", True)
         if self.crash_report_path:
             self._settings.set("/crashreporter/dumpDir", self.crash_report_path)
             path = self._settings.get("/crashreporter/dumpDir")
@@ -194,8 +189,12 @@ class ActorSDG:
 
     def _do_camera_placement(self):
         self._read_camera_json()
+        if not self.camera_placements_json:
+            return
+        print(f"camera_placements_json = {self.camera_placements_json}")
         prop = self._sim_manager.get_config_file_property("sensor", "camera_num")
         prop.set_value(len(self.camera_placements_json))
+        # Load camera
         self._sim_manager.load_camera_from_config_file()
         self._place_cameras()
 
