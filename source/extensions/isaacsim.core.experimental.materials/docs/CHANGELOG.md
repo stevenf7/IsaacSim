@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2025-06-07
+### Changed
+- Set test timeout to 900 seconds
+
 ## [0.2.0] - 2025-06-06
 ### Changed
 - Update source code to use the experimental core utils API
