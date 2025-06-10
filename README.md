@@ -1,10 +1,40 @@
+
+
+![Isaac Sim](docs/readme/hero_shot_compressed.jpg)
+
+---
 # Isaac Sim
 
-This repository contains the source code and build tools required to compile and run Isaac Sim. 
+[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
+[![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/20.04/)
+[![Windows platform](https://img.shields.io/badge/platform-windows--64-orange.svg)](https://www.microsoft.com/en-us/)
+[![License](https://img.shields.io/badge/license-BSD--3-yellow.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License](https://img.shields.io/badge/license-Apache--2.0-yellow.svg)](https://opensource.org/license/apache-2-0)
+
+
+NVIDIA Isaac Sim™ is a simulation platform built on NVIDIA Omniverse, designed to develop, test, train, and deploy AI-powered robots in realistic virtual environments. It supports importing robotic systems from common formats such as URDF, MJCF, and CAD. The simulator leverages high-fidelity, GPU-accelerated physics engines to simulate accurate dynamics and support multi-sensor RTX rendering at scale. It comes equipped with end-to-end workflows including synthetic data generation, reinforcement learning, ROS integration, and digital twin simulation. Isaac Sim provides the infrastructure needed to support robotics development at any stage.
+
+
+## Key Features
+
+- [Asset Import & Export](https://docs.isaacsim.omniverse.nvidia.com/latest/importer_exporter/importers_exporters.html): Importing and exporting robots and environments from and to non-USD format.
+- [Robot Tuning](https://docs.isaacsim.omniverse.nvidia.com/latest/robot_setup/index.html): Optimize robot for physics accuracy, computation efficiency, or photorealism
+- [Robot Simulation](https://docs.isaacsim.omniverse.nvidia.com/latest/robot_simulation/index.html): Tools for moving robots, such as controllers, motion generation and kinemtics solvers, and policy integration.
+- [Sensors](https://docs.isaacsim.omniverse.nvidia.com/latest/sensors/index.html): RTX and physics-based sensors
+
+## Key Applications
+
+- [Isaac Lab](https://docs.isaacsim.omniverse.nvidia.com/latest/isaac_lab_tutorials/index.html): GPU-accelerated framework built for reinforcement learning, imitation learning, and motion planning.
+- [ROS Bridge](https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/ros2_landing_page.html): Integration with Robot Opreating System (ROS).
+- [Synthetic Data Generation](https://docs.isaacsim.omniverse.nvidia.com/latest/sdg_index.html): Collection of SDG tools
 
 ## Documentation
 
-For the latest Isaac Sim documentation, release notes, quick start, tutorials, and more, see [Isaac Sim Documentation](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html)
+For the latest Isaac Sim documentation, release notes, quick start, tutorials, and more, see [Isaac Sim Documentation](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html). Follow these links to get started:
+
+- [Tutorials](https://docs.isaacsim.omniverse.nvidia.com/latest/introduction/quickstart_index.html)
+- [Assets](https://docs.isaacsim.omniverse.nvidia.com/latest/assets/usd_assets_overview.html)
+
 
 ## Prerequisites and Environment Setup
 
@@ -131,6 +161,25 @@ Isaac Sim uses a custom build system with the following key options:
 - `--post-build-only`: Only perform post-build step
 
 
+
+## Troubleshooting
+
+Please see the [FAQ](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/faq_index.html), [Troubleshooting](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/troubleshooting.html), and [Known Issues](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/known_issues.html) for common questions, fixes, and workarounds.
+
+
+## Support
+
+* Please use GitHub [Discussions](https://github.com/isaac-sim/IsaacSim/discussions) for discussing ideas, asking questions, and requests for new features.
+* Github [Issues](https://github.com/isaac-sim/IsaacSim/issues) should only be used to track executable pieces of work with a definite scope and a clear deliverable. These can be fixing bugs, documentation issues, new features, or general updates.
+
+## Connect with the NVIDIA Omniverse Community
+
+Have a project or resource you'd like to share more widely? We'd love to hear from you! Reach out to the
+NVIDIA Omniverse Community team at OmniverseCommunity@nvidia.com to discuss potential opportunities
+for broader dissemination of your work.
+
+
+
 ## Feature Branch Information
 **This repository is based on a Feature Branch of the Omniverse Kit SDK.** Feature Branches are regularly updated and best suited for testing and prototyping.
 
@@ -146,4 +195,5 @@ Additional components like the Omniverse Kit SDK are governed by the [NVIDIA Sof
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+We do not support direct community contributions at the moment. 
+
