@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.9.6] - 2025-06-09
+### Changed
+- Use default icon if app specific icon is not found
+
 ## [2.9.5] - 2025-06-04
 ### Fixed
 - App selector can now load ROS 2 Jazzy internal libraries in Ubuntu

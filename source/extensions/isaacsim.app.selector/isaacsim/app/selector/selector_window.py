@@ -291,6 +291,22 @@ class SelectorWindow:
     def _exit(self):
         omni.kit.app.get_app().post_quit()
 
+    def _get_icon_url(self, app_id: str) -> str:
+        """Get the icon URL for an app, falling back to default if the specific icon doesn't exist.
+
+        Args:
+            app_id: The application ID to get the icon for.
+
+        Returns:
+            The URL path to the icon file.
+        """
+        specific_icon_path = ICON_PATH / f"{app_id}.png"
+        if specific_icon_path.exists():
+            return f"{ICON_PATH}/{app_id}.png"
+        else:
+            # Fall back to default isaacsim.png icon
+            return f"{ICON_PATH}/isaacsim.png"
+
     def _build_app_widget(self, app_id):
         import omni.ui as ui
 
@@ -303,7 +319,6 @@ class SelectorWindow:
                 ui.RadioButton(
                     text=".",
                     style={"Button": {"padding": 20}, "Button.Image": {"alignment": ui.Alignment.CENTER}},
-                    # image_url=f"{ICON_PATH}/{an_app}.png",
                     name="app",
                     height=175,
                     width=175,
@@ -326,6 +341,7 @@ class SelectorWindow:
                 ui.Rectangle(name=bg_color)
                 app_title = self._appid_to_title(app_id)
                 description = self._appid_to_description(app_id)
+                icon_url = self._get_icon_url(app_id)
 
                 ui.RadioButton(
                     text=app_title,
@@ -339,7 +355,7 @@ class SelectorWindow:
                         },
                         "Label": {"alignment": ui.Alignment.LEFT},
                     },
-                    image_url=f"{ICON_PATH}/{app_id}.png",
+                    image_url=icon_url,
                     name="app",
                     # clicked_fn=lambda app=app_id: self._show_details(app),
                     mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._start_app(app, self._app_version),
