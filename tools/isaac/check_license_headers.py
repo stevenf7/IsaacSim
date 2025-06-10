@@ -43,7 +43,7 @@ FILE_EXTENSIONS = {
     # Other common source files
     ".lua": "--",
     ".sh": "#",
-    ".bat": "REM",
+    ".bat": "::",
 }
 
 # Required header lines (without comment symbols)
@@ -220,6 +220,140 @@ def has_shebang(lines: List[str]) -> bool:
     return len(lines) > 0 and lines[0].startswith("#!")
 
 
+def find_all_license_headers(lines: List[str]) -> List[Tuple[int, int]]:
+    """
+    Find all license headers in a file.
+
+    Returns:
+        List of tuples (start_index, end_index) for each license header found.
+    """
+    license_headers = []
+
+    # Skip shebang if present
+    search_start = 1 if has_shebang(lines) else 0
+
+    # All possible comment symbols to check for
+    all_comment_symbols = set(FILE_EXTENSIONS.values())
+    all_comment_symbols.add("REM")  # Also check for REM without @
+
+    i = search_start
+    while i < min(len(lines), 50):  # Check first 50 lines
+        line = lines[i].strip()
+
+        # Try to extract content by removing any known comment symbol
+        content = line
+        for cs in all_comment_symbols:
+            if line.startswith(cs):
+                content = line[len(cs) :].strip()
+                break
+
+        # Check if this line starts a license header
+        if "SPDX-FileCopyrightText:" in content or ("Copyright (c)" in content and "NVIDIA" in content):
+            # Found start of a license header, find its end
+            start_index = i
+            end_index = i + 1
+
+            # Continue until we find the end of this license header
+            for j in range(i + 1, min(len(lines), i + 20)):  # Look ahead up to 20 lines
+                next_line = lines[j].strip()
+
+                # Extract content from next line
+                next_content = next_line
+                for cs in all_comment_symbols:
+                    if next_line.startswith(cs):
+                        next_content = next_line[len(cs) :].strip()
+                        break
+
+                is_comment_line = any(next_line.startswith(cs) for cs in all_comment_symbols)
+
+                # Check if this line is still part of the license
+                if (
+                    is_comment_line
+                    or not next_line.strip()
+                    or "SPDX-License-Identifier:" in next_content
+                    or "Licensed under the Apache License" in next_content
+                    or "http://www.apache.org/licenses/LICENSE-2.0" in next_content
+                    or "limitations under the License" in next_content
+                    or "WITHOUT WARRANTIES OR CONDITIONS" in next_content
+                    or "distributed under the License" in next_content
+                    or "See the License for the specific language governing permissions" in next_content
+                    or "You may obtain a copy of the License at" in next_content
+                ):
+                    end_index = j + 1
+                else:
+                    # Found the end of the license header
+                    break
+
+            # Include any trailing empty lines
+            while end_index < len(lines) and not lines[end_index].strip():
+                end_index += 1
+
+            license_headers.append((start_index, end_index))
+            i = end_index  # Continue searching after this license header
+        else:
+            i += 1
+
+    return license_headers
+
+
+def has_multiple_license_headers(file_path: Path) -> Tuple[bool, List[Tuple[int, int]]]:
+    """
+    Check if a file has multiple license headers.
+
+    Returns:
+        Tuple of (has_multiple_headers, list_of_header_ranges)
+    """
+    try:
+        if is_jupyter_notebook(file_path):
+            # Handle Jupyter notebooks
+            notebook = read_notebook(file_path)
+            lines = get_notebook_header_lines(notebook)
+        else:
+            # Handle regular text files
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                lines = [line.rstrip() for line in f.readlines()[:50]]  # Check first 50 lines
+    except Exception:
+        return False, []
+
+    if not lines:
+        return False, []
+
+    license_headers = find_all_license_headers(lines)
+    return len(license_headers) > 1, license_headers
+
+
+def find_existing_license_header(lines: List[str], comment_symbol: str) -> Tuple[int, int]:
+    """
+    Find the start and end indices of the first existing license header.
+
+    Returns:
+        Tuple of (start_index, end_index) where end_index is exclusive.
+        Returns (-1, -1) if no license header is found.
+    """
+    license_headers = find_all_license_headers(lines)
+    if license_headers:
+        return license_headers[0]  # Return the first license header found
+    return (-1, -1)
+
+
+def remove_existing_license_header(lines: List[str], comment_symbol: str) -> List[str]:
+    """
+    Remove existing license header from the file lines.
+
+    Returns:
+        List of lines with the license header removed.
+    """
+    start_index, end_index = find_existing_license_header(lines, comment_symbol)
+
+    if start_index == -1:
+        return lines  # No license header found
+
+    # Remove the license header lines
+    new_lines = lines[:start_index] + lines[end_index:]
+
+    return new_lines
+
+
 def check_file_header(file_path: Path) -> Tuple[bool, List[str]]:
     """
     Check if a file has the required SPDX license header.
@@ -290,7 +424,7 @@ def check_file_header(file_path: Path) -> Tuple[bool, List[str]]:
 
 def fix_file_header(file_path: Path) -> bool:
     """
-    Add the required license header to a file that's missing it.
+    Add or replace the required license header in a file.
 
     Returns:
         True if the file was successfully fixed, False otherwise
@@ -299,6 +433,11 @@ def fix_file_header(file_path: Path) -> bool:
     has_valid_header, issues = check_file_header(file_path)
     if has_valid_header:
         return True  # Nothing to fix
+
+    # Check for multiple license headers - don't fix these automatically
+    has_multiple, header_ranges = has_multiple_license_headers(file_path)
+    if has_multiple:
+        return False  # Don't attempt to fix files with multiple headers
 
     # Generate the license header
     license_header = generate_license_header(file_path)
@@ -311,10 +450,25 @@ def fix_file_header(file_path: Path) -> bool:
             # Check if the first cell already has license header
             if "cells" in notebook and notebook["cells"]:
                 first_cell_lines = get_notebook_header_lines(notebook)
-                # If first cell already has some license content, we might need to replace it
-                # For now, we'll add a new cell at the beginning
+                comment_symbol = get_comment_symbol(file_path)
 
-            # Add header to notebook
+                # Check if first cell has existing license header
+                start_index, end_index = find_existing_license_header(first_cell_lines, comment_symbol)
+                if start_index != -1:
+                    # Replace the existing header in the first cell
+                    first_cell = notebook["cells"][0]
+                    if isinstance(first_cell.get("source", []), str):
+                        cell_lines = first_cell["source"].split("\n")
+                    else:
+                        cell_lines = [line.rstrip("\n") for line in first_cell["source"]]
+
+                    # Remove existing header and add new one
+                    cleaned_lines = remove_existing_license_header(cell_lines, comment_symbol)
+                    new_content = "\n".join(license_header + [""] + cleaned_lines)
+                    first_cell["source"] = [new_content + "\n"]
+                    return write_notebook(file_path, notebook)
+
+            # Add header to notebook (no existing header found)
             notebook = add_notebook_header(notebook, license_header)
             return write_notebook(file_path, notebook)
 
@@ -326,41 +480,44 @@ def fix_file_header(file_path: Path) -> bool:
         try:
             # Read the entire file
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                original_lines = f.readlines()
+                original_lines = [line.rstrip("\n\r") for line in f.readlines()]
         except Exception as e:
             print(f"  Error reading file: {e}")
             return False
+
+        comment_symbol = get_comment_symbol(file_path)
+
+        # Check for existing license header and remove it
+        cleaned_lines = remove_existing_license_header(original_lines, comment_symbol)
 
         # Determine where to insert the header
         insert_index = 0
 
         # If the file starts with a shebang, insert after it
-        if original_lines and original_lines[0].startswith("#!"):
+        if cleaned_lines and cleaned_lines[0].startswith("#!"):
             insert_index = 1
-            # Add an empty line after shebang if there isn't one
-            if len(original_lines) > 1 and original_lines[1].strip():
-                license_header.insert(0, "")
 
         # Create the new file content
         new_lines = []
 
         # Add lines before the license header (e.g., shebang)
-        new_lines.extend(original_lines[:insert_index])
+        new_lines.extend(cleaned_lines[:insert_index])
 
         # Add the license header
-        new_lines.extend([line + "\n" for line in license_header])
+        new_lines.extend(license_header)
 
         # Add an empty line after the license header if the next line isn't empty
-        if insert_index < len(original_lines) and original_lines[insert_index].strip():
-            new_lines.append("\n")
+        if insert_index < len(cleaned_lines) and cleaned_lines[insert_index].strip():
+            new_lines.append("")
 
         # Add the rest of the original file
-        new_lines.extend(original_lines[insert_index:])
+        new_lines.extend(cleaned_lines[insert_index:])
 
         # Write the updated file
         try:
             with open(file_path, "w", encoding="utf-8") as f:
-                f.writelines(new_lines)
+                for line in new_lines:
+                    f.write(line + "\n")
             return True
         except Exception as e:
             print(f"  Error writing file: {e}")
@@ -390,7 +547,9 @@ def main():
     parser.add_argument(
         "--root", type=str, default=".", help="Root directory to search for source files (default: current directory)"
     )
-    parser.add_argument("--fix", action="store_true", help="Attempt to add missing headers to files")
+    parser.add_argument(
+        "--fix", action="store_true", help="Attempt to add missing headers or replace incorrect headers in files"
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Show verbose output including files that pass")
     parser.add_argument("--extensions", nargs="*", help="Specific file extensions to check (e.g., .py .cpp .h)")
 
@@ -424,8 +583,17 @@ def main():
     files_with_issues = []
     files_passed = []
     files_fixed = []
+    files_with_multiple_headers = []
 
     for file_path in source_files:
+        # First check if file has multiple license headers
+        has_multiple, header_ranges = has_multiple_license_headers(file_path)
+
+        if has_multiple:
+            files_with_multiple_headers.append(file_path)
+            print(f"❌ ERROR: {file_path.relative_to(root_path)} has multiple license headers (lines {header_ranges})")
+            continue
+
         has_valid_header, issues = check_file_header(file_path)
 
         if has_valid_header:
@@ -437,10 +605,10 @@ def main():
                 print(f"🔧 Fixing {file_path.relative_to(root_path)}")
                 if fix_file_header(file_path):
                     files_fixed.append(file_path)
-                    print(f"  ✓ Successfully added license header")
+                    print(f"  ✓ Successfully added/updated license header")
                 else:
                     files_with_issues.append((file_path, issues))
-                    print(f"  ✗ Failed to add license header")
+                    print(f"  ✗ Failed to add/update license header")
             else:
                 files_with_issues.append((file_path, issues))
                 print(f"✗ {file_path.relative_to(root_path)}")
@@ -453,13 +621,22 @@ def main():
     if args.fix:
         print(f"  Files fixed: {len(files_fixed)}")
     print(f"  Files with issues: {len(files_with_issues)}")
+    if files_with_multiple_headers:
+        print(f"  Files with multiple headers: {len(files_with_multiple_headers)}")
+
+    if files_with_multiple_headers:
+        print(f"\nERROR: Files with multiple license headers found:")
+        for file_path in files_with_multiple_headers:
+            print(f"  {file_path.relative_to(root_path)}")
+        print(f"Please manually fix these files by removing duplicate headers.")
+        return 1
 
     if files_with_issues:
         if not args.fix:
             print(f"\nFiles with missing or incorrect license headers:")
             for file_path, _ in files_with_issues:
                 print(f"  {file_path.relative_to(root_path)}")
-            print(f"\nRun with --fix to automatically add missing headers")
+            print(f"\nRun with --fix to automatically add missing headers or replace incorrect ones")
 
         return 1
     else:
