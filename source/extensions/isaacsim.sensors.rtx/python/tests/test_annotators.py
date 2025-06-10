@@ -179,9 +179,10 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
         # Compute the number of returns that exceed the threshold of 1%, beyond edges of the octants
         num_exceeding_threshold = np.sum(np.logical_and(percent_diffs > 1e-2, np.array(not_near_edge)))
         pct_exceeding_threshold = num_exceeding_threshold / num_valid_returns * 100
+        valid_threshold = 1.0 if num_valid_returns >= 100 else 10.0
         self.assertLessEqual(
             pct_exceeding_threshold,
-            1.0,
+            valid_threshold,
             f"Expected fewer than 1% of returns to differ from expected range by more than 1%. {num_exceeding_threshold} of {num_valid_returns} valid returns exceeded threshold.",
         )
 

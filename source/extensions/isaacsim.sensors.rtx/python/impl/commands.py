@@ -104,7 +104,17 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
             found_config = False
             for config in self._supported_configs:
                 config_path = Path(config)
-                if self._config == config_path.stem:
+                vendor_name = config_path.parts[3]
+                config_name = config_path.stem
+                config_name_without_vendor = config_name
+                if config_name.startswith(vendor_name):
+                    config_name_without_vendor = config_name[len(vendor_name) + 1 :]
+                if (
+                    self._config == config_name
+                    or self._config == config_name.replace("_", " ")
+                    or self._config == config_name_without_vendor
+                    or self._config == config_name_without_vendor.replace("_", " ")
+                ):
                     found_config = True
                     prim = add_reference_to_stage(
                         usd_path=get_assets_root_path() + config,
