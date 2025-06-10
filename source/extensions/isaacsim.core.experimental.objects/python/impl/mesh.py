@@ -532,7 +532,7 @@ class Mesh(XformPrim):
             >>> face_indices, face_counts, face_interpolations, face_holes = prims.get_face_specs()
             >>> # print the first prim's face specifications (Plane mesh composed of 4 points with 1 face)
             >>> print(face_indices[0])  # points indices of the face
-            [0 2 3 1]
+            [0 1 3 2]
             >>> print(face_counts[0])  # number of points in the face
             [4]
             >>> face_interpolations[0]  # face-varying interpolation rule
