@@ -105,8 +105,7 @@ vscode.python_env.PYTHONPATH = [
 vscode.python_env.PATH = [
   "$$$${PATH}",
   "$root/_build/$platform/$config",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/IsaacSensorSchema/lib",
-  "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/plugins/RangeSensorSchema/lib",
+  "$root/_build/$platform/$config/exts/isaacsim.robot.schema/plugins/lib",
   "$root/_build/$platform/$config/exts/isaacsim.robot_motion.lula/pip_prebundle",
   "$root/_build/$platform/$config/exts/isaacsim.asset.exporter.urdf/pip_prebundle",
   "$root/_build/$platform/$config/kit",
