@@ -1,5 +1,5 @@
 [package]
-version = "1.0.14"
+version = "1.1.0"
 category = "Utility"
 title = "Jupyter notebook integration"
 description = "Jupyter notebook version of Omniverse's script editor"
@@ -21,13 +21,13 @@ writeTarget.kit = true
 name = "isaacsim.code_editor.jupyter"
 
 [python.pipapi]
-requirements = ["jupyterlab", "notebook", "nbclassic", "chardet", "python-language-server", "jedi", "requests", "h11"]
+requirements = ["jupyterlab", "chardet", "python-language-server", "jedi", "requests", "h11"]
 use_online_index = true
 ignore_import_check = true
 
 [settings]
 # IP address where the extension server will listen for connections.
-exts."isaacsim.code_editor.jupyter".host = "0.0.0.0"
+exts."isaacsim.code_editor.jupyter".host = "127.0.0.1"
 # Port number where the extension server will listen for connections.
 exts."isaacsim.code_editor.jupyter".port = 8227
 # Whether to kill applications/processes that use the same ports before enabling the extension.
@@ -36,10 +36,8 @@ exts."isaacsim.code_editor.jupyter".kill_processes_with_port_in_use = false
 
 # jupyter notebook settings
 
-# Whether to use the classic notebook interface. If false, the Jupyter Lab interface is used.
-exts."isaacsim.code_editor.jupyter".classic_notebook_interface = false
 # IP address where the Jupyter server is being started.
-exts."isaacsim.code_editor.jupyter".notebook_ip = "0.0.0.0"
+exts."isaacsim.code_editor.jupyter".notebook_ip = "127.0.0.1"
 # Port number where the Jupyter server is being started.
 exts."isaacsim.code_editor.jupyter".notebook_port = 8228
 # Jupyter server token for token-based authentication. If empty, the server will start without authentication.

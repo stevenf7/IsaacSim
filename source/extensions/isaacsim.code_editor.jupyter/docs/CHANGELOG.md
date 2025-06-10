@@ -1,4 +1,12 @@
 # Changelog
+
+## [1.1.0] - 2025-06-10
+### Changed
+- Set the default IP address for the Jupyter and extension servers to 127.0.0.1
+
+### Removed
+- Remove the classic Jupyter Notebook interface
+
 ## [1.0.14] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
