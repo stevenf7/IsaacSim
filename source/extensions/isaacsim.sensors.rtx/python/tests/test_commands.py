@@ -47,38 +47,54 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
 
         for config_path in SUPPORTED_LIDAR_CONFIGS:
             config = Path(config_path).stem
+            vendor_name = Path(config_path).parts[3]
+            # Try all possible supported config names:
+            # 1. exact match to config path stem
+            # 2. exact match to config path stem, with spaces instead of underscores
+            # 3. exact match to config path stem, with vendor name stripped
+            # 4. exact match to config path stem, with spaces instead of underscores, and vendor name stripped
+            allowed_configs = [
+                config,
+                config.replace("_", " "),
+            ]
+            if config.startswith(vendor_name):
+                allowed_configs.append(config[len(vendor_name) + 1 :])
+                allowed_configs.append(config[len(vendor_name) + 1 :].replace("_", " "))
             # Create new stage for each config to avoid conflicts
             await omni.usd.get_context().new_stage_async()
             self.stage = omni.usd.get_context().get_stage()
+            for i, allowed_config in enumerate(allowed_configs):
 
-            for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
-                path = f"/RtxLidar_{config}_{variant}"
-                _, prim = omni.kit.commands.execute(
-                    "IsaacSensorCreateRtxLidar",
-                    path=path,
-                    config=config,
-                    variant=variant,
-                    translation=translation,
-                    orientation=orientation,
-                )
-
-                self.assertIsNotNone(prim, f"Failed to create prim for config {config} and variant {variant}")
-                self.assertEqual(prim.GetTypeName(), "OmniLidar")
-
-                if variant is not None:
-                    prim = get_prim_at_path(path)
-                    variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
-                    self.assertGreater(
-                        len(variant_set.GetVariantNames()),
-                        0,
-                        f"Variant set '{SUPPORTED_LIDAR_VARIANT_SET_NAME}' on prim {path} does not contain any variants.",
+                for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
+                    path = f"/RtxLidar_{config}_{i}_{variant}"
+                    _, prim = omni.kit.commands.execute(
+                        "IsaacSensorCreateRtxLidar",
+                        path=path,
+                        config=allowed_config,
+                        variant=variant,
+                        translation=translation,
+                        orientation=orientation,
                     )
-                    current_variant = variant_set.GetVariantSelection()
-                    self.assertEqual(
-                        current_variant,
-                        variant,
-                        f"Incorrect variant selection {current_variant} for config {config} and variant {variant}",
+
+                    self.assertIsNotNone(
+                        prim, f"Failed to create prim for config {allowed_config} and variant {variant}"
                     )
+                    self.assertEqual(prim.GetTypeName(), "OmniLidar")
+
+                    if variant is not None:
+                        prim = get_prim_at_path(path)
+                        variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
+                        self.assertGreater(
+                            len(variant_set.GetVariantNames()),
+                            0,
+                            f"Variant set '{SUPPORTED_LIDAR_VARIANT_SET_NAME}' on prim {path} does not contain any variants.",
+                        )
+                        current_variant = variant_set.GetVariantSelection()
+                        self.assertEqual(
+                            current_variant,
+                            variant,
+                            f"Incorrect variant selection {current_variant} for config {allowed_config} and variant {variant}",
+                        )
 
     async def test_create_rtx_lidar_invalid_config(self):
         """Test creating an RTX Lidar sensor with an invalid configuration."""

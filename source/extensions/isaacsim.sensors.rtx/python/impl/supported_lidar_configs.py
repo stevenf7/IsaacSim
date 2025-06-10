@@ -110,9 +110,9 @@ SUPPORTED_LIDAR_CONFIGS = {
     # },
     "/Isaac/Sensors/SICK/multiScan136/SICK_multiScan136.usd": set(),
     "/Isaac/Sensors/SICK/multiScan165/SICK_multiScan165.usd": set(),
-    # "/Isaac/Sensors/SICK/nanoScan3/SICK_nanoScan3.usd": {
-    #     "CAAZ30AN1", # TODO: LidarPointAccumulator doesn't work with this config
-    # },
+    "/Isaac/Sensors/SICK/nanoScan3/SICK_nanoScan3.usd": {
+        "CAAZ30AN1",
+    },
     "/Isaac/Sensors/SICK/picoScan150/SICK_picoScan150.usd": {
         "Normal_1",
         "Normal_2",
@@ -126,6 +126,7 @@ SUPPORTED_LIDAR_CONFIGS = {
         "Normal_10",
         "Normal_11",
     },
+    "/Isaac/Sensors/SICK/TIM781/SICK_TIM781.usd": set(),
     "/Isaac/Sensors/Slamtec/RPLIDAR_S2E/Slamtec_RPLIDAR_S2E.usd": set(),
     "/Isaac/Sensors/ZVISION/ZVISION_ML30S.usda": set(),
     "/Isaac/Sensors/ZVISION/ZVISION_MLXS.usda": set(),

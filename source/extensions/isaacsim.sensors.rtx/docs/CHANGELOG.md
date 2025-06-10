@@ -1,4 +1,8 @@
 # Changelog
+## [15.2.1] - 2025-06-10
+### Added
+- Expanded support for specifying supported Lidars by config name.
+
 ## [15.2.0] - 2025-06-06
 ### Added
 - SUPPORTED_LIDAR_CONFIGS maps official Lidar asset paths to variants
