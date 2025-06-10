@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2025-06-10
+### Changed
+- Set the default IP address for the extension server to 127.0.0.1
+
 ## [1.0.10] - 2025-06-09
 ### Changed
 - Set the `carb_logs` flag to False by default

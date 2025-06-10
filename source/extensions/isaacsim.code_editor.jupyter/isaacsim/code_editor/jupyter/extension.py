@@ -53,7 +53,6 @@ class Extension(omni.ext.IExt):
         self._notebook_token = settings.get("/exts/isaacsim.code_editor.jupyter/notebook_token")
         self._notebook_dir = settings.get("/exts/isaacsim.code_editor.jupyter/notebook_dir")
         self._command_line_options = settings.get("/exts/isaacsim.code_editor.jupyter/command_line_options")
-        self._classic_notebook_interface = settings.get("/exts/isaacsim.code_editor.jupyter/classic_notebook_interface")
 
         kill_processes_with_port_in_use = settings.get(
             "/exts/isaacsim.code_editor.jupyter/kill_processes_with_port_in_use"
@@ -306,7 +305,6 @@ class Extension(omni.ext.IExt):
             self._notebook_ip,
             str(self._notebook_port),
             self._notebook_token,
-            str(self._classic_notebook_interface),
             self._notebook_dir,
             self._command_line_options,
         ]
