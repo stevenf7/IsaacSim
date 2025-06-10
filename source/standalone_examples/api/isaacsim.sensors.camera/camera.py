@@ -20,7 +20,7 @@ simulation_app = SimulationApp({"headless": False})
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--debug", action="store_true", help="Enable debug output.")
+parser.add_argument("--disable_output", action="store_true", help="Disable debug output.")
 parser.add_argument("--test", action="store_true", help="Enable test mode (fixed frame count).")
 args, _ = parser.parse_known_args()
 
@@ -74,20 +74,20 @@ camera.add_motion_vectors_to_frame()
 reset_needed = False
 while simulation_app.is_running() and (not args.test or i < 601):
     my_world.step(render=True)
-    if args.debug:
+    if not args.disable_output:
         print(camera.get_current_frame())
     if (i + 1) % 100 == 0:
         points_2d = camera.get_image_coords_from_world_points(
             np.array([cube_3.get_world_pose()[0], cube_2.get_world_pose()[0]])
         )
         points_3d = camera.get_world_points_from_image_coords(points_2d, np.array([24.94, 24.9]))
-        if args.debug:
+        if not args.disable_output:
             print(points_2d)
             print(points_3d)
         imgplot = plt.imshow(camera.get_rgba()[:, :, :3])
         plt.draw()
         plt.savefig(f"camera.frame{i:03d}.png")
-        if args.debug:
+        if not args.disable_output:
             print(camera.get_current_frame()["motion_vectors"])
     if my_world.is_stopped() and not reset_needed:
         reset_needed = True
