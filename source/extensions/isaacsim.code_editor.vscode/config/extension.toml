@@ -1,5 +1,5 @@
 [package]
-version = "1.0.9"
+version = "1.0.10"
 category = "Utility"
 title = "VS Code integration"
 description = "VS Code version of Omniverse's script editor"
@@ -26,4 +26,5 @@ exts."isaacsim.code_editor.vscode".host = "0.0.0.0"
 # Port number where the extension server will listen for connections.
 exts."isaacsim.code_editor.vscode".port = 8226
 # Whether to publish incoming carb logging messages.
-exts."isaacsim.code_editor.vscode".carb_logs = true
+# Warning: enabling this feature may cause the application to freeze in certain circumstances.
+exts."isaacsim.code_editor.vscode".carb_logs = false
