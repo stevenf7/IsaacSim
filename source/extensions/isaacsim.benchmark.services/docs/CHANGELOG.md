@@ -1,4 +1,8 @@
 # Changelog
+## [2.8.5] - 2025-06-09
+### Changed
+- Removed unneeded default settings for omni connection
+
 ## [2.8.4] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
