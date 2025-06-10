@@ -208,7 +208,7 @@ function create_tests()
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.camera.camera",
         "standalone_examples/api/isaacsim.sensors.camera/camera.py",
-        "--test"
+        "--test --disable_output"
     )
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.camera.camera",
