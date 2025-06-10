@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.10] - 2025-06-09
+### Changed
+- Set the `carb_logs` flag to False by default
+
 ## [1.0.9] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
