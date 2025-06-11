@@ -1616,8 +1616,8 @@ stage-to-github:
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - cp ../../tools/ci/config.packman.xml tools/packman
-      - python -m pip install tomlkit
-      - python ../../tools/ci/update_repo_toml.py repo.toml
+      - ./../../tools/packman/python.sh -m pip install tomlkit
+      - ./../../tools/packman/python.sh ../../tools/ci/update_repo_toml.py repo.toml
       - STAGED_VERSION=$(cat VERSION)
       - git config user.email "sabdulajees@nvidia.com"
       - git config user.name "sheikh-nv"
@@ -1661,8 +1661,8 @@ stage-to-gitlab:
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - cp ../../tools/ci/config.packman.xml tools/packman
-      - python -m pip install tomlkit
-      - python ../../tools/ci/update_repo_toml.py repo.toml
+      - ./../../tools/packman/python.sh -m pip install tomlkit
+      - ./../../tools/packman/python.sh ../../tools/ci/update_repo_toml.py repo.toml
       - STAGED_VERSION=$(cat VERSION)
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
