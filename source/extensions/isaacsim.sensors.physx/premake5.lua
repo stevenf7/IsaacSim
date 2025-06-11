@@ -32,7 +32,6 @@ includedirs {
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
-    "%{root}/_build/target-deps/usd_schema_semantics/%{cfg.buildcfg}/include",
     extsbuild_dir .. "/omni.syntheticdata/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
