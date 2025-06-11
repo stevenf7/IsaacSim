@@ -1621,8 +1621,8 @@ stage-to-github:
       - STAGED_VERSION=$(cat VERSION)
       - git config user.email "sabdulajees@nvidia.com"
       - git config user.name "sheikh-nv"
-      - echo "Staging Isaac Sim $STAGED_VERSION"
-      - git add -A && git commit -m "Staging Isaac Sim $STAGED_VERSION"
+      - echo "Update Isaac Sim $STAGED_VERSION"
+      - git add -A && git commit -m "Update Isaac Sim $STAGED_VERSION"
       - git push
       # - git tag -f $STAGED_VERSION
       # - git push origin $STAGED_VERSION
