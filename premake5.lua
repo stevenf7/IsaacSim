@@ -78,9 +78,10 @@ function setup_isaacsim_folder_links()
         { "%{root}/source/apps", bin_dir .. "/apps" },
     }
 
+    if not os.isdir(root .. "/_build/PACKAGE-LICENSES") then os.mkdir(root .. "/_build/PACKAGE-LICENSES") end
+    
 -- AUTOREMOVE: BEGIN
     -- Link all licenses (if not present just link empty dir)
-    if not os.isdir(root .. "/_build/PACKAGE-LICENSES") then os.mkdir(root .. "/_build/PACKAGE-LICENSES") end
     repo_build.prebuild_copy {
         -- Copy licenses
         { "tools/internal-licenses/*", bin_dir .. "/PACKAGE-LICENSES" },
