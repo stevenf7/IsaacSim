@@ -18,6 +18,7 @@ if "pip" not in repo_toml["repo_build"]["fetch"]:
     repo_toml["repo_build"]["fetch"]["pip"] = tomlkit.table()
 
 repo_toml["repo_build"]["fetch"]["pip"]["licensing_enabled"] = False
+repo_toml["repo_build"]["fetch"]["pip"]["publish_pip_cache"] = False
 
 # Create the environment entry as an array of tables
 # First, ensure the repo_kit_pull_extensions section exists
