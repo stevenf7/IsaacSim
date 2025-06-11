@@ -1,4 +1,10 @@
 # Changelog
+## [1.2.4] - 2025-06-05
+### Changed
+- Added checks to camera sensor horizontal and vertical aperture to ensure square pixels are maintained
+- Updated camera sensor projection golden data with aperture values ensuring square pixels
+- Added separate pointcloud tests
+
 ## [1.2.3] - 2025-06-04
 ### Changed
 - Switch to get_lens_distortion_model in deprecated methods
