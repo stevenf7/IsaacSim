@@ -1616,6 +1616,7 @@ stage-to-github:
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - cp ../../tools/ci/config.packman.xml tools/packman
+      - patch -p0 < ../../tools/ci/repo_toml_public.patch
       - STAGED_VERSION=$(cat VERSION)
       - git config user.email "sabdulajees@nvidia.com"
       - git config user.name "sheikh-nv"
@@ -1659,6 +1660,7 @@ stage-to-gitlab:
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
       - cp ../../tools/ci/config.packman.xml tools/packman
+      - patch -p0 < ../../tools/ci/repo_toml_public.patch
       - STAGED_VERSION=$(cat VERSION)
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
