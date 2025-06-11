@@ -19,7 +19,6 @@ import math
 import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.kit.test
-import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.prims import SingleXFormPrim
@@ -27,34 +26,6 @@ from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import Camera
 from omni.kit.viewport.utility import get_active_viewport
-
-GOLDEN_POINTCLOUD_WORLD_FRAME = np.array(
-    [
-        [3.4925, 3.4925, 0.0],
-        [3.4925, 0.0, -0.0],
-        [3.4925, -3.4925, 0.0],
-        [0.0, 3.4925, -0.0],
-        [0.0, 0.0, 0.0],
-        [0.0, -3.4925, -0.0],
-        [-3.4925, 3.4925, 0.0],
-        [-3.4925, 0.0, -0.0],
-        [-3.4925, -3.4925, 0.0],
-    ]
-)
-
-GOLDEN_POINTCLOUD_CAMERA_FRAME = np.array(
-    [
-        [-3.4925, -3.4925, 25.0],
-        [0.0, -3.4925, 25.0],
-        [3.4925, -3.4925, 25.0],
-        [-3.4925, 0.0, 25.0],
-        [0.0, 0.0, 25.0],
-        [3.4925, 0.0, 25.0],
-        [-3.4925, 3.4925, 25.0],
-        [0.0, 3.4925, 25.0],
-        [3.4925, 3.4925, 25.0],
-    ]
-)
 
 
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
@@ -153,11 +124,11 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             np.array([self.cube_3.get_world_pose()[0], self.cube_2.get_world_pose()[0]])
         )
         # visual inspection golden values
-        self.assertTrue(np.allclose(points_2d[0], [103.51783101, 295.75665], atol=0.1))
-        self.assertTrue(np.allclose(points_2d[1], [54.40569416, -40.09332], atol=0.1))
+        self.assertTrue(np.allclose(points_2d[0], [103.51776, 250.4115], atol=0.01))
+        self.assertTrue(np.allclose(points_2d[1], [54.405712, 5.3428555], atol=0.01))
         points_3d = self.camera.get_world_points_from_image_coords(points_2d, np.array([24.94, 24.9]))
-        self.assertTrue(np.allclose(points_3d[0], [-4.99799372, 0.99959505, 0.06], atol=0.01))
-        self.assertTrue(np.allclose(points_3d[1], [4.99999901, 2.99999974, 0.1], atol=0.01))
+        self.assertTrue(np.allclose(points_3d[0], [-5, 1, 0.06], atol=0.01))
+        self.assertTrue(np.allclose(points_3d[1], [5, 3, 0.1], atol=0.01))
         return
 
     async def test_data_acquisition(self):

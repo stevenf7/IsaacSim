@@ -69,6 +69,9 @@ W_U_TRANSFORM = np.array([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 
 # from World camera convention to USD camera convention
 U_W_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 1]])
 
+# USD camera attributes are stored in tenths of a unit, this constant converts them to stage units
+USD_CAMERA_TENTHS_TO_STAGE_UNIT = 10.0
+
 
 def point_to_theta(camera_matrix, x, y):
     """This helper function returns the theta angle of the point."""
@@ -280,6 +283,10 @@ class Camera(BaseSensor):
         self._previous_time = None
         self._og_controller = og.Controller()
         self._sdg_graph_pipeline = self._og_controller.graph("/Render/PostProcess/SDGPipeline")
+
+        # Make sure the camera aperture is set to use square pixels even if initilize() is not called
+        self._maintain_square_pixel_aperture(mode="horizontal")
+
         return
 
     def __del__(self):
@@ -488,14 +495,47 @@ class Camera(BaseSensor):
             self._previous_time = current_time
         return
 
-    def set_resolution(self, value: Tuple[int, int]) -> None:
+    def _maintain_square_pixel_aperture(self, mode: str = "horizontal"):
+        """Ensure apertures are in sync with aspect ratio to maintain square pixels.
+
+        Args:
+            mode (str): 'horizontal' to use horizontal aperture as source, 'vertical' to use vertical as source. Defaults to 'horizontal' if None or invalid.
         """
+        aspect_ratio = self.get_aspect_ratio()
+        horizontal_aperture = self.prim.GetAttribute("horizontalAperture").Get() / USD_CAMERA_TENTHS_TO_STAGE_UNIT
+        vertical_aperture = self.prim.GetAttribute("verticalAperture").Get() / USD_CAMERA_TENTHS_TO_STAGE_UNIT
+
+        # Default to 'horizontal' if mode is None or not 'vertical'
+        if mode != "vertical":
+            expected_vertical_aperture = horizontal_aperture / aspect_ratio
+            if not np.isclose(vertical_aperture, expected_vertical_aperture, rtol=1e-5, atol=1e-8):
+                carb.log_warn(
+                    f"'verticalAperture' ({vertical_aperture}) and 'horizontalAperture' ({horizontal_aperture}) are inconsistent with the pixel resolution aspect ratio ({aspect_ratio}). Setting 'verticalAperture' to {expected_vertical_aperture} to ensure square pixels."
+                )
+                self.prim.GetAttribute("verticalAperture").Set(
+                    expected_vertical_aperture * USD_CAMERA_TENTHS_TO_STAGE_UNIT
+                )
+        else:
+            expected_horizontal_aperture = vertical_aperture * aspect_ratio
+            if not np.isclose(horizontal_aperture, expected_horizontal_aperture, rtol=1e-5, atol=1e-8):
+                carb.log_warn(
+                    f"'horizontalAperture' ({horizontal_aperture}) and 'verticalAperture' ({vertical_aperture}) are inconsistent with the pixel resolution aspect ratio ({aspect_ratio}). Setting 'horizontalAperture' to {expected_horizontal_aperture} to ensure square pixels."
+                )
+                self.prim.GetAttribute("horizontalAperture").Set(
+                    expected_horizontal_aperture * USD_CAMERA_TENTHS_TO_STAGE_UNIT
+                )
+
+    def set_resolution(self, value: Tuple[int, int], maintain_square_pixels: bool = True) -> None:
+        """Set the resolution of the camera sensor. This will check and update the apertures to maintain square pixels.
 
         Args:
             value (Tuple[int, int]): width and height respectively.
-
+            maintain_square_pixels (bool): If True, keep apertures in sync for square pixels.
         """
-        set_resolution(self._render_product_path, value)
+        self._resolution = value
+        set_resolution(self._render_product_path, self._resolution)
+        if maintain_square_pixels:
+            self._maintain_square_pixel_aperture(mode="horizontal")
         return
 
     def get_resolution(self) -> Tuple[int, int]:
@@ -503,7 +543,7 @@ class Camera(BaseSensor):
         Returns:
             Tuple[int, int]: width and height respectively.
         """
-        return get_resolution(self._render_product_path)
+        return self._resolution
 
     def get_aspect_ratio(self) -> float:
         """
@@ -1034,18 +1074,23 @@ class Camera(BaseSensor):
     def get_pointcloud(self, device: str = None, world_frame: bool = True) -> np.ndarray | wp.array:
         """Get a 3D pointcloud from the camera sensor.
 
+        This method attempts to use the pointcloud annotator first, falling back to depth-based
+        calculation using the distance_to_image_plane annotator and perspective projection with
+        the camera's intrinsic parameters.
+
         Args:
-            device: str, optional, default is None. If None, uses self._annotator_device.
-                Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>']
-            world_frame (bool, optional): If True, returns points in world frame.
-                If False, returns points in camera frame.
+            device: Device to place tensors on. Select from ['cpu', 'cuda', 'cuda:<device_index>'].
+                If None, uses self._annotator_device.
+            world_frame: If True, returns points in world frame. If False, returns points in camera frame.
 
         Returns:
             np.ndarray | wp.array: A (N x 3) array of 3D points (X, Y, Z) in either world or camera frame,
                    where N is the number of points.
         Note:
-            The fallback method uses the depth (distance_to_camera_plane) annotator and
+            The fallback method uses the depth (distance_to_image_plane) annotator and
             performs a perspective projection using the camera's intrinsic parameters to generate the pointcloud.
+            Point ordering may differ between the pointcloud annotator and depth-based fallback methods,
+            even though the 3D locations are equivalent.
         """
         # Use annotator device as fallback if device is None
         device = self._annotator_device if device is None else device
@@ -1054,7 +1099,10 @@ class Camera(BaseSensor):
         if annot := self._custom_annotators.get("pointcloud"):
             pointcloud_data = annot.get_data(device=device).get("data")
             if pointcloud_data is None:
-                return None
+                carb.log_warn(
+                    f"[get_pointcloud][{self.prim_path}] WARNING: 'pointcloud' annotator returned None, Returning empty array"
+                )
+                return np.array([])
             if world_frame:
                 return pointcloud_data
             else:
@@ -1095,9 +1143,15 @@ class Camera(BaseSensor):
         depth = self.get_depth(device=device)
         if depth is None:
             carb.log_warn(
-                f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator not available to get depth data, Returning None"
+                f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator not available to get depth data, Returning empty array"
             )
-            return None
+            return np.array([])
+
+        if depth.shape[0] == 0:
+            carb.log_warn(
+                f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator returned empty depth data, Returning empty array"
+            )
+            return np.array([])
 
         # Determine backend based on device and depth type
         is_warp_array = isinstance(depth, wp.types.array)
@@ -1121,7 +1175,7 @@ class Camera(BaseSensor):
             # Use numpy for non-warp arrays and CPU
             ww = np.linspace(0.5, im_width - 0.5, im_width, dtype=np.float32)
             hh = np.linspace(0.5, im_height - 0.5, im_height, dtype=np.float32)
-            xmap, ymap = np.meshgrid(ww, hh)
+            xmap, ymap = np.meshgrid(ww, hh, indexing="xy")
             points_2d = np.column_stack((xmap.ravel(), ymap.ravel()))
 
         # Project 2D pixel coordinates to 3D world points using depth values
@@ -1147,7 +1201,7 @@ class Camera(BaseSensor):
         Returns:
             float: Value of camera prim focalLength attribute, converted to stage units.
         """
-        return self.prim.GetAttribute("focalLength").Get() / 10.0
+        return self.prim.GetAttribute("focalLength").Get() / USD_CAMERA_TENTHS_TO_STAGE_UNIT
 
     def set_focal_length(self, value: float):
         """Sets focal length of camera prim, in stage units. Longer focal length corresponds to narrower FOV, shorter focal length corresponds to wider FOV.
@@ -1155,7 +1209,7 @@ class Camera(BaseSensor):
         Args:
             value (float): Desired focal length of camera prim, in stage units.
         """
-        self.prim.GetAttribute("focalLength").Set(value * 10.0)
+        self.prim.GetAttribute("focalLength").Set(value * USD_CAMERA_TENTHS_TO_STAGE_UNIT)
         return
 
     def get_focus_distance(self) -> float:
@@ -1195,43 +1249,51 @@ class Camera(BaseSensor):
         return
 
     def get_horizontal_aperture(self) -> float:
-        """Gets value of camera prim horizontalAperture attribute, which emulates sensor/film width on a camera.
+        """Get horizontal aperture (sensor width) in stage units.
+
+        Only square pixels are supported; vertical aperture should match aspect ratio.
 
         Returns:
-            float: Value of camera prim horizontalAperture attribute, converted to stage units.
+            float: Horizontal aperture in stage units.
         """
-        aperture = self.prim.GetAttribute("horizontalAperture").Get() / 10.0
-        return aperture
+        return self.prim.GetAttribute("horizontalAperture").Get() / USD_CAMERA_TENTHS_TO_STAGE_UNIT
 
-    def set_horizontal_aperture(self, value: float) -> None:
-        """Sets value of camera prim horizontalAperture attribute, which emulates sensor/film width on a camera, then updates verticalAperture attribute to maintain resolution.
+    def set_horizontal_aperture(self, value: float, maintain_square_pixels: bool = True) -> None:
+        """Set horizontal aperture (sensor width) in stage units and update vertical for square pixels.
+
+        Only square pixels are supported; vertical aperture is updated to match aspect ratio.
 
         Args:
-            value (float): Value of camera prim horizontalAperture attribute (in stage units).
+            value (float): Horizontal aperture in stage units.
+            maintain_square_pixels (bool): If True, keep apertures in sync for square pixels.
         """
-        self.prim.GetAttribute("horizontalAperture").Set(value * 10.0)
-        (width, height) = self.get_resolution()
-        self.prim.GetAttribute("verticalAperture").Set((value * 10.0) * (float(height) / width))
+        self.prim.GetAttribute("horizontalAperture").Set(value * USD_CAMERA_TENTHS_TO_STAGE_UNIT)
+        if maintain_square_pixels:
+            self._maintain_square_pixel_aperture(mode="horizontal")
         return
 
     def get_vertical_aperture(self) -> float:
-        """Gets value of camera prim verticalAperture attribute, which emulates sensor/film height on a camera.
+        """Get vertical aperture (sensor height) in stage units.
+
+        This function ensures the vertical aperture is always synchronized with the aspect ratio and horizontal aperture to maintain square pixels. If not, it will automatically correct the value.
 
         Returns:
-            float: Value of camera prim verticalAperture attribute, converted to stage units.
+            float: Vertical aperture in stage units, always in sync with the aspect ratio and horizontal aperture.
         """
-        aperture = self.prim.GetAttribute("verticalAperture").Get() / 10.0
-        return aperture
+        return self.prim.GetAttribute("verticalAperture").Get() / USD_CAMERA_TENTHS_TO_STAGE_UNIT
 
-    def set_vertical_aperture(self, value: float) -> None:
-        """Sets value of camera prim verticalAperture attribute, which emulates sensor/film height on a camera, then updates horizontalAperture attribute to maintain resolution.
+    def set_vertical_aperture(self, value: float, maintain_square_pixels: bool = True) -> None:
+        """Set vertical aperture (sensor height) in stage units and update horizontal for square pixels.
+
+        Only square pixels are supported; horizontal aperture is updated to match aspect ratio.
 
         Args:
-            value (float): Value of camera prim verticalAperture attribute (in stage units).
+            value (float): Vertical aperture in stage units.
+            maintain_square_pixels (bool): If True, keep apertures in sync for square pixels.
         """
-        self.prim.GetAttribute("verticalAperture").Set(value * 10.0)
-        (width, height) = self.get_resolution()
-        self.prim.GetAttribute("horizontalAperture").Set((value * 10.0) * (float(width) / height))
+        self.prim.GetAttribute("verticalAperture").Set(value * USD_CAMERA_TENTHS_TO_STAGE_UNIT)
+        if maintain_square_pixels:
+            self._maintain_square_pixel_aperture(mode="vertical")
         return
 
     def get_clipping_range(self) -> Tuple[float, float]:
