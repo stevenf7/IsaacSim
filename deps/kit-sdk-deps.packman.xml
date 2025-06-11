@@ -23,9 +23,7 @@
 
   <!-- Import Physics plugins deps -->
   <import path="../_build/target-deps/omni_physics/${config}/deps/target-deps.packman.xml">
-    <filter include="pxshared" />
     <filter include="physx" />
-    <filter include="vhacd" />
   </import>
 
   <import path="../_build/target-deps/omni_physics/${config}/deps/schema-deps.packman.xml">
