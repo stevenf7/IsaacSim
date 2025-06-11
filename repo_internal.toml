@@ -473,9 +473,7 @@ exclude_dirs = [
 [repo_stage_for_github]
 enabled = true
 
-github_repo_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
-# github_repo_url = "https://github.com/isaac-sim/IsaacSim-Internal.git"
-# github_repo_url = "https://github.com/isaac-sim/IsaacSim.git"
+github_repo_url = "${env:GITHUB_REPO_URL}"
 
 exclude = [
     ".clang-tidy",
@@ -524,12 +522,12 @@ files = [
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
 
-[[repo_stage_for_github.trim]]
-files = [
-    "source/apps/isaacsim.exp.base.kit",
-]
-begin_marker = "# FOR DEVELOPMENT - START #"
-end_marker = "# FOR DEVELOPMENT - END #"
+# [[repo_stage_for_github.trim]]
+# files = [
+#     "source/apps/isaacsim.exp.base.kit",
+# ]
+# begin_marker = "# FOR DEVELOPMENT - START #"
+# end_marker = "# FOR DEVELOPMENT - END #"
 
 [[repo_stage_for_github.trim]]
 files = [

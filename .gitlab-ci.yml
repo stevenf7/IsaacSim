@@ -46,7 +46,7 @@ stages:
   - deploy
   - prod-test
   - check-externals
-  - stage-github
+  - github-staging
   - verify-github-staging
   - pages
 
@@ -1591,8 +1591,8 @@ check_externals_linux:
     - ./tools/packman/python.bat tools/check_externals/check_externals.py
 
 # ==============================================================================================================
-stage-for-github:
-    stage: stage-github
+stage-to-github:
+    stage: github-staging
     extends:
       - .deploy-artifacts
       - .osec:vault:v3:prod_token_job
@@ -1601,6 +1601,50 @@ stage-for-github:
     interruptible: false
     allow_failure: true
     needs: []
+    variables:
+        GITHUB_REPO_URL: "https://oauth2:${ISAACSIM_GITHUB_INTERNAL_PUSH}@github.com/isaac-sim/IsaacSim-Internal.git"
+    before_script:
+      - set -eu
+      - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
+      - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+      - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
+    script:
+      - ./repo.sh stage_for_github _git/isaacsim_github_internal
+      - cd _git/isaacsim_github_internal
+      - git remote -v
+      - git lfs fetch --all
+      # Custom Cleanup - clean extension.toml files to remove authors and repository
+      - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
+      - STAGED_VERSION=$(cat VERSION)
+      - git config user.email "sabdulajees@nvidia.com"
+      - git config user.name "sheikh-nv"
+      - echo "Staging Isaac Sim $STAGED_VERSION"
+      - git add -A && git commit -m "Staging Isaac Sim $STAGED_VERSION"
+      - git push
+      # - git tag -f $STAGED_VERSION
+      # - git push origin $STAGED_VERSION
+    # when: manual
+    rules:
+      - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+        when: manual
+    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+    #     when: manual
+      # - !reference [.rules-version-changed, rules]
+      # - !reference [.rules-push-manual, rules]
+
+# ==============================================================================================================
+stage-to-gitlab:
+    stage: github-staging
+    extends:
+      - .deploy-artifacts
+      - .osec:vault:v3:prod_token_job
+      - .runner-utility-linux-x86_64
+    timeout: 1 hour
+    interruptible: false
+    allow_failure: true
+    needs: []
+    variables:
+        GITHUB_REPO_URL: "https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
     before_script:
       - set -eu
       - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
@@ -1609,6 +1653,7 @@ stage-for-github:
     script:
       - ./repo.sh stage_for_github _git/isaacsim_staging
       - cd _git/isaacsim_staging
+      - git remote -v
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
@@ -1624,12 +1669,13 @@ stage-for-github:
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
         when: manual
-      - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
-        when: manual
+    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+    #     when: manual
       # - !reference [.rules-version-changed, rules]
       # - !reference [.rules-push-manual, rules]
 
-verify-github-staging:
+# ==============================================================================================================
+verify-stage-to-gitlab:
     stage: verify-github-staging
     timeout: 1 hour
     interruptible: true
@@ -1638,8 +1684,8 @@ verify-github-staging:
       - .runner-utility-linux-x86_64
     script:
       - ./tools/ci/check_github_staging/check_github_staging.sh _git/isaacsim_staging
-    needs: 
-      - job: stage-for-github
+    needs:
+      - job: stage-to-gitlab
         optional: true
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
@@ -1650,4 +1696,3 @@ verify-github-staging:
       paths:
         - results.json
         - results_by_file.json
-        
