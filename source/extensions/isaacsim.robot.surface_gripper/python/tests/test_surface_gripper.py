@@ -13,13 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import os
 
-import carb
-import carb.tokens
 import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
-import numpy as np
 import omni.kit.commands
 
 # NOTE:
@@ -33,8 +29,6 @@ from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
-    clear_stage,
-    close_stage,
     create_new_stage_async,
     get_current_stage,
     update_stage_async,

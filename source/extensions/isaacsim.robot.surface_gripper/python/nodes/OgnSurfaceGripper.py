@@ -12,15 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from math import radians
 
 import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
-import numpy as np
-import omni
-import omni.graph.core as og
-import omni.physics.tensors
-import omni.physx as _physx
-from pxr import Gf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 class OgnSurfaceGripper:

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.1] - 2025-06-10
+### Changed
+- Remove unnecessary dependencies and imports
+
 ## [3.2.0] - 2025-06-06
 ### Changed
 - Update source code to use ops from the experimental core utils extension

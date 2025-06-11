@@ -1,5 +1,5 @@
 [package]
-version = "3.2.0"
+version = "3.2.1"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
@@ -18,11 +18,8 @@ writeTarget.platform = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.utils" = {}
-"isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
 "omni.graph" = {}
-"omni.graph.tools" = {}
-"omni.isaac.dynamic_control" = {}
 
 [[python.module]]
 name = "isaacsim.robot.surface_gripper"
