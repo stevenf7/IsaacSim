@@ -38,7 +38,7 @@ del /S /F /Q %CLEAR_PATH%
 echo Clearing texturecache DONE.
 
 :KITCACHE
-SET "CLEAR_PATH=%userprofile%\AppData\Local\ov\cache\Kit\106.5"
+SET "CLEAR_PATH=%userprofile%\AppData\Local\ov\cache\Kit\107.3"
 echo.
 echo Clearing Kit cache... (%CLEAR_PATH%)
 SET /P AREYOUSURE=Are you sure (Y/[N])?

@@ -39,7 +39,7 @@ then
     echo -e "\nClearing texturecache DONE."
 fi
 
-CLEAR_PATH=~/.cache/ov/Kit/106.5
+CLEAR_PATH=~/.cache/ov/Kit/107.3
 echo -e "\nClearing Kit cache... ${CLEAR_PATH}"
 read -p "Are you sure (Y/[N])? " -r
 if [[ $REPLY =~ ^[Yy]$ ]]
