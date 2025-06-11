@@ -1,4 +1,10 @@
 # Changelog
+
+## [2.5.0] - 2025-06-10
+### Changed
+- Removed unused assets from data folder
+- Added missing license file
+
 ## [2.4.8] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
