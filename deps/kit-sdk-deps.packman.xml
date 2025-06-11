@@ -14,7 +14,7 @@
     <filter include="usd-${config}" />
     <filter include="cuda" />
     <filter include="omni_client_library" />
-    <filter include="usd_schema_semantics_${config}" />
+    <!-- <filter include="usd_schema_semantics_${config}" /> -->
     <filter include="omni_usd_resolver" />
     <filter include="usdrt" />
     <filter include="usd-release" />
@@ -38,7 +38,7 @@
   <dependency name="usd-${config}" linkPath="../_build/target-deps/usd/${config}" />
   <dependency name="cuda" linkPath="../_build/target-deps/cuda" />
   <dependency name="omni_client_library" linkPath="../_build/target-deps/omni_client_library" />
-  <dependency name="usd_schema_semantics_${config}" linkPath="../_build/target-deps/usd_schema_semantics/${config}" />
+  <!-- <dependency name="usd_schema_semantics_${config}" linkPath="../_build/target-deps/usd_schema_semantics/${config}" /> -->
 
   <dependency name="pybind11" linkPath="../_build/target-deps/pybind11" />
   <dependency name="fmt" linkPath="../_build/target-deps/fmt" />
