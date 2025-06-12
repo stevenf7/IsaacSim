@@ -1628,9 +1628,9 @@ stage-to-github:
       # - git push origin $STAGED_VERSION
     # when: manual
     rules:
-      - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+      - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
         when: manual
-    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/\d+\.\d+_oss$/
     #     when: manual
       # - !reference [.rules-version-changed, rules]
       # - !reference [.rules-push-manual, rules]
@@ -1673,9 +1673,9 @@ stage-to-gitlab:
       # - git push origin $STAGED_VERSION
     # when: manual
     rules:
-      - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+      - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
         when: manual
-    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/\d+\.\d+_oss$/
     #     when: manual
       # - !reference [.rules-version-changed, rules]
       # - !reference [.rules-push-manual, rules]
@@ -1694,8 +1694,8 @@ verify-stage-to-gitlab:
       - job: stage-to-gitlab
         optional: true
     rules:
-      - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
-      - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/.*/
+      - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
+      - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/\d+\.\d+_oss$/
     artifacts:
       expire_in: 2 weeks
       when: always
