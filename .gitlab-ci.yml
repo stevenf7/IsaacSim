@@ -1618,14 +1618,11 @@ stage-to-github:
       - cp ../../tools/ci/config.packman.xml tools/packman
       - ./../../tools/packman/python.sh -m pip install tomlkit
       - ./../../tools/packman/python.sh ../../tools/ci/update_repo_toml.py repo.toml
-      - STAGED_VERSION=$(cat VERSION)
       - git config user.email "sabdulajees@nvidia.com"
       - git config user.name "sheikh-nv"
-      - echo "Update Isaac Sim $STAGED_VERSION"
-      - git add -A && git commit -m "Update Isaac Sim $STAGED_VERSION"
+      - echo "Isaac Sim Update"
+      - git add -A && git commit -m "Isaac Sim Update"
       - git push
-      # - git tag -f $STAGED_VERSION
-      # - git push origin $STAGED_VERSION
     # when: manual
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
@@ -1663,14 +1660,11 @@ stage-to-gitlab:
       - cp ../../tools/ci/config.packman.xml tools/packman
       - ./../../tools/packman/python.sh -m pip install tomlkit
       - ./../../tools/packman/python.sh ../../tools/ci/update_repo_toml.py repo.toml
-      - STAGED_VERSION=$(cat VERSION)
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
-      - echo "Staging Isaac Sim $STAGED_VERSION"
-      - git add -A && git commit -m "Staging Isaac Sim $STAGED_VERSION"
+      - echo "Isaac Sim Update"
+      - git add -A && git commit -m "Isaac Sim Update"
       - git push
-      # - git tag -f $STAGED_VERSION
-      # - git push origin $STAGED_VERSION
     # when: manual
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
