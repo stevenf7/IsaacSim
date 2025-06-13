@@ -143,5 +143,5 @@ class ToolsMenuExtension:
 
         add_menu_items([physics_inspector], "Tools")
 
-    def __del__(self):
+    def shutdown(self):
         omni.kit.menu.utils.remove_layout(self.__menu_layout)
