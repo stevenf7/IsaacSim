@@ -23,7 +23,7 @@ namespace rtx
 #define DEG2RAD(deg) ((deg) / 180.f * 3.14159265358979323846f)
 #define RAD2DEG(rad) ((rad) / 3.14159265358979323846f * 180.f)
 
-__global__ void retrieveGMOBuffer_CUDA(void* dataPtr, omni::sensors::GenericModelOutput outBuffer) {
+__global__ void retrieveGMOBuffer_CUDA(void* dataPtr, omni::sensors::GenericModelOutput& outBuffer) {
     outBuffer = omni::sensors::getModelOutputFromBuffer(dataPtr);
 }
 
