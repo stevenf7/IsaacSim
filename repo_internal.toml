@@ -67,6 +67,7 @@ sphinx_conf_py_extra = """
         "omni.graph",
         # don't mock 'omni.kit' (needed for 'omni.kit.loop-isaac'),
         "omni.kit.app",
+        "omni.kit.actions",
         "omni.kit.commands",
         "omni.kit.menu",
         "omni.kit.property",
@@ -110,7 +111,14 @@ sphinx_conf_py_extra = """
 
     class DuplicateObjectDescriptionFilter(logging.Filter):
         def filter(self, record):
-            return "duplicate object description" not in record.getMessage()
+            strings = [
+                "duplicate object description",
+                "more than one target found for cross-reference",
+            ]
+            for item in strings:
+                if item in record.getMessage():
+                    return False
+            return True
 
     logging.getLogger("sphinx.sphinx.domains.python").addFilter(DuplicateObjectDescriptionFilter())
 """
