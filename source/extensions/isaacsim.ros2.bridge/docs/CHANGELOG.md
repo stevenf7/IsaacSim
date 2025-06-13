@@ -1,4 +1,7 @@
 # Changelog
+## [4.8.3] - 2025-06-13
+### Changed
+- Switched CUDA files to Apache license.
 
 ## [4.8.2] - 2025-06-12
 ### Fixed

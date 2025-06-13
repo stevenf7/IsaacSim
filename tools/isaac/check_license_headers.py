@@ -35,6 +35,9 @@ FILE_EXTENSIONS = {
     ".h": "//",
     ".hpp": "//",
     ".hxx": "//",
+    # CUDA files,
+    ".cu": "//",
+    ".cuh": "//",
     # YAML files
     ".yaml": "#",
     ".yml": "#",

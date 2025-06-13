@@ -1,4 +1,8 @@
 # Changelog
+## [15.3.1] - 2025-06-13
+### Changed
+- Switched CUDA files to Apache license.
+
 ## [15.3.0] - 2025-06-12
 ### Removed
 - omni.sensors.net from direct dependency list
