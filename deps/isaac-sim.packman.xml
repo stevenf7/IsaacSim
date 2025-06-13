@@ -29,7 +29,7 @@
         <package name="nlohmann_json" version="3.11.3-a3143f5-0"/>
    </dependency>
   <dependency name="generic_model_output_${config}" linkPath="../_build/target-deps/generic_model_output/${platform_target}/${config}">
-    <package name="generic-model-output" version="107.3.1+production.201676.74a0c37b.gl.${platform_target_abi}.${config}"/>
+    <package name="generic-model-output" version="107.3.1+production.203327.cfe00f9c.gl.${platform_target_abi}.${config}"/>
   </dependency>
   <dependency name="rapidjson" linkPath="../_build/target-deps/rapidjson">
     <package name="rapidjson" version="5.2.1-5-b4cf59b6" />
