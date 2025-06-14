@@ -8,196 +8,230 @@ Isaac Sim: Extensions API
    docs/overview/experimental
    docs/overview/guidelines
 
+|hr|
+
+API Reference
+-------------
+
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: API Reference
 
    C++ API <api/isaac_sim_api>
 
+* :doc:`C++ API <api/isaac_sim_api>`
+* Python API reference can be found on the individual pages of each extension.
+
+|hr|
+
+Extensions
+----------
+
+..
+   start extensions: don't remove this comment
+
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (App)
 
-   source/extensions/isaacsim.app.about/docs/index
-   source/extensions/isaacsim.app.selector/docs/index
-   source/extensions/isaacsim.app.setup/docs/index
+   isaacsim.app.about <source/extensions/isaacsim.app.about/docs/index>
+   isaacsim.app.selector <source/extensions/isaacsim.app.selector/docs/index>
+   isaacsim.app.setup <source/extensions/isaacsim.app.setup/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Asset)
 
-   source/extensions/isaacsim.asset.browser/docs/index
-   source/extensions/isaacsim.asset.exporter.urdf/docs/index
-   source/extensions/isaacsim.asset.gen.conveyor/docs/index
-   source/extensions/isaacsim.asset.gen.conveyor.ui/docs/index
-   source/extensions/isaacsim.asset.gen.omap/docs/index
-   source/extensions/isaacsim.asset.gen.omap.ui/docs/index
-   source/extensions/isaacsim.asset.importer.heightmap/docs/index
-   source/extensions/isaacsim.asset.importer.urdf/docs/index
-   source/extensions/isaacsim.asset.importer.mjcf/docs/index
+   isaacsim.asset.browser <source/extensions/isaacsim.asset.browser/docs/index>
+   isaacsim.asset.exporter.urdf <source/extensions/isaacsim.asset.exporter.urdf/docs/index>
+   isaacsim.asset.gen.conveyor <source/extensions/isaacsim.asset.gen.conveyor/docs/index>
+   isaacsim.asset.gen.conveyor.ui <source/extensions/isaacsim.asset.gen.conveyor.ui/docs/index>
+   isaacsim.asset.gen.omap <source/extensions/isaacsim.asset.gen.omap/docs/index>
+   isaacsim.asset.gen.omap.ui <source/extensions/isaacsim.asset.gen.omap.ui/docs/index>
+   isaacsim.asset.importer.heightmap <source/extensions/isaacsim.asset.importer.heightmap/docs/index>
+   isaacsim.asset.importer.urdf <source/extensions/isaacsim.asset.importer.urdf/docs/index>
+   isaacsim.asset.importer.mjcf <source/extensions/isaacsim.asset.importer.mjcf/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Benchmark)
 
-   source/extensions/isaacsim.benchmark.examples/docs/index
-   source/extensions/isaacsim.benchmark.services/docs/index
+   isaacsim.benchmark.examples <source/extensions/isaacsim.benchmark.examples/docs/index>
+   isaacsim.benchmark.services <source/extensions/isaacsim.benchmark.services/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Code Editor)
 
-   source/extensions/isaacsim.code_editor.jupyter/docs/index
-   source/extensions/isaacsim.code_editor.vscode/docs/index
+   isaacsim.code_editor.jupyter <source/extensions/isaacsim.code_editor.jupyter/docs/index>
+   isaacsim.code_editor.vscode <source/extensions/isaacsim.code_editor.vscode/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Core)
 
-   source/extensions/isaacsim.core.api/docs/index
-   source/extensions/isaacsim.core.cloner/docs/index
-   source/extensions/isaacsim.core.deprecation_manager/docs/index
-   source/extensions/isaacsim.core.experimental.materials/docs/index
-   source/extensions/isaacsim.core.experimental.objects/docs/index
-   source/extensions/isaacsim.core.experimental.prims/docs/index
-   source/extensions/isaacsim.core.experimental.utils/docs/index
-   source/extensions/isaacsim.core.includes/docs/index
-   source/extensions/isaacsim.core.nodes/docs/index
-   source/extensions/isaacsim.core.prims/docs/index
-   source/extensions/isaacsim.core.simulation_manager/docs/index
-   source/extensions/isaacsim.core.throttling/docs/index
-   source/extensions/isaacsim.core.utils/docs/index
-   source/extensions/isaacsim.core.version/docs/index
+   isaacsim.core.api <source/extensions/isaacsim.core.api/docs/index>
+   isaacsim.core.cloner <source/extensions/isaacsim.core.cloner/docs/index>
+   isaacsim.core.deprecation_manager <source/extensions/isaacsim.core.deprecation_manager/docs/index>
+   isaacsim.core.experimental.materials <source/extensions/isaacsim.core.experimental.materials/docs/index>
+   isaacsim.core.experimental.objects <source/extensions/isaacsim.core.experimental.objects/docs/index>
+   isaacsim.core.experimental.prims <source/extensions/isaacsim.core.experimental.prims/docs/index>
+   isaacsim.core.experimental.utils <source/extensions/isaacsim.core.experimental.utils/docs/index>
+   isaacsim.core.includes <source/extensions/isaacsim.core.includes/docs/index>
+   isaacsim.core.nodes <source/extensions/isaacsim.core.nodes/docs/index>
+   isaacsim.core.prims <source/extensions/isaacsim.core.prims/docs/index>
+   isaacsim.core.simulation_manager <source/extensions/isaacsim.core.simulation_manager/docs/index>
+   isaacsim.core.throttling <source/extensions/isaacsim.core.throttling/docs/index>
+   isaacsim.core.utils <source/extensions/isaacsim.core.utils/docs/index>
+   isaacsim.core.version <source/extensions/isaacsim.core.version/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Cortex)
 
-   source/extensions/isaacsim.cortex.behaviors/docs/index
-   source/extensions/isaacsim.cortex.framework/docs/index
+   isaacsim.cortex.behaviors <source/extensions/isaacsim.cortex.behaviors/docs/index>
+   isaacsim.cortex.framework <source/extensions/isaacsim.cortex.framework/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Examples)
 
-   source/extensions/isaacsim.examples.browser/docs/index
-   source/extensions/isaacsim.examples.extension/docs/index
-   source/extensions/isaacsim.examples.interactive/docs/index
-   source/extensions/isaacsim.examples.ui/docs/index
+   isaacsim.examples.browser <source/extensions/isaacsim.examples.browser/docs/index>
+   isaacsim.examples.extension <source/extensions/isaacsim.examples.extension/docs/index>
+   isaacsim.examples.interactive <source/extensions/isaacsim.examples.interactive/docs/index>
+   isaacsim.examples.ui <source/extensions/isaacsim.examples.ui/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (GUI)
 
-   source/extensions/isaacsim.gui.components/docs/index
-   source/extensions/isaacsim.gui.menu/docs/index
-   source/extensions/isaacsim.gui.property/docs/index
+   isaacsim.gui.components <source/extensions/isaacsim.gui.components/docs/index>
+   isaacsim.gui.menu <source/extensions/isaacsim.gui.menu/docs/index>
+   isaacsim.gui.property <source/extensions/isaacsim.gui.property/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Replicator)
 
-   source/extensions/isaacsim.replicator.behavior/docs/index
-   source/extensions/isaacsim.replicator.behavior.ui/docs/index
-   source/extensions/isaacsim.replicator.domain_randomization/docs/index
-   source/extensions/isaacsim.replicator.examples/docs/index
-   source/extensions/isaacsim.replicator.grasping/docs/index
-   source/extensions/isaacsim.replicator.mobility_gen/docs/index
-   source/extensions/isaacsim.replicator.synthetic_recorder/docs/index
-   source/extensions/isaacsim.replicator.writers/docs/index
+   isaacsim.replicator.behavior <source/extensions/isaacsim.replicator.behavior/docs/index>
+   isaacsim.replicator.behavior.ui <source/extensions/isaacsim.replicator.behavior.ui/docs/index>
+   isaacsim.replicator.domain_randomization <source/extensions/isaacsim.replicator.domain_randomization/docs/index>
+   isaacsim.replicator.examples <source/extensions/isaacsim.replicator.examples/docs/index>
+   isaacsim.replicator.grasping <source/extensions/isaacsim.replicator.grasping/docs/index>
+   isaacsim.replicator.mobility_gen <source/extensions/isaacsim.replicator.mobility_gen/docs/index>
+   isaacsim.replicator.synthetic_recorder <source/extensions/isaacsim.replicator.synthetic_recorder/docs/index>
+   isaacsim.replicator.writers <source/extensions/isaacsim.replicator.writers/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Robot Motion & Setup)
 
-   source/extensions/isaacsim.robot_motion.lula/docs/index
-   source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index
-   source/extensions/isaacsim.robot_motion.motion_generation/docs/index
-   source/extensions/isaacsim.robot_setup.assembler/docs/index
-   source/extensions/isaacsim.robot_setup.gain_tuner/docs/index
-   source/extensions/isaacsim.robot_setup.grasp_editor/docs/index
-   source/extensions/isaacsim.robot_setup.wizard/docs/index
-   source/extensions/isaacsim.robot_setup.xrdf_editor/docs/index
+   isaacsim.robot_motion.lula <source/extensions/isaacsim.robot_motion.lula/docs/index>
+   isaacsim.robot_motion.lula_test_widget <source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index>
+   isaacsim.robot_motion.motion_generation <source/extensions/isaacsim.robot_motion.motion_generation/docs/index>
+   isaacsim.robot_setup.assembler <source/extensions/isaacsim.robot_setup.assembler/docs/index>
+   isaacsim.robot_setup.gain_tuner <source/extensions/isaacsim.robot_setup.gain_tuner/docs/index>
+   isaacsim.robot_setup.grasp_editor <source/extensions/isaacsim.robot_setup.grasp_editor/docs/index>
+   isaacsim.robot_setup.wizard <source/extensions/isaacsim.robot_setup.wizard/docs/index>
+   isaacsim.robot_setup.xrdf_editor <source/extensions/isaacsim.robot_setup.xrdf_editor/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Robot)
 
-   source/extensions/isaacsim.robot.manipulators/docs/index
-   source/extensions/isaacsim.robot.manipulators.examples/docs/index
-   source/extensions/isaacsim.robot.manipulators.ui/docs/index
-   source/extensions/isaacsim.robot.policy.examples/docs/index
-   source/extensions/isaacsim.robot.schema/docs/index
-   source/extensions/isaacsim.robot.surface_gripper/docs/index
-   source/extensions/isaacsim.robot.surface_gripper.ui/docs/index
-   source/extensions/isaacsim.robot.wheeled_robots/docs/index
-   source/extensions/isaacsim.robot.wheeled_robots.ui/docs/index
+   isaacsim.robot.manipulators <source/extensions/isaacsim.robot.manipulators/docs/index>
+   isaacsim.robot.manipulators.examples <source/extensions/isaacsim.robot.manipulators.examples/docs/index>
+   isaacsim.robot.manipulators.ui <source/extensions/isaacsim.robot.manipulators.ui/docs/index>
+   isaacsim.robot.policy.examples <source/extensions/isaacsim.robot.policy.examples/docs/index>
+   isaacsim.robot.schema <source/extensions/isaacsim.robot.schema/docs/index>
+   isaacsim.robot.surface_gripper <source/extensions/isaacsim.robot.surface_gripper/docs/index>
+   isaacsim.robot.surface_gripper.ui <source/extensions/isaacsim.robot.surface_gripper.ui/docs/index>
+   isaacsim.robot.wheeled_robots <source/extensions/isaacsim.robot.wheeled_robots/docs/index>
+   isaacsim.robot.wheeled_robots.ui <source/extensions/isaacsim.robot.wheeled_robots.ui/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (ROS 1 & 2)
 
-   source/extensions/isaacsim.ros2.bridge/docs/index
-   source/extensions/isaacsim.ros2.tf_viewer/docs/index
-   source/extensions/isaacsim.ros2.urdf/docs/index
+   isaacsim.ros2.bridge <source/extensions/isaacsim.ros2.bridge/docs/index>
+   isaacsim.ros2.tf_viewer <source/extensions/isaacsim.ros2.tf_viewer/docs/index>
+   isaacsim.ros2.urdf <source/extensions/isaacsim.ros2.urdf/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Sensors)
 
-   source/extensions/isaacsim.sensors.camera/docs/index
-
-   source/extensions/isaacsim.sensors.camera.ui/docs/index
-   source/extensions/isaacsim.sensors.physics/docs/index
-   source/extensions/isaacsim.sensors.physics.examples/docs/index
-   source/extensions/isaacsim.sensors.physics.ui/docs/index
-   source/extensions/isaacsim.sensors.physx/docs/index
-   source/extensions/isaacsim.sensors.physx.examples/docs/index
-   source/extensions/isaacsim.sensors.physx.ui/docs/index
-   source/extensions/isaacsim.sensors.rtx/docs/index
-   source/extensions/isaacsim.sensors.rtx.ui/docs/index
+   isaacsim.sensors.camera <source/extensions/isaacsim.sensors.camera/docs/index>
+   isaacsim.sensors.camera.ui <source/extensions/isaacsim.sensors.camera.ui/docs/index>
+   isaacsim.sensors.physics <source/extensions/isaacsim.sensors.physics/docs/index>
+   isaacsim.sensors.physics.examples <source/extensions/isaacsim.sensors.physics.examples/docs/index>
+   isaacsim.sensors.physics.ui <source/extensions/isaacsim.sensors.physics.ui/docs/index>
+   isaacsim.sensors.physx <source/extensions/isaacsim.sensors.physx/docs/index>
+   isaacsim.sensors.physx.examples <source/extensions/isaacsim.sensors.physx.examples/docs/index>
+   isaacsim.sensors.physx.ui <source/extensions/isaacsim.sensors.physx.ui/docs/index>
+   isaacsim.sensors.rtx <source/extensions/isaacsim.sensors.rtx/docs/index>
+   isaacsim.sensors.rtx.ui <source/extensions/isaacsim.sensors.rtx.ui/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Simulation)
 
-   source/extensions/isaacsim.simulation_app/docs/index
+   isaacsim.simulation_app <source/extensions/isaacsim.simulation_app/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Storage)
 
-   source/extensions/isaacsim.storage.native/docs/index
+   isaacsim.storage.native <source/extensions/isaacsim.storage.native/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Test)
 
-   source/extensions/isaacsim.test.collection/docs/index
-   source/extensions/isaacsim.test.docstring/docs/index
+   isaacsim.test.collection <source/extensions/isaacsim.test.collection/docs/index>
+   isaacsim.test.docstring <source/extensions/isaacsim.test.docstring/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Extensions (Util)
 
-   source/extensions/isaacsim.util.camera_inspector/docs/index
-
-   source/extensions/isaacsim.util.debug_draw/docs/index
-   source/extensions/isaacsim.util.merge_mesh/docs/index
-   source/extensions/isaacsim.util.physics/docs/index
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Extensions (XR)
-
-   source/extensions/isaacsim.xr.openxr/docs/index
+   isaacsim.util.camera_inspector <source/extensions/isaacsim.util.camera_inspector/docs/index>
+   isaacsim.util.debug_draw <source/extensions/isaacsim.util.debug_draw/docs/index>
+   isaacsim.util.merge_mesh <source/extensions/isaacsim.util.merge_mesh/docs/index>
+   isaacsim.util.physics <source/extensions/isaacsim.util.physics/docs/index>
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :caption: Other Extensions
 
-   source/deprecated/omni.isaac.dynamic_control/docs/index
-   source/extensions/omni.kit.loop-isaac/docs/index
+   omni.isaac.dynamic_control <source/deprecated/omni.isaac.dynamic_control/docs/index>
+   omni.kit.loop-isaac <source/extensions/omni.kit.loop-isaac/docs/index>
+
+.. include:: docs/autogenerated-extension-toc.txt
+
+..
+   end extensions: don't remove this comment
+
+|hr|
 
 .. toctree::
    :maxdepth: 1
