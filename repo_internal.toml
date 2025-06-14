@@ -102,6 +102,10 @@ sphinx_conf_py_extra = """
 
         <br>
 
+    .. |hr| raw:: html
+
+        <hr>
+
     .. |physx_docs| replace:: `PhysX docs <https://nvidia-omniverse.github.io/PhysX/physx>`__
 
     '''
