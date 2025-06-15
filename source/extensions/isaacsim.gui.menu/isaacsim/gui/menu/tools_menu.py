@@ -99,7 +99,7 @@ class ToolsMenuExtension:
                                     MenuLayout.Item(name="Differential Controller"),
                                     MenuLayout.Item(name="Joint Position"),
                                     MenuLayout.Item(name="Joint Velocity"),
-                                    MenuLayout.Item(name="Open Loop Gripper Controller"),
+                                    MenuLayout.Item(name="Open Loop Gripper"),
                                 ],
                             ),
                             MenuLayout.Item("ROS 2 OmniGraphs"),

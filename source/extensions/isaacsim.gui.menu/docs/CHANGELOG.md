@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.12] - 2025-06-13
+### Changed
+- Fix incorrect menu name
+- Removed actions_api.md
+
 ## [2.3.11] - 2025-06-06
 ### Changed
 - Fixed shutdown
