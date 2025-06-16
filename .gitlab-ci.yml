@@ -1559,10 +1559,11 @@ publish-to-packman:
       - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
-.check_externals_base:
+check_externals:
   extends:
     - .repo-artifacts
     - .check-common
+    - .runner-utility-linux-x86_64
   stage: check-externals
   needs: []
   allow_failure: true
@@ -1572,23 +1573,10 @@ publish-to-packman:
       - packman_full_results.json
       - packman_full_results.csv
     expire_in: 1 week
-
-check_externals_linux:
-  extends:
-    - .check_externals_base
-    - .runner-utility-linux-x86_64
   script:
     - ./tools/packman/python.sh tools/check_externals/download_all_kits.py --skip-platform aarch64
     - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64
 
-.check_externals_windows:
-  timeout: 25 minutes
-  extends:
-    - .check_externals_base
-    - .runner-utility-windows-x86_64
-  script:
-    - ./build.bat --fetch -rd
-    - ./tools/packman/python.bat tools/check_externals/check_externals.py
 
 # ==============================================================================================================
 stage-to-github:
