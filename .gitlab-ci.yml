@@ -1651,6 +1651,7 @@ stage-to-gitlab:
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
       - echo "Isaac Sim Update"
+      - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
       - git add -A && git commit -m "Isaac Sim Update"
       - git push
     # when: manual
