@@ -15,6 +15,7 @@ project = "isaac_sim"
 
 # a slightly more descriptive name for your project. user visible. keep it short.
 long_name = "Isaac Sim"
+name = "Isaac Sim"
 
 # first year in your projects copyright.
 copyright_start = 2018
@@ -27,6 +28,33 @@ version_selector_enabled = false
 
 # Move api docs to build directory
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
+
+logo_target_url = "index.html"
+copybutton_enabled = true
+announcement = "Work in progress..."
+
+extra_content_head = [
+    "${env:TRACKING_SCRIPT}"
+]
+
+social_media = [
+    ["twitter", "https://twitter.com/nvidiaomniverse"],
+    ["youtube", "https://www.youtube.com/channel/UCSKUoczbGAcMld7HjpCR8OA"],
+    ["instagram", "https://www.instagram.com/nvidiarobotics"],
+    ["www", "https://developer.nvidia.com/isaac/sim"],
+    ["linkedin", "https://www.linkedin.com/showcase/nvidiarobotics"],
+    ["twitch", "https://www.twitch.tv/nvidiaomniverse"],
+    ["discord", "https://discord.gg/4ZsTFksGh8"],
+    ["github", "https://github.com/isaac-sim"],
+    # ["question", "https://forums.developer.nvidia.com/c/omniverse/simulation/69"],
+    # ["cloud", "https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim"],
+]
+
+# Enable LUNR search, which works better than Sphinx search - especially when running locally (from docs archive)
+enhanced_search_enabled = true
+
+# open all external links in a new tab
+external_links_open_new_tab = true
 
 # Add all extensions to docs sys.path
 
