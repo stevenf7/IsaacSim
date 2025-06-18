@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.4] - 2025-06-17
+### Changed
+- Fixed fabric cloning for partially populated stages
+- Pre-populated rigid body attributes before cloning
+
 ## [1.4.3] - 2025-06-06
 ### Changed
 - Make the cloner extension platform specific
