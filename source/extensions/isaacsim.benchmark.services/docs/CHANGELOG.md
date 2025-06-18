@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.0] - 2025-06-16
+### Added
+- Created validation tooling for render product evaluation
+
 ## [2.8.5] - 2025-06-09
 ### Changed
 - Removed unneeded default settings for omni connection
