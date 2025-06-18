@@ -14,9 +14,11 @@
 # limitations under the License.
 
 import argparse
+import json
 import os
 import re
 import sys
+import urllib.request
 import xml.etree.ElementTree as ET
 
 
@@ -120,23 +122,8 @@ def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
             log(f"Extension {ext} is in deprecated directory but not listed as dependency")
             missing_dependencies.append((ext, "deprecated"))
 
-    # Report missing dependencies
+    # Return False if there are missing dependencies, but don't print them
     if missing_dependencies:
-        print("\nERROR: The following extensions are missing from the dependencies section:")
-        missing_built = [ext for ext, category in missing_dependencies if category == "built"]
-        missing_deprecated = [ext for ext, category in missing_dependencies if category == "deprecated"]
-
-        if missing_built:
-            print(f"  {len(missing_built)} built extensions:")
-            for ext in missing_built:
-                print(f"   - {ext}")
-
-        if missing_deprecated:
-            print(f"  {len(missing_deprecated)} deprecated extensions:")
-            for ext in missing_deprecated:
-                print(f"   - {ext}")
-
-        print("\nPlease add these extensions to the [dependencies] section.")
         return False
     else:
         log("All extensions are correctly listed as dependencies.")
@@ -254,8 +241,8 @@ def check_version_locks(kit_file, verbose=False, dry_run=False, update_locks=Fal
 
 def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=False):
     """
-    Extract the physics version from the packman XML file and update physics extensions
-    in the kit file to match that version.
+    Extract the physics version from the packman XML file and check if physics extensions
+    in the kit file match that version.
 
     Args:
         kit_file (str): Path to the kit file
@@ -271,11 +258,11 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         if verbose:
             print(f"DEBUG: {msg}")
 
-    log("Updating physics extension versions...")
+    log("Checking physics extension versions...")
 
     # Check if packman XML file exists
     if not os.path.isfile(packman_xml_file):
-        log(f"Packman XML file {packman_xml_file} does not exist, skipping physics version update")
+        log(f"Packman XML file {packman_xml_file} does not exist, skipping physics version check")
         return True
 
     # Extract version from packman XML
@@ -315,7 +302,7 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         print(f"Error reading kit file: {e}")
         return False
 
-    # Define physics extensions that should be updated
+    # Define physics extensions that should be checked
     physics_extensions = [
         "omni.physx.bundle",
         "omni.physx.fabric",
@@ -326,48 +313,169 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         "omni.physx.tests.visual",
     ]
 
-    # Track updates made
-    updates_made = []
-    updated_content = content
+    # Track mismatches found
+    mismatches = []
 
-    # Update each physics extension version
+    # Check each physics extension version
     for ext_name in physics_extensions:
         # Pattern to match the extension with its current version
         # Matches: "omni.physx.bundle" = {version = "107.3.7", exact = true}
         pattern = r'("' + re.escape(ext_name) + r'"\s*=\s*\{\s*version\s*=\s*")([^"]+)(".*?\})'
+        match = re.search(pattern, content)
 
-        def replace_version(match):
-            prefix = match.group(1)
-            old_version = match.group(2)
-            suffix = match.group(3)
+        if match:
+            current_version = match.group(2)
+            if current_version != physics_version:
+                mismatches.append((ext_name, current_version, physics_version))
+                log(f"Found version mismatch for {ext_name}: {current_version} vs {physics_version}")
+        else:
+            log(f"Could not find version for {ext_name}")
 
-            if old_version != physics_version:
-                updates_made.append((ext_name, old_version, physics_version))
-                log(f"Updating {ext_name}: {old_version} → {physics_version}")
-                return f"{prefix}{physics_version}{suffix}"
-            else:
-                log(f"Extension {ext_name} already has correct version {physics_version}")
-                return match.group(0)
+    # Report mismatches if any found
+    if mismatches:
+        print("\nPhysics extension version mismatches found:")
+        print(f"Expected version from packman XML: {physics_version}")
+        for ext_name, current_version, expected_version in mismatches:
+            print(f"  - {ext_name}: {current_version} (expected {expected_version})")
+    else:
+        log("All physics extensions have matching versions")
 
-        updated_content = re.sub(pattern, replace_version, updated_content)
+    return True
 
-    # Write updated content if changes were made
-    if updates_made and not dry_run:
-        try:
-            with open(kit_file, "w") as f:
-                f.write(updated_content)
-            print(f"Updated {len(updates_made)} physics extension versions to {physics_version}:")
-            for ext_name, old_version, new_version in updates_made:
-                print(f"   - {ext_name}: {old_version} → {new_version}")
-        except Exception as e:
-            print(f"Error writing updated kit file: {e}")
-            return False
-    elif updates_made and dry_run:
-        print(f"Would update {len(updates_made)} physics extension versions to {physics_version}:")
-        for ext_name, old_version, new_version in updates_made:
-            print(f"   - {ext_name}: {old_version} → {new_version}")
-    elif not updates_made:
-        log("All physics extensions already have the correct version")
+
+def compare_with_template(kit_file, verbose=False, dry_run=False):
+    """
+    Compare the kit file with the template file from GitLab.
+    Specifically compares the # Exact Version dependencies: and # Version lock for all dependencies: sections.
+
+    Args:
+        kit_file (str): Path to the kit file
+        verbose (bool): If True, print detailed debug information
+        dry_run (bool): If True, don't modify the file, just report what would be done
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    log("Comparing kit file with template...")
+
+    # Read the kit file
+    try:
+        with open(kit_file, "r") as f:
+            content = f.read()
+    except Exception as e:
+        print(f"Error reading kit file: {e}")
+        return False
+
+    # Download the template file
+    template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/production/107.3/templates/omni.all.template.extensions.kit?ref_type=heads"
+    try:
+        with urllib.request.urlopen(template_url) as response:
+            template_content = response.read().decode("utf-8")
+    except Exception as e:
+        print(f"Error downloading template file: {e}")
+        return False
+
+    # Extract the BEGIN GENERATED PART sections
+    def extract_generated_part(content):
+        begin_match = re.search(r"# BEGIN GENERATED PART.*?\n(.*?)# END GENERATED PART", content, re.DOTALL)
+        if not begin_match:
+            return None
+        return begin_match.group(1)
+
+    kit_generated = extract_generated_part(content)
+    template_generated = extract_generated_part(template_content)
+
+    if not kit_generated or not template_generated:
+        print("Could not find generated part in one or both files")
+        return False
+
+    # Extract exact version dependencies
+    def extract_exact_versions(generated_part):
+        versions = {}
+        version_section = re.search(r"# Exact Version dependencies:(.*?)# Version lock", generated_part, re.DOTALL)
+        if version_section:
+            for line in version_section.group(1).split("\n"):
+                if "#" in line:
+                    match = re.search(r"#\s*([\w\.-]+)-([\d\.]+)", line)
+                    if match:
+                        name, version = match.groups()
+                        versions[name] = version
+        return versions
+
+    kit_versions = extract_exact_versions(kit_generated)
+    template_versions = extract_exact_versions(template_generated)
+
+    # Compare exact versions
+    version_mismatches = []
+    for name, template_version in template_versions.items():
+        if name in kit_versions:
+            if kit_versions[name] != template_version:
+                version_mismatches.append((name, kit_versions[name], template_version))
+        else:
+            version_mismatches.append((name, "missing", template_version))
+
+    # Extract version locks
+    def extract_version_locks(generated_part):
+        locks = {}
+        # Find the enabled list section
+        enabled_section = re.search(r"enabled\s*=\s*\[(.*?)\]", generated_part, re.DOTALL)
+        if enabled_section:
+            for line in enabled_section.group(1).split("\n"):
+                line = line.strip()
+                if line and '"' in line:
+                    # Extract the extension name and version
+                    match = re.search(r'"([^"]+)"', line)
+                    if match:
+                        ext_with_version = match.group(1)
+                        if "-" in ext_with_version:
+                            name, version = ext_with_version.rsplit("-", 1)
+                            locks[name] = version
+        return locks
+
+    kit_locks = extract_version_locks(kit_generated)
+    template_locks = extract_version_locks(template_generated)
+
+    # Compare version locks
+    lock_mismatches = []
+    for name, template_version in template_locks.items():
+        if name in kit_locks:
+            if kit_locks[name] != template_version:
+                lock_mismatches.append((name, kit_locks[name], template_version))
+        else:
+            lock_mismatches.append((name, "missing", template_version))
+
+    # Report mismatches
+    if version_mismatches:
+        print("\nExact Version dependencies mismatches:")
+        for name, kit_version, template_version in version_mismatches:
+            print(f"  - {name}: {kit_version} → {template_version}")
+
+    if lock_mismatches:
+        print("\nVersion lock mismatches:")
+        for name, kit_version, template_version in lock_mismatches:
+            print(f"  - {name}: {kit_version} → {template_version}")
+
+        if not dry_run:
+            # Update the version locks in the kit file
+            updated_content = content
+            for name, _, template_version in lock_mismatches:
+                # Find and replace the version in the enabled list
+                pattern = f'"{name}-[^"]*"'
+                replacement = f'"{name}-{template_version}"'
+                updated_content = re.sub(pattern, replacement, updated_content)
+
+            try:
+                with open(kit_file, "w") as f:
+                    f.write(updated_content)
+                print(f"\nUpdated {len(lock_mismatches)} version locks in the kit file")
+            except Exception as e:
+                print(f"Error writing updated kit file: {e}")
+                return False
 
     return True
 
@@ -385,6 +493,7 @@ def clean_extscache(
     check_locks=True,
     update_locks=False,
     update_physics=True,
+    match_kat=False,
 ):
     """
     Removes extensions from the enabled section in the kit file if they exist in the build directory,
@@ -403,6 +512,7 @@ def clean_extscache(
         check_locks (bool): If True, check that version locks match the SDK hash
         update_locks (bool): If True, update any mismatched version locks to match the SDK hash
         update_physics (bool): If True, update physics extension versions to match packman XML
+        match_kat (bool): If True, compare with template file and update version locks
 
     Returns:
         bool: True if successful, False otherwise
@@ -722,6 +832,12 @@ def clean_extscache(
         if not update_physics_ok and not dry_run:
             print("WARNING: Failed to update physics extension versions.")
 
+    # Compare with template if requested
+    if match_kat:
+        template_ok = compare_with_template(kit_file, verbose, dry_run)
+        if not template_ok and not dry_run:
+            print("WARNING: Failed to compare with template file.")
+
     return True
 
 
@@ -779,6 +895,11 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         action="store_true",
         help="Update physics extension versions to match packman XML",
     )
+    parser.add_argument(
+        "--match-kat",
+        action="store_true",
+        help="Compare with template file and update version locks",
+    )
 
     args = parser.parse_args()
 
@@ -795,6 +916,7 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         check_locks=not args.no_locks_check,
         update_locks=args.update_locks,
         update_physics=args.update_physics,
+        match_kat=args.match_kat,
     )
 
     if not success:
