@@ -1,4 +1,8 @@
 # Changelog
+## [4.8.4] - 2025-06-17
+### Fixed
+- Remove unnecessarily casting vectors to floats in OgnROS2PublishOdometry
+
 ## [4.8.3] - 2025-06-13
 ### Changed
 - Switched CUDA files to Apache license.
