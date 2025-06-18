@@ -1606,7 +1606,7 @@ stage-to-github:
       - cp ../../tools/ci/config.packman.xml tools/packman
       - ./../../tools/packman/python.sh -m pip install tomlkit
       - ./../../tools/packman/python.sh ../../tools/ci/update_repo_toml.py repo.toml
-      - git config user.email "sabdulajees@nvidia.com"
+      - git config user.email "7774242+sheikh-nv@users.noreply.github.com"
       - git config user.name "sheikh-nv"
       - echo "Isaac Sim Update"
       - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
