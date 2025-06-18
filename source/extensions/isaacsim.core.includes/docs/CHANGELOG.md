@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2025-06-17
+### Changed
+- Implement `computeWorldXformNoCache` using Fabric Scene Delegate and IFabricHierarchy
+
 ## [2.1.2] - 2025-06-12
 ### Fixed
 - Fix missing parameter description in doxygen comment

@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.8.5] - 2025-06-18
+### Changed
+- Track change from isaacsim.core.include Pose.h
+
 ## [4.8.4] - 2025-06-17
 ### Fixed
 - Remove unnecessarily casting vectors to floats in OgnROS2PublishOdometry

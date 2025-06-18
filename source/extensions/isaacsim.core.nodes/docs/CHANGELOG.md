@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.2.7] - 2025-06-18
+### Changed
+- Track change from isaacsim.core.include Pose.h
+
 ## [3.2.6] - 2025-06-13
 ### Changed
 - Switched CUDA files to Apache license.

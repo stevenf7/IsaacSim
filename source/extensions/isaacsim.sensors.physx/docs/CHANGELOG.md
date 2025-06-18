@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.22] - 2025-06-18
+### Changed
+- Track change from isaacsim.core.include Pose.h
+
 ## [2.2.21] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
