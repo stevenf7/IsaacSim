@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.1] - 2025-06-18
+### Removed
+- Removed unused CPU load metrics
+
 ## [3.0.0] - 2025-06-16
 ### Added
 - Created validation tooling for render product evaluation

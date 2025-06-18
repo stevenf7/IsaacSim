@@ -241,7 +241,6 @@ class IsaacMemoryRecorder(memory.MemoryRecorder):
 
     def get_data(self) -> interface.MeasurementData:
         (
-            cpu_load,
             rss,
             vms,
             uss,
