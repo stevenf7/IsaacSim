@@ -12,11 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import argparse
-import glob
 import os
 import re
-import subprocess
 import sys
 
 
@@ -113,177 +110,51 @@ def update_isaac_sim_version(file_path, new_version):
     return True
 
 
-def extract_package_names(xml_file):
-    """Extract package names from an XML file.
-
-    The function searches for package tags in the XML file and extracts
-    the name attribute values from each package.
-
-    Args:
-        xml_file: Path to the XML file to extract package names from.
-
-    Returns:
-        A list of package names found in the file.
-
-    Example:
-
-    .. code-block:: python
-
-        >>> extract_package_names("deps/isaac-sim.packman.xml")
-        ['nv_ros2', 'lula', 'octomap', 'tinyxml2', 'omniisaacsimschemas_openusd_0.24.05_py_3.11', 'nlohmann_json', 'generic-model-output', 'rapidjson']
-    """
-    package_names = set()
-
-    with open(xml_file, "r") as f:
-        content = f.read()
-
-    # Extract package names
-    pattern = r'<package\s+name="([^"]+)"'
-    matches = re.finditer(pattern, content)
-
-    for match in matches:
-        package_name = match.group(1)
-        # Skip versions with variables as they can't be updated directly
-        if "${" in package_name or "}" in package_name:
-            continue
-        package_names.add(package_name)
-
-    return list(package_names)
-
-
-def update_packages_with_repo_sh(package_names, repo_root):
-    """Run repo.sh update for each package.
-
-    The function executes the repo.sh update command for each package name
-    in the provided list.
-
-    Args:
-        package_names: List of package names to update.
-        repo_root: Path to the repository root directory.
-
-    Returns:
-        True if all commands executed successfully, False if any command failed.
-
-    Example:
-
-    .. code-block:: python
-
-        >>> update_packages_with_repo_sh(['nv_ros2_humble', 'lula'], '/path/to/repo')
-        Running: /path/to/repo/repo.sh update nv_ros2_humble
-        Running: /path/to/repo/repo.sh update lula
-        True
-    """
-    success = True
-    repo_script = os.path.join(repo_root, "repo.sh")
-
-    if not os.path.exists(repo_script):
-        print(f"Error: repo.sh not found at {repo_script}")
-        return False
-
-    for package in package_names:
-        print(f"Running: {repo_script} update {package}")
-        try:
-            result = subprocess.run(
-                [repo_script, "update", package], check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True
-            )
-            print(result.stdout)
-        except subprocess.CalledProcessError as e:
-            print(f"Error updating package {package}:")
-            print(e.stderr)
-            success = False
-
-    return success
-
-
 def main():
-    """Main function that handles different modes of operation.
+    """Main function that updates generic-model-output version in isaac-sim.packman.xml.
 
-    The function supports two modes:
-    1. Default mode (--mode=version): Updates generic-model-output version in isaac-sim.packman.xml
-    2. Repo update mode (--mode=update): Extracts package names from all XML files and runs repo.sh update
+    The function extracts the kit version from kit-sdk.packman.xml and updates
+    the generic-model-output version in isaac-sim.packman.xml to match.
 
     Raises:
-        SystemExit: If required files are not found or if an invalid mode is specified.
+        SystemExit: If required files are not found.
 
     Example:
 
     .. code-block:: python
 
-        >>> main()  # Default mode
+        >>> main()
         Extracted kit version: 107.3.0+master.187456.39f199e7
         Successfully updated generic-model-output version in /path/to/deps/isaac-sim.packman.xml
-
-        >>> # With update mode
-        >>> main(['--mode', 'update'])
-        Found 7 XML files in deps directory
-        Extracted 15 unique package names
-        Running: /path/to/repo.sh update nv_ros2_humble
-        ...
     """
-    parser = argparse.ArgumentParser(description="Update Isaac Sim dependencies")
-    parser.add_argument(
-        "--mode",
-        choices=["version", "update"],
-        default="version",
-        help="Operation mode: version (update version in isaac-sim.packman.xml) or "
-        "update (run repo.sh update for each package)",
-    )
-
-    args = parser.parse_args()
-
     # Get script directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(os.path.dirname(script_dir))  # Assuming script is in tools/isaac/
     deps_dir = os.path.join(repo_root, "deps")
 
-    if args.mode == "version":
-        # Original functionality: update version in isaac-sim.packman.xml
-        kit_sdk_path = os.path.join(deps_dir, "kit-sdk.packman.xml")
-        isaac_sim_path = os.path.join(deps_dir, "isaac-sim.packman.xml")
+    # Paths to required files
+    kit_sdk_path = os.path.join(deps_dir, "kit-sdk.packman.xml")
+    isaac_sim_path = os.path.join(deps_dir, "isaac-sim.packman.xml")
 
-        # Check if files exist
-        if not os.path.exists(kit_sdk_path):
-            print(f"Error: File not found: {kit_sdk_path}")
-            sys.exit(1)
+    # Check if files exist
+    if not os.path.exists(kit_sdk_path):
+        print(f"Error: File not found: {kit_sdk_path}")
+        sys.exit(1)
 
-        if not os.path.exists(isaac_sim_path):
-            print(f"Error: File not found: {isaac_sim_path}")
-            sys.exit(1)
+    if not os.path.exists(isaac_sim_path):
+        print(f"Error: File not found: {isaac_sim_path}")
+        sys.exit(1)
 
-        # Extract kit version
-        kit_version = extract_kit_version(kit_sdk_path)
-        print(f"Extracted kit version: {kit_version}")
+    # Extract kit version
+    kit_version = extract_kit_version(kit_sdk_path)
+    print(f"Extracted kit version: {kit_version}")
 
-        # Update isaac-sim.packman.xml
-        if update_isaac_sim_version(isaac_sim_path, kit_version):
-            print(f"Successfully updated generic-model-output version in {isaac_sim_path}")
-        else:
-            print("Failed to update version.")
-
-    elif args.mode == "update":
-        # New functionality: extract package names and run repo.sh update
-        xml_files = glob.glob(os.path.join(deps_dir, "*.packman.xml"))
-
-        if not xml_files:
-            print(f"Error: No XML files found in {deps_dir}")
-            sys.exit(1)
-
-        print(f"Found {len(xml_files)} XML files in deps directory")
-
-        # Extract package names from all XML files
-        all_packages = set()
-        for xml_file in xml_files:
-            package_names = extract_package_names(xml_file)
-            all_packages.update(package_names)
-
-        print(f"Extracted {len(all_packages)} unique package names")
-
-        # Run repo.sh update for each package
-        if update_packages_with_repo_sh(list(all_packages), repo_root):
-            print("Successfully updated all packages")
-        else:
-            print("Some packages failed to update")
-            sys.exit(1)
+    # Update isaac-sim.packman.xml
+    if update_isaac_sim_version(isaac_sim_path, kit_version):
+        print(f"Successfully updated generic-model-output version in {isaac_sim_path}")
+    else:
+        print("Failed to update version.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

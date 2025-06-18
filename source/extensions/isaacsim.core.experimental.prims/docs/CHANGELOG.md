@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.3] - 2025-06-18
+### Changed
+- Update docstrings for Warp version change
+
 ## [0.5.2] - 2025-06-12
 ### Fixed
 - Fix broken autodocs references in api.rst

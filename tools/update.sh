@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to update and build the project components
+# Script to update and build specific components of the project
 #
 
 # Exit immediately if a command exits with a non-zero status
@@ -8,90 +8,106 @@ set -e
 # Disable filename expansion (globbing)
 set -f
 
-# Function to run extension cache cleaning and building
-run_extscache_operations() {
-  echo "Running build and cleaning extscache..."
-  pushd ../
-  # update extensions to match kit and physics versions
-  python3 tools/isaac/clean_extscache.py --update-locks --kit-file="source/apps/isaacsim.exp.extscache.kit" --update-physics
-
-  # Build with update flag to update extension cache
-  ./repo.sh build -ur
-
-  # Cleanup extension cache
-  python3 tools/isaac/clean_extscache.py --update-locks --kit-file="source/apps/isaacsim.exp.extscache.kit" --update-physics
-  popd
-}
-
-# Help function
+# Function to print help message
 print_help() {
-  echo "Usage: $0 [options]"
-  echo ""
-  echo "Options:"
-  echo "  -h, --help         Show this help message and exit"
-  echo "  --repo             Run repo update"
-  echo "  --packman          Run packman update"
-  echo "  --only-extscache   Only run extension cache cleaning and building"
-  echo ""
-  exit 0
+    echo "Usage: $0 [options]"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help         Show this help message and exit"
+    echo "  --kit              Update kit-kernel and related components"
+    echo "  --physics          Update physics components"
+    echo "  --exts             Update and clean extension cache"
+    echo "  --all              Run all updates"
+    echo ""
+    echo "Examples:"
+    echo "  $0 --kit           # Update only kit components"
+    echo "  $0 --kit --physics # Update kit and physics components"
+    echo "  $0 --all           # Run all updates"
+    echo ""
+    exit 0
 }
 
-# Default values for command line options
-RUN_REPO_UPDATE=false
-RUN_PACKMAN_UPDATE=false
-ONLY_EXTSCACHE=false
+# Function to update kit components
+update_kit() {
+    echo "Updating kit components..."
+    pushd ../
+    ./repo.sh update kit-kernel --patch
+    ./repo.sh check_python_package_definitions --update-omniverse-kit
+    # update GMO package and other dep versions
+    python3 tools/isaac/update_isaac_sim_deps.py
+    popd
+}
 
-# Parse command line arguments
-for arg in "$@"; do
-  case $arg in
-    -h|--help)
-      print_help
-      ;;
-    --repo)
-      RUN_REPO_UPDATE=true
-      shift
-      ;;
-    --packman)
-      RUN_PACKMAN_UPDATE=true
-      shift
-      ;;
-    --only-extscache)
-      ONLY_EXTSCACHE=true
-      shift
-      ;;
-  esac
-done
+# Function to update physics components
+update_physics() {
+    echo "Updating physics components..."
+    pushd ../
+    ./repo.sh update omni_physics --include-pre-release --patch
+    popd
+}
+
+# Function to update extension cache
+update_extensions() {
+    echo "Updating extension cache..."
+    pushd ../
+    python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat
+    ./repo.sh build -ur
+    python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat
+    popd
+}
 
 # Get the directory where this script is located
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 cd "$SCRIPT_DIR"
 
-# If only-extscache mode, skip all other updates and go straight to extscache operations
-if [ "$ONLY_EXTSCACHE" = true ]; then
-  run_extscache_operations
-  exit 0
+# Parse command line arguments
+if [ $# -eq 0 ]; then
+    print_help
 fi
 
-# Update components
-../repo.sh update kit-kernel --patch
-../repo.sh update omni_physics --include-pre-release --patch
-../repo.sh check_python_package_definitions --update-omniverse-kit
-python3 isaac/update_isaac_sim_deps.py --mode version
-pushd ../
-# Generate documentation
-python3 tools/isaac/generate_doxygen_input.py --root ./
-popd
+# Initialize flags
+UPDATE_KIT=false
+UPDATE_PHYSICS=false
+UPDATE_EXTS=false
 
-# Run build and clean extscache (now runs by default)
-run_extscache_operations
+# Process arguments
+for arg in "$@"; do
+    case $arg in
+        -h|--help)
+            print_help
+            ;;
+        --kit)
+            UPDATE_KIT=true
+            ;;
+        --physics)
+            UPDATE_PHYSICS=true
+            ;;
+        --exts)
+            UPDATE_EXTS=true
+            ;;
+        --all)
+            UPDATE_KIT=true
+            UPDATE_PHYSICS=true
+            UPDATE_EXTS=true
+            ;;
+        *)
+            echo "Unknown option: $arg"
+            print_help
+            ;;
+    esac
+done
 
-# Run conditional updates based on command line arguments
-if [ "$RUN_REPO_UPDATE" = true ]; then
-  echo "Running repo update..."
-  ../repo.sh update repo_
+# Run selected updates
+if [ "$UPDATE_KIT" = true ]; then
+    update_kit
 fi
 
-if [ "$RUN_PACKMAN_UPDATE" = true ]; then
-  echo "Running packman update..."
-  ./packman/packman update -y
+if [ "$UPDATE_PHYSICS" = true ]; then
+    update_physics
 fi
+
+if [ "$UPDATE_EXTS" = true ]; then
+    update_extensions
+fi
+
+echo "Update completed successfully!"
