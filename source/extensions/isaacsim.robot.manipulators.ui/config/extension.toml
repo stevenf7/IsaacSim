@@ -14,8 +14,8 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
-"isaacsim.robot.manipulators" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.robot.manipulators" = {}
 "omni.kit.menu.utils" = {}
 
 [[python.module]]

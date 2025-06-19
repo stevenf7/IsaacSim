@@ -1,7 +1,3 @@
-[core]
-reloadable = true
-order = 0
-
 [package]
 version = "0.1.1"
 category = "Simulation"
@@ -17,13 +13,12 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.deprecation_manager" = {}
 "omni.hydra.usdrt_delegate" = {}
 "omni.kit.stage_templates" = {}
-"omni.usd.metrics.assembler" = {}
 "omni.usd" = {}
+"omni.usd.metrics.assembler" = {}
 "omni.warp.core" = {}
-"isaacsim.core.deprecation_manager" = {}
-
 [[python.module]]
 name = "isaacsim.core.experimental.utils"
 
@@ -34,8 +29,8 @@ name = "isaacsim.core.experimental.utils.tests"
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.test.docstring",
     "isaacsim.storage.native",
+    "isaacsim.test.docstring",
 ]
 args = [
     "--/app/asyncRendering=0",

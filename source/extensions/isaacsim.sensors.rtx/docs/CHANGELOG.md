@@ -14,6 +14,7 @@
 ## [15.2.0] - 2025-06-06
 ### Added
 - SUPPORTED_LIDAR_CONFIGS maps official Lidar asset paths to variants
+
 ### Changed
 - Autogenerate test structures, valid commands from SUPPORTED_LIDAR_CONFIGS
 
