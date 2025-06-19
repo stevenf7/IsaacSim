@@ -625,21 +625,29 @@ class SimulationApp:
 
     def close(self, wait_for_replicator=True) -> None:
         """Close the running Omniverse Toolkit."""
-        try:
-            # make sure that any replicator workflows finish rendering/writing
-            import omni.replicator.core as rep
 
-            if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
-                rep.orchestrator.stop()
-            if wait_for_replicator:
-                rep.orchestrator.wait_until_complete()
-                time.sleep(1.0)
+        def _close_replicator():
+            try:
+                # make sure that any replicator workflows finish rendering/writing
+                import omni.replicator.core as rep
 
-            # Disable capture on play to avoid replicator engaging on any new timeline events
-            rep.orchestrator.set_capture_on_play(False)
-        except Exception:
-            pass
+                status = rep.orchestrator.get_status()
+                # if replicator is stopped and all writing is done, we can return
+                if status == rep.orchestrator.Status.STOPPED and rep.orchestrator.BackendDispatch.is_done_writing():
+                    return
+                # if replicator is not stopped, stop it and wait for it to finish
+                if status not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
+                    rep.orchestrator.stop()
+                if wait_for_replicator:
+                    rep.orchestrator.wait_until_complete()
+                    time.sleep(1.0)
 
+                # Disable capture on play to avoid replicator engaging on any new timeline events
+                rep.orchestrator.set_capture_on_play(False)
+            except Exception:
+                pass
+
+        _close_replicator()
         # workaround for exit issues, clean the stage first:
         try:
             if omni.usd.get_context().can_close_stage():
