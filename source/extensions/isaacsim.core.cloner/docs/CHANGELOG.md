@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.5] - 2025-06-19
+### Changed
+- Fixed another issue with fabric cloning for partially populated stages
+
 ## [1.4.4] - 2025-06-17
 ### Changed
 - Fixed fabric cloning for partially populated stages
