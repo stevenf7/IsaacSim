@@ -2,7 +2,7 @@
 
 ## [1.2.3] - 2025-06-16
 ### Fixed
-- SimulationManager.set_default_physics_scene looks up the physics scene prim path provided in the stage in case it wasn't caught with the stage open event and usd notices.  
+- SimulationManager.set_default_physics_scene looks up the physics scene prim path provided in the stage in case it wasn't caught with the stage open event and usd notices.
 
 ## [1.2.2] - 2025-06-05
 ### Fixed
