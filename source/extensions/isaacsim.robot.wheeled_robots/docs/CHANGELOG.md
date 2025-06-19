@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.18] - 2025-06-18
+### Changed
+- Add units to differential and holonomic controller nodes descriptions
+
 ## [4.0.17] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
