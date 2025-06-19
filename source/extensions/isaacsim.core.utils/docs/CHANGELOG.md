@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.4.2] - 2025-06-18
+### Fixed
+- Resolve reference paths between layers when saving the stage
+
 ## [3.4.1] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
