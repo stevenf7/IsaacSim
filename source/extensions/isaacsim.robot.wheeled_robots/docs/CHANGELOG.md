@@ -1,4 +1,7 @@
 # Changelog
+## [4.0.19] - 2025-06-18
+### Fixed
+- Fixed WheelBasePoseController for moving forward along -x axis
 
 ## [4.0.18] - 2025-06-18
 ### Changed
