@@ -201,6 +201,31 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
         else
         {
             fabricId = iStageReaderWriter->getFabricId(stageReaderWriterId);
+
+            auto iFabricUsd = carb::getCachedInterface<omni::fabric::IFabricUsd>();
+            if (!iFabricUsd)
+            {
+                CARB_LOG_ERROR("fabricClone - IFabricUsd not found");
+                return false;
+            }
+            iFabricUsd->setEnableChangeNotifies(fabricId, false);
+
+            auto populationUtils = omni::core::createType<usdrt::population::IUtils>();
+            if (!populationUtils)
+            {
+                CARB_LOG_ERROR("fabricClone - IUtils not found");
+                return false;
+            }
+            populationUtils->setEnableUsdNoticeHandling(stageId, fabricId, true);
+
+            // Fill the stage in progress with USD values
+            {
+                CARB_PROFILE_ZONE(0, "fabricClone - fabric populate");
+                populationUtils->populateFromUsd(stageReaderWriterId, stageId,
+                                                 omni::fabric::asInt(PXR_NS::SdfPath::AbsoluteRootPath()), nullptr, 0.0);
+            }
+
+            fabricId = iStageReaderWriter->getFabricId(stageReaderWriterId);
             usdrt::UsdStageRefPtr stage = usdrt::UsdStage::Attach(stageId, stageReaderWriterId);
             stage->SynchronizeToFabric(usdrt::TimeChange::NoUpdate);
         }
