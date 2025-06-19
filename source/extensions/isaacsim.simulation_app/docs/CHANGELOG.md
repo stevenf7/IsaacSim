@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.1] - 2025-06-18
+### Changed
+- Optimize shutdown to avoid waiting for replicator to finish writing when it is already stopped
+
 ## [2.9.0] - 2025-06-09
 ### Added
 - Add `run_coroutine` method to allow running coroutines using the Kit's asynchronous task engine.
