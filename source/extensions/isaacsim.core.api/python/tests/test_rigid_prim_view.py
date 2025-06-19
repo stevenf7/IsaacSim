@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
+import os
+import unittest
 
 import carb
 import numpy as np
@@ -97,6 +98,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._my_world.clear_instance()
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
 
+    @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_rigid_prim_view_gpu_pipeline(self):
         test_configs = {"use_gpu": True, "use_gpu_pipeline": True, "device": "gpu"}
         for backend in ["torch", "warp"]:
@@ -125,6 +127,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
             await self._runner()
 
+    @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_rigid_prim_view_cpu_pipeline(self):
         test_configs = {"use_gpu_pipeline": False, "device": "cpu"}
 

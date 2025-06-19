@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.2] - 2025-06-18
+### Changed
+- Skip articulation and rigid body view tests in ETM
+
 ## [4.6.1] - 2025-06-06
 ### Fixed
 - Force commit timeline changes on play_async to properly initialize views
