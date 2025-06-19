@@ -1,5 +1,5 @@
 [package]
-version = "1.1.8"
+version = "1.1.9"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -37,6 +37,8 @@ name = "isaacsim.benchmark.examples"
 [settings]
 # Whether to add a randomly generated string as a prefix to the output filename to distinguish runs.
 exts."isaacsim.benchmark.examples".num_app_updates = 1
+# Path to the scene to load, for example "/Isaac/Environments/Grid/default_environment.usd". If empty, no scene is loaded. 
+exts."isaacsim.benchmark.examples".scene_path = ""
 
 [[test]]
 timeout = 900
