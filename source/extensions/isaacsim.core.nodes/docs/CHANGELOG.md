@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.8] - 2025-06-24
+### Changed
+- Add extension specific test args to extension.toml
+
 ## [3.2.7] - 2025-06-18
 ### Changed
 - Track change from isaacsim.core.include Pose.h
