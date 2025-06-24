@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.9.2] - 2025-06-19
+### Changed
+- Remove replicator shutdown workaround
+- Add timeout to prevent infinite loop when waiting for USD resource operations to complete on shutdown
+
 ## [2.9.1] - 2025-06-18
 ### Changed
 - Optimize shutdown to avoid waiting for replicator to finish writing when it is already stopped
