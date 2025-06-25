@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.8.6] - 2025-06-24
+### Fixed
+- Select correct RtxLidarDebugDraw annotator based on fullScan input in ROS2RtxLidarHelper
+- Set annotator's doTransform input to False if using OmniLidar prim with "WORLD" output reference frame
+
 ## [4.8.5] - 2025-06-18
 ### Changed
 - Track change from isaacsim.core.include Pose.h
