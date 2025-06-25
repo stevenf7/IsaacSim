@@ -1,4 +1,8 @@
 # Changelog
+## [15.3.2] - 2025-06-25
+### Changed
+- Removed nanoScan3 from supported lidar configs.
+
 ## [15.3.1] - 2025-06-13
 ### Changed
 - Switched CUDA files to Apache license.
