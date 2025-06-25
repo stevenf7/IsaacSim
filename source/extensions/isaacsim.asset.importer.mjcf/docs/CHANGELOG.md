@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1] - 2025-06-24
+### Fixed
+- Importing bodies with multiple mesh geom
+
 ## [2.5.0] - 2025-06-10
 ### Changed
 - Removed unused assets from data folder
