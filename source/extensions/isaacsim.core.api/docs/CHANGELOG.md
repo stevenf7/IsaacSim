@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.3] - 2025-06-25
+### Fixed
+- Fix GrounPlane's physical material apply during instance construction
+
 ## [4.6.2] - 2025-06-18
 ### Changed
 - Skip articulation and rigid body view tests in ETM
