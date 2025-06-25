@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.19] - 2025-06-25
+### Changed
+- Fix menu test, Gripper Control Golden, not finding the window given delay. (ETM)
+
 ## [2.1.18] - 2025-06-13
 ### Changed
 - Fix menu test timeout
