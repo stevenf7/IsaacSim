@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2025-06-25
+### Changed
+- Fixed sensor naming for context menu tests
+- Omitted nanoSensor3 from test due to reference load failures.
+
 ## [1.1.1] - 2025-06-13
 ### Changed
 - Fix menu test timeout
