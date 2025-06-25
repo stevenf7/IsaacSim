@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.7] - 2025-06-25
+### Changed
+- Update surface gripper gantry stage to allow manual update of joint targets
+
 ## [4.6.6] - 2025-06-11
 ### Changed
 - Update Franka Open Drawer Policy example
