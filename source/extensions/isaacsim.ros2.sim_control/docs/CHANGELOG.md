@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2025-06-24
+### Fixed
+- Resolved an issue where ROS 2 spinning errors would occur upon closing Isaac Sim.
+
 ## [1.1.0] - 2025-06-03
 ### Changed
 - Use isaacsim.core.experimental for prim operations
