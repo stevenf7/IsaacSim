@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.6] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [0.1.5] - 2025-05-31
 ### Changed
 - Fix SDF paths on windows

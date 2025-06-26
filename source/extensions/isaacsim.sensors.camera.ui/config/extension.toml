@@ -1,5 +1,5 @@
 [package]
-version = "0.1.13"
+version = "0.1.14"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation UI Components"
 description = "Provides UI components for Isaac Sim camera simulation, eg. menu options."
@@ -21,6 +21,7 @@ name = "isaacsim.sensors.camera.ui"
 
 [[test]]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

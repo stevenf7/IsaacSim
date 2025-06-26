@@ -1,5 +1,5 @@
 [package]
-version = "0.3.23"
+version = "0.3.24"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -53,6 +53,7 @@ stdoutFailPatterns.exclude = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

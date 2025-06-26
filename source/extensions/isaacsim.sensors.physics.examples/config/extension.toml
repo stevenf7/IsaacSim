@@ -1,5 +1,5 @@
 [package]
-version = "0.1.12"
+version = "0.1.13"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation Examples"
 description = "Isaac Sim Physics Sensor Simulation Examples extension provides example usage and snippets for Isaac Sim physics-based sensors."
@@ -29,6 +29,7 @@ name = "isaacsim.sensors.physics.examples.imu_sensor"
 
 [[test]]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

@@ -1,5 +1,5 @@
 [package]
-version = "2.1.19"
+version = "2.1.20"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
 description = "Manipulators"
@@ -24,6 +24,7 @@ name = "isaacsim.robot.manipulators.ui"
 [[test]]
 dependencies = []
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

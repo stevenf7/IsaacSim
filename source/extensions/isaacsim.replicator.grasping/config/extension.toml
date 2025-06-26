@@ -1,5 +1,5 @@
 [package]
-version = "1.0.6"
+version = "1.0.7"
 category = "Simulation"
 title = "Replicator Grasping Workflow"
 description = "Synthetic data generation workflow for grasping scenarios"
@@ -30,6 +30,7 @@ dependencies = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

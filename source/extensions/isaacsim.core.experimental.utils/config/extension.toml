@@ -1,5 +1,5 @@
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Sim Core (Utils)"
 description = "The Core Utils extension provides a set of utility functions."
@@ -19,6 +19,7 @@ writeTarget.kit = true
 "omni.usd" = {}
 "omni.usd.metrics.assembler" = {}
 "omni.warp.core" = {}
+
 [[python.module]]
 name = "isaacsim.core.experimental.utils"
 
@@ -33,6 +34,7 @@ dependencies = [
     "isaacsim.test.docstring",
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

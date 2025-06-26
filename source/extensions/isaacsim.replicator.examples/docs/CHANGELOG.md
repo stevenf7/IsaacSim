@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.26] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [1.1.25] - 2025-06-13
 ### Changed
 - Fixed various simready assets example snippet warnings

@@ -1,5 +1,5 @@
 [package]
-version = "3.2.8"
+version = "3.2.9"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Common Isaac Sim OmniGraph nodes"
@@ -43,6 +43,7 @@ dependencies = [
     "omni.kit.viewport.actions"
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

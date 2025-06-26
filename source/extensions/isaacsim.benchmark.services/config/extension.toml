@@ -1,5 +1,5 @@
 [package]
-version = "3.0.2"
+version = "3.0.3"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -38,6 +38,7 @@ dependencies = [
     "omni.physx.ui",
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

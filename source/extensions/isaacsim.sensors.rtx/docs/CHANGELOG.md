@@ -1,4 +1,8 @@
 # Changelog
+## [15.3.3] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [15.3.2] - 2025-06-25
 ### Changed
 - Removed nanoScan3 from supported lidar configs.

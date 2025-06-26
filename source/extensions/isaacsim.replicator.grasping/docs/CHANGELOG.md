@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.7] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [1.0.6] - 2025-06-03
 ### Changed
 - Fix incorrect licenses and add missing licenses

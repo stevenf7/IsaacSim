@@ -1,5 +1,5 @@
 [package]
-version = "3.0.3"
+version = "3.0.4"
 category = "Simulation"
 title = "Robot Assembler"
 description = "Alpha version of Robot Assembler Extension: Assemble multiple Articulations into a single robot"
@@ -27,6 +27,7 @@ dependencies = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

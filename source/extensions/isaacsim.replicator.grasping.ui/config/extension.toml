@@ -1,5 +1,5 @@
 [package]
-version = "1.0.5"
+version = "1.0.6"
 category = "Simulation"
 title = "Replicator Grasping Pipeline UI"
 description = "UI for the synthetic data generation workflow for grasping scenarios"
@@ -29,6 +29,7 @@ timeout = 900
 dependencies = []
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

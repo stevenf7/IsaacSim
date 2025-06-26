@@ -1,5 +1,5 @@
 [package]
-version = "2.2.8"
+version = "2.2.9"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor UI components"
 description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
@@ -27,6 +27,7 @@ name = "isaacsim.sensors.physx.ui"
 
 [[test]]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

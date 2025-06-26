@@ -1,5 +1,5 @@
 [package]
-version = "2.2.12"
+version = "2.2.13"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Synthetic Data Recorder"
 description = "The extension provides a UI to record synthetic data using Replicator writers. By default the UI uses the Replicator BasicWriter, it however also supports custom writers with custom parameters loaded through config files as key-value pairs."
@@ -26,6 +26,7 @@ name = "isaacsim.replicator.synthetic_recorder"
 dependencies = [
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

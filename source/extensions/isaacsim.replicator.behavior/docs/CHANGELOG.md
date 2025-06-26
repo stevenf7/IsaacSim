@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.10] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [1.1.9] - 2025-06-08
 ### Changed
 - Update sdg pipeline golden images on windows

@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.6] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [1.0.5] - 2025-06-13
 ### Fixed
 - UI does not rebuild the whole window when modifying values

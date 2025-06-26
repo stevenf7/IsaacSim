@@ -1,5 +1,5 @@
 [package]
-version = "4.0.19"
+version = "4.0.20"
 category = "Simulation"
 title = "Wheeled Robots"
 description = "This extension provides wheeled robot utilities"
@@ -41,6 +41,7 @@ exclude = ["Ogn*Database.py"]
 timeout = 900
 dependencies = []
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

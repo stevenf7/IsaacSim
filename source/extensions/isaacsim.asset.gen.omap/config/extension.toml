@@ -1,5 +1,5 @@
 [package]
-version = "2.0.24"
+version = "2.0.25"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "The Isaac Sim Occupancy Map extension provides tools to generate occupancy maps for a Scene"
@@ -36,6 +36,7 @@ dependencies = [
     "omni.hydra.usdrt_delegate",
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

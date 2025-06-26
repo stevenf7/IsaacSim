@@ -1,4 +1,7 @@
 # Changelog
+## [2.5.2] - 2025-06-25
+### Changed
+- Add --reset-user to test args
 
 ## [2.5.1] - 2025-06-24
 ### Fixed

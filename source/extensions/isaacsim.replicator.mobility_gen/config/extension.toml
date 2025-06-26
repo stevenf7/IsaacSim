@@ -1,5 +1,5 @@
 [package]
-version = "0.1.5"
+version = "0.1.6"
 category = "Simulation"
 title = "MobilityGen"
 description = "A toolset for generating mobility data for robots."
@@ -30,6 +30,7 @@ name = "isaacsim.replicator.mobility_gen.tests"
 
 [[test]]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

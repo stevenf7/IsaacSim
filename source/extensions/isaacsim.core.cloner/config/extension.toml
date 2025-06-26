@@ -1,5 +1,5 @@
 [package]
-version = "1.4.5"
+version = "1.4.6"
 category = "Simulation"
 title = "Isaac Sim Cloner"
 description = "The Cloner extension provides a set of APIs to clone prims and environments in an efficient way as well as filtering the collisions across the clones if needed."
@@ -30,6 +30,7 @@ dependencies = [
     "omni.physx.ui",
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

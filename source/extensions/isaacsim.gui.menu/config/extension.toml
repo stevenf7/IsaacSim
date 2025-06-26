@@ -1,5 +1,5 @@
 [package]
-version = "2.3.12"
+version = "2.3.13"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Menus specific to Isaac Sim"
@@ -37,6 +37,7 @@ dependencies = [
     "omni.kit.test_helpers_gfx",
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.2] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [1.1.1] - 2025-06-24
 ### Fixed
 - Resolved an issue where ROS 2 spinning errors would occur upon closing Isaac Sim.

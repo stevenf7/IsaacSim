@@ -1,5 +1,5 @@
 [package]
-version = "1.1.1"
+version = "1.1.2"
 category = "Simulation"
 title = "ROS 2 Simulation Control"
 description = "Extension that provides ROS2 services to control (play/pause) Isaac Sim"
@@ -31,6 +31,7 @@ dependencies = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

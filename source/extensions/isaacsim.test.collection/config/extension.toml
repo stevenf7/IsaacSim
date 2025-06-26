@@ -1,5 +1,5 @@
 [package]
-version = "2.0.20"
+version = "2.0.21"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -63,6 +63,7 @@ stdoutFailPatterns.exclude = [
 
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",
