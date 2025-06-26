@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.7] - 2025-06-26
+### Changed
+- Disable fabric usd notice handler during cloning
+
 ## [1.4.6] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
