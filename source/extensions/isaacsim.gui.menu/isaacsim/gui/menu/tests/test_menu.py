@@ -147,7 +147,15 @@ class TestMenuAssets(OmniUiTest):
         apriltag_path = "Create/April Tags"
 
         await omni.kit.app.get_app().next_update_async()
-        await menu_click(apriltag_path, human_delay_speed=50)
+        delays = [5, 50, 100]
+        for delay in delays:
+            try:
+                await menu_click(apriltag_path, human_delay_speed=delay)
+                break
+            except AttributeError as e:
+                if "NoneType' object has no attribute 'center'" in str(e) and delay != delays[-1]:
+                    continue
+                raise
         await omni.kit.app.get_app().next_update_async()
 
         omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_type="Cube", above_ground=True)

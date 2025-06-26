@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.13] - 2025-06-25
+### Changed
+- Add delay to menu click for apriltag test
+
 ## [2.3.12] - 2025-06-13
 ### Changed
 - Fix incorrect menu name
