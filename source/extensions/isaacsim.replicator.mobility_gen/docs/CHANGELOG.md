@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.5] - 2025-05-31
+### Changed
+- Fix SDF paths on windows
+
 ## [0.1.4] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests
