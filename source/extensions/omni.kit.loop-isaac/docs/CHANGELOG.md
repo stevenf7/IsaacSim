@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.4] - 2025-06-26
+### Added
+- Log failure but don't crash if message queue is null
+
 ## [1.3.3] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
