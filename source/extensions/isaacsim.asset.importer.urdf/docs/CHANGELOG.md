@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.16] - 2025-06-26
+### Changed
+- Skip tests from ETM that fail to load assets.
+
 ## [2.4.15] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
