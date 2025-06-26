@@ -128,6 +128,11 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
             filters: List of package names to include from the imported file
         """
         try:
+            # Check if the file exists before trying to parse it
+            if not os.path.exists(import_path):
+                print(f"  Skipping imported file (not found): {import_path}")
+                return
+
             import_tree = ET.parse(import_path)
             import_root = import_tree.getroot()
 
@@ -141,12 +146,12 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
                 package_elem = dependency.find("package")
                 package_name = package_elem.get("name") if package_elem is not None else None
 
+                # Substitute variables in name for comparison
+                substituted_name = substitute_variables(name)
+                substituted_package_name = substitute_variables(package_name) if package_name else None
+
                 # Only store packages that match the filters
                 if filters:
-                    # Substitute variables in name for comparison
-                    substituted_name = substitute_variables(name)
-                    substituted_package_name = substitute_variables(package_name) if package_name else None
-
                     if not any(
                         substitute_variables(filter_name) in substituted_name
                         or (substituted_package_name and substitute_variables(filter_name) in substituted_package_name)
@@ -168,7 +173,7 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
                     version = substitute_variables(version)
 
                     imported_packages[substituted_name] = {
-                        "name": package_name if package_name else substituted_name,
+                        "name": package_name if package_name else substituted_name,  # Use package name if available
                         "version": version,
                         "license_file": find_license_file(dependency.get("linkPath", ""), substituted_name),
                     }
@@ -193,7 +198,7 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
                 version = substitute_variables(version)
 
                 imported_packages[substituted_name] = {
-                    "name": package_name if package_name else substituted_name,
+                    "name": package_name if package_name else substituted_name,  # Use package name if available
                     "version": version,
                     "license_file": find_license_file(dependency.get("linkPath", ""), substituted_name),
                 }
@@ -237,6 +242,7 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
         total_deps = 0
         full_package_listing[file][config] = []
 
+        # Process all dependencies from the main file
         for dependency in root.findall(".//dependency"):
             name = dependency.get("name")
             if not name:
@@ -273,6 +279,19 @@ def gather_package_data(files, config, platform_abi, platform_target, package=No
 
             if not package or name == package:
                 full_package_listing[file][config].append(package_info)
+
+        # Also include packages from imported_packages that don't have corresponding dependency elements
+        for imported_name, imported_info in imported_packages.items():
+            # Check if this imported package was already processed above
+            already_processed = any(
+                pkg["name"] == imported_info["name"] and pkg["version"] == imported_info["version"]
+                for pkg in full_package_listing[file][config]
+            )
+
+            if not already_processed:
+                if not package or imported_name == package:
+                    full_package_listing[file][config].append(imported_info)
+                    total_deps += 1
 
         deps_count_by_file[file][config] = total_deps
 
@@ -312,7 +331,7 @@ def write_output_files(results_by_file, deps_count_by_file, json_output, full_pa
         configs: List of configs that were checked
 
     Returns:
-        int: Total number of issues found
+        tuple: (total_issues, private_package_count)
     """
     # Print summary and count total issues
     total_issues = 0
@@ -344,6 +363,7 @@ def write_output_files(results_by_file, deps_count_by_file, json_output, full_pa
 
         # Create a dictionary to track unique package entries
         unique_packages = {}
+        private_package_count = 0
 
         for file in full_package_listing:
             for config in configs:
@@ -381,6 +401,10 @@ def write_output_files(results_by_file, deps_count_by_file, json_output, full_pa
                             "license_type": license_type,
                         }
 
+                        # Count private packages
+                        if is_public == "private":
+                            private_package_count += 1
+
         # Sort packages by name first, then by version
         sorted_packages = sorted(unique_packages.values(), key=lambda x: (x["name"].lower(), x["version"].lower()))
 
@@ -395,8 +419,9 @@ def write_output_files(results_by_file, deps_count_by_file, json_output, full_pa
     print("\nDetailed results written to packman_verification_results.json")
     print("Full package listing written to packman_full_results.json")
     print("CSV summary written to packman_full_results.csv")
+    print(f"Found {private_package_count} private package(s)")
 
-    return total_issues
+    return total_issues, private_package_count
 
 
 def merge_verification_results(*results_list):
@@ -508,7 +533,13 @@ def verify_externals(xml_files=None, package=None, platform_abi=None, platform_t
 
     # Write output and get total issues
     configs = list(set(combo["config"] for combo in combinations))
-    return write_output_files(*merged_results, configs)
+    total_issues, private_package_count = write_output_files(*merged_results, configs)
+
+    # Return 1 if there are private packages found
+    if private_package_count > 0:
+        return 1
+
+    return total_issues
 
 
 def main():
@@ -584,7 +615,13 @@ def main():
 
     # Write output and get total issues
     configs = list(set(combo["config"] for combo in combinations))
-    return write_output_files(*merged_results, configs)
+    total_issues, private_package_count = write_output_files(*merged_results, configs)
+
+    # Return 1 if there are private packages found
+    if private_package_count > 0:
+        exit(1)
+
+    return total_issues
 
 
 if __name__ == "__main__":
