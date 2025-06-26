@@ -1,5 +1,5 @@
 [package]
-version = "15.3.2"
+version = "15.3.3"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -91,6 +91,7 @@ stdoutFailPatterns.include = [
     "*CUDA error*"
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

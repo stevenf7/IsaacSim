@@ -1,5 +1,5 @@
 [package]
-version = "3.3.2"
+version = "3.3.3"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
 description = "Manipulators"
@@ -36,6 +36,7 @@ stdoutFailPatterns.exclude = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

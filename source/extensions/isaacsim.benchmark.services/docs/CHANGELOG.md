@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.3] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [3.0.2] - 2025-06-18
 ### Added
 - Enabled multi-gpu frametime collection and reporting + average GPU frametime in mGPU setups

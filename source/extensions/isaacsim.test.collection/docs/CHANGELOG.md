@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.21] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [2.0.20] - 2025-05-31
 ### Changed
 - Use default nucleus server for all tests

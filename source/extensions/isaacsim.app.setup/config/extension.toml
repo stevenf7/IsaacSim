@@ -1,5 +1,5 @@
 [package]
-version = "1.4.6"
+version = "1.4.7"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -61,6 +61,7 @@ dependencies = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

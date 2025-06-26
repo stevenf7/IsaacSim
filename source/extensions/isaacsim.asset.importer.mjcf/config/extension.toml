@@ -1,5 +1,5 @@
 [package]
-version = "2.5.1"
+version = "2.5.2"
 category = "Simulation"
 title = "Omniverse MJCF Importer"
 description = "MJCF Importer"
@@ -52,6 +52,7 @@ stdoutFailPatterns.exclude = [
 ]
 
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

@@ -30,6 +30,7 @@ name = "isaacsim.replicator.mobility_gen.examples.tests"
 
 [[test]]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

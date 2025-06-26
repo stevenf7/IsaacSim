@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.8] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [2.1.7] - 2025-06-04
 ### Fixed
 - Grids are available while paused, if Grid Mode is ON

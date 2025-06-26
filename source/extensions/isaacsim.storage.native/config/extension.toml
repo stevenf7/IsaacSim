@@ -1,5 +1,5 @@
 [package]
-version = "1.2.4"
+version = "1.2.5"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -34,6 +34,7 @@ dependencies = [
     "omni.kit.test"
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

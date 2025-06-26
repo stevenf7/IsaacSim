@@ -1,5 +1,5 @@
 [package]
-version = "1.0.12"
+version = "1.0.13"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Writers"
 description = "The extension provides various custom Replicator based writers for Synthetic Data Generation (SDG) workflows. The writers are registered with Replicator at extension startup."
@@ -33,6 +33,7 @@ exclude = ["Ogn*Database.py"]
 dependencies = [
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

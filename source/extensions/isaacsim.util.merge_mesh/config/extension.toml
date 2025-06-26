@@ -1,5 +1,5 @@
 [package]
-version = "2.0.12"
+version = "2.0.13"
 category = "Simulation"
 title = "Isaac Sim Merge Mesh"
 description = "Isaac Sim tool to facilitate combining meshes together in a single USD Prim. It provides the ability to reset the mesh origin to world origin, and combining all materials into a single list, combining materials with the same characteristics."
@@ -29,6 +29,7 @@ dependencies = [
     "omni.kit.primitive.mesh",
 ]
 args = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",

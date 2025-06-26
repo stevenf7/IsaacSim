@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.20] - 2025-06-25
+### Changed
+- Add --reset-user to test args
+
 ## [4.0.19] - 2025-06-18
 ### Fixed
 - Fixed WheelBasePoseController for moving forward along -x axis

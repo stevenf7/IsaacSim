@@ -1,8 +1,11 @@
 # Changelog
+## [2.4.15] - 2025-06-25
+### Changed
+- Add --reset-user to test args
 
 ## [2.4.14] - 2025-06-24
 ### Fixed
-- Compound Inertial Origin to the inertia principal axis on import. 
+- Compound Inertial Origin to the inertia principal axis on import.
 
 ## [2.4.13] - 2025-06-12
 ### Fixed

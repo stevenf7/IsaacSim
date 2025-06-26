@@ -21,6 +21,7 @@ from pathlib import Path
 
 # Define standard arguments for different test sections
 STANDARD_TEST_ARGS = [
+    "--reset-user",
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",
