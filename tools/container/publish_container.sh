@@ -45,9 +45,11 @@ fi
 echo !Start publishing container!
 echo $docker_image_tag
 # ./bin/docker/publish.sh --yes -r nvcr.io/nvidian/isaac-sim $docker_image_tag
-echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim!
+echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH!
 ./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$CI_COMMIT_BRANCH
-# ./bin/docker/publish.sh --yes -r nvcr.io/nvidian $docker_image_tag -t latest-$CI_COMMIT_BRANCH
+
+echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH!
+./bin/docker/publish.sh --yes -r nvcr.io/nvidian $docker_image_tag -t latest-$CI_COMMIT_BRANCH
 # ./bin/docker/publish.sh --yes -r gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim $docker_image_tag -t latest-$CI_COMMIT_BRANCH
 # docker pull nvcr.io/nvidian/isaac-sim/$docker_image_tag
 
@@ -55,9 +57,9 @@ echo !Publishing to gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim
 # docker tag nvcr.io/nvidian/isaac-sim/$docker_image_tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
 # docker push gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
-echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH!
-docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
-docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
+# echo !Publishing to nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH!
+# docker tag $docker_image_tag nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
+# docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
 # # FOR PRODUCTION #
 # echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0!
