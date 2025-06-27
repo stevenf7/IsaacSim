@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.6] - 2025-06-27
+### Changed
+- Fix recording naming for windows filesystems
+
 ## [0.1.5] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
