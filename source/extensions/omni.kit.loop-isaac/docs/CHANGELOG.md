@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.3.5] - 2025-06-26
+### Changed
+- Update to latest loop runner code from kit-sdk
+- Remove internal category for extension
+
 ## [1.3.4] - 2025-06-26
 ### Added
 - Log failure but don't crash if message queue is null

@@ -29,6 +29,7 @@
 
 #include <omni/ext/IExt.h>
 #include <omni/extras/DictHelpers.h>
+#include <omni/kit/EventUtils.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IRunLoopRunner.h>
 
@@ -394,7 +395,7 @@ public:
         if (messageBusQ)
         {
             // Pump the message queue
-            (void)eventdispatcher::popAllAndDispatch(messageBusQ.get());
+            pumpQueue(*messageBusQ);
         }
         else
         {
