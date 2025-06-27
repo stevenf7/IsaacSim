@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.14] - 2025-06-26
+### Changed
+- Add increasing delay to menu click for environment test
+
 ## [2.3.13] - 2025-06-25
 ### Changed
 - Add --reset-user to test args

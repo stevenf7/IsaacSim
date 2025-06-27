@@ -4,6 +4,7 @@
 ### Fixed
 - Fix default rendering dt when set_defaults is false by using the stage's time codes per second as the rendering dt
 - Check if manual mode is enabled before returning the manual step size
+- Fix joint forces test
 
 ## [4.6.4] - 2025-06-25
 ### Changed
