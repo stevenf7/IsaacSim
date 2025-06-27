@@ -104,7 +104,10 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
         current_efforts = robot.get_measured_joint_efforts()
         await self._my_world.stop_async()
         # print(efforts, current_efforts)
-        self.assertTrue(torch.isclose(current_efforts, efforts, atol=1e-1).all())
+        self.assertTrue(
+            torch.isclose(current_efforts, efforts, rtol=1e-1).all(),
+            f"current_efforts: {current_efforts}, efforts: {efforts}",
+        )
 
     async def test_joint_forces(self, add_view_to_scene=True):
         assets_root_path = await get_assets_root_path_async()

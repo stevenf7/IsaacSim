@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.6] - 2025-06-26
+### Changed
+- Update unit test golden values and tolerances
+
 ## [1.2.5] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
