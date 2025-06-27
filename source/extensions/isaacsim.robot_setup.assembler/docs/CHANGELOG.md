@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.6] - 2025-06-26
+### Fixed
+- Fixed failed tests
+
 ## [3.0.5] - 2025-06-26
 ### Fixed
 - Error messages when assembling robots
