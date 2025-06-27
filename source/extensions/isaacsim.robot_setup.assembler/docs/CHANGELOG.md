@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.5] - 2025-06-26
+### Fixed
+- Error messages when assembling robots
+
 ## [3.0.4] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
