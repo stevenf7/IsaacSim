@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.25] - 2025-06-27
+### Fixed
+- Use rolling average for the Imu Ogn node test
+
 ## [0.3.24] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
