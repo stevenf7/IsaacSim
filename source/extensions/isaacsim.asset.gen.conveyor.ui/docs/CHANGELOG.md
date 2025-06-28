@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.15] - 2025-06-28
+### Changed
+- Increase delay in test to account for slower hardware
+
 ## [2.1.14] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
