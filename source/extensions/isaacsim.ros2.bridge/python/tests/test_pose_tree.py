@@ -13,18 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-import gc
-
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from re import I
 
 import carb
 import omni.graph.core as og
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
@@ -36,49 +28,22 @@ from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf
 from usd.schema.isaac import robot_schema
 
-from .common import add_cube, add_franka, get_qos_profile
+from .common import ROS2TestCase, add_cube, add_franka, get_qos_profile
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
+class TestRos2PoseTree(ROS2TestCase):
     # Before running each test
     async def setUp(self):
-        import rclpy
-
+        await super().setUp()
         await omni.usd.get_context().new_stage_async()
-        self._timeline = omni.timeline.get_timeline_interface()
-
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("isaacsim.ros2.bridge")
-        self._ros_extension_path = ext_manager.get_extension_path(ext_id)
-
-        self._assets_root_path = await get_assets_root_path_async()
-        if self._assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
-        kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
-
-        self._physics_rate = 60
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         await omni.kit.app.get_app().next_update_async()
-        rclpy.init()
 
         pass
 
     # After running each test
     async def tearDown(self):
-        import rclpy
-
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
-
-        self._timeline = None
-        rclpy.shutdown()
-        gc.collect()
-        pass
+        await super().tearDown()
 
     async def test_pose_tree(self):
         import rclpy
