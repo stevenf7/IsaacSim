@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.20] - 2025-06-27
+### Changed
+- Retry test if window is not found
+
 ## [2.1.19] - 2025-06-25
 ### Changed
 - Add --reset-user to test args

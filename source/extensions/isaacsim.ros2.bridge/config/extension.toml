@@ -1,5 +1,5 @@
 [package]
-version = "4.8.7"
+version = "4.8.8"
 category = "Simulation"
 title = "ROS 2 Bridge"
 description = "The ROS 2 Bridge extension enables communication between the Isaac Sim and ROS 2 systems. It allows for the publishing and subscribing of ROS 2 topics and services via OmniGraph nodes and Action graphs. ROS 2 publishers, subscribers and services are only active when play is pressed. To enable this extension, ensure ROS 2 libraries are sourced in the terminal before running Isaac Sim or source the lightweight ROS 2 libraries included with Isaac Sim as an alternative."
@@ -88,7 +88,10 @@ stdoutFailPatterns.exclude = [
     "*[Error] [isaacsim.sensors.physics.plugin] Failed to create imu sensor, parent prim is not found or invalid*",
     "*[Error] [omni.graph.core.plugin] Failed to create ComputeGraph \"/Graph/ROS_Nav2_Waypoint_Follower\". A graph already exists at this path*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishTransformTree: [/TestGraph] Please specify at least one valid target prim for the ROS pose tree component*",
-    "*[Error] [omni.physx.tensors.plugin] Failed to create simulation view: no active physics scene found*"
+    "*[Error] [omni.physx.tensors.plugin] Failed to create simulation view: no active physics scene found*",
+    "*[Error] [omni.graph.core.plugin] /Graph/ROS_Odometry/ComputeOdometry: [/Graph/ROS_Odometry] The prim  is not valid. Please specify at least one valid chassis prim*",
+    "*[Error] [omni.graph.core.plugin] /Graph/ROS_Odometry/TFRobot: [/Graph/ROS_Odometry] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
+    "*[Error] [omni.graph.core.plugin] /Graph/ROS_TF/PublisherTF: [/Graph/ROS_TF] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*"
 ]
 
 

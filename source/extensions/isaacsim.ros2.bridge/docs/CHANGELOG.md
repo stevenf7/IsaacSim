@@ -1,4 +1,7 @@
-# Changelog
+## [4.8.8] - 2025-06-27
+### Changed
+- Refactor tests, add print statements for total time and reduce total test time
+
 ## [4.8.7] - 2025-06-25
 ### Changed
 - Add --reset-user to test args

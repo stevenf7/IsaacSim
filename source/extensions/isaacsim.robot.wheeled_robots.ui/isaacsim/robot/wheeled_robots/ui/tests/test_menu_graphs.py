@@ -133,13 +133,19 @@ class TestDifferentialRobotGraph(OmniUiTest):
         graph = og.Controller.create_graph({"graph_path": graph_path, "evaluator_name": "execution"})
         og.Controller.create_node(graph_path + "/OnPlaybackTick", "omni.graph.action.OnPlaybackTick")
         # Open UI and set to add to existing graph
+
+        # Create graph. Check for parameter window before continuing.
+        # If the parameter window is not found, retry with increasing delays
+        window_name = "Differential Controller"
         delays = [5, 50, 100]
         for delay in delays:
             try:
                 await menu_click(
                     "Tools/Robotics/OmniGraph Controllers/Differential Controller", human_delay_speed=delay
                 )
-                break
+                if (param_window := ui_test.find(window_name)) is not None:
+                    break
+
             except AttributeError as e:
                 if "NoneType' object has no attribute 'center'" in str(e) and delay != delays[-1]:
                     continue
@@ -148,8 +154,6 @@ class TestDifferentialRobotGraph(OmniUiTest):
             await update_stage_async()
 
         # Find and interact with parameter window
-        window_name = "Differential Controller"
-        param_window = ui_test.find(window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and check the "Add to Existing Graph" checkbox
