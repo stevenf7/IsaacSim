@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.0] - 2025-06-29
+### Changed
+- Add resizeAsync function to DeviceBufferBase
+
 ## [2.2.0] - 2025-06-17
 ### Changed
 - Implement `computeWorldXformNoCache` using Fabric Scene Delegate and IFabricHierarchy

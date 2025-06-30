@@ -202,6 +202,33 @@ public:
     }
 
     /**
+     * @brief Asynchronously resizes the device buffer.
+     * @details
+     * Reallocates memory if the new size is different from the current size.
+     * Handles deallocation of existing memory if necessary.
+     *
+     * @param[in] size New size in number of elements
+     * @param[in] cudaStream CUDA stream to use for asynchronous operation
+     */
+    virtual void resizeAsync(size_t size, cudaStream_t cudaStream = 0)
+    {
+        if ((size != m_size && size > 0) || m_buffer == nullptr)
+        {
+            ScopedDevice scopedDevice(m_device);
+            if (m_buffer)
+            {
+                CUDA_CHECK(cudaFreeAsync(m_buffer, cudaStream));
+                m_buffer = nullptr;
+            }
+            if (size > 0)
+            {
+                CUDA_CHECK(cudaMallocAsync(&m_buffer, size * sizeof(T), cudaStream));
+            }
+            m_size = size;
+        }
+    }
+
+    /**
      * @brief Gets a pointer to the device memory.
      * @return Raw pointer to the device memory
      */
@@ -258,7 +285,7 @@ public:
         printf("%s", start.c_str());
         std::vector<T> hostBuffer(m_size);
         CUDA_CHECK(cudaMemcpyAsync(hostBuffer.data(), m_buffer, m_size * sizeof(T), cudaMemcpyDeviceToHost));
-        for (size_t i; i < m_size; ++i)
+        for (size_t i = 0; i < m_size; ++i)
         {
             std::cout << hostBuffer[i];
             if (i != m_size - 1)

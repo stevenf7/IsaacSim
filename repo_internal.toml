@@ -289,7 +289,7 @@ doxygen_input = [
   "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lidar/LidarSensor.h",
   "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lightbeam_sensor/LightBeamSensor.h",
   "source/extensions/isaacsim.sensors.rtx/include/isaacsim/sensors/rtx/IIsaacSimSensorsRtx.h",
-  "source/extensions/isaacsim.sensors.rtx/nodes/SensorNodeUtils.h",
+  "source/extensions/isaacsim.sensors.rtx/nodes/LidarConfigHelper.h",
   "source/extensions/omni.kit.loop-isaac/include/RunLoopRunner.h",
   "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
 ]

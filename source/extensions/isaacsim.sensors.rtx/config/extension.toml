@@ -1,5 +1,5 @@
 [package]
-version = "15.3.3"
+version = "15.4.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -66,15 +66,15 @@ app.sensors.nv.lidar.profileBaseFolder=[
 ]
 
 # Renderer copies Lidar return buffer onto CPU before postprocessing
-app.sensors.nv.lidar.outputBufferOnGPU = false
+app.sensors.nv.lidar.outputBufferOnGPU = true
 # Renderer copies Radar return buffer onto CPU before postprocessing
-app.sensors.nv.radar.outputBufferOnGPU = false
+app.sensors.nv.radar.outputBufferOnGPU = true
 # Enable motion BVH for sensor motion effects
 renderer.raytracingMotion.enabled=true
 # Enable motion raytracing Hydra engine masking support
 renderer.raytracingMotion.enableHydraEngineMasking=true
 # Enable motion raytracing for Hydra engines 0-4
-renderer.raytracingMotion.enabledForHydraengines="0,1,2,3,4"
+renderer.raytracingMotion.enabledForHydraEngines="0,1,2,3,4"
 # Enable non-visual materials using default hard-coded map of material names to material IDs
 rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;AsphaltWeatheredMaterial:2;VegetationGrassMaterial:3;WaterStandardMaterial:4;GlassStandardMaterial:5;FiberGlassMaterial:6;MetalAlloyMaterial:7;MetalAluminumMaterial:8;MetalAluminumOxidizedMaterial:9;PlasticStandardMaterial:10;RetroMarkingsMaterial:11;RetroSignMaterial:12;RubberStandardMaterial:13;SoilClayMaterial:14;ConcreteRoughMaterial:15;ConcreteSmoothMaterial:16;OakTreeBarkMaterial:17;FabricStandardMaterial:18;PlexiGlassStandardMaterial:19;MetalSilverMaterial:20"
 
@@ -84,7 +84,10 @@ stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",
     "*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*",
-    "*RuntimeWarning: invalid value encountered in divide*"
+    "*RuntimeWarning: invalid value encountered in divide*",
+    "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar, and node will not execute. Stop the simulation, correct the issue, and restart.*",
+    "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: Lidar prim elevationDeg contains nonzero value*",
+    "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.*"
 ]
 stdoutFailPatterns.include = [
     "*Could not open asset * for reference*",
