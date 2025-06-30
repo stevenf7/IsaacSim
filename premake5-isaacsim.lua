@@ -184,6 +184,7 @@ function add_cuda_dependencies()
     links { "dl", "pthread", "rt" }
     filter { "system:windows" }
     libdirs { target_deps .. "/cuda/lib/x64" }
+    links { "cuda" }
     filter {}
 
     -- CUDA-specific include directory

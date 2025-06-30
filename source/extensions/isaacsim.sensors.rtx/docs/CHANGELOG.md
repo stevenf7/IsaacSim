@@ -1,4 +1,13 @@
 # Changelog
+## [15.4.0] - 2025-06-27
+### Changed
+- Lidar and Radar data now on GPU by default
+- IsaacExtractRTXSensorPointCloud CUDA operations fully rewritten
+- Preallocating buffers in all nodes to avoid costly reallocation during compute
+### Fixed
+- IsaacComputeRTXLidarFlatScan synchronizes on CUDA stream before testing inputs to ensure data buffer is properly
+  filled before processing.
+
 ## [15.3.3] - 2025-06-25
 ### Changed
 - Add --reset-user to test args

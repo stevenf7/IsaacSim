@@ -98,7 +98,7 @@ SUPPORTED_LIDAR_CONFIGS = {
     "/Isaac/Sensors/SICK/microScan3/SICK_microScan3.usd": {
         "Normal_1",
         "Normal_2",
-        # "Normal_3", # TODO: CUDA error
+        "Normal_3",
         "Normal_4",
         "Normal_5",
         "Normal_6",
@@ -118,7 +118,7 @@ SUPPORTED_LIDAR_CONFIGS = {
         "Normal_2",
         "Normal_3",
         "Normal_4",
-        # "Normal_5", # TODO: CUDA error
+        "Normal_5",
         "Normal_6",
         "Normal_7",
         "Normal_8",
