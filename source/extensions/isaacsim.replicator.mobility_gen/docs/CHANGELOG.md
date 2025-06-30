@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.7] - 2025-06-30
+### Changed
+- Add writeTarget.platform to extension.toml
+
 ## [0.1.6] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
