@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.5] - 2025-06-30
+### Changed
+- Omit testing simulation manager interface on ETM as physics steps are handled differently.
+
 ## [1.2.4] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
