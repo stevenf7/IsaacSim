@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+import toml
+
 
 # Add color code constants
 class Colors:
@@ -111,6 +113,83 @@ class ExtensionValidator:
             self.errors.append("Missing required config folder\n" f"Expected: {config_path}")
         elif not (config_path / "extension.toml").exists():
             self.errors.append("Missing required extension.toml file\n" f"Expected: {config_path}/extension.toml")
+        else:
+            # Validate extension.toml content
+            self._validate_extension_toml(config_path / "extension.toml")
+
+    def _validate_extension_toml(self, toml_path):
+        """Validate the extension.toml file content.
+
+        Checks if the extension.toml file has the required configuration when the extension
+        contains C++ files but no [[native.plugin]] entry.
+
+        Args:
+            param toml_path: Path to the extension.toml file to validate.
+
+        Raises:
+            Exception: When there is an error reading or parsing the TOML file.
+        """
+        try:
+            with open(toml_path, "r") as f:
+                toml_content = toml.load(f)
+        except Exception as e:
+            self.errors.append(f"Error reading extension.toml: {str(e)}")
+            return
+
+        # Check if extension has C++ files
+        has_cpp_files = self._has_cpp_files()
+
+        # Check if extension.toml has [[native.plugin]] entry
+        has_native_plugin = "native" in toml_content and "plugin" in toml_content["native"]
+
+        # Check if writeTarget.platform is set to true (it's under package section)
+        write_target_platform = False
+        if "package" in toml_content and "writeTarget" in toml_content["package"]:
+            write_target_platform = toml_content["package"]["writeTarget"].get("platform", False) is True
+
+        # If extension has C++ files but no [[native.plugin]] entry,
+        # writeTarget.platform must be set to true
+        if has_cpp_files and not has_native_plugin and not write_target_platform:
+            self.errors.append(
+                f"Extension has C++ files but no [[native.plugin]] entry in extension.toml\n"
+                f"When an extension contains C++ files and does not have a [[native.plugin]] entry, "
+                f"writeTarget.platform must be set to true in extension.toml\n"
+                f"Add the following to your extension.toml:\n"
+                f"writeTarget.platform = true"
+            )
+
+    def _has_cpp_files(self):
+        """Check if the extension contains any C++ source files.
+
+        Searches for .cpp files in common C++ directories and .h files in the include
+        directory to determine if the extension contains C++ code.
+
+        Returns:
+            True if the extension contains C++ files, False otherwise.
+        """
+        # Check for .cpp files in various directories
+        cpp_directories = [
+            self.extension_path / "bindings",
+            self.extension_path / "nodes",
+            self.extension_path / "plugins",
+            self.extension_path / "src",  # Common C++ source directory
+        ]
+
+        for directory in cpp_directories:
+            if directory.exists():
+                # Look for .cpp files recursively
+                cpp_files = list(directory.rglob("*.cpp"))
+                if cpp_files:
+                    return True
+
+        # Also check for .h files in include directory as they indicate C++ code
+        include_path = self.extension_path / "include"
+        if include_path.exists():
+            header_files = list(include_path.rglob("*.h"))
+            if header_files:
+                return True
+
+        return False
 
     def validate_data(self):
         data_path = self.extension_path / "data"
