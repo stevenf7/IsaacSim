@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.3] - 2025-06-30
+### Changed
+- Fix docstrings example
+
 ## [0.1.2] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
