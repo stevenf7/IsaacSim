@@ -1,3 +1,9 @@
+# Changelog
+
+## [4.8.9] - 2025-06-30
+### Changed
+- Fix menu graph test failure and disable laser scan in RTX Lidar test for 3D lidar
+
 ## [4.8.8] - 2025-06-27
 ### Changed
 - Refactor tests, add print statements for total time and reduce total test time

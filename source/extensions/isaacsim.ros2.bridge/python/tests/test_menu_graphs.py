@@ -484,25 +484,33 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         # Store actual message data for validation, not just counts
         self.point_cloud_data = None
-        self.laser_scan_data = None
+        # self.laser_scan_data = None
 
         # Define topic names for the lidar data
-        laser_scan_topic = "/laser_scan"
+        # laser_scan_topic = "/laser_scan"
         point_cloud_topic = "/point_cloud"
 
-        # Create callbacks to capture and validate message content
-        def laser_scan_callback(msg):
-            self.laser_scan_data = msg
+        # # Create callbacks to capture and validate message content
+        # def laser_scan_callback(msg):
+        #     self.laser_scan_data = msg
 
         def point_cloud_callback(msg):
             self.point_cloud_data = msg
 
         # Create subscribers with validation callbacks
-        self.create_subscriber(laser_scan_topic, LaserScan, laser_scan_callback)
+        # self.create_subscriber(laser_scan_topic, LaserScan, laser_scan_callback)
         self.create_subscriber(point_cloud_topic, PointCloud2, point_cloud_callback)
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar")
+        delays = [5, 50, 100]
+        for delay in delays:
+            try:
+                await menu_click("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", human_delay_speed=delay)
+                break
+            except AttributeError as e:
+                if "NoneType' object has no attribute 'center'" in str(e) and delay != delays[-1]:
+                    continue
+                raise
         await omni.kit.app.get_app().next_update_async()
 
         # Wait for and interact with parameter window
@@ -517,9 +525,9 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         lidar_prim = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
         lidar_prim.model.set_value(lidar_path)
 
-        # Enable LaserScan
+        # Disable LaserScan as the lidar is 3D
         laser_scan_checkbox = ui_test.find(root_widget_path + "/HStack[5]/HStack[0]/VStack[0]/ToolButton[0]")
-        laser_scan_checkbox.model.set_value(True)
+        laser_scan_checkbox.model.set_value(False)
 
         # Enable Point Cloud
         point_cloud_checkbox = ui_test.find(root_widget_path + "/HStack[6]/HStack[0]/VStack[0]/ToolButton[0]")
