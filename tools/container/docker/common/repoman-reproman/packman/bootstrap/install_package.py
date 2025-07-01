@@ -45,7 +45,7 @@ def install_package(package_src_path, package_dst_path):
         try:
             # Recursive copy is needed because both package name and version folder could be missing in
             # target directory:
-            shutil.copytree(temp_dir, package_dst_path)
+            shutil.copytree(temp_dir, package_dst_path, symlinks=True)
         except OSError as exc:
             logger.warning(
                 "Directory %s already present, packaged installation aborted" % package_dst_path

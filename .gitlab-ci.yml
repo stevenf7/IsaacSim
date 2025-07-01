@@ -44,6 +44,7 @@ stages:
   - nightly-test
   - security
   - deploy
+  - deploy-test
   - prod-test
   - check-externals
   - github-staging
@@ -1424,6 +1425,16 @@ sign-windows-x86_64-release:
       - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
+.container-rules:
+  rules:
+    - if: $ALLOW_PUBLISH_CONTAINERS != "true"
+      when: never
+    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+      when: never
+    - !reference [.rules-version-changed, rules]
+    - !reference [.rules-push-manual, rules]
+
+
 # ==============================================================================================================
 publish-container:
     extends:
@@ -1447,13 +1458,53 @@ publish-container:
         when:
           - always
     rules:
-      - if: $ALLOW_PUBLISH_CONTAINERS != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
+      - !reference [.container-rules, rules]
     allow_failure: true
+
+# ==============================================================================================================
+test-container:
+  extends:
+    - .test-common
+    - .runner-test-linux-x86_64-gpu
+    - .omni_nvks_gpu
+  image: nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}
+  # variables:
+  #   GIT_STRATEGY: none
+  parallel:
+    matrix:
+      - BUCKET:
+        - deprecated
+        - asset
+        - core
+        - examples_tests
+        - replicator
+        - ros
+        - sensors
+        - utils_gui
+        - robot
+  script:
+    - pushd /isaac-sim
+    - ls -lash
+    - echo "Okay wasn't sure if this would work"
+    - ./python.sh run_tests.py --suite pythontests --bucket ${BUCKET}
+    - popd
+    - cp -r /root/.local/share/ov/data/_testoutput .
+    - cp _testoutput/ext_test_results.txt _testoutput/repo_test_results.txt
+    - /isaac-sim/python.sh tools/ci/standalone_report.py  _testoutput ${BUCKET}
+  stage: deploy-test
+  needs:
+    - job: publish-container
+      artifacts: false
+  rules:
+    - !reference [.container-rules, rules]
+  artifacts:
+    paths:
+      - _testoutput
+    expire_in: 1 week
+    when: always
+    reports:
+      junit:
+        - "_testoutput/*.xml"
 
 # ==============================================================================================================
 assets-1-publish-to-packman:
