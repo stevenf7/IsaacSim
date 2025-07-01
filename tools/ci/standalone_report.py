@@ -111,6 +111,7 @@ def parse_test_results(report_folder: str, suite_name: str) -> Tuple[ET.Element,
             # Parse test case results
             if any(status in line for status in ["[   ok   ]", "[retry ok]", "[  fail  ]", "[ flaky ]"]):
                 clean_line = line.replace(" ", "")
+                clean_line = clean_line.split("(Count:")[0]
                 match = re.search(test_result_pattern, clean_line)
 
                 if not match:
@@ -125,8 +126,10 @@ def parse_test_results(report_folder: str, suite_name: str) -> Tuple[ET.Element,
                 test_parts = test_name.split("-")
                 if len(test_parts) >= 3:
                     suite, classname = test_parts[1], test_parts[2]
-                else:
+                elif len(test_parts) > 1:
                     suite, classname = "pythontests", test_parts[1]
+                else:
+                    suite, classname = test_parts[0], test_parts[0]
 
                 # Store execution time
                 execution_time = float(time_str)

@@ -267,8 +267,8 @@ def collect_licenses(image, out_dir=None):
       logging.info(f"    > found package list, copying")
       pkg_file_dest = f"packages.{lic_type}.txt"
       lic_file_dest = f"licenses.{lic_type}.txt"
-      shutil.copyfile(packages_file, os.path.join(out_dir, pkg_file_dest))
-      shutil.copyfile(licenses_file, os.path.join(out_dir, lic_file_dest))
+      shutil.copyfile(packages_file, os.path.join(out_dir, pkg_file_dest), follow_symlinks=True)
+      shutil.copyfile(licenses_file, os.path.join(out_dir, lic_file_dest), follow_symlinks=True)
       ret['license_files'].append(lic_file_dest)
       ret['package_lists'].append(pkg_file_dest)
     elif(os.path.isfile(empty_marker)):

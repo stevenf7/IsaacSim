@@ -98,7 +98,7 @@ def main():
     if(os.path.isdir(chart_work_dir)):
       shutil.rmtree(chart_work_dir)
     logging.info(f"Copying chart from {args.chart_path} to {chart_work_dir}")
-    shutil.copytree(args.chart_path, chart_work_dir)
+    shutil.copytree(args.chart_path, chart_work_dir, symlinks=True)
 
     chart = Chart(path=chart_work_dir)
 

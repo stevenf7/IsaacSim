@@ -636,10 +636,10 @@ def copy_files(src_dir, dest_dir, src_files=[], src_subdir=''):
       dest = os.path.join(dest, dirname)
 
     if(source_file.endswith('*')):
-      shutil.copytree(os.path.join(src_dir, src_subdir, dirname), dest) 
+      shutil.copytree(os.path.join(src_dir, src_subdir, dirname), dest, symlinks=True) 
     else:  
       (not os.path.exists(dest)) and os.makedirs(dest)
-      shutil.copy2(os.path.join(src_dir, src_subdir, source_file), dest)
+      shutil.copy2(os.path.join(src_dir, src_subdir, source_file), dest, follow_symlinks=True)
 
 def get_dockerfile_func_args(func, release=None, family=None, build=None):
   all_args = { 'family' : family, 
