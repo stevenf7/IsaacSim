@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.4.2] - 2025-07-01
+### Fixed
+- Added deprecation note for deformable prims
+
 ## [0.4.1] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
