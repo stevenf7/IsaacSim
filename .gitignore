@@ -152,9 +152,8 @@ Temp_Config*.json
 .nvcode.json
 
 # Ignore packman verification results
-packman_verification_results.json
-packman_full_results.json
 packman_full_results.csv
+packman_private_results.csv
 
 # Ignore results from banned word check
 results.json

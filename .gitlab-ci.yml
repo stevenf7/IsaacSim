@@ -1569,8 +1569,7 @@ check_externals:
   allow_failure: true
   artifacts:
     paths:
-      - packman_verification_results.json
-      - packman_full_results.json
+      - packman_private_results.csv
       - packman_full_results.csv
     expire_in: 1 week
   script:
