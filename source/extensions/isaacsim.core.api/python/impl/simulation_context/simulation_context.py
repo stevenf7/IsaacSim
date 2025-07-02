@@ -226,6 +226,7 @@ class SimulationContext:
             SimulationContext._instance = None
             SimulationContext._sim_context_initialized = False
             SimulationManager.set_backend("numpy")
+            SimulationManager.set_physics_sim_device("cpu")
         return
 
     """

@@ -1,4 +1,15 @@
 # Changelog
+## [1.2.7] - 2025-06-29
+### Fixed
+- Camera view issues with different backends and devices (ISIM-3498)
+- Avoid slicing None data if data is not yet available in Camera View and Camera sensor
+
+### Changed
+- Removed unused local backend variables in Camera sensor
+- Update image comparison tolerance for camera view sensor tests
+
+### Added
+- Camera view sensor tests for different backends and devices
 
 ## [1.2.6] - 2025-06-26
 ### Changed
