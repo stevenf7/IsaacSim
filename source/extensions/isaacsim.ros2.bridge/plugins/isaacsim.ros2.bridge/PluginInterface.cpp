@@ -215,11 +215,12 @@ CARB_EXPORT void carbOnPluginStartup()
 
             carb::tokens::ITokens* tokens = carb::getCachedInterface<carb::tokens::ITokens>();
 #if defined(_WIN32)
-            std::filesystem::path p = carb::tokens::resolveString(tokens, "${app}");
+            std::filesystem::path p = carb::tokens::resolveString(tokens, "${isaacsim.ros2.bridge}");
 #else
-            std::experimental::filesystem::path p = carb::tokens::resolveString(tokens, "${app}");
+            std::experimental::filesystem::path p = carb::tokens::resolveString(tokens, "${isaacsim.ros2.bridge}");
 #endif
-            g_extensionPath = p.parent_path().string() + "/exts/isaacsim.ros2.bridge/" + std::string(rosDistro) + "/lib/";
+
+            g_extensionPath = (p / std::string(rosDistro) / "lib").string();
 
             // Try and load internal lib, this will fail if ENV vars are not set correctly due to dependency tree.
             // Do not print lib specific errors
