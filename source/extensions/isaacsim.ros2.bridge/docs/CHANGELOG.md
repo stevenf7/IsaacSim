@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.10] - 2025-07-02
+### Changed
+- Fix path resolution for ROS2 libraries
+
 ## [4.8.9] - 2025-06-30
 ### Changed
 - Fix menu graph test failure and disable laser scan in RTX Lidar test for 3D lidar
