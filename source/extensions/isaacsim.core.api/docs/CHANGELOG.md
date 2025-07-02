@@ -1,4 +1,7 @@
 # Changelog
+## [4.6.6] - 2025-06-30
+### Fixed
+- SimulationContext clear_instance will set the physics device to default "cpu"
 
 ## [4.6.5] - 2025-06-26
 ### Fixed
