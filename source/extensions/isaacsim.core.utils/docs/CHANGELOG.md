@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.4] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
+
 ## [3.4.3] - 2025-06-25
 ### Changed
 - Add --reset-user to test args

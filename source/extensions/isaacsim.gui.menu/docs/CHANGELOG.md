@@ -1,4 +1,7 @@
 # Changelog
+## [2.3.15] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
 
 ## [2.3.14] - 2025-06-26
 ### Changed
@@ -7,9 +10,6 @@
 ## [2.3.13] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
-
-## [2.3.13] - 2025-06-25
-### Changed
 - Add delay to menu click for apriltag test
 
 ## [2.3.12] - 2025-06-13

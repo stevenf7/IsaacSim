@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.6] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
+
 ## [1.2.5] - 2025-06-30
 ### Changed
 - Omit testing simulation manager interface on ETM as physics steps are handled differently.

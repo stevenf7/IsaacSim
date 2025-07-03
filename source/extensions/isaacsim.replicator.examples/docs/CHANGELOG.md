@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.28] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
+
 ## [1.1.27] - 2025-07-01
 ### Changed
 - Update simready assets test example to add references using isaac sim api
