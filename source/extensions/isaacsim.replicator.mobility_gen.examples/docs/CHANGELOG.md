@@ -1,10 +1,12 @@
 # Changelog
+
+## [0.1.7] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
+
 ## [0.1.6] - 2025-06-25
 ### Changed
 - Add --reset-user to test args
-
-## [0.1.6] - 2025-06-12
-### Changed
 - Fix SDF paths on windows
 
 ## [0.1.5] - 2025-06-12

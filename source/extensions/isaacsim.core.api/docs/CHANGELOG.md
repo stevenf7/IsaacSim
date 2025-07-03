@@ -1,4 +1,8 @@
 # Changelog
+## [4.6.7] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
+
 ## [4.6.6] - 2025-06-30
 ### Fixed
 - SimulationContext clear_instance will set the physics device to default "cpu"

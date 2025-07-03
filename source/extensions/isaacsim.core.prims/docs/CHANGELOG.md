@@ -1,4 +1,7 @@
 # Changelog
+## [0.4.3] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
 
 ## [0.4.2] - 2025-07-01
 ### Fixed

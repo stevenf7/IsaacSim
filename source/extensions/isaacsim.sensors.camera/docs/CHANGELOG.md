@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.8] - 2025-07-03
+### Changed
+- Make omni.kit.loop-isaac an explicit test dependency
+
 ## [1.2.7] - 2025-06-29
 ### Fixed
 - Camera view issues with different backends and devices (ISIM-3498)
