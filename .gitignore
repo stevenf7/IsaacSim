@@ -86,11 +86,12 @@ docs/source/*
 # ignore the cache
 data/cache
 
+# ignore browser cache
+source/extensions/isaacsim.asset.browser/cache/isaacsim.asset.browser.cache.json
+
 symbols.txt
 /.vs
 
-# petert: temp file i create for debugging
-output.txt
 
 # OVAT files
 gcn_local.yml
