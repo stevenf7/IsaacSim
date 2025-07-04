@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.8.12] - 2025-07-03
+### Changed
+- Fix crash on shutdown for ROS2 bridge
+
 ## [4.8.11] - 2025-07-03
 ### Changed
 - Make omni.kit.loop-isaac an explicit test dependency

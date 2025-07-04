@@ -76,7 +76,7 @@ omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 std::shared_ptr<isaacsim::ros2::bridge::Ros2ContextHandle> g_defaultContextHandle;
 std::shared_ptr<isaacsim::core::includes::LibraryLoader> g_factoryLoader;
 isaacsim::core::includes::MultiLibraryLoader g_backupLibraryLoader;
-isaacsim::ros2::bridge::Ros2Factory* g_factory = nullptr;
+std::unique_ptr<isaacsim::ros2::bridge::Ros2Factory> g_factory = nullptr;
 std::string g_extensionPath;
 
 void onResume(float currentTime, void* userData)
@@ -111,7 +111,7 @@ uint64_t const CARB_ABI getDefaultContextHandleAddr()
 
 isaacsim::ros2::bridge::Ros2Factory* const CARB_ABI getFactory()
 {
-    return g_factory;
+    return g_factory.get();
 }
 
 bool const CARB_ABI getStartupStatus()
@@ -253,16 +253,16 @@ CARB_EXPORT void carbOnPluginStartup()
     if (g_factoryLoader)
     {
         typedef isaacsim::ros2::bridge::Ros2Factory* (*createFactory_binding)(void);
-        createFactory_binding createFactory = (g_factoryLoader->getSymbol<createFactory_binding>("createFactory"));
+        createFactory_binding createFactory = (g_factoryLoader->getSymbol<createFactory_binding>("createFactoryC"));
 
         if (createFactory)
         {
-            g_factory = (isaacsim::ros2::bridge::Ros2Factory*)createFactory();
+            g_factory = std::unique_ptr<isaacsim::ros2::bridge::Ros2Factory>(createFactory());
         }
         else
         {
             CARB_LOG_WARN(
-                "Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
+                "Create Factory Failed: Could not load ROS2 Bridge due to missing library dependencies, please make sure your sourced ROS2 workspace has the correct packages/libraries installed");
             return;
         }
     }
@@ -282,12 +282,8 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_defaultContextHandle.reset();
 
     RELEASE_OGN_NODES()
+    g_factory.reset();
     g_factoryLoader.reset();
-    if (g_factory)
-    {
-        delete g_factory;
-        g_factory = nullptr;
-    }
 }
 
 void fillInterface(isaacsim::ros2::bridge::Ros2Bridge& iface)
