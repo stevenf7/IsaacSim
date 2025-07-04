@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.11] - 2025-07-03
+### Changed
+- Removed bundles from OgnIsaacReadWorldPose and added unit test
+
 ## [3.2.10] - 2025-07-03
 ### Changed
 - Make omni.kit.loop-isaac an explicit test dependency
