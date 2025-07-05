@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.22] - 2025-07-05
+### Changed
+- Update tests to pass without a custom loop runner
+
 ## [4.0.21] - 2025-07-03
 ### Changed
 - Make omni.kit.loop-isaac an explicit test dependency
