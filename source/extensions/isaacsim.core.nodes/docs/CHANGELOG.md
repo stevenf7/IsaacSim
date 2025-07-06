@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.12] - 2025-07-05
+### Changed
+- Update tests to pass without a custom loop runner
+
 ## [3.2.11] - 2025-07-03
 ### Changed
 - Removed bundles from OgnIsaacReadWorldPose and added unit test

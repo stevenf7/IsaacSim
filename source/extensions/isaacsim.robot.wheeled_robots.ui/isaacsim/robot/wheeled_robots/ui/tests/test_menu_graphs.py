@@ -19,6 +19,7 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.usd
+from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import update_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
@@ -33,6 +34,8 @@ class TestDifferentialRobotGraph(OmniUiTest):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
+        self._simulation_context = SimulationContext()
+        await self._simulation_context.initialize_simulation_context_async()
 
         # add robot to stage (Nova Carter)
         self._robot_path = "/World/test_robot"
