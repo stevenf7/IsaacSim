@@ -1,5 +1,5 @@
 [package]
-version = "0.1.4"
+version = "0.1.5"
 category = "Simulation"
 title = "Isaac Sim Core (Utils)"
 description = "The Core Utils extension provides a set of utility functions."
@@ -34,7 +34,8 @@ dependencies = [
     "isaacsim.test.docstring",
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

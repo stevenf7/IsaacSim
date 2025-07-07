@@ -1,5 +1,5 @@
 [package]
-version = "0.1.7"
+version = "0.1.8"
 category = "Simulation"
 title = "MobilityGen Examples"
 description = "Example robot and scenario implementations for MobilityGen"
@@ -30,7 +30,8 @@ name = "isaacsim.replicator.mobility_gen.examples.tests"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.14"
+version = "1.0.15"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Writers"
 description = "The extension provides various custom Replicator based writers for Synthetic Data Generation (SDG) workflows. The writers are registered with Replicator at extension startup."
@@ -33,7 +33,8 @@ exclude = ["Ogn*Database.py"]
 dependencies = [
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

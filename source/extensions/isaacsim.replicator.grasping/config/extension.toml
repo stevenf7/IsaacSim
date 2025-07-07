@@ -1,5 +1,5 @@
 [package]
-version = "1.0.8"
+version = "1.0.9"
 category = "Simulation"
 title = "Replicator Grasping Workflow"
 description = "Synthetic data generation workflow for grasping scenarios"
@@ -30,7 +30,8 @@ dependencies = [
 ]
 
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

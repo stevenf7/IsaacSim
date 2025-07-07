@@ -1,5 +1,5 @@
 [package]
-version = "0.1.11"
+version = "0.1.12"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation UI Components"
 description = "Isaac Sim Physics Sensor Simulation UI Components extension provides UI components for Isaac Sim physics-based sensor simulation, eg. menu options."
@@ -21,7 +21,8 @@ name = "isaacsim.sensors.physics.ui"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

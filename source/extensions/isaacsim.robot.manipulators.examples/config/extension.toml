@@ -1,5 +1,5 @@
 [package]
-version = "1.0.15"
+version = "1.0.16"
 category = "example"
 title = "Manipulators Examples"
 description = "examples of manipulators and grippers"
@@ -23,7 +23,8 @@ name = "isaacsim.robot.manipulators.examples"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

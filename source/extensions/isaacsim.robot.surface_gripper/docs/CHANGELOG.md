@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.6] - 2025-07-07
+### Fixed
+- Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 3.2.5)
+
 ## [3.2.5] - 2025-07-03
 ### Changed
 - Update extension unit tests to use tensor API from gripper view

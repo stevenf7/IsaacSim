@@ -1,5 +1,5 @@
 [package]
-version = "2.1.9"
+version = "2.1.10"
 category = "Other"
 title = "Isaac Sim Throttling"
 description = "Control throttling behaviors for isaac sim"
@@ -25,7 +25,8 @@ name = "isaacsim.core.throttling.tests"
 [[test]]
 dependencies = ["omni.kit.test"]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

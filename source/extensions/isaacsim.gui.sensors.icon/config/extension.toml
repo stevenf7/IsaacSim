@@ -1,5 +1,5 @@
 [package]
-version = "2.0.2"
+version = "2.0.3"
 category = "other"
 title = "Sensor Icon"
 description = "sensor icon in viewport"
@@ -50,7 +50,8 @@ dependencies = [
     "omni.kit.ui_test", 
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

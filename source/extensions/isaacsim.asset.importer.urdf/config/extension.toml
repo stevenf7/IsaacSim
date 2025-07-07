@@ -9,7 +9,7 @@
 # its affiliates is strictly prohibited.
 
 [package]
-version = "2.4.17"  # Semantic Versionning is used: https://semver.org/
+version = "2.4.18"  # Semantic Versionning is used: https://semver.org/
 category = "Simulation"
 title = "Urdf Importer Extension"
 description = "URDF Importer"
@@ -78,7 +78,8 @@ dependencies = [ "omni.hydra.usdrt_delegate"]
 
 
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

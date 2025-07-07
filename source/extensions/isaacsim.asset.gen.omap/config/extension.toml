@@ -1,5 +1,5 @@
 [package]
-version = "2.0.26"
+version = "2.0.27"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "The Isaac Sim Occupancy Map extension provides tools to generate occupancy maps for a Scene"
@@ -36,7 +36,8 @@ dependencies = [
     "omni.hydra.usdrt_delegate",
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

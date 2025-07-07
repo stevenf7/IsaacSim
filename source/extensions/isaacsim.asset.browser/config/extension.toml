@@ -1,5 +1,5 @@
 [package]
-version = "1.3.17"
+version = "1.3.18"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
@@ -71,7 +71,8 @@ dependencies = [
 ]
 
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

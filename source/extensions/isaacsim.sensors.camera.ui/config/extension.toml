@@ -1,5 +1,5 @@
 [package]
-version = "0.1.15"
+version = "0.1.16"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation UI Components"
 description = "Provides UI components for Isaac Sim camera simulation, eg. menu options."
@@ -21,7 +21,8 @@ name = "isaacsim.sensors.camera.ui"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

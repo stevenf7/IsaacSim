@@ -1,5 +1,5 @@
 [package]
-version = "1.2.6"
+version = "1.2.7"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -34,7 +34,8 @@ dependencies = [
     "omni.kit.test"
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

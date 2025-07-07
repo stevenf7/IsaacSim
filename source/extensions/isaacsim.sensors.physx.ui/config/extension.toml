@@ -1,5 +1,5 @@
 [package]
-version = "2.2.10"
+version = "2.2.11"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor UI components"
 description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
@@ -27,7 +27,8 @@ name = "isaacsim.sensors.physx.ui"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

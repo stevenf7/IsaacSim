@@ -1,5 +1,5 @@
 [package]
-version = "1.0.15"
+version = "1.0.16"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Domain Randomization"
 description="The extension provides various Domain Randomization scripts and OmniGraph nodes for randomizing simulation environments."
@@ -33,7 +33,8 @@ exclude = ["Ogn*Database.py"]
 dependencies = [
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

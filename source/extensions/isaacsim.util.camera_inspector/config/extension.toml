@@ -1,5 +1,5 @@
 [package]
-version = "1.0.14"
+version = "1.0.15"
 category = "Simulation"
 title = "Camera Inspector"
 description = "This extension can inspect and modify the properties of cameras in the scene."
@@ -27,7 +27,8 @@ stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

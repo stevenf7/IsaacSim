@@ -1,5 +1,5 @@
 [package]
-version = "15.4.1"
+version = "15.4.2"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -94,7 +94,8 @@ stdoutFailPatterns.include = [
     "*CUDA error*"
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

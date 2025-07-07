@@ -1,5 +1,5 @@
 [package]
-version = "1.4.8"
+version = "1.4.9"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -61,7 +61,8 @@ dependencies = [
 ]
 
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",
