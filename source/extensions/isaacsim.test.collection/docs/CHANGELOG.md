@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2025-07-07
+### Changed
+- Add new tests for testing single stepping behavior with replicator
+
 ## [2.0.24] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.0.23)
