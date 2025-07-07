@@ -21,7 +21,8 @@ from pathlib import Path
 
 # Define standard arguments for different test sections
 STANDARD_TEST_ARGS = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

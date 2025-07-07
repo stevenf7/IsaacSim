@@ -1,5 +1,5 @@
 [package]
-version = "0.5.5"
+version = "0.5.6"
 category = "Simulation"
 title = "Isaac Sim Core (Prims)"
 description = "The Core Prims extension provides a set of APIs to wrap one or more USD prims in the stage in order to manipulate (read/write) their attributes and perform other operations during the simulation."
@@ -37,7 +37,8 @@ dependencies = [
     "isaacsim.core.experimental.materials",  # for visual/physics materials
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

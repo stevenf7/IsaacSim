@@ -1,5 +1,5 @@
 [package]
-version = "2.0.23"
+version = "2.0.24"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -63,7 +63,8 @@ stdoutFailPatterns.exclude = [
 
 
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

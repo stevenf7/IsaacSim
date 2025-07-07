@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.24] - 2025-07-07
+### Fixed
+- Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.0.23)
+
 ## [2.0.23] - 2025-07-03
 ### Changed
 - Update leatherback test golden values

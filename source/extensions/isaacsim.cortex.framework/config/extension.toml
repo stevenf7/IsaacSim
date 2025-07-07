@@ -1,5 +1,5 @@
 [package]
-version = "1.0.11"
+version = "1.0.12"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Isaac Cortex is a framework within NVIDIA's Isaac Sim that integrates various robotics tools into a unified system, facilitating the development of collaborative robotic applications. It emphasizes reactivity and adaptability, enabling robots to operate safely alongside humans without the need for physical barriers."
@@ -27,7 +27,8 @@ stdoutFailPatterns.exclude = [
     "*WARNING: cannot load logging configuration file*", # exclude warning as failure
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

@@ -1,4 +1,8 @@
 # Changelog
+## [3.2.13] - 2025-07-07
+### Fixed
+- Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 3.2.12)
+
 ## [3.2.12] - 2025-07-05
 ### Changed
 - Update tests to pass without a custom loop runner

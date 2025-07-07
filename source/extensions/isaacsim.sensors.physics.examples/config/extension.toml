@@ -1,5 +1,5 @@
 [package]
-version = "0.1.14"
+version = "0.1.15"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation Examples"
 description = "Isaac Sim Physics Sensor Simulation Examples extension provides example usage and snippets for Isaac Sim physics-based sensors."
@@ -29,7 +29,8 @@ name = "isaacsim.sensors.physics.examples.imu_sensor"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

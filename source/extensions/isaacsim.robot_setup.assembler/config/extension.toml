@@ -1,5 +1,5 @@
 [package]
-version = "3.0.7"
+version = "3.0.8"
 category = "Simulation"
 title = "Robot Assembler"
 description = "Alpha version of Robot Assembler Extension: Assemble multiple Articulations into a single robot"
@@ -27,7 +27,8 @@ dependencies = [
 ]
 
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

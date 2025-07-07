@@ -1,5 +1,5 @@
 [package]
-version = "0.2.3"
+version = "0.2.4"
 category = "Simulation"
 title = "Isaac Sim Core (Objects)"
 description = "The Core Objects extension provides a set of APIs to create and/or wrap one or more USD objects in the stage..."
@@ -32,7 +32,8 @@ dependencies = [
     "omni.kit.material.library",
 ]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",

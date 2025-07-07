@@ -1,5 +1,5 @@
 [package]
-version = "0.1.7"
+version = "0.1.8"
 category = "Simulation"
 title = "MobilityGen UI"
 description = "User interface for recording data with MobilityGen"
@@ -28,7 +28,8 @@ name = "isaacsim.replicator.mobility_gen.ui.tests"
 
 [[test]]
 args = [
-    "--enable omni.kit.loop-isaac",
+    "--enable",
+    "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
     "--/app/asyncRendering=0",
