@@ -1625,7 +1625,7 @@ check_externals:
     expire_in: 1 week
   script:
     - ./tools/packman/python.sh tools/check_externals/download_all_kits.py --skip-platform aarch64
-    - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64
+    - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64 --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing
 
 
 # ==============================================================================================================

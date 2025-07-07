@@ -66,6 +66,7 @@ def find_license_file(link_path, package_name, config_tags=None, full_details=Fa
             - nvidia_proprietary: List of NVIDIA proprietary license files
             - mit_licenses: List of MIT license files
             - spdx_licenses: List of SPDX license files
+            - spdx_license_types: List of SPDX license types found
             Or None if no license found
     """
     if config_tags is None:
@@ -163,6 +164,7 @@ def find_license_file(link_path, package_name, config_tags=None, full_details=Fa
         "nvidia_proprietary": sorted(nvidia_proprietary_matches),
         "mit_licenses": sorted(mit_license_matches),
         "spdx_licenses": sorted([match[0] for match in spdx_matches]),
+        "spdx_license_types": sorted([match[1] for match in spdx_matches]),
     }
 
     # Set main license file if found
