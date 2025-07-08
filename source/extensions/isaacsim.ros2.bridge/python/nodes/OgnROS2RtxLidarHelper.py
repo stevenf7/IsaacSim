@@ -135,7 +135,7 @@ class OgnROS2RtxLidarHelper:
                             )
                             # Use the correct writer based on the fullScan input
                             writer = rep.writers.get(
-                                "RtxLidarDebugDrawPointCloud" + "Buffer" if db.inputs.fullScan else ""
+                                "RtxLidarDebugDrawPointCloud" + ("Buffer" if db.inputs.fullScan else "")
                             )
                             writer.initialize(doTransform=doTransform)
                             db.per_instance_state.append_writer(writer)

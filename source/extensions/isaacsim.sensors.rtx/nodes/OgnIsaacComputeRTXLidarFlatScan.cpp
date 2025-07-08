@@ -236,35 +236,42 @@ public:
 
         db.outputs.horizontalFov() = state.m_horizontalFov;
         db.outputs.horizontalResolution() = state.m_horizontalResolution;
-        db.outputs.azimuthRange() = { state.m_azimuthRangeStart, state.m_azimuthRangeEnd };
+        db.outputs.azimuthRange() = { state.m_azimuthRangeStart, state.m_azimuthRangeEnd - state.m_horizontalResolution };
         db.outputs.rotationRate() = state.m_rotationRate;
         db.outputs.depthRange() = { state.m_nearRangeM, state.m_farRangeM };
         db.outputs.numRows() = 1;
-        db.outputs.numCols() = hostGMO->numElements;
 
-        // Create a map of azimuth to depth and intensity, to automatically sort by azimuth
-        std::map<float, std::pair<float, uint8_t>> azimuthToDepthAndIntensity;
+        // Size output buffers as number of elements in horizontal FOV, based on horizontal FOV and resolution
+        size_t numElements = static_cast<size_t>(state.m_horizontalFov / state.m_horizontalResolution);
+        db.outputs.numCols() = static_cast<int>(numElements);
+        db.outputs.linearDepthData().resize(numElements);
+        db.outputs.intensitiesData().resize(numElements);
+        for (size_t i = 0; i < numElements; i++)
+        {
+            db.outputs.linearDepthData()[i] = 0.0f;
+            db.outputs.intensitiesData()[i] = 0;
+        }
+
+        // Iterate over the point cloud, storing valid returns in the appropriate index of the output buffers
         for (size_t i = 0; i < hostGMO->numElements; i++)
         {
-            // Skip invalid returns
             if ((hostGMO->elements.flags[i] & omni::sensors::ElementFlags::VALID) != omni::sensors::ElementFlags::VALID)
             {
                 continue;
             }
-            azimuthToDepthAndIntensity[hostGMO->elements.x[i]] = {
-                hostGMO->elements.z[i], static_cast<uint8_t>(hostGMO->elements.scalar[i] * 255.0f)
-            };
-        }
-        // Copy sorted values into output buffers
-        db.outputs.linearDepthData().resize(azimuthToDepthAndIntensity.size());
-        db.outputs.intensitiesData().resize(azimuthToDepthAndIntensity.size());
-        db.outputs.numCols() = static_cast<int>(azimuthToDepthAndIntensity.size());
-        size_t index = 0;
-        for (const auto& [azimuth, depthAndIntensity] : azimuthToDepthAndIntensity)
-        {
-            db.outputs.linearDepthData()[index] = depthAndIntensity.first;
-            db.outputs.intensitiesData()[index] = depthAndIntensity.second;
-            index++;
+            float azimuth = hostGMO->elements.x[i];
+            float depth = hostGMO->elements.z[i];
+            uint8_t intensity = static_cast<uint8_t>(hostGMO->elements.scalar[i] * 255.0f);
+            size_t index = static_cast<size_t>((azimuth - state.m_azimuthRangeStart) / state.m_horizontalResolution);
+            if (index >= numElements)
+            {
+                CARB_LOG_INFO(
+                    "IsaacComputeRTXLidarFlatScan: Unexpected index: %zu, azimuth: %f, depth: %f, numElements: %zu, horizontalResolution: %f",
+                    index, azimuth, depth, numElements, state.m_horizontalResolution);
+                continue;
+            }
+            db.outputs.linearDepthData()[index] = depth;
+            db.outputs.intensitiesData()[index] = intensity;
         }
 
         return true;
