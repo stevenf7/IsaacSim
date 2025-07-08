@@ -16,16 +16,18 @@
 from re import I
 
 import carb
+import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.nodes.scripts.utils import set_target_prims
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.utils.stage import add_reference_to_stage, open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Sdf
+from pxr import Sdf, UsdGeom
 from usd.schema.isaac import robot_schema
 
 from .common import ROS2TestCase, add_cube, add_franka, get_qos_profile
@@ -230,3 +232,126 @@ class TestRos2PoseTree(ROS2TestCase):
         self._timeline.stop()
         spin()
         pass
+
+    async def test_frame_name_override(self):
+        import rclpy
+        from tf2_msgs.msg import TFMessage
+
+        stage = omni.usd.get_context().get_stage()
+        dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
+        dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
+
+        # Create two Franka robots at different paths
+        assets_root_path = await get_assets_root_path_async()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
+        asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda1")
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda2")
+
+        stage = omni.usd.get_context().get_stage()
+
+        # Verify robots were created
+        panda1 = stage.GetPrimAtPath("/World/panda1")
+        panda2 = stage.GetPrimAtPath("/World/panda2")
+
+        self.assertTrue(panda1.IsValid(), "First robot not created successfully")
+        self.assertTrue(panda2.IsValid(), "Second robot not created successfully")
+
+        # Set position of second robot
+        XFormPrim(
+            "/World/panda2",
+            positions=np.array([[1.5, 0.0, 0.0]]),
+        )
+
+        stage = omni.usd.get_context().get_stage()
+        self._tf_data = None
+
+        def tf_callback(data: TFMessage):
+            self._tf_data = data
+
+        node = rclpy.create_node("tf_tester")
+        self._tf_sub = node.create_subscription(TFMessage, "/tf_test", tf_callback, 10)
+
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                        ("PublishTF", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf_test"),
+                        (
+                            "PublishTF.inputs:targetPrims",
+                            [
+                                usdrt.Sdf.Path("/World/panda1"),
+                                usdrt.Sdf.Path("/World/panda2"),
+                            ],
+                        ),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        # Run the simulation which will trigger the CARB_LOG_WARN when processing the duplicate "base_link" names
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        self._timeline.stop()
+        spin()
+
+        # Verify transforms were published with unique names
+        self.assertIsNotNone(self._tf_data)
+
+        # Creating dict to store all frame IDs from both robots
+        original_frames = set()
+        renamed_frames = set()
+
+        franka_links = ["panda_link0", "panda_link1", "panda_link2", "panda_hand"]
+
+        # Collect frame IDs from TF message
+        frame_ids = []
+        for transform in self._tf_data.transforms:
+            frame_ids.append(transform.child_frame_id)
+
+        # Check for original and renamed frames
+        for link in franka_links:
+            if link in frame_ids:
+                original_frames.add(link)
+
+            renamed_pattern = "World_panda2_" + link
+            for frame_id in frame_ids:
+                if renamed_pattern in frame_id:
+                    renamed_frames.add(frame_id)
+
+        # Verify we found original frames
+        self.assertTrue(len(original_frames) > 0, f"No original frames found. All frames: {frame_ids}")
+
+        # Verify we found renamed frames
+        self.assertTrue(len(renamed_frames) > 0, f"No renamed frames found. All frames: {frame_ids}")
+
+        # Verify for each original frame, there's a corresponding renamed frame
+        for link in franka_links:
+            if link in original_frames:
+                renamed_exists = False
+                expected_renamed = "World_panda2_" + link
+                for renamed in renamed_frames:
+                    if expected_renamed in renamed:
+                        renamed_exists = True
+                        break
+
+                self.assertTrue(renamed_exists, f"Original frame {link} should have a renamed frames")

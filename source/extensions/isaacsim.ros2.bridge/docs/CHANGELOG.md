@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.8.14] - 2025-07-07
+### Changed
+- Add unit test for prim validation for `OgnROS2PublishTransformTree` and `OgnROS2PublishJointState`
+- Add unit test for frame name collision
+
 ## [4.8.13] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 4.8.12)
