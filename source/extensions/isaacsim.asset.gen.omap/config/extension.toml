@@ -1,5 +1,5 @@
 [package]
-version = "2.0.27"
+version = "2.0.28"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "The Isaac Sim Occupancy Map extension provides tools to generate occupancy maps for a Scene"
@@ -34,6 +34,7 @@ dependencies = [
     "isaacsim.core.utils",
     "isaacsim.storage.native",
     "omni.hydra.usdrt_delegate",
+    "isaacsim.test.docstring",
 ]
 args = [
     "--enable",

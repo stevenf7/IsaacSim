@@ -1,5 +1,5 @@
 [package]
-version = "2.5.4"
+version = "2.5.5"
 category = "Simulation"
 title = "Omniverse MJCF Importer"
 description = "MJCF Importer"
@@ -38,7 +38,11 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
-dependencies = [ "omni.hydra.usdrt_delegate"]
+dependencies = [ 
+    "omni.hydra.usdrt_delegate",
+    "isaacsim.test.docstring",
+    "isaacsim.core.experimental.utils",
+]
 # this is to catch issues where our assimp is out of sync with the one that comes with
 # asset importer as this can cause segfaults due to binary incompatibility.
 
