@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.17] - 2025-07-07
+### Changed
+- updated path to Universal Robot's config file
+
 ## [1.0.16] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.0.15)
