@@ -1,4 +1,10 @@
 # Changelog
+
+## [2.0.28] - 2025-07-07
+### Changed
+- Fixed incorrect docstrings for pybind11 modules
+- Added tests for docstrings
+
 ## [2.0.27] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.0.26)

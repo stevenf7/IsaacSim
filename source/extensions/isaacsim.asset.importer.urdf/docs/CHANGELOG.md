@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.19] - 2025-07-07
+### Changed
+- Add unit test for pybind11 module docstrings
+
 ## [2.4.18] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.4.17)

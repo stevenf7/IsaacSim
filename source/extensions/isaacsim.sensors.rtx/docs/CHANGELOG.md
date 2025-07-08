@@ -1,4 +1,9 @@
 # Changelog
+
+## [15.4.3] - 2025-07-07
+### Changed
+- Cleanup docstring for bindings
+
 ## [15.4.2] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 15.4.1)
