@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.4.4] - 2025-07-07
+### Fixed
+- IsaacComputeRTXLidarFlatScan outputs azimuth range guaranted to be in [0, 360], with linear depth data appropriately sorted.
+
 ## [15.4.3] - 2025-07-07
 ### Changed
 - Cleanup docstring for bindings

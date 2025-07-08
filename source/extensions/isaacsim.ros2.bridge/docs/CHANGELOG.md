@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.15] - 2025-07-08
+### Fixed
+- Corrects regression when selecting debug draw output in Lidar helper without selecting full scan
+
 ## [4.8.14] - 2025-07-07
 ### Changed
 - Add unit test for prim validation for `OgnROS2PublishTransformTree` and `OgnROS2PublishJointState`

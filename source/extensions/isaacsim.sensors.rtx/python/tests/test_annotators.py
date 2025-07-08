@@ -16,6 +16,7 @@
 from pathlib import Path
 
 import carb
+import matplotlib.pyplot as plt
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
@@ -132,7 +133,6 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
             # Get spherical coordinates from cartesian unit vectors
             az_vals = np.arctan2(unit_vecs[:, 1], unit_vecs[:, 0])
             el_vals = np.arcsin(unit_vecs[:, 2])
-
         # Get octant dimensions and indices
         octant = (unit_vecs[:, 0] < 0) * 4 + (unit_vecs[:, 1] < 0) * 2 + (unit_vecs[:, 2] < 0)
         dims = np.array([self._octant_dimensions[o] for o in octant])
@@ -154,7 +154,7 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
 
         # Find where returns were not within 0.5deg of an octant edge
         not_near_edge = [
-            not (abs(a) > 0.5 or abs(a - 90) < 0.5 or abs(a - 180) < 0.5 or abs(a + 180) < 0.5) for a in az_vals
+            not (abs(a) < 0.5 or abs(a - 90) < 0.5 or abs(a - 180) < 0.5 or abs(a + 180) < 0.5) for a in az_vals
         ]
 
         # Compute the number of returns that exceed the threshold of 1%, beyond edges of the octants
@@ -227,8 +227,13 @@ class TestIsaacComputeRTXLidarFlatScan(TestRTXSensorAnnotator):
         self.assertGreater(num_elements, 0, "Expecting more than zero elements in output.")
         azimuth_vals = np.linspace(self.azimuthRange[0], self.azimuthRange[1], num_elements)
         elevation_vals = np.zeros_like(azimuth_vals)
-        # Assume all returns are valid
-        await self._test_returns(az_vals=azimuth_vals, el_vals=elevation_vals, r_vals=self.linearDepthData)
+        # Remove any returns with range below threshold
+        valid_returns = self.linearDepthData > 1e-3
+        await self._test_returns(
+            az_vals=azimuth_vals[valid_returns],
+            el_vals=elevation_vals[valid_returns],
+            r_vals=self.linearDepthData[valid_returns],
+        )
 
 
 class TestIsaacExtractRTXSensorPointCloud(TestRTXSensorAnnotator):
@@ -336,6 +341,7 @@ def _create_test_for_annotator_with_omni_lidar_prim(config: str = None, variant:
 
     async def test_function(self):
 
+        self.fig_name = f"lidar_sensor_{config}_{variant}"
         # Create sensor prim
         kwargs = {
             "path": "lidar",
