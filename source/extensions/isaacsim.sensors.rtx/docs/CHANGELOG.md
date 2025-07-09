@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.4.5] - 2025-07-09
+### Fixed
+- Explicitly lock the pre-release versions of omni.sensors.nv.* to ensure that the correct versions are loaded in all scenarios including ETM.
+
 ## [15.4.4] - 2025-07-07
 ### Fixed
 - IsaacComputeRTXLidarFlatScan outputs azimuth range guaranted to be in [0, 360], with linear depth data appropriately sorted.
