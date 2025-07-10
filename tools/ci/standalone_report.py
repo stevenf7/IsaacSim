@@ -287,6 +287,11 @@ def main(args: argparse.Namespace) -> None:
 
         print("Report generation complete")
 
+        # Check if the test summary has any failures
+        if any(test.status == "fail" for test in test_cases):
+            print("Test summary has failures")
+            exit(1)
+
     except Exception as e:
         print(f"Error generating JUnit XML report: {str(e)}")
         import traceback

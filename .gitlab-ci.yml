@@ -1492,6 +1492,7 @@ test-container:
     - cp _testoutput/ext_test_results.txt _testoutput/repo_test_results.txt
     - /isaac-sim/python.sh tools/ci/standalone_report.py  _testoutput ${BUCKET}
   stage: deploy-test
+  allow_failure: true
   needs:
     - job: publish-container
       artifacts: false
