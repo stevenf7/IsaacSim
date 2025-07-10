@@ -35,10 +35,12 @@ from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import PhysxSchema, UsdPhysics
 
+from .common import CoreTestCase
 
-# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestSingleArticulation(omni.kit.test.AsyncTestCase):
+
+class TestSingleArticulation(CoreTestCase):
     async def setUp(self, device="cpu"):
+        await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend="torch", device=device)
@@ -47,11 +49,7 @@ class TestSingleArticulation(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
-        await update_stage_async()
-        World.clear_instance()
+        await super().tearDown()
         pass
 
     async def test_get_applied_action(self, add_view_to_scene=True):
