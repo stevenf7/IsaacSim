@@ -36,6 +36,8 @@ from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_a
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.storage.native import get_assets_root_path_async
 
+from .common import CoreTestCase
+
 INDEXED = [True, False]
 USD_PATH = [True, False]
 BACKEND = ["torch", "numpy", "warp"]
@@ -45,11 +47,10 @@ template_cartpole_position_configs = {
     "infeasible states": torch.Tensor([[5, 3.1415 / 2], [5, 3.1415 / 2]]),
 }
 
-# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
-
-class TestArticulationView(omni.kit.test.AsyncTestCase):
+class TestArticulationView(CoreTestCase):
     async def setUp(self):
+        await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
         self._assets_root_path = await get_assets_root_path_async()
@@ -57,13 +58,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        World.clear_instance()
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
         await update_stage_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
-        await update_stage_async()
+        await super().tearDown()
 
     async def setUpWorld(self, backend="torch", device="cpu", report_residuals=True):
         World.clear_instance()

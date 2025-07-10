@@ -1,4 +1,10 @@
 # Changelog
+
+## [4.6.9] - 2025-07-09
+### Changed
+- Reduce test runtime
+- Add timing to test methods
+
 ## [4.6.8] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 4.6.7)
