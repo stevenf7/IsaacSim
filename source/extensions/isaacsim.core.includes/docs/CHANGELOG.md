@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2025-07-10
+### Added
+- Device-generic (CPU or CUDA device) memory buffer implementation
+
 ## [2.3.0] - 2025-06-29
 ### Changed
 - Add resizeAsync function to DeviceBufferBase
