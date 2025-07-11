@@ -1,4 +1,11 @@
 # Changelog
+## [1.1.13] - 2025-07-11
+### Fixed
+- Texture randomizer uses unique names for materials (WAR for ISIM-4054)
+
+### Changed
+- Update sdg pipeline golden images
+
 ## [1.1.12] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.1.11)
