@@ -116,6 +116,10 @@ function create_tests()
             "tests-nativepython-testing-isaacsim.simulation_app.test_createstage_config",
             "standalone_examples/testing/isaacsim.simulation_app/test_createstage_config.py",
         },
+        {
+            "tests-nativepython-testing-isaacsim.simulation_app.test_multiprocess",
+            "standalone_examples/testing/isaacsim.simulation_app/test_multiprocess.py",
+        },
     }
 
     for _, test in ipairs(simulation_app_tests) do
