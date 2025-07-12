@@ -18,11 +18,13 @@ print_help() {
     echo "  --physics          Update physics components"
     echo "  --exts             Update and clean extension cache"
     echo "  --all              Run all updates"
+    echo "  --commit-hash      Specific commit hash for template URL (used with --exts)"
     echo ""
     echo "Examples:"
     echo "  $0 --kit           # Update only kit components"
     echo "  $0 --kit --physics # Update kit and physics components"
     echo "  $0 --all           # Run all updates"
+    echo "  $0 --exts --commit-hash abc123def456  # Update extensions with specific commit hash"
     echo ""
     exit 0
 }
@@ -48,11 +50,21 @@ update_physics() {
 
 # Function to update extension cache
 update_extensions() {
+    local commit_hash="$1"
     echo "Updating extension cache..."
     pushd ../
-    python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat
+    
+    # Build the command with optional commit hash
+    local cmd="python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat"
+    if [ -n "$commit_hash" ]; then
+        cmd="$cmd --commit-hash $commit_hash"
+        echo "Using commit hash: $commit_hash"
+    fi
+    
+    # Run the command
+    eval $cmd
     ./repo.sh build -ur
-    python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat
+    eval $cmd
     popd
 }
 
@@ -69,29 +81,49 @@ fi
 UPDATE_KIT=false
 UPDATE_PHYSICS=false
 UPDATE_EXTS=false
+COMMIT_HASH=""
 
 # Process arguments
-for arg in "$@"; do
-    case $arg in
+while [[ $# -gt 0 ]]; do
+    case $1 in
         -h|--help)
             print_help
             ;;
         --kit)
             UPDATE_KIT=true
+            shift
             ;;
         --physics)
             UPDATE_PHYSICS=true
+            shift
             ;;
         --exts)
             UPDATE_EXTS=true
+            shift
             ;;
         --all)
             UPDATE_KIT=true
             UPDATE_PHYSICS=true
             UPDATE_EXTS=true
+            shift
+            ;;
+        --commit-hash)
+            # The next argument should be the commit hash
+            if [[ $# -gt 1 ]]; then
+                COMMIT_HASH="$2"
+                shift 2
+            else
+                echo "Error: --commit-hash requires a value"
+                print_help
+            fi
+            ;;
+        --commit-hash=*)
+            # Handle --commit-hash=value format
+            COMMIT_HASH="${1#*=}"
+            shift
             ;;
         *)
-            echo "Unknown option: $arg"
+            echo "Unknown option: $1"
             print_help
             ;;
     esac
@@ -107,7 +139,7 @@ if [ "$UPDATE_PHYSICS" = true ]; then
 fi
 
 if [ "$UPDATE_EXTS" = true ]; then
-    update_extensions
+    update_extensions "$COMMIT_HASH"
 fi
 
 echo "Update completed successfully!"

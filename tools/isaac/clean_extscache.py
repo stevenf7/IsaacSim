@@ -343,7 +343,7 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
     return True
 
 
-def compare_with_template(kit_file, verbose=False, dry_run=False):
+def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=None):
     """
     Compare the kit file with the template file from GitLab.
     Specifically compares the # Exact Version dependencies: and # Version lock for all dependencies: sections.
@@ -352,6 +352,7 @@ def compare_with_template(kit_file, verbose=False, dry_run=False):
         kit_file (str): Path to the kit file
         verbose (bool): If True, print detailed debug information
         dry_run (bool): If True, don't modify the file, just report what would be done
+        commit_hash (str): Specific commit hash to use for the template URL. If None, uses the production branch.
 
     Returns:
         bool: True if successful, False otherwise
@@ -372,7 +373,15 @@ def compare_with_template(kit_file, verbose=False, dry_run=False):
         return False
 
     # Download the template file
-    template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/production/107.3/templates/omni.all.template.extensions.kit?ref_type=heads"
+    if commit_hash:
+        template_url = f"https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/{commit_hash}/templates/omni.all.template.extensions.kit"
+        log(f"Using commit hash {commit_hash} for template URL")
+    else:
+        template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/production/107.3/templates/omni.all.template.extensions.kit?ref_type=heads"
+        log("Using default production branch for template URL")
+
+    log(f"Template URL: {template_url}")
+
     try:
         with urllib.request.urlopen(template_url) as response:
             template_content = response.read().decode("utf-8")
@@ -494,6 +503,7 @@ def clean_extscache(
     update_locks=False,
     update_physics=True,
     match_kat=False,
+    commit_hash=None,
 ):
     """
     Removes extensions from the enabled section in the kit file if they exist in the build directory,
@@ -513,6 +523,7 @@ def clean_extscache(
         update_locks (bool): If True, update any mismatched version locks to match the SDK hash
         update_physics (bool): If True, update physics extension versions to match packman XML
         match_kat (bool): If True, compare with template file and update version locks
+        commit_hash (str): Specific commit hash to use for the template URL when match_kat is True
 
     Returns:
         bool: True if successful, False otherwise
@@ -834,7 +845,7 @@ def clean_extscache(
 
     # Compare with template if requested
     if match_kat:
-        template_ok = compare_with_template(kit_file, verbose, dry_run)
+        template_ok = compare_with_template(kit_file, verbose, dry_run, commit_hash)
         if not template_ok and not dry_run:
             print("WARNING: Failed to compare with template file.")
 
@@ -900,6 +911,10 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         action="store_true",
         help="Compare with template file and update version locks",
     )
+    parser.add_argument(
+        "--commit-hash",
+        help="Specific commit hash to use for the template URL when match_kat is True",
+    )
 
     args = parser.parse_args()
 
@@ -917,6 +932,7 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         update_locks=args.update_locks,
         update_physics=args.update_physics,
         match_kat=args.match_kat,
+        commit_hash=args.commit_hash,
     )
 
     if not success:
