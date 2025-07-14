@@ -1,4 +1,11 @@
 # Changelog
+## [1.1.5] - 2025-07-10
+### Fixed
+- Prim filtering in entity_utils when retrieving states.
+
+### Changed
+- Instance Proxy prims are currently not supported.
+
 ## [1.1.4] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.1.3)
