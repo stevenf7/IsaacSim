@@ -577,6 +577,7 @@ end_marker = "# AUTOREMOVE: END"
 [[repo_stage_for_github.trim]]
 files = [
     "deps/repo-deps.packman.xml",
+    "deps/kit-sdk-deps.packman.xml",
 ]
 begin_marker = "<!-- AUTOREMOVE: BEGIN -->"
 end_marker = "<!-- AUTOREMOVE: END -->"
