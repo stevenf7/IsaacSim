@@ -79,30 +79,6 @@ isaacsim::core::includes::MultiLibraryLoader g_backupLibraryLoader;
 std::unique_ptr<isaacsim::ros2::bridge::Ros2Factory> g_factory = nullptr;
 std::string g_extensionPath;
 
-void onResume(float currentTime, void* userData)
-{
-    if (!g_defaultContextHandle->isValid())
-    {
-        CARB_LOG_INFO("rcl::init()");
-        int argc = 0;
-        char** argv = nullptr;
-
-        g_defaultContextHandle->init(argc, argv);
-    }
-    else
-    {
-        CARB_LOG_INFO("ROS2 already initialized");
-    }
-}
-
-void onStop(void* userData)
-{
-    if (g_defaultContextHandle->isValid())
-    {
-        CARB_LOG_INFO("rcl::shutdown()");
-        g_defaultContextHandle->shutdown();
-    }
-}
 
 uint64_t const CARB_ABI getDefaultContextHandleAddr()
 {
@@ -245,8 +221,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "IsaacRos2Bridge";
-    desc.onResume = onResume;
-    desc.onStop = onStop;
+
     desc.order = 100;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 
@@ -269,6 +244,18 @@ CARB_EXPORT void carbOnPluginStartup()
 
     g_defaultContextHandle = g_factory->createContextHandle();
 
+
+    if (!g_defaultContextHandle->isValid())
+    {
+        CARB_LOG_INFO("rcl::init()");
+        int argc = 0;
+        char** argv = nullptr;
+        g_defaultContextHandle->init(argc, argv);
+    }
+    else
+    {
+        CARB_LOG_INFO("ROS2 already initialized");
+    }
     INITIALIZE_OGN_NODES()
 }
 
@@ -279,6 +266,13 @@ CARB_EXPORT void carbOnPluginShutdown()
         g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
         g_stageUpdateNode = nullptr;
     }
+
+    if (g_defaultContextHandle->isValid())
+    {
+        CARB_LOG_INFO("rcl::shutdown()");
+        g_defaultContextHandle->shutdown();
+    }
+
     g_defaultContextHandle.reset();
 
     RELEASE_OGN_NODES()
