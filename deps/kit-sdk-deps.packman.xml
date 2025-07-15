@@ -47,8 +47,9 @@
   <dependency name="doctest" linkPath="../_build/target-deps/doctest">
     <package name="doctest" version="2.4.5+nv1-3" />
   </dependency>
-
+<!-- AUTOREMOVE: BEGIN -->
   <import path="../_build/${platform_target}/${config}/kit/dev/deps/linbuild.packman.xml">
     <filter include="linbuild" linkPath="../_build/host-deps/linbuild" tags="non-redist" />
   </import>
+<!-- AUTOREMOVE: END -->
 </project>

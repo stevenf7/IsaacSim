@@ -144,11 +144,12 @@ def gather_package_data(
                 return True
         return False
 
-    def substitute_variables(path):
+    def substitute_variables(path, platforms_attr=None):
         """Substitute variables in a path string.
 
         Args:
             path: Path string that may contain variables
+            platforms_attr: Optional platforms attribute to determine ABI vs target preference
 
         Returns:
             str: Path with variables substituted
@@ -156,7 +157,13 @@ def gather_package_data(
         path = path.replace("${config}", config)
         path = path.replace("${platform_target}", platform_target)
         path = path.replace("${platform_target_abi}", platform_abi)
-        path = path.replace("${platform}", platform_target)
+
+        # For ${platform}, prefer ABI format if both target and ABI are supported
+        platform_value = platform_target
+        if platforms_attr and platform_abi.lower() in platforms_attr.lower():
+            platform_value = platform_abi
+
+        path = path.replace("${platform}", platform_value)
         return path
 
     def process_imported_file(import_path, filters):
@@ -242,7 +249,10 @@ def gather_package_data(
                         if platforms:
                             platform_list = platforms.split()
                             # Skip if none of the platforms match our target
-                            if not any(platform_abi.lower() in platform.lower() for platform in platform_list):
+                            if not any(
+                                platform_abi.lower() in platform.lower() or platform_target.lower() in platform.lower()
+                                for platform in platform_list
+                            ):
                                 continue
 
                         # Skip if this package should be excluded
@@ -252,7 +262,7 @@ def gather_package_data(
                         # Get version from the package element
                         version = package_elem.get("version", "")
                         # Replace variables in version string
-                        version = substitute_variables(version)
+                        version = substitute_variables(version, platforms)
 
                         # Skip packages without valid version information
                         if not version or version.strip() == "":
@@ -267,6 +277,7 @@ def gather_package_data(
                                 dependency.get("linkPath", ""), substituted_name, None, full_license_details
                             ),
                         }
+
                         filtered_package_names.add((substituted_name, package_name, version))
                 else:
                     # No package elements, check dependency-level platform info
@@ -274,7 +285,10 @@ def gather_package_data(
                     if platforms:
                         platform_list = platforms.split()
                         # Skip if none of the platforms match our target
-                        if not any(platform_target.lower() in platform.lower() for platform in platform_list):
+                        if not any(
+                            platform_target.lower() in platform.lower() or platform_abi.lower() in platform.lower()
+                            for platform in platform_list
+                        ):
                             print(
                                 f"    Skipping {substituted_name} (platform mismatch: {platforms} vs {platform_target})"
                             )
@@ -283,7 +297,7 @@ def gather_package_data(
                     # Get version from dependency level
                     version = dependency.get("version", "")
                     # Replace variables in version string
-                    version = substitute_variables(version)
+                    version = substitute_variables(version, platforms)
 
                     # Skip dependencies without valid version information
                     if not version or version.strip() == "":
@@ -305,6 +319,7 @@ def gather_package_data(
                             dependency.get("linkPath", ""), substituted_name, None, full_license_details
                         ),
                     }
+
                     filtered_package_names.add((substituted_name, substituted_name, version))
         except Exception as e:
             print(f"Warning: Failed to process imported file {import_path}: {e}")
@@ -379,19 +394,23 @@ def gather_package_data(
                     # Process each package element separately
                     for package_elem in package_elements:
                         version = package_elem.get("version", "")
+                        # Check platforms for version substitution
+                        platforms = package_elem.get("platforms", "")
                         # Replace variables in version string
-                        version = substitute_variables(version)
+                        version = substitute_variables(version, platforms)
 
                         # Skip packages without valid version information
                         if not version or version.strip() == "":
                             continue
 
                         # Check if this package is for our platform
-                        platforms = package_elem.get("platforms", "")
                         if platforms:
                             platform_list = platforms.split()
                             # Skip if none of the platforms match our target
-                            if not any(platform_abi.lower() in platform.lower() for platform in platform_list):
+                            if not any(
+                                platform_abi.lower() in platform.lower() or platform_target.lower() in platform.lower()
+                                for platform in platform_list
+                            ):
                                 continue
 
                         # Skip if this package should be excluded
@@ -412,8 +431,10 @@ def gather_package_data(
                 else:
                     # No package elements, use dependency-level version
                     version = dependency.get("version", "")
+                    # Get dependency-level platforms for version substitution
+                    dep_platforms = dependency.get("platforms", "")
                     # Replace variables in version string
-                    version = substitute_variables(version)
+                    version = substitute_variables(version, dep_platforms)
 
                     # Skip dependencies without valid version information
                     if not version or version.strip() == "":
@@ -449,8 +470,13 @@ def gather_package_data(
             file,
             exclude_local=True,
             remotes=["cloudfront"],
-            tokens={"config": config, "platform_target": platform_target, "platform_target_abi": platform_target},
-            platform=platform_target,
+            tokens={
+                "config": config,
+                "platform_target": platform_target,
+                "platform_target_abi": platform_abi,
+                "platform": platform_abi,
+            },
+            platform=platform_abi,
             tags={"public": "true"},
         )
 
