@@ -68,6 +68,8 @@ files_exclude = [
     ["apps/exts.deps.generated.kit"],
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
+    ["kit/logs/**"],
+    ["logs/**"],
     ["extsbuild/**"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
