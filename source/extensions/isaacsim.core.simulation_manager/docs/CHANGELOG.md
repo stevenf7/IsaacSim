@@ -1,4 +1,10 @@
 # Changelog
+## [1.3.0] - 2025-07-14
+### Added
+- Refactor callback management system to use a dictionary of callback handles
+- Allow defult callbacks to be enabled/disabled individually
+- Add new callback management APIs: enable_all_default_callbacks, is_default_callback_enabled, get_default_callback_status
+
 ## [1.2.7] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.2.6)
