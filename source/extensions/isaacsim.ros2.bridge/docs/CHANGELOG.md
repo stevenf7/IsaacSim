@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.16] - 2025-07-15
+### Fixed
+- Fix issue with default ROS2 context not being initialized before use
+
 ## [4.8.15] - 2025-07-08
 ### Fixed
 - Corrects regression when selecting debug draw output in Lidar helper without selecting full scan
