@@ -1,4 +1,8 @@
 # Changelog
+## [2.5.6] - 2025-07-15
+### Fixed
+- Fixed application of Collision APIs in the collision scope and in the meshes directly as per OpenUSD Physics. 
+- Fix cyclic import of robot schema and leave it as sublayer on the base layer
 
 ## [2.5.5] - 2025-07-07
 ### Changed

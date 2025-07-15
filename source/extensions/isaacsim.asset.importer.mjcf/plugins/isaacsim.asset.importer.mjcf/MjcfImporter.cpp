@@ -279,11 +279,12 @@ bool MJCFImporter::AddPhysicsEntities(std::unordered_map<std::string, pxr::UsdSt
     {
         std::string rootArtPrimPath = rootPrimPath + "/" + SanitizeUsdName(bodies[i]->name);
         pxr::UsdGeomXform rootArtPrim = pxr::UsdGeomXform::Define(stages["base_stage"], pxr::SdfPath(rootArtPrimPath));
-        pxr::UsdPrim robotPrim = rootArtPrim.GetPrim();
         {
+            pxr::UsdPrim robotPrim = stages["stage"]->GetPrimAtPath(pxr::SdfPath(rootArtPrimPath));
             pxr::UsdEditContext context(stages["stage"], stages["robot_stage"]->GetRootLayer());
             isaacsim::robot::schema::ApplyRobotAPI(robotPrim);
         }
+        pxr::UsdPrim robotPrim = rootArtPrim.GetPrim();
         CreatePhysicsBodyAndJoint(stages, bodies[i], rootPrimPath, rootArtPrimPath, trans, true, rootPrimPath, config,
                                   instanceableUSDPath, robotPrim);
     }
@@ -525,10 +526,16 @@ void MJCFImporter::addWorldGeomsAndSites(std::unordered_map<std::string, pxr::Us
                             createPrimitiveGeom(stages["base_stage"], meshPath, worldBody.geoms[i], simulationMeshCache,
                                                 config, materialPaths, false, rootPath, true);
                         convertedMeshes[meshName] = mesh_prim.GetPath();
-                        applyCollisionGeom(stages["stage"], mesh_prim, config.convexDecomp);
                     }
                     basePrim.GetReferences().AddInternalReference(convertedMeshes[meshName]);
                     prim.GetReferences().AddInternalReference(basePrim.GetPath());
+                    for (auto collisionMeshPrim : pxr::UsdPrimRange(basePrim))
+                    {
+                        if (collisionMeshPrim.IsA<pxr::UsdGeomGprim>())
+                        {
+                            applyCollisionGeom(stages["stage"], collisionMeshPrim, config.convexDecomp);
+                        }
+                    }
 
                     if (prim)
                     {
@@ -1044,10 +1051,12 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(std::unordered_map<std::string, pxr
         pxr::UsdGeomXformable bodyPrim = createBody(stages["stage"], bodyPath, myTrans, config);
         {
             pxr::UsdEditContext context(stages["stage"], stages["robot_stage"]->GetRootLayer());
-            pxr::UsdPrim linkPrim = bodyPrim.GetPrim();
+            pxr::UsdPrim linkPrim = stages["stage"]->GetPrimAtPath(pxr::SdfPath(bodyPath));
             isaacsim::robot::schema::ApplyLinkAPI(linkPrim);
-            auto linksRel = robotPrim.GetRelationship(
-                isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::ROBOT_LINKS));
+            auto linksRel = stages["stage"]
+                                ->GetPrimAtPath(robotPrim.GetPath())
+                                .GetRelationship(isaacsim::robot::schema::relationNames.at(
+                                    isaacsim::robot::schema::Relations::ROBOT_LINKS));
             pxr::SdfPathVector targets;
             linksRel.GetTargets(&targets);
             targets.push_back(linkPrim.GetPath());
@@ -1113,13 +1122,20 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(std::unordered_map<std::string, pxr
                             createPrimitiveGeom(stages["base_stage"], meshPath, body->geoms[i], simulationMeshCache,
                                                 config, materialPaths, false, rootPrimPath, true);
                         convertedMeshes[meshName] = mesh_prim.GetPath();
-                        applyCollisionGeom(stages["stage"], mesh_prim, config.convexDecomp);
                     }
                     basePrim.GetReferences().AddInternalReference(convertedMeshes[meshName]);
                     nameToUsdCollisionPrim[body->geoms[i]->name] = bodyPath;
                 }
             }
             collisionPrim.GetReferences().AddInternalReference(basePrim.GetPath());
+            for (auto collisionMeshPrim : pxr::UsdPrimRange(basePrim))
+            {
+                if (collisionMeshPrim.IsA<pxr::UsdGeomGprim>())
+                {
+                    applyCollisionGeom(stages["stage"], collisionMeshPrim, config.convexDecomp);
+                }
+            }
+            // applyCollisionGeom(stages["stage"], basePrim, config.convexDecomp);
             // applyCollisionGeom(stages["stage"], collisionPrim, config.convexDecomp);
             collisionPrim.SetInstanceable(true);
         }
@@ -1355,8 +1371,10 @@ void MJCFImporter::addJoints(std::unordered_map<std::string, pxr::UsdStageRefPtr
             if (jointPrim)
             {
                 isaacsim::robot::schema::ApplyJointAPI(jointPrim);
-                auto jointsRel = robotPrim.GetRelationship(
-                    isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::ROBOT_JOINTS));
+                auto jointsRel = stages["stage"]
+                                     ->GetPrimAtPath(robotPrim.GetPath())
+                                     .GetRelationship(isaacsim::robot::schema::relationNames.at(
+                                         isaacsim::robot::schema::Relations::ROBOT_JOINTS));
                 pxr::SdfPathVector targets;
                 jointsRel.GetTargets(&targets);
                 targets.push_back(jointPrim.GetPath());

@@ -1131,7 +1131,7 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
 void applyCollisionGeom(pxr::UsdStageWeakPtr stage, pxr::UsdPrim prim, bool ConvexDecomposition)
 {
     pxr::UsdPhysicsCollisionAPI::Apply(prim);
-    for (const auto& mesh_prim : prim.GetChildren())
+    for (const auto mesh_prim : pxr::UsdPrimRange(prim))
     {
         if (pxr::UsdGeomMesh(mesh_prim))
         {
