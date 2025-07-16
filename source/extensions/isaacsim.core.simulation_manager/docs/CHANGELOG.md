@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.1] - 2025-07-15
+### Fixed
+- Use carb.log_warn instead of carb.log_warning
+
 ## [1.3.0] - 2025-07-14
 ### Added
 - Refactor callback management system to use a dictionary of callback handles

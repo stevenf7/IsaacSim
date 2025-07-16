@@ -486,7 +486,7 @@ class SimulationManager:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
         """
         if flag and "cuda" in SimulationManager.get_physics_sim_device():
-            carb.log_warning("CCD is not supported on GPU, ignoring request to enable it")
+            carb.log_warn("CCD is not supported on GPU, ignoring request to enable it")
             return
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
