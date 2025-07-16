@@ -91,6 +91,16 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._annotator_data = None
+        self.hydra_texture = None
+
+    async def tearDown(self):
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await update_stage_async()
+        World.clear_instance()
 
     async def _test_annotator_result(self):
         """Tests the annotator result."""
@@ -387,3 +397,6 @@ for config_path in SUPPORTED_LIDAR_CONFIGS:
             test_func.__name__ = f"test_{test_name}"
             test_func.__doc__ = f"Test {test_class.__name__} annotator results using OmniLidar prim, with config {config_name} and variant {variant} and data on {data_source.upper()}."
             setattr(test_class, test_func.__name__, test_func)
+        # Clear test_class to prevent the automated test loader in unittests.loader.TestLoader.loadTestsFromModule
+        # from duplicating tests
+        test_class = None

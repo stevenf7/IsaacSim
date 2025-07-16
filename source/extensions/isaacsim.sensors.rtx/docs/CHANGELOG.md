@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.4.6] - 2025-07-15
+### Fixed
+- No longer run IsaacExtractRTXSensorPointCloud tests twice.
+
 ## [15.4.5] - 2025-07-09
 ### Fixed
 - Explicitly lock the pre-release versions of omni.sensors.nv.* to ensure that the correct versions are loaded in all scenarios including ETM.
