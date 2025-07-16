@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.30] - 2025-07-16
+### Changed
+- Bucketed tests by context. Skipping sdg_ur10_palletizing test on ETM.
+
 ## [1.1.29] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.1.28)
