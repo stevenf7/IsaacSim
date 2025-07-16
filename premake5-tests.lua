@@ -730,6 +730,11 @@ function create_tests()
             "standalone_examples/benchmarks/benchmark_single_view_depth_sensor.py",
             "--num-frames 10 --num-cameras 2",
         },
+        {
+            "tests-standalone_benchmarks-benchmark_robots_humanoid",
+            "standalone_examples/benchmarks/benchmark_robots_humanoid.py",
+            "--num-frames 10 --num-robots 2",
+        },
     }
 
     for _, test in ipairs(benchmark_tests) do
