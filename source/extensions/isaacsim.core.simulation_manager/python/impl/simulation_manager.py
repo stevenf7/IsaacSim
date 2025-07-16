@@ -422,6 +422,8 @@ class SimulationManager:
         """
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if not physx_scene_api.GetPrim().IsValid():
+                    continue
                 if physx_scene_api.GetBroadphaseTypeAttr().Get() is None:
                     physx_scene_api.CreateBroadphaseTypeAttr(val)
                 else:
@@ -447,6 +449,8 @@ class SimulationManager:
         """
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if not physx_scene_api.GetPrim().IsValid():
+                    continue
                 if physx_scene_api.GetEnableCCDAttr().Get() is None:
                     physx_scene_api.CreateEnableCCDAttr(flag)
                 else:
@@ -490,6 +494,8 @@ class SimulationManager:
             return
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if not physx_scene_api.GetPrim().IsValid():
+                    continue
                 if physx_scene_api.GetEnableCCDAttr().Get() is None:
                     physx_scene_api.CreateEnableCCDAttr(flag)
                 else:
@@ -543,6 +549,8 @@ class SimulationManager:
         """
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if not physx_scene_api.GetPrim().IsValid():
+                    continue
                 if physx_scene_api.GetEnableGPUDynamicsAttr().Get() is None:
                     physx_scene_api.CreateEnableGPUDynamicsAttr(flag)
                 else:
@@ -628,6 +636,8 @@ class SimulationManager:
             raise Exception("Solver type {} is not supported".format(solver_type))
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if not physx_scene_api.GetPrim().IsValid():
+                    continue
                 if physx_scene_api.GetSolverTypeAttr().Get() is None:
                     physx_scene_api.CreateSolverTypeAttr(solver_type)
                 else:
@@ -668,6 +678,8 @@ class SimulationManager:
         """
         if physics_scene is None:
             for path, physx_scene_api in SimulationManager._physics_scene_apis.items():
+                if not physx_scene_api.GetPrim().IsValid():
+                    continue
                 if physx_scene_api.GetEnableStabilizationAttr().Get() is None:
                     physx_scene_api.CreateEnableStabilizationAttr(flag)
                 else:

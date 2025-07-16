@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.2] - 2025-07-16
+### Fixed
+- Check that PhysX Scene API instances are valid before using them
+
 ## [1.3.1] - 2025-07-15
 ### Fixed
 - Use carb.log_warn instead of carb.log_warning
