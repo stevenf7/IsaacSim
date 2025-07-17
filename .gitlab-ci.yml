@@ -465,14 +465,54 @@ build-windows-x86_64-debug:
       - job: build-windows-x86_64-release
         artifacts: true
 
+
+# ==============================================================================================================
+# Specifies 1xGpu tags for Windows
+.kit-runner-test-windows-x86_64-1x-gpu:
+  tags:
+    - win-x86_64-gpu-1x-573.42
+
+# ==============================================================================================================
+# Specifies 2xGpu tags for Windows
+.kit-runner-test-windows-x86_64-2x-gpu:
+  tags:
+    - win-x86_64-gpu-2x-573.42
+
+# ==============================================================================================================
+# Specifies 1xGpu for linux-x86_64
+.kit-runner-test-linux-x86_64-1x-gpu:
+  image: 
+    name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
+    entrypoint: [""]
+  tags:
+    - lnx-x86_64-gpu-1x-570.158.01
+
+# ==============================================================================================================
+# Specifies 2xGpu tags for linux-x86_64
+.kit-runner-test-linux-x86_64-2x-gpu:
+  image:
+    name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
+    entrypoint: [""]
+  tags:
+    - lnx-x86_64-gpu-2x-570.158.01
+
+# ==============================================================================================================
+# Specifies 4xGpu tags for linux-x86_64
+.kit-runner-test-linux-x86_64-4x-gpu:
+  image:
+    name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
+    entrypoint: [""]
+  tags:
+    - lnx-x86_64-gpu-4x-570.158.01
+
 # ==============================================================================================================
 test-linux-x86_64-startuptests:
     extends:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s startuptests
 
@@ -481,8 +521,8 @@ test-linux-x86_64-pythontests-deprecated:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b deprecated
 
@@ -491,8 +531,8 @@ test-linux-x86_64-pythontests-asset:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b asset
 
@@ -501,8 +541,8 @@ test-linux-x86_64-pythontests-core:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b core
 
@@ -511,8 +551,8 @@ test-linux-x86_64-pythontests-examples_tests:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b examples_tests
 
@@ -521,8 +561,8 @@ test-linux-x86_64-pythontests-replicator:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b replicator
 
@@ -531,8 +571,8 @@ test-linux-x86_64-pythontests-ros:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b ros
 
@@ -541,8 +581,8 @@ test-linux-x86_64-pythontests-sensors:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b sensors
 
@@ -551,8 +591,8 @@ test-linux-x86_64-pythontests-utils_gui:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b utils_gui
 
@@ -561,8 +601,8 @@ test-linux-x86_64-pythontests-robot:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b robot
 
@@ -571,8 +611,8 @@ test-linux-x86_64-pythontests-other:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b other
 
@@ -581,8 +621,8 @@ test-linux-x86_64-selectortests:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s selectortests
 
@@ -591,8 +631,8 @@ test-linux-x86_64-warmuptests:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s warmuptests
 
@@ -601,8 +641,8 @@ test-linux-x86_64-postinstalltests:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s postinstalltests
 
@@ -611,8 +651,8 @@ test-linux-x86_64-nativepythontests-api:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s nativepythontests -b api --generate-report
     after_script:
@@ -623,8 +663,8 @@ test-linux-x86_64-nativepythontests-replicator:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s nativepythontests -b replicator --generate-report
     after_script:
@@ -635,8 +675,8 @@ test-linux-x86_64-nativepythontests-testing:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s nativepythontests -b testing --generate-report
     after_script:
@@ -647,8 +687,8 @@ test-linux-x86_64-benchmarks-1-gpu:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - export ISAAC_TEST_MODE=1
       - ./repo.sh ci test -- -s benchmarks --generate-report
@@ -660,8 +700,8 @@ test-linux-x86_64-benchmarks-2-gpu:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu_2x
+      - .kit-runner-test-linux-x86_64-2x-gpu
     script:
       - export ISAAC_TEST_MODE=1
       - ./repo.sh ci test -- -s benchmarks --generate-report
@@ -672,7 +712,7 @@ test-windows-x86_64-startuptests:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s startuptests
 
@@ -680,7 +720,7 @@ test-windows-x86_64-pythontests-deprecated:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b deprecated
 
@@ -688,7 +728,7 @@ test-windows-x86_64-pythontests-asset:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b asset
 
@@ -696,7 +736,7 @@ test-windows-x86_64-pythontests-core:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b core
 
@@ -704,7 +744,7 @@ test-windows-x86_64-pythontests-examples_tests:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b examples_tests
 
@@ -712,7 +752,7 @@ test-windows-x86_64-pythontests-replicator:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b replicator
 
@@ -720,7 +760,7 @@ test-windows-x86_64-pythontests-ros:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b ros
 
@@ -728,7 +768,7 @@ test-windows-x86_64-pythontests-sensors:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b sensors
 
@@ -736,7 +776,7 @@ test-windows-x86_64-pythontests-utils_gui:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b utils_gui
 
@@ -744,7 +784,7 @@ test-windows-x86_64-pythontests-robot:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b robot
 
@@ -752,7 +792,7 @@ test-windows-x86_64-pythontests-other:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s pythontests -b other
 
@@ -760,7 +800,7 @@ test-windows-x86_64-selectortests:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s selectortests
 
@@ -768,7 +808,7 @@ test-windows-x86_64-warmuptests:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s warmuptests
 
@@ -776,7 +816,7 @@ test-windows-x86_64-postinstalltests:
     extends:
       - .test-common
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s postinstalltests
 
@@ -788,8 +828,8 @@ test-linux-x86_64-benchmarks-4-gpu:
       - .test-nightly
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu_4x
+      - .kit-runner-test-linux-x86_64-4x-gpu
     script:
       - export ISAAC_TEST_MODE=1
       - ./repo.sh ci test -- -s benchmarks
@@ -799,8 +839,8 @@ test-linux-x86_64-internalpythontests-1:
       - .test-nightly
       - .test-linux-common
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s internalpythontests -b 1
 
@@ -808,7 +848,7 @@ test-windows-x86_64-internalpythontests-1:
     extends:
       - .test-nightly
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s internalpythontests -b 1
 
@@ -816,7 +856,7 @@ test-windows-x86_64-nativepythontests-api:
     extends:
       - .test-nightly
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s nativepythontests -b api
 
@@ -824,7 +864,7 @@ test-windows-x86_64-nativepythontests-replicator:
     extends:
       - .test-nightly
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s nativepythontests -b replicator
 
@@ -832,7 +872,7 @@ test-windows-x86_64-nativepythontests-testing:
     extends:
       - .test-nightly
       - .test-windows-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s nativepythontests -b testing
 
@@ -843,9 +883,9 @@ test-linux-x86_64-external-ar:
     extends:
       - .test-external
       - .install-linux-test-packages
-      - .runner-test-linux-x86_64-gpu
       - .osec:vault:v3:prod_token_job
       - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     before_script:
       - set -eu
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
@@ -1214,7 +1254,8 @@ verify-publish-python-packages-linux:
     allow_failure: true
     extends:
       - .deploy-common
-      - .runner-test-linux-x86_64-gpu
+      - .omni_nvks_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       # install Python 3.10
       - sudo apt update
@@ -1244,7 +1285,7 @@ verify-publish-python-packages-windows:
     allow_failure: true
     extends:
       - .deploy-common
-      - .runner-test-windows-x86_64-gpu
+      - .kit-runner-test-windows-x86_64-1x-gpu
       - .osec:vault:v3:prod_token_job
     before_script:
       - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
@@ -1465,8 +1506,8 @@ publish-container:
 test-container:
   extends:
     - .test-common
-    - .runner-test-linux-x86_64-gpu
     - .omni_nvks_gpu
+    - .kit-runner-test-linux-x86_64-1x-gpu
   image: nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}
   # variables:
   #   GIT_STRATEGY: none
