@@ -42,7 +42,7 @@ my_jetbot = my_world.scene.add(
         wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
         create_robot=True,
         usd_path=jetbot_asset_path,
-        position=np.array([0, 0.0, 2.0]),
+        position=np.array([0, 0.0, 0.05]),
     )
 )
 my_world.scene.add_default_ground_plane()
