@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.6.0] - 2025-07-16
+### Added
+- Add deformable prim for surface and volume deformable bodies
+
 ## [0.5.6] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 0.5.5)
