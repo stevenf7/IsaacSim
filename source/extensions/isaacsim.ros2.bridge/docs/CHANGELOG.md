@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.17] - 2025-07-16
+### Fixed
+- Fix issue with ROS2 CameraInfo message not validating input parameters before use
+
 ## [4.8.16] - 2025-07-15
 ### Fixed
 - Fix issue with default ROS2 context not being initialized before use
