@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.14] - 2025-07-17
+### Changed
+- Updated windows golden images
+
 ## [1.1.13] - 2025-07-11
 ### Fixed
 - Texture randomizer uses unique names for materials (WAR for ISIM-4054)
