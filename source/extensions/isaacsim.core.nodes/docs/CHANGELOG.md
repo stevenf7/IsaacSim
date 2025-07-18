@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.2.14] - 2025-07-17
+### Fixed
+- Fix issue where explicit render product destruction caused crashes on stage cleanup
+
 ## [3.2.13] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 3.2.12)
