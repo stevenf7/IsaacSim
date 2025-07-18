@@ -1,5 +1,5 @@
 [package]
-version = "1.1.30"
+version = "1.1.31"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Examples"
 description="The extension provides various replicator snippets and examples for Synthetic Data Generation (SDG) workflows."
@@ -28,7 +28,7 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
-name = "isaacsim.replicator.examples-data_augmentation"
+name = "augmentation"
 pythonTests.include = [
     "isaacsim.replicator.examples.tests.test_data_augmentation*test_*"
 ]
@@ -82,7 +82,7 @@ args = [
 ]
 
 [[test]]
-name = "isaacsim.replicator.examples-ogn_custom_replicator_randomizer"
+name = "ogn"
 pythonTests.include = [
     "isaacsim.replicator.examples.tests.test_ogn_custom_replicator_randomizer*test_*"
 ]
@@ -136,7 +136,7 @@ args = [
 ]
 
 [[test]]
-name = "isaacsim.replicator.examples-sdg_snippets"
+name = "sdg_snippets"
 pythonTests.include = [
     "isaacsim.replicator.examples.tests.test_sdg_snippets*test_*",
     "isaacsim.replicator.examples.tests.test_sdg_snippets_simready*test_*",
@@ -192,7 +192,7 @@ args = [
 ]
 
 [[test]]
-name = "isaacsim.replicator.examples-sdg_ur10_palletizing"
+name = "sdg_ur10"
 pythonTests.include = [
     "isaacsim.replicator.examples.tests.test_sdg_ur10_palletizing*test_*"
 ]
@@ -246,7 +246,7 @@ args = [
 ]
 
 [[test]]
-name = "isaacsim.replicator.examples-sdg_core"
+name = "sdg_core"
 pythonTests.include = [
     "isaacsim.replicator.examples.tests.test_sdg_getting_started*test_*",
     "isaacsim.replicator.examples.tests.test_sdg_timeline_running*test_*"
@@ -302,7 +302,7 @@ args = [
 
 # Tests for other extensions not specific to a bucket.
 [[test]]
-name = "isaacsim.replicator.examples-other"
+name = "other"
 pythonTests.exclude = [
     "isaacsim.replicator.examples.tests.test_data_augmentation*test_*",
     "isaacsim.replicator.examples.tests.test_sdg_getting_started*test_*",
