@@ -1,4 +1,9 @@
 # Changelog
+## [2.5.7] - 2025-07-17
+### Fixed
+- Fixed saving texture files (moving to imported folder) for materials on import. 
+- Deleting partial files created when converting meshes
+
 ## [2.5.6] - 2025-07-15
 ### Fixed
 - Fixed application of Collision APIs in the collision scope and in the meshes directly as per OpenUSD Physics. 
