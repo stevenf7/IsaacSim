@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.31] - 2025-07-18
+### Changed
+- Reduce path length for test bucket names to avoid issues with long paths
+
 ## [1.1.30] - 2025-07-16
 ### Changed
 - Bucketed tests by context. Skipping sdg_ur10_palletizing test on ETM.
