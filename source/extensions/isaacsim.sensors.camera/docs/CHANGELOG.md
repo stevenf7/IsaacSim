@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.10] - 2025-07-18
+### Changed
+- Added explicit destroy() method to Camera to manually clean up resources
+
 ## [1.2.9] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.2.8)
