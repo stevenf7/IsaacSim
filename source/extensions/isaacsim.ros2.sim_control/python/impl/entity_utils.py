@@ -119,7 +119,7 @@ async def get_entity_state(entity_path):
         try:
 
             # Create a RigidPrim for the rigid body prim
-            rigid_prim = RigidPrim(paths=entity_path, reset_xform_op_properties=True)
+            rigid_prim = RigidPrim(paths=entity_path, reset_xform_op_properties=False)
 
             # Get world poses (position and orientation)
             positions, orientations = rigid_prim.get_world_poses()
@@ -170,7 +170,7 @@ async def get_entity_state(entity_path):
         try:
 
             # Create an XformPrim for the entity
-            xform_prim = XformPrim(paths=entity_path, reset_xform_op_properties=True)
+            xform_prim = XformPrim(paths=entity_path, reset_xform_op_properties=False)
 
             # Get world poses (position and orientation)
             positions, orientations = xform_prim.get_world_poses()
