@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.6] - 2025-07-18
+### Fixed
+- Velocity states correctly retrieved for rigid body prims.
+
 ## [1.1.5] - 2025-07-10
 ### Fixed
 - Prim filtering in entity_utils when retrieving states.
