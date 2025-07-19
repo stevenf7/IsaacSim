@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.15] - 2025-07-18
+### Fixed
+- Disable `xformOp` resetting when instantiating the articulation wrapper in the articulation state/controller nodes
+
 ## [3.2.14] - 2025-07-17
 ### Fixed
 - Fix issue where explicit render product destruction caused crashes on stage cleanup
