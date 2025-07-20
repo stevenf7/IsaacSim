@@ -1,4 +1,10 @@
 # Changelog
+## [2.5.8] - 2025-07-18
+### Fixed
+- Fixed importing assets where multiple meshes are defined per body
+- Fixed placement of bodies when meshes are reused at different transforms
+- Fixed material assignment on meshes when material is defined on Mjcf file
+
 ## [2.5.7] - 2025-07-17
 ### Fixed
 - Fixed saving texture files (moving to imported folder) for materials on import. 

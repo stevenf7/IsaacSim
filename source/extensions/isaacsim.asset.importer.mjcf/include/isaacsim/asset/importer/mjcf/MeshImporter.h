@@ -354,7 +354,41 @@ public:
         }
 
         pxr::SdfCopySpec(sourceStage->GetRootLayer(), mesh.GetPath(), dstStage->GetRootLayer(), newMesh.GetPath());
+
+        // Get the global transform of the source mesh and apply it to the new mesh
+        pxr::UsdGeomXformable sourceMeshXformable(mesh);
+        pxr::UsdGeomXformable newMeshXformable(newMesh);
+
+        // Get the global transform matrix using Omni USD
+        pxr::GfMatrix4d globalTransform = mesh.ComputeLocalToWorldTransform(pxr::UsdTimeCode::Default());
+
+        // Clear existing transform operations on the new mesh
+        newMeshXformable.ClearXformOpOrder();
+
+        // Decompose the global transform matrix
+        pxr::GfVec3d translation = globalTransform.ExtractTranslation();
+        pxr::GfRotation rotation = globalTransform.ExtractRotation();
+
+        // Calculate scale from the magnitude of the rotation matrix columns
+        pxr::GfMatrix3d rotationMatrix = globalTransform.ExtractRotationMatrix();
+        pxr::GfVec3d scaleX = rotationMatrix.GetColumn(0);
+        pxr::GfVec3d scaleY = rotationMatrix.GetColumn(1);
+        pxr::GfVec3d scaleZ = rotationMatrix.GetColumn(2);
+        pxr::GfVec3d scale(scaleX.GetLength(), scaleY.GetLength(), scaleZ.GetLength());
+
+
+        // Create standardized transform operations: Translate, Orient, Scale
+        pxr::UsdGeomXformOp translateOp = newMeshXformable.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionDouble);
+        pxr::UsdGeomXformOp orientOp = newMeshXformable.AddOrientOp(pxr::UsdGeomXformOp::PrecisionDouble);
+        pxr::UsdGeomXformOp scaleOp = newMeshXformable.AddScaleOp(pxr::UsdGeomXformOp::PrecisionDouble);
+
+        // Set the decomposed values
+        translateOp.Set(translation);
+        orientOp.Set(rotation.GetQuat().GetNormalized());
+        scaleOp.Set(pxr::GfVec3d(scale));
+
         // Move materials and bind them to the new mesh
+
         for (const auto& subset : pxr::UsdGeomSubset::GetAllGeomSubsets(mesh))
         {
             pxr::TfToken subsetName = subset.GetPrim().GetName();
