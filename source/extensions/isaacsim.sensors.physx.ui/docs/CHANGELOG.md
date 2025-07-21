@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.12] - 2025-07-21
+### Changed
+- Fix error on shutdown 
+
 ## [2.2.11] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.2.10)
