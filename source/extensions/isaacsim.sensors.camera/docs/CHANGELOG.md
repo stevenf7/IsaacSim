@@ -1,4 +1,10 @@
 # Changelog
+## [1.3.1] - 2025-07-21
+### Changed
+- Added explicit `destroy()` method to `CameraView`
+
+### Fixed
+- Fixed CameraView to use the correct render product variable `_tiled_render_product`
 
 ## [1.3.0] - 2025-07-19
 ### Added

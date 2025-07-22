@@ -1,4 +1,7 @@
 # Changelog
+## [0.5.1] - 2025-07-21
+### Changed
+- Added explicit `destroy()` method to `Prim`
 
 ## [0.5.0] - 2025-07-18
 ### Changed
