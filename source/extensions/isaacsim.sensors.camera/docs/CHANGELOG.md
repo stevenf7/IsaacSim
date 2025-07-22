@@ -1,4 +1,11 @@
 # Changelog
+
+## [1.3.0] - 2025-07-19
+### Added
+- SingleViewDepthSensorAsset API to wrap around USDs and automatically create
+  SingleViewDepthSensor objects (including render products) for cameras with
+  associated template render products.
+
 ## [1.2.10] - 2025-07-18
 ### Changed
 - Added explicit destroy() method to Camera to manually clean up resources
