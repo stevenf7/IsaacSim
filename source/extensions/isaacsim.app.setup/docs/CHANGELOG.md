@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.10] - 2025-07-22
+### Fixed
+- Fix exception caused if extension is disabled while ros bridge is being enabled
+
 ## [1.4.9] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.4.8)
