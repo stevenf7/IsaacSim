@@ -192,6 +192,10 @@ function create_tests()
 
     -- isaacsim.sensors.camera
     python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera_add_depth_sensor",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_add_depth_sensor.py"
+    )
+    python_sample_test(
         "tests-nativepython-isaacsim.sensors.camera.camera_opencv_fisheye",
         "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py"
     )
