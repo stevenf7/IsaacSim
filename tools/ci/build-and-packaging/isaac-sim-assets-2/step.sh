@@ -20,12 +20,12 @@ rm -rf $OUTPUT_PATH
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Environments $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Environments
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/IsaacLab/..."
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/IsaacLab $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/IsaacLab
-# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Materials/..."
-# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Materials $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Materials
+echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Materials/..."
+$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Materials $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Materials
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/People/..."
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/People $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/People
-# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Props/..."
-# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Props $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Props
+echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Props/..."
+$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Props $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Props
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Robots/..."
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Robots $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Robots
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Samples/..."
@@ -34,12 +34,12 @@ rm -rf $OUTPUT_PATH
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Sensors $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Sensors
 
 
-echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial/..."
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Commercial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial
-echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial/..."
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Industrial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial
-echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/..."
-$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential
+# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial/..."
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Commercial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial
+# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial/..."
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Industrial $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Industrial
+# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential/..."
+# $OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets/ArchVis/Residential $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Residential
 
 
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Materials/Base/..."
