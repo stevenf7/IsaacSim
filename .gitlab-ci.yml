@@ -481,7 +481,7 @@ build-windows-x86_64-debug:
 # ==============================================================================================================
 # Specifies 1xGpu for linux-x86_64
 .kit-runner-test-linux-x86_64-1x-gpu:
-  image: 
+  image:
     name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
     entrypoint: [""]
   tags:
@@ -1554,6 +1554,18 @@ assets-1-publish-to-packman:
       - .deploy-common
       - .runner-utility-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    retry:
+        max: 0
+        when:
+          - always
+    variables:
+        KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+        KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/packages/*.zip
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     timeout: 6 hour
@@ -1570,6 +1582,7 @@ assets-1-publish-to-packman:
         when: manual
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
+      # - !reference [.rules-mr, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1578,6 +1591,18 @@ assets-2-publish-to-packman:
       - .deploy-common
       - .runner-utility-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    retry:
+        max: 0
+        when:
+          - always
+    variables:
+        KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+        KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/packages/*.zip
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     timeout: 6 hour
@@ -1594,6 +1619,7 @@ assets-2-publish-to-packman:
         when: manual
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
+      # - !reference [.rules-mr, rules]
     allow_failure: true
 
 # ==============================================================================================================
@@ -1602,6 +1628,18 @@ assets-3-publish-to-packman:
       - .deploy-common
       - .runner-utility-linux-x86_64
       - .osec:vault:v3:prod_token_job
+    retry:
+        max: 0
+        when:
+          - always
+    variables:
+        KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+        KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/packages/*.zip
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     timeout: 6 hour
@@ -1618,7 +1656,80 @@ assets-3-publish-to-packman:
         when: manual
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
+      # - !reference [.rules-mr, rules]
     allow_failure: true
+
+# # ==============================================================================================================
+# assets-4-publish-to-packman:
+#     extends:
+#       - .deploy-common
+#       - .runner-utility-linux-x86_64
+#       - .osec:vault:v3:prod_token_job
+#     retry:
+#         max: 0
+#         when:
+#           - always
+#     variables:
+#         KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+#         KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
+#     artifacts:
+#         when: always
+#         expire_in: 2 weeks
+#         paths:
+#           - _build/packages/*.zip
+#     before_script:
+#       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+#     timeout: 6 hour
+#     script:
+#       - ./tools/ci/build-and-packaging/isaac-sim-assets-4/step.sh
+#       - ./repo.sh publish_assets_package_4
+#     needs: []
+#     rules:
+#       - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+#         when: never
+#       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+#         when: never
+#       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+#         when: manual
+#       - !reference [.rules-version-changed, rules]
+#       - !reference [.rules-push-manual, rules]
+#     allow_failure: true
+
+# # ==============================================================================================================
+# assets-5-publish-to-packman:
+#     extends:
+#       - .deploy-common
+#       - .runner-utility-linux-x86_64
+#       - .osec:vault:v3:prod_token_job
+#     retry:
+#         max: 0
+#         when:
+#           - always
+#     variables:
+#         KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "400Gi"
+#         KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "400Gi"
+#     artifacts:
+#         when: always
+#         expire_in: 2 weeks
+#         paths:
+#           - _build/packages/*.zip
+#     before_script:
+#       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+#     timeout: 6 hour
+#     script:
+#       - ./tools/ci/build-and-packaging/isaac-sim-assets-5/step.sh
+#       - ./repo.sh publish_assets_package_5
+#     needs: []
+#     rules:
+#       - if: $ALLOW_PUBLISH_TO_PACKMAN != "true"
+#         when: never
+#       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
+#         when: never
+#       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+#         when: manual
+#       - !reference [.rules-version-changed, rules]
+#       - !reference [.rules-push-manual, rules]
+#     allow_failure: true
 
 # ==============================================================================================================
 publish-to-packman:

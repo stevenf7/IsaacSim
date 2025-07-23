@@ -5,16 +5,18 @@ ROOT_DIR="$(dirname "$(realpath $SCRIPT_DIR/../../../)")"
 "$ROOT_DIR/tools/packman/packman" install connect-samples-launcher 1112-linux-x86_64 -l $ROOT_DIR/_build/_omnicli
 OMNICLI="$ROOT_DIR/_build/_omnicli/omnicli.sh"
 SOURCE_PATH="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac"
-OUTPUT_PATH="$ROOT_DIR/_assets-1_temp"
+OUTPUT_PATH="$ROOT_DIR/_assets-5_temp"
 VERSION="5.0"
-NAME="isaac-sim-assets-1"
+NAME="isaac-sim-assets-5"
 
 
 echo Removing $OUTPUT_PATH/...
 rm -rf $OUTPUT_PATH
 
-# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/..."
-# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac
+echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/..."
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Assets $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Assets
+echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Materials/..."
+$OMNICLI copy $SOURCE_PATH/$VERSION/NVIDIA/Materials $OUTPUT_PATH/Assets/Isaac/$VERSION/NVIDIA/Materials
 
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Environments/..."
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Environments $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Environments
@@ -26,12 +28,12 @@ rm -rf $OUTPUT_PATH
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/People $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/People
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Props/..."
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Props $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Props
-echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Robots/..."
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Robots $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Robots
+# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Robots/..."
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Robots $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Robots
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Samples/..."
 # $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Samples $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Samples
-echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Sensors/..."
-$OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Sensors $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Sensors
+# echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/Isaac/Sensors/..."
+# $OMNICLI copy $SOURCE_PATH/$VERSION/Isaac/Sensors $OUTPUT_PATH/Assets/Isaac/$VERSION/Isaac/Sensors
 
 
 # echo "Downloading /NVIDIA-Staging/Assets/Isaac/$VERSION/NVIDIA/Assets/ArchVis/Commercial/..."
