@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.1] - 2025-07-23
+### Fixed
+- Fix deformable prim tests golden values
+
 ## [0.6.0] - 2025-07-16
 ### Added
 - Add deformable prim for surface and volume deformable bodies
