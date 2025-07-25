@@ -719,8 +719,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         self.assertEqual(prim.deformable_type, "volume", f"Invalid deformable type")
         # - amount
         self.assertEqual(prim.num_nodes_per_element, 4, f"Invalid num_nodes_per_element")
-        self.assertEqual(prim.num_nodes_per_body, (1331, 9, 1331), f"Invalid num_nodes_per_body")
-        self.assertEqual(prim.num_elements_per_body, (5280, 12, 5280), f"Invalid num_elements_per_body")
+        self.assertEqual(prim.num_nodes_per_body, (1340, 1717, 1340), f"Invalid num_nodes_per_body")
+        self.assertEqual(prim.num_elements_per_body, (6048, 5425, 6048), f"Invalid num_elements_per_body")
         # - paths
         for path in prim.simulation_mesh_paths:
             self.assertTrue(
@@ -749,9 +749,9 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                 output = prim.get_element_indices(indices=indices)
             assert len(output) == 3, "Invalid number of outputs"
-            check_array(output[0], shape=(expected_count, 5280, 4), dtype=wp.uint32, device=device)
-            check_array(output[1], shape=(expected_count, 12, 4), dtype=wp.uint32, device=device)
-            check_array(output[2], shape=(expected_count, 5280, 4), dtype=wp.uint32, device=device)
+            check_array(output[0], shape=(expected_count, 6048, 4), dtype=wp.uint32, device=device)
+            check_array(output[1], shape=(expected_count, 5425, 4), dtype=wp.uint32, device=device)
+            check_array(output[2], shape=(expected_count, 6048, 4), dtype=wp.uint32, device=device)
 
     @parametrize(
         devices=["cuda"],
@@ -768,14 +768,14 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         # test cases
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
-            for v0, expected_v0 in draw_sample(shape=(expected_count, 1331, 3), dtype=wp.float32):
+            for v0, expected_v0 in draw_sample(shape=(expected_count, 1340, 3), dtype=wp.float32):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.set_nodal_positions(v0, indices=indices)
                     output = prim.get_nodal_positions(indices=indices)
                 assert len(output) == 3, "Invalid number of outputs"
-                check_array(output[0], shape=(expected_count, 1331, 3), dtype=wp.float32, device=device)
-                check_array(output[1], shape=(expected_count, 9, 3), dtype=wp.float32, device=device)
-                check_array(output[2], shape=(expected_count, 1331, 3), dtype=wp.float32, device=device)
+                check_array(output[0], shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
+                check_array(output[1], shape=(expected_count, 1717, 3), dtype=wp.float32, device=device)
+                check_array(output[2], shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output[0], given=(v0,))
 
     @parametrize(
@@ -793,11 +793,11 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         # test cases
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
-            for v0, expected_v0 in draw_sample(shape=(expected_count, 1331, 3), dtype=wp.float32):
+            for v0, expected_v0 in draw_sample(shape=(expected_count, 1340, 3), dtype=wp.float32):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.set_nodal_velocities(v0, indices=indices)
                     output = prim.get_nodal_velocities(indices=indices)
-                check_array(output, shape=(expected_count, 1331, 3), dtype=wp.float32, device=device)
+                check_array(output, shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(
@@ -816,14 +816,14 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
-                draw_sample(shape=(expected_count, 1331, 3), dtype=wp.float32),
-                draw_sample(shape=(expected_count, 1331, 1), dtype=wp.bool),
+                draw_sample(shape=(expected_count, 1340, 3), dtype=wp.float32),
+                draw_sample(shape=(expected_count, 1340, 1), dtype=wp.bool),
             ):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.set_nodal_kinematic_position_targets(v0, v1, indices=indices)
                     output = prim.get_nodal_kinematic_position_targets(indices=indices)
-                check_array(output[0], shape=(expected_count, 1331, 3), dtype=wp.float32, device=device)
-                check_array(output[1], shape=(expected_count, 1331, 1), dtype=wp.bool, device=device)
+                check_array(output[0], shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
+                check_array(output[1], shape=(expected_count, 1340, 1), dtype=wp.bool, device=device)
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(
