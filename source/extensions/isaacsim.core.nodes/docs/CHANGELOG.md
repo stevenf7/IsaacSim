@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.2.16] - 2025-07-25
+### Fixed
+- Fix issue where multiple upstream connections to execIn were causing duplicate node executions
+- Fix issue where correct frame time was not returned by Simulation Time annotator
+
 ## [3.2.15] - 2025-07-18
 ### Fixed
 - Disable `xformOp` resetting when instantiating the articulation wrapper in the articulation state/controller nodes
