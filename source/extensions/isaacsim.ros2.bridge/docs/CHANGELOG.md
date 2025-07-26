@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.1] - 2025-07-26
+## Changed
+- PublishPointCloudBuffer writer uses IsaacCreateRTXLidarScanBuffer annotator.
+
 ## [4.9.0] - 2025-07-25
 ## Changed
 - NITROS bridge image publishing is disabled by default
