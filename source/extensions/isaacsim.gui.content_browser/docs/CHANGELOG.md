@@ -1,5 +1,5 @@
 # Changelog
-## [0.1.8] - 2025-07-25
+## [0.1.9] - 2025-07-25
 ### Changed
 - Update assets path to production
 
