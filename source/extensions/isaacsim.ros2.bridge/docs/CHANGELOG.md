@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.9.0] - 2025-07-25
+## Changed
+- NITROS bridge image publishing is disabled by default
+## Added
+- Added carb setting enable_nitros_bridge to enable NITROS image publishing
+
 ## [4.8.17] - 2025-07-16
 ### Fixed
 - Fix issue with ROS2 CameraInfo message not validating input parameters before use
