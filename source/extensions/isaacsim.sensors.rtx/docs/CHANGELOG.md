@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.5.0] - 2025-07-25
+### Added
+- Restored IsaacCreateRTXLidarScanBuffer, switched to device-side processing with double buffers
+- Support for additional SICK Lidars
+### Removed
+- LidarPointAccumulator usage removed from extension
+### Changed
+- Improvements to stream processing in IsaacExtractRTXSensorPointCloud
+- IsaacComputeRTXLidarFlatScan gets inputs from IsaacCreateRTXLidarScanBuffer
+- OmniLidar prims created with IsaacSensorCreateRtxLidar command have omni:sensor:Core:skipDroppingInvalidPoints set to True
+### Fixed
+- No longer run IsaacExtractRTXSensorPointCloud tests twice.
+
 ## [15.4.6] - 2025-07-15
 ### Fixed
 - No longer run IsaacExtractRTXSensorPointCloud tests twice.
