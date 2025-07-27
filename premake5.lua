@@ -161,83 +161,10 @@ function get_git_info(params, env_var)
     return str
 end
 
--- AUTOREMOVE: BEGIN
-function process_git_branch(official_branch_roots)
-    if official_branch_roots == nil then
-        official_branch_roots = {"release"}
-    end
-    
-    -- Check for environment variables first (CI context)
-    local gitbranch = os.getenv("buildbranch") or os.getenv("CI_COMMIT_BRANCH") or os.getenv("CI_COMMIT_REF_SLUG") or ""
-    
-    -- If we're in a merge request, use MR format
-    local mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
-    if mr_iid ~= nil and mr_iid ~= "" then
-        gitbranch = "mr" .. mr_iid
-    else
-        -- If no branch from env vars, get from git
-        if gitbranch == "" then
-            gitbranch = get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
-        end
-        
-        if gitbranch ~= nil and gitbranch ~= "" then
-            -- Handle merge-request branches
-            if string.find(string.lower(gitbranch), "merge%-request") then
-                if string.find(gitbranch, "/") then
-                    -- Extract the part after the last "/"
-                    local parts = {}
-                    for part in string.gmatch(gitbranch, "[^/]+") do
-                        table.insert(parts, part)
-                    end
-                    gitbranch = "mr" .. parts[#parts]
-                else
-                    gitbranch = "mr"
-                end
-            else
-                -- Check if it starts with official branch roots
-                local is_official = false
-                for _, prefix in ipairs(official_branch_roots) do
-                    if string.find(gitbranch, "^" .. prefix .. "/") then
-                        -- Take just the prefix part
-                        gitbranch = string.match(gitbranch, "^([^/]+)")
-                        is_official = true
-                        break
-                    end
-                end
-                
-                -- If not official, take the last part after final "/"
-                if not is_official then
-                    local parts = {}
-                    for part in string.gmatch(gitbranch, "[^/]+") do
-                        table.insert(parts, part)
-                    end
-                    if #parts > 0 then
-                        gitbranch = parts[#parts]
-                    end
-                end
-            end
-            
-            -- Clean up the branch name
-            gitbranch = string.gsub(gitbranch, "/", "_")
-            gitbranch = string.gsub(gitbranch, "%+", "")
-            gitbranch = string.gsub(gitbranch, "%.", "")
-        end
-    end
-    
-    return gitbranch
-end
--- AUTOREMOVE: END
-
 function generate_version_header()
     shortSha = get_git_info("rev-parse --short HEAD", "ISAACSIM_BUILD_SHA")
     commitDate = get_git_info('show -s --format="%ad"', "ISAACSIM_BUILD_DATE")
-    
-    local branch
--- AUTOREMOVE: BEGIN
-    branch = process_git_branch({"release", "develop"})
--- AUTOREMOVE: END
-    branch = branch or get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
-    
+    branch = get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
     version = get_git_info("show HEAD:VERSION", "ISAACSIM_BUILD_VERSION")
     repo = get_git_info("config --get remote.origin.url", "ISAACSIM_BUILD_REPO")
     print(
