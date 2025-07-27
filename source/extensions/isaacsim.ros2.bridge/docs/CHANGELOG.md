@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.2] - 2025-07-26
+## Changed
+- Update test settings and exclude error messages from test logs
+
 ## [4.9.1] - 2025-07-26
 ## Changed
 - PublishPointCloudBuffer writer uses IsaacCreateRTXLidarScanBuffer annotator.
