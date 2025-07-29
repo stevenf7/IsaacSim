@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.20] - 2025-07-29
+### Fixed
+- Add standard check to tests that makes sure all meshes have >0 vertices and that the stage is in meters
+
 ## [2.4.19] - 2025-07-07
 ### Changed
 - Add unit test for pybind11 module docstrings
