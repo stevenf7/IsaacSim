@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import re
+import sys
 from typing import Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -39,12 +40,12 @@ from .common import (
 
 def _define_trimesh(stage, path):
     mesh = UsdGeom.Mesh.Define(stage, path)
-    mesh.GetPointsAttr().Set(Vt.Vec3fArray([(-1, -1, 0), (1, -1, 0), (-1, 1, 0), (1, 1, 0)]))
-    mesh.GetNormalsAttr().Set(Vt.Vec3fArray([(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)]))
+    mesh.GetPointsAttr().Set(Vt.Vec3fArray([[-1.0, -1.0, 0.0], [1.0, -1.0, 0.0], [-1.0, 1.0, 0.0], [1.0, 1.0, 0.0]]))
+    mesh.GetNormalsAttr().Set(Vt.Vec3fArray([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]))
     mesh.GetFaceVertexCountsAttr().Set(Vt.IntArray([3, 3]))
     mesh.GetFaceVertexIndicesAttr().Set(Vt.IntArray([0, 1, 3, 0, 3, 2]))
     mesh.GetSubdivisionSchemeAttr().Set("none")
-    mesh.GetExtentAttr().Set(Vt.Vec3fArray([(-1, -1, 0), (1, 1, 0)]))
+    mesh.GetExtentAttr().Set(Vt.Vec3fArray([[-1.0, -1.0, 0.0], [1.0, 1.0, 0.0]]))
 
 
 def _define_tetmesh(stage, path):
@@ -77,6 +78,61 @@ def _define_tetmesh(stage, path):
     tetmesh.GetExtentAttr().Set(Vt.Vec3fArray([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]))
 
 
+def _define_mesh(stage, path):
+    """Define a cube mesh.
+
+    The cube mesh values are generated as follows:
+
+    .. code-block:: python
+
+        >>> import pyvista as pv
+        >>>
+        >>> mesh = pv.Cube(x_length=2, y_length=2, z_length=2)
+        >>> bbox = mesh.bounds
+        >>> regular_faces = mesh.regular_faces.tolist()
+        >>> print("points:", mesh.points.tolist())
+        >>> print("normals:", mesh.point_normals.tolist())
+        >>> print("faceVertexCounts:", [len(face) for face in regular_faces])
+        >>> print("faceVertexIndices:", [item for face  in regular_faces for item in face])
+        >>> print("extent:", [[bbox.x_min, bbox.y_min, bbox.z_min], [bbox.x_max, bbox.y_max, bbox.z_max]])
+    """
+    mesh = UsdGeom.Mesh.Define(stage, path)
+    mesh.GetPointsAttr().Set(
+        Vt.Vec3fArray(
+            [
+                [-1.0, -1.0, -1.0],
+                [-1.0, -1.0, 1.0],
+                [-1.0, 1.0, 1.0],
+                [-1.0, 1.0, -1.0],
+                [1.0, -1.0, -1.0],
+                [1.0, 1.0, -1.0],
+                [1.0, 1.0, 1.0],
+                [1.0, -1.0, 1.0],
+            ]
+        )
+    )
+    mesh.GetNormalsAttr().Set(
+        Vt.Vec3fArray(
+            [
+                [-0.57, -0.57, -0.57],
+                [-0.57, -0.57, 0.57],
+                [-0.57, 0.57, 0.57],
+                [-0.57, 0.57, -0.57],
+                [0.57, -0.57, -0.57],
+                [0.57, 0.57, -0.57],
+                [0.57, 0.57, 0.57],
+                [0.57, -0.57, 0.57],
+            ]
+        )
+    )
+    mesh.GetFaceVertexCountsAttr().Set(Vt.IntArray([4, 4, 4, 4, 4, 4]))
+    mesh.GetFaceVertexIndicesAttr().Set(
+        Vt.IntArray([0, 1, 2, 3, 4, 5, 6, 7, 0, 4, 7, 1, 3, 2, 6, 5, 0, 3, 5, 4, 1, 7, 6, 2])
+    )
+    mesh.GetSubdivisionSchemeAttr().Set("none")
+    mesh.GetExtentAttr().Set(Vt.Vec3fArray([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]))
+
+
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
     deformable_case = kwargs.get("deformable_case")
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
@@ -103,9 +159,7 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
         # Xform (auto-surface)
         elif deformable_case == "auto-surface":
             stage_utils.define_prim(f"/World/A_{i}", "Xform")
-            omni.kit.commands.execute(
-                "CreateMeshPrimWithDefaultXformCommand", prim_type="Cube", prim_path=f"/World/A_{i}/mesh"
-            )
+            _define_mesh(stage, f"/World/A_{i}/mesh")
             if not deformableUtils.create_auto_surface_deformable_hierarchy(
                 stage_utils.get_current_stage(),
                 f"/World/A_{i}",
@@ -114,13 +168,10 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
                 cooking_src_simplification_enabled=False,
             ):
                 raise ValueError(f"Failed to create auto-surface deformable hierarchy for {f'/World/A_{i}'}")
-            await omni.kit.app.get_app().next_update_async()  # wait for the simulation mesh to be populated
         # Xform (auto-volume)
         elif deformable_case == "auto-volume":
             stage_utils.define_prim(f"/World/A_{i}", "Xform")
-            omni.kit.commands.execute(
-                "CreateMeshPrimWithDefaultXformCommand", prim_type="Cube", prim_path=f"/World/A_{i}/mesh"
-            )
+            _define_mesh(stage, f"/World/A_{i}/mesh")
             if not deformableUtils.create_auto_volume_deformable_hierarchy(
                 stage_utils.get_current_stage(),
                 f"/World/A_{i}",
@@ -131,13 +182,19 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
                 cooking_src_simplification_enabled=True,
             ):
                 raise ValueError(f"Failed to create auto-volume deformable hierarchy for {f'/World/A_{i}'}")
-            await omni.kit.app.get_app().next_update_async()  # wait for the simulation mesh to be populated
 
 
 class TestDeformablePrim(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Method called to prepare the test fixture"""
         super().setUp()
+        # auto-volume platform dependent checking
+        if sys.platform == "win32":
+            self._nnpb = (1350, 1717, 1350)
+            self._nepb = (6096, 5395, 6096)
+        else:
+            self._nnpb = (1348, 1717, 1348)
+            self._nepb = (6120, 5432, 6120)
 
     async def tearDown(self):
         """Method called immediately after the test method has been called"""
@@ -719,8 +776,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         self.assertEqual(prim.deformable_type, "volume", f"Invalid deformable type")
         # - amount
         self.assertEqual(prim.num_nodes_per_element, 4, f"Invalid num_nodes_per_element")
-        self.assertEqual(prim.num_nodes_per_body, (1340, 1717, 1340), f"Invalid num_nodes_per_body")
-        self.assertEqual(prim.num_elements_per_body, (6048, 5425, 6048), f"Invalid num_elements_per_body")
+        self.assertEqual(prim.num_nodes_per_body, self._nnpb, f"Invalid num_nodes_per_body")
+        self.assertEqual(prim.num_elements_per_body, self._nepb, f"Invalid num_elements_per_body")
         # - paths
         for path in prim.simulation_mesh_paths:
             self.assertTrue(
@@ -749,9 +806,9 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                 output = prim.get_element_indices(indices=indices)
             assert len(output) == 3, "Invalid number of outputs"
-            check_array(output[0], shape=(expected_count, 6048, 4), dtype=wp.uint32, device=device)
-            check_array(output[1], shape=(expected_count, 5425, 4), dtype=wp.uint32, device=device)
-            check_array(output[2], shape=(expected_count, 6048, 4), dtype=wp.uint32, device=device)
+            check_array(output[0], shape=(expected_count, self._nepb[0], 4), dtype=wp.uint32, device=device)
+            check_array(output[1], shape=(expected_count, self._nepb[1], 4), dtype=wp.uint32, device=device)
+            check_array(output[2], shape=(expected_count, self._nepb[2], 4), dtype=wp.uint32, device=device)
 
     @parametrize(
         devices=["cuda"],
@@ -768,14 +825,14 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         # test cases
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
-            for v0, expected_v0 in draw_sample(shape=(expected_count, 1340, 3), dtype=wp.float32):
+            for v0, expected_v0 in draw_sample(shape=(expected_count, self._nnpb[0], 3), dtype=wp.float32):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.set_nodal_positions(v0, indices=indices)
                     output = prim.get_nodal_positions(indices=indices)
                 assert len(output) == 3, "Invalid number of outputs"
-                check_array(output[0], shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
-                check_array(output[1], shape=(expected_count, 1717, 3), dtype=wp.float32, device=device)
-                check_array(output[2], shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
+                check_array(output[0], shape=(expected_count, self._nnpb[0], 3), dtype=wp.float32, device=device)
+                check_array(output[1], shape=(expected_count, self._nnpb[1], 3), dtype=wp.float32, device=device)
+                check_array(output[2], shape=(expected_count, self._nnpb[2], 3), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output[0], given=(v0,))
 
     @parametrize(
@@ -793,11 +850,11 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         # test cases
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
-            for v0, expected_v0 in draw_sample(shape=(expected_count, 1340, 3), dtype=wp.float32):
+            for v0, expected_v0 in draw_sample(shape=(expected_count, self._nnpb[0], 3), dtype=wp.float32):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.set_nodal_velocities(v0, indices=indices)
                     output = prim.get_nodal_velocities(indices=indices)
-                check_array(output, shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
+                check_array(output, shape=(expected_count, self._nnpb[0], 3), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(
@@ -816,14 +873,14 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
-                draw_sample(shape=(expected_count, 1340, 3), dtype=wp.float32),
-                draw_sample(shape=(expected_count, 1340, 1), dtype=wp.bool),
+                draw_sample(shape=(expected_count, self._nnpb[0], 3), dtype=wp.float32),
+                draw_sample(shape=(expected_count, self._nnpb[0], 1), dtype=wp.bool),
             ):
                 with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                     prim.set_nodal_kinematic_position_targets(v0, v1, indices=indices)
                     output = prim.get_nodal_kinematic_position_targets(indices=indices)
-                check_array(output[0], shape=(expected_count, 1340, 3), dtype=wp.float32, device=device)
-                check_array(output[1], shape=(expected_count, 1340, 1), dtype=wp.bool, device=device)
+                check_array(output[0], shape=(expected_count, self._nnpb[0], 3), dtype=wp.float32, device=device)
+                check_array(output[1], shape=(expected_count, self._nnpb[0], 1), dtype=wp.bool, device=device)
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(

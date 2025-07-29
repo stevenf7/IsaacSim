@@ -27,6 +27,7 @@ import numpy as np
 import omni.physics.tensors
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
+from omni.physx import get_physx_cooking_interface
 from omni.physx.bindings import _physx as physx_bindings
 from omni.physx.scripts import deformableUtils
 from pxr import Usd, UsdGeom, UsdShade
@@ -88,6 +89,7 @@ def _check_or_apply_deformable_schema(
                 assert (
                     deformable_type is None or deformable_type == "surface"
                 ), f"The prim at path {path} is a surface, but the deformable type is set to '{deformable_type}'"
+                get_physx_cooking_interface().cook_auto_deformable_body(path)
                 return "wrap", "surface"
             # - volume
             predicate = lambda prim, path: prim_utils.has_api(prim, "OmniPhysicsVolumeDeformableSimAPI")
@@ -95,6 +97,7 @@ def _check_or_apply_deformable_schema(
                 assert (
                     deformable_type is None or deformable_type == "volume"
                 ), f"The prim at path {path} is a volume, but the deformable type is set to '{deformable_type}'"
+                get_physx_cooking_interface().cook_auto_deformable_body(path)
                 return "wrap", "volume"
             raise ValueError(
                 f"The prim at path {path} has the Deformable schema applied, "
@@ -115,6 +118,7 @@ def _check_or_apply_deformable_schema(
                 cooking_src_mesh_path=prim_utils.get_prim_path(cooking_mesh),
                 cooking_src_simplification_enabled=False,
             ):
+                get_physx_cooking_interface().cook_auto_deformable_body(path)
                 return "create", "surface"
             raise ValueError(f"Failed to setup a surface deformable body for the prim at path {path}")
         # - volume
@@ -131,8 +135,9 @@ def _check_or_apply_deformable_schema(
                 collision_tetmesh_path=f"{path}/collision_mesh",
                 cooking_src_mesh_path=prim_utils.get_prim_path(cooking_mesh),
                 simulation_hex_mesh_enabled=True,
-                cooking_src_simplification_enabled=True,
+                cooking_src_simplification_enabled=False,
             ):
+                get_physx_cooking_interface().cook_auto_deformable_body(path)
                 return "create", "volume"
             raise ValueError(f"Failed to setup a volume deformable body for the prim at path {path}")
         else:

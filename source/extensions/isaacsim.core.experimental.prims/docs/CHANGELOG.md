@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.2] - 2025-07-28
+### Changed
+- Trigger the synchronous generation of deformable simulation meshes to ensure data is always available
+
 ## [0.6.1] - 2025-07-23
 ### Fixed
 - Fix deformable prim tests golden values
