@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.2] - 2025-07-29
+### Fixed
+- Added error exclusion to ignore depth sensor allocation errors in tests
+
 ## [1.3.1] - 2025-07-21
 ### Changed
 - Added explicit `destroy()` method to `CameraView`
