@@ -122,9 +122,9 @@ docker push nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_S
 # docker push nvcr.io/nvidian/$APP_NAME:latest-$CI_COMMIT_BRANCH
 
 # # FOR PRODUCTION #
-# echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0!
-# docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0
-# docker push nvcr.io/nvstaging/isaacsim/isaac-sim:5.0.0
+# echo !Publishing to nvcr.io/nvstaging/isaacsim/isaac-sim:5.1.0!
+# docker tag $docker_image_tag nvcr.io/nvstaging/isaacsim/isaac-sim:5.1.0
+# docker push nvcr.io/nvstaging/isaacsim/isaac-sim:5.1.0
 
 docker images
 docker rmi -f $(docker images --filter=reference="$docker_image_tag" -q)

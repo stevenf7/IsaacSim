@@ -26,14 +26,14 @@ copyright_start = 2018
 # our api docs are not versioned
 version_selector_enabled = false
 
-# version = "5.0.0"
+# version = "5.1.0"
 
 # Move api docs to build directory
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
 
 logo_target_url = "index.html"
 copybutton_enabled = true
-announcement = "<span style='color: orange; font-size: 1.2em;'>&#9888;</span><strong>Work in Progress:</strong> We are actively updating the 5.0.0 documentation.<br>Please note that the content is subject to change.<br>For the latest updates and source code, visit our <a href='https://github.com/isaac-sim/IsaacSim' target='_blank'>GitHub repository</a>."
+announcement = "<span style='color: orange; font-size: 1.2em;'>&#9888;</span><strong>Work in Progress:</strong> We are actively updating the 5.1.0 documentation.<br>Please note that the content is subject to change.<br>For the latest updates and source code, visit our <a href='https://github.com/isaac-sim/IsaacSim' target='_blank'>GitHub repository</a>."
 
 extra_content_head = [
     "${env:TRACKING_SCRIPT}"
