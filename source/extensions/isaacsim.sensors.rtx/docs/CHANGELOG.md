@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.5.1] - 2025-07-29
+### Fixed
+- Remove version locks for omni.sensors.nv.*
+
 ## [15.5.0] - 2025-07-25
 ### Added
 - Restored IsaacCreateRTXLidarScanBuffer, switched to device-side processing with double buffers
