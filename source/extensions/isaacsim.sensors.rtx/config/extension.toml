@@ -1,5 +1,5 @@
 [package]
-version = "15.5.0"
+version = "15.5.1"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -26,10 +26,10 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.replicator.core" = {}
 # Make sure the versions are aligned with source/apps/isaacsim.exp.extscache.kit
-"omni.sensors.nv.common" = { version = "2.7.0-coreapi", exact=true }
-"omni.sensors.nv.ids" = { version = "1.5.0-coreapi", exact=true }
-"omni.sensors.nv.lidar" = { version = "2.7.0-coreapi", exact=true }
-"omni.sensors.nv.radar" = { version = "2.8.0-coreapi", exact=true }
+"omni.sensors.nv.common" = {}
+"omni.sensors.nv.ids" = {}
+"omni.sensors.nv.lidar" = {}
+"omni.sensors.nv.radar" = {}
 "omni.syntheticdata" = {}
 "omni.timeline" = {} # Needed for simulation to occur
 "omni.usd" = {} # needed for call to add aov
