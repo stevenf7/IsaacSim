@@ -41,6 +41,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.dest_path = os.path.abspath(self._extension_path + "/tests_out")
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
         pass
 
     # After running each test
@@ -49,6 +50,18 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         # await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
+
+    async def standard_checks(self, prim_path):
+
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self._stage), 1.0)
+
+        prim = self._stage.GetPrimAtPath(prim_path)
+        # check that all meshes have >0 vertices
+        prim_range = [c for c in pxr.Usd.PrimRange(prim, pxr.Usd.TraverseInstanceProxies()) if UsdGeom.Mesh(c)]
+        for prim in prim_range:
+            mesh = UsdGeom.Mesh(prim)
+            self.assertGreater(len(mesh.GetFaceVertexCountsAttr().Get()), 0)
+        # TODO: Add more checks here
 
     # Tests to make sure visual mesh names are incremented
     async def test_urdf_mesh_naming(self):
@@ -479,13 +492,13 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/cobotta_pro_900/cobotta_pro_900.urdf")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.parse_mimic = False
-        status, path = omni.kit.commands.execute(
+        status, prim_path = omni.kit.commands.execute(
             "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
         )
-        self.assertTrue(path, "/cobotta_pro_900")
+        self.assertTrue(prim_path, "/cobotta_pro_900")
+        await self.standard_checks(prim_path)
 
-        stage = omni.usd.get_context().get_stage()
-        joint = stage.GetPrimAtPath("/cobotta_pro_900/joints/left_inner_knuckle_joint")
+        joint = self._stage.GetPrimAtPath("/cobotta_pro_900/joints/left_inner_knuckle_joint")
 
         self.assertFalse(joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
@@ -495,23 +508,29 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
             self._extension_path + "/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf"
         )
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
-        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
-        # TODO add checks here'
+        status, prim_path = omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
+        )
+        await self.standard_checks(prim_path)
 
     async def test_urdf_ur10(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/ur10/urdf/ur10.urdf")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
-        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
-        # TODO add checks here'
+        status, prim_path = omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
+        )
+        await self.standard_checks(prim_path)
 
     async def test_urdf_kaya(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.merge_fixed_joints = False
-        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
-        # TODO add checks here
+        status, prim_path = omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
+        )
+        await self.standard_checks(prim_path)
 
     async def test_missing(self):
 
