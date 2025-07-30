@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.6.2] - 2025-07-29
+### Changed
+- Update to qdldl==0.1.7.post5
+- Update to tornado==6.5.1
+
 ## [2.6.1] - 2025-06-05
 ### Fixed
 - Fixed broken test
