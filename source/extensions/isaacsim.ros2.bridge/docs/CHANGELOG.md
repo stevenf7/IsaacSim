@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.4] - 2025-07-28
+### Changed
+- Fix bugs with registering and deregistering examples in the browser
+
 ## [4.9.3] - 2025-07-29
 ## Changed
 - CycloneDDS is now supported for Jazzy
