@@ -826,6 +826,7 @@ limitations under the License.
 build_extension_paths = [
   "${root}/_build/${platform}/${config}/exts",
   "${root}/_build/${platform}/${config}/extsDeprecated",
+  "${root}/_build/${platform}/${config}/extsbuild",
 ]
 source_extension_paths = [
   "${root}/source/extensions",
@@ -925,6 +926,17 @@ excluded_extensions = [
     "omni.kit.property.isaac",
     "omni.replicator.isaac",
     "omni.usd.schema.isaac",
+    # extsbuild,
+    "omni.graph.tools",
+    "omni.kit.test",
+    "omni.syntheticdata",
+    "omni.usd.core",
+    "usdrt.scenegraph",
+]
+
+# Extensions from extsbuild that needed to be included in docs 
+extsbuild_exts_includes = [
+    "isaacsim.util.debug_draw",
 ]
 
 ########################################################################################################################
@@ -945,9 +957,10 @@ ogn_exts_includes = [
   "isaacsim.sensors.physx",
   "isaacsim.sensors.rtx",
   "isaacsim.core.nodes",
-  "isaacsim.util.debug_draw",
   "isaacsim.examples.interactive_nodes",
   "isaacsim.robot.wheeled_robots",
+  # "isaacsim.util.debug_draw",
+
 ]
 
 

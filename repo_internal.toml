@@ -67,6 +67,7 @@ library_paths = [
 ]
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
+  "${root}/_build/${platform}/${config}/extsbuild/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
   "${root}/_build/${platform}/${config}/extsDeprecated/*",
@@ -191,8 +192,7 @@ sphinx_exclude_patterns = [
   "CODING.md"
 ]
 
-doxygen_input = [
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Conversions.h",
+doxygen_input = ["source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Conversions.h",
   "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/DynamicControl.h",
   "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/DynamicControlTypes.h",
   "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Math.h",
@@ -293,7 +293,7 @@ doxygen_input = [
   "source/extensions/omni.kit.loop-isaac/include/RunLoopRunner.h",
   "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
 ]
-
+  
 doxygen_predefined = ["CARB_PLUGIN_INTERFACE="]
 
 

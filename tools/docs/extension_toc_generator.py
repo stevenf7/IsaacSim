@@ -65,6 +65,11 @@ def parse_toctree(content: list[str]) -> list[dict]:
             name = line.split(" <")[0]
             path = line.split("<")[1].split(">")[0]
             toctree["extensions"].append({"name": name, "path": path})
+        elif "<docs/extsbuild/" in line:
+            name = line.split(" <")[0]
+            path = line.split("<")[1].split(">")[0]
+            toctree["extensions"].append({"name": name, "path": path})
+
     return toctrees
 
 
@@ -84,9 +89,8 @@ def generate_tables(toctrees: list[dict], error_as_warn: bool) -> list[str]:
         for extension in toctree["extensions"]:
             # get extension description
             try:
-                ext_config = _load_extension_config(
-                    extension["path"].replace("/docs/index", ""), error_as_warn=error_as_warn
-                )
+                extension_path = extension["path"].replace("/docs/index", "")
+                ext_config = _load_extension_config(extension_path, error_as_warn=error_as_warn)
             except FileNotFoundError as e:
                 omni.repo.man.print_log(f"Unable to load extension.toml: {e}", logging.WARN)
                 continue
