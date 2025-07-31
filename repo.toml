@@ -74,10 +74,7 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_cloud.toml",
 ]
 
-"platform:linux-aarch64".fetch.pip.licensing_enabled = false # Disable licensing for aarch64 platforms, as it is not supported.
-"platform:windows-x86_64".fetch.pip.licensing_enabled = true 
-"platform:linux-x86_64".fetch.pip.licensing_enabled = true
-
+"platform:*-aarch64".fetch.pip.licensing_enabled = false
 
 # # Extensions precache
 # # This is one way to get the headers and bin files from extensions to show up... like needed in omni.sensors.nv.common
@@ -137,9 +134,7 @@ licensing.packages = [
   "${root}/deps/isaac-sim.packman.xml",
 ]
 
-"platform:linux-aarch64".licensing.fail_on_missing = false # Disable licensing for aarch64 platforms, as it is not supported.
-"platform:windows-x86_64".licensing.fail_on_missing = true
-"platform:linux-x86_64".licensing.fail_on_missing = true
+"platform:*-aarch64".licensing.fail_on_missing = false
 
 # By default, precache_exts is run after pull. Instead, running it after generating projects and staging files, so the necessary app file exists.
 fetch.after_pull_commands = []
@@ -833,9 +828,7 @@ limitations under the License.
 ########################################################################################################################
 
 [repo_docs]
-"platform:linux-aarch64".enabled = false # Disable docs generation for aarch64 platforms, as it is not supported.
-"platform:windows-x86_64".enabled = false # Disable docs generation for windows64 platforms, as it is not supported.
-"platform:linux-x86_64".enabled = true
+"platform:*-aarch64".enabled = false  # Disable docs generation for aarch64 platforms, as it is not supported.
 
 ########################################################################################################################
 # Extension documentation building (see: repo extension_docs --help)
