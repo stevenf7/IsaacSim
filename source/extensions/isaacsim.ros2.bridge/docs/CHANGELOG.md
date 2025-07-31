@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.5] - 2025-07-31
+### Fixed
+- Fix the length resolution of non-fixed size arrays of embedded dynamic messages
+
 ## [4.9.4] - 2025-07-28
 ### Changed
 - Fix bugs with registering and deregistering examples in the browser
