@@ -75,7 +75,7 @@ packages = [
 ]
 
 target = "../_build/target-deps/isaac_core_prebundle"
-platforms = ["*-x86_64"]
+platforms = ["*-x86_64", "*-aarch64"]
 download_only = false
 install_dependencies = false
 append_to_install_folder = true

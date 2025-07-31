@@ -33,9 +33,11 @@ name = "usd.schema.isaac"
 
 [[native.library]]
 "filter:platform"."linux-x86_64"."path" = "plugins/lib/${lib_prefix}rangeSensorSchema${lib_ext}"
+"filter:platform"."linux-aarch64"."path" = "plugins/lib/${lib_prefix}rangeSensorSchema${lib_ext}"
 "filter:platform"."windows-x86_64"."path" = "plugins/bin/${lib_prefix}rangeSensorSchema${lib_ext}"
 
 [[native.library]]
 # path = "plugins/IsaacSensorSchema/lib/${lib_prefix}isaacSensorSchema${lib_ext}"
 "filter:platform"."linux-x86_64"."path" = "plugins/lib/${lib_prefix}isaacSensorSchema${lib_ext}"
+"filter:platform"."linux-aarch64"."path" = "plugins/lib/${lib_prefix}isaacSensorSchema${lib_ext}"
 "filter:platform"."windows-x86_64"."path" = "plugins/bin/${lib_prefix}isaacSensorSchema${lib_ext}"

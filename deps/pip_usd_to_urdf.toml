@@ -11,7 +11,7 @@ packages = [
     "setuptools_scm==8.2.0",         # SWIPAT filed under: https://nvbugs/4248640
 ]
 target = "../_build/target-deps/isaac_usd_to_urdf_prebundle"
-platforms = ["*-x86_64"]
+platforms = ["*-x86_64", "*-aarch64"]
 download_only = false
 install_dependencies = false
 append_to_install_folder = true
