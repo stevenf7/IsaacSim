@@ -149,6 +149,7 @@ variables:
     RUN_CHECKS:
         value: "true"
         description: "Set to true to run check stage."
+    PLATFORM_LINUX_AARCH64: 'true'
     RUN_BUILDS:
         value: "true"
         description: "Set to true to run build stage."
@@ -307,6 +308,7 @@ check-python-packages:
       - .runner-utility-linux-x86_64
     script:
       - ./repo.sh check_python_package_definitions --gitlab
+
 # ==============================================================================================================
 .build-artifacts:
     artifacts:
@@ -464,7 +466,6 @@ build-windows-x86_64-debug:
     needs:
       - job: build-windows-x86_64-release
         artifacts: true
-
 
 # ==============================================================================================================
 # Specifies 1xGpu tags for Windows
@@ -1189,6 +1190,10 @@ publish-extensions:
       - job: build-linux-x86_64-debug
         artifacts: true
         optional: false
+      # Enable below for linux arm builds
+      # - job: build-linux-aarch64
+      #   artifacts: true
+      #   optional: false
     rules:
       - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
         when: never

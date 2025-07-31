@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.7] - 2025-07-30
+### Changed
+- Version bump to fix aarch64 pip_*.toml platform inclusion
+
 ## [1.3.6] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

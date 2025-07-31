@@ -22,6 +22,7 @@ name = "isaac-sim"
 
 # Specify python executable path for each platform
 python_executable."platform:linux-x86_64".python_executable_path = "python3${exe_ext}"
+python_executable."platform:linux-aarch64".python_executable_path = "python3${exe_ext}"
 python_executable."platform:windows-x86_64".python_executable_path = "python${exe_ext}"
 python_executable.packman_package_name = "python"
 python_executable.packman_package_version = "3.11.11+nv3-${platform}"
@@ -72,6 +73,8 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_usd_to_urdf.toml",
   "${root}/deps/pip_cloud.toml",
 ]
+
+"platform:*-aarch64".fetch.pip.licensing_enabled = false
 
 # # Extensions precache
 # # This is one way to get the headers and bin files from extensions to show up... like needed in omni.sensors.nv.common
@@ -130,7 +133,8 @@ licensing.packages = [
   "${root}/deps/ext-deps.packman.xml",
   "${root}/deps/isaac-sim.packman.xml",
 ]
-# licensing.fail_on_missing = true
+
+"platform:*-aarch64".licensing.fail_on_missing = false
 
 # By default, precache_exts is run after pull. Instead, running it after generating projects and staging files, so the necessary app file exists.
 fetch.after_pull_commands = []
@@ -721,7 +725,7 @@ enabled = true
 platforms = [
     "windows-x86_64",
     "linux-x86_64",
-    # "linux-aarch64"
+    "linux-aarch64"
 ]
 
 publish_root = "${root}/_build/$platform/$config"
@@ -817,6 +821,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+
+########################################################################################################################
+# Repo Docs (see: repo docs --help)
+########################################################################################################################
+
+[repo_docs]
+"platform:*-aarch64".enabled = false  # Disable docs generation for aarch64 platforms, as it is not supported.
 
 ########################################################################################################################
 # Extension documentation building (see: repo extension_docs --help)

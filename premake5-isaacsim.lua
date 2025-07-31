@@ -43,9 +43,17 @@ function include_physx()
     libdirs {
         "%{root}/_build/target-deps/physx/bin/linux.x86_64/debug",
     }
+    filter { "system:linux", "platforms:aarch64", "configurations:debug" }
+    libdirs {
+        "%{root}/_build/target-deps/physx/bin/linux.aarch64/debug",
+    }
     filter { "system:linux", "platforms:x86_64", "configurations:release" }
     libdirs {
         "%{root}/_build/target-deps/physx/bin/linux.x86_64/checked",
+    }
+    filter { "system:linux", "platforms:aarch64", "configurations:release" }
+    libdirs {
+        "%{root}/_build/target-deps/physx/bin/linux.aarch64/checked",
     }
     filter {}
 

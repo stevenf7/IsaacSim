@@ -55,7 +55,8 @@ keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in
 "omni.isaac.synthetic_recorder" = {}
 "omni.isaac.throttling" = {}
 
-# Additional Kit extensions
+# Additional Kit extensions (Filtered for x86_64 platforms)
+[dependencies."filter:platform"."*-x86_64"]
 "omni.anim.curve.bundle" = {}
 "omni.physx.asset_validator" = {}
 "omni.asset_validator.ui" = { order = 2000 }
