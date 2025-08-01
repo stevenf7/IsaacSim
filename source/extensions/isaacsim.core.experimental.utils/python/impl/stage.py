@@ -24,7 +24,7 @@ import omni.kit.stage_templates
 import omni.usd
 import usdrt
 from omni.metrics.assembler.core import get_metrics_assembler_interface
-from pxr import Sdf, Usd, UsdUtils
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics, UsdUtils
 
 from . import backend as backend_utils
 from . import prim as prim_utils
@@ -376,6 +376,59 @@ def add_reference_to_stage(
     # set variants
     prim_utils.set_prim_variants(prim, variants=variants)
     return prim
+
+
+def get_stage_units() -> tuple[float, float]:
+    """Get the stage meters per unit and kilograms per unit currently set.
+
+    Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
+
+    The most common distance units and their values are listed in the following table:
+
+    +------------------+--------+
+    | Unit             | Value  |
+    +==================+========+
+    | kilometer (km)   | 1000.0 |
+    +------------------+--------+
+    | meters (m)       | 1.0    |
+    +------------------+--------+
+    | inch (in)        | 0.0254 |
+    +------------------+--------+
+    | centimeters (cm) | 0.01   |
+    +------------------+--------+
+    | millimeter (mm)  | 0.001  |
+    +------------------+--------+
+
+    The most common mass units and their values are listed in the following table:
+
+    +------------------+--------+
+    | Unit             | Value  |
+    +==================+========+
+    | metric ton (t)   | 1000.0 |
+    +------------------+--------+
+    | kilogram (kg)    | 1.0    |
+    +------------------+--------+
+    | gram (g)         | 0.001  |
+    +------------------+--------+
+    | pound (lb)       | 0.4536 |
+    +------------------+--------+
+    | ounce (oz)       | 0.0283 |
+    +------------------+--------+
+
+    Returns:
+        Current stage meters per unit and kilograms per unit.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.stage as stage_utils
+        >>>
+        >>> stage_utils.get_stage_units()
+        (1.0, 1.0)
+    """
+    stage = get_current_stage()
+    return UsdGeom.GetStageMetersPerUnit(stage), UsdPhysics.GetStageKilogramsPerUnit(stage)
 
 
 def define_prim(path: str, type_name: str = "Xform") -> Usd.Prim | usdrt.Usd.Prim:

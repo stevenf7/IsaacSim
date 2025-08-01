@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2025-07-31
+### Added
+- Transform utils functions to manipulate rotations and quaternions
+- Stage utils function to get the current stage units
+
 ## [0.2.0] - 2025-07-16
 ### Added
 - Add funtion to check if a prim has or not the given API schema(s) applied
