@@ -176,3 +176,12 @@ class TestStage(omni.kit.test.AsyncTestCase):
         self.assertRaises(ValueError, stage_utils.define_prim, f"/World/")
         # - prim already exists with a different type
         self.assertRaises(RuntimeError, stage_utils.define_prim, f"/Sphere", type_name="Cube")
+
+    async def test_get_stage_units(self):
+        """Test get_stage_units returns tuple of distance and mass units"""
+        await stage_utils.create_new_stage_async()
+
+        # Test unpacking and default values
+        meters_per_unit, kilograms_per_unit = stage_utils.get_stage_units()
+        self.assertEqual(meters_per_unit, 1.0)
+        self.assertEqual(kilograms_per_unit, 1.0)

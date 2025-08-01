@@ -17,6 +17,7 @@ import isaacsim.core.experimental.utils.impl.backend as backend_utils
 import isaacsim.core.experimental.utils.impl.ops as ops_utils
 import isaacsim.core.experimental.utils.impl.prim as prim_utils
 import isaacsim.core.experimental.utils.impl.stage as stage_utils
+import isaacsim.core.experimental.utils.impl.transform as transform_utils
 import isaacsim.test.docstring
 
 
@@ -42,3 +43,6 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
 
     async def test_stage_docstrings(self):
         await self.assertDocTests(stage_utils)
+
+    async def test_transform_docstrings(self):
+        await self.assertDocTests(transform_utils)
