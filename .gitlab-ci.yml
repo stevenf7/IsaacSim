@@ -369,6 +369,32 @@ build-linux-x86_64-debug:
       - ./repo.sh ci build -c debug
 
 # ==============================================================================================================
+build-linux-aarch64:
+  extends:
+    - .build-common
+    - .runner-build-linux-aarch64
+    - .osec:vault:v3:prod_token_job
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00
+  variables:
+    OMNI_REPO_BUILD_NO_DOCKER: "1"
+  before_script:
+    - set -eu
+    - !reference [.gitlab-info-external-urls-linux, script]
+    - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+  script:
+    - ./repo.sh ci build
+  after_script:
+    - !reference [.gitlab-info-external-urls-linux, script]
+  rules:
+    - !reference [.rules-platform-linux-aarch64, rules]
+    - !reference [.rules-workflow, rules]
+    - !reference [.rules-version-changed, rules]
+    - if: $RUN_BUMP_VERSION == "true"
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual  # Manual to avoid overloading ARM ci runners during MRs
+
+# ==============================================================================================================
 build-windows-x86_64-release:
     extends:
       - .build-common
@@ -1190,10 +1216,9 @@ publish-extensions:
       - job: build-linux-x86_64-debug
         artifacts: true
         optional: false
-      # Enable below for linux arm builds
-      # - job: build-linux-aarch64
-      #   artifacts: true
-      #   optional: false
+      - job: build-linux-aarch64
+        artifacts: true
+        optional: false
     rules:
       - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
         when: never
