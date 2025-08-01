@@ -1,4 +1,10 @@
 # Changelog
+
+## [2.5.9] - 2025-07-31
+### Changed
+- Updated compiling dependency for Omniverse Asset Converter
+
+
 ## [2.5.8] - 2025-07-18
 ### Fixed
 - Fixed importing assets where multiple meshes are defined per body

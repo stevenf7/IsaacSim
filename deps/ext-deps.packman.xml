@@ -1,6 +1,6 @@
 <project toolsVersion="5.0">
   <!-- Use this file to include any dependencies for your extension beyond those in `kit-sdk-deps.packman.xml`. -->
-  <dependency name="omniverse_asset_converter" linkPath="../_build/target-deps/omniverse_asset_converter">
-    <package name="omniverse_asset_converter" version="5.1.3.${platform_target_abi}.${config}" platforms="${platform_target_abi}" />
+  <dependency name="omniverse_asset_converter_usd_24.05_py_3.11" linkPath="../_build/target-deps/omniverse_asset_converter">
+    <package name="omniverse_asset_converter_usd_24.05_py_3.11" version="7.0.5.${platform_target_abi}.${config}" platforms="${platform_target_abi}" />
   </dependency>
 </project>

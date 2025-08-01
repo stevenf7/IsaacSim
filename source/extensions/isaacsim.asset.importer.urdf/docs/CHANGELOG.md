@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.21] - 2025-07-31
+### Changed
+- Updated compiling dependency for Omniverse Asset Converter
+
 ## [2.4.20] - 2025-07-29
 ### Fixed
 - Add standard check to tests that makes sure all meshes have >0 vertices and that the stage is in meters
