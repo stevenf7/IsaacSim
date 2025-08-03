@@ -267,7 +267,8 @@ links.exts.include = [
   "usdrt.scenegraph",
   "omni.graph.tools",
   "omni.kit.test",
-  "isaacsim.util.debug_draw"
+  "isaacsim.util.debug_draw",
+  "omni.kit.asset_converter"
 ]
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
 
