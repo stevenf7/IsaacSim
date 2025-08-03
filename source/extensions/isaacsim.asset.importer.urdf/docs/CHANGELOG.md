@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [2.4.22] - 2025-08-02
+### Changed
+- Remove direct dependency from Omniverse Asset Converter, and use omni.kit.asset_converter
+
 ## [2.4.21] - 2025-07-31
 ### Changed
 - Updated compiling dependency for Omniverse Asset Converter

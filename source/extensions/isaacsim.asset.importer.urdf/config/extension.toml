@@ -9,7 +9,7 @@
 # its affiliates is strictly prohibited.
 
 [package]
-version = "2.4.21"  # Semantic Versionning is used: https://semver.org/
+version = "2.4.22"  # Semantic Versionning is used: https://semver.org/
 category = "Simulation"
 title = "Urdf Importer Extension"
 description = "URDF Importer"
@@ -26,6 +26,7 @@ writeTarget.kit = true
 "isaacsim.examples.browser" = {order = 1000}
 "isaacsim.gui.components" = {order = 1000}
 "isaacsim.robot.schema" = {}
+"omni.kit.asset_converter" = {}
 "omni.kit.browser.folder.core" = {}
 "omni.kit.commands" = {}
 "omni.kit.helper.file_utils" = {}
