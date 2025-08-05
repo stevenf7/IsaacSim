@@ -1810,6 +1810,8 @@ publish-to-packman:
         artifacts: true
       - job: build-linux-x86_64-release
         artifacts: true
+      - job: build-linux-aarch64-release
+        artifacts: true
       #   - job: test-windows-x86_64-startuptests
       #     artifacts: false
       #     optional: true
