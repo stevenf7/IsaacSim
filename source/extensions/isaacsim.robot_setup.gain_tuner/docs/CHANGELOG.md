@@ -1,4 +1,9 @@
 # Changelog
+## [3.0.6] - 2025-08-04
+### Fixed
+- Natural Frequency and Damping Ratio computations
+- unresponsive UI when bulk editing min step value
+
 ## [3.0.5] - 2025-07-02
 ### Changed
 - fixed refresh when robot changes on stage
