@@ -428,13 +428,13 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
         else:
             version_mismatches.append((name, "missing", template_version))
 
-    # Extract version locks
+    # Extract version locks from all enabled sections
     def extract_version_locks(generated_part):
         locks = {}
-        # Find the enabled list section
-        enabled_section = re.search(r"enabled\s*=\s*\[(.*?)\]", generated_part, re.DOTALL)
-        if enabled_section:
-            for line in enabled_section.group(1).split("\n"):
+        # Find all enabled sections (including platform-specific ones)
+        enabled_sections = re.findall(r"enabled\s*=\s*\[(.*?)\]", generated_part, re.DOTALL)
+        for enabled_section in enabled_sections:
+            for line in enabled_section.split("\n"):
                 line = line.strip()
                 if line and '"' in line:
                     # Extract the extension name and version
@@ -470,10 +470,10 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
             print(f"  - {name}: {kit_version} → {template_version}")
 
         if not dry_run:
-            # Update the version locks in the kit file
+            # Update the version locks in the kit file (across all enabled sections)
             updated_content = content
             for name, _, template_version in lock_mismatches:
-                # Find and replace the version in the enabled list
+                # Find and replace the version in all enabled sections
                 pattern = f'"{name}-[^"]*"'
                 replacement = f'"{name}-{template_version}"'
                 updated_content = re.sub(pattern, replacement, updated_content)
@@ -487,6 +487,151 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
                 return False
 
     return True
+
+
+def find_enabled_sections(lines, verbose=False):
+    """
+    Find all enabled sections in the kit file, including platform-specific sections.
+
+    Args:
+        lines (list): List of lines from the kit file
+        verbose (bool): If True, print detailed debug information
+
+    Returns:
+        list: List of tuples (section_name, start_line, end_line) for each enabled section found
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    sections = []
+    current_section = None
+    bracket_level = 0
+    enabled_start = None
+
+    for i, line in enumerate(lines):
+        stripped_line = line.strip()
+
+        # Check for settings.app.exts sections (including platform-specific ones)
+        if stripped_line.startswith("[settings.app.exts"):
+            if current_section and enabled_start is not None:
+                # We found a new section while still processing the previous one - close the previous one
+                sections.append((current_section, enabled_start, i))
+                log(f"Closed previous section {current_section} at line {i}")
+
+            current_section = stripped_line
+            enabled_start = None
+            bracket_level = 0
+            log(f"Found section {current_section} at line {i+1}")
+            continue
+
+        # Look for enabled = [ within the current section
+        if current_section and "enabled = [" in stripped_line:
+            enabled_start = i + 1
+            bracket_level = 1  # We've opened one bracket
+            log(f"Found enabled = [ at line {i+1} in section {current_section}")
+            continue
+
+        # Track bracket levels to find the end of the enabled list
+        if current_section and enabled_start is not None:
+            bracket_level += line.count("[") - line.count("]")
+
+            if bracket_level == 0:
+                sections.append((current_section, enabled_start, i))
+                log(f"Completed section {current_section} from line {enabled_start+1} to {i+1}")
+                current_section = None
+                enabled_start = None
+
+    # Handle case where file ends while we're still in a section
+    if current_section and enabled_start is not None:
+        sections.append((current_section, enabled_start, len(lines)))
+        log(f"Completed final section {current_section} from line {enabled_start+1} to end of file")
+
+    return sections
+
+
+def process_enabled_section(
+    lines, section_start, section_end, built_ext_bases, dir_deprecated_ext_bases, apps_ext_bases, verbose=False
+):
+    """
+    Process a single enabled section and return the cleaned section with removed extensions info.
+
+    Args:
+        lines (list): All lines from the kit file
+        section_start (int): Start line of the enabled section
+        section_end (int): End line of the enabled section
+        built_ext_bases (list): Base names of built extensions
+        dir_deprecated_ext_bases (list): Base names of deprecated extensions
+        apps_ext_bases (list): Base names of app extensions
+        verbose (bool): If True, print detailed debug information
+
+    Returns:
+        tuple: (new_section_lines, removed_extensions_list)
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    extensions_section = lines[section_start:section_end]
+    new_extensions_section = []
+    removed_exts = []
+
+    # Extension pattern: looks for quoted strings that might be extension names
+    extension_pattern = re.compile(r'["\']([^"\']+?(?:-[^"\']+)?)["\']')
+
+    for i, line in enumerate(extensions_section):
+        line_num = section_start + i + 1
+        line_stripped = line.strip()
+
+        if not line_stripped or line_stripped.startswith("#"):
+            log(f"Line {line_num}: Keeping comment or empty line: {line_stripped}")
+            new_extensions_section.append(line)
+            continue
+
+        # Try to extract extension using regex
+        match = extension_pattern.search(line_stripped)
+        if match:
+            ext_with_version = match.group(1)
+            log(f"Line {line_num}: Found extension {ext_with_version} using regex")
+        else:
+            # Fallback to manual extraction if regex fails
+            ext_with_version = line_stripped.strip('",').strip("',").rstrip(",")
+            log(f"Line {line_num}: Extracted extension {ext_with_version} manually")
+
+        # Get base name without version
+        if "-" in ext_with_version:
+            ext_base = ext_with_version.split("-")[0]
+            log(f"Line {line_num}: Processing extension {ext_with_version} (base: {ext_base})")
+        else:
+            ext_base = ext_with_version
+            log(f"Line {line_num}: Processing extension {ext_with_version} (no version found)")
+
+        # Check if this extension exists in the build directory, deprecated directory, or apps directory
+        remove_extension = False
+        reason = None
+
+        if ext_base in built_ext_bases:
+            log(f"Line {line_num}: Extension {ext_with_version} matches built extension")
+            remove_extension = True
+            reason = "built"
+        elif ext_base in dir_deprecated_ext_bases:
+            log(f"Line {line_num}: Extension {ext_with_version} matches deprecated directory extension")
+            remove_extension = True
+            reason = "deprecated directory"
+        elif ext_base in apps_ext_bases:
+            log(f"Line {line_num}: Extension {ext_with_version} matches app kit file")
+            remove_extension = True
+            reason = "apps directory"
+
+        if remove_extension:
+            removed_exts.append((ext_with_version, reason))
+        else:
+            log(f"Line {line_num}: Keeping extension {ext_with_version}")
+            new_extensions_section.append(line)
+
+    return new_extensions_section, removed_exts
 
 
 def clean_extscache(
@@ -506,7 +651,7 @@ def clean_extscache(
     commit_hash=None,
 ):
     """
-    Removes extensions from the enabled section in the kit file if they exist in the build directory,
+    Removes extensions from all enabled sections in the kit file if they exist in the build directory,
     the deprecated directory, or the apps directory. Also performs various validation and update tasks.
 
     Args:
@@ -631,90 +776,29 @@ def clean_extscache(
         print(f"Error reading kit file: {e}")
         return False
 
-    # Find the enabled section
-    enabled_start = None
-    enabled_end = None
-    section_found = False
-    bracket_level = 0
+    # Find all enabled sections
+    enabled_sections = find_enabled_sections(lines, verbose)
 
-    # First, try precise section search
-    for i, line in enumerate(lines):
-        if "[settings.app.exts]" in line:
-            section_found = True
-            log(f"Found [settings.app.exts] section at line {i+1}")
-
-        if section_found and "enabled = [" in line:
-            enabled_start = i + 1
-            bracket_level = 1  # We've opened one bracket
-            log(f"Found enabled = [ at line {i+1}, setting start to line {enabled_start+1}")
-            break
-
-    # If we found the start, look for the end by matching brackets
-    if enabled_start is not None:
-        for i in range(enabled_start, len(lines)):
-            line = lines[i]
-            # Count brackets in this line
-            bracket_level += line.count("[") - line.count("]")
-
-            if bracket_level == 0:
-                enabled_end = i
-                log(f"Found matching closing bracket at line {i+1}")
-                break
-
-    # If precise section search failed, try regex as fallback
-    if enabled_start is None or enabled_end is None:
-        log("Precise section search failed, trying regex fallback")
-        # Find the section using regex
-        try:
-            content = "".join(lines)
-            match = re.search(r"\[settings\.app\.exts\].*?enabled\s*=\s*\[(.*?)\]", content, re.DOTALL)
-            if match:
-                log("Found enabled section using regex")
-                # Get the index in the content where the extensions list starts
-                start_idx = match.start(1)
-                end_idx = match.end(1)
-
-                # Convert to line numbers
-                content_before_start = content[:start_idx]
-                content_before_end = content[:end_idx]
-                enabled_start = content_before_start.count("\n")
-                enabled_end = content_before_end.count("\n")
-
-                # Now we have line numbers
-                log(f"Regex found enabled section from lines {enabled_start+1} to {enabled_end+1}")
-            else:
-                log("Regex search also failed")
-        except Exception as e:
-            log(f"Regex search failed with error: {e}")
-
-    if enabled_start is None or enabled_end is None:
-        print("Could not find enabled extensions section!")
-        log("enabled_start = " + str(enabled_start))
-        log("enabled_end = " + str(enabled_end))
+    if not enabled_sections:
+        print("Could not find any enabled extensions sections!")
         if verbose:
             print("First 20 lines of file:")
             for i, line in enumerate(lines[:20]):
                 print(f"{i+1}: {line.rstrip()}")
         return False
 
-    # Process the enabled extensions list
-    log(f"Processing extensions from line {enabled_start+1} to {enabled_end+1}")
-    extensions_section = lines[enabled_start:enabled_end]
-    log(f"Extensions section has {len(extensions_section)} lines")
-    new_extensions_section = []
-    removed_count = 0
-    removed_exts = []
+    log(f"Found {len(enabled_sections)} enabled sections")
+    for section_name, start, end in enabled_sections:
+        log(f"  {section_name}: lines {start+1} to {end+1}")
 
-    # Extract extension names from the build directory (remove version part)
+    # Prepare extension base names
     built_ext_bases = [ext.split("-")[0] for ext in built_extensions]
     log(f"Built extension base names: {built_ext_bases}")
 
-    # Extract extension base names from deprecated directories
     dir_deprecated_ext_bases = [ext.split("-")[0] for ext in dir_deprecated_extensions]
     log(f"Deprecated extension base names from directory: {dir_deprecated_ext_bases}")
 
     # Extract extension base names from apps directory
-    # Remove both the version part and the .kit extension
     apps_ext_bases = []
     for ext in apps_extensions:
         # Remove .kit extension first
@@ -724,79 +808,34 @@ def clean_extscache(
         apps_ext_bases.append(base_name)
     log(f"Apps base names: {apps_ext_bases}")
 
-    # Extension pattern: looks for quoted strings that might be extension names
-    extension_pattern = re.compile(r'["\']([^"\']+?(?:-[^"\']+)?)["\']')
+    # Process each enabled section
+    new_lines = list(lines)  # Make a copy to modify
+    total_removed = 0
+    all_removed_exts = []
 
-    for i, line in enumerate(extensions_section):
-        line_num = enabled_start + i + 1
-        line_stripped = line.strip()
+    # Process sections in reverse order to maintain line number accuracy
+    for section_name, section_start, section_end in reversed(enabled_sections):
+        log(f"Processing section {section_name} from line {section_start+1} to {section_end+1}")
 
-        if not line_stripped or line_stripped.startswith("#"):
-            log(f"Line {line_num}: Keeping comment or empty line: {line_stripped}")
-            new_extensions_section.append(line)
-            continue
+        new_section, removed_exts = process_enabled_section(
+            lines, section_start, section_end, built_ext_bases, dir_deprecated_ext_bases, apps_ext_bases, verbose
+        )
 
-        # Try to extract extension using regex
-        match = extension_pattern.search(line_stripped)
-        if match:
-            ext_with_version = match.group(1)
-            log(f"Line {line_num}: Found extension {ext_with_version} using regex")
-        else:
-            # Fallback to manual extraction if regex fails
-            ext_with_version = line_stripped.strip('",').strip("',").rstrip(",")
-            log(f"Line {line_num}: Extracted extension {ext_with_version} manually")
+        # Replace the section in new_lines
+        new_lines[section_start:section_end] = new_section
 
-        # Get base name without version
-        if "-" in ext_with_version:
-            ext_base = ext_with_version.split("-")[0]
-            log(f"Line {line_num}: Processing extension {ext_with_version} (base: {ext_base})")
-        else:
-            ext_base = ext_with_version
-            log(f"Line {line_num}: Processing extension {ext_with_version} (no version found)")
+        total_removed += len(removed_exts)
+        all_removed_exts.extend([(ext, reason, section_name) for ext, reason in removed_exts])
 
-        # Check if this extension exists in the build directory, deprecated directory, or apps directory
-        remove_extension = False
-        reason = None
+        log(f"Section {section_name}: removed {len(removed_exts)} extensions")
 
-        if ext_base in built_ext_bases:
-            matching_built_ext = [ext for ext in built_extensions if ext.split("-")[0] == ext_base][0]
-            log(f"Line {line_num}: Matched {ext_with_version} to built extension {matching_built_ext}")
-            remove_extension = True
-            reason = "built"
-        elif ext_base in dir_deprecated_ext_bases:
-            matching_dep_ext = [ext for ext in dir_deprecated_extensions if ext.split("-")[0] == ext_base][0]
-            log(f"Line {line_num}: Matched {ext_with_version} to deprecated directory extension {matching_dep_ext}")
-            remove_extension = True
-            reason = "deprecated directory"
-        elif ext_base in apps_ext_bases:
-            # Find the matching app extension with .kit extension
-            matching_app_exts = [
-                ext for ext in apps_extensions if ext.endswith(".kit") and ext[:-4].split("-")[0] == ext_base
-            ]
-            if matching_app_exts:
-                matching_app_ext = matching_app_exts[0]
-                log(f"Line {line_num}: Matched {ext_with_version} to app kit file {matching_app_ext}")
-                remove_extension = True
-                reason = "apps directory"
-
-        if remove_extension:
-            removed_exts.append((ext_with_version, reason))
-            removed_count += 1
-        else:
-            log(f"Line {line_num}: Keeping extension {ext_with_version}")
-            new_extensions_section.append(line)
-
-    if removed_count == 0:
+    if total_removed == 0:
         print("No extensions need to be removed.")
     else:
-        # Update the file
-        log(f"Updating file with {len(new_extensions_section)} extension entries (removed {removed_count})")
-        new_lines = lines[:enabled_start] + new_extensions_section + lines[enabled_end:]
-
         if dry_run:
-            print(f"Dry run: Would remove {removed_count} extensions:")
-            for ext, reason in removed_exts:
-                print(f"  - {ext} ({reason})")
+            print(f"Dry run: Would remove {total_removed} extensions:")
+            for ext, reason, section_name in all_removed_exts:
+                print(f"  - {ext} ({reason}) from {section_name}")
         else:
             try:
                 # Write the updated file
@@ -806,12 +845,14 @@ def clean_extscache(
                 print(f"Error writing to kit file: {e}")
                 return False
 
-            # Summarize removed extensions by category
-            built_removed = [ext for ext, reason in removed_exts if reason == "built"]
-            dir_deprecated_removed = [ext for ext, reason in removed_exts if reason == "deprecated directory"]
-            apps_removed = [ext for ext, reason in removed_exts if reason == "apps directory"]
+            # Summarize removed extensions by category and section
+            built_removed = [ext for ext, reason, section in all_removed_exts if reason == "built"]
+            dir_deprecated_removed = [
+                ext for ext, reason, section in all_removed_exts if reason == "deprecated directory"
+            ]
+            apps_removed = [ext for ext, reason, section in all_removed_exts if reason == "apps directory"]
 
-            print(f"Removed {removed_count} extensions from the enabled list:")
+            print(f"Removed {total_removed} extensions from enabled sections:")
             if built_removed:
                 print(f"  {len(built_removed)} built extensions:")
                 for ext in built_removed:
