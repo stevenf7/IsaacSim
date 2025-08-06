@@ -237,28 +237,55 @@ def generate_extension_diff_report(
     name: str, changelog_path: str, old_date: datetime.date, new_date: datetime.date, format_: str
 ) -> List[Tuple[str, List[str]]]:
     """
-    generate a changelog for an extension by reading a range of versions
-    from it's CHANGELOG.md
+    Generate a changelog report for a specific extension by reading a range of versions
+    from its CHANGELOG.md file.
+
+    Args:
+        name (str): Name of the extension.
+        changelog_path (str): Path to the extension's CHANGELOG.md file.
+        old_date (datetime.date): Start date for the changelog range.
+        new_date (datetime.date): End date for the changelog range.
+        format_ (str): Output format, either "md" (Markdown) or "rst" (reStructuredText).
+
+    Returns:
+        List[Tuple[str, List[str]]]: Not used (function prints the report directly).
     """
     report = ""
+
+    # Get the changelog entries and whether this is a new extension
     results, is_new = get_extension_diff_data(changelog_path, old_date, new_date)
+
+    # If there are any changelog entries, start the report with the extension name
     if len(results) > 0:
         report += f"\n- **{name}**"
+
+    # Dictionary to collect all changelog entries grouped by type (e.g., Added, Changed, Fixed)
     all_entries = {}
+
+    # If this is a new extension, add a "New extension" entry and return
     if is_new:
         report += f"\n  - New extension" if format_ == "md" else "\n\n    - New extension"
         return
+
+    # Aggregate all changelog entries by their type
     for entry in results:
-        for k, values in entry[1].items():
-            if k not in all_entries:
-                all_entries[k] = []
+        # entry[1] is a dict: {type: [list of changes]}
+        for change_type, values in entry[1].items():
+            if change_type not in all_entries:
+                all_entries[change_type] = []
             for v in values:
-                all_entries[k].append(v)
-    for k, values in all_entries.items():
+                all_entries[change_type].append(v)
+
+    # Format the report for each changelog type and its changes
+    for change_type, values in all_entries.items():
         if len(values) > 0:
-            report += f"\n  - {k}" if format_ == "md" else f"\n\n    - {k}"
+            # Add the changelog type (e.g., Added, Changed, Fixed)
+            report += f"\n  - {change_type}" if format_ == "md" else f"\n\n    - {change_type}\n"
+            # Add each change under the type
             for change in values:
-                report += f"\n    - {change}" if format_ == "md" else f"\n\n      - {change}"
+                report += f"\n    - {change}" if format_ == "md" else f"\n      - {change}"
+
+    # Print the report if there is any content
     if report:
         print(report)
 
@@ -330,8 +357,10 @@ def generate_extscache_diff_report(
         # merge results to "dependencies"
         if merge_extscache_sections:
             data["exact_version_dependencies"].update(data["dependencies"])
+            data["exact_version_dependencies"].update(data["version_lock_dependencies"])
             data["dependencies"] = OrderedDict(sorted(data["exact_version_dependencies"].items()))
             data["exact_version_dependencies"] = {}
+            data["version_lock_dependencies"] = {}
 
         report = ""
 
