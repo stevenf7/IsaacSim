@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.7] - 2025-08-05
+### Fixed
+- Fix test failures in test_menu_graphs.py
+
 ## [4.9.6] - 2025-08-05
 ### Fixed
 - CameraInfoHelper node now accuately publishes system time 
