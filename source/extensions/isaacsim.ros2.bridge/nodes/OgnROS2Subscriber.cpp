@@ -131,8 +131,8 @@ public:
             CARB_LOG_INFO("OgnROS2Subscriber: creating subscriber: %s (%s)", fullTopicName.c_str(), messageType.c_str());
 
             Ros2QoSProfile qos;
-            const std::string& qosProfile = db.inputs.qosProfile();
-            if (qosProfile.empty())
+            const std::string& currentQosProfile = db.inputs.qosProfile();
+            if (currentQosProfile.empty())
             {
                 qos.depth = state.m_queueSize;
             }
@@ -591,15 +591,11 @@ private:
         // Check for attribute name and type
         for (auto const& dynamicOutput : dynamicOutputs)
         {
-            bool status = false;
-            for (auto const& messageField : messageFields)
-            {
-                if (db.tokenToString(dynamicOutput().name()) == ("outputs:" + messageField.name))
-                {
-                    status = dynamicOutput().typeName() == messageField.ognType;
-                    break;
-                }
-            }
+            auto it =
+                std::find_if(messageFields.begin(), messageFields.end(),
+                             [&](const auto& messageField)
+                             { return db.tokenToString(dynamicOutput().name()) == ("outputs:" + messageField.name); });
+            bool status = (it != messageFields.end() && dynamicOutput().typeName() == it->ognType);
             if (!status)
             {
                 return false;

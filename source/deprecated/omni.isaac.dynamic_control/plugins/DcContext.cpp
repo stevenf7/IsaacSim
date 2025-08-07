@@ -692,9 +692,9 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
             auto stage = omni::usd::UsdContext::getContext()->getStage();
             body->name = isaacsim::core::includes::getName(stage->GetPrimAtPath(usdPath));
             DcRigidBody* bodyPtr = body.get();
-            DcHandle h = addRigidBody(std::move(body), usdPath);
-            bodyPtr->handle = h;
-            return h;
+            DcHandle bodyHandle = addRigidBody(std::move(body), usdPath);
+            bodyPtr->handle = bodyHandle;
+            return bodyHandle;
         }
     }
     else
@@ -763,7 +763,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     auto atype = mStage->GetPrimAtPath(SdfPath(usdPath)).GetTypeName();
 
     if (!abase || abase->getConcreteType() != PxConcreteType::eARTICULATION_REDUCED_COORDINATE ||
-        (abase && atype == "PhysicsFixedJoint"))
+        atype == "PhysicsFixedJoint")
     {
         CARB_LOG_WARN("Failed to find articulation at '%s'", usdPath.GetString().c_str());
         return kDcInvalidHandle;
@@ -829,8 +829,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
         art->componentPaths.insert(body->path);
 
-        DcRigidBody* bodyPtr = body.get();
         DcHandle bodyHandle = addRigidBody(std::move(body), linkPath);
+        DcRigidBody* bodyPtr = getRigidBody(bodyHandle);
         bodyPtr->handle = bodyHandle;
 
         bodyMap[link] = bodyPtr;
@@ -853,8 +853,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             joint->pxArticulationJoint = pxJoint;
             joint->art = art.get();
             joint->path = jointPath;
-            auto stage = omni::usd::UsdContext::getContext()->getStage();
-            joint->name = isaacsim::core::includes::getName(stage->GetPrimAtPath(jointPath));
+            auto usdStage = omni::usd::UsdContext::getContext()->getStage();
+            joint->name = isaacsim::core::includes::getName(usdStage->GetPrimAtPath(jointPath));
 
             CARB_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
 
@@ -1008,9 +1008,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
     CARB_LOG_INFO("Articulation path is '%s'\n", artPath.GetString().c_str());
     art->path = artPath;
 
-    DcArticulation* artPtr = art.get();
     // DcHandle artHandle = addArticulation(std::move(art), usdPath);
     DcHandle artHandle = addArticulation(std::move(art), artPath);
+    DcArticulation* artPtr = getArticulation(artHandle);
     artPtr->handle = artHandle;
 
     return artHandle;

@@ -64,7 +64,7 @@ public:
 
 
 private:
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
 };
 
 REGISTER_OGN_NODE()

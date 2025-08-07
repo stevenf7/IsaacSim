@@ -199,8 +199,8 @@ public:
             {
                 if (state.m_velocity != 0 && db.inputs.onStep())
                 {
-                    pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
-                    pxr::UsdEditContext context(stage, stage->GetRootLayer());
+                    pxr::UsdStagePtr currentStage = omni::usd::UsdContext::getContext()->getStage();
+                    pxr::UsdEditContext context(currentStage, currentStage->GetRootLayer());
                     pxr::SdfChangeBlock changeBlock;
 
                     for (auto& attribute : state.m_shaderAttributes)

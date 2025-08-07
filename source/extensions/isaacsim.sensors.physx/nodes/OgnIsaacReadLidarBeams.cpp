@@ -249,7 +249,7 @@ public:
             m_beamIdx = 0;
         }
 
-        else if (m_numBeamsRemaining <= numBeams)
+        else
         {
 
             // Save data up to maximum FOV

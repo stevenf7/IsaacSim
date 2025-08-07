@@ -29,21 +29,22 @@ Ros2SubscriberImpl::Ros2SubscriberImpl(Ros2NodeHandle* nodeHandle,
                                        const char* topicName,
                                        const void* typeSupport,
                                        const Ros2QoSProfile& qos)
-    : m_nodeHandle(nodeHandle), m_waitSetInitialized(false)
+    : m_nodeHandle(nodeHandle),
+      m_waitSetInitialized(false),
+      m_subscription(std::shared_ptr<rcl_subscription_t>(
+          new rcl_subscription_t,
+          [nodeHandle](rcl_subscription_t* subscription)
+          {
+              // Intentionally capture node by copy so shared_ptr can be
+              // transferred to copies
+              rcl_ret_t ret = rcl_subscription_fini(subscription, static_cast<rcl_node_t*>(nodeHandle->getNode()));
+              if (RCL_RET_OK != ret)
+              {
+                  RCL_ERROR_MSG(Ros2SubscriberImpl, rcl_subscription_fini);
+              }
+              delete subscription;
+          }))
 {
-    m_subscription = std::shared_ptr<rcl_subscription_t>(
-        new rcl_subscription_t,
-        [nodeHandle](rcl_subscription_t* subscription)
-        {
-            // Intentionally capture node by copy so shared_ptr can be
-            // transferred to copies
-            rcl_ret_t ret = rcl_subscription_fini(subscription, static_cast<rcl_node_t*>(nodeHandle->getNode()));
-            if (RCL_RET_OK != ret)
-            {
-                RCL_ERROR_MSG(Ros2SubscriberImpl, rcl_subscription_fini);
-            }
-            delete subscription;
-        });
     (*m_subscription) = rcl_get_zero_initialized_subscription();
     rcl_subscription_options_t subscriptionOptions = rcl_subscription_get_default_options();
     subscriptionOptions.qos = Ros2QoSProfileConverter::convert(qos);
