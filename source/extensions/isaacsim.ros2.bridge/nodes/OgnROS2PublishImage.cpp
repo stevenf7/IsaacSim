@@ -40,6 +40,17 @@ class PublishImageThreadData
 {
 public:
     PublishImageThreadData()
+        : inputDataPtr(nullptr),
+          outputDataPtr(nullptr),
+          resourceFormat(carb::Format::eUnknown),
+          width(0),
+          height(0),
+          bufferSize(0),
+          totalBytes(0),
+          cudaDeviceIndex(-1),
+          stream(nullptr),
+          streamDevice(nullptr),
+          mStreamNotCreated(nullptr)
     {
     }
 
@@ -64,6 +75,17 @@ class PublishNitrosBridgeImageThreadData
 {
 public:
     PublishNitrosBridgeImageThreadData()
+        : inputDataPtr(nullptr),
+          outputDataPtr(nullptr),
+          resourceFormat(carb::Format::eUnknown),
+          width(0),
+          height(0),
+          bufferSize(0),
+          totalBytes(0),
+          cudaDeviceIndex(-1),
+          nitrosBridgeStream(nullptr),
+          nitrosBridgeStreamDevice(nullptr),
+          nitrosBridgeStreamNotCreated(nullptr)
     {
     }
 

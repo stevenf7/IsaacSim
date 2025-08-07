@@ -90,7 +90,7 @@ private:
     uint64_t m_frames = 0;
     uint64_t m_step = 1;
 
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
 };
 
 REGISTER_OGN_NODE()

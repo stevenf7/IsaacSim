@@ -20,6 +20,7 @@
 #include <isaacsim/core/includes/utils/Path.h>
 
 #include <OmniClient.h>
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <map>
@@ -65,19 +66,6 @@ std::string StatusToString(OmniConverterStatus status)
 
 
 const static size_t INVALID_MATERIAL_INDEX = SIZE_MAX;
-
-
-std::string ReplaceBackwardSlash(std::string in)
-{
-    for (auto& c : in)
-    {
-        if (c == '\\')
-        {
-            c = '/';
-        }
-    }
-    return in;
-}
 
 
 pxr::TfToken getMaterialToken(pxr::UsdStageWeakPtr stage, const pxr::SdfPath& materialPath)
@@ -283,7 +271,7 @@ pxr::SdfPath waitForConverter(OmniConverterFuture* future,
                               const pxr::SdfPath& rootPath,
                               std::map<pxr::TfToken, pxr::SdfPath>& materialPaths)
 {
-    OmniConverterStatus status = OmniConverterStatus::OK;
+    OmniConverterStatus status;
     bool isCollada = isColladaFile(meshPath);
     UpAxis upAxis = isCollada ? getColladaUpAxis(meshPath) : UpAxis::UNKNOWN;
 

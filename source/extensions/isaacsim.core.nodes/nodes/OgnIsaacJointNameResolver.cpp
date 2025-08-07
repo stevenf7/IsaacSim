@@ -72,7 +72,7 @@ public:
         {
 
             const auto& prim = db.inputs.targetPrim();
-            state.m_robotPath = std::string(db.inputs.robotPath()).c_str();
+            state.m_robotPath = db.inputs.robotPath();
 
             // if robotPath field is empty
             if (std::strcmp(state.m_robotPath.c_str(), "") == 0)
@@ -121,14 +121,14 @@ public:
             }
 
             // Traverse from the starting prim
-            for (const pxr::UsdPrim& prim : pxr::UsdPrimRange(startPrim))
+            for (const pxr::UsdPrim& currentPrim : pxr::UsdPrimRange(startPrim))
             {
 
-                std::string primNameOverride = isaacsim::core::includes::getName(prim);
-                std::string primName = prim.GetName();
+                std::string primNameOverride = isaacsim::core::includes::getName(currentPrim);
+                std::string primName = currentPrim.GetName();
                 if (primNameOverride != primName)
                 {
-                    state.m_nameOverrideMap.insert({ primNameOverride, prim });
+                    state.m_nameOverrideMap.insert({ primNameOverride, currentPrim });
                 }
             }
         }
@@ -142,8 +142,6 @@ public:
     void resolvePrims(OgnIsaacJointNameResolverDatabase& db)
     {
         // Check if the input string is a key in the dictionary
-        std::vector<std::string> resultList;
-
         db.outputs.jointNames.resize(db.inputs.jointNames().size());
 
         for (size_t i = 0; i < db.inputs.jointNames().size(); i++)

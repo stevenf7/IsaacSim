@@ -383,7 +383,7 @@ public:
         std::vector<int> deletionKeys;
         auto deletionCallbacksMap = m_usdNoticeListener->getDeletionCallbacks();
         std::transform(deletionCallbacksMap.begin(), deletionCallbacksMap.end(), std::back_inserter(deletionKeys),
-                       [](auto& p) { return p.first; });
+                       [](const auto& p) { return p.first; });
         for (auto const& key : deletionKeys)
         {
             deletionCallbacksMap[key]("/");

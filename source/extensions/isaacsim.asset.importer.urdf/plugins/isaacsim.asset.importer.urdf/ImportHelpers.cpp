@@ -188,12 +188,12 @@ void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRobot& rob
                 urdfParentLink.visuals.push_back(visual);
             }
             urdfChildLink.visuals.clear();
-            for (auto& joint : robot.joints)
+            for (auto& jointPair : robot.joints)
             {
-                if (joint.second.parentLinkName == childNode->linkName_)
+                if (jointPair.second.parentLinkName == childNode->linkName_)
                 {
-                    joint.second.parentLinkName = parentNode.linkName_;
-                    joint.second.origin = poseChildToParent * joint.second.origin;
+                    jointPair.second.parentLinkName = parentNode.linkName_;
+                    jointPair.second.origin = poseChildToParent * jointPair.second.origin;
                 }
             }
 
@@ -212,7 +212,7 @@ bool collapseFixedJoints(UrdfRobot& robot)
         return false;
     }
 
-    auto& parentNode = chain.baseNode;
+    const auto& parentNode = chain.baseNode;
     if (!parentNode->childNodes_.empty())
     {
         mergeFixedChildLinks(*parentNode, robot);

@@ -38,6 +38,14 @@ class PublishPointCloudThreadData
 {
 public:
     PublishPointCloudThreadData()
+        : inputDataPtr(nullptr),
+          outputDataPtr(nullptr),
+          bufferSize(0),
+          totalBytes(0),
+          cudaDeviceIndex(-1),
+          stream(nullptr),
+          streamDevice(nullptr),
+          mStreamNotCreated(nullptr)
     {
     }
 

@@ -135,7 +135,7 @@ private:
     bool m_cleanUp = false;
     size_t m_domainId = 0;
     uint64_t m_contextHandleAddr;
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
 };
 
 REGISTER_OGN_NODE()

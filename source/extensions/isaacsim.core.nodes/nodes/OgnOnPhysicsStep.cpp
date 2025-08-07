@@ -188,8 +188,8 @@ public:
                 // Iterate over all step nodes enabling them to receive the evaluate input
                 for (auto handle : graphData->second.nodes)
                 {
-                    NodeObj node = g_iNode->getNodeFromHandle(handle);
-                    auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(node, instanceId);
+                    NodeObj currentNode = g_iNode->getNodeFromHandle(handle);
+                    auto& state = OgnOnPhysicsStepDatabase::sPerInstanceState<OgnOnPhysicsStep>(currentNode, instanceId);
                     state.m_dt = timeElapsed;
                     state.m_isSet = true;
                 }

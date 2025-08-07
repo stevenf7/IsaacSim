@@ -275,7 +275,7 @@ omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* inSensorProfil
     return outJson;
 }
 
-std::string LidarConfigHelper::ReadWholeTextFile(std::string fullPath)
+std::string LidarConfigHelper::ReadWholeTextFile(const std::string& fullPath)
 {
     std::FILE* f = nullptr;
 

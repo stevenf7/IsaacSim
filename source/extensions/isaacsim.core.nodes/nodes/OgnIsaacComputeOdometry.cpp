@@ -241,7 +241,7 @@ private:
     std::vector<float> velData;
     ::physx::PxTransform m_startingPose;
 
-    double m_unitScale;
+    double m_unitScale = 1.0;
     bool m_firstFrame = true;
 
     double m_lastTime = 0.0;

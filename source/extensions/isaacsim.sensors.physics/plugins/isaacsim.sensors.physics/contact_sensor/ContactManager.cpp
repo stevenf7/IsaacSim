@@ -145,23 +145,22 @@ void ContactManager::onPhysicsStep(const float& currentTime, const float& timeEl
     const omni::physx::ContactEventHeader* contactEventHeadersBuffer = nullptr;
     const omni::physx::ContactData* contactDataBuffer = nullptr;
     const ::omni::physx::FrictionAnchor* frictionAnchorData = nullptr;
-    uint32_t numContactData = 0;
     uint32_t numContactHeaders = 0;
-    uint32_t numFrictionAnchorData = 0;
     {
         CARB_PROFILE_ZONE(0, "Contact Sensor manager - Get Data");
+        uint32_t numContactData = 0;
+        uint32_t numFrictionAnchorData = 0;
         numContactHeaders = carb::getCachedInterface<omni::physx::IPhysxSimulation>()->getFullContactReport(
             &contactEventHeadersBuffer, &contactDataBuffer, numContactData, &frictionAnchorData, numFrictionAnchorData);
     }
-    uint32_t dataIdx = 0;
     {
         CARB_PROFILE_ZONE(0, "Contact Sensor manager - update lists");
+        uint32_t dataIdx = 0;
         for (uint32_t i = 0; i < numContactHeaders; i++)
         {
             const omni::physx::ContactEventHeader c = contactEventHeadersBuffer[i];
             processContact(c, contactDataBuffer, dataIdx);
         }
-        // CARB_LOG_WARN("Num Contacts: %ld - %ld",numContactHeaders, numContactData);
     }
 }
 

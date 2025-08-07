@@ -125,8 +125,8 @@ public:
         if (!state.m_serviceServer || state.m_serviceUpdateNeeded)
         {
             // Setup ROS ServiceServer
-            const std::string& serviceName = db.inputs.serviceName();
-            std::string fullServiceName = addTopicPrefix(db.inputs.nodeNamespace(), serviceName);
+            const std::string& currentServiceName = db.inputs.serviceName();
+            std::string fullServiceName = addTopicPrefix(db.inputs.nodeNamespace(), currentServiceName);
             if (!state.m_factory->validateTopicName(fullServiceName))
             {
                 db.logWarning("No Valid Topic : %s", fullServiceName.c_str());

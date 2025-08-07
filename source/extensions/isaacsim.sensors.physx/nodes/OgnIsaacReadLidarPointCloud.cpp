@@ -170,7 +170,7 @@ public:
             }
             m_numBeamsRemainingPCL -= numBeams;
         }
-        else if (m_numBeamsRemainingPCL <= numBeams)
+        else
         {
 
             // Save data up to maximum FOV
