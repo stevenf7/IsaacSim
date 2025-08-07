@@ -6,13 +6,13 @@
 
 ## [4.9.6] - 2025-08-05
 ### Fixed
-- CameraInfoHelper node now accuately publishes system time 
+- CameraInfoHelper node now accuately publishes system time
 
 ## [4.9.5] - 2025-07-31
 ### Fixed
 - Fix the length resolution of non-fixed size arrays of embedded dynamic messages
 
-## [4.9.4] - 2025-07-28
+## [4.9.4] - 2025-07-30
 ### Changed
 - Fix bugs with registering and deregistering examples in the browser
 
