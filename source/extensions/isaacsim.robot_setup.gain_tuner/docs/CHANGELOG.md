@@ -8,7 +8,7 @@
 ### Changed
 - fixed refresh when robot changes on stage
 - fixed batch editing when tuning gains
-- removed "strength" and use stiffness/damping 
+- removed "strength" and use stiffness/damping
 - Pop up a warning asking for confirmation when save Gains to Physics Layer
 - Make frames and table resizable and add scroll bar
 

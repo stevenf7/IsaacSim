@@ -389,7 +389,7 @@ build-linux-aarch64-release:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual  # Manual to avoid overloading ARM ci runners during MRs
+      when: never  # Manual to avoid overloading ARM ci runners during MRs
     - !reference [.rules-platform-linux-aarch64, rules]
     - !reference [.rules-workflow, rules]
     - !reference [.rules-version-changed, rules]
@@ -415,7 +415,7 @@ build-linux-aarch64-debug:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual  # Manual to avoid overloading ARM ci runners during MRs
+      when: never  # Manual to avoid overloading ARM ci runners during MRs
     - !reference [.rules-platform-linux-aarch64, rules]
     - !reference [.rules-workflow, rules]
     - !reference [.rules-version-changed, rules]
