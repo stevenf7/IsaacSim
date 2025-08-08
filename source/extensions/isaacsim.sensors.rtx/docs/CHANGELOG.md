@@ -1,5 +1,10 @@
 # Changelog
 
+## [15.5.2] - 2025-08-07
+### Fixed
+- Annotator test tolerance increased to 2% to account for FlatScan not interpolating distance based on azimuths
+- Annotator tests combined where appropriate to reduce test time
+
 ## [15.5.1] - 2025-07-29
 ### Fixed
 - Remove version locks for omni.sensors.nv.*

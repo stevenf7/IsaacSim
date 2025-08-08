@@ -107,7 +107,7 @@ public:
             {
                 state.m_horizontalResolution = 360.0f * configHelper.scanRateBaseHz / configHelper.reportRateBaseHz;
                 state.m_azimuthRangeStart = -180.0f;
-                state.m_azimuthRangeEnd = 180.0f - state.m_horizontalResolution;
+                state.m_azimuthRangeEnd = 180.0f;
                 state.m_horizontalFov = 360.0f;
             }
             state.m_nearRangeM = configHelper.nearRangeM;
@@ -173,7 +173,7 @@ public:
 
                 state.m_horizontalResolution = 360.0f * state.m_rotationRate / reportRateBaseHz;
                 state.m_azimuthRangeStart = -180.0f;
-                state.m_azimuthRangeEnd = 180.0f - state.m_horizontalResolution;
+                state.m_azimuthRangeEnd = 180.0f;
                 state.m_horizontalFov = 360.0;
             }
         }

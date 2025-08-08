@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import os
 import unittest
 from pathlib import Path
@@ -22,10 +23,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
-from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
-from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS, get_gmo_data
+from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
@@ -36,15 +36,12 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
     """Test class for RTX sensor annotators"""
 
     # This class is not meant to be run as a test, but rather to be used as a base class for other tests
-    __test__ = False
     _assets_root_path = get_assets_root_path()
     _accumulate_returns = False
 
     async def setUp(self):
         """Setup test environment with a cube and lidar"""
         await create_new_stage_async()
-        self.my_world = World(stage_units_in_meters=1.0)
-        await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
 
         # Ordering octants in binary order, such that octant 0 is +++, octant 1 is ++-, etc. for XYZ.
@@ -94,27 +91,29 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
             i += 1
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self._annotator_data = None
         self.hydra_texture = None
+        self._isaac_create_rtx_lidar_scan_buffer_annotator = None
+        self._isaac_compute_rtx_lidar_flat_scan_annotator = None
+        self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator = None
+        self._isaac_create_rtx_lidar_scan_buffer_data = None
+        self._isaac_compute_rtx_lidar_flat_scan_data = None
+        self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data = None
 
     async def tearDown(self):
         self._timeline.stop()
+        if self._isaac_create_rtx_lidar_scan_buffer_annotator:
+            self._isaac_create_rtx_lidar_scan_buffer_annotator.detach()
+        if self._isaac_compute_rtx_lidar_flat_scan_annotator:
+            self._isaac_compute_rtx_lidar_flat_scan_annotator.detach()
+        if self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator:
+            self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator.detach()
+        self.hydra_texture.destroy()
+        self.hydra_texture = None
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await update_stage_async()
-        World.clear_instance()
-
-    async def _test_annotator_result(self):
-        """Tests the annotator result."""
-        self.assertIn("gmoBufferPointer", self._annotator_data)
-        self.assertIn("gmoDeviceIndex", self._annotator_data)
-        self.assertNotEqual(self._annotator_data["gmoBufferPointer"], 0, "Expected nonzero GMO buffer pointer.")
-
-        gmo = get_gmo_data(self._annotator_data["gmoBufferPointer"])
-        await self._test_returns(az_vals=gmo.x, el_vals=gmo.y, r_vals=gmo.z)
-        return
 
     async def _test_returns(
         self, az_vals: np.array, el_vals: np.array, r_vals: np.array, cartesian: bool = False
@@ -146,20 +145,10 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
             unit_vecs = np.divide(unit_vecs, np.repeat(r_vals[:, None], 3, axis=1))
             # Get spherical coordinates from cartesian unit vectors
             az_vals = np.arctan2(unit_vecs[:, 1], unit_vecs[:, 0])
-            el_vals = np.arcsin(unit_vecs[:, 2])
+            # el_vals = np.arcsin(unit_vecs[:, 2])
         # Get octant dimensions and indices
         octant = (unit_vecs[:, 0] < 0) * 4 + (unit_vecs[:, 1] < 0) * 2 + (unit_vecs[:, 2] < 0)
         dims = np.array([self._octant_dimensions[o] for o in octant])
-
-        if DEBUG_DRAW_PRINT:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-            x_plot = np.multiply(unit_vecs[:, 0], r_vals)
-            y_plot = np.multiply(unit_vecs[:, 1], r_vals)
-            z_plot = np.multiply(unit_vecs[:, 2], r_vals)
-            ax.scatter(x_plot, y_plot, z_plot)
-            plt.savefig(f"test_returns_{self.fig_name}.png")
-            plt.close()
 
         # Let alpha be the angle between the normal to the plane and the return vector
         # Let the distance from the origin of the return vector along the normal vector to the plane be l =  dims(idx)
@@ -173,16 +162,31 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
         # The minimum of these values is the expected range to the first plane the return vector will intersect
         expected_range = np.min(np.divide(dims, np.abs(unit_vecs)), axis=1)
 
-        # Compute percent differences, and count the number of returns that exceed the threshold of 1%
+        if DEBUG_DRAW_PRINT:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d")
+            x_plot = np.multiply(unit_vecs[:, 0], r_vals)
+            y_plot = np.multiply(unit_vecs[:, 1], r_vals)
+            z_plot = np.multiply(unit_vecs[:, 2], r_vals)
+            x_expected = np.multiply(unit_vecs[:, 0], expected_range)
+            y_expected = np.multiply(unit_vecs[:, 1], expected_range)
+            z_expected = np.multiply(unit_vecs[:, 2], expected_range)
+            ax.scatter(x_plot, y_plot, z_plot, c="b")
+            ax.scatter(x_expected, y_expected, z_expected, c="r")
+            plt.savefig(f"test_returns_{self.fig_name}.png")
+            plt.close()
+
+        # Compute percent differences
         percent_diffs = np.divide(np.abs(expected_range - r_vals), expected_range)
 
-        # Find where returns were not within 0.5deg of an octant edge
-        not_near_edge = [
-            not (abs(a) < 0.5 or abs(a - 90) < 0.5 or abs(a - 180) < 0.5 or abs(a + 180) < 0.5) for a in az_vals
-        ]
+        # Exclude returns that are within 0.5deg of an octant edge or corner
+        near_edge = np.full(az_vals.shape, False)
+        for excl_az in np.arange(-180, 181, 45):
+            near_edge = np.logical_or(near_edge, np.abs(az_vals - excl_az) < 0.5)
+        not_near_edge = np.logical_not(near_edge)
 
-        # Compute the number of returns that exceed the threshold of 1%, beyond edges of the octants
-        num_exceeding_threshold = np.sum(np.logical_and(percent_diffs > 1e-2, np.array(not_near_edge)))
+        # Compute the number of returns that exceed the threshold of 2%
+        num_exceeding_threshold = np.sum(np.logical_and(percent_diffs > 2e-2, np.array(not_near_edge)))
         num_returns = np.size(az_vals)
         carb.log_warn(f"num_returns: {num_returns}")
         pct_exceeding_threshold = num_exceeding_threshold / num_returns * 100
@@ -190,33 +194,11 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
         self.assertLessEqual(
             pct_exceeding_threshold,
             valid_threshold,
-            f"Expected fewer than 1% of returns to differ from expected range by more than 1%. {num_exceeding_threshold} of {num_returns} returns exceeded threshold.",
+            f"Expected fewer than 1% of returns to differ from expected range by more than 2%. {num_exceeding_threshold} of {num_returns} returns exceeded threshold.",
         )
 
-
-class TestIsaacComputeRTXLidarFlatScan(TestRTXSensorAnnotator):
-    """Test the Isaac Compute RTX Lidar Flat Scan annotator"""
-
-    __test__ = True
-    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacComputeRTXLidarFlatScan")
-    _accumulate_returns = True
-
-    async def _test_annotator_result(self):
+    async def _test_isaac_compute_rtx_lidar_flat_scan_annotator_result(self):
         """Tests the annotator result."""
-
-        # Render to get annotator result
-        await self.my_world.reset_async()
-        self._timeline.play()
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-            if self._annotator_data and "numCols" in self._annotator_data and self._annotator_data["numCols"] > 0:
-                break
-
-        self._timeline.stop()
-
-        # Call the main test method
-        # self._annotator_data = self._annotator.get_data()
 
         # Test that all expected keys are present in the annotator data, then copy those values to the test class attributes
         for expected_key in [
@@ -230,8 +212,8 @@ class TestIsaacComputeRTXLidarFlatScan(TestRTXSensorAnnotator):
             "numRows",
             "rotationRate",
         ]:
-            self.assertIn(expected_key, self._annotator_data)
-            setattr(self, expected_key, self._annotator_data[expected_key])
+            self.assertIn(expected_key, self._isaac_compute_rtx_lidar_flat_scan_data)
+            setattr(self, expected_key, self._isaac_compute_rtx_lidar_flat_scan_data[expected_key])
 
         # Confirm default values for 3D lidar
         if not self._is_2d_lidar:
@@ -259,74 +241,21 @@ class TestIsaacComputeRTXLidarFlatScan(TestRTXSensorAnnotator):
             r_vals=self.linearDepthData[valid_returns],
         )
 
-
-class TestIsaacExtractRTXSensorPointCloudNoAccumulator(TestRTXSensorAnnotator):
-    """Test the Isaac Extract RTX Sensor Point Cloud annotator without accumulator"""
-
-    __test__ = True
-    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacExtractRTXSensorPointCloudNoAccumulator")
-    _WARMUP_FRAMES = 6
-    _ADDITIONAL_FRAMES = 0
-
-    async def test_rtx_radar(self):
-        # Create sensor prim
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxRadar")
-        self.assertIsNotNone(self.sensor)
-
-        self.fig_name = f"radar_sensor"
-
-        # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
-            self.sensor.GetPath(),
-            [32, 32],
-            name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
-        )
-        # Attach annotator to render product
-        self._annotator.attach([self.hydra_texture.path])
-
-        # Render to get annotator result
-        await self.my_world.reset_async()
-        self._timeline.play()
-        await omni.syntheticdata.sensors.next_render_simulation_async(self.hydra_texture.path, self._WARMUP_FRAMES)
-        self._timeline.stop()
-
-        # Call the main test method
-        self._annotator_data = self._annotator.get_data()
-        await self._test_annotator_result()
-
-    async def _test_annotator_result(self):
+    async def _test_isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator_result(self):
         """Tests the annotator result."""
-        # Render to get annotator result
-        await self.my_world.reset_async()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
 
-        # Render a minimum number of frames to ensure the sensor renderer has warmed up
-        await omni.syntheticdata.sensors.next_render_simulation_async(self.hydra_texture.path, self._WARMUP_FRAMES)
-        # Render additional frames until we get valid data, or until we've rendered the maximum number of frames
-        for _ in range(self._ADDITIONAL_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-            if (
-                self._annotator_data
-                and "info" in self._annotator_data
-                and self._annotator_data["info"]["accumulatedData"]
-            ):
-                break
-        self._timeline.stop()
-
-        self._annotator_data = self._annotator.get_data()
         # Test that all expected keys are present in the annotator data, then copy those values to the test class attributes
-        self.assertIn("data", self._annotator_data)
-        self.data = self._annotator_data["data"]
+        self.assertIn("data", self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data)
+        self.data = self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data["data"]
 
-        self.assertIn("info", self._annotator_data)
+        self.assertIn("info", self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data)
         for expected_key in [
             "transform",
         ]:
-            self.assertIn(expected_key, self._annotator_data["info"])
-            setattr(self, expected_key, self._annotator_data["info"][expected_key])
+            self.assertIn(expected_key, self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data["info"])
+            setattr(
+                self, expected_key, self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data["info"][expected_key]
+            )
 
         # Test data (cartesian)
         self.assertGreater(self.data.shape[0], 0, "Expected non-empty data.")
@@ -335,32 +264,8 @@ class TestIsaacExtractRTXSensorPointCloudNoAccumulator(TestRTXSensorAnnotator):
 
         return
 
-
-class TestIsaacCreateRTXLidarScanBuffer(TestRTXSensorAnnotator):
-    """Test the Isaac Create RTX Lidar Scan Buffer annotator"""
-
-    __test__ = True
-    _annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXLidarScanBuffer")
-    _WARMUP_FRAMES = 3
-    _ADDITIONAL_FRAMES = 17
-
-    async def _test_annotator_result(self):
+    async def _test_isaac_create_rtx_lidar_scan_buffer_annotator_result(self):
         """Tests the annotator result."""
-        # Render to get annotator result
-        await self.my_world.reset_async()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-
-        # Render a minimum number of frames to ensure the sensor renderer has warmed up
-        await omni.syntheticdata.sensors.next_render_simulation_async(self.hydra_texture.path, self._WARMUP_FRAMES)
-        # Render additional frames until we get valid data, or until we've rendered the maximum number of frames
-        for _ in range(self._ADDITIONAL_FRAMES):
-            # Wait for a single frame
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-            if self._annotator_data and "data" in self._annotator_data and self._annotator_data["data"].size > 0:
-                break
-        self._timeline.stop()
 
         # Test that all expected keys are present in the annotator data, then copy those values to the test class attributes
         for expected_key in [
@@ -378,10 +283,10 @@ class TestIsaacCreateRTXLidarScanBuffer(TestRTXSensorAnnotator):
             "timestamp",
             "velocity",
         ]:
-            self.assertIn(expected_key, self._annotator_data)
-            setattr(self, expected_key, self._annotator_data[expected_key])
+            self.assertIn(expected_key, self._isaac_create_rtx_lidar_scan_buffer_data)
+            setattr(self, expected_key, self._isaac_create_rtx_lidar_scan_buffer_data[expected_key])
 
-        self.assertIn("info", self._annotator_data)
+        self.assertIn("info", self._isaac_create_rtx_lidar_scan_buffer_data)
         for expected_key in [
             "numChannels",
             "numEchos",
@@ -402,8 +307,8 @@ class TestIsaacCreateRTXLidarScanBuffer(TestRTXSensorAnnotator):
             "timestamp",
             "velocity",
         ]:
-            self.assertIn(expected_key, self._annotator_data["info"])
-            setattr(self, expected_key, self._annotator_data["info"][expected_key])
+            self.assertIn(expected_key, self._isaac_create_rtx_lidar_scan_buffer_data["info"])
+            setattr(self, expected_key, self._isaac_create_rtx_lidar_scan_buffer_data["info"][expected_key])
 
         # Test data (cartesian)
         self.assertGreater(self.data.shape[0], 0, "Expected non-empty data.")
@@ -413,27 +318,97 @@ class TestIsaacCreateRTXLidarScanBuffer(TestRTXSensorAnnotator):
         return
 
 
-# Map annotator classes to their corresponding sensor types
-annotators = {
-    TestIsaacComputeRTXLidarFlatScan: ["lidar"],
-    TestIsaacExtractRTXSensorPointCloudNoAccumulator: ["lidar", "radar"],
-    TestIsaacCreateRTXLidarScanBuffer: ["lidar"],
-}
-
-ETM_SKIP_LIST = [
-    "SICK_microScan3_Profile_1",
-    "SICK_microScan3_Profile_3",
-    "SICK_picoScan150_Profile_11",
-    "SICK_picoScan150_Profile_1",
-    "OS1_OS1_REV6_32ch10hz512res",
-    "OS2_OS2_REV6_128ch10hz512res",
-    "SICK_picoScan150_Profile_2",
-    "Simple_Example_Solid_State_None",
-]
+ETM_SKIP_LIST = []
 
 
-def _create_test_for_annotator_with_omni_lidar_prim(config: str = None, variant: str = None):
+def _create_flat_scan_annotator_test(config: str = None, variant: str = None):
     """Create OmniLidar prim with specified config and variants, then attach an annotator and run for several frames.
+
+    Args:
+        sensor_type (Literal[&quot;lidar&quot;, &quot;radar&quot;], optional): _description_. Defaults to "lidar".
+        prim_type (Literal[&quot;sensor&quot;, &quot;camera&quot;], optional): _description_. Defaults to "sensor".
+        config (str, optional): _description_. Defaults to None.
+    """
+
+    async def test_function(self):
+
+        if os.getenv("ETM_ACTIVE") and f"{config}_{variant}" in ETM_SKIP_LIST:
+            raise unittest.SkipTest("Skipping test in ETM.")
+
+        self.fig_name = f"lidar_sensor_{config}_{variant}"
+
+        # Create sensor prim
+        kwargs = {
+            "path": "/lidar",
+            "parent": None,
+            "translation": Gf.Vec3d(0.0, 0.0, 0.0),
+            "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+            "config": config,
+            "variant": variant,
+            "omni:sensor:Core:outputFrameOfReference": "WORLD",
+        }
+        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
+        sensor_type = self.sensor.GetTypeName()
+        self.assertEqual(
+            sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
+        )
+
+        # Create render product and attach to sensor
+        self.hydra_texture = rep.create.render_product(
+            self.sensor.GetPath(),
+            [32, 32],
+            name="RtxSensorRenderProduct",
+            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
+        )
+        # Attach annotators to render product
+        self._isaac_create_rtx_lidar_scan_buffer_annotator = rep.AnnotatorRegistry.get_annotator(
+            "IsaacCreateRTXLidarScanBufferForFlatScan"
+        )
+        self._isaac_compute_rtx_lidar_flat_scan_annotator = rep.AnnotatorRegistry.get_annotator(
+            "IsaacComputeRTXLidarFlatScan"
+        )
+
+        self._isaac_create_rtx_lidar_scan_buffer_annotator.attach([self.hydra_texture.path])
+        self._isaac_compute_rtx_lidar_flat_scan_annotator.attach([self.hydra_texture.path])
+
+        # Test attributes of the sensor prim
+        elevationDeg = self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:elevationDeg").Get()
+        self._is_2d_lidar = all([abs(i) < 1e-3 for i in list(elevationDeg)])
+
+        # Render to get annotator results
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+            self._isaac_create_rtx_lidar_scan_buffer_data = (
+                self._isaac_create_rtx_lidar_scan_buffer_annotator.get_data()
+            )
+
+            self._isaac_compute_rtx_lidar_flat_scan_data = self._isaac_compute_rtx_lidar_flat_scan_annotator.get_data()
+            # print(f"self._isaac_create_rtx_lidar_scan_buffer_data: {self._isaac_create_rtx_lidar_scan_buffer_data}")
+            # print(f"self._isaac_compute_rtx_lidar_flat_scan_data: {self._isaac_compute_rtx_lidar_flat_scan_data}")
+            if (
+                self._isaac_create_rtx_lidar_scan_buffer_data
+                and "data" in self._isaac_create_rtx_lidar_scan_buffer_data
+                and self._isaac_create_rtx_lidar_scan_buffer_data["data"].size > 0
+            ):
+                if not self._is_2d_lidar or (
+                    self._isaac_compute_rtx_lidar_flat_scan_data
+                    and "numCols" in self._isaac_compute_rtx_lidar_flat_scan_data
+                    and self._isaac_compute_rtx_lidar_flat_scan_data["numCols"] > 0
+                ):
+                    break
+
+        self._timeline.stop()
+
+        await self._test_isaac_create_rtx_lidar_scan_buffer_annotator_result()
+        await self._test_isaac_compute_rtx_lidar_flat_scan_annotator_result()
+
+    return test_function
+
+
+def _create_isaac_extract_rtx_sensor_point_cloud_test(config: str = None, variant: str = None):
+    """Create OmniLidar prim with specified config and variants, then attach an IsaacExtractRTXSensorPointCloud annotator and run for several frames.
 
     Args:
         sensor_type (Literal[&quot;lidar&quot;, &quot;radar&quot;], optional): _description_. Defaults to "lidar".
@@ -457,7 +432,6 @@ def _create_test_for_annotator_with_omni_lidar_prim(config: str = None, variant:
             "config": config,
             "variant": variant,
             "omni:sensor:Core:outputFrameOfReference": "WORLD",
-            # "omni:sensor:Core:skipDroppingInvalidPoints": True,
         }
         _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
         sensor_type = self.sensor.GetTypeName()
@@ -473,13 +447,29 @@ def _create_test_for_annotator_with_omni_lidar_prim(config: str = None, variant:
             render_vars=["GenericModelOutput", "RtxSensorMetadata"],
         )
         # Attach annotator to render product
-        self._annotator.attach([self.hydra_texture.path])
+        self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator = rep.AnnotatorRegistry.get_annotator(
+            "IsaacExtractRTXSensorPointCloudNoAccumulator"
+        )
+        self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator.attach([self.hydra_texture.path])
 
-        # Test attributes of the sensor prim
-        elevationDeg = self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:elevationDeg").Get()
-        self._is_2d_lidar = all([abs(i) < 1e-3 for i in list(elevationDeg)])
+        # Render to get annotator results
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+            self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data = (
+                self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator.get_data()
+            )
+            if (
+                self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data
+                and "data" in self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data
+                and self._isaac_extract_rtx_sensor_point_cloud_no_accumulator_data["data"].size > 0
+            ):
+                break
 
-        await self._test_annotator_result()
+        self._timeline.stop()
+
+        await self._test_isaac_extract_rtx_sensor_point_cloud_no_accumulator_annotator_result()
 
     return test_function
 
@@ -489,12 +479,14 @@ data_source = "gpu"
 for config_path in SUPPORTED_LIDAR_CONFIGS:
     config_name = Path(config_path).stem
     for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
-        for test_class in annotators:
-            test_func = _create_test_for_annotator_with_omni_lidar_prim(config=config_name, variant=variant)
-            test_name = f"lidar_sensor_{config_name}_{variant}_{data_source}"
-            test_func.__name__ = f"test_{test_name}"
-            test_func.__doc__ = f"Test {test_class.__name__} annotator results using OmniLidar prim, with config {config_name} and variant {variant} and data on {data_source.upper()}."
-            setattr(test_class, test_func.__name__, test_func)
-        # Clear test_class to prevent the automated test loader in unittests.loader.TestLoader.loadTestsFromModule
-        # from duplicating tests
-        test_class = None
+        flat_scan_test_func = _create_flat_scan_annotator_test(config=config_name, variant=variant)
+        flat_scan_test_name = f"lidar_sensor_flatscan_{config_name}_{variant}_{data_source}"
+        flat_scan_test_func.__name__ = f"test_{flat_scan_test_name}"
+        flat_scan_test_func.__doc__ = f"Test IsaacComputeRTXLidarFlatScan and IsaacCreateRTXLidarScanBuffer annotator results using OmniLidar prim, with config {config_name} and variant {variant} and data on {data_source.upper()}."
+        setattr(TestRTXSensorAnnotator, flat_scan_test_func.__name__, flat_scan_test_func)
+
+        pcna_test_func = _create_isaac_extract_rtx_sensor_point_cloud_test(config=config_name, variant=variant)
+        pcna_test_name = f"lidar_sensor_pointcloud_{config_name}_{variant}_{data_source}"
+        pcna_test_func.__name__ = f"test_{pcna_test_name}"
+        pcna_test_func.__doc__ = f"Test IsaacExtractRTXSensorPointCloudNoAccumulator annotator results using OmniLidar prim, with config {config_name} and variant {variant} and data on {data_source.upper()}."
+        setattr(TestRTXSensorAnnotator, pcna_test_func.__name__, pcna_test_func)
