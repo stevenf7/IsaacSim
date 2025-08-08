@@ -1,4 +1,11 @@
 # Changelog
+
+## [1.4.0] - 2025-08-08
+### Changed
+- Update to msal==1.27.0
+- Update to s3transfer==0.11.0
+- Remove typing-extensions as its in omni.kit.pip_archive
+
 ## [1.3.7] - 2025-07-30
 ### Changed
 - Version bump to fix aarch64 pip_*.toml platform inclusion
