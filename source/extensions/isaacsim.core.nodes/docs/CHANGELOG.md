@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.17] - 2025-08-09
+### Changed
+- Use ISimulationManager instead of deprecated CoreNodes APIs for time related APIs
+
 ## [3.2.16] - 2025-07-25
 ### Fixed
 - Fix issue where multiple upstream connections to execIn were causing duplicate node executions
