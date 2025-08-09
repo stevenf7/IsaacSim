@@ -500,6 +500,7 @@ exclude = [
   "tests-standalone*${shell_ext}",
   "tests-nativepython*${shell_ext}",
   "tests-internaldocker*${shell_ext}",
+  "tests-external*${shell_ext}",
 ]
 include = ["tests-*${shell_ext}"]
 stdout_fail_patterns.exclude = [
