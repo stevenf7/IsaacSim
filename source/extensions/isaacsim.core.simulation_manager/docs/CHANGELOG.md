@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.3] - 2025-08-08
+### Fixed
+- Update to event 2.0 system
+
 ## [1.3.2] - 2025-07-16
 ### Fixed
 - Check that PhysX Scene API instances are valid before using them
