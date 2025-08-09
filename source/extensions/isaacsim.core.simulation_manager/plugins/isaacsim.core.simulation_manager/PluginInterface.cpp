@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include <carb/PluginUtils.h>
+#include <carb/eventdispatcher/IEventDispatcher.h>
 #include <carb/events/EventsUtils.h>
 
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
@@ -95,15 +96,17 @@ public:
      */
     SimulationManagerImpl()
     {
-        m_usdNoticeListener = new UsdNoticeListener();
+        m_usdNoticeListener = std::make_unique<UsdNoticeListener>();
         m_usdNoticeListenerKey =
-            pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener), &UsdNoticeListener::handle);
-        m_stageEventSubscription = carb::events::createSubscriptionToPopByType(
-            omni::usd::UsdContext::getContext()->getStageEventStream().get(),
-            static_cast<carb::events::EventType>(omni::usd::StageEventType::eOpened),
-            [this](carb::events::IEvent* e)
+            pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener.get()), &UsdNoticeListener::handle);
+        auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
+        const static carb::RStringKey name("IsaacSimStageOpenedUsdNoticeListener");
+        auto usdContext = omni::usd::UsdContext::getContext();
+        m_stageEventSubscription = ed->observeEvent(
+            name, 1000, usdContext->stageEventName(omni::usd::StageEventType::eOpened),
+            [this, usdContext](const auto&)
             {
-                auto stage = omni::usd::UsdContext::getContext()->getStage();
+                auto stage = usdContext->getStage();
                 PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
                 omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(stage).ToLongInt()) };
                 omni::fabric::IStageReaderWriter* iStageReaderWriter =
@@ -126,8 +129,7 @@ public:
                         }
                     }
                 }
-            },
-            1000, "IsaacSimStageOpenedUsdNoticeListener");
+            });
     }
 
     /**
@@ -137,8 +139,8 @@ public:
      */
     ~SimulationManagerImpl()
     {
-        delete m_usdNoticeListener;
-        m_stageEventSubscription->unsubscribe();
+        m_usdNoticeListener.reset();
+        m_stageEventSubscription.reset();
     }
 
     /**
@@ -463,7 +465,7 @@ private:
     /**
      * @brief USD notice listener object that handles USD notices.
      */
-    UsdNoticeListener* m_usdNoticeListener = nullptr;
+    std::unique_ptr<UsdNoticeListener> m_usdNoticeListener;
 
     /**
      * @brief Key for the registered USD notice listener.
@@ -473,7 +475,7 @@ private:
     /**
      * @brief Subscription for stage opened events.
      */
-    carb::events::ISubscriptionPtr m_stageEventSubscription = nullptr;
+    carb::eventdispatcher::ObserverGuard m_stageEventSubscription;
 };
 
 /**
