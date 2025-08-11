@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2025-07-21
+### Added
+- Add unit tests on robots `ur10e`, `2f-140-base`, `nova-carter`,  `tien-kung`, `go2`
+
 ## [1.2.5] - 2025-06-02
 ### Changed
 - Update lxml==5.4.0
