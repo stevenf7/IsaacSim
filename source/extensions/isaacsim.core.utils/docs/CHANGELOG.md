@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.6] - 2025-08-11
+### Removed
+- No-longer-necessary TODO statement.
+
 ## [3.4.5] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 3.4.4)
