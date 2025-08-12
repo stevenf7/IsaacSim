@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.0] - 2025-08-12
+### Added
+- Tashan TS-F-A sensor under "LightBeam" menu
+
 ## [2.2.12] - 2025-07-21
 ### Changed
 - Fix error on shutdown
