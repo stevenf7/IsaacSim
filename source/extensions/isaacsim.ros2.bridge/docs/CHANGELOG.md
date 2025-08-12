@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.8] - 2025-08-08
+### Changed
+- Update odometry test case to test IsaacComputeOdometry node processing on the GPU
+
 ## [4.9.7] - 2025-08-05
 ### Fixed
 - Fix test failures in test_menu_graphs.py

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0] - 2025-08-07
+### Changed
+- Use device-generic memory buffer implementation to enable tensor API processing on the GPU for PoseTree computation
+
 ## [2.4.1] - 2025-07-28
 ### Changed
 - Defaulting to non-FabricHierarchy usage in `computeWorldXformNoCache`
