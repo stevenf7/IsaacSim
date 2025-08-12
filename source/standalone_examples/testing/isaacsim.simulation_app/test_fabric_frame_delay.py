@@ -32,7 +32,7 @@ import torch
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.prims import Articulation, RigidPrim
-from isaacsim.core.utils.prims import add_update_semantics, get_prim_attribute_value
+from isaacsim.core.utils.prims import get_prim_attribute_value
 from isaacsim.sensors.camera import Camera
 from isaacsim.storage.native import get_assets_root_path
 
@@ -72,26 +72,38 @@ def main():
         position = cube.get_world_pose()[0]
         position[0] += 3
         cube.set_world_pose(position=position)
+        cube_fabric_world_matrix = get_prim_attribute_value(
+            "/World/Origin1/cube", "omni:fabric:worldMatrix", fabric=True
+        )
+        cube_fabric_world_position = np.array(cube_fabric_world_matrix.ExtractTranslation())
         if not (
             np.isclose(
-                get_prim_attribute_value("/World/Origin1/cube", "_worldPosition", fabric=True),
+                cube_fabric_world_position,
                 np.array([-3.0, 0.0, 0.1]),
                 atol=0.01,
             ).all()
         ):
             raise (ValueError(f"PhysX is not synced with Fabric CPU"))
         sim.render()
+        panda_link1_fabric_world_matrix = get_prim_attribute_value(
+            "/World/Franka/panda_link1", "omni:fabric:worldMatrix", fabric=True
+        )
+        panda_link1_fabric_world_position = np.array(panda_link1_fabric_world_matrix.ExtractTranslation())
         if not (
             np.isclose(
-                get_prim_attribute_value("/World/Franka/panda_link1", "_worldPosition", fabric=True),
+                panda_link1_fabric_world_position,
                 np.array([-10.0, -10.0, 0.33]),
                 atol=0.01,
             ).all()
         ):
             raise (ValueError(f"Kinematic Tree is not updated in fabric"))
+        cube_fabric_world_matrix = get_prim_attribute_value(
+            "/World/Origin1/cube", "omni:fabric:worldMatrix", fabric=True
+        )
+        cube_fabric_world_position = np.array(cube_fabric_world_matrix.ExtractTranslation())
         if not (
             np.isclose(
-                get_prim_attribute_value("/World/Origin1/cube", "_worldPosition", fabric=True),
+                cube_fabric_world_position,
                 np.array([0.0, 0.0, 0.1]),
                 atol=0.01,
             ).all()
