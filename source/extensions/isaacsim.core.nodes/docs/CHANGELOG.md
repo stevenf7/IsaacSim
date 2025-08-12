@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.0] - 2025-08-11
+### Changed
+- Use device-generic memory buffer implementation to enable tensor API processing on the GPU in OgnIsaacComputeOdometry node
+
 ## [3.2.17] - 2025-08-09
 ### Changed
 - Use ISimulationManager instead of deprecated CoreNodes APIs for time related APIs
