@@ -19,23 +19,23 @@ import os
 import string
 import subprocess
 import sys
+import tempfile
 from typing import Callable, Dict
 from xml.etree import ElementTree
 
 import omni.repo.man
 import omni.repo.python_package
+import requests
+import tomli
 from omni.repo.man.version import OVFlowBuildIdentifier, PackmanVersion
 
 logger = logging.getLogger(__name__)
 
 
-def _check_omniverse_kit_version(
-    package_definitions, kit_sdk_packman, omniverse_kit_version, exit_on_error=True, print_errors=True
-):
+def _parse_kit_version(kit_sdk_packman, template, exit_on_error=True):
     def get_by_index_or_default(elems, index, default):
         return elems[index] if len(elems) > index else default
 
-    # get kit sdk/kernel build number
     build_number = ""
     tree = ElementTree.parse(kit_sdk_packman)
     for dependency in tree.getroot().iter("dependency"):
@@ -46,7 +46,7 @@ def _check_omniverse_kit_version(
         omni.repo.man.print_log(f"Unable to identify kit sdk/kernel version in {kit_sdk_packman}", logging.ERROR)
         if exit_on_error:
             sys.exit(1)
-        return [], ""
+        return ""
 
     # parse kit sdk/kernel build number to get the omniverse-kit target version
     ov_flow_version = OVFlowBuildIdentifier.from_build_string(build_number)
@@ -57,8 +57,20 @@ def _check_omniverse_kit_version(
         "patch": get_by_index_or_default(packman_version.components, 2, 0),
         "build_number": ov_flow_version.build_number,
         "build_string": build_number,
+        "build_location": ov_flow_version.build_location,
+        "gitbranch": ov_flow_version.gitbranch,
+        "githash": ov_flow_version.githash,
     }
-    target_version = string.Template(omniverse_kit_version).substitute(tokens)
+    return string.Template(template).substitute(tokens)
+
+
+def _check_omniverse_kit_version(
+    package_definitions, kit_sdk_packman, omniverse_kit_version, exit_on_error=True, print_errors=True
+):
+    # get kit sdk/kernel build number
+    target_version = _parse_kit_version(kit_sdk_packman, omniverse_kit_version, exit_on_error)
+    if not target_version:
+        return [], ""
 
     # get packages that depend on omniverse-kit
     packages = []
@@ -68,7 +80,9 @@ def _check_omniverse_kit_version(
             if dependency.startswith("omniverse-kit"):
                 packages.append({"name": name, "dependency": dependency})
     if not packages:
-        omni.repo.man.print_log("Skipping checking: No packages found that depend on omniverse-kit", logging.WARN)
+        omni.repo.man.print_log(
+            f"Skipping checking: No packages found that depend on omniverse-kit=={target_version}", logging.WARN
+        )
 
     # compare versions
     incompatible_versions = set()
@@ -162,6 +176,108 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
         sys.exit(1)
 
 
+def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files):
+    def _should_exclude_dependency(dependency):
+        excluded_dependencies = ["isaacsim-", "nvidia-", "pywin32"]
+        excluded_dependencies.extend(
+            ["filelock", "fsspec", "networkx", "sympy"]
+        )  # TODO: remove after support multiple platforms
+        for item in excluded_dependencies:
+            if dependency.startswith(item):
+                return True
+        return False
+
+    def _dependencies_in(dependency, dependencies):
+        def _get_name(dependency):
+            return dependency.replace("=", "#").replace("<", "#").replace(">", "#").split("#")[0]
+
+        def _handle_special_cases(dependency):
+            if dependency.startswith("torch"):
+                dependency = dependency.split("+")[0]  # ignore cuda version in PyTorch
+            dependency = dependency.replace("typing_extensions", "typing-extensions")
+            return dependency
+
+        # handle special cases
+        dependency = _handle_special_cases(dependency)
+        dependencies = [_handle_special_cases(d) for d in dependencies]
+        # check for missing/mismatching dependencies
+        if dependency not in dependencies:
+            name = _get_name(dependency)
+            names = [_get_name(d) for d in dependencies]
+            if name in names:
+                return False, dependencies[names.index(name)]
+            return False, ""
+        return True, None
+
+    missing_dependencies = False
+    defined_dependencies = []
+    for _, spec in package_definitions.items():
+        for dependency in spec.get("pyproject", {}).get("dependencies", []):
+            if not _should_exclude_dependency(dependency):
+                defined_dependencies.append(dependency)
+    # read dependencies files (.toml)
+    all_target_dependencies = []
+    for dependencies_file in dependencies_files:
+        target_dependencies = []
+        if os.path.isfile(dependencies_file):
+            path = dependencies_file
+        else:
+            url = _parse_kit_version(kit_sdk_packman, dependencies_file, exit_on_error=False)
+            if not url:
+                omni.repo.man.print_log(f"Unable to parse kit version from {dependencies_file}", logging.ERROR)
+                sys.exit(1)
+            # get file name from url using python built-in libraries and store it in a temp file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".toml") as file:
+                omni.repo.man.print_log(f"Downloading {url} to {file.name}", logging.INFO)
+                file.write(requests.get(url).content)
+                path = file.name
+        with open(path, "rb") as file:
+            content = tomli.load(file)
+            for dependency in content.get("dependency", []):
+                skip_target_dep = False
+                for item in ["target-deps/pip_sensors", "target-deps/pip_debugpy"]:
+                    if item in dependency.get("target", ""):
+                        skip_target_dep = True
+                        break
+                if skip_target_dep:
+                    continue
+                for package in dependency.get("packages", []):
+                    if not _should_exclude_dependency(package):
+                        target_dependencies.append(package)
+        all_target_dependencies.extend(target_dependencies)
+        # check if target dependencies are in defined dependencies
+        for target_dependency in target_dependencies:
+            result, msg = _dependencies_in(target_dependency, defined_dependencies)
+            if not result:
+                missing_dependencies = True
+                msg = f"Mismatch with defined dependency {msg}" if msg else "Missing"
+                msg += f" (target: {dependency.get('target', '')})"
+                omni.repo.man.print_log(
+                    f"Expected dependency: {target_dependency} ({dependencies_file}). {msg}",
+                    logging.ERROR,
+                )
+    # check if defined dependencies are in all target dependencies
+    for defined_dependency in defined_dependencies:
+        result, msg = _dependencies_in(defined_dependency, all_target_dependencies)
+        if not result:
+            missing_dependencies = True
+            if msg:
+                omni.repo.man.print_log(
+                    f"Defined dependency has a different version: {defined_dependency}. Expected: {msg}",
+                    logging.ERROR,
+                )
+            else:
+                omni.repo.man.print_log(
+                    f"Defined dependency not found in target dependencies: {defined_dependency}",
+                    logging.ERROR,
+                )
+    # export defined dependencies to a requirements.txt file
+    with open("python-package-requirements.txt", "w") as file:
+        file.write("\n".join(defined_dependencies))
+    if missing_dependencies:
+        sys.exit(1)
+
+
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Check for the proper definition of the python packages"
     parser.add_argument(
@@ -216,5 +332,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             exit_on_error=not skip_exit_on_error,
         )
         _check_extensions(package_definitions, tool_config["extension_folder"], tool_config["excluded_extensions"])
+        _check_dependencies(package_definitions, tool_config["kit_sdk_packman"], tool_config["dependencies_files"])
 
     return run_repo_tool

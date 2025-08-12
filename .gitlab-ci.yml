@@ -1323,11 +1323,11 @@ verify-publish-python-packages-linux:
       - .omni_nvks_gpu
       - .kit-runner-test-linux-x86_64-1x-gpu
     script:
-      # install Python 3.10
+      # install Python 3.11
       - sudo apt update
-      - sudo apt -y install python3.10-venv
+      - sudo apt -y install python3.11-venv
       # create and source a virtual environment
-      - python3.10 -m venv env_isaacsim
+      - python3.11 -m venv env_isaacsim
       - source env_isaacsim/bin/activate
       # upgrade pip and install Isaac Sim - Python packages
       - pip install --upgrade pip
@@ -1356,11 +1356,11 @@ verify-publish-python-packages-windows:
     before_script:
       - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
     script:
-      # install Python 3.10
-      - curl -o python-3.10.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
-      - cmd /c start /wait python-3.10.exe /quiet TargetDir=C:\Python310
+      # install Python 3.11
+      - curl -o python-3.11.exe https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe
+      - cmd /c start /wait python-3.11.exe /quiet TargetDir=C:\Python311
       # create and source a virtual environment
-      - C:\Python310\python.exe -m venv C:\env_isaacsim
+      - C:\Python311\python.exe -m venv C:\env_isaacsim
       - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
       - C:\env_isaacsim\Scripts\activate.ps1
       # install Isaac Sim - Python packages
@@ -1848,6 +1848,24 @@ check_externals:
     - ./tools/packman/python.sh tools/check_externals/download_all_kits.py --skip-platform aarch64
     - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64 --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing --allowed-external linbuild
 
+# ==============================================================================================================
+check-python-packages-dependencies:
+  extends:
+    - .repo-artifacts
+    - .check-common
+    - .runner-utility-linux-x86_64
+  stage: check-externals
+  needs: []
+  allow_failure: true
+  script:
+    - ./repo.sh check_python_package_definitions --gitlab
+    # check for dependency conflicts
+    - apt update
+    - apt install -y python3.11-venv
+    - python3.11 -m venv _env_dependency_check
+    - source _env_dependency_check/bin/activate
+    - pip install --upgrade pip
+    - pip install -r python-package-requirements.txt  # exported from check_python_package_definitions
 
 # ==============================================================================================================
 stage-to-github:
