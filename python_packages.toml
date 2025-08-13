@@ -677,6 +677,7 @@ inventory.include = [
     # extensions
     "exts/isaacsim.test.collection",
     "exts/isaacsim.test.docstring",
+    "exts/isaacsim.test.utils",
     # deprecated extensions
     "extsDeprecated/omni.isaac.doctest",
     "extsDeprecated/omni.isaac.tests",
