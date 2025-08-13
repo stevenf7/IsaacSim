@@ -360,6 +360,72 @@ def quaternion_conjugate(
         return output.reshape((*batch_shape, 4))
 
 
+def quaternion_to_rotation_matrix(
+    quaternion: list | np.ndarray | wp.array,
+    *,
+    dtype: type | None = None,
+    device: str | wp.context.Device | None = None,
+) -> wp.array:
+    """Convert quaternion to rotation matrix.
+
+    Converts quaternions in [w, x, y, z] format to 3x3 rotation matrices
+    using the standard quaternion-to-matrix formula.
+
+    Args:
+        quaternion: Quaternion or batch of quaternions with shape (..., 4) in [w, x, y, z] format.
+        dtype: Data type of the output array. If ``None``, the data type of the input is used.
+        device: Device to place the output array on. If ``None``, the default device is used,
+            unless the input is a Warp array (in which case the input device is used).
+
+    Returns:
+        A 3x3 rotation matrix or batch of 3x3 rotation matrices with shape (..., 3, 3).
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.transform as transform_utils
+        >>> import numpy as np
+        >>>
+        >>> # Identity quaternion to rotation matrix
+        >>> identity = np.array([1.0, 0.0, 0.0, 0.0])
+        >>> rotation_matrix = transform_utils.quaternion_to_rotation_matrix(identity)  # doctest: +NO_CHECK
+        >>> rotation_matrix.numpy()
+        array([[1., 0., 0.],
+               [0., 1., 0.],
+               [0., 0., 1.]])
+    """
+    quaternion = ops_utils.place(quaternion, dtype=dtype, device=device)
+
+    # Ensure we have proper 4-element quaternions
+    if quaternion.shape[-1] != 4:
+        raise ValueError(f"Expected 4-element quaternions, got shape {quaternion.shape}")
+
+    # Handle single quaternion case and determine batch size
+    if quaternion.ndim == 1:
+        squeeze_output = True
+        batch_size = 1
+    else:
+        squeeze_output = False
+        batch_shape = quaternion.shape[:-1]
+        batch_size = int(np.prod(batch_shape))
+
+    output = wp.empty(shape=(batch_size, 3, 3), dtype=quaternion.dtype, device=quaternion.device)
+
+    wp.launch(
+        _wk_quaternion_to_rotation_matrix,
+        dim=batch_size,
+        inputs=[quaternion.reshape((-1, 4)), output],
+        device=quaternion.device,
+    )
+
+    # Reshape to original batch shape
+    if squeeze_output:
+        return output.reshape((3, 3))
+    else:
+        return output.reshape((*batch_shape, 3, 3))
+
+
 """
 Custom Warp kernels for transform operations.
 """
@@ -539,3 +605,40 @@ def _wk_quaternion_conjugate(q: wp.array(ndim=2), output: wp.array(ndim=2)):
     output[i, 1] = -q[i, 1]  # negate x component
     output[i, 2] = -q[i, 2]  # negate y component
     output[i, 3] = -q[i, 3]  # negate z component
+
+
+@wp.kernel(enable_backward=False)
+def _wk_quaternion_to_rotation_matrix(quaternion: wp.array(ndim=2), output: wp.array(ndim=3)):
+    """Convert quaternion to rotation matrix using standard formula."""
+    i = wp.tid()
+
+    # Extract quaternion components [w, x, y, z]
+    w = quaternion[i, 0]
+    x = quaternion[i, 1]
+    y = quaternion[i, 2]
+    z = quaternion[i, 3]
+
+    # Type-safe constants
+    zero = w - w  # Type-safe zero
+    one = zero + output.dtype(1.0)  # Type-safe one using output dtype
+    two = one + one  # Type-safe two
+
+    # Compute squared components
+    sqx = x * x
+    sqy = y * y
+    sqz = z * z
+    sqw = w * w
+
+    # Normalization factor
+    s = one / (sqx + sqy + sqz + sqw)
+
+    # Standard quaternion to rotation matrix formula
+    output[i, 0, 0] = one - two * s * (sqy + sqz)
+    output[i, 0, 1] = two * s * (x * y - z * w)
+    output[i, 0, 2] = two * s * (x * z + y * w)
+    output[i, 1, 0] = two * s * (x * y + z * w)
+    output[i, 1, 1] = one - two * s * (sqx + sqz)
+    output[i, 1, 2] = two * s * (y * z - x * w)
+    output[i, 2, 0] = two * s * (x * z - y * w)
+    output[i, 2, 1] = two * s * (y * z + x * w)
+    output[i, 2, 2] = one - two * s * (sqx + sqy)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2025-08-13
+### Added
+- More functionality has been added to Transform utils for manipulating rotations and quaternions
+
 ## [0.2.1] - 2025-07-31
 ### Added
 - Transform utils functions to manipulate rotations and quaternions
