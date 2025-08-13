@@ -1,0 +1,125 @@
+..
+   Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+   NVIDIA CORPORATION and its licensors retain all intellectual property
+   and proprietary rights in and to this software, related documentation
+   and any modifications thereto. Any use, reproduction, disclosure or
+   distribution of this software and related documentation without an express
+   license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+
+
+.. _isaac_assets_robots:
+
+================================
+Robot Assets
+================================
+
+|isaac-sim| supports a wide range of robots with differential bases, form factors, and functions.
+
+These robots can be categorized as wheeled robots, holonomic robots, quadruped robots, robotic manipulator and aerial robots (drones). They can be found in the Content Browser in the ``Isaac Sim/Robots`` folder.
+
+
+.. tab-set::
+{% for robot_type, value in robot_categorization.items() %}
+    .. tab-item:: {{ robot_type }}
+
+{% set written_robot_names = [] %}
+{% for robot_company, robot_names in value.items() %}
+        **{{ robot_company }}**
+
+{% for robot_name, truncated_path, robot_official_name in robot_names %}
+{% set image_path = truncated_path.replace("/", "_").replace(" ", "_").replace("-", "_").replace(".", "_") %}
+
+{% if robot_official_name not in written_robot_names %}
+{% set _ = written_robot_names.append(robot_official_name) %}
+          - Robot: {{ robot_official_name }}
+
+              .. tab-set::
+{% endif %}
+                  .. tab-item:: {{ truncated_path }}
+
+                      .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_{{ version }}_full_ref_viewport_Isaac_Robots_{{ truncated_path.replace("/", "_").replace(" ", "_").replace("-", "_").split(".")[0] }}.usd.png
+                        :align: center
+                        :alt: {{ robot_official_name }} Robot
+                        :width: 100%
+
+                      .. list-table::
+                          :align: center
+                          :widths: 40 40
+
+                          * - Description
+                            - {{ useful_data[truncated_path]["isaac:description"] }}
+                          * - License
+                            - {{ useful_data[truncated_path]["isaac:license"] }}
+                          * - Version
+                            - {{ useful_data[truncated_path]["isaac:version"] }}
+                          * - Source
+                            - {{ useful_data[truncated_path]["isaac:source"] }}
+                          * - Number of Joints
+                            - {{ useful_data[truncated_path]["num_joints"] }}
+                          * - Number of Links
+                            - {{ useful_data[truncated_path]["num_links"] }}
+                          * - Number of DOFs
+                            - {{ useful_data[truncated_path]["num_dofs"] }}
+
+{% if truncated_path in additional_info and additional_info[truncated_path]|length > 1 %}
+                      .. list-table::
+                          :align: center
+                          :widths: 40 40
+                          :header-rows: 1
+
+                          * - Sensor/Accessory
+                            - Count
+{% for item, count in additional_info[truncated_path].items() %}
+{% if item != "Camera" %}
+                          * - {{ item }}
+                            - {{ count }}
+
+{% elif count > 4 %}
+                          * - {{ item }}
+                            - {{ count - 4 }}
+
+{% endif %}
+{% endfor %}
+{% elif truncated_path in additional_info and additional_info[truncated_path]|length == 1 and additional_info[truncated_path]["Camera"] > 4 %}
+                      .. list-table::
+                          :align: center
+                          :widths: 40 40
+                          :header-rows: 1
+
+                          * - Sensors
+                            - Count
+                          * - Camera
+                            - {{ additional_info[truncated_path]["Camera"] - 4 }}
+
+
+{% endif %}
+{% if truncated_path in accessory_list and accessory_list[truncated_path]|length > 1 %}
+                      * Accessories
+{% for accessory in accessory_list[truncated_path] %}
+                          - {{ accessory }}
+{% endfor %}
+
+{% endif %}
+{% if physics_apis[truncated_path]|length > 0 %}
+                      * Physics APIs:
+{% for api in physics_apis[truncated_path] %}
+                          - {{ api }}
+{% endfor %}
+
+{% endif %}
+{% if truncated_path.split("/")[-1] in isaac_lab_robot_names %}
+                      * This robot is in Isaac Lab
+
+{% endif %}
+{% if truncated_path.split("/")[-1].split(".")[0] in ros_bots %}
+                      * This robot uses ROS2
+
+{% endif %}
+
+
+
+
+{% endfor %}
+{% endfor %}
+{% endfor %}
