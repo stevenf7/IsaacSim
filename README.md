@@ -8,8 +8,6 @@
 [![Windows platform](https://img.shields.io/badge/platform-windows--64-orange.svg)](https://www.microsoft.com/en-us/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-yellow.svg)](https://opensource.org/license/apache-2-0)
 
-> **⚠️ PRE-RELEASE SOFTWARE NOTICE**
-> This is pre-release, currently in development. You may encounter bugs, incomplete features, and other issues that will be addressed in future releases. Please [report](#support) any issues you encounter. This will be finalized into a stable release in the future.
 
 NVIDIA Isaac Sim™ is a simulation platform built on NVIDIA Omniverse, designed to develop, test, train, and deploy AI-powered robots in realistic virtual environments. It supports importing robotic systems from common formats such as URDF, MJCF, and CAD. The simulator leverages high-fidelity, GPU-accelerated physics engines to simulate accurate dynamics and support multi-sensor RTX rendering at scale. It comes equipped with end-to-end workflows including synthetic data generation, reinforcement learning, ROS integration, and digital twin simulation. Isaac Sim provides the infrastructure needed to support robotics development at any stage.
 
@@ -195,11 +193,17 @@ Isaac Sim uses a custom build system with the following key options:
 - `-b, --build-only`: Only perform building step, skip others
 - `--post-build-only`: Only perform post-build step
 
-
+## Usage
+Congratulations on installing Isaac Sim! To get started with using Isaac Sim, follow these [Quick Tutorials](https://docs.isaacsim.omniverse.nvidia.com/latest/introduction/quickstart_index.html). For more information, visit our full [documentation](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html).
+  
 
 ## Troubleshooting
 
-Please see the [FAQ](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/overview/faq_index.html), [Troubleshooting](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/overview/troubleshooting.html), and [Known Issues](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/overview/known_issues.html) for common questions, fixes, and workarounds.
+Please see the [FAQ](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/faq_index.html), [Troubleshooting](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/troubleshooting.html), and [Known Issues](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/known_issues.html) for common questions, fixes, and workarounds.
+
+ - On linux, if you encounter network connectivity issues when building (such as corporate firewalls), run the following commands:
+	``export http_proxy="http://{Your IP address}"  ``
+	``export https_proxy="http://{Your IP address}"``
 
 
 ## Support
