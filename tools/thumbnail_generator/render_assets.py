@@ -13,11 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Render Assets Script
+
+This script renders USD assets to images. It supports reusing existing scene USD files
+to avoid duplicating .thumb.usd generation if they already exist. If a scene file exists
+but the corresponding image doesn't, the script will reuse the existing scene to render.
+If a scene and corresponding image already exist, but the asset has changed since last 
+generated, the script will recreate the scene and image.
+"""
+
 import argparse
 import datetime
 import fnmatch
 import os
+import posixpath
 import re
+from urllib.parse import urlparse, urlunparse
 
 from isaacsim import SimulationApp
 
@@ -133,19 +145,9 @@ if not args.input and not args.assets:
 # launch app
 simulation_app = SimulationApp({"headless": args.headless})
 
-
-import posixpath
-from pathlib import Path
-from urllib.parse import urlparse, urlunparse
-
 import omni.client
-import omni.kit
-import omni.timeline
-from isaacsim.storage.native import path_join
-from omni.isaac.core import World
-from omni.isaac.nucleus import is_dir, is_file
-
-from . import render_asset_utils as render_assets
+import render_asset_utils as render_assets
+from isaacsim.storage.native import is_dir, path_join
 
 
 def is_a_dir(path):
@@ -156,9 +158,13 @@ def is_a_dir(path):
 
 
 def file_exists(path):
+    """Check if a file exists using omni.client.stat directly."""
     try:
-        return is_file(path)
-    except:
+        result, stat_info = omni.client.stat(path)
+        exists = result == omni.client.Result.OK
+        return exists
+    except Exception as e:
+        print(f"Exception in file_exists for {path}: {e}")
         return False
 
 
@@ -206,7 +212,7 @@ def collect_asset_paths(args):
                 lambda d: d == ".thumbs" or is_excluded(d),
             )
             files = [f for f in files if not is_excluded(f)]
-            # asset_paths.extend(files)
+            asset_paths.extend(files)
 
         elif not is_excluded(p):
             asset_paths.append(p)
@@ -259,15 +265,26 @@ def build_job(path, args):
 
     image_filename = f"{filename_parts[0]}.{filename_parts[1]}.png"
     last_generated_filename = f".{filename_parts[0]}.{filename_parts[1]}.last_generated"
+
+    # Determine scene filename based on whether we're using a scenes_dir or looking for existing thumbnails
     if args.scenes_dir:
-        scene_filename = f"{filename_parts[0]}.{args.scenes_usd_prefix}.{filename_parts[1]}"
+        scene_filename = f"{filename_parts[0]}.{args.scenes_usd_prefix}.usd"
+    else:
+        # For documentation generation, look for existing thumbnail scenes
+        # Check if the asset path already contains .thumbs (i.e., it's already a thumbnail file)
+        if ".thumbs/" in path:
+            # The asset is already a thumbnail file, so we don't need to construct a scene filename
+            scene_filename = None
+        else:
+            # Look for existing thumbnail scenes
+            scene_filename = f"{filename_parts[0]}.{args.scenes_usd_prefix}.usd"
 
     # Use the whole path with _ instead of / as a prefix to the filename
     if args.use_full_path_name:
         filename_prefix = path_parts[0].strip("/").replace("/", "_")
         image_filename = filename_prefix + "_" + image_filename
         last_generated_filename = image_filename + ".last_generated"
-        if args.scenes_dir:
+        if scene_filename is not None:
             scene_filename = filename_prefix + "_" + scene_filename
 
     image_path = join_path_and_filename_with_directory_of_path(path, args.images_dir, image_filename)
@@ -281,7 +298,24 @@ def build_job(path, args):
     }
 
     if args.scenes_dir:
+        # Use the specified scenes directory
         scene_path = join_path_and_filename_with_directory_of_path(path, args.scenes_dir, scene_filename)
+        job["scene_path"] = scene_path
+    else:
+        # Look for existing thumbnail scenes in the asset's .thumbs directory
+        # This is the default behavior for thumbnail generation and documentation generation
+
+        # Check if the asset path already contains .thumbs (i.e., it's already a thumbnail file)
+        if ".thumbs/" in path:
+            # The asset is already a thumbnail file, so the scene should be the asset itself
+            # For documentation generation, we don't want to create new files on the server
+            scene_path = path
+            # Mark this job to not save the scene (since we're reusing existing)
+            job["reuse_existing_scene"] = True
+        else:
+            # Look for the scene in the .thumbs directory relative to the asset
+            scene_path = join_path_and_filename_with_directory_of_path(path, ".thumbs", scene_filename)
+
         job["scene_path"] = scene_path
 
     if args.environment:
@@ -303,15 +337,21 @@ for path in asset_paths:
 
     job = build_job(path, args)
 
-    if args.skip_existing and file_exists(job["image_path"]) and file_exists(job["scene_path"]):
-        print(f"Skipping {path}")
+    # Check if we should skip based on existing files
+    scene_exists = "scene_path" in job and file_exists(job["scene_path"])
+    image_exists = file_exists(job["image_path"])
+
+    if args.skip_existing and image_exists and scene_exists:
+        print(f"Skipping {path} - both image and scene already exist")
         num_skipped += 1
         continue
 
     elif args.log_latest:
         # Check if there were changes in the asset or thumbnail scene since the last time it was generated
         result, image_stat = omni.client.stat(job["asset_path"])
-        scene_result, scene_stat = omni.client.stat(job["asset_path"])
+        scene_result, scene_stat = (
+            omni.client.stat(job["scene_path"]) if "scene_path" in job else (omni.client.Result.ERROR_NOT_FOUND, None)
+        )
         if result == omni.client.Result.OK:
             result, stat = omni.client.stat(job["last_generated"])
             if result == omni.client.Result.OK:
@@ -327,12 +367,21 @@ for path in asset_paths:
                         num_skipped += 1
                         continue
 
+    # If scene exists but image doesn't, we can reuse the scene
+    if args.skip_existing and scene_exists and not image_exists:
+        print(f"Reusing existing scene for {path}")
+        # Mark this job to not save the scene (since we're reusing existing)
+        job["reuse_existing_scene"] = True
+        force_create_scene = False
+    else:
+        force_create_scene = args.force_create_scene
+
     print(f"Creating image for {path}")
 
     if args.pretend:
         continue
     success = renderer.create_image(
-        job, reposition_camera=args.reposition_camera, force_create_scene=args.force_create_scene
+        job, reposition_camera=args.reposition_camera, force_create_scene=force_create_scene
     )
     if args.log_latest:
         result, image_stat = omni.client.stat(job["image_path"])
