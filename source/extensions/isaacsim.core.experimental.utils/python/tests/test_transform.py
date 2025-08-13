@@ -39,96 +39,107 @@ class TestTransform(omni.kit.test.AsyncTestCase):
 
     # --------------------------------------------------------------------
 
-    async def test_rotation_matrix_to_quaternion_single(self):
-        """Test rotation_matrix_to_quaternion with single rotation matrix"""
-        # Test identity matrix
-        identity = np.eye(3)
-        result = transform_utils.rotation_matrix_to_quaternion(identity)
+    async def test_rotation_matrix_to_quaternion(self):
+        """Test rotation_matrix_to_quaternion with single and batch inputs"""
+        # Test identity matrix with different input types
+        identity_inputs = [
+            np.eye(3),  # numpy
+            wp.array(np.eye(3)),  # warp
+        ]
 
-        # Check that result is a warp array
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (4,))
+        for identity in identity_inputs:
+            result = transform_utils.rotation_matrix_to_quaternion(identity)
 
-        # Identity should produce quaternion [1, 0, 0, 0] (w, x, y, z)
-        result_np = result.numpy()
-        expected = np.array([1.0, 0.0, 0.0, 0.0])
-        self.assertTrue(np.allclose(result_np, expected, atol=self.tolerance))
+            # Check that result is a warp array
+            self.assertIsInstance(result, wp.array)
+            self.assertEqual(result.shape, (4,))
 
-    async def test_rotation_matrix_to_quaternion_batch(self):
-        """Test rotation_matrix_to_quaternion with batch of rotation matrices"""
+            # Identity should produce quaternion [1, 0, 0, 0] (w, x, y, z)
+            result_np = result.numpy()
+            expected = np.array([1.0, 0.0, 0.0, 0.0])
+            self.assertTrue(np.allclose(result_np, expected, atol=self.tolerance))
+
         # Test batch of identity matrices
         batch = np.array([np.eye(3), np.eye(3)], dtype=np.float32)
-        result = transform_utils.rotation_matrix_to_quaternion(batch)
+        result_batch = transform_utils.rotation_matrix_to_quaternion(batch)
 
         # Check that result is a warp array with correct shape
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (2, 4))
+        self.assertIsInstance(result_batch, wp.array)
+        self.assertEqual(result_batch.shape, (2, 4))
 
         # Check that all quaternions are unit quaternions
-        result_np = result.numpy()
-        norms = np.linalg.norm(result_np, axis=1)
+        result_batch_np = result_batch.numpy()
+        norms = np.linalg.norm(result_batch_np, axis=1)
         expected_norms = np.ones(2)
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
-    async def test_euler_angles_to_rotation_matrix_single(self):
-        """Test euler_angles_to_rotation_matrix with single Euler angles"""
-        # Test zero rotation
-        euler = [0.0, 0.0, 0.0]
-        result = transform_utils.euler_angles_to_rotation_matrix(euler)
+    async def test_euler_angles_to_rotation_matrix(self):
+        """Test euler_angles_to_rotation_matrix with single and batch inputs"""
+        # Test zero rotation with different input types
+        euler_inputs = [
+            [0.0, 0.0, 0.0],  # list
+            np.array([0.0, 0.0, 0.0]),  # numpy
+            wp.array([0.0, 0.0, 0.0]),  # warp
+        ]
 
-        # Check that result is a warp array
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (3, 3))
+        for euler in euler_inputs:
+            result = transform_utils.euler_angles_to_rotation_matrix(euler)
 
-        # Should produce identity matrix
-        result_np = result.numpy()
-        expected = np.eye(3)
-        self.assertTrue(np.allclose(result_np, expected, atol=self.tolerance))
+            # Check that result is a warp array
+            self.assertIsInstance(result, wp.array)
+            self.assertEqual(result.shape, (3, 3))
 
-    async def test_euler_angles_to_rotation_matrix_batch(self):
-        """Test euler_angles_to_rotation_matrix with batch of Euler angles"""
+            # Should produce identity matrix
+            result_np = result.numpy()
+            expected = np.eye(3)
+            self.assertTrue(np.allclose(result_np, expected, atol=self.tolerance))
+
         # Test batch of zero rotations
         euler_batch = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], dtype=np.float32)
-        result = transform_utils.euler_angles_to_rotation_matrix(euler_batch)
+        result_batch = transform_utils.euler_angles_to_rotation_matrix(euler_batch)
 
         # Check that result is a warp array with correct shape
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (2, 3, 3))
+        self.assertIsInstance(result_batch, wp.array)
+        self.assertEqual(result_batch.shape, (2, 3, 3))
 
         # Check that all matrices are orthogonal (det = 1)
-        result_np = result.numpy()
+        result_batch_np = result_batch.numpy()
         for i in range(2):
-            det = np.linalg.det(result_np[i])
+            det = np.linalg.det(result_batch_np[i])
             self.assertAlmostEqual(det, 1.0, places=5)
 
-    async def test_euler_angles_to_quaternion_single(self):
-        """Test euler_angles_to_quaternion with single Euler angles"""
-        # Test zero rotation
-        euler = [0.0, 0.0, 0.0]
-        result = transform_utils.euler_angles_to_quaternion(euler)
+    async def test_euler_angles_to_quaternion(self):
+        """Test euler_angles_to_quaternion with single and batch inputs"""
+        # Test zero rotation with different input types
+        euler_inputs = [
+            [0.0, 0.0, 0.0],  # list
+            np.array([0.0, 0.0, 0.0]),  # numpy
+            wp.array([0.0, 0.0, 0.0]),  # warp
+        ]
 
-        # Check that result is a warp array
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (4,))
+        for euler in euler_inputs:
+            result = transform_utils.euler_angles_to_quaternion(euler)
 
-        # Should produce identity quaternion [1, 0, 0, 0]
-        result_np = result.numpy()
-        expected = np.array([1.0, 0.0, 0.0, 0.0])
-        self.assertTrue(np.allclose(result_np, expected, atol=self.tolerance))
+            # Check that result is a warp array
+            self.assertIsInstance(result, wp.array)
+            self.assertEqual(result.shape, (4,))
 
-    async def test_euler_angles_to_quaternion_batch(self):
-        """Test euler_angles_to_quaternion with batch of Euler angles"""
+            # Should produce identity quaternion [1, 0, 0, 0]
+            result_np = result.numpy()
+            expected = np.array([1.0, 0.0, 0.0, 0.0])
+            self.assertTrue(np.allclose(result_np, expected, atol=self.tolerance))
+
         # Test batch of zero rotations
         euler_batch = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], dtype=np.float32)
-        result = transform_utils.euler_angles_to_quaternion(euler_batch)
+        result_batch = transform_utils.euler_angles_to_quaternion(euler_batch)
 
         # Check that result is a warp array with correct shape
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (2, 4))
+        self.assertIsInstance(result_batch, wp.array)
+        self.assertEqual(result_batch.shape, (2, 4))
 
         # Check that all quaternions are unit quaternions
-        result_np = result.numpy()
-        norms = np.linalg.norm(result_np, axis=1)
+        result_batch_np = result_batch.numpy()
+        norms = np.linalg.norm(result_batch_np, axis=1)
         expected_norms = np.ones(2)
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
@@ -175,70 +186,180 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         norm = np.linalg.norm(q)
         self.assertAlmostEqual(norm, 1.0, places=5)
 
-    async def test_quaternion_multiplication_single(self):
-        """Test quaternion_multiplication with single quaternions"""
-        # Test identity quaternion multiplication
-        identity = [1.0, 0.0, 0.0, 0.0]
-        result = transform_utils.quaternion_multiplication(identity, identity)
+    async def test_quaternion_multiplication(self):
+        """Test quaternion_multiplication with single and batch inputs"""
+        # Test identity quaternion multiplication with different input types
+        quaternion_inputs = [
+            [1.0, 0.0, 0.0, 0.0],  # list
+            np.array([1.0, 0.0, 0.0, 0.0]),  # numpy
+            wp.array([1.0, 0.0, 0.0, 0.0]),  # warp
+        ]
 
-        # Check that result is a warp array
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (4,))
+        for quaternion in quaternion_inputs:
+            result = transform_utils.quaternion_multiplication(quaternion, quaternion)
 
-        # Identity * Identity should be identity
-        result_numpy = result.numpy()
-        expected = np.array([1.0, 0.0, 0.0, 0.0])
-        self.assertTrue(np.allclose(result_numpy, expected, atol=self.tolerance))
+            # Check that result is a warp array
+            self.assertIsInstance(result, wp.array)
+            self.assertEqual(result.shape, (4,))
 
-    async def test_quaternion_multiplication_batch(self):
-        """Test quaternion_multiplication with batch of quaternions"""
+            # Identity * Identity should be identity
+            result_numpy = result.numpy()
+            expected = np.array([1.0, 0.0, 0.0, 0.0])
+            self.assertTrue(np.allclose(result_numpy, expected, atol=self.tolerance))
+
         # Test batch of identity quaternions
         identity_batch = np.array([[1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]], dtype=np.float32)
-        result = transform_utils.quaternion_multiplication(identity_batch, identity_batch)
+        result_batch = transform_utils.quaternion_multiplication(identity_batch, identity_batch)
 
         # Check that result is a warp array with correct shape
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (2, 4))
+        self.assertIsInstance(result_batch, wp.array)
+        self.assertEqual(result_batch.shape, (2, 4))
 
         # Check that all results are unit quaternions
-        result_numpy = result.numpy()
-        norms = np.linalg.norm(result_numpy, axis=1)
+        result_batch_numpy = result_batch.numpy()
+        norms = np.linalg.norm(result_batch_numpy, axis=1)
         expected_norms = np.ones(2)
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
-    async def test_quaternion_conjugate_single(self):
-        """Test quaternion_conjugate with single quaternion"""
-        # Test with a rotation around X axis
-        quaternion = [0.7071, 0.7071, 0.0, 0.0]  # 90 degrees around X
-        result = transform_utils.quaternion_conjugate(quaternion)
+    async def test_quaternion_conjugate(self):
+        """Test quaternion_conjugate with single and batch inputs"""
+        # Test with a rotation around X axis using different input types
+        quaternion_inputs = [
+            [0.7071, 0.7071, 0.0, 0.0],  # list
+            np.array([0.7071, 0.7071, 0.0, 0.0]),  # numpy
+            wp.array([0.7071, 0.7071, 0.0, 0.0]),  # warp
+        ]
 
-        # Check that result is a warp array
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (4,))
+        for quaternion in quaternion_inputs:
+            result = transform_utils.quaternion_conjugate(quaternion)
 
-        # Conjugate should negate vector components
-        result_numpy = result.numpy()
-        expected = np.array([0.7071, -0.7071, 0.0, 0.0])
-        self.assertTrue(np.allclose(result_numpy, expected, atol=self.tolerance))
+            # Check that result is a warp array
+            self.assertIsInstance(result, wp.array)
+            self.assertEqual(result.shape, (4,))
 
-    async def test_quaternion_conjugate_batch(self):
-        """Test quaternion_conjugate with batch of quaternions"""
+            # Conjugate should negate vector components
+            result_numpy = result.numpy()
+            expected = np.array([0.7071, -0.7071, 0.0, 0.0])
+            self.assertTrue(np.allclose(result_numpy, expected, atol=self.tolerance))
+
         # Test batch of rotations
         quaternion_batch = np.array(
             [[0.7071, 0.7071, 0.0, 0.0], [0.7071, 0.0, 0.7071, 0.0]],  # 90 degrees around X  # 90 degrees around Y
             dtype=np.float32,
         )
-        result = transform_utils.quaternion_conjugate(quaternion_batch)
+        result_batch = transform_utils.quaternion_conjugate(quaternion_batch)
 
         # Check that result is a warp array with correct shape
-        self.assertIsInstance(result, wp.array)
-        self.assertEqual(result.shape, (2, 4))
+        self.assertIsInstance(result_batch, wp.array)
+        self.assertEqual(result_batch.shape, (2, 4))
 
         # Check that all results are unit quaternions
-        result_numpy = result.numpy()
-        norms = np.linalg.norm(result_numpy, axis=1)
+        result_batch_numpy = result_batch.numpy()
+        norms = np.linalg.norm(result_batch_numpy, axis=1)
         expected_norms = np.ones(2)
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
+
+    async def test_quaternion_to_rotation_matrix(self):
+        """Test quaternion_to_rotation_matrix with single and batch inputs, including round-trip validation"""
+        # Test identity quaternion with different input types
+        quaternion_inputs = [
+            [1.0, 0.0, 0.0, 0.0],  # list
+            np.array([1.0, 0.0, 0.0, 0.0]),  # numpy
+            wp.array([1.0, 0.0, 0.0, 0.0]),  # warp
+        ]
+
+        for quaternion in quaternion_inputs:
+            result = transform_utils.quaternion_to_rotation_matrix(quaternion)
+
+            # Check that result is a warp array
+            self.assertIsInstance(result, wp.array)
+            self.assertEqual(result.shape, (3, 3))
+
+            # Identity quaternion should produce identity matrix
+            result_numpy = result.numpy()
+            expected = np.eye(3)
+            self.assertTrue(np.allclose(result_numpy, expected, atol=self.tolerance))
+
+        # Test batch of identity quaternions
+        identity_batch = np.array([[1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]], dtype=np.float32)
+        result_batch = transform_utils.quaternion_to_rotation_matrix(identity_batch)
+
+        # Check that result is a warp array with correct shape
+        self.assertIsInstance(result_batch, wp.array)
+        self.assertEqual(result_batch.shape, (2, 3, 3))
+
+        # Check that all matrices are orthogonal (det = 1)
+        result_batch_numpy = result_batch.numpy()
+        for i in range(2):
+            det = np.linalg.det(result_batch_numpy[i])
+            self.assertAlmostEqual(det, 1.0, places=5)
+
+        # Test round-trip conversion: quaternion -> matrix -> quaternion
+        quaternion = [0.7071, 0.7071, 0.0, 0.0]  # 90 degrees around X
+
+        # Convert to rotation matrix
+        rotation_matrix = transform_utils.quaternion_to_rotation_matrix(quaternion)
+
+        # Convert back to quaternion
+        quaternion_back = transform_utils.rotation_matrix_to_quaternion(rotation_matrix)
+
+        # Results should be approximately equal (allowing for sign differences)
+        original_np = np.array(quaternion)
+        back_np = quaternion_back.numpy()
+
+        # Check that either the quaternions are equal or one is the negative of the other
+        # (both represent the same rotation)
+        self.assertTrue(
+            np.allclose(original_np, back_np, atol=self.tolerance)
+            or np.allclose(original_np, -back_np, atol=self.tolerance)
+        )
+
+        # Test round-trip conversion with batch of quaternions
+        quaternion_batch = np.array(
+            [
+                [1.0, 0.0, 0.0, 0.0],  # Identity
+                [0.7071, 0.7071, 0.0, 0.0],  # 90 degrees around X
+                [0.7071, 0.0, 0.7071, 0.0],  # 90 degrees around Y
+                [0.7071, 0.0, 0.0, 0.7071],  # 90 degrees around Z
+            ],
+            dtype=np.float32,
+        )
+
+        # Convert to rotation matrices
+        rotation_matrices = transform_utils.quaternion_to_rotation_matrix(quaternion_batch)
+
+        # Convert back to quaternions
+        quaternions_back = transform_utils.rotation_matrix_to_quaternion(rotation_matrices)
+
+        # Check that all roundtrip conversions are valid
+        original_np = quaternion_batch
+        back_np = quaternions_back.numpy()
+
+        for i in range(4):
+            # Check that either the quaternions are equal or one is the negative of the other
+            self.assertTrue(
+                np.allclose(original_np[i], back_np[i], atol=self.tolerance)
+                or np.allclose(original_np[i], -back_np[i], atol=self.tolerance)
+            )
+
+        # Test mathematical properties of quaternion_to_rotation_matrix results
+        quaternion = [0.7071, 0.7071, 0.0, 0.0]  # 90 degrees around X
+        result = transform_utils.quaternion_to_rotation_matrix(quaternion)
+        R = result.numpy()
+
+        # Check that it's a valid rotation matrix
+        # 1. Determinant should be 1
+        det = np.linalg.det(R)
+        self.assertAlmostEqual(det, 1.0, places=5)
+
+        # 2. Should be orthogonal (R * R^T = I)
+        R_transpose = R.T
+        identity = np.eye(3)
+        self.assertTrue(np.allclose(np.dot(R, R_transpose), identity, atol=self.tolerance))
+
+        # 3. Check specific values for 90-degree X rotation
+        expected = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
+        self.assertTrue(np.allclose(R, expected, atol=self.tolerance))
 
     async def test_quaternion_multiplication_associativity(self):
         """Test that quaternion multiplication is associative"""
@@ -259,43 +380,3 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(
             np.allclose(quaternion_result_left.numpy(), quaternion_result_right.numpy(), atol=self.tolerance)
         )
-
-    async def test_input_types(self):
-        """Test that different input types work correctly for all transform functions"""
-        # Test euler_angles_to_quaternion with different input types
-        euler_list = [0.0, 0.0, 0.0]
-        euler_numpy = np.array([0.0, 0.0, 0.0])
-        euler_warp = wp.array(euler_numpy)
-
-        result_list = transform_utils.euler_angles_to_quaternion(euler_list)
-        result_numpy = transform_utils.euler_angles_to_quaternion(euler_numpy)
-        result_warp = transform_utils.euler_angles_to_quaternion(euler_warp)
-
-        # All results should be approximately equal
-        self.assertTrue(np.allclose(result_list.numpy(), result_numpy.numpy(), atol=self.tolerance))
-        self.assertTrue(np.allclose(result_numpy.numpy(), result_warp.numpy(), atol=self.tolerance))
-
-        # Test quaternion functions with different input types
-        quaternion_list = [1.0, 0.0, 0.0, 0.0]
-        quaternion_numpy = np.array([1.0, 0.0, 0.0, 0.0])
-        quaternion_warp = wp.array(quaternion_numpy)
-
-        # Test quaternion_multiplication
-        result_list_multiplication = transform_utils.quaternion_multiplication(quaternion_list, quaternion_list)
-        result_numpy_multiplication = transform_utils.quaternion_multiplication(quaternion_numpy, quaternion_numpy)
-        result_warp_multiplication = transform_utils.quaternion_multiplication(quaternion_warp, quaternion_warp)
-
-        self.assertTrue(
-            np.allclose(result_list_multiplication.numpy(), result_numpy_multiplication.numpy(), atol=self.tolerance)
-        )
-        self.assertTrue(
-            np.allclose(result_numpy_multiplication.numpy(), result_warp_multiplication.numpy(), atol=self.tolerance)
-        )
-
-        # Test quaternion_conjugate
-        result_list_conjugate = transform_utils.quaternion_conjugate(quaternion_list)
-        result_numpy_conjugate = transform_utils.quaternion_conjugate(quaternion_numpy)
-        result_warp_conjugate = transform_utils.quaternion_conjugate(quaternion_warp)
-
-        self.assertTrue(np.allclose(result_list_conjugate.numpy(), result_numpy_conjugate.numpy(), atol=self.tolerance))
-        self.assertTrue(np.allclose(result_numpy_conjugate.numpy(), result_warp_conjugate.numpy(), atol=self.tolerance))
