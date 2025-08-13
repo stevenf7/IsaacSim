@@ -1,4 +1,9 @@
 # Changelog
+## [4.7.0] - 2025-07-17
+### Added
+- Flattened pick-and-place action sequence using Franka Robot
+- Base sample class relies on new APIs
+
 ## [4.6.10] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 4.6.9)
