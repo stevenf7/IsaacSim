@@ -1,9 +1,9 @@
 [package]
-version = "1.0.17"
+version = "1.1.0"
 category = "example"
 title = "Manipulators Examples"
 description = "examples of manipulators and grippers"
-authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
+authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "shivangv@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators.examples"
 keywords = ["manipulators","grippers"]
 changelog = "docs/CHANGELOG.md"
@@ -14,6 +14,10 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
+"isaacsim.core.experimental.materials" = {}
+"isaacsim.core.experimental.objects" = {}
+"isaacsim.core.experimental.prims" = {}
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2025-07-02
+### Changed
+- Merged task wrapper and pick-and-place controller into a single file for the Franka robot
+
 ## [1.0.17] - 2025-07-07
 ### Changed
 - updated path to Universal Robot's config file
