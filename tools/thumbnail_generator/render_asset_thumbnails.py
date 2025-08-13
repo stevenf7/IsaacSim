@@ -33,24 +33,26 @@ args = parser.parse_args()
 
 # All the directories we'll generate thumbnails for
 asset_dir_paths = [
-    "Environments/Outdoor/Rivermark/dsready_content",
-    "IsaacLab",
-    "Materials",
-    "People",
-    "Props",
-    "Robots",
-    "Samples",
-    "Sensors",
+    # "Environments/Outdoor/Rivermark/dsready_content",
+    # IsaacLab",
+    # "Materials",
+    # "People",
+    # "Props",
+    "Robots/IsaacSim",
+    # "Samples"
+    # "Sensors",
 ]
 
 # These are always excluded
 base_exclusions = [
-    # "Parts",
-    # "parts",
-    # "Source",
-    # "DetailedProps",
-    # "Materials",
-    # "HighResProps",
+    "Parts",
+    "parts",
+    "Source",
+    "DetailedProps",
+    "Materials",
+    "materials",
+    "HighResProps",
+    "*robot_schema*",
 ]
 
 # Here we build a dict containing extra exclusions for specific directories
@@ -71,6 +73,8 @@ for asset_dir_path in asset_dir_paths:
 
     full_asset_dir_path = args.asset_root + "/" + asset_dir_path
 
+    print(f"Full asset dir path: {full_asset_dir_path}")
+
     # Build our exclusion list
     exclusions = base_exclusions.copy()
     if asset_dir_path in extra_exclusions:
@@ -78,10 +82,13 @@ for asset_dir_path in asset_dir_paths:
 
     cmd = [
         "./python.sh",
-        "standalone_examples/api/isaacsim.util.internal/render_assets.py",
+        "../../../tools/thumbnail_generator/render_assets.py",
         "-r",
         "256x256",
         "-TR",
+        "--skip-existing",
+        # "--force-create-scene",
+        # "--reposition-camera",
     ]
 
     for e in exclusions:
