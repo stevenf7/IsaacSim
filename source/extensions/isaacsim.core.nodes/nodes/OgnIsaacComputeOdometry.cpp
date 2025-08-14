@@ -122,9 +122,9 @@ public:
             int deviceOrdinal = state.m_simulationView->getDeviceOrdinal();
             state.m_transformBuffer.setDevice(deviceOrdinal);
             state.m_velocitiesBuffer.setDevice(deviceOrdinal);
-            createTensorDesc(state.m_transformTensor, (void*)state.m_transformBuffer.data(), 7,
+            createTensorDesc(state.m_transformTensor, static_cast<void*>(state.m_transformBuffer.data()), 7,
                              TensorDataType::eFloat32, deviceOrdinal);
-            createTensorDesc(state.m_velocitiesTensor, (void*)state.m_velocitiesBuffer.data(), 6,
+            createTensorDesc(state.m_velocitiesTensor, static_cast<void*>(state.m_velocitiesBuffer.data()), 6,
                              TensorDataType::eFloat32, deviceOrdinal);
 
             // Create view for the target prim
@@ -262,7 +262,7 @@ private:
     std::vector<float> m_velocitiesData;
 
     // Other variables
-    isaacsim::core::simulation_manager::ISimulationManager* m_simulationManagerFramework;
+    isaacsim::core::simulation_manager::ISimulationManager* m_simulationManagerFramework = nullptr;
     bool m_firstFrame = true;
     double m_lastTime = 0.0;
     double m_unitScale = 1.0;

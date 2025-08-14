@@ -206,9 +206,9 @@ void LidarConfigHelper::init(const char* json)
 }
 
 // TODO
-omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* inSensorProfileName)
+omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* fileName)
 {
-    std::string sensorProfileName{ inSensorProfileName };
+    std::string sensorProfileName{ fileName };
     std::string json{ "" };
 
     carb::tokens::ITokens* tokens = carb::getCachedInterface<carb::tokens::ITokens>();

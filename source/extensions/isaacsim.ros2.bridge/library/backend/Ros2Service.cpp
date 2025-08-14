@@ -92,6 +92,11 @@ bool Ros2ServiceImpl::takeRequest(void* requestMsg)
     else
     {
         rcl_ret_t rc = rcl_wait_set_clear(&m_waitSet);
+        if (rc != RCL_RET_OK)
+        {
+            RCL_ERROR_MSG(takeRequest, rcl_wait_set_clear);
+            return false;
+        }
         rc = rcl_wait_set_add_service(&m_waitSet, m_service.get(), nullptr);
         if (rc != RCL_RET_OK)
         {

@@ -477,8 +477,8 @@ void Ros2DynamicMessageImpl::getArrayEmbeddedMessage(const rosidl_typesupport_in
     {
         uint8_t* memberData;
         size_t arrayLength = 0;
-        memcpy(&memberData, data, sizeof(void*));
-        memcpy(&arrayLength, data + sizeof(void*), sizeof(arrayLength)); // read length
+        memcpy(&memberData, data, sizeof(memberData));
+        memcpy(&arrayLength, data + sizeof(memberData), sizeof(arrayLength)); // read length
         for (size_t i = 0; i < arrayLength; ++i)
         {
             auto jsonObj = nlohmann::json::object();

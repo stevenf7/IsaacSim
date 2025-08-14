@@ -134,7 +134,7 @@ private:
     std::shared_ptr<Ros2ContextHandle> m_contextHandle = nullptr;
     bool m_cleanUp = false;
     size_t m_domainId = 0;
-    uint64_t m_contextHandleAddr;
+    uint64_t m_contextHandleAddr = 0;
     isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
 };
 

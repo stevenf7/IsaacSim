@@ -113,7 +113,7 @@ std::vector<JointDefinition> analyzeConstraints(const std::vector<MJCFEqualityCo
             // Fixed joint
             jointDef.type = "fixed";
             jointDef.position = Vec3(0, 0, 0);
-            for (const auto& constraint : constraints)
+            for (const auto* const constraint : constraints)
             {
                 jointDef.position = jointDef.position + constraint->anchor;
             }

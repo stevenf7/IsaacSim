@@ -91,7 +91,7 @@ public:
     omni::sensors::GenericModelOutput* gmoHostPtr;
 
     /** @brief Default constructor */
-    IsaacExtractRTXSensorPointCloudDeviceBuffers() = default;
+    IsaacExtractRTXSensorPointCloudDeviceBuffers() : bufferSize(0), cudaDevice(0), maxThreadsPerBlock(0), gmoOnDevice(false), gmoHostPtr(nullptr) {}
 
     /** @brief Default destructor */
     ~IsaacExtractRTXSensorPointCloudDeviceBuffers();

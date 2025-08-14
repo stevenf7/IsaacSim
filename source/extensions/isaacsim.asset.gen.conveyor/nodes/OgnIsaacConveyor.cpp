@@ -224,8 +224,6 @@ private:
     pxr::GfVec3f m_direction;
     bool m_onStart;
     bool m_onEnd;
-    bool m_onStep;
-    bool m_deltaTime;
     carb::eventdispatcher::ObserverGuard m_eventSubscription[2];
 };
 

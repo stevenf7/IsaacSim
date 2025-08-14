@@ -94,9 +94,8 @@ public:
      * @details
      * Initializes the USD notice listener and registers it to handle USD notices.
      */
-    SimulationManagerImpl()
+    SimulationManagerImpl() : m_usdNoticeListener(std::make_unique<UsdNoticeListener>())
     {
-        m_usdNoticeListener = std::make_unique<UsdNoticeListener>();
         m_usdNoticeListenerKey =
             pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener.get()), &UsdNoticeListener::handle);
         auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();

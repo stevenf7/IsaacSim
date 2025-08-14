@@ -56,7 +56,6 @@ private:
     std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> intensityBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> azimuthBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> elevationBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<int32_t>, 2> deltaTimesBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<int32_t>, 2> timestampBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> emitterIdBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> materialIdBuffers;

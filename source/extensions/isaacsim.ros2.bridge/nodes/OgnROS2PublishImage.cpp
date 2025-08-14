@@ -466,7 +466,7 @@ public:
             }
         }
 
-        void* dataPtr = (void*)state.m_ipcBufferManager->getCurBufferPtr();
+        void* dataPtr = reinterpret_cast<void*>(state.m_ipcBufferManager->getCurBufferPtr());
 
         // Data on host
         if (db.inputs.cudaDeviceIndex() == -1)

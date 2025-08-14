@@ -245,11 +245,11 @@ private:
     uint64_t m_prevSequenceNumber = 0;
 
     bool m_resetPCL = true;
-    size_t m_numBeamsRemainingPCL;
+    size_t m_numBeamsRemainingPCL = 0;
 
     bool m_firstFrame = true;
 
-    double m_unitScale;
+    double m_unitScale = 1.0;
 };
 
 REGISTER_OGN_NODE()

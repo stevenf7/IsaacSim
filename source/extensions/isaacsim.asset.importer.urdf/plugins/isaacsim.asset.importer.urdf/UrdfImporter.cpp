@@ -465,7 +465,7 @@ void UrdfImporter::addRigidBody(std::unordered_map<std::string, pxr::UsdStageRef
         {
             mat = urdfMatIter->second;
         }
-        auto& color = mat.color;
+        const auto& color = mat.color;
         loadMaterial = (color.r >= 0 && color.g >= 0 && color.b >= 0);
         pxr::UsdPrim meshPrim =
             addMesh(stages["base_stage"], link.visuals[i].geometry, assetRoot_, urdfPath_, meshName, meshPaths,
@@ -502,7 +502,7 @@ void UrdfImporter::addRigidBody(std::unordered_map<std::string, pxr::UsdStageRef
                 }
                 else
                 {
-                    auto& materialColor = link.visuals[i].material.color;
+                    const auto& materialColor = link.visuals[i].material.color;
                     std::stringstream ss;
                     ss << std::uppercase << std::hex << (int)(256 * materialColor.r) << std::uppercase << std::hex
                        << (int)(256 * materialColor.g) << std::uppercase << std::hex << (int)(256 * materialColor.b);

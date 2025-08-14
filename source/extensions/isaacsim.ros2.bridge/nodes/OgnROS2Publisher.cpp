@@ -417,7 +417,7 @@ private:
     std::string m_messageSubfolder;
     std::string m_messageName;
     std::string m_topicName;
-    uint64_t m_queueSize;
+    uint64_t m_queueSize = 10;
     std::string m_qosProfile;
 
     // OGN utils
