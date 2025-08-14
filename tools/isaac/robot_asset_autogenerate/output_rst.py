@@ -163,6 +163,8 @@ def main():
     has_ros = {}
     accessory_list = {}
 
+    no_data_bots = []
+
     for asset_path in paths:
         # check all intended assets
         if asset_path.endswith(".usd") and not any(exclude_path in asset_path for exclude_path in exclude_paths):
@@ -185,7 +187,11 @@ def main():
                 physics_apis[truncated_path] = get_all_physics_apis(object_prim)
 
                 # find sensors
+                articulation_roots = []
+                joint_count = 0
                 for children in stage_utils.traverse_stage():
+                    if children.HasAPI(UsdPhysics.ArticulationRootAPI):
+                        articulation_roots.append(children.GetPath())
                     prim_type = children.GetTypeName()
                     if prim_type == "OmniLidar":
                         additional_info[truncated_path]["OmniSensor Lidar"] += 1
@@ -205,6 +211,8 @@ def main():
                         additional_info[truncated_path]["Contact Sensor"] += 1
                     elif prim_type == "Camera":
                         additional_info[truncated_path]["Camera"] += 1
+                    elif "Joint" in prim_type:
+                        joint_count += 1
 
                 variants = prim_utils.get_prim_variant_collection(str(stage_path))
 
@@ -261,26 +269,61 @@ def main():
                 except Exception as e:
                     print(f"Error getting description: {e}")
 
-                has_articulation = object_prim.HasAPI(UsdPhysics.ArticulationRootAPI)
-                if has_articulation:
-                    articulation = Articulation(str(object_prim.GetPath()))
+                joints_links_dofs = []
+                if len(articulation_roots) > 0:
+                    for articulation_root in articulation_roots:
 
-                    try:
-                        data["num_joints"] = articulation.num_joints
-                    except:
-                        data["num_joints"] = "N/A"
-                    try:
-                        data["num_links"] = articulation.num_links
-                    except:
-                        data["num_links"] = "N/A"
-                    try:
-                        data["num_dofs"] = articulation.num_dofs
-                    except:
-                        data["num_dofs"] = "N/A"
+                        temp_joints_links_dofs = []
+                        articulation = Articulation(str(articulation_root))
+
+                        try:
+
+                            temp_joints_links_dofs.append(articulation.num_joints)
+
+                        except:
+                            temp_joints_links_dofs.append("N/A")
+                        try:
+                            temp_joints_links_dofs.append(articulation.num_links)
+
+                        except:
+                            temp_joints_links_dofs.append("N/A")
+                        try:
+                            temp_joints_links_dofs.append(articulation.num_dofs)
+
+                        except:
+                            temp_joints_links_dofs.append("N/A")
+                        joints_links_dofs.append(temp_joints_links_dofs)
+
+                    joints = 0
+                    links = 0
+                    dofs = 0
+
+                    for root in joints_links_dofs:
+                        if root[0] != "N/A":
+                            joints += root[0]
+                        if root[1] != "N/A":
+                            links += root[1]
+
+                        if root[2] != "N/A":
+                            dofs += root[2]
+
+                    if any(root[0] == joint_count for root in joints_links_dofs):
+                        # Find the root that matches
+                        for root in joints_links_dofs:
+                            if root[0] == joint_count:
+                                data["num_joints"] = root[0]
+                                data["num_links"] = root[1]
+                                data["num_dofs"] = root[2]
+                                break
+                    else:
+                        data["num_joints"] = joints
+                        data["num_links"] = links
+                        data["num_dofs"] = dofs
                 else:
                     data["num_joints"] = "N/A"
                     data["num_links"] = "N/A"
                     data["num_dofs"] = "N/A"
+                    no_data_bots.append(truncated_path)
 
                 # Basic info
                 robot_company = asset_path.split("/")[5]  # may be different if not my local path
@@ -347,9 +390,15 @@ def main():
     with open(args.rst, "w") as f:
         f.write(template.render(**context))
 
-    print(f"RST documentation generated successfully at {args.rst}")
+    print(f"RST documentation generated successfully at {args.rst}\n\n")
+
+    print("\n\n")
+    print("The following robots have no data on the number of joints, links, or DOFs:\n\n")
+    print(no_data_bots)
+    print(f"Total number of robots with no data: {len(no_data_bots)}\n\n")
 
 
 if __name__ == "__main__":
     main()
+
     simulation_app.close()
