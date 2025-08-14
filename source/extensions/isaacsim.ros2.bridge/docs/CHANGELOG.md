@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.10.0] - 2025-08-12
+### Changed
+- Improve sequence memory management in ROS2 message generation
+- Cleanup and improve error messages and default values
+- Add c++ doctests for backend classes
+
 ## [4.9.8] - 2025-08-08
 ### Changed
 - Update odometry test case to test IsaacComputeOdometry node processing on the GPU
