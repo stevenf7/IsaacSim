@@ -148,7 +148,7 @@ After a reboot you will need to:
         * check the "Overwrite diverged branches" checkbox.
     * go to "Settings->General->Visibility, project features, permissions"
         * ensure "Project Visibility" is set to "Public".
-- Clone your fork to a local hard drive, make sure to use a NTFS drive on Windows (Carbonite uses symbolic links). 
+- Clone your fork to a local hard drive, make sure to use a NTFS drive on Windows (Carbonite uses symbolic links).
     * Prefer to clone the fork to the shortest file path possible (such as cloning directly to C:\\) as long file paths can lead to errors when building.
 - Execute `./setup.sh` (Linux) which will install Docker. Logging out and back
   in is required to update your account's group membership to include "docker".
@@ -173,7 +173,7 @@ script.
 
 - When using OpenGL on Linux, especially in workstations or desktops, it often defaults to using the NVIDIA drivers. However, on laptops, it may fall back to using the CPU's integrated graphics (i.e., not using the NVIDIA GPU). To make sure OpenGL is using the NVIDIA driver, follow these steps:
 
-Install `mesa-utils` to get `glxinfo`: 
+Install `mesa-utils` to get `glxinfo`:
 ```
 sudo apt update
 sudo apt install mesa-utils
@@ -300,7 +300,7 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 To run the container and start Isaac Sim as a headless app:
 
 ```bash
-docker run --name isaac-sim --entrypoint bash -it --runtime=nvidia --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
   -e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=<nv_email>" \
   -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
   -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
@@ -318,7 +318,7 @@ To run the container and start Isaac Sim as a windowed app:
 
 ```bash
 xhost +
-docker run --name isaac-sim --entrypoint bash -it --runtime=nvidia --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
   -e "PRIVACY_CONSENT=Y" -e "PRIVACY_USERID=<nv_email>" \
   -v $HOME/.Xauthority:/root/.Xauthority \
   -e DISPLAY \

@@ -64,7 +64,7 @@ docker pull nvcr.io/nvidia/isaac-sim:5.1.0
 
 echo "Running Isaac Sim container with X11 forwarding..."
 xhost +
-docker run --name isaac-sim --entrypoint bash --runtime=nvidia --gpus all -e "ACCEPT_EULA=${accept_eula}" -it --rm --network=host \
+docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=${accept_eula}" -it --rm --network=host \
 	-v $HOME/.Xauthority:/root/.Xauthority \
 	-e DISPLAY \
 	-e "OMNI_USER=${omni_user}" -e "OMNI_PASS=${omni_password}" \
