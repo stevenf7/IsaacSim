@@ -2,10 +2,10 @@
 # pyproject.toml
 pyproject.description = "A metapackage to manage the Isaac Sim installation"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-kernel==${version}",
 ]
-pyproject.optional-dependencies = [
+pyproject.optional-dependencies.all = [
     { "rl" = ["isaacsim-rl==${version}", "isaacsim-replicator==${version}", "isaacsim-app==${version}"] },
     { "ros" = ["isaacsim-ros1==${version}"] },
     { "ros2" = ["isaacsim-ros2==${version}"] },
@@ -38,7 +38,7 @@ pyproject.optional-dependencies = [
         ] }
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # apps
@@ -49,7 +49,7 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim kernel"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kernel"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     # archives (omni.kit.pip_archive)
     # 1.
     "aiohttp==3.11.11",
@@ -93,7 +93,7 @@ pyproject.dependencies = [
     "requests==2.32.3",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # python package/module
@@ -102,7 +102,7 @@ inventory.include = [
     # kit
     "kit/*",
 ]
-inventory.exclude = [
+inventory.excludes.all = [
     # kit
     # - folders
     "kit/cache",
@@ -124,13 +124,13 @@ inventory.exclude = [
 pyproject.description = "Kit extensions cache for Isaac Sim"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kit", "cache"]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # cache
     "extscache/*",
 ]
-inventory.exclude = [
+inventory.excludes.all = [
     # archives
     "extscache/omni.kit.pip_archive*",
     # large in size cache (to isaacsim-extscache-kit-sdk)
@@ -143,7 +143,7 @@ inventory.exclude = [
 pyproject.description = "Kit-SDK extensions cache for Isaac Sim"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kit-sdk", "cache"]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # cache
@@ -158,7 +158,7 @@ inventory.include = [
 pyproject.description = "Physics extensions cache for Isaac Sim"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "physics", "cache"]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # cache
@@ -171,11 +171,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for application setup"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "app"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-kernel==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -196,12 +196,12 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for asset import, creation and management"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "asset"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-utils==${version}",
     "isaacsim-storage==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -230,11 +230,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for benchmarking"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "benchmark"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-robot==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -249,11 +249,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for scripting and code edition"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "editor"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-kernel==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -268,7 +268,7 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim core extensions and APIs"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "core"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     # isaacsim packages
     "isaacsim-kernel==${version}",
     # archives (omni.isaac.core_archive)
@@ -296,15 +296,6 @@ pyproject.dependencies = [
     "pyperclip==1.8.0",
     "python-dateutil==2.9.0.post0",
     "six==1.17.0",
-    # archives (omni.isaac.ml_archive)
-    "torch==2.7.0",
-    "torchvision==0.22.0",
-    "torchaudio==2.7.0",
-    "filelock==3.13.1",
-    "fsspec==2024.6.1",
-    "mpmath==1.3.0",
-    "networkx==3.3",
-    "sympy==1.13.3",
     # archives (omni.pip.compute)
     "imageio==2.37.0",
     "scipy==1.15.3",
@@ -330,8 +321,44 @@ pyproject.dependencies = [
     "python-dateutil==2.9.0.post0",
     "six==1.17.0",
 ]
+pyproject.dependencies.linux-x86_64 = [
+    # archives (omni.isaac.ml_archive)
+    "torch==2.7.0",
+    "torchvision==0.22.0",
+    "torchaudio==2.7.0",
+    "filelock==3.13.1",
+    "fsspec==2024.6.1",
+    "mpmath==1.3.0",
+    "networkx==3.3",
+    "sympy==1.13.3",
+]
+pyproject.dependencies.linux-aarch64 = [
+    # archives (omni.isaac.ml_archive)
+    "torch==2.7.0",
+    "torchvision==0.22.0",
+    "torchaudio==2.7.0",
+    "filelock==3.15.4",
+    "fsspec==2024.10.0",
+    "mpmath==1.3.0",
+    "networkx==3.4.2",
+    "sympy==1.13.1",
+]
+pyproject.dependencies.windows-x86_64 = [
+    # archives (omni.isaac.ml_archive)
+    "torch==2.7.0",
+    "torchvision==0.22.0",
+    "torchaudio==2.7.0",
+    "filelock==3.13.1",
+    "fsspec==2024.6.1",
+    "mpmath==1.3.0",
+    "networkx==3.3",
+    "sympy==1.13.3",
+    # archives (omni.pip.cloud)
+    "pywin32==306",
+]
+
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -368,12 +395,12 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components to enable the Cortex decision framework for intelligent robot behavior"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "cortex"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-robot==${version}",
     "isaacsim-ros1==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -388,11 +415,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim examples"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "example"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-cortex==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -410,11 +437,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for the graphical user interface (GUI)"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "gui"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-core==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -434,12 +461,12 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components to enable the Replicator framework for synthetic data generation pipelines and services"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "replicator"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-core==${version}",
     "isaacsim-storage==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -465,12 +492,12 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for reinforcement learning"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "rl"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-robot==${version}",
     "isaacsim-benchmark==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
 ]
@@ -479,12 +506,12 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim's robot models and APIs"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-sensor==${version}",
     "isaacsim-robot-motion==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -513,11 +540,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for motion generation pipelines and algorithms"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot", "motion"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-gui==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -534,11 +561,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for robot setup"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "robot", "setup"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-robot-motion==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -560,11 +587,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for ROS 1 system integration"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ros", "ros1"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-sensor==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -574,11 +601,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for ROS 2 system integration"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ros", "ros2"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-sensor==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -596,13 +623,13 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components to simulate sensors"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "sensor"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-utils==${version}",
     "isaacsim-gui==${version}",
     "isaacsim-storage==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -630,11 +657,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for storage system"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "storage"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-kernel==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -651,12 +678,12 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim templates"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "template"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-storage==${version}",
     "isaacsim-gui==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # deprecated extensions
@@ -667,11 +694,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim components for testings"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "test"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-robot==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
@@ -687,11 +714,11 @@ inventory.include = [
 # pyproject.toml
 pyproject.description = "Isaac Sim utilities"
 pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "utils"]
-pyproject.dependencies = [
+pyproject.dependencies.all = [
     "isaacsim-gui==${version}",
 ]
 # inventory (relative to the build config)
-inventory.include = [
+inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
