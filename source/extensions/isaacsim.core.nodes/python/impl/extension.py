@@ -101,14 +101,12 @@ class Extension(omni.ext.IExt):
             name=annotator_name,
             input_rendervars=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    f"DispatchSync",
+                    f"rpFabricTime",
                     attributes_mapping={
-                        "outputs:referenceTimeNumerator": "inputs:referenceTimeNumerator",
-                        "outputs:referenceTimeDenominator": "inputs:referenceTimeDenominator",
+                        "outputs:exec": "inputs:execIn",
+                        "outputs:fabricFrameTimeNumerator": "inputs:referenceTimeNumerator",
+                        "outputs:fabricFrameTimeDenominator": "inputs:referenceTimeDenominator",
                     },
-                ),
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    f"PostProcessDispatch",
                 ),
             ],
             node_type_id="isaacsim.core.nodes.IsaacReadSimulationTimeAnnotator",
@@ -120,8 +118,13 @@ class Extension(omni.ext.IExt):
             name=annotator_name,
             input_rendervars=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    f"ReferenceTime", attributes_mapping={f"outputs:exec": "inputs:execIn"}
-                )
+                    f"rpFabricTime",
+                    attributes_mapping={
+                        "outputs:exec": "inputs:execIn",
+                        "outputs:fabricFrameTimeNumerator": "inputs:referenceTimeNumerator",
+                        "outputs:fabricFrameTimeDenominator": "inputs:referenceTimeDenominator",
+                    },
+                ),
             ],
             node_type_id="isaacsim.core.nodes.IsaacReadSystemTimeAnnotator",
         )
@@ -217,9 +220,7 @@ class Extension(omni.ext.IExt):
         register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
-                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                    rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                ),
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "IsaacSimulationGate"),
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     rv + "Ptr",
                 ),
