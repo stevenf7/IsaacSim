@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.4.7] - 2025-08-15
+### Fixed
+- Fix Sdf/Gf casting when setting/getting prim attribute's value
+
 ## [3.4.6] - 2025-08-11
 ### Removed
 - No-longer-necessary TODO statement.
