@@ -62,7 +62,7 @@ echo "Pulling docker image..."
 docker pull nvcr.io/nvidia/isaac-sim:5.1.0
 
 echo "Running Isaac Sim container..."
-docker run --name isaac-sim --entrypoint bash --runtime=nvidia --gpus all -e "ACCEPT_EULA=${accept_eula}" -it --rm --network=host \
+docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=${accept_eula}" -it --rm --network=host \
 	-e "OMNI_USER=${omni_user}" -e "OMNI_PASS=${omni_password}" \
 	-e "OMNI_SERVER=${omni_server}" \
     -e "PRIVACY_CONSENT=${privacy_consent}" -e "PRIVACY_USERID=${privacy_userid}" \
