@@ -1266,7 +1266,7 @@ publish-extensions:
       - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
-publish-python-packages-linux:
+publish-python-packages-linux-x86_64:
     extends:
       - .deploy-common
       - .runner-build-linux-x86_64
@@ -1289,7 +1289,7 @@ publish-python-packages-linux:
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
-publish-python-packages-windows:
+publish-python-packages-windows-x86_64:
     extends:
       - .deploy-common
       - .runner-build-windows-x86_64
@@ -1315,7 +1315,7 @@ publish-python-packages-windows:
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
-verify-publish-python-packages-linux:
+verify-publish-python-packages-linux-x86_64:
     interruptible: true
     allow_failure: true
     extends:
@@ -1324,21 +1324,21 @@ verify-publish-python-packages-linux:
       - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       # install Python 3.11
-      - sudo apt update
-      - sudo apt -y install python3.11-venv
+      - apt update
+      - apt -y install python3.11-venv
       # create and source a virtual environment
       - python3.11 -m venv env_isaacsim
       - source env_isaacsim/bin/activate
       # upgrade pip and install Isaac Sim - Python packages
       - pip install --upgrade pip
-      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple
       # accept EULA
       - export OMNI_KIT_ACCEPT_EULA=YES
       # run tests
       - python -c "import isaacsim"
       - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1 --no-window
     needs:
-      - job: publish-python-packages-linux
+      - job: publish-python-packages-linux-x86_64
         artifacts: true
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
@@ -1346,7 +1346,7 @@ verify-publish-python-packages-linux:
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
-verify-publish-python-packages-windows:
+verify-publish-python-packages-windows-x86_64:
     interruptible: true
     allow_failure: true
     extends:
@@ -1364,14 +1364,14 @@ verify-publish-python-packages-windows:
       - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
       - C:\env_isaacsim\Scripts\activate.ps1
       # install Isaac Sim - Python packages
-      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple
+      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple
       # accept EULA
       - $env:OMNI_KIT_ACCEPT_EULA = "YES"
       # run tests
       - python -c "import isaacsim"
       - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1 --no-window
     needs:
-      - job: publish-python-packages-windows
+      - job: publish-python-packages-windows-x86_64
         artifacts: true
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
@@ -1849,7 +1849,7 @@ check_externals:
     - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64 --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing --allowed-external linbuild
 
 # ==============================================================================================================
-check-python-packages-dependencies:
+check-python-packages-dependencies-linux-x86_64:
   extends:
     - .repo-artifacts
     - .check-common
@@ -1865,7 +1865,7 @@ check-python-packages-dependencies:
     - python3.11 -m venv _env_dependency_check
     - source _env_dependency_check/bin/activate
     - pip install --upgrade pip
-    - pip install -r python-package-requirements.txt  # exported from check_python_package_definitions
+    - pip install -r python-package-requirements-linux-x86_64.txt  # exported from check_python_package_definitions
 
 # ==============================================================================================================
 stage-to-github:

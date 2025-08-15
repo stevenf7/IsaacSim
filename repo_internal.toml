@@ -403,9 +403,10 @@ pyproject.urls = [
 ]
 pyproject.version = "${build_string}"
 
-wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64"}
+# wheel specifications
+wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64", "linux-aarch64" = "manylinux_2_35_aarch64"}
 
-# whl publishing (pypi)
+# wheel publishing (PyPI)
 [[repo_python_package.publish.task]]
 packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
 pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"

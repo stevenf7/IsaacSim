@@ -42,9 +42,9 @@
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
     <package name="repo_docs" version="2.3.0" />
   </dependency>
-  <!-- For Pypi packages -->
+  <!-- For PyPI packages -->
   <dependency name="repo_python_package" linkPath="../_repo/deps/repo_python_package">
-    <package name="repo_python_package" version="0.5.8" />
+    <package name="repo_python_package" version="1.0.0" />
   </dependency>
   <!-- For building pip prebundles -->
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">

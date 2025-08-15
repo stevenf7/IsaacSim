@@ -14,12 +14,14 @@
 # limitations under the License.
 
 import argparse
+import fnmatch
 import logging
 import os
 import string
 import subprocess
 import sys
 import tempfile
+from collections import defaultdict
 from typing import Callable, Dict
 from xml.etree import ElementTree
 
@@ -165,8 +167,8 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
         # check if extension is in any package inventory
         found = False
         for i, (name, spec) in enumerate(package_definitions.items()):
-            inventory = spec.get("inventory", {}).get("include", [])
-            if f"exts/{extension}" in inventory or f"extsDeprecated/{extension}" in inventory:
+            includes = [item for items in spec.get("inventory", {}).get("includes", {}).values() for item in items]
+            if f"exts/{extension}" in includes or f"extsDeprecated/{extension}" in includes:
                 found = True
                 break
         if not found:
@@ -176,13 +178,9 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
         sys.exit(1)
 
 
-def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files):
+def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files, platforms):
     def _should_exclude_dependency(dependency):
-        excluded_dependencies = ["isaacsim-", "nvidia-", "pywin32"]
-        excluded_dependencies.extend(
-            ["filelock", "fsspec", "networkx", "sympy"]
-        )  # TODO: remove after support multiple platforms
-        for item in excluded_dependencies:
+        for item in ["isaacsim-", "nvidia-"]:
             if dependency.startswith(item):
                 return True
         return False
@@ -209,16 +207,44 @@ def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files
             return False, ""
         return True, None
 
+    def _get_platforms_from_target(target_platforms, platforms, path):
+        matched_platforms = []
+        for target_platform in target_platforms:
+            found = False
+            for platform in platforms:
+                if fnmatch.fnmatch(platform, target_platform):
+                    matched_platforms.append(platform)
+                    found = True
+            if not found:
+                omni.repo.man.print_log(
+                    f"Unable to find target platform '{target_platform}' in {platforms} ({path})",
+                    logging.ERROR,
+                )
+                sys.exit(1)
+        matched_platforms = sorted(list(set(matched_platforms)))
+        return ["all"] if matched_platforms == platforms else matched_platforms
+
     missing_dependencies = False
-    defined_dependencies = []
+    defined_dependencies = defaultdict(list)
+    defined_platforms = ["all", *platforms]
+    for item in defined_platforms:
+        defined_dependencies[item].extend([])
     for _, spec in package_definitions.items():
-        for dependency in spec.get("pyproject", {}).get("dependencies", []):
-            if not _should_exclude_dependency(dependency):
-                defined_dependencies.append(dependency)
+        for k, v in spec.get("pyproject", {}).get("dependencies", {}).items():
+            for dependency in v:
+                if not _should_exclude_dependency(dependency):
+                    defined_dependencies[k].append(dependency)
+    if len(defined_dependencies) != len(defined_platforms):
+        omni.repo.man.print_log(
+            f"Expected specification: {defined_platforms}, got: {list(defined_dependencies.keys())}",
+            logging.ERROR,
+        )
+        sys.exit(1)
+
     # read dependencies files (.toml)
-    all_target_dependencies = []
+    all_target_dependencies = {platform: [] for platform in defined_platforms}
     for dependencies_file in dependencies_files:
-        target_dependencies = []
+        # process file
         if os.path.isfile(dependencies_file):
             path = dependencies_file
         else:
@@ -231,49 +257,63 @@ def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files
                 omni.repo.man.print_log(f"Downloading {url} to {file.name}", logging.INFO)
                 file.write(requests.get(url).content)
                 path = file.name
+        # read dependencies file content
+        target_dependencies = {platform: [] for platform in defined_platforms}
+        omni.repo.man.print_log(f"Reading {path}", logging.INFO)
         with open(path, "rb") as file:
             content = tomli.load(file)
             for dependency in content.get("dependency", []):
-                skip_target_dep = False
+                # skip untargeted dependencies
+                skip_target_deps = False
                 for item in ["target-deps/pip_sensors", "target-deps/pip_debugpy"]:
                     if item in dependency.get("target", ""):
-                        skip_target_dep = True
+                        skip_target_deps = True
                         break
-                if skip_target_dep:
+                if skip_target_deps:
                     continue
-                for package in dependency.get("packages", []):
-                    if not _should_exclude_dependency(package):
-                        target_dependencies.append(package)
-        all_target_dependencies.extend(target_dependencies)
+                # get depedencies according to target platforms
+                target_platforms = _get_platforms_from_target(dependency.get("platforms", []), platforms, path)
+                for target_platform in target_platforms:
+                    for package in dependency.get("packages", []):
+                        if not _should_exclude_dependency(package):
+                            target_dependencies[target_platform].append(package)
+        # update all target dependencies
+        for k, v in target_dependencies.items():
+            all_target_dependencies[k].extend(v)
         # check if target dependencies are in defined dependencies
-        for target_dependency in target_dependencies:
-            result, msg = _dependencies_in(target_dependency, defined_dependencies)
+        for platform in defined_platforms:
+            for target_dependency in target_dependencies[platform]:
+                result, msg = _dependencies_in(target_dependency, defined_dependencies[platform])
+                if not result:
+                    missing_dependencies = True
+                    msg = f"Mismatch with defined dependency {msg}" if msg else "Missing"
+                    omni.repo.man.print_log(
+                        f"[file: {dependencies_file}, platform: {platform}] Expected dependency: {target_dependency}. {msg}",
+                        logging.ERROR,
+                    )
+    # check if defined dependencies are in all target dependencies
+    for platform in defined_platforms:
+        for defined_dependency in defined_dependencies[platform]:
+            result, msg = _dependencies_in(defined_dependency, all_target_dependencies[platform])
             if not result:
                 missing_dependencies = True
-                msg = f"Mismatch with defined dependency {msg}" if msg else "Missing"
-                msg += f" (target: {dependency.get('target', '')})"
-                omni.repo.man.print_log(
-                    f"Expected dependency: {target_dependency} ({dependencies_file}). {msg}",
-                    logging.ERROR,
-                )
-    # check if defined dependencies are in all target dependencies
-    for defined_dependency in defined_dependencies:
-        result, msg = _dependencies_in(defined_dependency, all_target_dependencies)
-        if not result:
-            missing_dependencies = True
-            if msg:
-                omni.repo.man.print_log(
-                    f"Defined dependency has a different version: {defined_dependency}. Expected: {msg}",
-                    logging.ERROR,
-                )
-            else:
-                omni.repo.man.print_log(
-                    f"Defined dependency not found in target dependencies: {defined_dependency}",
-                    logging.ERROR,
-                )
+                if msg:
+                    omni.repo.man.print_log(
+                        f"[source: definition_paths, platform: {platform}] Defined dependency has a different version: {defined_dependency}. Expected: {msg}",
+                        logging.ERROR,
+                    )
+                else:
+                    omni.repo.man.print_log(
+                        f"[source: definition_paths, platform: {platform}] Defined dependency not found in target dependencies: {defined_dependency}",
+                        logging.ERROR,
+                    )
     # export defined dependencies to a requirements.txt file
-    with open("python-package-requirements.txt", "w") as file:
-        file.write("\n".join(defined_dependencies))
+    for platform in platforms:
+        with open(f"python-package-requirements-{platform}.txt", "w") as file:
+            file.write("# common dependencies\n")
+            file.write("\n".join(defined_dependencies["all"]))
+            file.write("\n# platform-specific dependencies\n")
+            file.write("\n".join(defined_dependencies[platform]))
     if missing_dependencies:
         sys.exit(1)
 
@@ -302,6 +342,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # get python packages definitions
         definition_paths = python_package_tool_config.get("definition_paths", [])
         package_definitions = omni.repo.python_package.create.load_extra_package_definitions({}, definition_paths)
+        platforms = sorted(list(python_package_tool_config.get("wheel", {}).get("platforms", {}).keys()))
 
         # update
         if options.update_omniverse_kit:
@@ -315,9 +356,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             _update_omniverse_kit_version(definition_paths, incompatible_versions, target_version)
             return
 
-        # Check if we're in GitLab mode with dependabot update
+        # check if we're in GitLab mode with dependabot update
         skip_exit_on_error = options.gitlab and _is_dependabot_kit_update()
-
         if skip_exit_on_error:
             omni.repo.man.print_log(
                 "GitLab mode detected with dependabot/update-kit-sdk branch and kit-sdk.packman.xml changes - errors will be reported but not fail the build",
@@ -332,6 +372,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             exit_on_error=not skip_exit_on_error,
         )
         _check_extensions(package_definitions, tool_config["extension_folder"], tool_config["excluded_extensions"])
-        _check_dependencies(package_definitions, tool_config["kit_sdk_packman"], tool_config["dependencies_files"])
+        _check_dependencies(
+            package_definitions, tool_config["kit_sdk_packman"], tool_config["dependencies_files"], platforms
+        )
 
     return run_repo_tool
