@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.10.1] - 2025-08-14
+### Changed
+- Cleanup unused code in tests
+### Fixed
+- Fix test failures
+
 ## [4.10.0] - 2025-08-12
 ### Changed
 - Improve sequence memory management in ROS2 message generation

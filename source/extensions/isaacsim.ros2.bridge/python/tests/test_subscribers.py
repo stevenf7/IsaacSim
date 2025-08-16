@@ -145,7 +145,11 @@ class TestRos2Subscribers(ROS2TestCase):
 
         self._timeline.stop()
 
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Joint State Subscriber Queue Test Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         ## Change queue size to random value
         self.reset_queue_size(sub_node_queue_attribute_path, queue_size=self.choose_queue_size())
@@ -161,7 +165,11 @@ class TestRos2Subscribers(ROS2TestCase):
 
         self._timeline.stop()
 
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Joint State Subscriber Queue Test (Second Run) Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         pass
 
@@ -230,7 +238,11 @@ class TestRos2Subscribers(ROS2TestCase):
 
         self._timeline.stop()
 
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Clock Subscriber Queue Test Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         ## Change queue size to random value
         self.reset_queue_size(sub_node_queue_attribute_path, queue_size=self.choose_queue_size())
@@ -245,7 +257,11 @@ class TestRos2Subscribers(ROS2TestCase):
         await simulate_async(2, 60, self.spin)
 
         self._timeline.stop()
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Clock Subscriber Queue Test (Second Run) Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         pass
 
@@ -311,7 +327,11 @@ class TestRos2Subscribers(ROS2TestCase):
 
         self._timeline.stop()
 
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Twist Subscriber Queue Test Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         ## Change queue size to random value
         self.reset_queue_size(sub_node_queue_attribute_path, queue_size=self.choose_queue_size())
@@ -326,7 +346,11 @@ class TestRos2Subscribers(ROS2TestCase):
         await simulate_async(2, 60, self.spin)
 
         self._timeline.stop()
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Twist Subscriber Queue Test (Second Run) Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         pass
 
@@ -395,7 +419,11 @@ class TestRos2Subscribers(ROS2TestCase):
 
         self._timeline.stop()
 
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Ackermann Subscriber Queue Test Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         ## Change queue size to random value
         self.reset_queue_size(sub_node_queue_attribute_path, queue_size=self.choose_queue_size())
@@ -410,7 +438,11 @@ class TestRos2Subscribers(ROS2TestCase):
         await simulate_async(2, 60, self.spin)
 
         self._timeline.stop()
-        self.assertTrue(self.sub_data == [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)])
+        expected_data = [self.MAX_COUNT - self.queue_size + i for i in range(self.queue_size)]
+        self.assertTrue(
+            self.sub_data == expected_data,
+            msg=f"Ackermann Subscriber Queue Test (Second Run) Failed:\n  Expected: {expected_data}\n  Actual: {self.sub_data}\n  Queue Size: {self.queue_size}\n  MAX_COUNT: {self.MAX_COUNT}",
+        )
 
         pass
 
