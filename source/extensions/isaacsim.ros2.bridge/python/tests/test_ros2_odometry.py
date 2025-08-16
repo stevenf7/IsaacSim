@@ -23,7 +23,6 @@ import omni.kit.usd
 import omni.kit.viewport.utility
 import torch
 import usdrt.Sdf
-from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.prims import XFormPrim
@@ -44,26 +43,16 @@ class TestRos2Odometry(ROS2TestCase):
 
         await omni.usd.get_context().new_stage_async()
 
-        SimulationManager.set_physics_sim_device("cpu")
-        await omni.kit.app.get_app().next_update_async()
-
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
-
-        self.my_world = World(stage_units_in_meters=1.0)
-        await self.my_world.initialize_simulation_context_async()
 
         self.CUBE_SCALE = 0.5
         await omni.kit.app.get_app().next_update_async()
 
     # After running each test
     async def tearDown(self):
-
-        self.my_world.stop()
-        self.my_world.clear_instance()
 
         await omni.kit.app.get_app().next_update_async()
         await super().tearDown()
@@ -87,6 +76,7 @@ class TestRos2Odometry(ROS2TestCase):
         return position, orientation
 
     async def test_ROS2_general_odometry_gpu(self):
+        SimulationManager.set_backend("torch")
         SimulationManager.set_physics_sim_device("cuda")
         await omni.kit.app.get_app().next_update_async()
         await self.test_ROS2_general_odometry()
@@ -262,7 +252,9 @@ class TestRos2Odometry(ROS2TestCase):
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-        # Test1: Check Z odometry:
+        # set_cuboid_pose(self.cuboid, [[0.0, 0.0, self.CUBE_SCALE / 2.0]], [[1, 0, 0, 0]])
+
+        print("Test1: Check Z odometry:")
         ##############################
         self._cube_odometry_data = None
 
@@ -299,7 +291,7 @@ class TestRos2Odometry(ROS2TestCase):
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-        # Test2A: Check X odometry:
+        print("Test2A: Check X odometry:")
         ##############################
         self._cube_odometry_data = None
 
@@ -331,7 +323,7 @@ class TestRos2Odometry(ROS2TestCase):
         self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
-        # Test2B: Check X odometry (with robot front (0,1,0) and publishRawVelocities disabled:
+        print("Test2B: Check X odometry (with robot front (0,1,0) and publishRawVelocities disabled:")
         ##############################
         self._cube_odometry_data = None
 
@@ -372,7 +364,7 @@ class TestRos2Odometry(ROS2TestCase):
         self.assertAlmostEqual(self._cube_odometry_global_data.twist.twist.linear.z, self.lin_vel_cmd[2], delta=0.2)
 
         self._timeline.stop()
-        # Test2C: Check X odometry (with robot front (0,1,0) and publishRawVelocities enabled:
+        print("Test2C: Check X odometry (with robot front (0,1,0) and publishRawVelocities enabled:")
         ##############################
         self._cube_odometry_data = None
 
@@ -428,10 +420,6 @@ class TestRos2Odometry(ROS2TestCase):
         # Load the Leatherback robot USD
         leatherback_usd_path = self._assets_root_path + "/Isaac/Samples/ROS2/Robots/leatherback_ROS.usd"
         await open_stage_async(leatherback_usd_path)
-
-        # Initialize simulation world
-        self.my_world = World(stage_units_in_meters=1.0)
-        await self.my_world.initialize_simulation_context_async()
 
         # Wait for the stage to load
         await omni.kit.app.get_app().next_update_async()
@@ -640,8 +628,6 @@ class TestRos2Odometry(ROS2TestCase):
         # Clean up
         self._timeline.stop()
         ros2_node.destroy_node()
-        self.my_world.stop()
-        self.my_world.clear_instance()
 
         pass
 
@@ -659,10 +645,6 @@ class TestRos2Odometry(ROS2TestCase):
         # Load the Leatherback robot USD
         leatherback_usd_path = self._assets_root_path + "/Isaac/Samples/ROS2/Robots/leatherback_ROS.usd"
         await open_stage_async(leatherback_usd_path)
-
-        # Initialize simulation world
-        self.my_world = World(stage_units_in_meters=1.0)
-        await self.my_world.initialize_simulation_context_async()
 
         # Wait for the stage to load
         await omni.kit.app.get_app().next_update_async()
@@ -829,7 +811,5 @@ class TestRos2Odometry(ROS2TestCase):
         # Clean up
         self._timeline.stop()
         ros2_node.destroy_node()
-        self.my_world.stop()
-        self.my_world.clear_instance()
 
         pass

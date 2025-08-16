@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.4] - 2025-08-14
+### Fixed
+- Do not change /physics/outputVelocitiesLocalSpace when fabric is enabled/disabled
+
 ## [1.3.3] - 2025-08-08
 ### Fixed
 - Update to event 2.0 system

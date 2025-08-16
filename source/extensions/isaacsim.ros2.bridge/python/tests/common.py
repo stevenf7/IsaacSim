@@ -14,18 +14,16 @@
 # limitations under the License.
 
 import asyncio
-import functools
 import gc
 import time
-import types
-import unittest
 
 import carb
 import numpy as np
 import omni
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import PhysxSchema, UsdGeom, UsdPhysics
+from pxr import UsdPhysics
 
 
 class ROS2TestCase(omni.kit.test.AsyncTestCase):
@@ -44,6 +42,11 @@ class ROS2TestCase(omni.kit.test.AsyncTestCase):
 
         if not rclpy.ok():
             rclpy.init()
+
+        SimulationManager.set_backend("numpy")
+        SimulationManager.set_physics_sim_device("cpu")
+        SimulationManager.enable_fabric(enable=False)
+        await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
         self._timeline.stop()
