@@ -1289,6 +1289,29 @@ publish-python-packages-linux-x86_64:
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
+publish-python-packages-linux-aarch64:
+    extends:
+      - .deploy-common
+      - .runner-build-linux-aarch64
+    script:
+      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.release.7z --dst _build/linux-aarch64/release
+      - ls _build/linux-aarch64/release
+      - ./repo.sh python_package --create
+      - ./repo.sh comment_archive_deps
+      - ./repo.sh python_package --wheel
+      - ls _build/packages/dist
+      - ./repo.sh python_package --publish
+    needs:
+      - job: build-linux-aarch64-release
+        artifacts: true
+    rules:
+      - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
+        when: never
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-push-manual, rules]
+
 publish-python-packages-windows-x86_64:
     extends:
       - .deploy-common
