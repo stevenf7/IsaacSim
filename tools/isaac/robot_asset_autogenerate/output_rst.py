@@ -371,7 +371,7 @@ def main():
         isaac_lab_robot_names = f.read().split("\n")
 
     # Set up Jinja2 environment
-    env = Environment(loader=FileSystemLoader(script_dir))
+    env = Environment(loader=FileSystemLoader(script_dir), autoescape=True)
     template = env.get_template("robot_rst_template.jinja")
 
     # Prepare template context
