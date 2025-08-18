@@ -568,9 +568,9 @@ void Ros2NitrosBridgeImageMessageImpl::generateBuffer(const uint32_t height,
 #endif
 }
 
-void Ros2NitrosBridgeImageMessageImpl::writeData(const std::vector<int32_t>& data)
+void Ros2NitrosBridgeImageMessageImpl::writeData(const std::vector<int32_t>& imageData)
 {
-    if (!m_msg || data.empty())
+    if (!m_msg || imageData.empty())
     {
         return;
     }
@@ -578,8 +578,8 @@ void Ros2NitrosBridgeImageMessageImpl::writeData(const std::vector<int32_t>& dat
     isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage* imageMsg =
         static_cast<isaac_ros_nitros_bridge_interfaces__msg__NitrosBridgeImage*>(m_msg);
 
-    m_imageData.resize(data.size());
-    std::memcpy(m_imageData.data(), data.data(), data.size() * sizeof(int32_t));
+    m_imageData.resize(imageData.size());
+    std::memcpy(m_imageData.data(), imageData.data(), imageData.size() * sizeof(int32_t));
 
     imageMsg->data.size = m_imageData.size();
     imageMsg->data.capacity = m_imageData.size();
@@ -613,7 +613,7 @@ struct Bbox2DData
     int32_t yMin;
     int32_t xMax;
     int32_t yMax;
-    float occlusionRatio;
+    float occlusionRatio; // Unused but needed to match the size of the incoming void* struct
 };
 
 Ros2BoundingBox2DMessageImpl::Ros2BoundingBox2DMessageImpl()
@@ -713,7 +713,7 @@ struct Bbox3DData
     float yMax;
     float zMax;
     pxr::GfMatrix4f transform;
-    float occlusionRatio;
+    float occlusionRatio; // Unused but needed to match the size of the incoming void* struct
 };
 
 Ros2BoundingBox3DMessageImpl::Ros2BoundingBox3DMessageImpl()

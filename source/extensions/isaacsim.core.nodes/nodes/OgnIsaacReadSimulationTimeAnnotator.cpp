@@ -85,7 +85,7 @@ public:
 
 private:
     bool m_resetOnStop = true;
-    isaacsim::core::simulation_manager::ISimulationManager* m_simulationManagerFramework;
+    isaacsim::core::simulation_manager::ISimulationManager* m_simulationManagerFramework = nullptr;
 };
 
 REGISTER_OGN_NODE()

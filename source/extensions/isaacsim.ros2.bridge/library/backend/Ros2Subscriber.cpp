@@ -94,6 +94,12 @@ bool Ros2SubscriberImpl::spin(void* msg)
     else
     {
         rcl_ret_t rc = rcl_wait_set_clear(&m_waitSet);
+        if (rc != RCL_RET_OK)
+        {
+            RCL_ERROR_MSG(spin, rcl_wait_set_clear);
+            return false;
+        }
+
         rc = rcl_wait_set_add_subscription(&m_waitSet, m_subscription.get(), nullptr);
         if (rc != RCL_RET_OK)
         {

@@ -201,14 +201,14 @@ private:
     bool m_serviceUpdateNeeded = true;
     bool m_messageUpdateNeeded = true;
     NodeObj m_nodeObj;
-    uint64_t m_serverHandle;
+    uint64_t m_serverHandle = 0;
 
     std::string m_messagePackage;
     std::string m_messageSubfolder;
     std::string m_messageName;
     std::string m_serviceName;
     std::string m_qosProfile;
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework;
+    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
 
     static void onPackageChanged(AttributeObj const& attrObj, void const* userData)
     {

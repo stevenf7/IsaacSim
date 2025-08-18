@@ -295,7 +295,8 @@ void SurfaceGripperComponent::updateAttachmentPoints()
             {
                 joint.GetExcludeFromArticulationAttr().Set(true);
             }
-            physx::PxJoint* px_joint = (physx::PxJoint*)g_physx->getPhysXPtr((path), omni::physx::PhysXType::ePTJoint);
+            physx::PxJoint* px_joint =
+                static_cast<physx::PxJoint*>(g_physx->getPhysXPtr((path), omni::physx::PhysXType::ePTJoint));
             if (!px_joint)
             {
                 CARB_LOG_WARN("   Gripper %s has no joint at attachment point %s", m_primPath.GetText(), path.GetText());
@@ -496,7 +497,7 @@ void SurfaceGripperComponent::checkForceLimits()
         // Get the joint prim and PhysX joint
         pxr::UsdPrim jointPrim = m_stage->GetPrimAtPath(pxr::SdfPath(attachmentPath));
         physx::PxJoint* px_joint =
-            (physx::PxJoint*)g_physx->getPhysXPtr(jointPrim.GetPath(), omni::physx::PhysXType::ePTJoint);
+            static_cast<physx::PxJoint*>(g_physx->getPhysXPtr(jointPrim.GetPath(), omni::physx::PhysXType::ePTJoint));
 
         if (!px_joint)
             continue;
@@ -602,8 +603,8 @@ void SurfaceGripperComponent::findObjectsToGrip()
         pxr::UsdPhysicsJoint joint(jointPrim);
 
         // Get PhysX joint pointer
-        physx::PxJoint* px_joint =
-            (physx::PxJoint*)g_physx->getPhysXPtr(pxr::SdfPath(attachmentPath), omni::physx::PhysXType::ePTJoint);
+        physx::PxJoint* px_joint = static_cast<physx::PxJoint*>(
+            g_physx->getPhysXPtr(pxr::SdfPath(attachmentPath), omni::physx::PhysXType::ePTJoint));
         if (!px_joint)
             continue;
 
@@ -710,7 +711,7 @@ void SurfaceGripperComponent::findObjectsToGrip()
                 }
                 // Calculate the relative transform for the joint connection
                 physx::PxRigidActor* hitActor =
-                    (physx::PxRigidActor*)g_physx->getPhysXPtr(hitPath, omni::physx::PhysXType::ePTActor);
+                    static_cast<physx::PxRigidActor*>(g_physx->getPhysXPtr(hitPath, omni::physx::PhysXType::ePTActor));
                 if (!hitActor)
                     continue;
                 // Calculate the relative transform for the joint connection
@@ -787,8 +788,8 @@ void SurfaceGripperComponent::releaseAllObjects()
     for (const auto& attachmentPath : m_attachmentPoints)
     {
         // Get the PhysX joint directly
-        physx::PxJoint* px_joint =
-            (physx::PxJoint*)g_physx->getPhysXPtr(pxr::SdfPath(attachmentPath), omni::physx::PhysXType::ePTJoint);
+        physx::PxJoint* px_joint = static_cast<physx::PxJoint*>(
+            g_physx->getPhysXPtr(pxr::SdfPath(attachmentPath), omni::physx::PhysXType::ePTJoint));
 
         if (px_joint)
         {

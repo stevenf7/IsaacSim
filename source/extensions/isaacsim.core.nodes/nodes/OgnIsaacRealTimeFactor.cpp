@@ -86,7 +86,7 @@ public:
 
 private:
     std::chrono::steady_clock::time_point m_realStartTime;
-    double m_simStartTime;
+    double m_simStartTime = 0.0;
     bool m_resetTimes = true;
     uint64_t m_frames = 0;
     uint64_t m_step = 1;

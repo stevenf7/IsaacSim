@@ -270,8 +270,9 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
         if (!list_of_clones.empty())
         {
             CARB_PROFILE_ZONE(0, "fabricClone - fabric batch clone");
-            isrwLegacy->batchClone(iStageReaderWriter->getFabricId(stageInProgress), world_envs_env_0,
-                                   { (const omni::fabric::PathC*)list_of_clones.data(), list_of_clones.size() });
+            isrwLegacy->batchClone(
+                iStageReaderWriter->getFabricId(stageInProgress), world_envs_env_0,
+                { reinterpret_cast<const omni::fabric::PathC*>(list_of_clones.data()), list_of_clones.size() });
         }
         else
         {

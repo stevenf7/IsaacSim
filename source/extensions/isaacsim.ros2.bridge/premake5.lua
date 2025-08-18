@@ -62,7 +62,6 @@ for _, ros_distro in ipairs(ros_distributions) do
     includedirs {
         "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/cuda/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include",
         "%{root}/_build/target-deps/nlohmann_json/include",
@@ -75,7 +74,6 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_dynamic_typesupport",
     }
     libdirs {
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         extsbuild_dir .. "/omni.usd.core/bin",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/lib",
     }

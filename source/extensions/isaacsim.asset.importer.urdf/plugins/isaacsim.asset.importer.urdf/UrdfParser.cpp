@@ -196,11 +196,11 @@ std::ostream& operator<<(std::ostream& out, const UrdfLink& link)
 {
     out << "Link: ";
     out << " \tName=" << link.name << std::endl;
-    for (auto& visual : link.visuals)
+    for (const auto& visual : link.visuals)
     {
         out << " \t" << visual << std::endl;
     }
-    for (auto& collision : link.collisions)
+    for (const auto& collision : link.collisions)
     {
         out << " \t" << collision << std::endl;
     }
@@ -228,15 +228,15 @@ std::ostream& operator<<(std::ostream& out, const UrdfRobot& robot)
 {
     out << "Robot: ";
     out << robot.name << std::endl;
-    for (auto& link : robot.links)
+    for (const auto& link : robot.links)
     {
         out << link.second << std::endl;
     }
-    for (auto& joint : robot.joints)
+    for (const auto& joint : robot.joints)
     {
         out << joint.second << std::endl;
     }
-    for (auto& material : robot.materials)
+    for (const auto& material : robot.materials)
     {
         out << material.second << std::endl;
     }

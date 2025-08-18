@@ -102,7 +102,7 @@ public:
             state.m_timelineEventSub = carb::events::createSubscriptionToPopByType(
                 state.m_timeline->getTimeline()->getTimelineEventStream(),
                 static_cast<carb::events::EventType>(omni::timeline::TimelineEventType::ePlay),
-                [nodeObj, instanceId](carb::events::IEvent* e) { start(nodeObj, instanceId); }, 0,
+                [nodeObj, instanceId](const carb::events::IEvent* e) { start(nodeObj, instanceId); }, 0,
                 "IsaacSimOGNPhysicStepsTimelineEventHandler");
         }
         if (pipelineStage != kGraphPipelineStage_OnDemand)
