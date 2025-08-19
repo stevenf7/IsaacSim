@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.0.3] - 2025-08-19
+### Changed
+- Update to sympy 1.13.3 for ARM64
+
 ## [3.0.2] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

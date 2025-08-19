@@ -341,7 +341,7 @@ pyproject.dependencies.linux-aarch64 = [
     "fsspec==2024.10.0",
     "mpmath==1.3.0",
     "networkx==3.4.2",
-    "sympy==1.13.1",
+    "sympy==1.13.3",
 ]
 pyproject.dependencies.windows-x86_64 = [
     # archives (omni.isaac.ml_archive)

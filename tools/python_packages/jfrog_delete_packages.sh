@@ -47,6 +47,12 @@ fi
 # delete packages
 for artifactory_package in $ARTIFACTORY_PYTHON_PACKAGES; do
     if [ "$1" == "--all" ]; then
+        # double check
+        read -p "Are you sure you want to delete all '$artifactory_package' packages? Type 'Y' to continue: " confirm
+        if [ "$confirm" != "Y" ]; then
+            echo "Aborting..."
+            exit
+        fi
         echo $ARTIFACTORY_URL/$artifactory_package
         curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X DELETE "$ARTIFACTORY_URL/$artifactory_package"
     else
