@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from isaacsim.robot.manipulators.examples.universal_robots.follow_target_experimental import UR10FollowTarget
-from isaacsim.robot.manipulators.examples.universal_robots.kinematics_solver import KinematicsSolver
-from isaacsim.robot.manipulators.examples.universal_robots.ur10 import UR10
-from isaacsim.robot.manipulators.examples.universal_robots.ur10_experimental import UR10Experimental
+
+# NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
+
+from isaacsim.examples.interactive.ur_follow_target.follow_target_experimental import UR10FollowTargetInteractive
+from isaacsim.examples.interactive.ur_follow_target.follow_target_extension_experimental import (
+    UR10FollowTargetExtension,
+)
