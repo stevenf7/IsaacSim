@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.7.1] - 2025-08-20
+### Added
+- UR robot follows target example using IK
+
 ## [4.7.0] - 2025-07-17
 ### Added
 - Flattened pick-and-place action sequence using Franka Robot
