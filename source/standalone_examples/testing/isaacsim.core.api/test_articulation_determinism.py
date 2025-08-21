@@ -18,6 +18,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import asyncio
+import sys
 
 import carb
 import numpy as np
@@ -90,11 +91,11 @@ for i in range(5):
 print(f"Over 5 trials, the Franka converged to target in {frames_to_converge} frames.")
 if np.unique(frames_to_converge).shape[0] != 1:
     print(f"Non-deterministic test converged in varying number of frames: {frames_to_converge}")
-    raise Exception
+    sys.exit(1)
 
 # On the develop branch, this test always takes 26 frames to converge
 if frames_to_converge[0] != 26:
     print("Didn't converge in the right number of frames")
-    raise Exception
+    sys.exit(1)
 
 simulation_app.close()

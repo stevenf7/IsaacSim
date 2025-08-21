@@ -17,6 +17,8 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
+import sys
+
 import carb
 import numpy as np
 import omni
@@ -65,7 +67,8 @@ print("cube pose", cube_1.get_world_pose())
 reading = cs.get_sensor_reading(cube_path + "/Contact_Sensor")
 
 if not reading.is_valid:
-    raise ValueError("No contact sensor readings")
+    print("[FAIL] No contact sensor readings")
+    sys.exit(1)
 
 if reading.is_valid:
     print(str(reading))

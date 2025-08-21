@@ -75,7 +75,8 @@ rgba = camera.get_rgba()
 print(rgba.size)
 
 if rgba.size != 1280 * 720 * 4:
-    raise ValueError(f"RGB buffer has size of {rgba.size} which is not {1280*720*4}")
+    print(f"[FAIL] RGB buffer has size of {rgba.size} which is not {1280*720*4}")
+    sys.exit(1)
 
 # Cleanup application
 simulation_app.close()
