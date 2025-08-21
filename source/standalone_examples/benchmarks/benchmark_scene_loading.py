@@ -46,7 +46,6 @@ cam_pos = args.camera_position
 cam_target = args.camera_target
 gpu_frametime = args.gpu_frametime
 headless = args.non_headless
-viewport_updates = args.viewport_updates
 n_gpu = args.num_gpus
 
 # Both cam_pos and cam_target should be specified if used
