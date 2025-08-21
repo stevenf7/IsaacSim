@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.6] - 2025-08-21
+### Changed
+- RTX Lidar menu options now use IsaacSensorCreateRtxLidar command to align with other APIs
+
 ## [1.1.5] - 2025-08-06
 ### Changed
 - Remove test_helpers_gfx from test dependencies
