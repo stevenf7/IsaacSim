@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.3] - 2025-08-21
+### Changed
+- Fix PIL image conversion warnings
 
 ## [1.3.2] - 2025-07-29
 ### Fixed
