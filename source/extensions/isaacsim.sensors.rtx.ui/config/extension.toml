@@ -1,5 +1,5 @@
 [package]
-version = "1.1.5"
+version = "1.1.6"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation UI Components"
 description = "Provides UI components for Isaac Sim RTX-based sensor simulation, eg. menu options."
@@ -70,6 +70,9 @@ args = [
     ### Extension specific args
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
+]
+stdoutFailPatterns.include = [
+    "*Config * not found for OmniLidar*"
 ]
 
 [[test]]
