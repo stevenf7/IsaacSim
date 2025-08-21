@@ -566,6 +566,15 @@ function create_tests()
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
         },
         {
+            "tests-nativepython-testing-isaacsim.replicator.examples.ar_capture_pipeline",
+            "/standalone_examples/testing/isaacsim.replicator.examples/ar_capture_pipeline.py",
+        },
+        {
+            "tests-nativepython-testing-isaacsim.replicator.examples.ar_capture_pipeline_gpu",
+            "/standalone_examples/testing/isaacsim.replicator.examples/ar_capture_pipeline.py",
+            "--gpu_dynamics",
+        },
+        {
             "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_short",
             "/standalone_examples/testing/isaacsim.replicator.examples/motion_blur_short.py",
         },
