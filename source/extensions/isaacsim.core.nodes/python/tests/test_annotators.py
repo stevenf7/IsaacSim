@@ -104,7 +104,7 @@ class TestAnnotators(omni.kit.test.AsyncTestCase):
         current_sim_time = self._core_nodes_interface.get_sim_time_at_time(
             (fabric_time_data["referenceTimeNumerator"], fabric_time_data["referenceTimeDenominator"])
         )
-        self.assertAlmostEqual(current_sim_time, 0.01666666753590107 * 13)
+        self.assertAlmostEqual(current_sim_time, 0.01666666753590107 * 12)
         annotator_read_sim_time.detach()
         annotator_read_system_time.detach()
         fabric_time_annotator.detach()

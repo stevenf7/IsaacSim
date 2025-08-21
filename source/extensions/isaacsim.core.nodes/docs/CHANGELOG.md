@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.2] - 2025-08-18
+### Fixed
+- Fix test golden values after timestamp fix
+
 ## [3.3.1] - 2025-08-13
 ### Fixed
 - Fix issue with inconsistent publishing rates due to upstream frame times nodes, a new render product frame time node is used . 

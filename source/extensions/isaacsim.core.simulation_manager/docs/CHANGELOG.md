@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0] - 2025-08-18
+### Changed
+- Backend time sampling is now done using a circular buffer that writes/reads rational time samples and properly works with FSD enabled/disabled.
+### Fixed
+- Duplicated/incorrect timestamp issue
+
 ## [1.3.4] - 2025-08-14
 ### Fixed
 - Do not change /physics/outputVelocitiesLocalSpace when fabric is enabled/disabled
