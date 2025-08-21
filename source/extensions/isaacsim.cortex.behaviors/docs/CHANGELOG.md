@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.13] - 2025-08-20
+### Changed
+- Increased tolerance on bin picking task when reaching bin
+
 ## [2.0.12] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.0.11)
