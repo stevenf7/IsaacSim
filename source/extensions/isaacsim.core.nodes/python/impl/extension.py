@@ -43,11 +43,6 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_error(f"Could not register node templates {e}")
 
-        self._stage_event_sub = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._on_stage_open_event)
-        )
         pass
 
     def on_shutdown(self):
@@ -57,23 +52,7 @@ class Extension(omni.ext.IExt):
             self.unregister_nodes()
         except Exception as e:
             carb.log_warn(f"Could not unregister node templates {e}")
-        self._stage_event_sub = None
         pass
-
-    def _on_stage_open_event(self, event):
-        # Workaround for issue where an opened stage can contain a dirty /Render path
-        stage = get_current_stage()
-        path = "/Render"
-        # delete any deltas on the root layer
-        try:
-            from omni.kit.widget.layers.layer_commands import RemovePrimSpecCommand
-
-            RemovePrimSpecCommand(layer_identifier=stage.GetRootLayer().realPath, prim_spec_path=[Sdf.Path(path)]).do()
-        except:
-            pass
-        # Make sure /Render is hidden
-        if get_prim_at_path(path):
-            get_prim_at_path(path).SetMetadata("hide_in_stage_window", True)
 
     def register_nodes(self):
         ## Annotators

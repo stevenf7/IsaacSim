@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.0] - 2025-08-20
+### Changed
+- Remove workaround for /Render prim visibility and deleting deltas in stage open event
+
 ## [3.3.2] - 2025-08-18
 ### Fixed
 - Fix test golden values after timestamp fix
