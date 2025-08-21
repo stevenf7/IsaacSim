@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.11.0] - 2025-08-19
+## Changed
+- Set default ROS bridge lib setting to system_default and cleanup ROS Bridge loading
+
 ## [4.10.1] - 2025-08-14
 ### Changed
 - Cleanup unused code in tests
