@@ -215,7 +215,7 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
 
                 # Util function to save rgb images to file
                 def save_img(rgb_data, filename):
-                    rgb_img = Image.fromarray(rgb_data, "RGBA")
+                    rgb_img = Image.fromarray(rgb_data).convert("RGBA")
                     rgb_img.save(filename + ".png")
 
                 self._switch_to_pathtracing()

@@ -204,7 +204,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
 
         # Helper functions for writing images from annotator data
         def write_rgb(data, path):
-            rgb_img = Image.fromarray(data, mode="RGBA")
+            rgb_img = Image.fromarray(data).convert("RGBA")
             rgb_img.save(path + ".png")
 
         def write_depth(data, path):
@@ -216,7 +216,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             data = np.nan_to_num(data, nan=np.nanmean(data), copy=False)
             normalized_array = (data - np.min(data)) / (np.max(data) - np.min(data))
             integer_array = (normalized_array * 255).astype(np.uint8)
-            depth_img = Image.fromarray(integer_array, mode="L")
+            depth_img = Image.fromarray(integer_array).convert("L")
             depth_img.save(path + ".png")
 
         # Setup the environment
