@@ -5,7 +5,7 @@ import sys
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--test-steps", type=int, default=3)  # Run for a few frames
+parser.add_argument("--test-steps", type=int, default=1000)  # Run for a few frames
 args, _ = parser.parse_known_args()
 
 import carb
@@ -14,10 +14,10 @@ from isaacsim import SimulationApp
 BACKGROUND_STAGE_PATH = "/background"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": False}
+CONFIG = {"renderer": "RayTracedLighting", "headless": True}
 
 # Example ROS2 bridge sample demonstrating the manual loading of stages and manual publishing of images
-simulation_app = SimulationApp(CONFIG, experience=f'{os.environ["EXP_PATH"]}/isaacsim.exp.base.zero_delay.kit')
+simulation_app = SimulationApp(CONFIG)
 import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni
@@ -61,6 +61,7 @@ class TimestampChecker(Node):
         self.topic_timestamps = defaultdict(set)  # topic_name -> set of timestamps
         self.topic_last_timestamp = defaultdict(lambda: None)  # topic_name -> last timestamp
         self.event = Event()
+        self.error_detected = False  # Flag to track if any timestamp errors are detected
         import rosidl_runtime_py
         from rosidl_runtime_py.utilities import get_message
 
@@ -82,10 +83,11 @@ class TimestampChecker(Node):
         timestamp = getattr(msg, "header", None)
         if timestamp:
             time_val = (timestamp.stamp.sec, timestamp.stamp.nanosec)
-
+            # print(f"Timestamp: {time_val}")
             # Check for duplicate timestamps
             if time_val in self.topic_timestamps[topic_name]:
                 print(f"ERROR: Duplicate timestamp {time_val} detected on topic {topic_name}")
+                self.error_detected = True
                 return
 
             # Check for backwards timestamps
@@ -103,6 +105,7 @@ class TimestampChecker(Node):
                         f"ERROR: Backwards timestamp detected on topic {topic_name}: "
                         f"current {time_val} < previous {last_timestamp}"
                     )
+                    self.error_detected = True
                     return
 
             # Update tracking data structures
@@ -376,6 +379,9 @@ simulation_context.play()
 
 for _ in range(args.test_steps):
     simulation_context.step(render=True)
+    if checker.error_detected:
+        print("Exiting simulation loop due to timestamp error")
+        break
 
 # Clean up
 checker.stop()
