@@ -83,7 +83,8 @@ def main():
                 atol=0.01,
             ).all()
         ):
-            raise (ValueError(f"PhysX is not synced with Fabric CPU"))
+            print(f"[FAIL] PhysX is not synced with Fabric CPU")
+            sys.exit(1)
         sim.render()
         panda_link1_fabric_world_matrix = get_prim_attribute_value(
             "/World/Franka/panda_link1", "omni:fabric:worldMatrix", fabric=True
@@ -96,7 +97,8 @@ def main():
                 atol=0.01,
             ).all()
         ):
-            raise (ValueError(f"Kinematic Tree is not updated in fabric"))
+            print(f"[FAIL] Kinematic Tree is not updated in fabric")
+            sys.exit(1)
         cube_fabric_world_matrix = get_prim_attribute_value(
             "/World/Origin1/cube", "omni:fabric:worldMatrix", fabric=True
         )
@@ -108,7 +110,8 @@ def main():
                 atol=0.01,
             ).all()
         ):
-            raise (ValueError(f"PhysX is not synced with Fabric CPU"))
+            print(f"[FAIL] PhysX is not synced with Fabric CPU")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
