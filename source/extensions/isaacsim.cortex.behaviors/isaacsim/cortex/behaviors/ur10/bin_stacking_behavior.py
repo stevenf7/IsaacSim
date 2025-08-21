@@ -282,7 +282,7 @@ class BinStackingContext(ObstacleMonitorContext):
         if self.has_active_bin:
             fk_T = self.robot.arm.get_fk_T()
             self.active_bin.is_grasp_reached = math_util.transforms_are_close(
-                self.active_bin.grasp_T, fk_T, p_thresh=0.005, R_thresh=0.01
+                self.active_bin.grasp_T, fk_T, p_thresh=0.01, R_thresh=0.01
             )
             # We can be looser with this proximity check.
             self.active_bin.is_attached = (
@@ -332,7 +332,7 @@ class ReachToPick(MoveWithNavObs):
     """
 
     def __init__(self):
-        super().__init__(p_thresh=0.001, R_thresh=2.0)
+        super().__init__(p_thresh=0.005, R_thresh=2.0)
 
     def enter(self):
         super().enter()
