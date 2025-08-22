@@ -382,29 +382,32 @@ void fillValidCartesianPoints(float* azimuth, float* elevation, float* range, fl
 }
 
 template <typename T>
-__global__ void selectValidPointsKernel(T* inData, T* outData, size_t* validIndices, int* numValidPoints) {
+__global__ void selectValidPointsKernel(T* inData, T* outData, size_t* validIndices, int* numValidPoints, size_t stride) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= *numValidPoints) {
         return;
     }
-    outData[idx] = inData[validIndices[idx]];
+    for (size_t i = 0; i < stride; i++) {
+        outData[idx*stride + i] = inData[validIndices[idx]*stride + i];
+    }
 }
 
 template <typename T>
-void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream) {
+void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride) {
     isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
 
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, cudaDeviceIndex);
     const int nt = prop.maxThreadsPerBlock;
     const int nb = (maxPoints + nt - 1) / nt;
-    selectValidPointsKernel<<<nb, nt, 0, stream>>>(inData, outData, validIndices, numValidPoints);
+    selectValidPointsKernel<<<nb, nt, 0, stream>>>(inData, outData, validIndices, numValidPoints, stride);
 }
 
-template void selectValidPoints<float>(float* inData, float* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream);
-template void selectValidPoints<float3>(float3* inData, float3* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream);
-template void selectValidPoints<int32_t>(int32_t* inData, int32_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream);
-template void selectValidPoints<uint32_t>(uint32_t* inData, uint32_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream);
+template void selectValidPoints<float>(float* inData, float* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<float3>(float3* inData, float3* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<int32_t>(int32_t* inData, int32_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<uint8_t>(uint8_t* inData, uint8_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<uint32_t>(uint32_t* inData, uint32_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
 
 }   // namespace isaacsim
 }   // namespace sensors
