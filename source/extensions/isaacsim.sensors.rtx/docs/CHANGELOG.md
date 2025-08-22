@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.6.1] - 2025-08-22
+### Fixed
+- Corrected field name in test_generic_model_output
+
 ## [15.6.0] - 2025-08-08
 ### Added
 - StableIdMap annotator available in LidarRtx class
