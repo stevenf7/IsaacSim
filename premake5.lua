@@ -167,39 +167,58 @@ function process_git_branch(official_branch_roots)
         official_branch_roots = {"release"}
     end
     
+    print("process_git_branch: Starting with official_branch_roots = " .. table.concat(official_branch_roots, ", "))
+    
     -- Check for environment variables first (CI context)
     local gitbranch = os.getenv("buildbranch") or os.getenv("CI_COMMIT_BRANCH") or os.getenv("CI_COMMIT_REF_SLUG") or ""
+    print("process_git_branch: Initial gitbranch from env vars = '" .. gitbranch .. "'")
     
     -- If we're in a merge request, use MR format
     local mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
     if mr_iid ~= nil and mr_iid ~= "" then
+        print("process_git_branch: Found merge request IID = " .. mr_iid)
         gitbranch = "mr" .. mr_iid
+        print("process_git_branch: Set branch to merge request format = '" .. gitbranch .. "'")
     else
+        print("process_git_branch: No merge request IID found")
         -- If no branch from env vars, get from git
         if gitbranch == "" then
+            print("process_git_branch: No branch from env vars, querying git")
             gitbranch = get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
+        else
+            print("process_git_branch: Using branch from env vars = '" .. gitbranch .. "'")
         end
         
         if gitbranch ~= nil and gitbranch ~= "" then
+            local original_gitbranch = gitbranch
+            print("process_git_branch: Processing branch = '" .. gitbranch .. "'")
+            
             -- Handle merge-request branches
             if string.find(string.lower(gitbranch), "merge%-request") then
+                print("process_git_branch: Detected merge-request branch pattern")
                 if string.find(gitbranch, "/") then
+                    print("process_git_branch: Extracting part after last '/' from merge-request branch")
                     -- Extract the part after the last "/"
                     local parts = {}
                     for part in string.gmatch(gitbranch, "[^/]+") do
                         table.insert(parts, part)
                     end
                     gitbranch = "mr" .. parts[#parts]
+                    print("process_git_branch: Extracted merge-request branch = '" .. gitbranch .. "'")
                 else
                     gitbranch = "mr"
+                    print("process_git_branch: Set to generic 'mr' for merge-request branch")
                 end
             else
+                print("process_git_branch: Processing regular branch")
                 -- Check if it starts with official branch roots
                 local is_official = false
                 for _, prefix in ipairs(official_branch_roots) do
                     if string.find(gitbranch, "^" .. prefix .. "/") then
+                        print("process_git_branch: Found official branch with prefix '" .. prefix .. "'")
                         -- Take just the prefix part
                         gitbranch = string.match(gitbranch, "^([^/]+)")
+                        print("process_git_branch: Set to official branch root = '" .. gitbranch .. "'")
                         is_official = true
                         break
                     end
@@ -207,23 +226,38 @@ function process_git_branch(official_branch_roots)
                 
                 -- If not official, take the last part after final "/"
                 if not is_official then
+                    print("process_git_branch: Not an official branch, extracting last part after '/'")
                     local parts = {}
                     for part in string.gmatch(gitbranch, "[^/]+") do
                         table.insert(parts, part)
                     end
                     if #parts > 0 then
                         gitbranch = parts[#parts]
+                        print("process_git_branch: Extracted non-official branch = '" .. gitbranch .. "'")
+                    else
+                        print("process_git_branch: Warning: No parts found when splitting branch name")
                     end
+                else
+                    print("process_git_branch: Using official branch = '" .. gitbranch .. "'")
                 end
             end
             
             -- Clean up the branch name
+            local pre_cleanup = gitbranch
             gitbranch = string.gsub(gitbranch, "/", "_")
             gitbranch = string.gsub(gitbranch, "%+", "")
             gitbranch = string.gsub(gitbranch, "%.", "")
+            if pre_cleanup ~= gitbranch then
+                print("process_git_branch: Cleaned up branch name from '" .. pre_cleanup .. "' to '" .. gitbranch .. "'")
+            else
+                print("process_git_branch: No cleanup needed for branch name")
+            end
+        else
+            print("process_git_branch: Warning: gitbranch is empty or nil after git query")
         end
     end
     
+    print("process_git_branch: Returning final branch = '" .. (gitbranch or "nil") .. "'")
     return gitbranch
 end
 -- AUTOREMOVE: END
@@ -237,6 +271,9 @@ function generate_version_header()
     branch = process_git_branch({"release", "develop"})
 -- AUTOREMOVE: END
     branch = branch or get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
+    
+    -- Always print the final branch value
+    print("ISAACSIM_BUILD_BRANCH " .. (branch or "UNKNOWN"))
     
     version = get_git_info("show HEAD:VERSION", "ISAACSIM_BUILD_VERSION")
     repo = get_git_info("config --get remote.origin.url", "ISAACSIM_BUILD_REPO")
