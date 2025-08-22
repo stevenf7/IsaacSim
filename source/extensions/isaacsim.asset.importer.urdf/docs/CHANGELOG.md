@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.4.23] - 2025-08-21
+### Changed
+- Promoted missing mesh to error message
+- URDF gets imported even if meshes are not found
+
 ## [2.4.22] - 2025-08-02
 ### Changed
 - Remove direct dependency from Omniverse Asset Converter, and use omni.kit.asset_converter

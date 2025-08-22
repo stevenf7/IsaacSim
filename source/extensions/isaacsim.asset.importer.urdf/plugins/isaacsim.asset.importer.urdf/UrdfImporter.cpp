@@ -164,8 +164,8 @@ pxr::UsdPrim addMeshReference(UrdfGeometry geometry,
     pxr::SdfPath path;
     if (meshPath.empty())
     {
-        CARB_LOG_WARN("Failed to resolve mesh '%s'", meshUri.c_str());
-        return pxr::UsdPrim();
+        CARB_LOG_ERROR("Failed to resolve mesh '%s'", meshUri.c_str());
+        return usdXform.GetPrim();
     }
     else if (IsUsdFile(meshPath))
     {
@@ -177,6 +177,11 @@ pxr::UsdPrim addMeshReference(UrdfGeometry geometry,
         CARB_LOG_INFO("Found Mesh At: %s (%s)", meshPath.c_str(), meshName.c_str());
         std::string next_path = std::string("/meshes/") + makeValidUSDIdentifier(getPathStem(meshPath.c_str()));
         path = SimpleImport(stage, next_path, meshPath, meshList, materialList, robotRoot);
+        if (path.IsEmpty())
+        {
+            CARB_LOG_ERROR("Failed to import mesh '%s'", meshPath.c_str());
+            return usdXform.GetPrim();
+        }
         usdXform.GetPrim().GetReferences().AddInternalReference(path);
     }
     return usdXform.GetPrim();
