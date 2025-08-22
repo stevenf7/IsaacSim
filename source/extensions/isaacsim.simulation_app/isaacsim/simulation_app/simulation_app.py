@@ -366,6 +366,10 @@ class SimulationApp:
             args.append(f'--/physics/cudaDevice={self.config["physics_gpu"]}')
         if self.config.get("max_gpu_count") is not None:
             args.append(f'--/renderer/multiGpu/maxGpuCount={self.config["max_gpu_count"]}')
+        if self.config.get("enable_motion_bvh"):
+            args.append("--/renderer/raytracingMotion/enabled=true")
+            args.append("--/renderer/raytracingMotion/enableHydraEngineMasking=true")
+            args.append("--/renderer/raytracingMotion/enabledForHydraEngines='0'")
 
         # limit the number of CPU threads created to lesser of: num_cpu_cores or config-set limit
         num_cpu_cores = os.cpu_count()

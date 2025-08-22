@@ -18,7 +18,7 @@ import argparse
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp({"headless": True, "enable_motion_bvh": True})
 
 import carb
 import omni
