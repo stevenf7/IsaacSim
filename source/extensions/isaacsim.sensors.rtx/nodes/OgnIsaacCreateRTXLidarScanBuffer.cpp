@@ -59,7 +59,7 @@ private:
     std::array<isaacsim::core::includes::DeviceBufferBase<int32_t>, 2> timestampBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> emitterIdBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> materialIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> objectIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> objectIdBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<float3>, 2> normalBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<float3>, 2> velocityBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> flagsBuffers;
@@ -88,7 +88,7 @@ private:
     isaacsim::core::includes::DeviceBufferBase<int32_t> timestampBufferValid;
     isaacsim::core::includes::DeviceBufferBase<uint32_t> emitterIdBufferValid;
     isaacsim::core::includes::DeviceBufferBase<uint32_t> materialIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint32_t> objectIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint8_t> objectIdBufferValid;
     isaacsim::core::includes::DeviceBufferBase<float3> normalBufferValid;
     isaacsim::core::includes::DeviceBufferBase<float3> velocityBufferValid;
 
@@ -197,17 +197,19 @@ public:
             if (m_outputObjectId)
             {
                 objectIdBuffers[i].setDevice(cudaDeviceIndex);
-                objectIdBuffers[i].resize(m_maxPoints);
+                objectIdBuffers[i].resize(m_maxPoints * 16); // object id is stride 16
             }
             if (m_outputNormal)
             {
                 normalBuffers[i].setDevice(cudaDeviceIndex);
-                normalBuffers[i].resize(m_maxPoints);
+                normalBuffers[i].resize(m_maxPoints); // normals are stride 3, but we're storing them as float3, so use
+                                                      // stride 1
             }
             if (m_outputVelocity)
             {
                 velocityBuffers[i].setDevice(cudaDeviceIndex);
-                velocityBuffers[i].resize(m_maxPoints);
+                velocityBuffers[i].resize(m_maxPoints); // velocity is stride 3, but we're storing it as float3, so use
+                                                        // stride 1
             }
         }
 
@@ -252,7 +254,7 @@ public:
         if (m_outputObjectId)
         {
             objectIdBufferValid.setDevice(cudaDeviceIndex);
-            objectIdBufferValid.resize(m_maxPoints);
+            objectIdBufferValid.resize(m_maxPoints * 16); // stride 16
         }
         if (m_outputNormal)
         {
@@ -476,13 +478,13 @@ public:
         }
         if (state.m_outputObjectId)
         {
-            CUDA_CHECK(cudaMemcpyAsync(state.objectIdBuffers[state.m_currentBuffer].data() + startIndex,
-                                       state.hostAuxPoints->objId, numElementsToCopyToCurrentBuffer * sizeof(uint32_t),
-                                       cudaMemcpyHostToDevice, cudaStreams[16]));
+            CUDA_CHECK(cudaMemcpyAsync(
+                state.objectIdBuffers[state.m_currentBuffer].data() + startIndex * 16, state.hostAuxPoints->objId,
+                numElementsToCopyToCurrentBuffer * sizeof(uint8_t) * 16, cudaMemcpyHostToDevice, cudaStreams[16]));
             CUDA_CHECK(cudaEventRecord(copyEvents[16], cudaStreams[16]));
             CUDA_CHECK(cudaMemcpyAsync(state.objectIdBuffers[state.m_nextBuffer].data(),
                                        state.hostAuxPoints->objId + numElementsToCopyToCurrentBuffer,
-                                       numElementsToCopyToNextBuffer * sizeof(uint32_t), cudaMemcpyHostToDevice,
+                                       numElementsToCopyToNextBuffer * sizeof(uint8_t) * 16, cudaMemcpyHostToDevice,
                                        cudaStreams[17]));
             CUDA_CHECK(cudaEventRecord(copyEvents[17], cudaStreams[17]));
         }
@@ -555,7 +557,7 @@ public:
                 db.outputs.azimuthBufferSize() = state.numValidPointsHost[0] * sizeof(float);
                 selectValidPoints(state.azimuthBuffers[state.m_currentBuffer].data(), state.azimuthBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[0]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[0], 1);
             }
             if (state.m_outputElevation)
             {
@@ -563,7 +565,7 @@ public:
                 db.outputs.elevationBufferSize() = state.numValidPointsHost[0] * sizeof(float);
                 selectValidPoints(state.elevationBuffers[state.m_currentBuffer].data(), state.elevationBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[2]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[2], 1);
             }
             if (state.m_outputDistance)
             {
@@ -571,7 +573,7 @@ public:
                 db.outputs.distanceBufferSize() = state.numValidPointsHost[0] * sizeof(float);
                 selectValidPoints(state.distanceBuffers[state.m_currentBuffer].data(), state.distanceBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[4]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[4], 1);
             }
             if (state.m_outputIntensity)
             {
@@ -579,7 +581,7 @@ public:
                 db.outputs.intensityBufferSize() = state.numValidPointsHost[0] * sizeof(float);
                 selectValidPoints(state.intensityBuffers[state.m_currentBuffer].data(), state.intensityBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[8]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[8], 1);
             }
             if (state.m_outputTimestamp)
             {
@@ -587,7 +589,7 @@ public:
                 db.outputs.timestampBufferSize() = state.numValidPointsHost[0] * sizeof(int32_t);
                 selectValidPoints(state.timestampBuffers[state.m_currentBuffer].data(), state.timestampBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[10]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[10], 1);
             }
             if (state.m_outputEmitterId)
             {
@@ -595,7 +597,7 @@ public:
                 db.outputs.emitterIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint32_t);
                 selectValidPoints(state.emitterIdBuffers[state.m_currentBuffer].data(), state.emitterIdBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[12]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[12], 1);
             }
             if (state.m_outputMaterialId)
             {
@@ -604,15 +606,15 @@ public:
                 selectValidPoints(state.materialIdBuffers[state.m_currentBuffer].data(),
                                   state.materialIdBufferValid.data(), state.indicesValidBuffer.data(),
                                   state.numValidPointsDevice, static_cast<int>(state.m_maxPoints), cudaDeviceIndex,
-                                  cudaStreams[14]);
+                                  cudaStreams[14], 1);
             }
             if (state.m_outputObjectId)
             {
                 db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.objectIdBufferValid.data());
-                db.outputs.objectIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint32_t);
+                db.outputs.objectIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint8_t) * 16;
                 selectValidPoints(state.objectIdBuffers[state.m_currentBuffer].data(), state.objectIdBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[16]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[16], 16);
             }
             if (state.m_outputNormal)
             {
@@ -620,7 +622,7 @@ public:
                 db.outputs.normalBufferSize() = state.numValidPointsHost[0] * sizeof(float3);
                 selectValidPoints(state.normalBuffers[state.m_currentBuffer].data(), state.normalBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[18]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[18], 1);
             }
             if (state.m_outputVelocity)
             {
@@ -628,7 +630,7 @@ public:
                 db.outputs.velocityBufferSize() = state.numValidPointsHost[0] * sizeof(float3);
                 selectValidPoints(state.velocityBuffers[state.m_currentBuffer].data(), state.velocityBufferValid.data(),
                                   state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[20]);
+                                  static_cast<int>(state.m_maxPoints), cudaDeviceIndex, cudaStreams[20], 1);
             }
 
             // Synchronize on the output/current streams

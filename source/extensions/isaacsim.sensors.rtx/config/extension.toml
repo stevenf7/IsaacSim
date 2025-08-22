@@ -1,5 +1,5 @@
 [package]
-version = "15.5.2"
+version = "15.6.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -86,6 +86,7 @@ stdoutFailPatterns.exclude = [
     "*Missing call to destroyResourceBindingSignature()*",
     "*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*",
     "*RuntimeWarning: invalid value encountered in divide*",
+    "*RuntimeWarning: divide by zero encountered in divide*",
     "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar, and node will not execute. Stop the simulation, correct the issue, and restart.*",
     "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: Lidar prim elevationDeg contains nonzero value*",
     "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.*"
@@ -140,6 +141,7 @@ args = [
     ### Extension specific args
     "--/app/hydraEngine/waitIdle=1",
     "--/app/updateOrder/checkForHydraRenderComplete=1000",
+    "--/rtx-transient/stableIds/enabled=true",
 ]
 
 [[test]]

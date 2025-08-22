@@ -146,7 +146,7 @@ void fillIndices(size_t* indices, size_t numIndices, int cudaDeviceIndex, cudaSt
 void fillValidCartesianPoints(float* azimuth, float* elevation, float* range, float3* cartesianPoints, size_t* validIndices, int* numValidPoints, int maxPoints,int cudaDeviceIndex, cudaStream_t stream);
 
 template <typename T>
-void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream);
+void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
 
 }
 }

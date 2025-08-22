@@ -1,5 +1,10 @@
 # Changelog
 
+## [15.6.0] - 2025-08-08
+### Added
+- StableIdMap annotator available in LidarRtx class
+- New static methods in LidarRTX class to decode StableIdMap output into map of stable IDs to prim paths, and resolve GenericModelOutput object IDs as 128-bit stable IDs.
+
 ## [15.5.2] - 2025-08-07
 ### Fixed
 - Annotator test tolerance increased to 2% to account for FlatScan not interpolating distance based on azimuths

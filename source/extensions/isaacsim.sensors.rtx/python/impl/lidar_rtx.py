@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple
 
 import carb
 import numpy as np
@@ -119,6 +119,12 @@ class LidarRtx(BaseSensor):
             elif not get_prim_at_path(prim_path).HasAPI("OmniSensorGenericLidarCoreAPI"):
                 raise Exception(f"Prim at {prim_path} does not have the OmniSensorGenericLidarCoreAPI schema.")
             carb.log_warn("Using existing RTX Lidar prim at path {}".format(prim_path))
+            sensor = get_prim_at_path(prim_path)
+            for key, value in kwargs.items():
+                if sensor.HasAttribute(key):
+                    sensor.GetAttribute(key).Set(value)
+                else:
+                    carb.log_warn(f"Sensor at {prim_path} does not have attribute {key}")
         else:
             p = position if translation is None else translation
             _, sensor = omni.kit.commands.execute(
@@ -194,6 +200,7 @@ class LidarRtx(BaseSensor):
             "IsaacComputeRTXLidarFlatScan",
             "IsaacExtractRTXSensorPointCloudNoAccumulator",
             "IsaacCreateRTXLidarScanBuffer",
+            "StableIdMap",
         ],
     ) -> None:
         """Attach an annotator to the Lidar sensor.
@@ -203,6 +210,7 @@ class LidarRtx(BaseSensor):
                 - "IsaacComputeRTXLidarFlatScan"
                 - "IsaacExtractRTXSensorPointCloudNoAccumulator"
                 - "IsaacCreateRTXLidarScanBuffer"
+                - "StableIdMap"
         """
         if annotator_name in self._annotators:
             carb.log_warn(f"Annotator {annotator_name} already attached to {self._render_product_path}")
@@ -690,3 +698,39 @@ class LidarRtx(BaseSensor):
             "remove_elevation_data_to_frame is deprecated as of Isaac Sim 5.0 and will be removed in a future release."
         )
         return
+
+    @staticmethod
+    def decode_stable_id_mapping(stable_id_mapping_raw: bytes):
+        """Decode the StableIdMap buffer into a dictionary of stable IDs to labels.
+        The buffer is a sequence of 6-byte entries, each containing:
+        - 4 bytes for the stable ID (uint32)
+        - 1 byte for the label length (uint8)
+        - 1 byte for the label offset (uint8)
+        The label is a UTF-8 string of the specified length, starting at the offset.
+        """
+        num_entries = int.from_bytes(stable_id_mapping_raw[-4:], byteorder="little")
+        output_data_type = np.dtype([("stable_id", "<u4", (4)), ("label_length", "<u4"), ("label_offset", "<u4")])
+        entry_data_length = num_entries * output_data_type.itemsize
+        entries = np.frombuffer(stable_id_mapping_raw[:entry_data_length], "<u4").reshape(-1, 6)
+
+        mapping = {}
+        for entry in entries:
+            entry_id = int.from_bytes(entry[:4].tobytes(), byteorder="little")
+            mapping[entry_id] = stable_id_mapping_raw[entry[5] : entry[5] + entry[4]].decode("utf8").rstrip()
+        return mapping
+
+    @staticmethod
+    def get_object_ids(obj_ids: np.ndarray) -> List[int]:
+        """Get Object IDs from the GenericModelOutput object ID buffer.
+        The buffer is an array of dtype uint8 that must be converted
+        to a list of dtype uint128 (stride 16). Each uint128 is a unique stable
+        ID for a prim in the scene, which can be used to look up the prim
+        path in the map provided by the StableIdMap annotator (see above).
+
+        Args:
+            obj_ids (np.ndarray): The GenericModelOutput object ID buffer.
+
+        Returns:
+            List[int]: The object IDs as a list of uint128.
+        """
+        return [int.from_bytes(item, byteorder="little") for item in obj_ids.view(np.dtype("<U4"))]
