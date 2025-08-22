@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.0] - 2025-08-04
+### Added
+- New 'enable_motion_bvh' config to enable Motion BVH settings via extra_args
+
 ## [2.9.2] - 2025-06-19
 ### Changed
 - Remove replicator shutdown workaround

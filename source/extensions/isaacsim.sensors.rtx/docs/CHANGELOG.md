@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.6.2] - 2025-08-22
+### Removed
+- Motion BVH no longer enabled by default.
+
 ## [15.6.1] - 2025-08-22
 ### Fixed
 - Corrected field name in test_generic_model_output

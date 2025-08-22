@@ -24,7 +24,9 @@ parser.add_argument("--test", default=False, action="store_true", help="Run in t
 args, unknown = parser.parse_known_args()
 
 # Specify --/rtx-transient/stableIds/enabled=true to enable StableIdMap output
-simulation_app = SimulationApp({"headless": args.test, "extra_args": ["--/rtx-transient/stableIds/enabled=true"]})
+simulation_app = SimulationApp(
+    {"headless": args.test, "enable_motion_bvh": True, "extra_args": ["--/rtx-transient/stableIds/enabled=true"]}
+)
 
 import carb
 from isaacsim.sensors.rtx import LidarRtx, get_gmo_data
