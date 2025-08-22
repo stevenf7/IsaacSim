@@ -57,9 +57,9 @@ Current public release: **4.2.0-rc.18**
 
 ## Python packages
 
-* Python packages (public): [pypi.nvidia.com](https://pypi.nvidia.com)
-  * See [Install Isaac Sim using PIP](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_python.html#install-isaac-sim-using-pip) for installation instructions.
-* Python packages (internal: beta, release candidates, etc.): [urm.nvidia.com/artifactory/sw-isaacsim-pypi-local](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local)
+* Python packages (**public**): [pypi.nvidia.com](https://pypi.nvidia.com)
+  * See [Install Isaac Sim using PIP](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_python.html#installation-using-pip) for installation instructions.
+* Python packages (**internal**: beta, release candidates, etc.): [urm.nvidia.com/artifactory/sw-isaacsim-pypi-local](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local)
   * See the internal [README](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local/README.html) for installation instructions.
 
 ## Native Python Sample Repository
