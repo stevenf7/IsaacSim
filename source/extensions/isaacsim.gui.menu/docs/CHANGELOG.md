@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2025-08-21
+### Changed
+- Moved help menu links to isaacsim.gui.menu from isaacsim.app.setup
+
 ## [2.3.17] - 2025-07-22
 ### Changed
 - Add delay to menu click for sensor tests
