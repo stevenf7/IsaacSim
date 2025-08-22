@@ -136,6 +136,8 @@ inventory.excludes.all = [
     # large in size cache (to isaacsim-extscache-kit-sdk)
     "extscache/omni.sensors*",
     "extscache/omni.kit.converter*",
+    # compatibility check
+    "extscache/isaacsim.app.compatibility_check*",
 ]
 
 [isaacsim-extscache-kit-sdk]
@@ -190,6 +192,9 @@ inventory.includes.all = [
     "extsDeprecated/omni.isaac.window.about",
     # others
     "VERSION",
+    # compatibility check
+    [ "apps/isaacsim.exp.compatibility_check.kit", "apps" ],
+    [ "extscache/isaacsim.app.compatibility_check*", "exts" ],
 ]
 
 [isaacsim-asset]
