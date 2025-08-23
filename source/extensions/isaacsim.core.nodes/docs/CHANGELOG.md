@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.1] - 2025-08-22
+### Changed
+- Use SimulationManager instead of deprecated CoreNodes APIs for time related APIs
+
 ## [3.4.0] - 2025-08-20
 ### Changed
 - Remove workaround for /Render prim visibility and deleting deltas in stage open event
