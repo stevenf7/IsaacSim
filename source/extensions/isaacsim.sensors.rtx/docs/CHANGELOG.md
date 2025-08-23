@@ -1,5 +1,10 @@
 # Changelog
 
+## [15.6.3] - 2025-08-22
+### Changed
+- Use SimulationManager instead of deprecated CoreNodes APIs for time related APIs
+- Add dependency on isaacsim.core.simulation_manager
+
 ## [15.6.2] - 2025-08-22
 ### Removed
 - Motion BVH no longer enabled by default.

@@ -417,7 +417,8 @@ public:
 
     double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime) override
     {
-        if (!g_timeStorage)
+        // If no samples are stored, return the current simulation time
+        if (!g_timeStorage || g_timeStorage->getSampleCount() == 0)
         {
             return g_simulationTime;
         }
@@ -438,7 +439,8 @@ public:
 
     double getSimulationTimeMonotonicAtTime(const omni::fabric::RationalTime& rtime) override
     {
-        if (!g_timeStorage)
+        // If no samples are stored, return the current simulation time
+        if (!g_timeStorage || g_timeStorage->getSampleCount() == 0)
         {
             return g_simulationTimeMonotonic;
         }
@@ -458,7 +460,8 @@ public:
 
     double getSystemTimeAtTime(const omni::fabric::RationalTime& rtime) override
     {
-        if (!g_timeStorage)
+        // If no samples are stored, return the current system time
+        if (!g_timeStorage || g_timeStorage->getSampleCount() == 0)
         {
             return g_systemTime;
         }

@@ -21,7 +21,7 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
-from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.simulation_manager import _simulation_manager
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_type_name, is_prim_path_valid
 from pxr import Gf
 
@@ -147,8 +147,8 @@ class LidarRtx(BaseSensor):
         self._render_product = rep.create.render_product(prim_path, resolution=(128, 128))
         self._render_product_path = self._render_product.path
 
-        # Initialize core nodes interface
-        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
+        # Initialize simulation manager interface
+        self._simulation_manager_interface = _simulation_manager.acquire_simulation_manager_interface()
         if position is not None and orientation is not None:
             self.set_world_pose(position=position, orientation=orientation)
         elif translation is not None and orientation is not None:
@@ -400,7 +400,7 @@ class LidarRtx(BaseSensor):
             .get(),
         )
 
-        self._current_frame["rendering_time"] = self._core_nodes_interface.get_sim_time_at_time(
+        self._current_frame["rendering_time"] = self._simulation_manager_interface.get_simulation_time_at_time(
             self._current_frame["rendering_frame"]
         )
         for annotator_name, annotator in self._annotators.items():

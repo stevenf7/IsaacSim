@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2025-08-22
+### Fixed
+- Always return current time if no samples are stored, this occurs if you access the time storage before starting simulation
+
 ## [1.4.0] - 2025-08-18
 ### Changed
 - Backend time sampling is now done using a circular buffer that writes/reads rational time samples and properly works with FSD enabled/disabled.
