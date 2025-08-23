@@ -54,7 +54,7 @@ packages = [
     "torchaudio==2.7.0+cu128",       # SWIPAT: https://nvbugs/5326960
 
     # dependencies
-    "filelock==3.13.1",              # SWIPAT: https://nvbugs/5303100
+    "filelock==3.13.1",             # SWIPAT: https://nvbugs/5303100
     "fsspec==2024.6.1",             # SWIPAT: https://nvbugs/5303035
     "mpmath==1.3.0",                # SWIPAT: https://nvbugs/5303037
     "networkx==3.3",                # SWIPAT: https://nvbugs/5303034
