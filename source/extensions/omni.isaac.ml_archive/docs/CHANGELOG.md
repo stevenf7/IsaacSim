@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.4] - 2025-08-22
+### Changed
+- Version bump to fix extension publishing issues
+
 ## [3.0.3] - 2025-08-19
 ### Changed
 - Update to sympy 1.13.3 for ARM64
