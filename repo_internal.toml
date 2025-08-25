@@ -357,6 +357,23 @@ folder_output = "${root}/_signedpackages"
 
 
 ########################################################################################################################
+# Custom scripts for repo_ci
+########################################################################################################################
+[repo_ci.jobs.build]
+script = "${config_root}/tools/ci/build_isaac.py"
+
+[repo_ci.jobs.test]
+script = "${config_root}/tools/ci/test_isaac.py"
+
+[repo_ci.jobs.standalone_report]
+script = "${config_root}/tools/ci/standalone_report.py"
+
+[repo_ci.jobs.test_isaaclab]
+script = "${config_root}/tools/ci/test_isaac_lab.py"
+
+
+
+########################################################################################################################
 # Python packages generation
 ########################################################################################################################
 [repo_python_package]
