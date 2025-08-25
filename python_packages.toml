@@ -6,6 +6,7 @@ pyproject.dependencies.all = [
     "isaacsim-kernel==${version}",
 ]
 pyproject.optional-dependencies.all = [
+    { "compatibility-check" = ["isaacsim-app==${version}"] },
     { "rl" = ["isaacsim-rl==${version}", "isaacsim-replicator==${version}", "isaacsim-app==${version}"] },
     { "ros" = ["isaacsim-ros1==${version}"] },
     { "ros2" = ["isaacsim-ros2==${version}"] },
