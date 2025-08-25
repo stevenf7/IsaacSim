@@ -2037,3 +2037,38 @@ verify-stage-to-gitlab:
       paths:
         - results.json
         - results_by_file.json
+
+
+# ==============================================================================================================
+.test-linux-x86_64-isaaclab-integration-base:
+  stage: test
+  needs:
+    - job: build-linux-x86_64-release
+      artifacts: true
+  extends:
+    - .omni_nvks_gpu
+    - .kit-runner-test-linux-x86_64-1x-gpu
+  script:
+    - ./repo.sh ci test_isaaclab
+  artifacts:
+    expire_in: 2 weeks
+    when: always
+    paths:
+      - _isaaclab/tests/*
+      - '**/tests/*.xml'
+    reports:
+      junit:
+        - '**/tests/full_report.xml'
+
+test-linux-x86_64-isaaclab-integration:
+  extends:
+    - .test-common
+    - .test-linux-x86_64-isaaclab-integration-base
+  variables:
+    ISAACSIM_CI_SHORT: "true"
+
+test-linux-x86_64-isaaclab-integration-nightly:
+  timeout: 12 hours
+  extends:
+    - .test-nightly
+    - .test-linux-x86_64-isaaclab-integration-base
