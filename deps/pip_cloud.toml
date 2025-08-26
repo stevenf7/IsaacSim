@@ -3,7 +3,7 @@
 python = "../_build/target-deps/python"
 packages = [
     "boto3[crt]==1.36.1",          # SWIPAT filed under: https://nvbugs/3697913
-    "s3transfer==0.11.0",           # SWIPAT filed under: https://nvbugs/3738087
+    "s3transfer==0.11.3",           # SWIPAT filed under: https://nvbugs/3738087
     "azure-storage-blob==12.17.0", # SWIPAT filed under: https://nvbugs/4221315
     "azure-identity==1.13.0",      # SWIPAT filed under: https://nvbugs/4221323
     "requests==2.32.3",            # SWIPAT filed under: https://nvbugs/3430668

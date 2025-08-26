@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2025-08-25
+### Changed
+- Update to s3transfer==0.11.3
+
 ## [1.4.0] - 2025-08-08
 ### Changed
 - Update to msal==1.27.0
