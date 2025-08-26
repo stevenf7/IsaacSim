@@ -278,10 +278,7 @@ pyproject.dependencies.all = [
     # isaacsim packages
     "isaacsim-kernel==${version}",
     # archives (omni.isaac.core_archive)
-    "numpy-quaternion==2023.0.3",
     "numba==0.59.1",
-    "selenium==4.14.0",
-    "construct==2.10.68",
     "llvmlite==0.42.0",
     "nest_asyncio==1.5.6",
     "markupsafe==2.1.3",
@@ -296,9 +293,7 @@ pyproject.dependencies.all = [
     "gunicorn==23.0.0",
     "osqp==0.6.7.post3",
     "qdldl==0.1.7.post5",
-    "nvsmi==0.4.2",
     "tornado==6.5.1",
-    "plotly==5.3.1",
     "pyperclip==1.8.0",
     "python-dateutil==2.9.0.post0",
     "six==1.17.0",
@@ -311,7 +306,7 @@ pyproject.dependencies.all = [
     "rtree==1.3.0",
     # archives (omni.pip.cloud)
     "boto3[crt]==1.36.1",
-    "s3transfer==0.11.0",
+    "s3transfer==0.11.3",
     "azure-storage-blob==12.17.0",
     "azure-identity==1.13.0",
     "oauthlib==3.2.2",

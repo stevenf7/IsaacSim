@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0] - 2025-08-25
+### Changed
+- Removed unused python packages: numpy-quaternion, selenium, construct, nvsmi, plotly
+
 ## [2.7.0] - 2025-08-08
 ### Changed
 - Update to osqp==0.6.7.post3
