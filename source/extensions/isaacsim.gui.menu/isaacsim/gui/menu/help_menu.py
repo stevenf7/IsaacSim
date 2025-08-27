@@ -69,7 +69,7 @@ class HelpMenuExtension:
 
         add_menu_items(demo_items, "Help")
 
-        ISAAC_DOCS_URL = "https://docs.isaacsim.omniverse.nvidia.com/latest"
+        ISAAC_DOCS_URL = "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html"
         REFERENCE_GUIDE_URL = ISAAC_DOCS_URL + "/index.html"
         MANUAL_URL = ISAAC_DOCS_URL + "/py/index.html"
         FORUMS_URL = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.24] - 2025-08-27
+### Fixed
+- Fix the broken documentation links
+
 ## [2.4.23] - 2025-08-21
 ### Changed
 - Promoted missing mesh to error message

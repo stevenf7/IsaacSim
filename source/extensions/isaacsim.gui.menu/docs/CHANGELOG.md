@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1] - 2025-08-27
+### Fixed
+- Fix the broken documentation links
+
 ## [2.4.0] - 2025-08-21
 ### Changed
 - Moved help menu links to isaacsim.gui.menu from isaacsim.app.setup
