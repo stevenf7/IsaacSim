@@ -889,8 +889,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 break;
             }
 
-            DcJoint* jointPtr = joint.get();
             DcHandle jointHandle = addJoint(std::move(joint), jointPath);
+            DcJoint* jointPtr = getJoint(jointHandle);
             jointPtr->handle = jointHandle;
 
             if (jointType == PxArticulationJointType::eREVOLUTE ||
@@ -952,8 +952,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 pxJoint->setDrive(dof->pxAxis, stiffness, damping, maxForce, driveType);
 #endif
 
-                DcDof* dofPtr = dof.get();
                 DcHandle dofHandle = addDof(std::move(dof), jointPath);
+                DcDof* dofPtr = getDof(dofHandle);
                 dofPtr->handle = dofHandle;
 
                 art->dofs.push_back(dofPtr);

@@ -83,7 +83,6 @@ public:
 #else
         std::experimental::filesystem::path p = carb::tokens::resolveString(tokens, "${app}");
 #endif
-        std::string extensionPath = p.parent_path().string() + "/exts/isaacsim.ros2.bridge/" + distro + "/lib/";
 
         // Create a library loader for the factory
         auto factoryLoader = std::make_shared<isaacsim::core::includes::LibraryLoader>("isaacsim.ros2.bridge." + distro);
