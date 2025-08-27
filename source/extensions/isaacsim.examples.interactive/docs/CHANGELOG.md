@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.7.2] - 2025-08-27
+### Fixed
+- Fix the broken documentation links
+
 ## [4.7.1] - 2025-08-20
 ### Added
 - UR robot follows target example using IK

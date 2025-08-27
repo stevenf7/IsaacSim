@@ -48,8 +48,7 @@ class World(SimulationContext):
     a Scene. Besides this, the object is bound to a short keyword that facilitates objects retrievals,
     like in a dict.
 
-    Checkout the required tutorials at
-    https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+    Checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html
 
     Args:
         physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
