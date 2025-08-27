@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1] - 2025-08-27
+### Changed
+- Use the IFabricHierarchy cached transform (with explicit update call) and set it to be the default call in `computeWorldXformNoCache`
+
 ## [2.5.0] - 2025-08-07
 ### Changed
 - Use device-generic memory buffer implementation to enable tensor API processing on the GPU for PoseTree computation
