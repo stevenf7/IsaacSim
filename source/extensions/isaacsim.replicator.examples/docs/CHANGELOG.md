@@ -1,4 +1,11 @@
 # Changelog
+## [1.2.0] - 2025-08-22
+### Changed
+- Moved randomizer snippets tests from `isaacsim.test.collection` to `test_sdg_randomizer_snippets.py`
+
+### Fixed
+- Fixed `get_shapes()` new semantics label check in texture randomization test
+
 ## [1.1.32] - 2025-08-21
 ### Changed
 - Fix PIL image conversion warnings
