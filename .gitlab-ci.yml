@@ -1954,9 +1954,6 @@ stage-to-github:
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
-      - cp ../../tools/ci/config.packman.xml tools/packman
-      - ./../../tools/packman/python.sh -m pip install tomlkit
-      - ./../../tools/packman/python.sh ../../tools/ci/merge_toml_files.py ./repo.toml  ../../tools/ci/repo_toml_patch.toml ./repo.toml
       - git config user.email "7774242+sheikh-nv@users.noreply.github.com"
       - git config user.name "sheikh-nv"
       - echo "Isaac Sim Update"
@@ -1997,9 +1994,6 @@ stage-to-gitlab:
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
-      - cp ../../tools/ci/config.packman.xml tools/packman
-      - ./../../tools/packman/python.sh -m pip install tomlkit
-      - ./../../tools/packman/python.sh ../../tools/ci/merge_toml_files.py ./repo.toml  ../../tools/ci/repo_toml_patch.toml ./repo.toml
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
       - echo "Isaac Sim Update"

@@ -612,3 +612,12 @@ files = [
 ]
 begin_marker = "-- AUTOREMOVE: BEGIN"
 end_marker = "-- AUTOREMOVE: END"
+
+[[repo_stage_for_github.file_move]]
+source_file = "tools/ci/config.packman.xml"
+destination_file = "tools/packman/config.packman.xml"
+
+[[repo_stage_for_github.toml_merge]]
+source_file = "repo.toml"
+patch_file = "./tools/ci/repo_toml_patch.toml"
+destination_file = "repo.toml"
