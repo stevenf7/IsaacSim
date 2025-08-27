@@ -63,6 +63,7 @@ std::vector<JointDefinition> analyzeConstraints(const std::vector<MJCFEqualityCo
 
     std::vector<JointDefinition> jointDefinitions;
 
+    // cppcheck-suppress unusedVariable
     for (const auto& [_, groupConstraints] : constraintGroups)
     {
         JointDefinition jointDef;
