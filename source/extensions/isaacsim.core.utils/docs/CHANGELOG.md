@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.0] - 2025-08-27
+### Added
+- Add Warp kernels to compose/decompose fabric transformation matrices from/to Warp arrays
+
 ## [3.4.7] - 2025-08-15
 ### Fixed
 - Fix Sdf/Gf casting when setting/getting prim attribute's value

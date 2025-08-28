@@ -41,7 +41,7 @@ my_world.reset()
 for i in range(500):
     my_world.step(render=False)
 my_world.render()
-if not (xfrom_cube.get_world_poses()[0][:, -1].item() < 10e-02):
+if not (xfrom_cube.get_world_poses(usd=False)[0][:, -1].item() < 10e-02):
     print(f"[FAIL] PhysX status is not updated in the rendering call")
     sys.exit(1)
 

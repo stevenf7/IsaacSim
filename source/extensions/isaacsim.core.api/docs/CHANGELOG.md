@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.7.0] - 2025-08-27
+### Added
+- Add boolean flag to force the update of the physics data to fabric when performing a physics-only step
+
 ## [4.6.12] - 2025-08-27
 ### Fixed
 - Fix the broken documentation links
