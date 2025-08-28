@@ -1,0 +1,47 @@
+# CodeRabbit Review Settings
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+tone_instructions: |
+  Be casual, friendly, and egoless, using approachable, clear, and conversational language that feels warm and engaging.
+  Keep the writing light, concise, and positive, as if speaking to a peer.
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: false # We don't want this to complain for disabled reviews.
+  collapse_walkthrough: true
+  auto_review:
+    enabled: false
+    drafts: false
+    base_branches: ["develop"]
+
+  # COMMENTED OUT, but left for reference
+  # path_instructions:
+  #   - path: "**/*.go"
+  #     instructions: |
+  #       Review the Go files with a focus on maintainability, clarity, and idiomatic Go practices:
+  #       - Idiomatic Go: Ensure proper use of Go idioms including error handling patterns, interface design,
+  #       channel usage, and goroutine management. Check for appropriate use of defer, proper resource cleanup,
+  #       and adherence to Go naming conventions.
+  #       - Code Clarity and Maintainability: Focus on readability, single responsibility principle, and clear
+  #       function/variable naming. Verify that functions are reasonably sized, logic is easy to follow, and
+  #       complex operations are properly documented.
+  #       - Error Handling: Ensure all errors are properly handled or explicitly ignored, error messages provide
+  #       adequate context, and error wrapping follows Go 1.13+ patterns with fmt.Errorf("context: %w", err).
+  #       - Performance and Best Practices: Identify potential performance issues, unnecessary allocations,
+  #       race conditions, or missing context.Context usage. Suggest improvements for database queries,
+  #       API design, and resource management patterns.
+  #   - path: "**/*.sh"
+  #     instructions: |
+  #       Review the shell scripts, point out issues relative to security,
+  #       performance, and maintainability.
+  #   - path: "**/*.md"
+  #     instructions: |
+  #       Review markdown documentation with these guidelines:
+  #       - Structure: Ensure consistent heading hierarchy and document organization
+  #       - Content: Verify accuracy of technical details, code examples, and API references
+  #       - Quality: Check for spelling, grammar, and broken links
+  #       - Completeness: Confirm all features and changes are properly documented
+  #       - Style: Follow general good documentation style guide and formatting conventions

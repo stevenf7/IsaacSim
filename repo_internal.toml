@@ -548,6 +548,7 @@ exclude = [
     ".dependabot.toml",
     ".eula_accepted",
     ".git",
+    ".coderabbit.yaml",
     ".gitlab-ci.yml",
     ".nspect-vuln-allowlist.toml",
     ".omni-pulse.toml",
