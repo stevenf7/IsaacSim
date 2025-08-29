@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.2] - 2025-05-30
+### Changed
+- Update nvidia-srl-usd-to-urdf==1.0.2
+- Update nvidia-srl-usd==2.0.0
+
 ## [1.3.1] - 2025-08-28
 ### Fixed
 - Fix test cleanup behavior
