@@ -775,13 +775,13 @@ function create_tests()
     local external_tests = {
         {
             "tests-external-ar.ar_sdg_test",
-            "tests-external/external_workflow_tests/ar/ar_sdg_test.py",
-            "--scene $SAMPLE_DIR/tests-external/external_workflow_tests/ar/data/physics_GPU.usda --num_datasets 3 --num_frames 3 --windowed --test --output _out_ar_test",
+            "standalone_examples/testing/external_workflow_tests/ar/ar_sdg_test.py",
+            "--scene $SAMPLE_DIR/standalone_examples/testing/external_workflow_tests/ar/data/physics_GPU.usda --num_datasets 3 --num_frames 3 --windowed --test --output _out_ar_test",
         },
         {
             "tests-external-ar.ar_sdg_benchmark",
-            "tests-external/external_workflow_tests/ar/ar_sdg_benchmark.py",
-            "--scene $SAMPLE_DIR/tests-external/external_workflow_tests/ar/data/physics_GPU.usda  --num_datasets 3 --windowed --output _out_ar_benchmark",
+            "standalone_examples/testing/external_workflow_tests/ar/ar_sdg_benchmark.py",
+            "--scene $SAMPLE_DIR/standalone_examples/testing/external_workflow_tests/ar/data/physics_GPU.usda  --num_datasets 3 --windowed --output _out_ar_benchmark",
         },
     }
 
