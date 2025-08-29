@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2025-08-29
+### Changed
+- Renamed CARB profiling zones to include [IsaacSim] prefix
+
 ## [0.4.0] - 2025-08-07
 ### Changed
 - Use device-generic memory buffer implementation to enable tensor API processing on the GPU for IMU sensor

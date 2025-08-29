@@ -315,7 +315,7 @@ public:
                 iFabricUsd->setEnableChangeNotifies(fabricId, flag);
                 if (flag)
                 {
-                    CARB_PROFILE_ZONE(0, "EnableFabricUsdNoticeHandler::forceMinulaPopulate");
+                    CARB_PROFILE_ZONE(0, "[IsaacSim] EnableFabricUsdNoticeHandler::forceMinulaPopulate");
                     iFabricUsd->forceMinimalPopulate(fabricId);
                 }
             }

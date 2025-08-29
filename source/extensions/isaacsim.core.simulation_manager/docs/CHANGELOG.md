@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.2] - 2025-08-29
+### Changed
+- Renamed CARB profiling zones to include [IsaacSim] prefix
+
 ## [1.4.1] - 2025-08-22
 ### Fixed
 - Always return current time if no samples are stored, this occurs if you access the time storage before starting simulation

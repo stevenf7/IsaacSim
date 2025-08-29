@@ -138,7 +138,7 @@ void ContactManager::removeRawData(const ContactPair& p)
 
 void ContactManager::onPhysicsStep(const float& currentTime, const float& timeElapsed)
 {
-    CARB_PROFILE_ZONE(0, "Contact Sensor manager - physics step");
+    CARB_PROFILE_ZONE(0, "[IsaacSim] Contact Sensor manager - physics step");
     m_currentTime = currentTime;
     m_currentDt = timeElapsed;
 
@@ -147,14 +147,14 @@ void ContactManager::onPhysicsStep(const float& currentTime, const float& timeEl
     const ::omni::physx::FrictionAnchor* frictionAnchorData = nullptr;
     uint32_t numContactHeaders = 0;
     {
-        CARB_PROFILE_ZONE(0, "Contact Sensor manager - Get Data");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] Contact Sensor manager - Get Data");
         uint32_t numContactData = 0;
         uint32_t numFrictionAnchorData = 0;
         numContactHeaders = carb::getCachedInterface<omni::physx::IPhysxSimulation>()->getFullContactReport(
             &contactEventHeadersBuffer, &contactDataBuffer, numContactData, &frictionAnchorData, numFrictionAnchorData);
     }
     {
-        CARB_PROFILE_ZONE(0, "Contact Sensor manager - update lists");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] Contact Sensor manager - update lists");
         uint32_t dataIdx = 0;
         for (uint32_t i = 0; i < numContactHeaders; i++)
         {

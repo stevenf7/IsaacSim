@@ -42,7 +42,7 @@ public:
 
     bool initialize(OgnIsaacExtractRTXSensorPointCloudDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "IsaacExtractRTXSensorPointCloud initialize");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacExtractRTXSensorPointCloud initialize");
 
         m_deviceBuffers.initialize(reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.cudaDeviceIndex());
         if (!m_deviceBuffers.gmoOnDevice)
@@ -55,7 +55,7 @@ public:
 
     static bool compute(OgnIsaacExtractRTXSensorPointCloudDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "IsaacExtractRTXSensorPointCloud compute");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacExtractRTXSensorPointCloud compute");
         auto& state = db.perInstanceState<OgnIsaacExtractRTXSensorPointCloud>();
         // Enable downstream execution by default
         db.outputs.exec() = kExecutionAttributeStateEnabled;

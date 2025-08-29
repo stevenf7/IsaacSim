@@ -62,7 +62,7 @@ public:
     }
     bool initialize(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "IsaacComputeRTXLidarFlatScan initialize");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacComputeRTXLidarFlatScan initialize");
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
 
         // Retrieve lidar prim from render product path, then validate its attributes
@@ -188,7 +188,7 @@ public:
 
     static bool compute(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "IsaacComputeRTXLidarFlatScan compute");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacComputeRTXLidarFlatScan compute");
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
         // Enable downstream execution by default
         db.outputs.exec() = kExecutionAttributeStateEnabled;

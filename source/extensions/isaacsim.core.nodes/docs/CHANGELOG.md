@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.2] - 2025-08-29
+### Changed
+- Renamed CARB profiling zones to include [IsaacSim] prefix
+
 ## [3.4.1] - 2025-08-22
 ### Changed
 - Use SimulationManager instead of deprecated CoreNodes APIs for time related APIs
