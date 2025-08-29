@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import time
 
 import numpy as np
@@ -76,13 +77,6 @@ class ROS2MenuTestBase(ROS2TestCase):
         sub = self.node.create_subscription(msg_type, topic, message_callback, 10)
         self.subscribers.append(sub)
         return sub
-
-    async def process_ros_messages(self, duration=0.1):
-        """Process ROS messages for a short duration"""
-        start_time = time.time()
-        while time.time() - start_time < duration:
-            rclpy.spin_once(self.node, timeout_sec=0.01)
-            await omni.kit.app.get_app().next_update_async()
 
     async def setup_test_environment(self, robot_path="/World/test_robot", add_test_cubes=False):
         """Helper function to set up a standard test environment with a Nova Carter robot.
@@ -314,10 +308,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Run simulation
-        timeout = 3
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
+        for _ in range(10):
             await simulate_async(0.5, callback=spin_ros)
 
             # Check if we have received messages
@@ -556,10 +547,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Run simulation
-        timeout = 3  # seconds
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
+        for _ in range(10):
             await simulate_async(0.5, callback=spin_ros)
 
             # check for message
@@ -782,10 +770,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Run simulation
-        timeout = 3
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
+        for _ in range(10):
             await simulate_async(0.5, callback=spin_ros)
 
             # Check if we have received the messages we need
@@ -1032,10 +1017,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Run simulation
-        timeout = 3
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
+        for _ in range(10):
             await simulate_async(0.5, callback=spin_ros)
 
             if self.tf_data is not None:
@@ -1200,10 +1182,10 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
 
         # Create callbacks to store message data
         def tf_callback(msg):
-            self.tf_data = msg
+            self.tf_data = copy.deepcopy(msg)
 
         def odom_callback(msg):
-            self.odom_data = msg
+            self.odom_data = copy.deepcopy(msg)
 
         # Create subscribers
         self.create_subscriber(tf_topic, TFMessage, tf_callback)
@@ -1296,19 +1278,18 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Run simulation
-        timeout = 3
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
+        frame_ids = set()
+        child_frame_ids = set()
+        for _ in range(10):
             await simulate_async(0.5, callback=spin_ros)
 
             # Check if we have received both types of messages
-            if self.tf_data is not None and self.odom_data is not None:
-                break
+            if self.tf_data and self.odom_data:
+                frame_ids.update(transform.header.frame_id for transform in self.tf_data.transforms)
+                child_frame_ids.update(transform.child_frame_id for transform in self.tf_data.transforms)
 
-        # Stop simulation
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
+                if "base_link" in frame_ids or "base_link" in child_frame_ids:
+                    break
 
         # Validate TF data
         self.assertIsNotNone(self.tf_data, "No TF messages received")
@@ -1353,6 +1334,8 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
             # Check twist data is present
             self.assertIsNotNone(self.odom_data.twist.twist.linear.x, "Missing linear.x velocity")
             self.assertIsNotNone(self.odom_data.twist.twist.angular.z, "Missing angular.z velocity")
+        # Stop simulation
+        self._timeline.stop()
 
 
 class TestMenuROS2ClockGraph(ROS2MenuTestBase):
@@ -1653,12 +1636,10 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
         # Run simulation
-        timeout = 3
-        start_time = time.time()
 
         print("Starting RTF Float32 Publisher data collection...")
 
-        while time.time() - start_time < timeout:
+        for _ in range(10):
             await simulate_async(0.5, callback=spin_ros)
 
             # check for message

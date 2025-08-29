@@ -15,34 +15,23 @@
 
 # Standard library imports
 import asyncio
-import json
 import os
 import tempfile
-from tempfile import mkstemp
 from typing import Any
 
 # Local imports
-import isaacsim.asset.importer.urdf as urdf_importer
 import isaacsim.core.experimental.prims as prims
 import isaacsim.core.utils.stage as stage_utils
 
 # Third-party imports
 import numpy as np
-import nvidia.srl.tools.logger as logger
 import omni.kit.actions.core
 import omni.kit.commands
 import omni.kit.test
 from isaacsim.core.experimental.prims import Articulation
-from isaacsim.core.utils.prims import add_reference_to_stage, get_articulation_root_api_prim_path, get_prim_object_type
-from isaacsim.core.utils.stage import create_new_stage_async, open_stage_async, update_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async, open_stage_async
 from isaacsim.storage.native import get_assets_root_path
 from nvidia.srl.from_usd.to_urdf import UsdToUrdf
-from pxr import Gf, Usd, UsdGeom, UsdPhysics
-
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-# import omni.kit.test
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -50,24 +39,27 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._timeline = omni.timeline.get_timeline_interface()
-
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.exporter.urdf")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-        self.dest_path = os.path.abspath(self._extension_path + "/tests_out")
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
-        # Ensure app updates are processed
-        await omni.kit.app.get_app().next_update_async()
+        # Wait for any pending stage loading operations to complete
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
 
         # Stop timeline if running
-        if self._timeline.is_playing():
+        if self._timeline and self._timeline.is_playing():
             self._timeline.stop()
-        await create_new_stage_async()
+
+        # Ensure app updates are processed
+        # Create a new stage to release any previously open files
+        await omni.kit.app.get_app().next_update_async()
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+
         pass
 
     @staticmethod
@@ -238,7 +230,7 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
         stage = stage_utils.get_current_stage()
 
         # Create a temporary directory for test output
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
 
             usd_to_urdf_kwargs = {
                 "node_names_to_remove": None,
@@ -252,6 +244,10 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             with self.assertRaises(Exception, msg="Expected failure: joint transforms inconsistent"):
                 usd_to_urdf = UsdToUrdf(stage, **usd_to_urdf_kwargs)
 
+            # Ensure stage is cleared before temp directory cleanup
+            await create_new_stage_async()
+            await omni.kit.app.get_app().next_update_async()
+
     async def test_exporter_2f_140_base(self):
         """Test exporting the 2F-140 base robot from USD to URDF and validate the exported URDF"""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
@@ -261,7 +257,7 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
         stage = stage_utils.get_current_stage()
 
         # Create a temporary directory for test output
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
 
             usd_to_urdf_kwargs = {
                 "node_names_to_remove": None,
@@ -275,24 +271,23 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             with self.assertRaises(Exception, msg="Expected failure: kinematic loops found"):
                 usd_to_urdf = UsdToUrdf(stage, **usd_to_urdf_kwargs)
 
+            # Ensure stage is cleared before temp directory cleanup
+            await create_new_stage_async()
+            await omni.kit.app.get_app().next_update_async()
+
     async def test_exporter_nova_carter(self):
         """Test exporting the NovaCarter robot from USD to URDF and validate the exported URDF"""
 
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
         robot_path = "Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
         robot_path = os.path.join(assets_root_path, robot_path)
-        # await create_new_stage_async()
         await open_stage_async(robot_path)
         stage = stage_utils.get_current_stage()
 
-        # Create temporary files for test output
-        temp_dir = tempfile.mkdtemp()
-        temp_files = []
-
-        try:
+        # Create a temporary directory for test output
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             # Test exporting to URDF
             usd_to_check = os.path.join(temp_dir, f"nova_carter_original.usd")
-            temp_files.append(usd_to_check)
 
             usd_to_urdf_kwargs = {
                 "node_names_to_remove": None,
@@ -307,7 +302,6 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
 
             # Export to URDF
             output_urdf_path = os.path.join(temp_dir, f"nova_carter_exported.urdf")
-            temp_files.append(output_urdf_path)
             output_path = usd_to_urdf.save_to_file(
                 urdf_output_path=output_urdf_path,
                 visualize_collision_meshes=False,
@@ -334,7 +328,6 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             )
 
             urdf_to_check = os.path.join(temp_dir, f"nova_carter_exported.usd")
-            temp_files.append(urdf_to_check)
             stage_utils.save_stage(urdf_to_check)
 
             await create_new_stage_async()
@@ -348,23 +341,10 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
                 articulation_root_2="/World/nova_carter_01/nova_carter",
             )
             self.assertTrue(comparison_result, "USD comparison failed")
+
+            # Ensure stage is cleared before temp directory cleanup
             await create_new_stage_async()
-
-        finally:
-            # Clean up temporary files
-            for temp_file in temp_files:
-                try:
-                    if os.path.exists(temp_file):
-                        os.remove(temp_file)
-                except Exception as e:
-                    print(f"Warning: Failed to remove temporary file {temp_file}: {e}")
-
-            # Clean up temporary directory
-            try:
-                if os.path.exists(temp_dir):
-                    os.rmdir(temp_dir)
-            except Exception as e:
-                print(f"Warning: Failed to remove temporary directory {temp_dir}: {e}")
+            await omni.kit.app.get_app().next_update_async()
 
         return
 
@@ -377,7 +357,7 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
         await open_stage_async(robot_path)
         stage = stage_utils.get_current_stage()
         # Create a temporary directory for test output
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
 
             usd_to_urdf_kwargs = {
                 "node_names_to_remove": None,
@@ -391,6 +371,10 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             with self.assertRaises(Exception, msg="Expected failure: joint transforms inconsistent"):
                 usd_to_urdf = UsdToUrdf(stage, **usd_to_urdf_kwargs)
 
+            # Ensure stage is cleared before temp directory cleanup
+            await create_new_stage_async()
+            await omni.kit.app.get_app().next_update_async()
+
     async def test_exporter_unitree_go2(self):
         """Test exporting the Unitree Go2 robot from USD to URDF and validate the exported URDF"""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
@@ -400,13 +384,9 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
         await open_stage_async(robot_path)
         stage = stage_utils.get_current_stage()
 
-        # Create temporary files for test output
-        temp_dir = tempfile.mkdtemp()
-        temp_files = []
-
-        try:
+        # Create a temporary directory for test output
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             usd_to_check = os.path.join(temp_dir, f"unitree_go2_original.usd")
-            temp_files.append(usd_to_check)
 
             usd_to_urdf_kwargs = {
                 "node_names_to_remove": None,
@@ -421,7 +401,6 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
 
             # Export to URDF
             output_urdf_path = os.path.join(temp_dir, f"unitree_go2_exported.urdf")
-            temp_files.append(output_urdf_path)
             output_path = usd_to_urdf.save_to_file(
                 urdf_output_path=output_urdf_path,
                 visualize_collision_meshes=False,
@@ -448,7 +427,6 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             )
 
             urdf_to_check = os.path.join(temp_dir, f"unitree_go2_exported.usd")
-            temp_files.append(urdf_to_check)
             stage_utils.save_stage(urdf_to_check)
 
             await create_new_stage_async()
@@ -463,20 +441,8 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             )
             self.assertTrue(comparison_result, "USD comparison failed")
 
-        finally:
-            # Clean up temporary files
-            for temp_file in temp_files:
-                try:
-                    if os.path.exists(temp_file):
-                        os.remove(temp_file)
-                except Exception as e:
-                    print(f"Warning: Failed to remove temporary file {temp_file}: {e}")
-
-            # Clean up temporary directory
-            try:
-                if os.path.exists(temp_dir):
-                    os.rmdir(temp_dir)
-            except Exception as e:
-                print(f"Warning: Failed to remove temporary directory {temp_dir}: {e}")
+            # Ensure stage is cleared before temp directory cleanup
+            await create_new_stage_async()
+            await omni.kit.app.get_app().next_update_async()
 
         return

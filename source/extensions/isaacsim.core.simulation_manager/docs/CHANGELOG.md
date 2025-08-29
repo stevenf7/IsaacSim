@@ -7,6 +7,7 @@
 ## [1.4.0] - 2025-08-18
 ### Changed
 - Backend time sampling is now done using a circular buffer that writes/reads rational time samples and properly works with FSD enabled/disabled.
+
 ### Fixed
 - Duplicated/incorrect timestamp issue
 

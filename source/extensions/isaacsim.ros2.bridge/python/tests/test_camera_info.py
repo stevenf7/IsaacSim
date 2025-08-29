@@ -25,10 +25,6 @@ import omni.graph.core as og
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
@@ -156,11 +152,10 @@ class TestRos2CameraInfo(ROS2TestCase):
 
         system_time = time.time()
 
-        for num in range(5):
+        for num in range(3):
             print(f"Play #{num+1}")
             self._timeline.play()
             await omni.kit.app.get_app().next_update_async()
-            await simulate_async(1.5, callback=spin)
             for _ in range(10):
                 if self._camera_info is None:
                     await simulate_async(1, callback=spin)

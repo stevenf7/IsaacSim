@@ -2,8 +2,10 @@
 ## [2.3.0] - 2025-08-12
 ### Added
 - Unit tests for sensor creation commands.
+
 ### Changed
 - Standardized sensor creation command arguments.
+
 ### Fixed
 - Setting LightBeam sensor orientation and translation works correctly.
 

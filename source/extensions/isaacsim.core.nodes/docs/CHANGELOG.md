@@ -14,7 +14,7 @@
 
 ## [3.3.1] - 2025-08-13
 ### Fixed
-- Fix issue with inconsistent publishing rates due to upstream frame times nodes, a new render product frame time node is used . 
+- Fix issue with inconsistent publishing rates due to upstream frame times nodes, a new render product frame time node is used .
 
 ## [3.3.0] - 2025-08-11
 ### Changed

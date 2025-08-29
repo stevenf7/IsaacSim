@@ -5,7 +5,7 @@
 - UR robot functionality based on Warp APIs
 - Target-following task for the UR robot using inverse kinematics (IK)
 
-## [1.1.0] - 2025-07-02
+## [1.1.0] - 2025-07-08
 ### Changed
 - Merged task wrapper and pick-and-place controller into a single file for the Franka robot
 
