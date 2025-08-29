@@ -55,7 +55,7 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        await add_carter()
+        robot_path = await add_carter()
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
         # Add Point Cloud publisher
@@ -74,7 +74,7 @@ class TestRos2PointCloud(ROS2TestCase):
                         ("PublishPCL", "isaacsim.ros2.bridge.ROS2PublishPointCloud"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path("/carter/chassis_link/carter_lidar")])
+                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path(robot_path + "/chassis_link/carter_lidar")])
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
@@ -89,7 +89,10 @@ class TestRos2PointCloud(ROS2TestCase):
 
         # Enable highLod for Lidar
         omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/carter/chassis_link/carter_lidar.highLod"), value=True, prev=None
+            "ChangeProperty",
+            prop_path=Sdf.Path(robot_path + "/chassis_link/carter_lidar.highLod"),
+            value=True,
+            prev=None,
         )
 
         self._point_cloud_data = None
@@ -137,7 +140,7 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        await add_carter()
+        robot_path = await add_carter()
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
         # Add Point Cloud publisher
@@ -156,7 +159,7 @@ class TestRos2PointCloud(ROS2TestCase):
                         ("PublishPCL", "isaacsim.ros2.bridge.ROS2PublishPointCloud"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path("/carter/chassis_link/carter_lidar")])
+                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path(robot_path + "/chassis_link/carter_lidar")])
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
@@ -213,10 +216,10 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        await add_carter_ros()
+        robot_path = await add_carter_ros()
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
-        graph_path = "/Carter/ROS_Cameras"
+        graph_path = robot_path + "/ROS_Cameras"
 
         # Disabling left camera rgb image publisher
         og.Controller.attribute(graph_path + "/isaac_create_render_product_left.inputs:enabled").set(False)

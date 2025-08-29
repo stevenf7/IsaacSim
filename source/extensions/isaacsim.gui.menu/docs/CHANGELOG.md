@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.2] - 2025-08-28
+### Changed
+- Add delay to menu click for environment test
+
 ## [2.4.1] - 2025-08-27
 ### Fixed
 - Fix the broken documentation links

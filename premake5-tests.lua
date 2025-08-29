@@ -20,7 +20,10 @@ function define_test_startup_experience(app_name, kit_file, extra_args)
     local kit_file = kit_file or app_name
     define_test_experience(app_name, {
         config_path = "../apps/" .. kit_file .. ".kit",
-        extra_args = '--ext-folder "' .. script_dir_token .. '/../apps" ' .. extra_args,
+        extra_args = '--ext-folder "' .. script_dir_token .. '/../exts" ' ..
+                     '--ext-folder "' .. script_dir_token .. '/../extscache" ' ..
+                     '--ext-folder "' .. script_dir_token .. '/../extsDeprecated" ' ..
+                     '--ext-folder "' .. script_dir_token .. '/../apps" ' .. extra_args,
     })
 end
 

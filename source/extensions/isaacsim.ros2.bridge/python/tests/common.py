@@ -21,7 +21,7 @@ import carb
 import numpy as np
 import omni
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.utils.stage import add_reference_to_stage, open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdPhysics
 
@@ -124,32 +124,33 @@ async def add_cube(path, size, offset):
     return cubeGeom
 
 
-async def add_carter():
+async def add_carter(prim_path="/Carter"):
     from pxr import Gf, PhysicsSchemaTools
 
     assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
-    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd")
+    add_reference_to_stage(assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd", prim_path)
     stage = omni.usd.get_context().get_stage()
-
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5))
+    await omni.kit.app.get_app().next_update_async()
+    return prim_path
 
 
-async def add_carter_ros():
+async def add_carter_ros(prim_path="/Carter"):
     from pxr import Gf, PhysicsSchemaTools
 
     assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
-    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd")
-
+    add_reference_to_stage(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd", prim_path)
+    await omni.kit.app.get_app().next_update_async()
     # Disabling cameras by default
     import omni.graph.core as og
 
-    ros_cameras_graph_path = "/Carter/ROS_Cameras"
+    ros_cameras_graph_path = prim_path + "/ROS_Cameras"
 
     prims_to_disable = [
         ros_cameras_graph_path + "/isaac_create_render_product_left.inputs:enabled",
@@ -166,6 +167,8 @@ async def add_carter_ros():
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5))
+    await omni.kit.app.get_app().next_update_async()
+    return prim_path
 
 
 async def add_nova_carter_ros():
@@ -174,6 +177,7 @@ async def add_nova_carter_ros():
         carb.log_error("Could not find Isaac Sim assets folder")
         return
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd")
+    await omni.kit.app.get_app().next_update_async()
 
 
 async def add_franka():

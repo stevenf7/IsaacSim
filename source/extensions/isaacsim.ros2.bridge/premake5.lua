@@ -272,8 +272,6 @@ cppdialect("C++17")
         "%{root}/_build/target-deps/cuda/include",
         "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/isaacsim.core.includes/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/python/include/python3.11",
         "%{root}/_build/target-deps/python/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2025-08-28
+### Fixed
+- Fix test cleanup behavior
+
 ## [1.3.0] - 2025-07-21
 ### Added
 - Add unit tests on robots `ur10e`, `2f-140-base`, `nova-carter`,  `tien-kung`, `go2`
