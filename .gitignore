@@ -162,3 +162,6 @@ results_by_file.json
 
 # EULA check marker file
 .eula_accepted
+
+# Ignore external tests
+source/standalone_examples/testing/external_workflow_tests/**

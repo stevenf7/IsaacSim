@@ -943,12 +943,20 @@ test-linux-x86_64-external-ar:
     before_script:
       - set -eu
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+      - curl -o ./archive.zip  https://gitlab-master.nvidia.com/api/v4/projects/139162/repository/archive.zip
+      - unzip archive.zip -d _git
+      - mkdir -p source/standalone_examples/testing/external_workflow_tests/ar
+      - cp -r _git/*/ar/* source/standalone_examples/testing/external_workflow_tests/ar
       - ./build.sh -r --no-docker
-      - git clone --depth=1 -b main --single-branch https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/external_workflow_tests.git _git/external_workflow_tests
-      - mkdir -p _build/linux-x86_64/release/tests-external/external_workflow_tests/ar
-      - cp -r _git/external_workflow_tests/ar _build/linux-x86_64/release/tests-external/external_workflow_tests
     script:
-      - ./repo.sh test -c release -s external -b ar
+      - cd _build/linux-x86_64/release
+      - ./python.sh standalone_examples/testing/external_workflow_tests/ar/ar_sdg_test.py --scene standalone_examples/testing/external_workflow_tests/ar/data/physics_GPU.usda --num_datasets 3 --num_frames 3 --test --output _testoutput
+      # Fail if _testoutput is empty
+      - |
+        if [ -z "$(ls -A _testoutput)" ]; then
+          echo "Error: _testoutput directory is empty";
+          exit 1;
+        fi
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
       - ./repo.sh ci test -- --generate-report
