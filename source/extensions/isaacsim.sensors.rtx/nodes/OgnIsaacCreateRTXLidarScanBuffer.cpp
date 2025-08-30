@@ -114,7 +114,7 @@ public:
 
     bool initialize(OgnIsaacCreateRTXLidarScanBufferDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "IsaacCreateRTXLidarScanBuffer initialize");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacCreateRTXLidarScanBuffer initialize");
 
         omni::sensors::lidar::LidarMetaData* lidarMetaData =
             reinterpret_cast<omni::sensors::lidar::LidarMetaData*>(db.inputs.metadataPtr());
@@ -279,7 +279,7 @@ public:
 
     static bool compute(OgnIsaacCreateRTXLidarScanBufferDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "Create RTX Lidar Scan Buffer");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] Create RTX Lidar Scan Buffer");
         // Enable downstream execution by default, so that downstream nodes can do any initialization
         db.outputs.exec() = kExecutionAttributeStateEnabled;
         auto& state = db.perInstanceState<OgnIsaacCreateRTXLidarScanBuffer>();

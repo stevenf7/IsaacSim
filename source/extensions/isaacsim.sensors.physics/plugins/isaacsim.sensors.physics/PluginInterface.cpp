@@ -358,12 +358,12 @@ void onComponentChange(const pxr::SdfPath& primOrPropertyPath, void* userData)
 
 void onPhysicsStep(float dt, void* userData)
 {
-    CARB_PROFILE_ZONE(0, "IsaacSensor::onPhysicsStep");
+    CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacSensor::onPhysicsStep");
     if (g_isaacSensorManager)
     {
         if (g_firstFrame)
         {
-            CARB_PROFILE_ZONE(0, "IsaacSensor::firstFramePlay");
+            CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacSensor::firstFramePlay");
             onPlay();
             g_firstFrame = false;
         }

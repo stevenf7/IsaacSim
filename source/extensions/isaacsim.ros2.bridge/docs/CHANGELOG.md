@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.11.2] - 2025-08-29
+### Changed
+- Renamed CARB profiling zones to include [IsaacSim] prefix
+
 ## [4.11.1] - 2025-08-28
 ### Changed
 - Improvements to test stability and cleanup test code

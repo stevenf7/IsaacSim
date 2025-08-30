@@ -344,7 +344,7 @@ void onPhysicsStep(float dt, void* userData)
     {
         if (g_firstFrame)
         {
-            CARB_PROFILE_ZONE(0, "SurfaceGripper::firstFramePlay");
+            CARB_PROFILE_ZONE(0, "[IsaacSim] SurfaceGripper::firstFramePlay");
             onPlay();
             g_firstFrame = false;
         }

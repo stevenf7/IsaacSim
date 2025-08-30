@@ -172,7 +172,7 @@ public:
 
     static void onPhysicsStep(float timeElapsed, void* userData)
     {
-        CARB_PROFILE_ZONE(0, "OgnOnPysicsStep::onPhysicsStep");
+        CARB_PROFILE_ZONE(0, "[IsaacSim] OgnOnPysicsStep::onPhysicsStep");
         HandleIdPair* idpair = reinterpret_cast<HandleIdPair*>(userData);
         auto graphHandle = idpair->graphHandle;
         auto instanceId = idpair->instanceId;
