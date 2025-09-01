@@ -60,6 +60,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         class MyWriter(Writer):
             def __init__(self, rgb: bool = True):
                 self._frame_id = 0
+                self.annotators = []
                 if rgb:
                     self.annotators.append(AnnotatorRegistry.get_annotator("rgb"))
                 # Create writer output directory

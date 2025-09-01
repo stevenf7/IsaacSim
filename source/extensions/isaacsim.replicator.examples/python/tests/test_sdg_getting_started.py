@@ -97,6 +97,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
             def __init__(self, camera_params: bool = True, bounding_box_3d: bool = True):
                 # Organize data from render product perspective (legacy, annotator, renderProduct)
                 self.data_structure = "renderProduct"
+                self.annotators = []
                 if camera_params:
                     self.annotators.append(rep.annotators.get("camera_params"))
                 if bounding_box_3d:

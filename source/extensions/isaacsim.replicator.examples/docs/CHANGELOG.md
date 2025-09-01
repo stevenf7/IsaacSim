@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.1] - 2025-09-01
+### Fixed
+- Make sure custom writers reset annotators list (`self.annotators = []`) on initialization
+
 ## [1.2.0] - 2025-08-22
 ### Changed
 - Moved randomizer snippets tests from `isaacsim.test.collection` to `test_sdg_randomizer_snippets.py`

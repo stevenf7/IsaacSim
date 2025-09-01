@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.17] - 2025-09-01
+### Fixed
+- Make sure custom writers reset annotators list (`self.annotators = []`) on initialization
+
 ## [1.0.16] - 2025-08-21
 ### Changed
 - Fix PIL image conversion warnings
