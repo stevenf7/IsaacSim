@@ -68,6 +68,7 @@ from pxr import UsdGeom
 
 class CustomWriter(Writer):
     def __init__(self):
+        self.annotators = []
         self.annotators.append(AnnotatorRegistry.get_annotator("rgb"))
         self.annotators.append(AnnotatorRegistry.get_annotator("semantic_segmentation"))
         self.annotators.append(AnnotatorRegistry.get_annotator("bounding_box_2d_tight"))
