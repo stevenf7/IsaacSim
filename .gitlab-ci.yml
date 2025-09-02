@@ -38,10 +38,10 @@ include:
 # ==============================================================================================================
 stages:
   - check
-  - external-test
   - build
   - test
   - nightly-test
+  - external-test
   - security
   - deploy
   - deploy-test
@@ -497,12 +497,13 @@ build-windows-x86_64-debug:
     extends:
       - .test-artifacts
     allow_failure: true
+    needs:
+      - job: check-code-format
+        optional: true
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS != "true"
         when: never
-      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-        when: never
-      - !reference [.rules-version-changed, rules]
+      - !reference [.rules-workflow, rules]
 
 .test-linux-common:
     after_script:
