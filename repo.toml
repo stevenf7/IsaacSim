@@ -74,6 +74,10 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_cloud.toml",
 ]
 
+enable_compiler_version_check = true
+
+"platform:linux-x86_64".version_check_gcc_version = "11.*.*"
+
 "platform:linux-aarch64".fetch.pip.licensing_enabled = false # Disable licensing for aarch64 platforms, as it is not supported.
 "platform:windows-x86_64".fetch.pip.licensing_enabled = true 
 "platform:linux-x86_64".fetch.pip.licensing_enabled = true
@@ -210,6 +214,11 @@ vs_version = "vs2022"
 # Internal CI Visual Studio path that sometimes works.
 "token:in_ci==true".vs_path = "C:\\vs2019"
 # AUTOREMOVE: END
+
+"token:in_ci==false".version_check_vs_version = "2022"
+"token:in_ci==false".version_check_msvc_version = "v143"
+"token:in_ci==false".version_check_msbuild_version = "17"
+"token:in_ci==false".version_check_winsdk_version = "10.0.26100.0"
 
 # Filter specifically to "Enterprise", "Professional", or "Community" editions of Visual Studio
 # vs_edition = "Community"
