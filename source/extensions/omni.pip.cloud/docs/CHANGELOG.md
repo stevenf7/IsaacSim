@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.2] - 2025-09-03
+### Changed
+- Update to boto3[crt]==1.40.16
+- Update to botocore==1.40.16
+- Update to s3transfer==0.13.1
+
 ## [1.4.1] - 2025-08-25
 ### Changed
 - Update to s3transfer==0.11.3
