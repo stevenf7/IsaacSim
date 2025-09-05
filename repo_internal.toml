@@ -293,7 +293,7 @@ doxygen_input = ["source/deprecated/omni.isaac.dynamic_control/include/omni/isaa
   "source/extensions/omni.kit.loop-isaac/include/RunLoopRunner.h",
   "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
 ]
-  
+
 doxygen_predefined = ["CARB_PLUGIN_INTERFACE="]
 
 
@@ -327,7 +327,7 @@ git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omni
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #
-# branch_name = "release/5.0"
+# branch_name = "release/5.1"
 
 ########################################################################################################################
 # Generate changelog
