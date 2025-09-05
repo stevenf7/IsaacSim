@@ -38,13 +38,15 @@ public:
     {
         m_firstFrame = true;
         m_isInitialized = false;
+        CUDA_CHECK(cudaStreamDestroy(m_cudaStream));
     }
 
     bool initialize(OgnIsaacExtractRTXSensorPointCloudDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacExtractRTXSensorPointCloud initialize");
 
-        m_deviceBuffers.initialize(reinterpret_cast<void*>(db.inputs.dataPtr()), db.inputs.cudaDeviceIndex());
+        CUDA_CHECK(cudaStreamCreate(&m_cudaStream));
+        m_deviceBuffers.initialize(reinterpret_cast<void*>(db.inputs.dataPtr()), m_cudaStream);
         if (!m_deviceBuffers.gmoOnDevice)
         {
             // Preallocate host buffer to store point cloud
@@ -62,7 +64,7 @@ public:
 
         int cudaDevice = db.inputs.cudaDeviceIndex();
         isaacsim::core::includes::ScopedDevice scopedDevice(cudaDevice);
-        CUDA_CHECK(cudaStreamSynchronize((cudaStream_t)db.inputs.cudaStream()));
+        // CUDA_CHECK(cudaStreamSynchronize((cudaStream_t)db.inputs.cudaStream()));
 
 
         // Test if input data pointer is nullptr before we initialize the node, to avoid incorrect CUDA memory
@@ -90,6 +92,7 @@ public:
         // Fill the point cloud buffer with the valid points
         state.m_deviceBuffers.fillPointCloudBuffer(dataPtr, state.m_numValidPointsHost, state.m_frameAtEnd);
 
+        CUDA_CHECK(cudaStreamSynchronize(state.m_cudaStream));
         // Populate outputs
         if (state.m_deviceBuffers.gmoOnDevice)
         {
@@ -100,7 +103,6 @@ public:
         else
         {
             // Synchronize the stream to ensure the point cloud buffer is populated
-            CUDA_CHECK(cudaStreamSynchronize((cudaStream_t)db.inputs.cudaStream()));
             if (state.hostPcBuffer.size() < state.m_deviceBuffers.bufferSize)
             {
                 state.hostPcBuffer.resize(state.m_deviceBuffers.bufferSize);
@@ -118,6 +120,7 @@ public:
         db.outputs.bufferSize() = state.m_numValidPointsHost * sizeof(float3);
         db.outputs.width() = static_cast<uint32_t>(state.m_numValidPointsHost);
         db.outputs.height() = 1;
+        state.m_counter++;
         return true;
     }
 
@@ -128,6 +131,8 @@ private:
     isaacsim::core::includes::HostBufferBase<float3> hostPcBuffer;
     size_t m_numValidPointsHost{ 0 };
     omni::sensors::FrameAtTime m_frameAtEnd;
+    cudaStream_t m_cudaStream{ nullptr };
+    uint32_t m_counter = 0;
 };
 
 REGISTER_OGN_NODE()

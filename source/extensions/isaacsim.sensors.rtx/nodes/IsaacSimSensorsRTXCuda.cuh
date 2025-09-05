@@ -139,14 +139,35 @@ public:
 
 };
 
-void findValidIndices(size_t* dataIn, size_t* dataOut, int* numValidPoints, int numPoints, uint8_t* flags, int cudaDeviceIndex, cudaStream_t stream);
 
-void fillIndices(size_t* indices, size_t numIndices, int cudaDeviceIndex, cudaStream_t stream = 0);
+// Cached version that reuses temp storage to avoid reallocation every frame
+void findValidIndices(size_t* dataIn, size_t* dataOut, int* numValidPoints, size_t numPoints, uint8_t* flags, 
+                           int cudaDeviceIndex, cudaStream_t stream, void** d_temp_storage, size_t* temp_storage_bytes, int* cached_numPoints);
 
-void fillValidCartesianPoints(float* azimuth, float* elevation, float* range, float3* cartesianPoints, size_t* validIndices, int* numValidPoints, int maxPoints,int cudaDeviceIndex, cudaStream_t stream);
+void fillIndices(size_t* indices, size_t numIndices, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream = 0);
+
+size_t getTempStorageSizeForValidIndices(size_t maxPoints, int cudaDeviceIndex);
+
+void fillValidCartesianPoints(float* azimuth, float* elevation, float* range, float3* cartesianPoints, size_t* validIndices, int* numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int multiProcessorCount, int cudaDeviceIndex, cudaStream_t stream);
 
 template <typename T>
-void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+
+// Fused function for required basic outputs (azimuth, elevation, distance, intensity)
+void selectRequiredValidPoints(
+    const float* azimuthSrc, const float* elevationSrc, const float* distanceSrc, const float* intensitySrc,
+    float* azimuthDst, float* elevationDst, float* distanceDst, float* intensityDst,
+    const size_t* validIndices, int* numValidPoints, size_t maxPoints, 
+    uint32_t enableMask, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream);
+
+// Fused function for optional outputs (timestamp, IDs, normals, velocities)
+void selectOptionalValidPoints(
+    const int32_t* timestampSrc, const uint32_t* emitterIdSrc, const uint32_t* materialIdSrc, const uint8_t* objectIdSrc,
+    const float3* normalSrc, const float3* velocitySrc,
+    int32_t* timestampDst, uint32_t* emitterIdDst, uint32_t* materialIdDst, uint8_t* objectIdDst,
+    float3* normalDst, float3* velocityDst,
+    const size_t* validIndices, int* numValidPoints, size_t maxPoints,
+    uint32_t enableMask, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream);
 
 }
 }

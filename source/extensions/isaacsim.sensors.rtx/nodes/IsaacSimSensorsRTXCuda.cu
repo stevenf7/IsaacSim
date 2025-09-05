@@ -27,18 +27,18 @@ namespace sensors
 namespace rtx
 {
 
-__global__ void getModelOutputFromBufferKernel(void* dataPtr, omni::sensors::GenericModelOutput* gmoPtrDevice) {
+__global__ void getModelOutputFromBufferKernel(void* __restrict__ dataPtr, omni::sensors::GenericModelOutput* __restrict__ gmoPtrDevice) {
     *gmoPtrDevice = omni::sensors::getModelOutputFromBuffer(dataPtr);
 }
 
-__global__ void fillIndicesKernel(size_t* indices, const int length) {
+__global__ void fillIndicesKernel(size_t* __restrict__ indices, const int length) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= length)
         return;
     indices[idx] = idx;
 }
 
-__global__ void fillPointsKernel(omni::sensors::GenericModelOutput* gmoPtr, float3* cartesianPoints, size_t* validIndices, const int numValidPoints) {
+__global__ void fillPointsKernel(omni::sensors::GenericModelOutput* __restrict__ gmoPtr, float3* __restrict__ cartesianPoints, size_t* __restrict__ validIndices, const int numValidPoints) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= numValidPoints)
         return;
@@ -58,7 +58,7 @@ __global__ void fillPointsKernel(omni::sensors::GenericModelOutput* gmoPtr, floa
     }
 }
 
-__global__ void fillPointsKernel(float* x, float* y, float* z, float3* cartesianPoints, size_t* validIndices, const int numValidPoints, omni::sensors::CoordsType* elementsCoordsType) {
+__global__ void fillPointsKernel(float* __restrict__ x, float* __restrict__ y, float* __restrict__ z, float3* __restrict__ cartesianPoints, size_t* __restrict__ validIndices, const int numValidPoints, omni::sensors::CoordsType* __restrict__ elementsCoordsType) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= numValidPoints)
         return;
@@ -81,10 +81,10 @@ __global__ void fillPointsKernel(float* x, float* y, float* z, float3* cartesian
 
 struct IsValid
 {
-    uint8_t* flags{ nullptr }; // sensor specific flags
+    uint8_t* __restrict__ flags{ nullptr }; // sensor specific flags
 
     __host__ __device__ __forceinline__
-    IsValid(uint8_t* flags) : flags(flags) {}
+    IsValid(uint8_t* __restrict__ flags) : flags(flags) {}
 
     __host__ __device__ __forceinline__
     bool operator()(const int &i) const {
@@ -310,15 +310,14 @@ IsaacExtractRTXSensorPointCloudDeviceBuffers::~IsaacExtractRTXSensorPointCloudDe
     }
 }
 
-void findValidIndices(size_t* dataIn, size_t* dataOut, int* numValidPoints, int numPoints, uint8_t* flags, int cudaDeviceIndex, cudaStream_t stream) {
+// Version that uses pre-allocated temporary storage for vGPU compatibility
+void findValidIndices(size_t* __restrict__ dataIn, size_t* __restrict__ dataOut, int* __restrict__ numValidPoints, size_t numPoints, uint8_t* __restrict__ flags, 
+                           int cudaDeviceIndex, cudaStream_t stream, void** __restrict__ d_temp_storage, size_t* __restrict__ temp_storage_bytes, int* __restrict__ cached_numPoints) {
     isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
-    // Determine temporary device storage requirements
-    void* d_temp_storage = nullptr;
-    size_t temp_storage_bytes = 0;
-
+    
     cub::DeviceSelect::If(
-        d_temp_storage,
-        temp_storage_bytes,
+        *d_temp_storage,
+        *temp_storage_bytes,
         dataIn,
         dataOut,
         numValidPoints,
@@ -326,63 +325,100 @@ void findValidIndices(size_t* dataIn, size_t* dataOut, int* numValidPoints, int 
         IsValid(flags),
         stream
     );
-
-    // Allocate temporary storage
-    cudaMallocAsync(&d_temp_storage, temp_storage_bytes, stream);
-
-    // Run selection
-    cub::DeviceSelect::If(
-        d_temp_storage,
-        temp_storage_bytes,
-        dataIn,
-        dataOut,
-        numValidPoints,
-        numPoints,
-        IsValid(flags),
-        stream
-    );
-
-    cudaFreeAsync(d_temp_storage, stream);
 }
 
-void fillIndices(size_t* indices, size_t numIndices, int cudaDeviceIndex, cudaStream_t stream) {
+void fillIndices(size_t* __restrict__ indices, size_t numIndices, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream) {
     isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
 
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, cudaDeviceIndex);
-    const int nt = prop.maxThreadsPerBlock;
+    const int nt = maxThreadsPerBlock;
     const int nb = (numIndices + nt - 1) / nt;
 
     fillIndicesKernel<<<nb, nt, 0, stream>>>(indices, numIndices);
 }
 
-__global__ void fillValidCartesianPointsKernel(float* x, float* y, float* z, float3* cartesianPoints, size_t* validIndices, int* numValidPoints) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= *numValidPoints)
-        return;
-    float azimuthDeg = x[validIndices[idx]];
-    float elevationDeg = y[validIndices[idx]];
-    float range = z[validIndices[idx]];
-    float cosAzimuth, sinAzimuth, cosElevation, sinElevation;
-    sincospif(azimuthDeg/180.0f, &sinAzimuth, &cosAzimuth);
-    sincospif(elevationDeg/180.0f, &sinElevation, &cosElevation);
-    cartesianPoints[idx].x = range * cosElevation * cosAzimuth;
-    cartesianPoints[idx].y = range * cosElevation * sinAzimuth;
-    cartesianPoints[idx].z = range * sinElevation;
+size_t getTempStorageSizeForValidIndices(size_t maxPoints, int cudaDeviceIndex) {
+    isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
+    
+    void* d_temp_storage = nullptr;
+    size_t temp_storage_bytes = 0;
+    
+    // Query temp storage size for max points
+    cub::DeviceSelect::If(
+        d_temp_storage,
+        temp_storage_bytes,
+        static_cast<size_t*>(nullptr),
+        static_cast<size_t*>(nullptr),
+        static_cast<int*>(nullptr),
+        maxPoints,
+        IsValid(static_cast<uint8_t*>(nullptr))
+    );
+    
+    return temp_storage_bytes;
 }
 
-void fillValidCartesianPoints(float* azimuth, float* elevation, float* range, float3* cartesianPoints, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream) {
+__global__ void fillValidCartesianPointsKernel(
+    const float* __restrict__ azimuth, 
+    const float* __restrict__ elevation, 
+    const float* __restrict__ range, 
+    float3* __restrict__ cartesianPoints, 
+    const size_t* __restrict__ validIndices, 
+    int numValidPoints)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= numValidPoints) return;
+    
+    size_t srcIdx = validIndices[idx];
+    float azimuthDeg = azimuth[srcIdx];
+    float elevationDeg = elevation[srcIdx];
+    float rangeVal = range[srcIdx];
+    
+    float cosAzimuth, sinAzimuth, cosElevation, sinElevation;
+    sincospif(azimuthDeg / 180.0f, &sinAzimuth, &cosAzimuth);
+    sincospif(elevationDeg / 180.0f, &sinElevation, &cosElevation);
+    
+    // Compute intermediate value once
+    float rangeXY = rangeVal * cosElevation;
+    
+    // Vectorized store using make_float3
+    cartesianPoints[idx] = make_float3(
+        rangeXY * cosAzimuth,      // x
+        rangeXY * sinAzimuth,      // y
+        rangeVal * sinElevation    // z
+    );
+}
+
+// High-accuracy version with cached device properties
+void fillValidCartesianPoints(float* __restrict__ azimuth, float* __restrict__ elevation, float* __restrict__ range, float3* __restrict__ cartesianPoints, 
+                                                 size_t* __restrict__ validIndices, int* __restrict__ numValidPointsDevice, size_t maxPoints,
+                                                 int maxThreadsPerBlock, int multiProcessorCount,
+                                                 int cudaDeviceIndex, cudaStream_t stream) {
     isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
 
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, cudaDeviceIndex);
-    const int nt = prop.maxThreadsPerBlock;
-    const int nb = (maxPoints + nt - 1) / nt;
-    fillValidCartesianPointsKernel<<<nb, nt, 0, stream>>>(azimuth, elevation, range, cartesianPoints, validIndices, numValidPoints);
+    // Get actual number of points to process
+    int numValidPointsHost;
+    CUDA_CHECK(cudaMemcpyAsync(&numValidPointsHost, numValidPointsDevice, sizeof(int), cudaMemcpyDeviceToHost, stream));
+    CUDA_CHECK(cudaStreamSynchronize(stream));
+    
+    if (numValidPointsHost == 0) return;
+    
+    // optimize for occupancy
+    if (numValidPointsHost < 1024) {
+        // vectorized approach - high occupancy
+        int nt = 256;
+        int nb = (multiProcessorCount * 4); // Ensure high occupancy
+        fillValidCartesianPointsKernel<<<nb, nt, 0, stream>>>(
+            azimuth, elevation, range, cartesianPoints, validIndices, numValidPointsHost);
+    } else {
+        // use all available threads
+        int nt = maxThreadsPerBlock;
+        int nb = (numValidPointsHost + nt - 1) / nt;
+        fillValidCartesianPointsKernel<<<nb, nt, 0, stream>>>(
+            azimuth, elevation, range, cartesianPoints, validIndices, numValidPointsHost);
+    }
 }
 
 template <typename T>
-__global__ void selectValidPointsKernel(T* inData, T* outData, size_t* validIndices, int* numValidPoints, size_t stride) {
+__global__ void selectValidPointsKernel(T* __restrict__ inData, T* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t stride) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= *numValidPoints) {
         return;
@@ -393,21 +429,115 @@ __global__ void selectValidPointsKernel(T* inData, T* outData, size_t* validIndi
 }
 
 template <typename T>
-void selectValidPoints(T* inData, T* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride) {
+void selectValidPoints(T* __restrict__ inData, T* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride) {
     isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
 
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, cudaDeviceIndex);
-    const int nt = prop.maxThreadsPerBlock;
+    const int nt = maxThreadsPerBlock;
     const int nb = (maxPoints + nt - 1) / nt;
     selectValidPointsKernel<<<nb, nt, 0, stream>>>(inData, outData, validIndices, numValidPoints, stride);
 }
 
-template void selectValidPoints<float>(float* inData, float* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
-template void selectValidPoints<float3>(float3* inData, float3* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
-template void selectValidPoints<int32_t>(int32_t* inData, int32_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
-template void selectValidPoints<uint8_t>(uint8_t* inData, uint8_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
-template void selectValidPoints<uint32_t>(uint32_t* inData, uint32_t* outData, size_t* validIndices, int* numValidPoints, int maxPoints, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<float>(float* __restrict__ inData, float* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<float3>(float3* __restrict__ inData, float3* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<int32_t>(int32_t* __restrict__ inData, int32_t* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<uint8_t>(uint8_t* __restrict__ inData, uint8_t* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+template void selectValidPoints<uint32_t>(uint32_t* __restrict__ inData, uint32_t* __restrict__ outData, size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream, size_t stride);
+
+// fused kernel for required basic outputs (azimuth, elevation, distance, intensity)
+__global__ void selectRequiredValidPointsKernel(
+    const float* __restrict__ azimuthSrc, const float* __restrict__ elevationSrc, const float* __restrict__ distanceSrc, const float* __restrict__ intensitySrc,
+    float* __restrict__ azimuthDst, float* __restrict__ elevationDst, float* __restrict__ distanceDst, float* __restrict__ intensityDst,
+    const size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, uint32_t enableMask)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= *numValidPoints) {
+        return;
+    }
+    
+    size_t srcIdx = validIndices[idx];
+    
+    // vectorized loads for better memory bandwidth
+    if (enableMask & 0xF) {
+        if (enableMask & 1) azimuthDst[idx] = azimuthSrc[srcIdx];      // bit 0: azimuth
+        if (enableMask & 2) elevationDst[idx] = elevationSrc[srcIdx];  // bit 1: elevation  
+        if (enableMask & 4) distanceDst[idx] = distanceSrc[srcIdx];    // bit 2: distance
+        if (enableMask & 8) intensityDst[idx] = intensitySrc[srcIdx];  // bit 3: intensity
+    }
+}
+
+// Optimized fused kernel for optional outputs
+__global__ void selectOptionalValidPointsKernel(
+    const int32_t* __restrict__ timestampSrc, const uint32_t* __restrict__ emitterIdSrc, const uint32_t* __restrict__ materialIdSrc, const uint8_t* __restrict__ objectIdSrc,
+    const float3* __restrict__ normalSrc, const float3* __restrict__ velocitySrc,
+    int32_t* __restrict__ timestampDst, uint32_t* __restrict__ emitterIdDst, uint32_t* __restrict__ materialIdDst, uint8_t* __restrict__ objectIdDst,
+    float3* __restrict__ normalDst, float3* __restrict__ velocityDst,
+    const size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, uint32_t enableMask)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= *numValidPoints) {
+        return;
+    }
+    
+    size_t srcIdx = validIndices[idx];
+    
+    // Optional outputs - less frequently accessed together
+    if (enableMask & (1 << 4)) timestampDst[idx] = timestampSrc[srcIdx];      // bit 4: timestamp
+    if (enableMask & (1 << 5)) emitterIdDst[idx] = emitterIdSrc[srcIdx];      // bit 5: emitter ID
+    if (enableMask & (1 << 6)) materialIdDst[idx] = materialIdSrc[srcIdx];    // bit 6: material ID
+    if (enableMask & (1 << 7)) {                                              // bit 7: object ID
+        for (size_t i = 0; i < 16; i++) {   // handle striding
+            objectIdDst[idx * 16 + i] = objectIdSrc[srcIdx * 16 + i];
+        }
+    }
+    if (enableMask & (1 << 8)) normalDst[idx] = normalSrc[srcIdx];            // bit 8: normal
+    if (enableMask & (1 << 9)) velocityDst[idx] = velocitySrc[srcIdx];        // bit 9: velocity
+}
+
+// Host function to launch the required outputs kernel
+void selectRequiredValidPoints(
+    const float* __restrict__ azimuthSrc, const float* __restrict__ elevationSrc, const float* __restrict__ distanceSrc, const float* __restrict__ intensitySrc,
+    float* __restrict__ azimuthDst, float* __restrict__ elevationDst, float* __restrict__ distanceDst, float* __restrict__ intensityDst,
+    const size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints, 
+    uint32_t enableMask, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream)
+{
+    isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
+    
+    // Only launch if any required outputs are enabled
+    if (enableMask == 0) return;
+    
+    const int nt = maxThreadsPerBlock;
+    const int nb = (maxPoints + nt - 1) / nt;
+    
+    selectRequiredValidPointsKernel<<<nb, nt, 0, stream>>>(
+        azimuthSrc, elevationSrc, distanceSrc, intensitySrc,
+        azimuthDst, elevationDst, distanceDst, intensityDst,
+        validIndices, numValidPoints, enableMask);
+}
+
+// Host function to launch the optional outputs kernel
+void selectOptionalValidPoints(
+    const int32_t* __restrict__ timestampSrc, const uint32_t* __restrict__ emitterIdSrc, const uint32_t* __restrict__ materialIdSrc, const uint8_t* __restrict__ objectIdSrc,
+    const float3* __restrict__ normalSrc, const float3* __restrict__ velocitySrc,
+    int32_t* __restrict__ timestampDst, uint32_t* __restrict__ emitterIdDst, uint32_t* __restrict__ materialIdDst, uint8_t* __restrict__ objectIdDst,
+    float3* __restrict__ normalDst, float3* __restrict__ velocityDst,
+    const size_t* __restrict__ validIndices, int* __restrict__ numValidPoints, size_t maxPoints,
+    uint32_t enableMask, int maxThreadsPerBlock, int cudaDeviceIndex, cudaStream_t stream)
+{
+    isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
+    
+    // launch if any optional outputs are enabled
+    if (enableMask == 0) return;
+    
+    const int nt = maxThreadsPerBlock;
+    const int nb = (maxPoints + nt - 1) / nt;
+    
+    selectOptionalValidPointsKernel<<<nb, nt, 0, stream>>>(
+        timestampSrc, emitterIdSrc, materialIdSrc, objectIdSrc,
+        normalSrc, velocitySrc,
+        timestampDst, emitterIdDst, materialIdDst, objectIdDst,
+        normalDst, velocityDst,
+        validIndices, numValidPoints, enableMask);
+}
 
 }   // namespace isaacsim
 }   // namespace sensors
