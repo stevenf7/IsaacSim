@@ -1,11 +1,11 @@
 [package]
-version = "1.1.6"
+version = "1.2.0"
 category = "Simulation"
 title = "ROS 2 Simulation Control"
 description = "Extension that uses the ROS 2 Simulation Interfaces to control Isaac Sim"
-authors = ["Isaac Sim Team"]
+authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.sim_control"
-keywords = ["isaac", "ROS2", "simulation", "control"]
+keywords = ["isaac", "ROS2", "simulation", "sim", "control"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
@@ -28,6 +28,10 @@ timeout = 900
 
 dependencies = [
     "isaacsim.robot.wheeled_robots",
+]
+
+stdoutFailPatterns.exclude = [
+    "*[Error] [omni.usd] Failed to open : /invalid/path/to/nonexistent.usd*",
 ]
 
 args = [
@@ -80,3 +84,5 @@ name = "startup"
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]
+
+

@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.0] - 2025-09-05
+### Added
+- Added the find_filtered_files and find_filtered_files_async utility to recursively search for USD files with configurable depth and pattern matching.
+- Added is_local_path utility to determine if a given path is a local file path or a remote (e.g., Omniverse) URL.
 
 ## [1.2.9] - 2025-09-05
 ### Fixed

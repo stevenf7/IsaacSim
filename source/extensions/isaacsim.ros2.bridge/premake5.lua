@@ -254,6 +254,13 @@ if os.target() == "windows" then
         { "%{root}/_build/target-deps/nv_ros2_humble/Lib/site-packages", ext.target_dir .. "/humble/rclpy" },
         { "%{root}/_build/target-deps/tinyxml2/bin/**.dll", ext.target_dir .. "/humble/lib" },
     }
+    repo_build.prebuild_copy {
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/bin/**.dll", ext.target_dir .. "/jazzy/lib" },
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/Lib/site-packages", ext.target_dir .. "/jazzy/rclpy" },
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/opt/libyaml_vendor/bin/**.dll", ext.target_dir .. "/jazzy/lib" },
+        { "%{root}/_build/target-deps/nv_ros2_jazzy/opt/spdlog_vendor/bin/**.dll", ext.target_dir .. "/jazzy/lib" },
+        { "%{root}/_build/target-deps/tinyxml2/bin/**.dll", ext.target_dir .. "/jazzy/lib" },
+    }
 end
 
 
