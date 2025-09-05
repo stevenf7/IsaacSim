@@ -1164,7 +1164,7 @@ void UrdfImporter::addLinksAndJoints(std::unordered_map<std::string, pxr::UsdSta
                         // if (!parentLink.softs.size() && !childLink.softs.size()) // rigid parent, rigid child
                         {
                             if (urdfJoint.type != UrdfJointType::FIXED || !config.mergeFixedJoints ||
-                                urdfJoint.dontCollapse)
+                                urdfJoint.dontCollapse || (childLink.inertial.hasMass && childLink.inertial.mass > 0.0f))
                             {
 
                                 addRigidBody(stages, childLink, poseLinkToWorld, robotPrim, robot);
