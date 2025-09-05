@@ -569,6 +569,7 @@ exclude = [
     "tools/ci",
     "tools/container",
     "tools/docs",
+    "tools/docker/tag_and_push_container.sh",
     "tools/internal-licenses",
     "tools/internal",
     "tools/isaac",
@@ -586,6 +587,7 @@ exclude = [
 files = [
     "repo.toml",
     "repo_tools.toml",
+    "tools/docker/prep_docker_build.sh"
 ]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
@@ -601,6 +603,7 @@ end_marker = "# AUTOREMOVE: END"
 files = [
     "deps/repo-deps.packman.xml",
     "deps/kit-sdk-deps.packman.xml",
+    "tools/docker/README.md",
 ]
 begin_marker = "<!-- AUTOREMOVE: BEGIN -->"
 end_marker = "<!-- AUTOREMOVE: END -->"
