@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.12.0] - 2025-09-05
+### Changed
+- Update internal ROS 2 Humble and Jazzy libs to include common_interfaces, tf2_ros, sensor_msgs_py, Simulation Interfaces v1.1.0. 
+
 ## [4.11.2] - 2025-08-29
 ### Changed
 - Renamed CARB profiling zones to include [IsaacSim] prefix
