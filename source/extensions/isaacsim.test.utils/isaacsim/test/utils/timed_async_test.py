@@ -1,0 +1,64 @@
+import time
+
+import omni.kit.test
+
+
+class TimedAsyncTestCase(omni.kit.test.AsyncTestCase):
+    """Base test class that automatically times all test methods.
+
+    This class extends omni.kit.test.AsyncTestCase to automatically measure and print
+    the execution time of each test method. The timing information is displayed after
+    each test completes, helping with performance monitoring and optimization.
+
+    All test classes should inherit from this class instead of omni.kit.test.AsyncTestCase
+    directly to benefit from automatic test timing functionality.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import asyncio
+        >>> from isaacsim.test.utils.timed_async_test import TimedAsyncTestCase
+        >>>
+        >>> class MyTestCase(TimedAsyncTestCase):
+        ...     async def test_example(self):
+        ...         await asyncio.sleep(0.1)
+        ...         self.assertTrue(True)
+        >>>
+        >>> # When running the test, output will include:
+        >>> # [TEST TIMING] test_example: 0.100 seconds
+    """
+
+    async def setUp(self):
+        """Set up test timing before each test method.
+
+        This method is called before each test method execution to record the start time.
+        It first calls the parent setUp method to ensure proper test initialization,
+        then records the current timestamp in _test_start_time, which will be used
+        later in tearDown to calculate the test execution duration.
+
+        This order ensures we measure only the test method execution time, excluding
+        any framework setup overhead.
+        """
+        super().setUp()
+        self._test_start_time = time.time()
+
+    async def tearDown(self):
+        """Clean up and display test timing after each test method.
+
+        This method is called after each test method execution to calculate and display
+        the test execution time. It computes the duration by subtracting the start time
+        (recorded in setUp) from the current time, then prints the timing information
+        in a standardized format.
+
+        The timing output includes the test method name and execution duration in seconds
+        with three decimal places of precision. If setUp failed before recording the start
+        time, timing information is skipped to avoid errors.
+
+        The method also calls the parent tearDown method to ensure proper test cleanup.
+        """
+        if hasattr(self, "_test_start_time"):
+            test_duration = time.time() - self._test_start_time
+            test_name = self._testMethodName
+            print(f"\n[TEST TIMING] {test_name}: {test_duration:.3f} seconds")
+        super().tearDown()
