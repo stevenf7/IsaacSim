@@ -21,6 +21,7 @@ import omni.kit.commands
 import omni.kit.test
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.robot.surface_gripper import GripperView
+from isaacsim.robot.surface_gripper._surface_gripper import GripperStatus
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 # from isaacsim.robot.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
@@ -128,7 +129,7 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # set status of the grippers and make sure we can retrieve it after a step
-        status_exp = ["Open", "Open"]
+        status_exp = [GripperStatus.Open, GripperStatus.Open]
         status_values = [-0.5, -0.5]
         self.gripper_view.apply_gripper_action(status_values)
 
@@ -137,26 +138,26 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
 
         status = self.gripper_view.get_surface_gripper_status()
         for i in range(gripper_count):
-            self.assertEqual(status[i], status_exp[i])
+            self.assertEqual(GripperStatus(status[i]), status_exp[i])
 
         # set status of the grippers and make sure we can retrieve them without a step
-        status_exp = ["Open", "Closing"]
+        status_exp = [GripperStatus.Open, GripperStatus.Closing]
         status_values = [-0.5, 0.5]
         self.gripper_view.apply_gripper_action(status_values)
 
         status = self.gripper_view.get_surface_gripper_status()
         for i in range(gripper_count):
-            self.assertEqual(status[i], status_exp[i])
+            self.assertEqual(GripperStatus(status[i]), status_exp[i])
 
         # set status of only some grippers
-        status_new_exp = ["Open", "Closing"]
+        status_new_exp = [GripperStatus.Open, GripperStatus.Closing]
         status_values = [0.5, 0.5]
         changed_gripper_indices = [1]
         self.gripper_view.apply_gripper_action(status_values, changed_gripper_indices)
 
         status = self.gripper_view.get_surface_gripper_status()
-        self.assertEqual(status[0], status_new_exp[0])
-        self.assertEqual(status[1], status_new_exp[1])
+        self.assertEqual(GripperStatus(status[0]), status_new_exp[0])
+        self.assertEqual(GripperStatus(status[1]), status_new_exp[1])
 
         pass
 
