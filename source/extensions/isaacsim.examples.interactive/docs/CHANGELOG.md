@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.7.3] - 2025-08-30
+### Changed
+- Updated Surface Gripper sample
+
 ## [4.7.2] - 2025-08-27
 ### Fixed
 - Fix the broken documentation links
