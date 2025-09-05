@@ -404,6 +404,10 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         prim = stage.GetPrimAtPath("/test_merge_joints/link_2")
         self.assertEqual(prim.GetPath(), Sdf.Path.emptyPath)
 
+        # palm link has mass, so it should not merge
+        prim = stage.GetPrimAtPath("/test_merge_joints/palm_link")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
         pass
 
     async def test_urdf_mtl(self):
@@ -786,7 +790,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         base_link = [
             child_prim
             for child_prim in pxr.Usd.PrimRange(
-                stage.GetPrimAtPath("/test_collision_from_visuals/root_link/collisions"),
+                stage.GetPrimAtPath("/test_collision_from_visuals/base_link/collisions"),
                 pxr.Usd.TraverseInstanceProxies(),
             )
             if IsVisualGeom(child_prim)
