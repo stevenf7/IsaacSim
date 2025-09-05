@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.22] - 2025-09-05
+### Changed
+- Update assets path to staging
+
 ## [1.3.21] - 2025-08-27
 ### Fixed
 - Fix the broken documentation links

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.9] - 2025-09-05
+### Fixed
+- Update assets path to staging
+
 ## [1.2.8] - 2025-07-25
 ### Fixed
 - Update assets path to production

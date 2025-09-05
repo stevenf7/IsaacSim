@@ -25,7 +25,7 @@ if [[ -z "$@" ]]; then
     command="bash"
 fi
 # Set to desired Nucleus
-omni_server="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0"
+omni_server="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1"
 if ! [[ -z "${OMNI_SERVER}" ]]; then
 	omni_server="${OMNI_SERVER}"
 fi
