@@ -55,9 +55,9 @@ private:
     std::vector<cudaStream_t> m_cudaStreams; // Persistent streams
     std::vector<cudaEvent_t> m_cudaEvents; // Persistent events
 
-    // Cached device properties per GPU - avoid per-frame getDeviceProperties call
-    std::unordered_map<int, int> m_maxThreadsPerBlockCache;
-    std::unordered_map<int, int> m_multiProcessorCountCache;
+    // Cached device properties
+    int m_maxThreadsPerBlock{ 0 };
+    int m_multiProcessorCount{ 0 };
 
     // CUDA graph optimization for basic data copy operations
     cudaGraph_t m_basicDataCopyGraph{};
@@ -103,7 +103,7 @@ private:
     std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> intensityBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> azimuthBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> elevationBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<int32_t>, 2> timestampBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint64_t>, 2> timestampBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> emitterIdBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> materialIdBuffers;
     std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> objectIdBuffers;
@@ -132,7 +132,7 @@ private:
     isaacsim::core::includes::DeviceBufferBase<float> azimuthBufferValid;
     isaacsim::core::includes::DeviceBufferBase<float> elevationBufferValid;
     isaacsim::core::includes::DeviceBufferBase<int32_t> deltaTimesBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<int32_t> timestampBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint64_t> timestampBufferValid;
     isaacsim::core::includes::DeviceBufferBase<uint32_t> emitterIdBufferValid;
     isaacsim::core::includes::DeviceBufferBase<uint32_t> materialIdBufferValid;
     isaacsim::core::includes::DeviceBufferBase<uint8_t> objectIdBufferValid;
@@ -164,7 +164,8 @@ public:
         m_currentBuffer = 0;
         m_nextBuffer = 1;
         m_totalElements = 0;
-        clearDevicePropertiesCache();
+        m_maxThreadsPerBlock = 0;
+        m_multiProcessorCount = 0;
         CUDA_CHECK(cudaFreeHost(hostGMO));
         CUDA_CHECK(cudaFreeHost(hostAuxPoints));
 
@@ -222,6 +223,22 @@ public:
 
         int cudaDeviceIndex = db.inputs.cudaDeviceIndex() == -1 ? 0 : db.inputs.cudaDeviceIndex();
         isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
+
+        // Query for device props
+        try
+        {
+            cudaDeviceProp prop;
+            CUDA_CHECK(cudaGetDeviceProperties(&prop, cudaDeviceIndex));
+
+            // cache results
+            m_maxThreadsPerBlock = prop.maxThreadsPerBlock;
+            m_multiProcessorCount = prop.multiProcessorCount;
+        }
+        catch (const std::exception& e)
+        {
+            CARB_LOG_ERROR("Failed to get device properties for GPU %d: %s", cudaDeviceIndex, e.what());
+            return false;
+        }
 
         // Allocate pinned host memory
         CUDA_CHECK(cudaMallocHost(&hostGMO, sizeof(omni::sensors::GenericModelOutput)));
@@ -411,15 +428,7 @@ public:
             CUDA_CHECK(cudaEventCreate(&m_cudaEvents[i]));
         }
 
-        // Cache device properties per GPU to handle multi-GPU systems
-        int maxThreadsPerBlock, multiProcessorCount;
-        if (!getCachedDeviceProperties(cudaDeviceIndex, maxThreadsPerBlock, multiProcessorCount))
-        {
-            CARB_LOG_ERROR("Failed to get device properties for GPU %d during initialization", cudaDeviceIndex);
-            return false;
-        }
-
-        fillIndices(indicesBuffer.data(), m_maxPoints, maxThreadsPerBlock, cudaDeviceIndex);
+        fillIndices(indicesBuffer.data(), m_maxPoints, m_maxThreadsPerBlock, cudaDeviceIndex);
 
         // init cuda graphs for repeated ops
         if (!initializeCudaGraphs(cudaDeviceIndex))
@@ -946,14 +955,14 @@ public:
             {
                 CARB_PROFILE_ZONE(0, "Copy Timestamp Data");
                 auto timestampStream = cudaStreams[state.STREAM_TIMESTAMP];
-                CUDA_CHECK(cudaMemcpyAsync(state.timestampBuffers[state.m_currentBuffer].data() + startIndex,
-                                           state.hostGMO->elements.timeOffsetNs,
-                                           numElementsToCopyToCurrentBuffer * sizeof(int32_t), cudaMemcpyDeviceToDevice,
-                                           timestampStream));
-                CUDA_CHECK(cudaMemcpyAsync(state.timestampBuffers[state.m_nextBuffer].data(),
-                                           state.hostGMO->elements.timeOffsetNs + numElementsToCopyToCurrentBuffer,
-                                           numElementsToCopyToNextBuffer * sizeof(int32_t), cudaMemcpyDeviceToDevice,
-                                           timestampStream));
+                copyTimestamps(state.timestampBuffers[state.m_currentBuffer].data() + startIndex,
+                               state.hostGMO->timestampNs, state.hostGMO->elements.timeOffsetNs,
+                               static_cast<int>(numElementsToCopyToCurrentBuffer), state.m_maxThreadsPerBlock,
+                               state.m_multiProcessorCount, cudaDeviceIndex, timestampStream);
+                copyTimestamps(state.timestampBuffers[state.m_nextBuffer].data(), state.hostGMO->timestampNs,
+                               state.hostGMO->elements.timeOffsetNs + numElementsToCopyToCurrentBuffer,
+                               static_cast<int>(numElementsToCopyToNextBuffer), state.m_maxThreadsPerBlock,
+                               state.m_multiProcessorCount, cudaDeviceIndex, timestampStream);
                 CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_TIMESTAMP], timestampStream));
             }
             if (state.m_outputEmitterId)
@@ -1053,14 +1062,6 @@ public:
             // Select only valid indices on point cloud stream
             size_t numPointsToCheck = db.inputs.enablePerFrameOutput() ? numElements : state.m_maxPoints;
 
-            // Get cached device props for current device
-            int maxThreadsPerBlock, multiProcessorCount;
-            if (!state.getCachedDeviceProperties(cudaDeviceIndex, maxThreadsPerBlock, multiProcessorCount))
-            {
-                CARB_LOG_ERROR("Failed to get device properties for GPU %d", cudaDeviceIndex);
-                return false;
-            }
-
             cudaEvent_t findValidIndicesEvent;
             CUDA_CHECK(cudaEventCreate(&findValidIndicesEvent));
             findValidIndices(state.indicesBuffer.data(), state.indicesValidBuffer.data(), state.numValidPointsDevice,
@@ -1074,11 +1075,11 @@ public:
             CUDA_CHECK(cudaEventDestroy(findValidIndicesEvent));
 
             // Fill the valid cartesian points
-            fillValidCartesianPoints(state.azimuthBuffers[state.m_currentBuffer].data(),
-                                     state.elevationBuffers[state.m_currentBuffer].data(),
-                                     state.distanceBuffers[state.m_currentBuffer].data(), state.pcBufferValid.data(),
-                                     state.indicesValidBuffer.data(), state.numValidPointsDevice, numPointsToCheck,
-                                     maxThreadsPerBlock, multiProcessorCount, cudaDeviceIndex, pointCloudStream);
+            fillValidCartesianPoints(
+                state.azimuthBuffers[state.m_currentBuffer].data(), state.elevationBuffers[state.m_currentBuffer].data(),
+                state.distanceBuffers[state.m_currentBuffer].data(), state.pcBufferValid.data(),
+                state.indicesValidBuffer.data(), state.numValidPointsDevice, numPointsToCheck,
+                state.m_maxThreadsPerBlock, state.m_multiProcessorCount, cudaDeviceIndex, pointCloudStream);
             CUDA_CHECK(cudaEventRecord(outputEvent, pointCloudStream));
 
             std::vector<cudaEvent_t> outputCompletionEvents; // Track output completion for final sync
@@ -1156,7 +1157,7 @@ public:
                                               state.azimuthBufferValid.data(), state.elevationBufferValid.data(),
                                               state.distanceBufferValid.data(), state.intensityBufferValid.data(),
                                               state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                              numPointsToCheck, state.m_requiredOutputsMask, maxThreadsPerBlock,
+                                              numPointsToCheck, state.m_requiredOutputsMask, state.m_maxThreadsPerBlock,
                                               cudaDeviceIndex, commonStream);
 
                     cudaEvent_t commonCompleteEvent;
@@ -1187,17 +1188,18 @@ public:
                     if (state.m_outputVelocity)
                         CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_VELOCITY], 0));
 
-                    selectOptionalValidPoints(
-                        state.timestampBuffers[state.m_currentBuffer].data(),
-                        state.emitterIdBuffers[state.m_currentBuffer].data(),
-                        state.materialIdBuffers[state.m_currentBuffer].data(),
-                        state.objectIdBuffers[state.m_currentBuffer].data(),
-                        state.normalBuffers[state.m_currentBuffer].data(),
-                        state.velocityBuffers[state.m_currentBuffer].data(), state.timestampBufferValid.data(),
-                        state.emitterIdBufferValid.data(), state.materialIdBufferValid.data(),
-                        state.objectIdBufferValid.data(), state.normalBufferValid.data(),
-                        state.velocityBufferValid.data(), state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                        numPointsToCheck, state.m_optionalOutputsMask, maxThreadsPerBlock, cudaDeviceIndex, auxStream);
+                    selectOptionalValidPoints(state.timestampBuffers[state.m_currentBuffer].data(),
+                                              state.emitterIdBuffers[state.m_currentBuffer].data(),
+                                              state.materialIdBuffers[state.m_currentBuffer].data(),
+                                              state.objectIdBuffers[state.m_currentBuffer].data(),
+                                              state.normalBuffers[state.m_currentBuffer].data(),
+                                              state.velocityBuffers[state.m_currentBuffer].data(),
+                                              state.timestampBufferValid.data(), state.emitterIdBufferValid.data(),
+                                              state.materialIdBufferValid.data(), state.objectIdBufferValid.data(),
+                                              state.normalBufferValid.data(), state.velocityBufferValid.data(),
+                                              state.indicesValidBuffer.data(), state.numValidPointsDevice,
+                                              numPointsToCheck, state.m_optionalOutputsMask, state.m_maxThreadsPerBlock,
+                                              cudaDeviceIndex, auxStream);
 
                     cudaEvent_t auxCompleteEvent;
                     CUDA_CHECK(cudaEventCreate(&auxCompleteEvent));
@@ -1280,58 +1282,6 @@ public:
             CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_VELOCITY]));
 
         return true;
-    }
-
-private:
-    /**
-     * @brief Gets cached device properties for the specified GPU, queries if not cached
-     * @param cudaDeviceIndex CUDA device index to get properties for
-     * @param maxThreadsPerBlock Output parameter for max threads per block
-     * @param multiProcessorCount Output parameter for multiprocessor count
-     * @return true if successful, false on error
-     */
-    bool getCachedDeviceProperties(int cudaDeviceIndex, int& maxThreadsPerBlock, int& multiProcessorCount)
-    {
-        // Check if props are already cached for device
-        auto threadsIter = m_maxThreadsPerBlockCache.find(cudaDeviceIndex);
-        auto mpIter = m_multiProcessorCountCache.find(cudaDeviceIndex);
-
-        if (threadsIter != m_maxThreadsPerBlockCache.end() && mpIter != m_multiProcessorCountCache.end())
-        {
-            maxThreadsPerBlock = threadsIter->second;
-            multiProcessorCount = mpIter->second;
-            return true;
-        }
-
-        // Query for device props
-        try
-        {
-            cudaDeviceProp prop;
-            CUDA_CHECK(cudaGetDeviceProperties(&prop, cudaDeviceIndex));
-
-            // cache results
-            m_maxThreadsPerBlockCache[cudaDeviceIndex] = prop.maxThreadsPerBlock;
-            m_multiProcessorCountCache[cudaDeviceIndex] = prop.multiProcessorCount;
-
-            maxThreadsPerBlock = prop.maxThreadsPerBlock;
-            multiProcessorCount = prop.multiProcessorCount;
-
-            return true;
-        }
-        catch (const std::exception& e)
-        {
-            CARB_LOG_ERROR("Failed to get device properties for GPU %d: %s", cudaDeviceIndex, e.what());
-            return false;
-        }
-    }
-
-    /**
-     * @brief Clears all cached device properties
-     */
-    void clearDevicePropertiesCache()
-    {
-        m_maxThreadsPerBlockCache.clear();
-        m_multiProcessorCountCache.clear();
     }
 };
 

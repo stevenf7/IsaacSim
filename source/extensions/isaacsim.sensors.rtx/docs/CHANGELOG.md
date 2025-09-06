@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.7.0] - 2025-09-05
+### Added
+- Per-frame output option to IsaacCreateRTXLidarScanBuffer
+### Changed
+- Use CUDA graphs, improved kernels, and cached device properties in IsaacCreateRTXLidarScanBuffer to improve perf
+- IsaacExtractRTXSensorPointCloudNoAccumulator annotator now uses IsaacCreateRTXLidarScanBuffer node with per-frame
+  output enabled
+### Removed
+- IsaacExtractRTXSensorPointCloud node no longer used
+- Unused CUDA kernels removed
+### Fixed
+- IsaacCreateRTXLidarScanBuffer outputs correct timestamps
+
 ## [15.6.4] - 2025-08-29
 ### Changed
 - Renamed CARB profiling zones to include [IsaacSim] prefix
