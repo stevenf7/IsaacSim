@@ -118,6 +118,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         dof_states["pos"] = targets
         self._dc.set_articulation_dof_states(art, dof_states, _dynamic_control.STATE_POS)
         await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_POS)
 
         expected_pos = body_states["pose"]["p"][hand_idx]
