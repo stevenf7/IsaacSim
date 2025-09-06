@@ -88,7 +88,6 @@ timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 i = 0
 # Run for 10 frames in test mode
-print(aux_data_level)
 while simulation_app.is_running() and (not args.test or i < 10):
     simulation_app.update()
     data = lidar.get_current_frame()[ANNOTATOR_NAME]

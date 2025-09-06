@@ -31,6 +31,9 @@ from pxr import Gf
 
 DEBUG_DRAW_PRINT = False
 
+# Maximum difference in fireTimeNs for Example_Rotary configuration
+MAX_TIMESTAMP_DIFF = 3500
+
 
 class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
     """Test the Isaac Create RTX Lidar Scan Buffer annotator"""
@@ -109,9 +112,6 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
     async def _test_intensity(self):
         pass
 
-    async def _test_distance(self):
-        pass
-
     async def _test_object_id(self):
         stable_id_map = LidarRtx.decode_stable_id_mapping(self._annotator_stable_id_map_data.tobytes())
         self.assertGreater(len(stable_id_map), 0, "Expected non-empty stable id map.")
@@ -144,16 +144,16 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
     async def _test_velocity(self):
         pass
 
-    async def _test_azimuth(self):
-        pass
-
-    async def _test_elevation(self):
-        pass
-
     async def _test_normal(self):
         pass
 
     async def _test_timestamp(self):
+        timestamp_diffs = np.diff(self.timestamp)
+        self.assertTrue(np.all(timestamp_diffs >= 0), "Timestamps are not monotonically increasing.")
+        self.assertTrue(
+            np.all(timestamp_diffs <= MAX_TIMESTAMP_DIFF),
+            "Max difference in timestamps is expected to be 3500ns, the maximum difference in fireTimeNs in the Example_Rotary configuration.",
+        )
         pass
 
     async def _test_emitter_id(self):
@@ -309,11 +309,8 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         self.cube_prim_paths = [f"/World/cube_{int(i)}" for i in cube_idx]
 
         await self._test_intensity()
-        await self._test_distance()
         await self._test_object_id()
         await self._test_velocity()
-        await self._test_azimuth()
-        await self._test_elevation()
         await self._test_normal()
         await self._test_timestamp()
         await self._test_emitter_id()
