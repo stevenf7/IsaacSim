@@ -122,7 +122,7 @@ def get_prim_variant_collection(prim: str | Usd.Prim) -> dict[str, list[str]]:
         ... )  # doctest: +NO_CHECK
         >>>
         >>> prim_utils.get_prim_variant_collection("/panda")
-        {'Mesh': ['Performance', 'Quality'], 'Gripper': ['AlternateFinger', 'Default']}
+        {'Mesh': ['Performance', 'Quality'], 'Gripper': ['AlternateFinger', 'Default', 'None', 'Robotiq_2F_85']}
     """
     prim = stage_utils.get_current_stage(backend="usd").GetPrimAtPath(prim) if isinstance(prim, str) else prim
     return {

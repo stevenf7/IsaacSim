@@ -46,7 +46,10 @@ class TestPrim(omni.kit.test.AsyncTestCase):
         )
         # test cases
         # - collection
-        ground_truth = {"Mesh": ["Performance", "Quality"], "Gripper": ["AlternateFinger", "Default"]}
+        ground_truth = {
+            "Mesh": ["Performance", "Quality"],
+            "Gripper": ["AlternateFinger", "Default", "None", "Robotiq_2F_85"],
+        }
         self.assertEqual(prim_utils.get_prim_variant_collection(prim), ground_truth, "Wrong variant collection")
         # - get variants (default)
         ground_truth = [("Gripper", "Default"), ("Mesh", "Performance")]

@@ -205,7 +205,7 @@ class TestMenuAssets(OmniUiTest):
             for _ in range(20):
                 await omni.kit.app.get_app().next_update_async()
             print(test_path)
-            delays = [10, 100, 200]
+            delays = [100, 150, 200]
             for delay in delays:
                 try:
                     await menu_click(test_path, human_delay_speed=delay)

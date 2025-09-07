@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.1] - 2025-09-05
+### Fixed
+- Fix test failure
+
 ## [2.2.0] - 2025-08-22
 ### Changed
 - Moved `test_randomizer_snippets.py` tests to `isaacsim.replicator.examples`

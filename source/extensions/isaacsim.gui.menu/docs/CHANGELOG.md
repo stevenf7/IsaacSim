@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.3] - 2025-09-07
+### Changed
+- Update test settings
+
 ## [2.4.2] - 2025-08-28
 ### Changed
 - Add delay to menu click for environment test
