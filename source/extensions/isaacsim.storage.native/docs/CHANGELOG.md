@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.0] - 2025-09-08
+### Added
+- Add `skip_check` optional argument to allow skipping the verification check step when resolving the asset root path
+
 ## [1.3.0] - 2025-09-05
 ### Added
 - Added the find_filtered_files and find_filtered_files_async utility to recursively search for USD files with configurable depth and pattern matching.
