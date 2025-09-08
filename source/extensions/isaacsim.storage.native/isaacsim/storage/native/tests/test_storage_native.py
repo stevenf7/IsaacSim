@@ -21,7 +21,7 @@ import omni.kit.commands
 import omni.kit.test
 
 # import omni.kit.usd
-from isaacsim.storage.native import find_filtered_files_async, get_assets_root_path_async
+from isaacsim.storage.native import find_filtered_files_async, get_assets_root_path, get_assets_root_path_async
 
 
 class TestStorageNative(omni.kit.test.AsyncTestCase):
@@ -33,10 +33,39 @@ class TestStorageNative(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_get_assets_root_path_async(self):
+    async def test_get_assets_root_path(self):
         default_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
-        result = await get_assets_root_path_async()
-        self.assertEqual(result, default_assets_url)
+
+        # including checking step
+        self.assertEqual(await get_assets_root_path_async(), default_assets_url)
+        self.assertEqual(get_assets_root_path(), default_assets_url)
+
+        # check unset setting
+        carb.settings.get_settings().set("/persistent/isaac/asset_root/default", 0)
+        with self.assertRaises(RuntimeError) as context:
+            await get_assets_root_path_async()
+        self.assertIn("setting is not set", str(context.exception))
+        with self.assertRaises(RuntimeError) as context:
+            get_assets_root_path()
+        self.assertIn("setting is not set", str(context.exception))
+
+        # skipping checking step
+        # - define invalid setting
+        invalid_assets_url = "https://some-invalid-path"
+        carb.settings.get_settings().set("/persistent/isaac/asset_root/default", invalid_assets_url)
+        # - check for exception raised due to invalid setting
+        with self.assertRaises(RuntimeError) as context:
+            await get_assets_root_path_async()
+        self.assertIn("Could not find assets root folder:", str(context.exception))
+        with self.assertRaises(RuntimeError) as context:
+            get_assets_root_path()
+        self.assertIn("Could not find assets root folder:", str(context.exception))
+        # - check for path (valid or not) due to skipping checking step
+        self.assertEqual(await get_assets_root_path_async(skip_check=True), invalid_assets_url)
+        self.assertEqual(get_assets_root_path(skip_check=True), invalid_assets_url)
+
+        # reset settings
+        carb.settings.get_settings().set("/persistent/isaac/asset_root/default", default_assets_url)
 
     async def test_find_filtered_files_async_basic_discovery(self):
         """Test basic USD file discovery without filters.
