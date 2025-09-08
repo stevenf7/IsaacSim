@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.1] - 2025-09-08
+### Fixed
+- Fix test configuration to allow runing all tests
+
 ## [3.5.0] - 2025-08-27
 ### Added
 - Add Warp kernels to compose/decompose fabric transformation matrices from/to Warp arrays
