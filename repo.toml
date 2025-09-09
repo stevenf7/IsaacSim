@@ -218,7 +218,7 @@ vs_version = "vs2022"
 "token:in_ci==false".version_check_vs_version = "2022"
 "token:in_ci==false".version_check_msvc_version = "v143"
 "token:in_ci==false".version_check_msbuild_version = "17"
-"token:in_ci==false".version_check_winsdk_version = "10.0.26100.0"
+"token:in_ci==false".version_check_winsdk_version = "10.0.22621.0"
 
 # Filter specifically to "Enterprise", "Professional", or "Community" editions of Visual Studio
 # vs_edition = "Community"
