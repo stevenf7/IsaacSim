@@ -25,6 +25,8 @@
 
 #include "isaacsim/robot/surface_gripper/SurfaceGripperComponent.h"
 #include "isaacsim/robot/surface_gripper/SurfaceGripperManager.h"
+// Threading utilities
+#include "isaacsim/robot/surface_gripper/ThreadUtils.h"
 // clang-format on
 
 #include <carb/Framework.h>
@@ -46,7 +48,6 @@
 #include <omni/usd/UsdContext.h>
 
 #include <algorithm>
-#include <thread>
 #include <vector>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.robot.surface_gripper.plugin", "Surface Gripper",
@@ -78,33 +79,7 @@ bool g_firstFrame = true;
 long int g_stageID;
 } // end of anonymous namespace
 
-// Parallel utilities
-namespace
-{
-template <typename Func>
-void parallelForIndex(size_t count, Func func)
-{
-    const size_t hw = std::thread::hardware_concurrency();
-    const size_t numThreads = std::max<size_t>(1, std::min<size_t>(hw ? hw : 1, count));
-    std::vector<std::thread> threads;
-    threads.reserve(numThreads);
-    for (size_t t = 0; t < numThreads; ++t)
-    {
-        threads.emplace_back(
-            [t, numThreads, count, &func]()
-            {
-                for (size_t i = t; i < count; i += numThreads)
-                {
-                    func(i);
-                }
-            });
-    }
-    for (auto& th : threads)
-    {
-        th.join();
-    }
-}
-} // anonymous namespace
+// Parallel utilities are provided by ThreadUtils.h
 
 namespace surface_gripper
 {
@@ -229,7 +204,8 @@ std::vector<int> CARB_ABI getGripperStatusBatch(const char* const* primPaths, si
     {
         return results;
     }
-    parallelForIndex(count, [&](size_t i) { results[i] = static_cast<int>(getGripperStatus(primPaths[i])); });
+    isaacsim::robot::surface_gripper::parallelForIndex(
+        count, [&](size_t i) { results[i] = static_cast<int>(getGripperStatus(primPaths[i])); });
     return results;
 }
 
@@ -243,7 +219,7 @@ std::vector<bool> CARB_ABI openGripperBatch(const char* const* primPaths, size_t
     {
         return results;
     }
-    parallelForIndex(count, [&](size_t i) { results[i] = openGripper(primPaths[i]); });
+    isaacsim::robot::surface_gripper::parallelForIndex(count, [&](size_t i) { results[i] = openGripper(primPaths[i]); });
     return results;
 }
 
@@ -257,7 +233,7 @@ std::vector<bool> CARB_ABI closeGripperBatch(const char* const* primPaths, size_
     {
         return results;
     }
-    parallelForIndex(count, [&](size_t i) { results[i] = closeGripper(primPaths[i]); });
+    isaacsim::robot::surface_gripper::parallelForIndex(count, [&](size_t i) { results[i] = closeGripper(primPaths[i]); });
     return results;
 }
 
@@ -271,7 +247,8 @@ std::vector<bool> CARB_ABI setGripperActionBatch(const char* const* primPaths, c
     {
         return results;
     }
-    parallelForIndex(count, [&](size_t i) { results[i] = setGripperAction(primPaths[i], actions[i]); });
+    isaacsim::robot::surface_gripper::parallelForIndex(
+        count, [&](size_t i) { results[i] = setGripperAction(primPaths[i], actions[i]); });
     return results;
 }
 
@@ -285,7 +262,8 @@ std::vector<std::vector<std::string>> CARB_ABI getGrippedObjectsBatch(const char
     {
         return results;
     }
-    parallelForIndex(count, [&](size_t i) { results[i] = getGrippedObjects(primPaths[i]); });
+    isaacsim::robot::surface_gripper::parallelForIndex(
+        count, [&](size_t i) { results[i] = getGrippedObjects(primPaths[i]); });
     return results;
 }
 

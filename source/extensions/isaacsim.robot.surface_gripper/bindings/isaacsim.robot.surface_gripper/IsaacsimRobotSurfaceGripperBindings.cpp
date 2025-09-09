@@ -43,8 +43,8 @@ namespace
 enum class GripperStatus
 {
     Open,
-    Closed,
     Closing,
+    Closed,
 };
 
 namespace py = pybind11;
