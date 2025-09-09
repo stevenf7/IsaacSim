@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.1] - 2025-09-08
+### Fixed
+- Update `SimulationApp` class docstrings to clarify the default behavior when loading experience files
+
 ## [2.10.0] - 2025-08-04
 ### Added
 - New 'enable_motion_bvh' config to enable Motion BVH settings via extra_args

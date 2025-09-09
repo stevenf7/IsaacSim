@@ -59,7 +59,13 @@ class SimulationApp:
 
     Arguments:
         config (dict): A dictionary containing the configuration for the app. (default: None)
-        experience (str): Path to the application config loaded by the launcher (default: "", will load apps/isaacsim.kit if left blank)
+        experience (str): Path to the application config loaded by the launcher.
+            If not specified, the launcher will load one of the following experience files in order
+            (where ``$EXP_PATH`` points to the ``apps`` folder in a default Isaac Sim setup):
+
+            - ``$EXP_PATH/omni.isaac.sim.python.kit``
+            - ``$EXP_PATH/isaacsim.exp.base.python.kit``
+            - ``$EXP_PATH/isaacsim.exp.base.kit``
     """
 
     DEFAULT_LAUNCHER_CONFIG = {
