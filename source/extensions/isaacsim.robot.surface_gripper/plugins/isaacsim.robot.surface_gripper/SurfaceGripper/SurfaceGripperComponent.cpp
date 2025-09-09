@@ -26,9 +26,6 @@
 
 #include <PxConstraint.h>
 #include <PxRigidActor.h>
-#include <future>
-#include <mutex>
-#include <thread>
 
 
 namespace
@@ -178,7 +175,8 @@ bool SurfaceGripperComponent::setGripperStatus(GripperStatus status)
             m_status = GripperStatus::Open;
             m_retryCloseActive = false;
         }
-        else if (gripperStatus == GripperStatus::Closed || gripperStatus == GripperStatus::Closing)
+        else if ((gripperStatus == GripperStatus::Closed && m_status != GripperStatus::Closing) ||
+                 gripperStatus == GripperStatus::Closing)
         {
             m_status = GripperStatus::Closing;
             m_retryCloseActive = true;
@@ -564,27 +562,14 @@ void SurfaceGripperComponent::findObjectsToGrip()
 
     std::set<pxr::SdfPath> targetSet(m_grippedObjects.begin(), m_grippedObjects.end());
 
-    // Iterate through each attachment point
+    // Iterate through each attachment point sequentially
     std::vector<std::string> apToRemove;
     std::vector<std::pair<std::string, float>> clearanceOffsetsToPersist;
 
-
-    std::vector<std::future<void>> futures;
-    futures.reserve(m_inactiveAttachmentPoints.size());
-    std::mutex ap_mutex;
-    std::mutex clearance_mutex;
-
     for (const auto& attachmentPath : m_inactiveAttachmentPoints)
     {
-        futures.emplace_back(std::async(std::launch::async,
-                                        [&, attachmentPath]() {
-                                            _processAttachmentForGrip(attachmentPath, apToRemove,
-                                                                      clearanceOffsetsToPersist, ap_mutex,
-                                                                      clearance_mutex);
-                                        }));
+        _processAttachmentForGrip(attachmentPath, apToRemove, clearanceOffsetsToPersist);
     }
-    for (auto& f : futures)
-        f.get();
     // Persist all clearance offset changes in one USD write
     if (!clearanceOffsetsToPersist.empty() && m_writeToUsd)
     {
@@ -603,25 +588,17 @@ void SurfaceGripperComponent::findObjectsToGrip()
 
 void SurfaceGripperComponent::_processAttachmentForGrip(const std::string& attachmentPath,
                                                         std::vector<std::string>& apToRemove,
-                                                        std::vector<std::pair<std::string, float>>& clearanceOffsetsToPersist,
-                                                        std::mutex& apMutex,
-                                                        std::mutex& clearanceMutex)
+                                                        std::vector<std::pair<std::string, float>>& clearanceOffsetsToPersist)
 {
     auto physxQuery = carb::getCachedInterface<omni::physx::IPhysxSceneQuery>();
     if (!physxQuery)
         return;
 
-    bool shouldContinue = false;
+    if (m_jointSettlingCounters[attachmentPath] > 0)
     {
-        std::lock_guard<std::mutex> lock(apMutex);
-        if (m_jointSettlingCounters[attachmentPath] > 0)
-        {
-            m_jointSettlingCounters[attachmentPath]--;
-            shouldContinue = true;
-        }
-    }
-    if (shouldContinue)
+        m_jointSettlingCounters[attachmentPath]--;
         return;
+    }
 
     physx::PxJoint* px_joint = static_cast<physx::PxJoint*>(
         g_physx->getPhysXPtr(pxr::SdfPath(attachmentPath), omni::physx::PhysXType::ePTJoint));
@@ -641,13 +618,10 @@ void SurfaceGripperComponent::_processAttachmentForGrip(const std::string& attac
 
     pxr::GfVec3f worldPos(worldTransform.p.x, worldTransform.p.y, worldTransform.p.z);
     float clearanceOffset = 0.0f;
+    auto itClear = m_jointClearanceOffset.find(attachmentPath);
+    if (itClear != m_jointClearanceOffset.end())
     {
-        std::lock_guard<std::mutex> lock(apMutex);
-        auto itClear = m_jointClearanceOffset.find(attachmentPath);
-        if (itClear != m_jointClearanceOffset.end())
-        {
-            clearanceOffset = itClear->second;
-        }
+        clearanceOffset = itClear->second;
     }
     bool selfCollision = true;
     bool clearanceChanged = false;
@@ -681,22 +655,15 @@ void SurfaceGripperComponent::_processAttachmentForGrip(const std::string& attac
             if (clearanceOffset > 0.0f)
             {
                 float originalOffset = 0.0f;
+                auto itC = m_jointClearanceOffset.find(attachmentPath);
+                if (itC != m_jointClearanceOffset.end())
                 {
-                    std::lock_guard<std::mutex> lock(apMutex);
-                    auto itC = m_jointClearanceOffset.find(attachmentPath);
-                    if (itC != m_jointClearanceOffset.end())
-                    {
-                        originalOffset = itC->second;
-                    }
+                    originalOffset = itC->second;
                 }
                 if (originalOffset != clearanceOffset)
                 {
-
                     clearanceChanged = true;
-                    {
-                        std::lock_guard<std::mutex> lock(apMutex);
-                        m_jointClearanceOffset[attachmentPath] = clearanceOffset;
-                    }
+                    m_jointClearanceOffset[attachmentPath] = clearanceOffset;
                 }
             }
             physx::PxRigidActor* hitActor =
@@ -713,10 +680,7 @@ void SurfaceGripperComponent::_processAttachmentForGrip(const std::string& attac
 
             _queueAttachJoint(attachmentPath, local_actor0, hitActor, hitLocalTransform);
 
-            {
-                std::lock_guard<std::mutex> lock(apMutex);
-                apToRemove.push_back(attachmentPath);
-            }
+            apToRemove.push_back(attachmentPath);
         }
         else
         {
@@ -725,7 +689,6 @@ void SurfaceGripperComponent::_processAttachmentForGrip(const std::string& attac
     }
     if (clearanceChanged)
     {
-        std::lock_guard<std::mutex> lock(clearanceMutex);
         clearanceOffsetsToPersist.emplace_back(attachmentPath, clearanceOffset);
     }
 }
@@ -785,7 +748,6 @@ void SurfaceGripperComponent::releaseAllObjects()
 
 void SurfaceGripperComponent::consumePhysxActions(std::vector<PhysxAction>& outActions)
 {
-    std::lock_guard<std::mutex> lock(m_actionsMutex);
     if (!m_physxActions.empty())
     {
         outActions.insert(outActions.end(), std::make_move_iterator(m_physxActions.begin()),
@@ -796,7 +758,6 @@ void SurfaceGripperComponent::consumePhysxActions(std::vector<PhysxAction>& outA
 
 void SurfaceGripperComponent::_queueReleaseAllObjectsActions()
 {
-    std::lock_guard<std::mutex> lock(m_actionsMutex);
     for (const auto& attachmentPath : m_attachmentPoints)
     {
         PhysxAction a;
@@ -808,7 +769,6 @@ void SurfaceGripperComponent::_queueReleaseAllObjectsActions()
 
 void SurfaceGripperComponent::_queueDetachJoint(const std::string& jointPath)
 {
-    std::lock_guard<std::mutex> lock(m_actionsMutex);
     PhysxAction a;
     a.type = PhysxActionType::Detach;
     a.jointPath = jointPath;
@@ -820,7 +780,6 @@ void SurfaceGripperComponent::_queueAttachJoint(const std::string& jointPath,
                                                 physx::PxRigidActor* actor1,
                                                 const physx::PxTransform& localPose1)
 {
-    std::lock_guard<std::mutex> lock(m_actionsMutex);
     PhysxAction a;
     a.type = PhysxActionType::Attach;
     a.jointPath = jointPath;
@@ -836,7 +795,6 @@ void SurfaceGripperComponent::_queueAttachJoint(const std::string& jointPath,
 
 void SurfaceGripperComponent::consumeUsdActions(std::vector<UsdAction>& outActions)
 {
-    std::lock_guard<std::mutex> lock(m_usdMutex);
     if (!m_usdActions.empty())
     {
         outActions.insert(outActions.end(), std::make_move_iterator(m_usdActions.begin()),
@@ -847,7 +805,6 @@ void SurfaceGripperComponent::consumeUsdActions(std::vector<UsdAction>& outActio
 
 void SurfaceGripperComponent::_queueWriteStatus(const std::string& statusToken)
 {
-    std::lock_guard<std::mutex> lock(m_usdMutex);
     UsdAction a;
     a.type = UsdActionType::WriteStatus;
     a.primPath = m_primPath.GetString();
@@ -858,7 +815,6 @@ void SurfaceGripperComponent::_queueWriteStatus(const std::string& statusToken)
 void SurfaceGripperComponent::_queueWriteGrippedObjectsAndFilters(const std::vector<std::string>& objectPaths,
                                                                   const std::string& body0PathForFilterPairs)
 {
-    std::lock_guard<std::mutex> lock(m_usdMutex);
     UsdAction a;
     a.type = UsdActionType::WriteGrippedObjectsAndFilters;
     a.primPath = m_primPath.GetString();
@@ -872,7 +828,6 @@ void SurfaceGripperComponent::_queueWriteAttachmentPointBatch(
     const std::vector<std::string>& excludeFromArticulationPaths,
     const std::vector<std::pair<std::string, float>>& clearanceOffsets)
 {
-    std::lock_guard<std::mutex> lock(m_usdMutex);
     UsdAction a;
     a.type = UsdActionType::WriteAttachmentPointBatch;
     a.primPath = m_primPath.GetString();

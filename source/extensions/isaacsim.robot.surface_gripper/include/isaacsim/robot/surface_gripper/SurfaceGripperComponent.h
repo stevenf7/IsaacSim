@@ -117,8 +117,8 @@ struct UsdAction
 enum class GripperStatus
 {
     Open,
+    Closing,
     Closed,
-    Closing
 };
 
 // Add conversion functions for GripperStatus
@@ -278,6 +278,16 @@ public:
         m_writeToUsd = writeToUsd;
     }
 
+    bool hasPhysxActions() const
+    {
+        return !m_physxActions.empty();
+    }
+
+    bool hasUsdActions() const
+    {
+        return !m_usdActions.empty();
+    }
+
 private:
     /**
      * @brief Updates gripper properties from the USD prim
@@ -323,9 +333,7 @@ private:
      */
     void _processAttachmentForGrip(const std::string& attachmentPath,
                                    std::vector<std::string>& apToRemove,
-                                   std::vector<std::pair<std::string, float>>& clearanceOffsetsToPersist,
-                                   std::mutex& apMutex,
-                                   std::mutex& clearanceMutex);
+                                   std::vector<std::pair<std::string, float>>& clearanceOffsetsToPersist);
 
     /**
      * @brief Updates the gripper state when it's open
@@ -425,11 +433,9 @@ private:
 
     // Queued PhysX action buffer (protected by mutex)
     std::vector<PhysxAction> m_physxActions;
-    std::mutex m_actionsMutex;
 
     // Queued USD actions (protected by mutex)
     std::vector<UsdAction> m_usdActions;
-    std::mutex m_usdMutex;
 };
 
 } // namespace surface_gripper

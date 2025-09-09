@@ -27,6 +27,8 @@
 #include <PxConstraint.h>
 #include <PxRigidActor.h>
 
+// Threading utilities
+#include "isaacsim/robot/surface_gripper/ThreadUtils.h"
 namespace isaacsim
 {
 namespace robot
@@ -112,17 +114,13 @@ void SurfaceGripperManager::onPhysicsStep(const double& dt)
 {
     CARB_PROFILE_ZONE(0, "[IsaacSim] SurfaceGripperManager::onPhysicsStep");
 
-    std::vector<std::thread> threads;
-    threads.reserve(m_components.size());
-    for (auto& component : m_components)
-    {
-        threads.emplace_back([&component, dt]() { component.second->onPhysicsStep(dt); });
-    }
-    for (auto& t : threads)
-    {
-        t.join();
-    }
-
+    isaacsim::robot::surface_gripper::parallelForIndex(m_components.size(),
+                                                       [&](size_t i)
+                                                       {
+                                                           auto it = m_components.begin();
+                                                           std::advance(it, i);
+                                                           it->second->onPhysicsStep(dt);
+                                                       });
     // Collect all PhysX and USD actions from components
     std::vector<PhysxAction> actions;
     std::vector<UsdAction> usdActions;
@@ -132,36 +130,37 @@ void SurfaceGripperManager::onPhysicsStep(const double& dt)
         kv.second->consumeUsdActions(usdActions);
     }
 
-
     // Execute PhysX actions serially
-    for (const PhysxAction& a : actions)
     {
         CARB_PROFILE_ZONE(0, "[IsaacSim] SurfaceGripperManager::onPhysicsStep::PhysxAction");
-        if (a.type == PhysxActionType::Attach)
+        for (const PhysxAction& a : actions)
         {
-            physx::PxJoint* joint = static_cast<physx::PxJoint*>(
-                m_physXInterface->getPhysXPtr(pxr::SdfPath(a.jointPath), omni::physx::PhysXType::ePTJoint));
-            if (!joint)
-                continue;
-            physx::PxRigidActor* actor0 = a.actor0;
-            physx::PxRigidActor* actor1 = a.actor1;
-            if (!actor0 || !actor1)
-                continue;
-            joint->setActors(actor0, actor1);
-            joint->setLocalPose(physx::PxJointActorIndex::eACTOR1, a.localPose1);
-            // On attach: constraints disabled, collision disabled
-            joint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, false);
-            joint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, false);
-        }
-        else if (a.type == PhysxActionType::Detach)
-        {
-            physx::PxJoint* joint = static_cast<physx::PxJoint*>(
-                m_physXInterface->getPhysXPtr(pxr::SdfPath(a.jointPath), omni::physx::PhysXType::ePTJoint));
-            if (!joint)
-                continue;
-            // On detach: constraints enabled, collision enabled
-            joint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, true);
-            joint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, true);
+            if (a.type == PhysxActionType::Attach)
+            {
+                physx::PxJoint* joint = static_cast<physx::PxJoint*>(
+                    m_physXInterface->getPhysXPtr(pxr::SdfPath(a.jointPath), omni::physx::PhysXType::ePTJoint));
+                if (!joint)
+                    continue;
+                physx::PxRigidActor* actor0 = a.actor0;
+                physx::PxRigidActor* actor1 = a.actor1;
+                if (!actor0 || !actor1)
+                    continue;
+                joint->setActors(actor0, actor1);
+                joint->setLocalPose(physx::PxJointActorIndex::eACTOR1, a.localPose1);
+                // On attach: constraints disabled, collision disabled
+                joint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, false);
+                joint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, false);
+            }
+            else if (a.type == PhysxActionType::Detach)
+            {
+                physx::PxJoint* joint = static_cast<physx::PxJoint*>(
+                    m_physXInterface->getPhysXPtr(pxr::SdfPath(a.jointPath), omni::physx::PhysXType::ePTJoint));
+                if (!joint)
+                    continue;
+                // On detach: constraints enabled, collision enabled
+                joint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, true);
+                joint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, true);
+            }
         }
     }
 

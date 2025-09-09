@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.3.1] - 2025-08-30
+### Changed
+- Performance improvements
+
 ## [3.3.0] - 2025-08-30
 ### Added
 - Added Option to Write or not to USD on simulation
