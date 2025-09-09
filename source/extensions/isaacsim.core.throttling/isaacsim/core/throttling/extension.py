@@ -18,6 +18,9 @@ import carb
 import omni.ext
 import omni.timeline
 
+ASYNC_TOGGLE_SETTING = "/exts/isaacsim.core.throttling/enable_async"
+MANUAL_TOGGLE_SETTING = "/exts/isaacsim.core.throttling/enable_manualmode"
+
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
@@ -38,12 +41,15 @@ class Extension(omni.ext.IExt):
             self.on_stop_play, name="IsaacSimThrottlingEventHandler"
         )
 
-        # Enable async rendering at startup
         _settings = carb.settings.get_settings()
-        _settings.set("/app/asyncRendering", True)
-        _settings.set("/app/asyncRenderingLowLatency", True)
 
-        self._set_loop_manual_mode(False)
+        if _settings.get(ASYNC_TOGGLE_SETTING):
+            # Enable async rendering at startup
+            _settings.set("/app/asyncRendering", True)
+            _settings.set("/app/asyncRenderingLowLatency", True)
+
+        if _settings.get(MANUAL_TOGGLE_SETTING):
+            self._set_loop_manual_mode(False)
 
     def _set_loop_manual_mode(self, manual_mode: bool):
         if self._loop_runner is not None:
@@ -61,18 +67,26 @@ class Extension(omni.ext.IExt):
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
             _settings.set("/rtx/ecoMode/enabled", False)
             _settings.set("/exts/omni.kit.hydra_texture/gizmos/enabled", False)
-            _settings.set("/app/asyncRendering", False)
-            _settings.set("/app/asyncRenderingLowLatency", False)
-            self._set_loop_manual_mode(True)
+
+            if _settings.get(ASYNC_TOGGLE_SETTING):
+                _settings.set("/app/asyncRendering", False)
+                _settings.set("/app/asyncRenderingLowLatency", False)
+
+            if _settings.get(MANUAL_TOGGLE_SETTING):
+                self._set_loop_manual_mode(True)
 
         elif event.type == int(omni.timeline.TimelineEventType.STOP) or event.type == int(
             omni.timeline.TimelineEventType.PAUSE
         ):
             _settings.set("/rtx/ecoMode/enabled", True)
             _settings.set("/exts/omni.kit.hydra_texture/gizmos/enabled", True)
-            _settings.set("/app/asyncRendering", True)
-            _settings.set("/app/asyncRenderingLowLatency", True)
-            self._set_loop_manual_mode(False)
+
+            if _settings.get(ASYNC_TOGGLE_SETTING):
+                _settings.set("/app/asyncRendering", True)
+                _settings.set("/app/asyncRenderingLowLatency", True)
+
+            if _settings.get(MANUAL_TOGGLE_SETTING):
+                self._set_loop_manual_mode(False)
         pass
 
     def on_shutdown(self):

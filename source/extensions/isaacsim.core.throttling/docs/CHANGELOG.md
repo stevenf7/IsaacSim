@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2025-09-08
+### Changed
+- Use opt-in carb setting for async rendering and manual mode toggles
+
 ## [2.2.0] - 2025-09-05
 ### Added
 - Add setting to enable/disable async rendering
