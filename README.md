@@ -89,6 +89,9 @@ Ensure your system is set up with the following before building Isaac Sim:
   > sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 200
   > ```
 
+  > **Compiler Version Check ⚠️**
+  > We have added a version checker to our build process. If you do not have the default versions you are still able to execute a build, add  `--skip-compiler-version-check` to `build.[sh/bat]` when building.  Proceed at your own risk, unsupported build environments may encounter build and runtime issues.  
+
 ### Recommended Software
 
 - [**(Linux) Docker**](https://docs.docker.com/engine/install/ubuntu/): For containerized development and deployment. **Ensure non-root users have Docker permissions.**
