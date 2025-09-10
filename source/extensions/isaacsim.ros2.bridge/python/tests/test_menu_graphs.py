@@ -31,7 +31,6 @@ from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import add_reference_to_stage, update_stage_async
-from isaacsim.storage.native import get_assets_root_path_async
 from nav_msgs.msg import Odometry
 from omni.kit.ui_test.menu import *
 from omni.kit.ui_test.query import *
@@ -106,8 +105,7 @@ class ROS2MenuTestBase(ROS2TestCase):
 
         await update_stage_async()
 
-        assets_root_path = await get_assets_root_path_async()
-        asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
+        asset_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path=robot_path)
         robot.GetVariantSet("Physics").SetVariantSelection("Physics_Base")
         robot.GetVariantSet("Sensors").SetVariantSelection("All_Sensors")

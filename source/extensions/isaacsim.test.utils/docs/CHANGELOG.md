@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2025-09-08
+### Added
+- Base test class stores the asset root path using fast path
+
 ## [0.2.0] - 2025-08-28
 ### Added
 - Added image comparison utilities

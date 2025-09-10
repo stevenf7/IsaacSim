@@ -24,7 +24,6 @@ import omni.kit.viewport.utility
 import usdrt.Sdf
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
-from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf
 
 from .common import ROS2TestCase, add_carter, add_carter_ros, add_cube, fields_to_dtype, get_qos_profile
@@ -38,11 +37,6 @@ class TestRos2PointCloud(ROS2TestCase):
 
         await omni.usd.get_context().new_stage_async()
 
-        self._assets_root_path = await get_assets_root_path_async()
-        if self._assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
-
         await omni.kit.app.get_app().next_update_async()
 
         pass
@@ -55,7 +49,7 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        robot_path = await add_carter()
+        robot_path = await add_carter(self._assets_root_path)
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
         # Add Point Cloud publisher
@@ -140,7 +134,7 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        robot_path = await add_carter()
+        robot_path = await add_carter(self._assets_root_path)
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
         # Add Point Cloud publisher
@@ -216,7 +210,7 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        robot_path = await add_carter_ros()
+        robot_path = await add_carter_ros(self._assets_root_path)
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
         graph_path = robot_path + "/ROS_Cameras"
