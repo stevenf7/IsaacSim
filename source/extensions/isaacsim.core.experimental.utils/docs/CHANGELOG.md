@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] - 2025-09-09
+### Added
+- Add stage utils functions to:
+  - Set the current stage units
+  - Get and set current stage up axis and time code
+  - Save and close the current stage
+  - Generate next free path
+- Add prim utils function to create prim attributes
+- Add foundation utils
+
 ## [0.2.3] - 2025-09-05
 ### Fixed
 - Fix test failure
