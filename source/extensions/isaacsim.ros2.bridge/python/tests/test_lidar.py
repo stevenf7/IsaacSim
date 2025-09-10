@@ -22,7 +22,6 @@ import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf
 
 from .common import ROS2TestCase, get_qos_profile
@@ -35,11 +34,6 @@ class TestRos2Lidar(ROS2TestCase):
         await super().setUp()
 
         await omni.usd.get_context().new_stage_async()
-
-        self._assets_root_path = await get_assets_root_path_async()
-        if self._assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
 
         await omni.kit.app.get_app().next_update_async()
 

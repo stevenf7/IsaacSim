@@ -1,6 +1,9 @@
+import gc
 import time
 
+import carb
 import omni.kit.test
+from isaacsim.storage.native import get_assets_root_path
 
 
 class TimedAsyncTestCase(omni.kit.test.AsyncTestCase):
@@ -42,6 +45,11 @@ class TimedAsyncTestCase(omni.kit.test.AsyncTestCase):
         """
         super().setUp()
         self._test_start_time = time.time()
+        # In order to run tests faster, we assume the asset server is available and don't try connecting to it for each test
+        self._assets_root_path = get_assets_root_path(skip_check=False)
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
 
     async def tearDown(self):
         """Clean up and display test timing after each test method.
@@ -62,3 +70,4 @@ class TimedAsyncTestCase(omni.kit.test.AsyncTestCase):
             test_name = self._testMethodName
             print(f"\n[TEST TIMING] {test_name}: {test_duration:.3f} seconds")
         super().tearDown()
+        gc.collect()

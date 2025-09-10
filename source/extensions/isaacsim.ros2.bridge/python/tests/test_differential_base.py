@@ -104,7 +104,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         from nav_msgs.msg import Odometry
         from tf2_msgs.msg import TFMessage
 
-        await add_carter_ros()
+        await add_carter_ros(self._assets_root_path)
         stage = omni.usd.get_context().get_stage()
 
         # add an odom prim to carter
@@ -236,7 +236,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
 
-        await add_carter()
+        await add_carter(self._assets_root_path)
 
         odom_sub = self.node.create_subscription(Odometry, "odom", self.odom_callback, 10)
         cmd_vel_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
@@ -321,7 +321,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         from nav_msgs.msg import Odometry
         from tf2_msgs.msg import TFMessage
 
-        await add_nova_carter_ros()
+        await add_nova_carter_ros(self._assets_root_path)
         stage = omni.usd.get_context().get_stage()
 
         graph_path = "/nova_carter_ros2_sensors/transform_tree_odometry"

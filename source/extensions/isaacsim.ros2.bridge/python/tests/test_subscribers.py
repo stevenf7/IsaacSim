@@ -26,7 +26,6 @@ import omni.kit.usd
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.xforms import get_world_pose
-from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 from .common import ROS2TestCase
@@ -38,10 +37,6 @@ class TestRos2Subscribers(ROS2TestCase):
         await super().setUp()
 
         await omni.usd.get_context().new_stage_async()
-        self._assets_root_path = await get_assets_root_path_async()
-        if self._assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
 
         self.sub_data = []
         self.prev_seq = 0
