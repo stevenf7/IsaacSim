@@ -1,5 +1,11 @@
 # Changelog
 
+## [15.8.0] - 2025-09-09
+### Added
+- New APIs to apply non-visual material attributes to Material prims, resolve non-visual material ID as base/coating/attribute.
+### Removed
+- No longer using CSV mapping from visual to non-visual materials as default behavior, favoring USD attribute specification instead
+
 ## [15.7.0] - 2025-09-05
 ### Added
 - Per-frame output option to IsaacCreateRTXLidarScanBuffer

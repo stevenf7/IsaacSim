@@ -1,5 +1,5 @@
 [package]
-version = "15.7.0"
+version = "15.8.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -71,8 +71,10 @@ app.sensors.nv.lidar.profileBaseFolder=[
 app.sensors.nv.lidar.outputBufferOnGPU = true
 # Renderer copies Radar return buffer onto CPU before postprocessing
 app.sensors.nv.radar.outputBufferOnGPU = true
-# Enable non-visual materials using default hard-coded map of material names to material IDs
-rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;AsphaltWeatheredMaterial:2;VegetationGrassMaterial:3;WaterStandardMaterial:4;GlassStandardMaterial:5;FiberGlassMaterial:6;MetalAlloyMaterial:7;MetalAluminumMaterial:8;MetalAluminumOxidizedMaterial:9;PlasticStandardMaterial:10;RetroMarkingsMaterial:11;RetroSignMaterial:12;RubberStandardMaterial:13;SoilClayMaterial:14;ConcreteRoughMaterial:15;ConcreteSmoothMaterial:16;OakTreeBarkMaterial:17;FabricStandardMaterial:18;PlexiGlassStandardMaterial:19;MetalSilverMaterial:20"
+# Enable non-visual materials using USD attributes
+rtx.materialDb.nonVisualMaterialCSV.enabled=false
+# Specify non-visual material USD attribute prefix
+rtx.materialDb.nonVisualMaterialSemantics.prefix="inputs:nonvisual"
 
 [[test]]
 timeout = 1200
@@ -84,7 +86,14 @@ stdoutFailPatterns.exclude = [
     "*RuntimeWarning: divide by zero encountered in divide*",
     "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar, and node will not execute. Stop the simulation, correct the issue, and restart.*",
     "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: Lidar prim elevationDeg contains nonzero value*",
-    "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.*"
+    "*[Error] [isaacsim.sensors.rtx.plugin] IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Attribute 'invalidattribute' not found in attributes dictionary*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Base material 'InvalidMaterial' not found in base materials dictionary*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Coating 'invalidcoating' not found in coatings dictionary*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Provided prim is not a valid USD prim*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Provided prim is not a material prim*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Provided prim is not a valid USD prim*",
+    "*[Error] [isaacsim.sensors.rtx.impl.nonvisual_materials] Provided prim is not a material prim*",
 ]
 stdoutFailPatterns.include = [
     "*Could not open asset * for reference*",

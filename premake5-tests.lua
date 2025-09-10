@@ -229,11 +229,6 @@ function create_tests()
 
     -- isaacsim.sensors.rtx
     python_sample_test(
-        "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",
-        "standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py",
-        "--test"
-    )
-    python_sample_test(
         "tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_metadata",
         "standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_metadata.py",
         "--test"
@@ -241,6 +236,16 @@ function create_tests()
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.rtx.resolve_object_ids_from_gmo",
         "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py",
+        "--test"
+    )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",
+        "standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py",
+        "--test"
+    )
+    python_sample_test(
+        "tests-nativepython-isaacsim.sensors.rtx.specify_non_visual_materials",
+        "standalone_examples/api/isaacsim.sensors.rtx/specify_non_visual_materials.py",
         "--test"
     )
 

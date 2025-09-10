@@ -23,16 +23,107 @@ import matplotlib.pyplot as plt
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
+from isaacsim.core.api.materials import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
-from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS, LidarRtx, get_gmo_data
+from isaacsim.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
+from isaacsim.sensors.rtx import (
+    SUPPORTED_LIDAR_CONFIGS,
+    LidarRtx,
+    apply_nonvisual_material,
+    decode_material_id,
+    get_gmo_data,
+    get_material_id,
+)
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf
+from pxr import Gf, UsdGeom
 
 DEBUG_DRAW_PRINT = False
 
 # Maximum difference in fireTimeNs for Example_Rotary configuration
 MAX_TIMESTAMP_DIFF = 3500
+
+
+def create_sarcophagus(enable_nonvisual_material: bool = True):
+    # Autogenerate sarcophagus
+    dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
+    i = 0
+    cube_info = {}
+    for l, h1, h2 in dims:
+        h = h1 + h2
+        x_sign = -1 if 0 < i < 3 else 1
+        y_sign = -1 if i > 1 else 1
+        signs = np.array([x_sign, y_sign, 1])
+
+        # Place cube normal to x-axis
+        cube = VisualCuboid(
+            prim_path=f"/World/cube_{i*4}",
+            name=f"cube_{i*4}",
+            position=np.multiply(signs, np.array([l + 0.5, l / 2, h1 - h / 2])),
+            scale=np.array([1, l, h]),
+        )
+        if enable_nonvisual_material:
+            material = OmniPBR(
+                prim_path=f"/World/cube_{i*4}/material",
+                name=f"cube_{i*4}_material",
+                color=np.array([1, 0, 0]),
+            )
+            apply_nonvisual_material(material.prim, "aluminum", "paint", "emissive")
+            cube.apply_visual_material(material)
+            cube_info[f"/World/cube_{i*4}"] = {"material_id": get_material_id(material.prim)}
+
+        # place cube normal to y-axis
+        cube = VisualCuboid(
+            prim_path=f"/World/cube_{i*4+1}",
+            name=f"cube_{i*4+1}",
+            position=np.multiply(signs, np.array([l / 2, l + 0.5, h1 - h / 2])),
+            scale=np.array([l, 1, h]),
+        )
+        if enable_nonvisual_material:
+            material = OmniPBR(
+                prim_path=f"/World/cube_{i*4+1}/material",
+                name=f"cube_{i*4+1}_material",
+                color=np.array([0, 1, 0]),
+            )
+            apply_nonvisual_material(material.prim, "steel", "clearcoat", "emissive")
+            cube.apply_visual_material(material)
+            cube_info[f"/World/cube_{i*4+1}"] = {"material_id": get_material_id(material.prim)}
+
+        # place cube normal to z-axis, top
+        cube = VisualCuboid(
+            prim_path=f"/World/cube_{i*4+2}",
+            name=f"cube_{i*4+2}",
+            position=np.multiply(signs, np.array([l / 2, l / 2, h1 + 0.5])),
+            scale=np.array([l, l, 1]),
+        )
+        if enable_nonvisual_material:
+            material = OmniPBR(
+                prim_path=f"/World/cube_{i*4+2}/material",
+                name=f"cube_{i*4+2}_material",
+                color=np.array([0, 0, 1]),
+            )
+            apply_nonvisual_material(material.prim, "concrete", "clearcoat", "emissive")
+            cube.apply_visual_material(material)
+            cube_info[f"/World/cube_{i*4+2}"] = {"material_id": get_material_id(material.prim)}
+
+        # place cube normal to z-axis, bottom
+        cube = VisualCuboid(
+            prim_path=f"/World/cube_{i*4+3}",
+            name=f"cube_{i*4+3}",
+            position=np.multiply(signs, np.array([l / 2, l / 2, -h2 - 0.5])),
+            scale=np.array([l, l, 1]),
+        )
+        if enable_nonvisual_material:
+            material = OmniPBR(
+                prim_path=f"/World/cube_{i*4+3}/material",
+                name=f"cube_{i*4+3}_material",
+                color=np.array([1, 1, 0]),
+            )
+            apply_nonvisual_material(material.prim, "concrete", "paint", "emissive")
+            cube.apply_visual_material(material)
+            cube_info[f"/World/cube_{i*4+3}"] = {"material_id": get_material_id(material.prim)}
+
+        i += 1
+    return cube_info
 
 
 class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
@@ -54,44 +145,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
             (20, 20, 13),
             (20, 20, 15),
         ]
-
-        # Autogenerate sarcophagus
-        dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
-        i = 0
-        for l, h1, h2 in dims:
-            h = h1 + h2
-            x_sign = -1 if 0 < i < 3 else 1
-            y_sign = -1 if i > 1 else 1
-            signs = np.array([x_sign, y_sign, 1])
-            # Place cube normal to x-axis
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4}",
-                name=f"cube_{i*4}",
-                position=np.multiply(signs, np.array([l + 0.5, l / 2, h1 - h / 2])),
-                scale=np.array([1, l, h]),
-            )
-            # place cube normal to y-axis
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4+1}",
-                name=f"cube_{i*4+1}",
-                position=np.multiply(signs, np.array([l / 2, l + 0.5, h1 - h / 2])),
-                scale=np.array([l, 1, h]),
-            )
-            # place cube normal to z-axis, top
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4+2}",
-                name=f"cube_{i*4+2}",
-                position=np.multiply(signs, np.array([l / 2, l / 2, h1 + 0.5])),
-                scale=np.array([l, l, 1]),
-            )
-            # place cube normal to z-axis, bottom
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4+3}",
-                name=f"cube_{i*4+3}",
-                position=np.multiply(signs, np.array([l / 2, l / 2, -h2 - 0.5])),
-                scale=np.array([l, l, 1]),
-            )
-            i += 1
+        self.cube_info = create_sarcophagus()
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._annotator_data = None
@@ -163,6 +217,20 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         pass
 
     async def _test_material_id(self):
+
+        self.assertEqual(
+            len(self.materialId),
+            len(self.cube_prim_paths),
+            "Expected same number of material ids as number of valid returns.",
+        )
+
+        for material_id, prim_path in zip(self.materialId, self.cube_prim_paths):
+            self.assertEqual(
+                self.cube_info[prim_path]["material_id"],
+                material_id,
+                f"Expected material id {self.cube_info[prim_path]['material_id']} for return generated by {prim_path}, got {material_id}.",
+            )
+
         pass
 
     async def test_annotator_outputs(self):  # Create sensor prim
@@ -341,40 +409,7 @@ class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
             (20, 20, 13),
             (20, 20, 15),
         ]
-
-        # Autogenerate sarcophagus
-        dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
-        i = 0
-        for l, h1, h2 in dims:
-            h = h1 + h2
-            x_sign = -1 if 0 < i < 3 else 1
-            y_sign = -1 if i > 1 else 1
-            signs = np.array([x_sign, y_sign, 1])
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4}",
-                name=f"cube_{i*4}",
-                position=np.multiply(signs, np.array([l + 0.5, l / 2, h1 - h / 2])),
-                scale=np.array([1, l, h]),
-            )
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4+1}",
-                name=f"cube_{i*4+1}",
-                position=np.multiply(signs, np.array([l / 2, l + 0.5, h1 - h / 2])),
-                scale=np.array([l, 1, h]),
-            )
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4+2}",
-                name=f"cube_{i*4+2}",
-                position=np.multiply(signs, np.array([l / 2, l / 2, h1 + 0.5])),
-                scale=np.array([l, l, 1]),
-            )
-            VisualCuboid(
-                prim_path=f"/World/cube_{i*4+3}",
-                name=f"cube_{i*4+3}",
-                position=np.multiply(signs, np.array([l / 2, l / 2, -h2 - 0.5])),
-                scale=np.array([l, l, 1]),
-            )
-            i += 1
+        create_sarcophagus(enable_nonvisual_material=False)
 
         self._timeline = omni.timeline.get_timeline_interface()
         self.hydra_texture = None
