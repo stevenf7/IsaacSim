@@ -419,7 +419,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
 
-        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/test_mtl/mesh")
+        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/test_mtl/World/mesh")
         self.assertTrue(UsdShade.MaterialBindingAPI(mesh) is not None)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPrim().GetChildren()[0].GetPath()))

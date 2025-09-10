@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.26] - 2025-09-10
+### Fixed
+- Fix transform error for dae files
+
 ## [2.4.25] - 2025-09-06
 ### Fixed
 - Check for child link mass and avoid merging if it's defined (only merge reference frames)
