@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.4] - 2025-09-04
+### Fixed
+- Camera.set_opencv_pinhole_properties and Camera.set_opencv_fisheye_properties now correctly set imageSize attribute as Camera._resolution.
+
 ## [1.3.3] - 2025-08-21
 ### Changed
 - Fix PIL image conversion warnings
