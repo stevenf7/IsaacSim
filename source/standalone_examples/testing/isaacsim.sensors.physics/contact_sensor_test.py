@@ -19,7 +19,6 @@ simulation_app = SimulationApp({"headless": True})
 
 import sys
 
-import carb
 import numpy as np
 import omni
 import omni.kit.commands

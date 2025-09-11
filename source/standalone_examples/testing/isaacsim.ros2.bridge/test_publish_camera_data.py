@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 
 import numpy as np
@@ -27,7 +26,7 @@ import omni.syntheticdata._syntheticdata as sd
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.nodes.scripts.utils import set_target_prims
 from isaacsim.core.utils import extensions, nucleus, stage
-from isaacsim.core.utils.prims import is_prim_path_valid, set_targets
+from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.sensors.camera import Camera
 
 # Enable ROS2 bridge extension
@@ -62,8 +61,6 @@ class TimestampChecker(Node):
         self.topic_last_timestamp = defaultdict(lambda: None)  # topic_name -> last timestamp
         self.event = Event()
         self.error_detected = False  # Flag to track if any timestamp errors are detected
-        import rosidl_runtime_py
-        from rosidl_runtime_py.utilities import get_message
 
         self.subscribed_types = {}
 

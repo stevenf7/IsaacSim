@@ -45,7 +45,7 @@ enable_extension("isaacsim.ros2.bridge")
 kit.update()
 
 # Locate Isaac Sim assets folder to load sample
-from isaacsim.storage.native import get_assets_root_path, is_file
+from isaacsim.storage.native import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

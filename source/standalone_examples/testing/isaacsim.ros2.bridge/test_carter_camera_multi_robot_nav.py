@@ -26,7 +26,6 @@ CONFIG = {"renderer": "RaytracedLighting", "headless": False}
 simulation_app = SimulationApp(CONFIG)
 import carb
 import omni
-import omni.graph.core as og
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.storage.native import get_assets_root_path
