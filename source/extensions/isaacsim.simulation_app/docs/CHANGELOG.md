@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.11.0] - 2025-09-10
+### Fixed
+- Force headless mode if DISPLAY environment variable is not set on Linux
+
 ## [2.10.1] - 2025-09-08
 ### Fixed
 - Update `SimulationApp` class docstrings to clarify the default behavior when loading experience files
