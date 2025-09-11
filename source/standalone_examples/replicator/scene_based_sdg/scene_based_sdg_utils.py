@@ -25,7 +25,7 @@ from isaacsim.core.utils import prims
 from isaacsim.core.utils.bounds import compute_combined_aabb, compute_obb, create_bbox_cache, get_obb_corners
 from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
 from isaacsim.core.utils.semantics import remove_labels
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 
 # Add colliders to Gprim and Mesh descendants of the root prim

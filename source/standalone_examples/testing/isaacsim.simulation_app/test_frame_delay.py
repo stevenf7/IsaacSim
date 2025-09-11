@@ -56,7 +56,6 @@ import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.prims import add_labels
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera

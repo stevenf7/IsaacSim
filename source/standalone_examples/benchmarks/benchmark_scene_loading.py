@@ -52,12 +52,10 @@ n_gpu = args.num_gpus
 if (cam_pos and not cam_target) or (cam_target and not cam_pos):
     parser.error("Both --camera-position and --camera-target must be specified together.")
 
-import numpy as np
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu})
 
-import carb
 import omni
 import omni.kit.test
 from isaacsim.core.utils.extensions import enable_extension

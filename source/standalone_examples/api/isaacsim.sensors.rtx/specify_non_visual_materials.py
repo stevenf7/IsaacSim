@@ -21,10 +21,9 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 import omni.kit.commands
-from isaacsim.core.api import World
 from isaacsim.core.api.materials import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.sensors.rtx import apply_nonvisual_material, get_material_id
+from isaacsim.sensors.rtx import apply_nonvisual_material
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()

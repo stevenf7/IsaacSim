@@ -14,7 +14,6 @@
 # limitations under the License.
 import sys
 
-import numpy as np
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp()

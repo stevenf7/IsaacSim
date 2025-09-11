@@ -33,7 +33,6 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-import numpy as np
 import omni.timeline
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.manipulators.examples.universal_robots import UR10FollowTarget
