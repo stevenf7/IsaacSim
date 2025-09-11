@@ -395,8 +395,18 @@ class SimulationApp:
         # we still run apps as portable to prevent them writing extra files to user directory
         if "--portable-root" not in unknown_args:
             args.append("--portable")
-        if self.config.get("headless") and "--no-window" not in unknown_args:
+
+        # Check for DISPLAY environment variable on Linux
+        display_not_available = sys.platform.startswith("linux") and os.environ.get("DISPLAY") is None
+        headless_mode = self.config.get("headless")
+
+        if "--no-window" not in unknown_args and (headless_mode or display_not_available):
             args.append("--no-window")
+            if display_not_available and not headless_mode:
+                carb.log_warn(
+                    "DISPLAY environment variable is not set, running in headless mode with --no-window flag. "
+                    "Set DISPLAY environment variable if you want to run in non-headless mode."
+                )
 
         # if the user forces hideUi via commandline, use that setting
         if "--/app/window/hideUi" not in unknown_args:
