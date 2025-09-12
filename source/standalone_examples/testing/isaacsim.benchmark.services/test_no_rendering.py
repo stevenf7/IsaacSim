@@ -48,6 +48,17 @@ robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda")
 robot.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
 robot.GetVariantSet("Mesh").SetVariantSelection("Quality")
 
+# Wait two frames so that stage starts loading
+simulation_app.update()
+simulation_app.update()
+
+print("Loading stage...")
+from isaacsim.core.utils.stage import is_stage_loading
+
+while is_stage_loading():
+    simulation_app.update()
+print("Loading Complete")
+
 benchmark.set_phase("benchmark")
 
 timeline = omni.timeline.get_timeline_interface()

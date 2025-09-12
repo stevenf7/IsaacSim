@@ -106,6 +106,7 @@ vscode.python_env.PYTHONPATH = [
   "$root/_build/$platform/$config/exts/isaacsim.robot_motion.lula/pip_prebundle",
   "$root/_build/$platform/$config/exts/isaacsim.asset.exporter.urdf/pip_prebundle",
   "$root/_build/$platform/$config/extscache/omni.kit.pip_archive*/pip_prebundle",
+  "$root/_build/$platform/$config/kit/exts/omni.kit.pip_archive*/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
@@ -712,22 +713,6 @@ name = "ar"
 # executables = [
 # 	"${test_root}/tests/tests-unit-omni.isaac.range_sensor${exe_ext}",
 # ]
-
-[repo_test.suites.gympythontests]
-kind = "glob_and_exec"
-path = "${test_root}/tests"
-
-[[repo_test.suites.gympythontests.group]]
-args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
-exclude = []
-include = ["tests-omni.isaac.gym${shell_ext}"]
-stdout_fail_patterns.exclude = [
-  "*Remote server does not support WebSockets*",
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
-]
-tc_report_enabled = false
-timeout = 100000
 
 
 ########################################################################################################################
