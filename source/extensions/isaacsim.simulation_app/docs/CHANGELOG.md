@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.12.0] - 2025-09-10
+## Changed
+- added skip_cleanup parameter to close method
+- update docstrings 
+### Fixed
+- Fix hang on startup when waiting for viewport to be ready
+- Fix for hang on exit
+
 ## [2.11.0] - 2025-09-10
 ### Fixed
 - Force headless mode if DISPLAY environment variable is not set on Linux
