@@ -62,7 +62,7 @@ class LidarRtx(BaseSensor):
         name: str = "lidar_rtx",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = np.array([1.0, 0.0, 0.0, 0.0]),
+        orientation: Optional[np.ndarray] = None,
         config_file_name: Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -107,8 +107,6 @@ class LidarRtx(BaseSensor):
         self._render_product = None
         self._render_product_path = None
 
-        if position is None and translation is None:
-            position = np.array([0.0, 0.0, 0.0])
         if is_prim_path_valid(prim_path):
             if get_prim_type_name(prim_path) == "Camera":
                 carb.log_warn(
@@ -126,11 +124,8 @@ class LidarRtx(BaseSensor):
                 else:
                     carb.log_warn(f"Sensor at {prim_path} does not have attribute {key}")
         else:
-            p = position if translation is None else translation
             _, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateRtxLidar",
-                translation=Gf.Vec3d(p[0], p[1], p[2]),
-                orientation=Gf.Quatd(orientation[0], orientation[1], orientation[2], orientation[3]),
                 path=prim_path,
                 parent=None,
                 config=config_file_name,
@@ -149,12 +144,6 @@ class LidarRtx(BaseSensor):
 
         # Initialize simulation manager interface
         self._simulation_manager_interface = _simulation_manager.acquire_simulation_manager_interface()
-        if position is not None and orientation is not None:
-            self.set_world_pose(position=position, orientation=orientation)
-        elif translation is not None and orientation is not None:
-            self.set_local_pose(translation=translation, orientation=orientation)
-        elif orientation is not None:
-            self.set_local_pose(orientation=orientation)
 
         # Define data dictionary for current frame
         self._current_frame = dict()
@@ -201,6 +190,7 @@ class LidarRtx(BaseSensor):
             "IsaacExtractRTXSensorPointCloudNoAccumulator",
             "IsaacCreateRTXLidarScanBuffer",
             "StableIdMap",
+            "GenericModelOutput",
         ],
     ) -> None:
         """Attach an annotator to the Lidar sensor.

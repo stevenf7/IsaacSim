@@ -1,5 +1,11 @@
 # Changelog
 
+## [15.8.1] - 2025-09-15
+### Added
+- GenericModelOutput explicitly added to valid arguments in LidarRtx.attach_annotator
+### Fixed
+- LidarRtx no longer resets prim orientation and position if called with existing prim path
+
 ## [15.8.0] - 2025-09-09
 ### Added
 - New APIs to apply non-visual material attributes to Material prims, resolve non-visual material ID as base/coating/attribute.
