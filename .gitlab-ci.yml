@@ -1564,6 +1564,7 @@ sign-windows-x86_64-release:
       - !reference [.rules-push-manual, rules]
 #   allow_failure: true
 
+# ==============================================================================================================
 .container-rules:
   rules:
     - if: $ALLOW_PUBLISH_CONTAINERS != "true"
@@ -1573,15 +1574,11 @@ sign-windows-x86_64-release:
     - !reference [.rules-version-changed, rules]
     - !reference [.rules-push-manual, rules]
 
-
 # ==============================================================================================================
-publish-container:
+publish-container-x86_64:
     extends:
       - .deploy-common
       - .omni_nvks_runner_with_docker
-    variables:
-        APP_NAME: "isaac-sim"
-        FAMILY_NAME: "gl"
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
@@ -1590,17 +1587,67 @@ publish-container:
     script:
       - 7z x -y -o_build/docs/isaac_sim/latest _build/packages/docs*.7z
       - 7z x -y -o_build/linux-x86_64/release _build/packages/isaac-sim-standalone*.7z
-      - ./tools/docker/prep_docker_build.sh
-      # Need to get full tag ready to push
-      - ./tools/docker/build_docker.sh
-      - ./tools/docker/tag_and_push_container.sh
+      - ./tools/docker/prep_docker_build.sh --x86_64
+      - ./tools/docker/build_docker.sh --x86_64 --tag nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-x86_64
+      - PLATFORM_TAG=x86_64 ./tools/docker/tag_and_push_container.sh
     needs:
       - job: build-linux-x86_64-release
         artifacts: true
-    retry:
-        max: 2
-        when:
-          - always
+    rules:
+      - !reference [.container-rules, rules]
+    allow_failure: true
+
+# ==============================================================================================================
+publish-container-aarch64:
+    extends:
+      - .deploy-common
+      - .omni_nvks_runner_with_docker
+    tags:
+      - lnx-x86_64-cpu-medium    # 1. Selects a runner with x86_64 host of the given size
+      - runtime/aarch64-medium   # 2. Selects a runner that supports aarch64 runtime
+    before_script:
+      - docker version
+      - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
+      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
+      - docker login nvcr.io
+    script:
+      - 7z x -y -o_build/linux-aarch64/release _build/packages/isaac-sim-standalone*.7z
+      - ./tools/docker/prep_docker_build.sh --aarch64
+      - ./tools/docker/build_docker.sh --aarch64 --tag nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
+      - PLATFORM_TAG=aarch64 ./tools/docker/tag_and_push_container.sh
+    needs:
+      - job: build-linux-aarch64-release
+        artifacts: true
+    rules:
+      - !reference [.container-rules, rules]
+    allow_failure: true
+
+# ==============================================================================================================
+publish-container-multi-arch:
+    extends:
+      - .deploy-common
+      - .omni_nvks_runner_with_docker
+    before_script:
+      - docker version
+      - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
+      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
+      - docker login nvcr.io
+    #   - docker run --privileged --rm tonistiigi/binfmt --install all
+    #   - docker buildx create --name multiarch-builder --driver docker-container --use
+    #   - docker buildx inspect --bootstrap
+    #   - docker pull nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-x86_64
+    #   - docker manifest inspect nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-x86_64
+    #   - docker pull nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
+    #   - docker manifest inspect nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
+    script:
+      - docker manifest create nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG} --amend nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-x86_64 --amend nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
+      - docker manifest push nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}
+      - docker manifest inspect nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}
+    needs:
+      - job: publish-container-x86_64
+        artifacts: false
+      - job: publish-container-aarch64
+        artifacts: false
     rules:
       - !reference [.container-rules, rules]
     allow_failure: true
@@ -1611,7 +1658,7 @@ test-container:
     - .test-common
     - .omni_nvks_gpu
     - .kit-runner-test-linux-x86_64-1x-gpu
-  image: nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}
+  image: nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-x86_64
   # variables:
   #   GIT_STRATEGY: none
   parallel:
@@ -1638,7 +1685,7 @@ test-container:
   stage: deploy-test
   allow_failure: true
   needs:
-    - job: publish-container
+    - job: publish-container-x86_64
       artifacts: false
   rules:
     - !reference [.container-rules, rules]

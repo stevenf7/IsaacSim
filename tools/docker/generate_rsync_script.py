@@ -20,6 +20,13 @@ def __parse_arguments(argv=None):
     )
 
     parser.add_argument(
+        "--platform",
+        type=str,
+        help="Which platform to use. Defaults to linux-x86_64",
+        default="linux-x86_64",
+    )
+
+    parser.add_argument(
         "--hardcode-pip-prebundle-links",
         action="store_true",
         default=False,
@@ -62,8 +69,8 @@ def main(argv=None):
                 if "files_strip_exclude" in target_toml:
                     files_strip_exclude.extend(target_toml["files_strip_exclude"])
 
-                if "linux-x86_64" in target_toml:
-                    target_toml = target_toml["linux-x86_64"]
+                if f"{arguments.platform}" in target_toml:
+                    target_toml = target_toml[f"{arguments.platform}"]
                     if "files" in target_toml:
                         package_paths.extend(target_toml["files"])
                     if "files_exclude" in target_toml:
@@ -81,7 +88,9 @@ def main(argv=None):
 
     rename_list = []
 
-    exclude_paths = [x[0].replace("${config}", "release").replace("${platform}", "linux-x86_64") for x in exclude_paths]
+    exclude_paths = [
+        x[0].replace("${config}", "release").replace("${platform}", f"{arguments.platform}") for x in exclude_paths
+    ]
 
     # Done gathering data, time to do things with it
     if len(exclude_paths):
@@ -91,13 +100,13 @@ def main(argv=None):
 
     with open("./generated_rsync_package.sh", "w") as out_file:
         out_file.write(f"output_folder={output_folder}\n\n")
-        out_file.write("config=release\nplatform=linux-x86_64\n")
+        out_file.write(f"config=release\nplatform={arguments.platform}\n")
         out_file.write("mkdir -p ${output_folder}\n\n")
         out_file.write("\necho Starting rsync, please wait...\n")
         exclude_flag = ""
         if hardcode_pip_prebundle_links:
             out_file.write(
-                'find _build/linux-x86_64/release -type l -iname "pip_prebundle" > pip_prebundle_locations.txt\n\n'
+                f'find _build/{arguments.platform}/release -type l -iname "pip_prebundle" > pip_prebundle_locations.txt\n\n'
             )
             exclude_flag += "--exclude-from=./pip_prebundle_locations.txt"
         if len(exclude_paths):
@@ -122,9 +131,9 @@ def main(argv=None):
             for rename_paths in rename_list:
                 out_file.write(
                     "mv ${output_folder}"
-                    + f"{rename_paths[0].replace('$platform','linux-x86_64')} "
-                    + "${output_folder}"
-                    + f"{rename_paths[1].replace('$platform','linux-x86_64')}\n"
+                    f"{rename_paths[0].replace('$platform', arguments.platform)} "
+                    "${output_folder}"
+                    f"{rename_paths[1].replace('$platform', arguments.platform)}\n"
                 )
             out_file.write("\n")
 

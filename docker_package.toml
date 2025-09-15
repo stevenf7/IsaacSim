@@ -39,9 +39,7 @@ files = []
 [isaac-sim-docker]
 files = [
     # Goes source path destination path.  If no destination path it will be inferred as top level.
-    ["_build/linux-x86_64/release/**", "."],
-    [".vscode"], 
-    ["_build/docs/isaac_sim/latest/**", "docs/py/"]
+    [".vscode"],
 ]
 files_exclude = [
     ["**/*.pyc"],
@@ -59,15 +57,14 @@ files_exclude = [
     ["tests/tests-docker*"],
     ["dockertests/**"],
     ["tests-external/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
+    ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"],
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.importer.onshape*"],
-    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
-    ["**/.git/**"], # ISIM-1020
+    ["kit/exts/omni.kit.extpath.git/**"],
+    ["**/.git/**"],
     ["pull_kit_sdk*"],
     ["run_all_*"],
     ["compile_commands.json"],
-    # Exclude windows pip installed binaries, they aren't valid to use currently (embedded interpreter path) and fail codesigning
     ["exts/*/pip_*/**/*.exe"],
     ["extscache/*/pip_*/**/*.exe"],
 ]
@@ -83,4 +80,15 @@ files_strip_exclude = [
     ["*exts/omni.pip.cloud/pip_prebundle/**"],
     ["*exts/omni.pip.compute/pip_prebundle/**"],
     ["*libscipy_openblas*.so"],
+]
+
+[isaac-sim-docker.linux-x86_64]
+files = [
+    ["_build/linux-x86_64/release/**", "."],
+    ["_build/docs/isaac_sim/latest/**", "docs/py/"],
+]
+
+[isaac-sim-docker.linux-aarch64]
+files = [
+    ["_build/linux-aarch64/release/**", "."]
 ]
