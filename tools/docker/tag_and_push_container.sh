@@ -1,10 +1,10 @@
 #!/bin/sh
 
-
+: "${PLATFORM_TAG:=x86_64}"
 # Starting container
-BASE_CONTAINER="isaac-sim-docker:latest"
+BASE_CONTAINER="nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
 # Destination tags
-CONTAINER_TAGS="gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim:latest-${CI_COMMIT_REF_SLUG},nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG},nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+CONTAINER_TAGS="gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG},nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
 
 
 echo "Base container: $BASE_CONTAINER"
@@ -23,18 +23,18 @@ IFS=','
 for tag in $CONTAINER_TAGS; do
     # Trim whitespace from tag
     tag=$(echo "$tag" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-    
+
     if [ -n "$tag" ]; then
         total_tags=$((total_tags + 1))
         target_tag="${tag}"
-        
+
         echo "Processing tag: $tag"
         echo "Tagging: $BASE_CONTAINER -> $target_tag"
-        
+
         if docker tag "$BASE_CONTAINER" "$target_tag"; then
             echo "Successfully tagged: $target_tag"
             successful_tags=$((successful_tags + 1))
-            
+
             echo "Pushing: $target_tag"
             if docker push "$target_tag"; then
                 echo "Successfully pushed: $target_tag"

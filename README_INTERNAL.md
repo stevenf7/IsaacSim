@@ -41,17 +41,17 @@ Current public release: **4.2.0-rc.18**
 
 * Isaac Sim Stable RC: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-x.y](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857?orderBy=NAME&sort=desc&search[]=rc) (Release branch, rc)
 * Isaac Sim Daily: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/53857?orderBy=NAME&sort=desc&search[]=develop) (Develop branch, alpha/beta)
-* Isaac Sim Internal-only: [gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/container_registry/58656?orderBy=NAME&sort=desc&search[]=develop) (Develop branch, internal-only)
 
 ## Docker Containers (NGC)
 
 * [Isaac Sim Public](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim): ``nvcr.io/nvidia/isaac-sim:x.y.z``
-* [Isaac Sim Internal](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags) For anyone in the ``nvidian`` org in NGC.
+* [Isaac Sim Internal](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim/tags): For anyone in the ``nvidian`` org in NGC.
   * Latest RC: ``nvcr.io/nvidian/isaac-sim:latest-x.y`` Built from the Release branch.
   * Latest Daily: ``nvcr.io/nvidian/isaac-sim:latest-develop`` Built from the Develop branch.
-* [Isaac Sim Internal-only](https://registry.ngc.nvidia.com/orgs/nvidian/containers/isaac-sim-internal/tags): ``nvcr.io/nvidian/isaac-sim/isaac-sim-internal:latest-develop`` Built from the Develop branch (for internal tests/benchmarking). For anyone in the ``nvidian`` org in NGC.
 
 > Notes:
+>  - Isaac Sim containers are now multi-arch. Docker will pull containers based on the host platforms. use the `--platform` flag to pull specific container.
+>  - `*-x86_64` and `*-aarch64` tags are for specific arch/platforms.
 >  - Access to [``nvidian``](https://docs.google.com/forms/d/e/1FAIpQLScHfy_rMaUwpDVF7vpUuZe68fKESB7CN8twnXQnrZSUZnAfFA/viewform) org in NGC. [#swngc-help](https://nvidia.enterprise.slack.com/archives/C7VGNG1V3)
 >  - See [Branches](#branches)
 

@@ -4,6 +4,7 @@
 # Parse command line arguments
 SKIP_DEDUPE=false
 RUN_BUILD=false
+CONTAINER_PLATFORM=linux-x86_64
 
 show_help() {
     cat << EOF
@@ -14,6 +15,8 @@ Prepares Docker build by generating rsync script and copying necessary files.
 OPTIONS:
     --skip-dedupe    Skip the deduplication process
     --build          Run build sequence (build.sh -r, repo.sh examples_list, build_docs.sh)
+    --x86_64         Build x86_64 container (default)
+    --aarch64        Build aarch64 container
     --help, -h       Show this help message
 
 EOF
@@ -21,20 +24,20 @@ EOF
 
 build_function() {
     echo "Starting build sequence..."
-    
+
     echo "Running build.sh -r"
     if ! ./build.sh -r; then
         echo "Error: build.sh -r failed" >&2
         return 1
     fi
-    
+
 # AUTOREMOVE: BEGIN
     echo "Running repo.sh examples_list"
     if ! ./repo.sh examples_list; then
         echo "Error: repo.sh examples_list failed" >&2
         return 1
     fi
-    
+
     echo "Running build_docs.sh"
     if ! ./tools/build_docs.sh; then
         echo "Error: tools/build_docs.sh failed" >&2
@@ -54,6 +57,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --build)
             RUN_BUILD=true
+            shift
+            ;;
+        --x86_64)
+            CONTAINER_PLATFORM=linux-x86_64
+            shift
+            ;;
+        --aarch64)
+            CONTAINER_PLATFORM=linux-aarch64
             shift
             ;;
         --help|-h)
@@ -79,16 +90,16 @@ if [[ "$RUN_BUILD" == "true" ]]; then
     fi
 fi
 
-# Check that _build/linux-x86_64 something exists
-if [[ ! -d "_build/linux-x86_64/release" ]]; then
-    echo "Error: _build/linux-x86_64/release does not exist" >&2
+# Check that _build/linux-x86_64 or _build/linux-aarch64 exists
+if [[ ! -d "_build/${CONTAINER_PLATFORM}/release" ]]; then
+    echo "Error: _build/${CONTAINER_PLATFORM}/release does not exist" >&2
     echo "Please rerun the script with --build" >&2
     exit 1
 fi
 
 # AUTOREMOVE: BEGIN
 if [[ "${CI}" == "true" ]]; then
-    apt-get update 
+    apt-get update
     apt-get install -y rsync
 fi
 # AUTOREMOVE: END
@@ -100,7 +111,7 @@ if ! python3 -m pip install -r tools/docker/requirements.txt; then
 fi
 
 
-if ! python3 tools/docker/generate_rsync_script.py --target isaac-sim-docker --output-folder _container_temp; then
+if ! python3 tools/docker/generate_rsync_script.py --platform ${CONTAINER_PLATFORM} --target isaac-sim-docker --output-folder _container_temp; then
     echo "Failed to generate rsync script" >&2
     exit 1
 fi
@@ -140,7 +151,7 @@ find_chained_symlinks(){
 
 
 dedupe_folder(){
-    echo "Starting a dedupe of $1" 
+    echo "Starting a dedupe of $1"
     hash=""
     true_path=""
     echo "Searching for duplicates (ignoring paths with spaces)"
@@ -182,6 +193,6 @@ if [[ "$SKIP_DEDUPE" != "true" ]]; then
 else
     echo "Skipping deduplication as requested"
 fi
- 
+
 # Clean up our venv
 rm -rf .container_venv

@@ -2,6 +2,7 @@
 
 # Default tag
 TAG="isaac-sim-docker:latest"
+CONTAINER_PLATFORM=linux/amd64
 
 # Parse command line arguments
 while [ $# -gt 0 ]; do
@@ -10,9 +11,19 @@ while [ $# -gt 0 ]; do
             TAG="$2"
             shift 2
             ;;
+        --x86_64)
+            CONTAINER_PLATFORM=linux/amd64
+            shift
+            ;;
+        --aarch64)
+            CONTAINER_PLATFORM=linux/arm64
+            shift
+            ;;
         -h|--help)
             echo "Usage: $0 [--tag TAG]"
             echo "  --tag TAG    Docker image tag (default: isaac-sim-docker:latest)"
+            echo "  --x86_64     Platform tag (default: x86_64)"
+            echo "  --aarch64    Platform tag (default: x86_64)"
             echo "  -h, --help   Show this help message"
             exit 0
             ;;
@@ -24,4 +35,15 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-docker build -t "$TAG" -f tools/docker/Dockerfile _container_temp
+if docker buildx inspect | grep -q $CONTAINER_PLATFORM; then
+    echo "This builder supports $CONTAINER_PLATFORM builds"
+else
+    echo "ERROR: This host's buildx builder does NOT support $CONTAINER_PLATFORM"
+    exit 1
+fi
+
+docker buildx build \
+  -t "$TAG" \
+  --platform=$CONTAINER_PLATFORM \
+  -f tools/docker/Dockerfile \
+  --push _container_temp
