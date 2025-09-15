@@ -1882,8 +1882,8 @@ check_externals:
       - packman_full_results.csv
     expire_in: 1 week
   script:
-    - ./tools/packman/python.sh tools/check_externals/download_all_kits.py --skip-platform aarch64
-    - ./tools/packman/python.sh tools/check_externals/check_externals.py --skip-platform aarch64 --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing --allowed-external linbuild
+    - ./tools/packman/python.sh tools/check_externals/download_all_kits.py
+    - ./tools/packman/python.sh tools/check_externals/check_externals.py --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing --allowed-external linbuild
 
 # ==============================================================================================================
 check-python-packages-dependencies-linux-x86_64:
