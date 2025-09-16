@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.27] - 2025-09-16
+### Fixed
+- Fix merging fixed joints that stops processing incorrectly.
+
 ## [2.4.26] - 2025-09-10
 ### Fixed
 - Fix transform error for dae files

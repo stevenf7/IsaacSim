@@ -127,7 +127,7 @@ void mergeFixedChildLinks(const KinematicChain::Node& parentNode, UrdfRobot& rob
             if ((urdfChildLink.inertial.hasMass && urdfChildLink.inertial.mass > 0.0f))
             {
                 joint.dontCollapse = true;
-                return;
+                continue;
             }
             CARB_LOG_WARN("link %s has no body properties (mass, inertia, or collisions) and is being merged into %s",
                           childNode->linkName_.c_str(), parentNode.linkName_.c_str());
