@@ -354,6 +354,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
 
             # Stop the timeline (and the behavior scripts triggering)
             timeline.stop()
+            await omni.kit.app.get_app().next_update_async()
 
             # Free the renderer resources
             writer.detach()
