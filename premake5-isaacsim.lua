@@ -259,6 +259,7 @@ function define_test_experience(name, args)
 end
 ROS2_EXTRA = {
     ["windows"] = [[
+set ROS_DISTRO=humble
 set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 set ROS_DOMAIN_ID=93
 pushd %~dp0\..\exts
@@ -267,6 +268,7 @@ popd
 set PATH=%PATH%;%basedir%
 ]],
     ["linux"] = [[
+export ROS_DISTRO=humble
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=$((($RANDOM % 18) + 80))
 INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/isaacsim.ros2.bridge/humble/lib)
