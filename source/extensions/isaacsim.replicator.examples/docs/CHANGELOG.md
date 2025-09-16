@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.2] - 2025-09-15
+### Changed
+- switched to isaacsim.test.utils for folder contents validation and goldenimage comparison in tests
+
 ## [1.2.1] - 2025-09-01
 ### Fixed
 - Make sure custom writers reset annotators list (`self.annotators = []`) on initialization
