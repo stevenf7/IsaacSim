@@ -517,7 +517,7 @@ class XFormPrim(Prim):
                         material = UsdShade.Material(stage.GetPrimAtPath(material_path))
                         # getting the shader
                         shader_info = material.ComputeSurfaceSource()
-                        if shader_info[0].GetPath() != "":
+                        if shader_info[0].GetPath().pathString != "":
                             shader = shader_info[0]
                         elif is_prim_path_valid(material_path + "/shader"):
                             shader_path = material_path + "/shader"
