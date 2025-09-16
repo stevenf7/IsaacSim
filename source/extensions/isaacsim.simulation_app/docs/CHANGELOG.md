@@ -1,9 +1,14 @@
 # Changelog
 
+## [2.12.1] - 2025-09-15
+### Added
+- Add builtins flag to indicate that the `SimulationApp` class has been launched
+
 ## [2.12.0] - 2025-09-10
 ## Changed
-- added skip_cleanup parameter to close method
-- update docstrings 
+- Added skip_cleanup parameter to close method
+- Update docstrings
+
 ### Fixed
 - Fix hang on startup when waiting for viewport to be ready
 - Fix for hang on exit

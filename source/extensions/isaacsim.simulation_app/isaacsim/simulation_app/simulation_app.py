@@ -352,6 +352,8 @@ class SimulationApp:
             benchmark.store_measurements()
             benchmark.stop()
 
+        builtins.ISAACSIM_APP_LAUNCHED = True
+
     def __del__(self):
         """Destructor for the SimulationApp class.
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ctypes
+import builtins
 import glob
 import os
 import sys
@@ -160,7 +160,47 @@ def main():
     sys.exit(app.shutdown())
 
 
+"""
+Setup Isaac Sim launch.
+"""
+
 bootstrap_kernel()
 
 # make isaacsim.simulation_app discoverable
 AppFramework, SimulationApp = expose_api()
+
+
+# register custom exception handler
+def exception_handler(exc_type, exc_value, exc_traceback):
+    ret = _excepthook(exc_type, exc_value, exc_traceback)
+    if issubclass(exc_type, (ImportError, ModuleNotFoundError)):
+        if not hasattr(builtins, "ISAACSIM_APP_LAUNCHED"):
+            print(
+                """
+========================================================================
+WARNING: Omniverse/Isaac Sim import statements must take place after the
+`SimulationApp` class has been instantiated. It is a requirement of the
+Carbonite framework's extension/runtime plugin system.
+========================================================================
+
+Ensure that the `SimulationApp` class is instantiated before importing
+any other Omniverse/Isaac Sim modules, as shown below:
+
+    ------------------------------------------------------------------
+    from isaacsim import SimulationApp
+
+    # instantiate the SimulationApp helper class
+    simulation_app = SimulationApp({"headless": False})
+
+    # execute other Omniverse/Isaac Sim imports after instantiating it
+    from isaacsim...
+    ------------------------------------------------------------------
+
+========================================================================
+"""
+            )
+    return ret
+
+
+_excepthook = sys.excepthook
+sys.excepthook = exception_handler
