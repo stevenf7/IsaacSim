@@ -13,10 +13,10 @@ Usage: $0 [OPTIONS]
 Prepares Docker build by generating rsync script and copying necessary files.
 
 OPTIONS:
-    --skip-dedupe    Skip the deduplication process
-    --build          Run build sequence (build.sh -r, repo.sh examples_list, build_docs.sh)
+    --build          Build Isaac Sim
     --x86_64         Build x86_64 container (default)
     --aarch64        Build aarch64 container
+    --skip-dedupe    Skip the deduplication process
     --help, -h       Show this help message
 
 EOF
