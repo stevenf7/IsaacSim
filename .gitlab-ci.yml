@@ -2021,7 +2021,7 @@ stage-to-github:
       - echo "Isaac Sim Update"
       - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
       - git add -A && git commit -m "Isaac Sim Update"
-      - git push
+      - git push --set-upstream origin upstream/update_from_${CI_COMMIT_SHORT_SHA}
     # when: manual
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
@@ -2061,7 +2061,7 @@ stage-to-gitlab:
       - echo "Isaac Sim Update"
       - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
       - git add -A && git commit -m "Isaac Sim Update"
-      - git push
+      - git push --set-upstream origin upstream/update_from_${CI_COMMIT_SHORT_SHA}
     # when: manual
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
