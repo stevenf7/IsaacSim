@@ -38,6 +38,7 @@ ENV VK_DRIVER_FILES=/etc/vulkan/icd.d/nvidia_icd.json
 # Switch to root user
 USER root
 RUN useradd -ms /bin/bash -l --uid 1234 isaac-sim -d /isaac-sim
+RUN chown -R isaac-sim /tmp
 USER isaac-sim
 
 # Copy package
@@ -45,11 +46,6 @@ RUN mkdir -p /isaac-sim
 WORKDIR /isaac-sim
 COPY --chown=isaac-sim:isaac-sim . /isaac-sim/
 RUN mkdir -p /isaac-sim/.nvidia-omniverse/config
-
-# Switch to root user
-USER root
-RUN chown -R isaac-sim /isaac-sim
-USER isaac-sim
 
 # Open ports for live streaming
 EXPOSE 47998/udp \

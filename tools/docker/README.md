@@ -31,17 +31,19 @@ Use `prep_docker_build.sh` to prepare the Docker build context:
 ```
 
 #### Options:
-- `--build` - Run the full build sequence before preparing Docker files:
+- `--build` - Run the full Isaac Sim build sequence before preparing Docker files:
   - Executes `build.sh -r`
 <!-- AUTOREMOVE: BEGIN -->
   - Executes `repo.sh examples_list`
   - Executes `tools/build_docs.sh`
 <!-- AUTOREMOVE: END -->
+- `--x86_64` - Build x86_64 container (default)
+- `--aarch64` - Build aarch64 container
 - `--skip-dedupe` - Skip the file deduplication process (faster but larger image)
 - `--help, -h` - Show help message
 
 #### What this script does:
-1. **Build Verification**: Checks that `_build/linux-x86_64/release` exists (required for Docker build)
+1. **Build Verification**: Checks that `_build/$CONTAINER_PLATFORM/release` exists (required for Docker build)
 2. **Dependency Installation**: Installs Python requirements from `tools/docker/requirements.txt`
 3. **File Preparation**: Generates and runs an rsync script to copy necessary files to `_container_temp`
 4. **Data Copying**: Copies additional data from `tools/docker/data` and `tools/docker/oss`
@@ -58,6 +60,8 @@ Use `build_docker.sh` to build the actual Docker image:
 
 #### Options:
 - `--tag TAG` - Specify the Docker image tag (default: `isaac-sim-docker:latest`)
+- `--x86_64` - Specify the Platform tag (default: x86_64)
+- `--aarch64` - Specify the Platform tag (default: x86_64)
 - `-h, --help` - Show help message
 
 ## Example Usage
@@ -91,14 +95,15 @@ Use `build_docker.sh` to build the actual Docker image:
 
 ## Important Notes
 
-- **Build Requirements**: The `_build/linux-x86_64/release` directory must exist before running the Docker preparation. Use `--build` option if you haven't built Isaac Sim yet.
+- **Build Requirements**: The `_build/$CONTAINER_PLATFORM/release` directory must exist before running the Docker preparation. Use `--build` option if you haven't built Isaac Sim yet.
 - **Deduplication**: The deduplication process can significantly reduce Docker image size by replacing duplicate files with symlinks, but it takes time. Use `--skip-dedupe` for faster rebuilds during development.
 - **File Paths**: The deduplication process skips files with spaces in their paths for reliability.
 - **Build Context**: The final Docker build uses `_container_temp` as the build context and `tools/docker/Dockerfile` as the Dockerfile.
+- **Platform**: Add the `--aarch64` flag to build for arm64 platform. It is recommended to use this flag when on an arm64 host.
 
 ## Troubleshooting
 
-- **Error: "_build/linux-x86_64/release does not exist"**: Run the script with `--build` option to build Isaac Sim first.
+- **Error: "_build/$CONTAINER_PLATFORM/release does not exist"**: Run the script with `--build` option to build Isaac Sim first.
 - **rsync not found**: Install rsync using your system's package manager.
 - **Python requirements installation fails**: Ensure python3 and pip are properly installed.
-- **Docker build fails**: Check that Docker daemon is running and you have sufficient disk space. 
+- **Docker build fails**: Check that Docker daemon is running and you have sufficient disk space.
