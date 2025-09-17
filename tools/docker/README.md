@@ -62,6 +62,7 @@ Use `build_docker.sh` to build the actual Docker image:
 - `--tag TAG` - Specify the Docker image tag (default: `isaac-sim-docker:latest`)
 - `--x86_64` - Specify the Platform tag (default: x86_64)
 - `--aarch64` - Specify the Platform tag (default: x86_64)
+- `--push` - Push docker image tag
 - `-h, --help` - Show help message
 
 ## Example Usage

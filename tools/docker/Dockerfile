@@ -5,7 +5,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 # Disable hardware-specific library optimizations in dynamic linker for wider compatibility (legacy Debian/Ubuntu)
 RUN touch /etc/ld.so.nohwcap
 
-## TODO - Need OSRB for this list of packages
+# Install dependencies
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         curl \

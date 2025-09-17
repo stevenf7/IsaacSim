@@ -3,6 +3,7 @@
 # Default tag
 TAG="isaac-sim-docker:latest"
 CONTAINER_PLATFORM=linux/amd64
+PUSH_TAG=""
 
 # Parse command line arguments
 while [ $# -gt 0 ]; do
@@ -19,11 +20,16 @@ while [ $# -gt 0 ]; do
             CONTAINER_PLATFORM=linux/arm64
             shift
             ;;
+        --push)
+            PUSH_TAG="--push"
+            shift
+            ;;
         -h|--help)
             echo "Usage: $0 [--tag TAG]"
             echo "  --tag TAG    Docker image tag (default: isaac-sim-docker:latest)"
             echo "  --x86_64     Platform tag (default: x86_64)"
             echo "  --aarch64    Platform tag (default: x86_64)"
+            echo "  --push       Push docker image tag"
             echo "  -h, --help   Show this help message"
             exit 0
             ;;
@@ -46,4 +52,4 @@ docker buildx build \
   -t "$TAG" \
   --platform=$CONTAINER_PLATFORM \
   -f tools/docker/Dockerfile \
-  --push _container_temp
+  $PUSH_TAG _container_temp
