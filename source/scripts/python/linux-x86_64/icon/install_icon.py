@@ -19,33 +19,41 @@ import sys
 if sys.platform == "win32":
     pass
 else:
-    # Get executable path from command line argument if provided
-    executable_path = sys.argv[1] if len(sys.argv) > 1 else None
 
-    icon_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "omni.isaac.sim.png")
-    user_apps_folder = os.path.expanduser("~/.local/share/applications")
-    icon_file_path = os.path.join(user_apps_folder, "IsaacSim.desktop")
-    if os.path.exists(user_apps_folder):
-        with open(icon_file_path, "w") as file:
-            print(f"Writing Isaac Sim icon file to {icon_file_path}")
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    icon_path = os.path.join(this_dir, "omni.isaac.sim.png")
 
-            # Build desktop entry content
-            desktop_content = f"""[Desktop Entry]
+    if len(sys.argv) > 1:
+        # get path to executable from the command line
+        exec_path = sys.argv[1]
+    else:
+        # isaac sim executable path is 2 levels up from this py script
+        exec_path = os.path.join(this_dir, "..", "..", "isaac-sim.sh")
+
+    exec_path = os.path.normpath(exec_path)
+    print(f"Using Isaac Sim executable path: {exec_path}")
+
+    desktop_file_path = os.path.expanduser(
+        "~/.local/share/applications/IsaacSim.desktop",
+    )
+
+    # write the .desktop file to the user's applications folder
+    # (will appear under ubuntu logo)
+    if os.path.exists(os.path.dirname(desktop_file_path)):
+        with open(desktop_file_path, "w") as file:
+            print(f"Writing Isaac Sim icon file to: {desktop_file_path}")
+            file.write(
+                f"""\
+[Desktop Entry]
 Version=1.0
 Name=Isaac Sim
 Icon={icon_path}
 Terminal=false
 Type=Application
-StartupWMClass=IsaacSim"""
+StartupWMClass=IsaacSim
+Exec={exec_path}\
+"""
+            )
 
-            # Add Exec field if executable path is provided
-            if executable_path and os.path.exists(executable_path):
-                desktop_content += f"\nExec={executable_path}"
-                print(f"Added Exec field: {executable_path}")
-            else:
-                if executable_path:
-                    print(f"Warning: Executable path not found: {executable_path}")
-                else:
-                    print("No executable path provided")
-
-            file.write(desktop_content)
+    # set trusted flag on the .desktop file via GIO shell
+    os.system(f'gio set "{desktop_file_path}" metadata::trusted true')
