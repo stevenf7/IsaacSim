@@ -133,8 +133,10 @@ keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in
 "omni.usd.metrics.assembler.physics" = {}
 "omni.usd.schema.scene.visualization" = {}
 
-[dependencies."filter:platform"."*-x86_64"] # (Filtered for x86_64 platforms)
-"omni.anim.navigation.meshtools" = {}
+[dependencies."filter:platform"."windows-x86_64"] # (Filtered for x86_64 platforms)
+"omni.kit.converter.cad" = {order = 200, version = "204.0.1", exact = true}
+
+[dependencies."filter:platform"."linux-x86_64"] # (Filtered for x86_64 platforms)
 "omni.kit.converter.cad" = {order = 200, version = "204.0.1", exact = true}
 
 [settings]
