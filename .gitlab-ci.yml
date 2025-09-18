@@ -388,8 +388,6 @@ build-linux-aarch64-release:
   rules:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never  # Manual to avoid overloading ARM ci runners during MRs
     - !reference [.rules-platform-linux-aarch64, rules]
     - !reference [.rules-workflow, rules]
     - !reference [.rules-version-changed, rules]
@@ -1931,7 +1929,7 @@ check_externals:
     expire_in: 1 week
   script:
     - ./tools/packman/python.sh tools/check_externals/download_all_kits.py
-    - ./tools/packman/python.sh tools/check_externals/check_externals.py --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing --allowed-external linbuild
+    - ./tools/packman/python.sh tools/check_externals/check_externals.py --allowed-external repo_lint --allowed-external repo_docs --allowed-external repo_codesign --allowed-external repo_python_package --allowed-external repo_licensing --allowed-external linbuild --allowed-external repo_nv --allowed-external repo_kit_tools_internal
 
 # ==============================================================================================================
 check-python-packages-dependencies-linux-x86_64:
