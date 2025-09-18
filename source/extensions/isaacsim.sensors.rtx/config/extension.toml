@@ -1,5 +1,5 @@
 [package]
-version = "15.8.1"
+version = "15.8.2"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -67,14 +67,14 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${isaacsim.sensors.rtx}/data/lidar_configs/"
 ]
 
-# Renderer copies Lidar return buffer onto CPU before postprocessing
+# Renderer keeps Lidar return buffer on GPU for post-processing.
 app.sensors.nv.lidar.outputBufferOnGPU = true
-# Renderer copies Radar return buffer onto CPU before postprocessing
+# Renderer keeps Radar return buffer on GPU for post-processing.
 app.sensors.nv.radar.outputBufferOnGPU = true
 # Enable non-visual materials using USD attributes
 rtx.materialDb.nonVisualMaterialCSV.enabled=false
 # Specify non-visual material USD attribute prefix
-rtx.materialDb.nonVisualMaterialSemantics.prefix="inputs:nonvisual"
+rtx.materialDb.nonVisualMaterialSemantics.prefix="omni:simready:nonvisual"
 
 [[test]]
 timeout = 1200

@@ -125,9 +125,10 @@ ATTRIBUTES = {
 
 
 # Attribute name constants
-ATTR_BASE = "inputs:nonvisual:base"
-ATTR_COATING = "inputs:nonvisual:coating"
-ATTR_ATTRIBUTE = "inputs:nonvisual:attributes"
+ATTR_PREFIX = carb.settings.get_settings().get("/rtx/materialDb/nonVisualMaterialSemantics/prefix")
+ATTR_BASE = f"{ATTR_PREFIX}:base"
+ATTR_COATING = f"{ATTR_PREFIX}:coating"
+ATTR_ATTRIBUTE = f"{ATTR_PREFIX}:attributes"
 
 
 def apply_nonvisual_material(

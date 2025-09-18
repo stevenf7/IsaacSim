@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.8.2] - 2025-09-17
+### Changed
+- Specify rtx.materialDb.nonVisualMaterialSemantics.prefix as "omni:simready:nonvisual" to align with SimReady spec
+
 ## [15.8.1] - 2025-09-15
 ### Added
 - GenericModelOutput explicitly added to valid arguments in LidarRtx.attach_annotator
