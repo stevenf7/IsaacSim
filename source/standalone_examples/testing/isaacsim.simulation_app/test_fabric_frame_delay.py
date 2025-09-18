@@ -110,6 +110,9 @@ def main():
             print(f"[FAIL] PhysX is not synced with Fabric CPU")
             sys.exit(1)
 
+    print(f"[PASS] Fabric frame delay test passed")
+    simulation_app.close()
+
 
 if __name__ == "__main__":
     main()
