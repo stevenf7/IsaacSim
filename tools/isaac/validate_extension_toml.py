@@ -22,7 +22,7 @@ This comprehensive validation script checks and can automatically fix multiple a
 1. **Section Order**: Ensures sections appear in the correct order as defined in SECTION_ORDER
 2. **Package Field Order**: Validates that fields in the [package] section follow the expected order
 3. **Test Field Order**: Ensures fields in [[test]] sections are properly ordered
-4. **Test Section Organization**: Validates that unnamed test sections appear before named ones, 
+4. **Test Section Organization**: Validates that unnamed test sections appear before named ones,
    ensures only one unnamed test section exists, and sorts named test sections alphabetically
 
 ## Content Validation:

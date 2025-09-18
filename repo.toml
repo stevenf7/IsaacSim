@@ -78,9 +78,11 @@ enable_compiler_version_check = true
 
 "platform:linux-x86_64".version_check_gcc_version = "11.*.*"
 
+# AUTOREMOVE: BEGIN
 "platform:linux-aarch64".fetch.pip.licensing_enabled = false # Disable licensing for aarch64 platforms, as it is not supported.
 "platform:windows-x86_64".fetch.pip.licensing_enabled = true 
 "platform:linux-x86_64".fetch.pip.licensing_enabled = true
+# AUTOREMOVE: END
 
 
 # # Extensions precache
@@ -780,6 +782,10 @@ etm_emails = ["hmazhar@nvidia.com"]
 
 [repo_format]
 
+cpp.maintain_legal_blurbs = false
+python.maintain_legal_blurbs = false
+
+
 cpp.files.exclude = [
   "tools/container/**",
 ]
@@ -1033,12 +1039,13 @@ extra_args = [
 [repo_kit_pull_extensions]
 precache_exts_enabled = false
 
-########################################################################################################################
-# Tool to promote extensions to the public registry pipeline
-########################################################################################################################
 
-[repo_deploy_exts.pipeline_repo.branch.prod]
-fail_if_exts_are_missing = false
+[[repo_kit_pull_extensions.environment]]
+name = "integ"
+app_version_regex = ""
+"tokens.registry_url" = "https://ovextensionsprod.blob.core.windows.net"
+"tokens.registry_shared_name" = "shared"
+"tokens.registry_name" = "kit/prod"
 
 
 ########################################################################################################################

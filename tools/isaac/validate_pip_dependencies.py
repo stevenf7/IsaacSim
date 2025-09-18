@@ -23,34 +23,34 @@ potentially unused dependencies that can be removed to reduce package bloat.
 Usage Examples:
     # Basic validation (auto-detects _build/linux-x86_64/release/python.sh, excludes test files)
     python tools/isaac/validate_pip_dependencies.py
-    
+
     # Use specific Python interpreter (e.g., the build environment)
     _build/linux-x86_64/release/python.sh tools/isaac/validate_pip_dependencies.py
-    
+
     # Or explicitly specify the python path
     python tools/isaac/validate_pip_dependencies.py --python-path _build/linux-x86_64/release/python.sh
-    
+
     # Search only in specific directories (follows symlinks automatically)
     python tools/isaac/validate_pip_dependencies.py --search-dirs source exts
-    
+
     # Search in build directory (useful for analyzing installed packages)
     python tools/isaac/validate_pip_dependencies.py --search-dirs _build/linux-x86_64/release/
-    
+
     # Include test files in analysis (normally excluded by default)
     python tools/isaac/validate_pip_dependencies.py --no-default-exclusions
-    
+
     # Add custom exclusions for demo and benchmark files
     python tools/isaac/validate_pip_dependencies.py --exclude "demo_*.py" "benchmark/*.py" "scripts/*.py"
-    
+
     # Show all imports found in the codebase
     python tools/isaac/validate_pip_dependencies.py --show-imports
-    
+
     # Save results to JSON for programmatic analysis
     python tools/isaac/validate_pip_dependencies.py --output-json results.json
-    
+
     # Disable pipdeptree integration (show all unused packages including dependencies)
     python tools/isaac/validate_pip_dependencies.py --no-pipdeptree
-    
+
     # Verbose output with detailed logging
     python tools/isaac/validate_pip_dependencies.py --verbose
 
@@ -69,7 +69,7 @@ Features:
 
 Note: This analysis may have false positives for packages that are:
     - Used only at runtime (like CUDA libraries)
-    - Imported dynamically using importlib  
+    - Imported dynamically using importlib
     - Dependencies of other packages (filtered out with pipdeptree integration)
     - Used through complex import structures
 """

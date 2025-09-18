@@ -513,6 +513,16 @@ ignored_extensions = [
 ]
 
 
+
+########################################################################################################################
+# Tool to promote extensions to the public registry pipeline
+########################################################################################################################
+
+[repo_deploy_exts.pipeline_repo.branch.prod]
+fail_if_exts_are_missing = false
+
+
+
 ########################################################################################################################
 # Lua formatting
 ########################################################################################################################
@@ -564,6 +574,7 @@ exclude = [
     "README_INTERNAL.md",
     "repo_internal.toml",
     "TESTING.md",
+    "deps/repo-deps-nv.packman.xml",
     "tools/autopull",
     "tools/build_docs.*",
     "tools/ci",
@@ -601,7 +612,6 @@ end_marker = "# AUTOREMOVE: END"
 
 [[repo_stage_for_github.trim]]
 files = [
-    "deps/repo-deps.packman.xml",
     "deps/kit-sdk-deps.packman.xml",
     "tools/docker/README.md",
 ]

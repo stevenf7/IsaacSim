@@ -5,10 +5,3 @@ fetch.pip.publish_pip_cache = false
 
 [repo_build.docker]
 enabled = false
-
-[[repo_kit_pull_extensions.environment]]
-name = "integ"
-app_version_regex = ""
-"tokens.registry_url" = "https://ovextensionsprod.blob.core.windows.net"
-"tokens.registry_shared_name" = "shared"
-"tokens.registry_name" = "kit/prod"

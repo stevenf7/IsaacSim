@@ -19,7 +19,7 @@ Render Assets Script
 This script renders USD assets to images. It supports reusing existing scene USD files
 to avoid duplicating .thumb.usd generation if they already exist. If a scene file exists
 but the corresponding image doesn't, the script will reuse the existing scene to render.
-If a scene and corresponding image already exist, but the asset has changed since last 
+If a scene and corresponding image already exist, but the asset has changed since last
 generated, the script will recreate the scene and image.
 """
 
