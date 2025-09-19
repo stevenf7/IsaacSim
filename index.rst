@@ -164,7 +164,7 @@ Extensions
 .. toctree::
    :hidden:
    :maxdepth: 1
-   :caption: Extensions (ROS 1 & 2)
+   :caption: Extensions (ROS 2)
 
    isaacsim.ros2.bridge <source/extensions/isaacsim.ros2.bridge/docs/index>
    isaacsim.ros2.tf_viewer <source/extensions/isaacsim.ros2.tf_viewer/docs/index>
