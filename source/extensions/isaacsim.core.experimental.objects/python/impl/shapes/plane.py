@@ -15,37 +15,36 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import warp as wp
 from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
-from pxr import Usd, UsdLux
+from pxr import Gf, Usd, UsdGeom
 
-from .light import Light
+from .shape import Shape
 
 
-class RectLight(Light):
-    """High level class for creating/wrapping USD Rect Light (light emitted from one side of a rectangle) prims.
-
-    The rectangle, centered in the XY plane, emits light along the -Z axis.
+class Plane(Shape):
+    """High level class for creating/wrapping USD Plane (primitive plane centered at the origin) prims.
 
     .. note::
 
-        This class creates or wraps (one of both) USD Rect Light prims according to the following rules:
+        This class creates or wraps (one of both) USD Plane prims according to the following rules:
 
-        * If the prim paths exist, a wrapper is placed over the USD Rect Light prims.
-        * If the prim paths do not exist, USD Rect Light prims are created at each path and a wrapper is placed over them.
+        * If the prim paths exist, a wrapper is placed over the USD Plane prims.
+        * If the prim paths do not exist, USD Plane prims are created at each path and a wrapper is placed over them.
 
     Args:
         paths: Single path or list of paths to existing or non-existing (one of both) USD prims.
             Can include regular expressions for matching multiple prims.
         widths: Widths (shape ``(N, 1)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
-        heights: Heights (shape ``(N, 1)``).
+        lengths: Lengths (plane's length) (shape ``(N, 1)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
-        texture_files: Color texture files (shape ``(N,)``). In the default position, the texture file's minimum
-            and maximum coordinates should be at ``(+X, +Y)`` and ``(-X, -Y)`` respectively.
+        axes: Axes (plane's axis along which the surface is aligned) (shape ``(N,)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
@@ -60,29 +59,29 @@ class RectLight(Light):
 
     Raises:
         ValueError: If resulting paths are mixed (existing and non-existing prims) or invalid.
-        AssertionError: If wrapped prims are not USD Rect Light.
+        AssertionError: If wrapped prims are not USD Plane.
         AssertionError: If both positions and translations are specified.
 
     Example:
 
     .. code-block:: python
 
-        >>> from isaacsim.core.experimental.objects import RectLight
+        >>> from isaacsim.core.experimental.objects import Plane
         >>>
         >>> # given an empty USD stage with the /World Xform prim,
-        >>> # create rect lights at paths: /World/prim_0, /World/prim_1, and /World/prim_2
+        >>> # create planes at paths: /World/prim_0, /World/prim_1, and /World/prim_2
         >>> paths = ["/World/prim_0", "/World/prim_1", "/World/prim_2"]
-        >>> prims = RectLight(paths)  # doctest: +NO_CHECK
+        >>> prims = Plane(paths)  # doctest: +NO_CHECK
     """
 
     def __init__(
         self,
         paths: str | list[str],
         *,
-        # RectLight
+        # Plane
         widths: float | list | np.ndarray | wp.array | None = None,
-        heights: float | list | np.ndarray | wp.array | None = None,
-        texture_files: str | list[str] | None = None,
+        lengths: float | list | np.ndarray | wp.array | None = None,
+        axes: Literal["X", "Y", "Z"] | list[Literal["X", "Y", "Z"]] | None = None,
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -90,21 +89,21 @@ class RectLight(Light):
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
     ) -> None:
-        self._lights = []
+        self._geoms = []
         stage = stage_utils.get_current_stage(backend="usd")
-        existent_paths, nonexistent_paths = Light.resolve_paths(paths)
-        # get lights
+        existent_paths, nonexistent_paths = Shape.resolve_paths(paths)
+        # get planes
         if existent_paths:
             paths = existent_paths
             for path in existent_paths:
                 prim = stage.GetPrimAtPath(path)
-                assert prim.IsA(UsdLux.RectLight), f"Prim at path {path} is not a RectLight"
-                self._lights.append(UsdLux.RectLight(prim))
-        # create lights
+                assert prim.IsA(UsdGeom.Plane), f"The wrapped prim at path {path} is not a USD Plane"
+                self._geoms.append(UsdGeom.Plane(prim))
+        # create planes
         else:
             paths = nonexistent_paths
             for path in nonexistent_paths:
-                self._lights.append(UsdLux.RectLight.Define(stage, path))
+                self._geoms.append(UsdGeom.Plane.Define(stage, path))
         # initialize base class
         super().__init__(
             paths,
@@ -118,24 +117,90 @@ class RectLight(Light):
         # initialize instance from arguments
         if widths is not None:
             self.set_widths(widths)
-        if heights is not None:
-            self.set_heights(heights)
-        if texture_files is not None:
-            self.set_texture_files(texture_files)
+        if lengths is not None:
+            self.set_lengths(lengths)
+        if axes is not None:
+            self.set_axes(axes)
+
+    """
+    Static methods.
+    """
+
+    @staticmethod
+    def update_extents(geoms: list[UsdGeom.Plane]) -> None:
+        """Update the gprims' extents.
+
+        Backends: :guilabel:`usd`.
+
+        Args:
+            geoms: Geoms to process.
+        """
+        # USD API
+        for geom in geoms:
+            half_width = geom.GetWidthAttr().Get() / 2.0
+            half_length = geom.GetLengthAttr().Get() / 2.0
+            axis = geom.GetAxisAttr().Get()
+            if axis == "X":
+                extent = (Gf.Vec3f([0, -half_length, -half_width]), Gf.Vec3f([0, half_length, half_width]))
+            elif axis == "Y":
+                extent = (Gf.Vec3f([-half_width, 0, -half_length]), Gf.Vec3f([half_width, 0, half_length]))
+            elif axis == "Z":
+                extent = (Gf.Vec3f([-half_width, -half_length, 0]), Gf.Vec3f([half_width, half_length, 0]))
+            geom.GetExtentAttr().Set(extent)
+
+    @staticmethod
+    def are_of_type(paths: str | Usd.Prim | list[str | Usd.Prim]) -> wp.array:
+        """Check if the prims at the given paths are valid for creating Shape instances of this type.
+
+        Backends: :guilabel:`usd`.
+
+        .. warning::
+
+            Since this method is static, the output is always on the CPU.
+
+        Args:
+            paths: Prim paths (or prims) to check for.
+
+        Returns:
+            Boolean flags indicating if the prims are valid for creating Shape instances.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # check if the following prims at paths are valid for creating instances
+            >>> result = Plane.are_of_type(["/World", "/World/prim_0"])
+            >>> print(result)
+            [False  True]
+        """
+        stage = stage_utils.get_current_stage(backend="usd")
+        return ops_utils.place(
+            [
+                (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdGeom.Plane)
+                for item in (paths if isinstance(paths, (list, tuple)) else [paths])
+            ],
+            dtype=wp.bool,
+            device="cpu",
+        )
 
     """
     Methods.
     """
 
     def set_widths(
-        self, widths: float | list | np.ndarray | wp.array, *, indices: int | list | np.ndarray | wp.array | None = None
+        self,
+        widths: float | list | np.ndarray | wp.array,
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
         """Set the widths of the prims.
 
         Backends: :guilabel:`usd`.
 
+        The width aligns to the x-axis when axis is ``'Y'`` or ``'Z'``, or to the z-axis when axis is ``'X'``.
+
         Args:
-            lengths: Lengths (shape ``(N, 1)``).
+            widths: Widths (shape ``(N, 1)``).
                 If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
@@ -157,12 +222,20 @@ class RectLight(Light):
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         widths = ops_utils.place(widths, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
-            self.lights[index].GetWidthAttr().Set(widths[0 if widths.shape[0] == 1 else i].item())
+            geom = self.geoms[index]
+            geom.GetWidthAttr().Set(widths[0 if widths.shape[0] == 1 else i].item())
+            self.update_extents([geom])
 
-    def get_widths(self, *, indices: int | list | np.ndarray | wp.array | None = None) -> wp.array:
+    def get_widths(
+        self,
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
+    ) -> wp.array:
         """Get the widths of the prims.
 
         Backends: :guilabel:`usd`.
+
+        The width aligns to the x-axis when axis is ``'Y'`` or ``'Z'``, or to the z-axis when axis is ``'X'``.
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
@@ -192,21 +265,23 @@ class RectLight(Light):
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
-            data[i][0] = self.lights[index].GetWidthAttr().Get()
+            data[i][0] = self.geoms[index].GetWidthAttr().Get()
         return ops_utils.place(data, device=self._device)
 
-    def set_heights(
+    def set_lengths(
         self,
-        heights: float | list | np.ndarray | wp.array,
+        lengths: float | list | np.ndarray | wp.array,
         *,
         indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
-        """Set the heights of the prims.
+        """Set the lengths of the prims.
 
         Backends: :guilabel:`usd`.
 
+        The length aligns to the y-axis when axis is ``'X'`` or ``'Z'``, or to the z-axis when axis is ``'Y'``.
+
         Args:
-            heights: Heights (shape ``(N, 1)``).
+            lengths: Lengths (shape ``(N, 1)``).
                 If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
@@ -217,29 +292,37 @@ class RectLight(Light):
 
         .. code-block:: python
 
-            >>> # set same heights for all prims
-            >>> prims.set_heights(heights=[0.1])
+            >>> # set same lengths for all prims
+            >>> prims.set_lengths(lengths=[0.1])
             >>>
-            >>> # set only the height for the second prim
-            >>> prims.set_heights(heights=[0.2], indices=[1])
+            >>> # set only the length for the second prim
+            >>> prims.set_lengths(lengths=[0.2], indices=[1])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
-        heights = ops_utils.place(heights, device="cpu").numpy().reshape((-1, 1))
+        lengths = ops_utils.place(lengths, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
-            self.lights[index].GetHeightAttr().Set(heights[0 if heights.shape[0] == 1 else i].item())
+            geom = self.geoms[index]
+            geom.GetLengthAttr().Set(lengths[0 if lengths.shape[0] == 1 else i].item())
+            self.update_extents([geom])
 
-    def get_heights(self, *, indices: int | list | np.ndarray | wp.array | None = None) -> wp.array:
-        """Get the heights of the prims.
+    def get_lengths(
+        self,
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
+    ) -> wp.array:
+        """Get the lengths of the prims.
 
         Backends: :guilabel:`usd`.
+
+        The length aligns to the y-axis when axis is ``'X'`` or ``'Z'``, or to the z-axis when axis is ``'Y'``.
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
         Returns:
-            The heights (shape ``(N, 1)``).
+            The lengths (shape ``(N, 1)``).
 
         Raises:
             AssertionError: Wrapped prims are not valid.
@@ -248,14 +331,14 @@ class RectLight(Light):
 
         .. code-block:: python
 
-            >>> # get the heights of all prims
-            >>> heights = prims.get_heights()
-            >>> heights.shape
+            >>> # get the lengths of all prims
+            >>> lengths = prims.get_lengths()
+            >>> lengths.shape
             (3, 1)
             >>>
-            >>> # get the heights of the first and last prims
-            >>> heights = prims.get_heights(indices=[0, 2])
-            >>> heights.shape
+            >>> # get the lengths of the first and last prims
+            >>> lengths = prims.get_lengths(indices=[0, 2])
+            >>> lengths.shape
             (2, 1)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
@@ -263,46 +346,56 @@ class RectLight(Light):
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         data = np.zeros((indices.shape[0], 1), dtype=np.float32)
         for i, index in enumerate(indices.numpy()):
-            data[i][0] = self.lights[index].GetHeightAttr().Get()
+            data[i][0] = self.geoms[index].GetLengthAttr().Get()
         return ops_utils.place(data, device=self._device)
 
-    def set_texture_files(
-        self, texture_files: str | list[str], *, indices: int | list | np.ndarray | wp.array | None = None
+    def set_axes(
+        self,
+        axes: Literal["X", "Y", "Z"] | list[Literal["X", "Y", "Z"]],
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
-        """Set the color texture files (to use on the rectangle) of the prims.
+        """Set the axes (plane's axis along which the surface is aligned) of the prims.
 
         Backends: :guilabel:`usd`.
 
         Args:
-            texture_files: Color texture files (shape ``(N,)``). In the default position, the texture file's minimum
-                and maximum coordinates should be at ``(+X, +Y)`` and ``(-X, -Y)`` respectively.
+            axes: Axes (shape ``(N,)``).
                 If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
         Raises:
             AssertionError: Wrapped prims are not valid.
+            AssertionError: Invalid axis token.
 
         Example:
 
         .. code-block:: python
 
-            >>> # set color texture files for all prims
-            >>> prims.set_texture_files(texture_files=[
-            ...     "/local/path/to/texture_0",
-            ...     "/local/path/to/texture_1",
-            ...     "/local/path/to/texture_2",
-            ... ])
+            >>> # set a different axis for each prim
+            >>> prims.set_axes(axes=["X", "Y", "Z"])
+            >>>
+            >>> # set the axis for the second prim
+            >>> prims.set_axes(axes=["X"], indices=[1])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
-        texture_files = [texture_files] if isinstance(texture_files, str) else texture_files
-        texture_files = np.broadcast_to(np.array(texture_files, dtype=object), (indices.shape[0],))
+        axes = [axes] if isinstance(axes, str) else axes
+        for axis in set(axes):
+            assert axis in ["X", "Y", "Z"], f"Invalid axis token: {axis}"
+        axes = np.broadcast_to(np.array(axes, dtype=object), (indices.shape[0],))
         for i, index in enumerate(indices.numpy()):
-            self.lights[index].GetTextureFileAttr().Set(texture_files[i])
+            geom = self.geoms[index]
+            geom.GetAxisAttr().Set(axes[i])
+            self.update_extents([geom])
 
-    def get_texture_files(self, *, indices: int | list | np.ndarray | wp.array | None = None) -> list[str | None]:
-        """Get the color texture files (to use on the rectangle) of the prims.
+    def get_axes(
+        self,
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
+    ) -> list[Literal["X", "Y", "Z"]]:
+        """Get the axes (plane's axis along which the surface is aligned) of the prims.
 
         Backends: :guilabel:`usd`.
 
@@ -310,7 +403,7 @@ class RectLight(Light):
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
         Returns:
-            The color texture files or ``None`` if no texture is set (shape ``(N,)``).
+            The axes (shape ``(N,)``).
 
         Raises:
             AssertionError: Wrapped prims are not valid.
@@ -319,57 +412,20 @@ class RectLight(Light):
 
         .. code-block:: python
 
-            >>> # set the color texture file for the second prim
-            >>> prims.set_texture_files(["/local/path/to/texture_1"], indices=[1])
+            >>> # get the axes of all prims
+            >>> axes = prims.get_axes()
+            >>> axes
+            ['Z', 'Z', 'Z']
             >>>
-            >>> # get the color texture files of all prims
-            >>> prims.get_texture_files()
-            [None, '/local/path/to/texture_1', None]
+            >>> # get the axes of the first and last prims
+            >>> axes = prims.get_axes(indices=[0, 2])
+            >>> axes
+            ['Z', 'Z']
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
-        data = []
-        for index in indices.numpy():
-            texture_file = self.lights[index].GetTextureFileAttr().Get()
-            data.append(None if texture_file is None else texture_file.path)
-        return data
-
-    """
-    Static methods.
-    """
-
-    @staticmethod
-    def are_of_type(paths: str | Usd.Prim | list[str | Usd.Prim]) -> wp.array:
-        """Check if the prims at the given paths are valid for creating Light instances of this type.
-
-        Backends: :guilabel:`usd`.
-
-        .. warning::
-
-            Since this method is static, the output is always on the CPU.
-
-        Args:
-            paths: Prim paths (or prims) to check for.
-
-        Returns:
-            Boolean flags indicating if the prims are valid for creating Light instances.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> # check if the following prims at paths are valid for creating instances
-            >>> result = RectLight.are_of_type(["/World", "/World/prim_0"])
-            >>> print(result)
-            [False  True]
-        """
-        stage = stage_utils.get_current_stage(backend="usd")
-        return ops_utils.place(
-            [
-                (stage.GetPrimAtPath(item) if isinstance(item, str) else item).IsA(UsdLux.RectLight)
-                for item in (paths if isinstance(paths, (list, tuple)) else [paths])
-            ],
-            dtype=wp.bool,
-            device="cpu",
-        )
+        data = np.empty((indices.shape[0],), dtype=object)
+        for i, index in enumerate(indices.numpy()):
+            data[i] = self.geoms[index].GetAxisAttr().Get()
+        return data.tolist()

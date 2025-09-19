@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.0] - 2025-09-18
+### Added
+- Add support for input data expressed as basic Python types (bool, int, float)
+
 ## [0.6.2] - 2025-07-28
 ### Changed
 - Trigger the synchronous generation of deformable simulation meshes to ensure data is always available
