@@ -262,6 +262,10 @@ def is_absolute_path(path):
         return True
     if path.lower().startswith("file://"):
         return True
+    if path.lower().startswith("http://"):
+        return True
+    if path.lower().startswith("https://"):
+        return True
     return os.path.isabs(path)
 
 
