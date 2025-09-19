@@ -49,6 +49,171 @@ def detect_platform():
         raise RuntimeError(f"Unsupported platform: {system}")
 
 
+def auto_detect_nv_packages(files, platform_abi, platform_target):
+    """Automatically detect packages from files ending with '-nv.packman.xml' and add them to allowed_external.
+
+    Args:
+        files: List of XML files to process
+        platform_abi: Platform ABI string
+        platform_target: Platform target string
+
+    Returns:
+        set: Set of package names that should be automatically allowed as external/private
+    """
+    nv_packages = set()
+
+    for file in files:
+        # Check if file ends with '-nv.packman.xml'
+        if not file.endswith("-nv.packman.xml"):
+            continue
+
+        print(f"Auto-detecting NV packages from: {file}")
+
+        try:
+            tree = ET.parse(file)
+            root = tree.getroot()
+            file_dir = os.path.dirname(os.path.abspath(file))
+
+            def substitute_variables(path, platforms_attr=None):
+                """Substitute variables in a path string."""
+                path = path.replace("${platform_target}", platform_target)
+                path = path.replace("${platform_target_abi}", platform_abi)
+
+                # For ${platform}, prefer ABI format if both target and ABI are supported
+                platform_value = platform_target
+                if platforms_attr and platform_abi.lower() in platforms_attr.lower():
+                    platform_value = platform_abi
+
+                path = path.replace("${platform}", platform_value)
+                return path
+
+            # Process imports first
+            for import_elem in root.findall(".//import"):
+                import_path = import_elem.get("path")
+                if not import_path:
+                    continue
+
+                # Substitute variables in import path
+                import_path = substitute_variables(import_path)
+
+                # Resolve import path relative to the file being scanned
+                import_path = os.path.normpath(os.path.join(file_dir, import_path))
+
+                # Check if the imported file also ends with '-nv.packman.xml'
+                if import_path.endswith("-nv.packman.xml") and os.path.exists(import_path):
+                    print(f"  Processing NV import: {import_path}")
+                    try:
+                        import_tree = ET.parse(import_path)
+                        import_root = import_tree.getroot()
+
+                        # Process dependencies from imported NV file
+                        for dependency in import_root.findall(".//dependency"):
+                            name = dependency.get("name")
+                            if not name:
+                                continue
+
+                            # Substitute variables in name
+                            substituted_name = substitute_variables(name)
+
+                            # Get all package elements within this dependency
+                            package_elements = dependency.findall("package")
+
+                            if package_elements:
+                                for package_elem in package_elements:
+                                    package_name = package_elem.get("name")
+                                    if not package_name:
+                                        continue
+
+                                    # Substitute variables in package name
+                                    substituted_package_name = substitute_variables(package_name)
+
+                                    # Check if this package is for our platform
+                                    platforms = package_elem.get("platforms", "")
+                                    if platforms:
+                                        platform_list = platforms.split()
+                                        if not any(
+                                            platform_abi.lower() in platform.lower()
+                                            or platform_target.lower() in platform.lower()
+                                            for platform in platform_list
+                                        ):
+                                            continue
+
+                                    nv_packages.add(substituted_package_name)
+                                    print(f"    Added NV package: {substituted_package_name}")
+                            else:
+                                # No package elements, use dependency-level info
+                                platforms = dependency.get("platforms", "")
+                                if platforms:
+                                    platform_list = platforms.split()
+                                    if not any(
+                                        platform_target.lower() in platform.lower()
+                                        or platform_abi.lower() in platform.lower()
+                                        for platform in platform_list
+                                    ):
+                                        continue
+
+                                nv_packages.add(substituted_name)
+                                print(f"    Added NV package: {substituted_name}")
+                    except Exception as e:
+                        print(f"Warning: Failed to process NV import {import_path}: {e}")
+
+            # Process dependencies from the main NV file
+            for dependency in root.findall(".//dependency"):
+                name = dependency.get("name")
+                if not name:
+                    continue
+
+                # Substitute variables in name
+                name = substitute_variables(name)
+
+                # Get all package elements within this dependency
+                package_elements = dependency.findall("package")
+
+                if package_elements:
+                    for package_elem in package_elements:
+                        package_name = package_elem.get("name")
+                        if not package_name:
+                            continue
+
+                        # Check if this package is for our platform
+                        platforms = package_elem.get("platforms", "")
+                        if platforms:
+                            platform_list = platforms.split()
+                            if not any(
+                                platform_abi.lower() in platform.lower() or platform_target.lower() in platform.lower()
+                                for platform in platform_list
+                            ):
+                                continue
+
+                        nv_packages.add(package_name)
+                        print(f"  Added NV package: {package_name}")
+                else:
+                    # No package elements, use dependency-level info
+                    platforms = dependency.get("platforms", "")
+                    if platforms:
+                        platform_list = platforms.split()
+                        if not any(
+                            platform_target.lower() in platform.lower() or platform_abi.lower() in platform.lower()
+                            for platform in platform_list
+                        ):
+                            continue
+
+                    nv_packages.add(name)
+                    print(f"  Added NV package: {name}")
+
+        except Exception as e:
+            print(f"Warning: Failed to process NV file {file}: {e}")
+
+    if nv_packages:
+        print(f"\nAuto-detected {len(nv_packages)} NV packages as allowed external:")
+        for pkg in sorted(nv_packages):
+            print(f"  - {pkg}")
+    else:
+        print("\nNo NV packages auto-detected")
+
+    return nv_packages
+
+
 def should_filter_package(platform_filter, pkg):
     """Check if a package should be filtered out based on platform filter.
 
@@ -545,77 +710,94 @@ def write_output_files(
         unique_packages = {}
         private_package_count = 0
 
+        # First pass: collect all package statuses across all configs
+        package_statuses = defaultdict(list)
         for file in full_package_listing:
             for config in configs:
-                private_packages = {pkg["name"] for pkg in json_output[file][config]["problem_packages"]}
+                private_packages = {
+                    (pkg["name"], pkg["version"]) for pkg in json_output[file][config]["problem_packages"]
+                }
 
                 for package in full_package_listing[file][config]:
                     name = package["name"]
                     version = package["version"]
-                    is_public = "private" if name in private_packages else "public"
+                    is_public = "private" if (name, version) in private_packages else "public"
 
-                    # Determine expected public/private based on allowed_external list
-                    expected_public_private = "private" if allowed_external and name in allowed_external else "public"
-
-                    # Create a key for the package based on its identifying information
                     package_key = (name, version)
+                    package_statuses[package_key].append(
+                        {"is_public": is_public, "package": package, "file": file, "config": config}
+                    )
 
-                    # Store package info if we haven't seen it before
-                    if package_key not in unique_packages:
-                        license_info = package.get("license_file")
-                        license_type = ""
-                        license_files = ""
-                        if license_info:
-                            # Handle the new dictionary format from find_license_file
-                            if isinstance(license_info, dict):
-                                license_files_list = []
-                                license_types_list = []
+        # Second pass: determine final status and store unique packages
+        for package_key, status_list in package_statuses.items():
+            name, version = package_key
 
-                                # Always include main license file first if present
-                                if license_info.get("main_license"):
-                                    license_files_list.append(license_info["main_license"])
+            # Determine final public/private status
+            # If package is private in ANY config, mark it as private
+            is_public_final = "public" if all(status["is_public"] == "public" for status in status_list) else "private"
 
-                                # Handle PACKAGE-LICENSES
-                                if license_info.get("package_licenses_count", 0) > 0:
-                                    if full_license_details:
-                                        # Include individual files
-                                        license_files_list.extend(license_info.get("package_licenses_files", []))
-                                    else:
-                                        # Just show count
-                                        license_files_list.append(
-                                            f"PACKAGE-LICENSES found ({license_info['package_licenses_count']})"
-                                        )
+            # Determine expected public/private based on allowed_external list
+            expected_public_private = "private" if allowed_external and name in allowed_external else "public"
 
-                                # Add other license files in priority order
-                                license_files_list.extend(license_info.get("nvidia_proprietary", []))
-                                license_files_list.extend(license_info.get("mit_licenses", []))
-                                license_files_list.extend(license_info.get("spdx_licenses", []))
-                                license_files_list.extend(license_info.get("other_licenses", []))
+            # Use the first package info for license details (they should be the same across configs)
+            package = status_list[0]["package"]
 
-                                # Extract license types
-                                if license_info.get("nvidia_proprietary"):
-                                    license_types_list.append("NVIDIA Proprietary")
-                                if license_info.get("mit_licenses"):
-                                    license_types_list.append("MIT")
-                                if license_info.get("spdx_license_types"):
-                                    license_types_list.extend(license_info.get("spdx_license_types", []))
+            # Store package info if we haven't seen it before
+            if package_key not in unique_packages:
+                license_info = package.get("license_file")
+                license_type = ""
+                license_files = ""
+                if license_info:
+                    # Handle the new dictionary format from find_license_file
+                    if isinstance(license_info, dict):
+                        license_files_list = []
+                        license_types_list = []
 
-                                license_files = ";".join(license_files_list)
-                                license_type = ";".join(license_types_list)
+                        # Always include main license file first if present
+                        if license_info.get("main_license"):
+                            license_files_list.append(license_info["main_license"])
+
+                        # Handle PACKAGE-LICENSES
+                        if license_info.get("package_licenses_count", 0) > 0:
+                            if full_license_details:
+                                # Include individual files
+                                license_files_list.extend(license_info.get("package_licenses_files", []))
                             else:
-                                # Fallback for old string format
-                                license_files = str(license_info)
-                        unique_packages[package_key] = {
-                            "name": name,
-                            "version": version,
-                            "public_private": is_public,
-                            "expected_public_private": expected_public_private,
-                            "license_files": license_files,
-                            "license_type": license_type,
-                        }
-                        # Count private packages
-                        if is_public == "private":
-                            private_package_count += 1
+                                # Just show count
+                                license_files_list.append(
+                                    f"PACKAGE-LICENSES found ({license_info['package_licenses_count']})"
+                                )
+
+                        # Add other license files in priority order
+                        license_files_list.extend(license_info.get("nvidia_proprietary", []))
+                        license_files_list.extend(license_info.get("mit_licenses", []))
+                        license_files_list.extend(license_info.get("spdx_licenses", []))
+                        license_files_list.extend(license_info.get("other_licenses", []))
+
+                        # Extract license types
+                        if license_info.get("nvidia_proprietary"):
+                            license_types_list.append("NVIDIA Proprietary")
+                        if license_info.get("mit_licenses"):
+                            license_types_list.append("MIT")
+                        if license_info.get("spdx_license_types"):
+                            license_types_list.extend(license_info.get("spdx_license_types", []))
+
+                        license_files = ";".join(license_files_list)
+                        license_type = ";".join(license_types_list)
+                    else:
+                        # Fallback for old string format
+                        license_files = str(license_info)
+                unique_packages[package_key] = {
+                    "name": name,
+                    "version": version,
+                    "public_private": is_public_final,
+                    "expected_public_private": expected_public_private,
+                    "license_files": license_files,
+                    "license_type": license_type,
+                }
+                # Count private packages
+                if is_public_final == "private":
+                    private_package_count += 1
 
         # Sort packages with custom priority: private+expected_public first, public+expected_public second, private+expected_private last
         def sort_key(package_info):
@@ -741,6 +923,15 @@ def verify_externals(
     else:
         files = glob("./deps/*.packman.xml")
 
+    # Auto-detect NV packages from files ending with '-nv.packman.xml'
+    auto_nv_packages = auto_detect_nv_packages(files, platform_abi, platform_target)
+
+    # Merge auto-detected NV packages with user-provided allowed_external
+    final_allowed_external = set()
+    if allowed_external:
+        final_allowed_external.update(allowed_external)
+    final_allowed_external.update(auto_nv_packages)
+
     # Get combinations from kit-sdk.packman.xml
     _, _, combinations = get_package_combinations("./deps/kit-sdk.packman.xml", platform_filter)
 
@@ -777,7 +968,7 @@ def verify_externals(
             platform_filter,
             full_license_details,
             exclude_packages,
-            allowed_external,
+            list(final_allowed_external),
         )
         all_results.append(results)
 
@@ -787,7 +978,7 @@ def verify_externals(
     # Write output and get total issues
     configs = list(set(combo["config"] for combo in combinations))
     total_issues, private_package_count = write_output_files(
-        *merged_results, configs, full_license_details, allowed_external
+        *merged_results, configs, full_license_details, list(final_allowed_external)
     )
 
     # Return 1 if there are private packages found
@@ -845,6 +1036,21 @@ def main():
         if not files:
             raise FileNotFoundError("No packman XML files found in ./deps/")
 
+    # Auto-detect NV packages from files ending with '-nv.packman.xml'
+    auto_nv_packages = auto_detect_nv_packages(files, platform_abi, platform_target)
+
+    # Merge auto-detected NV packages with user-provided allowed_external
+    final_allowed_external = set()
+    if args.allowed_external:
+        final_allowed_external.update(args.allowed_external)
+    final_allowed_external.update(auto_nv_packages)
+
+    if final_allowed_external:
+        print(f"\nFinal allowed external packages ({len(final_allowed_external)} total):")
+        for pkg in sorted(final_allowed_external):
+            source = "auto-detected NV" if pkg in auto_nv_packages else "user-provided"
+            print(f"  - {pkg} ({source})")
+
     # Get combinations from kit-sdk.packman.xml
     _, _, combinations = get_package_combinations("./deps/kit-sdk.packman.xml", args.skip_platform)
 
@@ -876,7 +1082,7 @@ def main():
             args.skip_platform,
             args.full_package_license_details,
             args.exclude_package,
-            args.allowed_external,
+            list(final_allowed_external),
         )
         all_results.append(results)
 
@@ -886,7 +1092,7 @@ def main():
     # Write output and get total issues
     configs = list(set(combo["config"] for combo in combinations))
     total_issues, private_package_count = write_output_files(
-        *merged_results, configs, args.full_package_license_details, args.allowed_external
+        *merged_results, configs, args.full_package_license_details, list(final_allowed_external)
     )
 
     # Return 1 if there are private packages found
