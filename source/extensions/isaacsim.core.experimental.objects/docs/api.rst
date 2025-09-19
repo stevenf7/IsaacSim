@@ -26,6 +26,7 @@ The following table summarizes the available objects.
     Cone
     Cube
     Cylinder
+    Plane
     Shape
     Sphere
 
@@ -73,6 +74,12 @@ Shapes
     :show-inheritance:
 
 .. autoclass:: isaacsim.core.experimental.objects.Cylinder
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.core.experimental.objects.Plane
     :members:
     :undoc-members:
     :inherited-members:

@@ -445,7 +445,7 @@ class DeformablePrim(XformPrim):
         return SimulationManager._physics_sim_view__warp is not None and self._physics_deformable_body_view is not None
 
     def get_element_indices(
-        self, *, indices: list | np.ndarray | wp.array | None = None
+        self, *, indices: int | list | np.ndarray | wp.array | None = None
     ) -> tuple[wp.array, wp.array, wp.array]:
         """Get the element (triangular faces for surface, tetrahedrons for volume) indices
         of the simulation, collision and rest meshes of the prims.
@@ -498,7 +498,7 @@ class DeformablePrim(XformPrim):
         )
 
     def get_nodal_positions(
-        self, *, indices: list | np.ndarray | wp.array | None = None
+        self, *, indices: int | list | np.ndarray | wp.array | None = None
     ) -> tuple[wp.array, wp.array, wp.array]:
         """Get the nodal (mesh points) positions of the simulation, collision and rest meshes of the prims.
 
@@ -549,7 +549,7 @@ class DeformablePrim(XformPrim):
         self,
         positions: list | np.ndarray | wp.array | None = None,
         *,
-        indices: list | np.ndarray | wp.array | None = None,
+        indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
         """Set the nodal (mesh points) positions of the simulation mesh of the prims.
 
@@ -587,7 +587,7 @@ class DeformablePrim(XformPrim):
         wp.copy(data[indices], positions)
         self._physics_deformable_body_view.set_simulation_nodal_positions(data, indices)
 
-    def get_nodal_velocities(self, *, indices: list | np.ndarray | wp.array | None = None) -> wp.array:
+    def get_nodal_velocities(self, *, indices: int | list | np.ndarray | wp.array | None = None) -> wp.array:
         """Get the nodal (mesh points) velocities of the simulation mesh of the prims.
 
         Backends: :guilabel:`tensor`. |br|
@@ -628,7 +628,7 @@ class DeformablePrim(XformPrim):
         self,
         velocities: list | np.ndarray | wp.array | None = None,
         *,
-        indices: list | np.ndarray | wp.array | None = None,
+        indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
         """Set the nodal (mesh points) velocities of the simulation mesh of the prims.
 
@@ -667,7 +667,7 @@ class DeformablePrim(XformPrim):
         self._physics_deformable_body_view.set_simulation_nodal_velocities(data, indices)
 
     def get_nodal_kinematic_position_targets(
-        self, *, indices: list | np.ndarray | wp.array | None = None
+        self, *, indices: int | list | np.ndarray | wp.array | None = None
     ) -> tuple[wp.array, wp.array]:
         """Get the nodal (mesh points) kinematic position targets of the simulation mesh of the prims.
 
@@ -720,9 +720,9 @@ class DeformablePrim(XformPrim):
     def set_nodal_kinematic_position_targets(
         self,
         positions: list | np.ndarray | wp.array | None = None,
-        enabled: list | np.ndarray | wp.array | None = None,
+        enabled: bool | list | np.ndarray | wp.array | None = None,
         *,
-        indices: list | np.ndarray | wp.array | None = None,
+        indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
         """Set the nodal (mesh points) kinematic position targets of the simulation mesh of the prims.
 
@@ -776,8 +776,8 @@ class DeformablePrim(XformPrim):
         self,
         materials: type["PhysicsMaterial"] | list[type["PhysicsMaterial"]],
         *,
-        weaker_than_descendants: list | np.ndarray | wp.array | None = None,
-        indices: list | np.ndarray | wp.array | None = None,
+        weaker_than_descendants: bool | list | np.ndarray | wp.array | None = None,
+        indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
         """Apply physics materials to the prims, and optionally, to their descendants.
 
@@ -840,7 +840,7 @@ class DeformablePrim(XformPrim):
             )
 
     def get_applied_physics_materials(
-        self, *, indices: list | np.ndarray | wp.array | None = None
+        self, *, indices: int | list | np.ndarray | wp.array | None = None
     ) -> list[type["PhysicsMaterial"] | None]:
         """Get the applied physics materials.
 

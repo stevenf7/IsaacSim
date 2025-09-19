@@ -18,7 +18,7 @@ from typing import Literal
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 import warp as wp
-from isaacsim.core.experimental.objects import Cylinder as TargetShape
+from isaacsim.core.experimental.objects import Plane as TargetShape
 from isaacsim.core.experimental.prims.tests.common import (
     check_allclose,
     check_array,
@@ -38,10 +38,10 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
     # define prims
     if operation == "wrap":
         for i in range(max_num_prims):
-            stage_utils.define_prim(f"/World/A_{i}", "Cylinder")
+            stage_utils.define_prim(f"/World/A_{i}", "Plane")
 
 
-class TestCylinder(omni.kit.test.AsyncTestCase):
+class TestPlane(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Method called to prepare the test fixture"""
         super().setUp()
@@ -59,25 +59,25 @@ class TestCylinder(omni.kit.test.AsyncTestCase):
     @parametrize(backends=["usd"], prim_class=TargetShape, populate_stage_func=populate_stage)
     async def test_geoms(self, prim, num_prims, device, backend):
         for usd_prim, geom in zip(prim.prims, prim.geoms):
-            self.assertTrue(usd_prim.IsA(UsdGeom.Cylinder), f"Invalid geom type: {usd_prim.GetTypeName()}")
+            self.assertTrue(usd_prim.IsA(UsdGeom.Plane), f"Invalid geom type: {usd_prim.GetTypeName()}")
 
     @parametrize(backends=["usd"], prim_class=TargetShape, populate_stage_func=populate_stage)
-    async def test_radii(self, prim, num_prims, device, backend):
+    async def test_widths(self, prim, num_prims, device, backend):
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
-                prim.set_radii(v0, indices=indices)
-                output = prim.get_radii(indices=indices)
+                prim.set_widths(v0, indices=indices)
+                output = prim.get_widths(indices=indices)
                 check_array(output, shape=(expected_count, 1), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], prim_class=TargetShape, populate_stage_func=populate_stage)
-    async def test_heights(self, prim, num_prims, device, backend):
+    async def test_lengths(self, prim, num_prims, device, backend):
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
-                prim.set_heights(v0, indices=indices)
-                output = prim.get_heights(indices=indices)
+                prim.set_lengths(v0, indices=indices)
+                output = prim.get_lengths(indices=indices)
                 check_array(output, shape=(expected_count, 1), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output, given=(v0,))
 

@@ -15,4 +15,4 @@
 
 from .lights import CylinderLight, DiskLight, DistantLight, DomeLight, Light, RectLight, SphereLight
 from .mesh import Mesh
-from .shapes import Capsule, Cone, Cube, Cylinder, Shape, Sphere
+from .shapes import Capsule, Cone, Cube, Cylinder, Plane, Shape, Sphere
