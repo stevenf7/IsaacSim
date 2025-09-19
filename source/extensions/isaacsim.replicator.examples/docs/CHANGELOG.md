@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.0] - 2025-09-18
+### Changed
+- Added cosmos writer tests
+
 ## [1.2.2] - 2025-09-15
 ### Changed
 - switched to isaacsim.test.utils for folder contents validation and goldenimage comparison in tests
