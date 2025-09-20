@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2025-09-19
+### Added
+- Add rotation, stress and gradient computation for volume deformable bodies
+
 ## [0.7.0] - 2025-09-18
 ### Added
 - Add support for input data expressed as basic Python types (bool, int, float)
