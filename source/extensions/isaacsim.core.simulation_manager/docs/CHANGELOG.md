@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.3] - 2025-09-19
+### Fixed
+- Reduce verbosity of log messages
+
 ## [1.4.2] - 2025-08-29
 ### Changed
 - Renamed CARB profiling zones to include [IsaacSim] prefix
