@@ -1896,13 +1896,13 @@ publish-to-packman:
       - job: build-linux-aarch64-release
         artifacts: true
       - job: build-windows-x86_64-debug
-        artifacts: false
+        artifacts: true
         optional: true
       - job: build-linux-x86_64-debug
-        artifacts: false
+        artifacts: true
         optional: true
       - job: build-linux-aarch64-debug
-        artifacts: false
+        artifacts: true
         optional: true
     retry:
         max: 2
