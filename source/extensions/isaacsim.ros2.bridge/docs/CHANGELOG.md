@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.12.2] - 2025-09-20
+### Fixed
+- Properly cleanup subscriber, publisher and node resources at the end of each test
+
 ## [4.12.1] - 2025-09-08
 ### Changed
 - Use base test class from isaacsim.test.utils 
