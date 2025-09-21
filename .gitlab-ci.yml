@@ -1895,12 +1895,15 @@ publish-to-packman:
         artifacts: true
       - job: build-linux-aarch64-release
         artifacts: true
-      #   - job: test-windows-x86_64-startuptests
-      #     artifacts: false
-      #     optional: true
-      #   - job: test-linux-x86_64-startuptests
-      #     artifacts: false
-      #     optional: true
+      - job: build-windows-x86_64-debug
+        artifacts: false
+        optional: true
+      - job: build-linux-x86_64-debug
+        artifacts: false
+        optional: true
+      - job: build-linux-aarch64-debug
+        artifacts: false
+        optional: true
     retry:
         max: 2
         when:
