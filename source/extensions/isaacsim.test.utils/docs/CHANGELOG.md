@@ -1,4 +1,7 @@
 # Changelog
+## [0.5.0] - 2025-09-22
+### Changed
+- Can now optionally exclude blank pixels from image_comparison.compute_difference_metrics.
 
 ## [0.4.0] - 2025-09-19
 ### Added
@@ -10,7 +13,7 @@
 
 ### Changed
 - Moved image saving functions (`save_rgb_image`, `save_depth_image`) from `image_capture.py` to new `image_io.py` module
-- Added optional `render_product` parameter to `capture_annotator_data_async()`, `capture_rgb_data_async()`, `capture_depth_data_async()`
+- Added optional `render_product` parameter to `capture_annotator_data_async()`, `capture_rgb_data_async()`, `capture_depth_data_async()
 
 ## [0.3.0] - 2025-09-15
 ### Changed

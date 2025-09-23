@@ -1,17 +1,21 @@
 # Changelog
 
+## [4.12.3] - 2025-09-22
+### Fixed
+- CameraInfo message always sets fy == fx, as renderer assumes square pixels.
+
 ## [4.12.2] - 2025-09-20
 ### Fixed
 - Properly cleanup subscriber, publisher and node resources at the end of each test
 
 ## [4.12.1] - 2025-09-08
 ### Changed
-- Use base test class from isaacsim.test.utils 
+- Use base test class from isaacsim.test.utils
 - Reduce test time by using fast asset root path function
 
 ## [4.12.0] - 2025-09-05
 ### Changed
-- Update internal ROS 2 Humble and Jazzy libs to include common_interfaces, tf2_ros, sensor_msgs_py, Simulation Interfaces v1.1.0. 
+- Update internal ROS 2 Humble and Jazzy libs to include common_interfaces, tf2_ros, sensor_msgs_py, Simulation Interfaces v1.1.0.
 
 ## [4.11.2] - 2025-08-29
 ### Changed
