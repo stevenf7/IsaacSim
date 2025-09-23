@@ -32,7 +32,7 @@ The ROS 2 Simulation Control extension uses the ROS 2 Simulation Interfaces to c
 
 - Isaac Sim 5.0 or later
 - ROS 2 (Humble or later)
-- [Simulation Interfaces](https://github.com/ros-simulation/simulation_interfaces) ROS 2 package installed. This extension is currently tested with [v1.0.1](https://github.com/ros-simulation/simulation_interfaces/releases/tag/1.0.1).  
+- [Simulation Interfaces](https://github.com/ros-simulation/simulation_interfaces) ROS 2 package installed. This extension is currently tested with [v1.1.0](https://github.com/ros-simulation/simulation_interfaces/releases/tag/1.1.0).  
 
 ## Usage
 
@@ -326,7 +326,6 @@ Notes:
 - The simulation must be in a paused state before stepping can be performed
 - The service call will block until all steps are completed
 - After stepping completes, the simulation will automatically return to a paused state
-- **Important limitation**: When steps=1 is requested, the service will automatically use steps=2 instead. Only step values greater than 1 are available. The minimum effective step count is 2.
 - Returns `RESULT_OK` if stepping completed successfully
 - Returns `RESULT_INCORRECT_STATE` if the simulation is not paused when the service is called
 - Returns `RESULT_OPERATION_FAILED` if any error occurs during stepping
@@ -350,7 +349,6 @@ Notes:
 - After steps are completed, the simulation will return to a paused state
 - You will receive feedback after each step showing completed and remaining steps
 - The action can be canceled while executing
-- **Important limitation**: When steps=1 is requested, the action will automatically use steps=2 instead. Only step values greater than 1 are available. The minimum effective step count is 2.
 
 ### Using the LoadWorld Service
 

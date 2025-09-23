@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.1] - 2025-09-22
+### Changed
+- Minor updates to README
+
 ## [1.3.0] - 2025-09-18
 ### Changed
 - Added rclpy executors for better performance.
