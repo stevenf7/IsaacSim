@@ -129,8 +129,10 @@ class TestRos2CameraInfo(ROS2TestCase):
         def camera_info_callback(data):
             self._camera_info = data
 
-        node = rclpy.create_node("camera_tester")
-        camera_info_sub = node.create_subscription(CameraInfo, "camera_info", camera_info_callback, get_qos_profile())
+        node = self.create_node("camera_tester")
+        camera_info_sub = self.create_subscription(
+            node, CameraInfo, "camera_info", camera_info_callback, get_qos_profile()
+        )
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -367,8 +369,8 @@ class TestRos2CameraInfo(ROS2TestCase):
             rclpy.init()
 
         # Create ROS nodes to receive camera data
-        node_left = rclpy.create_node("camera_left_node")
-        node_right = rclpy.create_node("camera_right_node")
+        node_left = self.create_node("camera_left_node")
+        node_right = self.create_node("camera_right_node")
 
         # Set up QoS profile matching the publisher
         cam_info_qos = QoSProfile(
@@ -389,14 +391,14 @@ class TestRos2CameraInfo(ROS2TestCase):
             self._image_right = msg
 
         # Create subscriptions
-        camera_info_left_sub = node_left.create_subscription(
-            CameraInfo, "camera_info_left", camera_info_left_callback, cam_info_qos
+        camera_info_left_sub = self.create_subscription(
+            node_left, CameraInfo, "camera_info_left", camera_info_left_callback, cam_info_qos
         )
-        camera_info_right_sub = node_right.create_subscription(
-            CameraInfo, "camera_info_right", camera_info_right_callback, cam_info_qos
+        camera_info_right_sub = self.create_subscription(
+            node_right, CameraInfo, "camera_info_right", camera_info_right_callback, cam_info_qos
         )
-        image_left_sub = node_left.create_subscription(Image, "rgb_left", image_left_callback, cam_info_qos)
-        image_right_sub = node_right.create_subscription(Image, "rgb_right", image_right_callback, cam_info_qos)
+        image_left_sub = self.create_subscription(node_left, Image, "rgb_left", image_left_callback, cam_info_qos)
+        image_right_sub = self.create_subscription(node_right, Image, "rgb_right", image_right_callback, cam_info_qos)
 
         # Start spinning the nodes
         def spin_left():
@@ -573,9 +575,9 @@ class TestRos2CameraInfo(ROS2TestCase):
         def camera_info_system_time_callback(data):
             self._camera_info_system_time = data
 
-        node_system = rclpy.create_node("camera_system_time_tester")
-        camera_info_sub_system = node_system.create_subscription(
-            CameraInfo, "camera_info_left", camera_info_system_time_callback, get_qos_profile()
+        node_system = self.create_node("camera_system_time_tester")
+        camera_info_sub_system = self.create_subscription(
+            node_system, CameraInfo, "camera_info_left", camera_info_system_time_callback, get_qos_profile()
         )
 
         def spin_system_time():
@@ -617,9 +619,9 @@ class TestRos2CameraInfo(ROS2TestCase):
         def camera_info_sim_time_callback(data):
             self._camera_info_sim_time = data
 
-        node_sim = rclpy.create_node("camera_sim_time_tester")
-        camera_info_sub_sim = node_sim.create_subscription(
-            CameraInfo, "camera_info_left", camera_info_sim_time_callback, get_qos_profile()
+        node_sim = self.create_node("camera_sim_time_tester")
+        camera_info_sub_sim = self.create_subscription(
+            node_sim, CameraInfo, "camera_info_left", camera_info_sim_time_callback, get_qos_profile()
         )
 
         def spin_sim_time():
@@ -687,9 +689,9 @@ class TestRos2CameraInfo(ROS2TestCase):
         def camera_info_sim_time_callback(data):
             self._camera_info_sim_time = data
 
-        node_sim = rclpy.create_node("camera_sim_time_monotonic_tester")
-        camera_info_sub_sim = node_sim.create_subscription(
-            CameraInfo, "camera_info_left", camera_info_sim_time_callback, get_qos_profile()
+        node_sim = self.create_node("camera_sim_time_monotonic_tester")
+        camera_info_sub_sim = self.create_subscription(
+            node_sim, CameraInfo, "camera_info_left", camera_info_sim_time_callback, get_qos_profile()
         )
 
         def spin_sim_time():

@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.28] - 2025-09-20
+### Changed
+- Add test output directory to gitignore
+
 ## [2.4.27] - 2025-09-16
 ### Fixed
 - Fix merging fixed joints that stops processing incorrectly.
@@ -10,7 +15,6 @@
 ## [2.4.25] - 2025-09-06
 ### Fixed
 - Check for child link mass and avoid merging if it's defined (only merge reference frames)
-
 
 ## [2.4.24] - 2025-08-27
 ### Fixed
