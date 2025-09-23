@@ -121,6 +121,13 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import UsdGeom
 
+        # Capture parameters
+        START_DELAY = 0.1  # Timeline duration delay before capturing the first clip
+        NUM_CLIPS = 2  # Number of video clips to capture with the CosmosWriter
+        NUM_FRAMES_PER_CLIP = 10  # Number of frames for each clip
+        CAPTURE_INTERVAL = 2  # Capture interval between frames (capture every N simulation steps)
+
+        # Stage and asset paths
         STAGE_URL = "/Isaac/Samples/Replicator/Stage/full_warehouse_worker_and_anim_cameras.usd"
         CARTER_NAV_ASSET_URL = "/Isaac/Samples/Replicator/OmniGraph/nova_carter_nav_only.usd"
         CARTER_NAV_PATH = "/NavWorld/CarterNav"
@@ -129,11 +136,7 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         CARTER_NAV_POSITION = (-6, 4, 0)
         CARTER_NAV_TARGET_POSITION = (3, 3, 0)
 
-        NUM_FRAMES = 30
-        CAPTURE_INTERVAL = 4
-        START_DELAY = 1.0
-
-        async def advance_timeline_by_duration(duration: float, max_updates: int = 1000):
+        async def advance_timeline_by_duration_async(duration: float, max_updates: int = 1000):
             timeline = omni.timeline.get_timeline_interface()
             current_time = timeline.get_current_time()
             target_time = current_time + duration
@@ -163,8 +166,13 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
                     print(f"Warning: Timeline did not advance at update {step_count} (time: {current_time:.4f}s).")
             print(f"Finished advancing timeline to {timeline.get_end_time():.4f}s in {step_count} steps")
 
-        async def run_sdg_pipeline(
-            camera_path, num_frames, capture_interval, use_instance_id=True, segmentation_mapping=None
+        async def run_sdg_pipeline_async(
+            camera_path,
+            num_clips,
+            num_frames_per_clip,
+            capture_interval,
+            use_instance_id=True,
+            segmentation_mapping=None,
         ):
             rp = rep.create.render_product(camera_path, (1280, 720))
             cosmos_writer = rep.WriterRegistry.get("CosmosWriter")
@@ -182,33 +190,53 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
             if not timeline.is_playing():
                 timeline.play()
 
-            print(f"Starting SDG pipeline. Capturing {num_frames} frames, every {capture_interval} simulation step(s).")
-            frames_captured_count = 0
-            simulation_step_index = 0
-            while frames_captured_count < num_frames:
-                print(f"Simulation step {simulation_step_index}")
-                if simulation_step_index % capture_interval == 0:
-                    print(f"\t Capturing frame {frames_captured_count + 1}/{num_frames}")
-                    await rep.orchestrator.step_async(pause_timeline=False)
-                    frames_captured_count += 1
-                else:
-                    await omni.kit.app.get_app().next_update_async()
-                simulation_step_index += 1
+            print(
+                f"Starting SDG pipeline. Capturing {num_clips} clips with {num_frames_per_clip} frames each, every {capture_interval} simulation step(s)."
+            )
+
+            for clip_index in range(num_clips):
+                print(f"Starting clip {clip_index + 1}/{num_clips}")
+
+                frames_captured_count = 0
+                simulation_step_index = 0
+                while frames_captured_count < num_frames_per_clip:
+                    print(f"Simulation step {simulation_step_index}")
+                    if simulation_step_index % capture_interval == 0:
+                        print(
+                            f"\t Capturing frame {frames_captured_count + 1}/{num_frames_per_clip} for clip {clip_index + 1}"
+                        )
+                        await rep.orchestrator.step_async(pause_timeline=False)
+                        frames_captured_count += 1
+                    else:
+                        await omni.kit.app.get_app().next_update_async()
+                    simulation_step_index += 1
+
+                print(f"Finished clip {clip_index + 1}/{num_clips}. Captured {frames_captured_count} frames")
+
+                # Move to next clip if not the last clip
+                if clip_index < num_clips - 1:
+                    print(f"Moving to next clip...")
+                    cosmos_writer.next_clip()
 
             print("Waiting to finish processing and writing the data")
             await rep.orchestrator.wait_until_complete_async()
-            print(f"Finished SDG pipeline. Captured {frames_captured_count} frames")
+            print(f"Finished SDG pipeline. Captured {num_clips} clips with {num_frames_per_clip} frames each")
             cosmos_writer.detach()
             rp.destroy()
             timeline.pause()
 
         async def run_example_async(
-            num_frames, capture_interval=1, start_delay=None, use_instance_id=True, segmentation_mapping=None
+            num_clips,
+            num_frames_per_clip,
+            capture_interval,
+            start_delay=0.0,
+            use_instance_id=True,
+            segmentation_mapping=None,
         ):
             assets_root_path = await get_assets_root_path_async()
             stage_path = assets_root_path + STAGE_URL
             print(f"Opening stage: '{stage_path}'")
-            await omni.usd.get_context().open_stage_async(stage_path)
+            omni.usd.get_context().open_stage(stage_path)
             stage = omni.usd.get_context().get_stage()
 
             # Enable script nodes
@@ -221,6 +249,7 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
             carter_url_path = assets_root_path + CARTER_NAV_ASSET_URL
             print(f"Loading carter nova asset: '{carter_url_path}' at prim path: '{CARTER_NAV_PATH}'")
             carter_nav_prim = add_reference_to_stage(usd_path=carter_url_path, prim_path=CARTER_NAV_PATH)
+
             if not carter_nav_prim.GetAttribute("xformOp:translate"):
                 UsdGeom.Xformable(carter_nav_prim).AddTranslateOp()
             carter_nav_prim.GetAttribute("xformOp:translate").Set(CARTER_NAV_POSITION)
@@ -242,20 +271,39 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
 
             # Advance the timeline with the start delay if provided
             if start_delay is not None and start_delay > 0:
-                await advance_timeline_by_duration(start_delay)
+                await advance_timeline_by_duration_async(start_delay)
 
             # Run the SDG pipeline
-            await run_sdg_pipeline(
-                camera_prim.GetPath(), num_frames, capture_interval, use_instance_id, segmentation_mapping
+            await run_sdg_pipeline_async(
+                camera_prim.GetPath(),
+                num_clips,
+                num_frames_per_clip,
+                capture_interval,
+                use_instance_id,
+                segmentation_mapping,
             )
 
+        # Setup the environment and run the example
+        # asyncio.ensure_future(run_example_async(
+        #     num_clips=NUM_CLIPS,
+        #     num_frames_per_clip=NUM_FRAMES_PER_CLIP,
+        #     capture_interval=CAPTURE_INTERVAL,
+        #     start_delay=START_DELAY,
+        #     use_instance_id=True,
+        # ))
         await run_example_async(
-            num_frames=NUM_FRAMES, capture_interval=CAPTURE_INTERVAL, start_delay=START_DELAY, use_instance_id=True
+            num_clips=NUM_CLIPS,
+            num_frames_per_clip=NUM_FRAMES_PER_CLIP,
+            capture_interval=CAPTURE_INTERVAL,
+            start_delay=START_DELAY,
+            use_instance_id=True,
         )
 
-        # 5 * .mp4 files (depth, edges, rgb, segmentation, shaded_segmentation) should be in the output directory and 5 * num_frames .png files
+        # 5 * num_clips .mp4 files (depth, edges, rgb, segmentation, shaded_segmentation) should be in the output directory and 5 * num_frames_per_clip * num_clips .png files
         out_dir = os.path.join(os.getcwd(), "_out_cosmos_warehouse")
         all_data_written = validate_folder_contents(
-            path=out_dir, recursive=True, expected_counts={"mp4": 5, "png": 5 * NUM_FRAMES}
+            path=out_dir,
+            recursive=True,
+            expected_counts={"mp4": 5 * NUM_CLIPS, "png": 5 * NUM_FRAMES_PER_CLIP * NUM_CLIPS},
         )
         self.assertTrue(all_data_written, f"Output directory contents validation failed for {out_dir}")

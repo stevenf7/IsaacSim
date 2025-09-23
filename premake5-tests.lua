@@ -427,6 +427,10 @@ function create_tests()
             "standalone_examples/replicator/amr_navigation.py",
             "--num_frames 3 --env_interval 1 --use_temp_rp",
         },
+        {
+            "tests-nativepython-replicator.cosmos_writer_warehouse",
+            "standalone_examples/replicator/cosmos_writer_warehouse.py",
+        },
     }
 
     for _, test in ipairs(replicator_tests) do
@@ -573,10 +577,6 @@ function create_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.cosmos_writer_simple",
             "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_simple.py",
-        },        
-        {
-            "tests-nativepython-isaacsim.replicator.examples.cosmos_writer_warehouse",
-            "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_warehouse.py",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.custom_event_and_write",
