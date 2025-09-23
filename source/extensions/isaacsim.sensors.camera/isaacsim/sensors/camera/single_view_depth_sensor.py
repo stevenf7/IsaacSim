@@ -386,7 +386,12 @@ class SingleViewDepthSensorAsset:
             render_product_prim = get_prim_at_path(depth_sensor.get_render_product_path())
             for attribute in template_render_product_prim.GetAttributes():
                 if attribute.GetName().startswith("omni:rtx:post:depthSensor:"):
-                    render_product_prim.GetAttribute(attribute.GetName()).Set(attribute.Get())
+                    if render_product_prim.HasAttribute(attribute.GetName()):
+                        render_product_prim.GetAttribute(attribute.GetName()).Set(attribute.Get())
+                    else:
+                        carb.log_warn(
+                            f"Render product prim {render_product_prim.GetPath()} does not have attribute {attribute.GetName()}."
+                        )
 
             # Explicitly enable the depth sensor, in case the template render product is disabled
             depth_sensor.set_enabled(enabled=True)
