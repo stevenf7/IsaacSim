@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2025-09-24
+### Fixed
+- Fix deformable prim's docstrings test
+
 ## [0.8.0] - 2025-09-19
 ### Added
 - Add rotation, stress and gradient computation for volume deformable bodies

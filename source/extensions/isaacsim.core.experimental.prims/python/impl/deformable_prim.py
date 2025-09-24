@@ -899,12 +899,12 @@ class DeformablePrim(XformPrim):
         .. code-block:: python
 
             >>> # get the nodal rotations of all prims
-            >>> simulation_rotations = prims.get_nodal_rotations()
+            >>> simulation_rotations = prims.get_nodal_rotations()  # doctest: +NO_CHECK
             >>> simulation_rotations.shape
             (3, 1, 4)
             >>>
             >>> # get the nodal rotations of the first and last prims
-            >>> simulation_rotations = prims.get_nodal_rotations(indices=[0, 2])
+            >>> simulation_rotations = prims.get_nodal_rotations(indices=[0, 2])  # doctest: +NO_CHECK
             >>> simulation_rotations.shape
             (2, 1, 4)
         """
@@ -952,7 +952,7 @@ class DeformablePrim(XformPrim):
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
         Returns:
-            The simulation mesh's nodal gradients (shape ``(N, num_elements_per_body, 3, 3)``).
+            The simulation mesh's nodal gradients (shape ``(N, num_elements_per_body)``, where items are 3x3 matrices).
 
         Raises:
             AssertionError: When the deformable body is not a volume.
@@ -964,14 +964,14 @@ class DeformablePrim(XformPrim):
         .. code-block:: python
 
             >>> # get the nodal gradients of all prims
-            >>> simulation_gradients = prims.get_nodal_gradients()  # doctest: +SKIP
-            >>> simulation_gradients.shape  # doctest: +SKIP
-            (3, 1, 3, 3)
+            >>> simulation_gradients = prims.get_nodal_gradients()  # doctest: +NO_CHECK
+            >>> simulation_gradients.shape
+            (3, 1)
             >>>
             >>> # get the nodal gradients of the first and last prims
-            >>> simulation_gradients = prims.get_nodal_gradients(indices=[0, 2])  # doctest: +SKIP
-            >>> simulation_gradients.shape  # doctest: +SKIP
-            (2, 1, 3, 3)
+            >>> simulation_gradients = prims.get_nodal_gradients(indices=[0, 2])  # doctest: +NO_CHECK
+            >>> simulation_gradients.shape
+            (2, 1)
         """
         assert self.deformable_type == "volume", "Nodal gradients is only supported for volume deformable bodies"
         assert self.valid, _MSG_PRIM_NOT_VALID
@@ -1029,7 +1029,7 @@ class DeformablePrim(XformPrim):
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
         Returns:
-            The simulation mesh's nodal stresses (shape ``(N, num_elements_per_body, 3, 3)``).
+            The simulation mesh's nodal stresses (shape ``(N, num_elements_per_body)``, where items are 3x3 matrices).
 
         Raises:
             AssertionError: When the deformable body is not a volume.
@@ -1043,12 +1043,12 @@ class DeformablePrim(XformPrim):
             >>> # get the nodal stresses of all prims
             >>> simulation_stresses = prims.get_nodal_stresses()  # doctest: +SKIP
             >>> simulation_stresses.shape  # doctest: +SKIP
-            (3, 1, 3, 3)
+            (3, 1)
             >>>
             >>> # get the nodal stresses of the first and last prims
             >>> simulation_stresses = prims.get_nodal_stresses(indices=[0, 2])  # doctest: +SKIP
             >>> simulation_stresses.shape  # doctest: +SKIP
-            (2, 1, 3, 3)
+            (2, 1)
         """
         assert self.deformable_type == "volume", "Nodal stresses is only supported for volume deformable bodies"
         assert self.valid, _MSG_PRIM_NOT_VALID
