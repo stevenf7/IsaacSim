@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.6] - 2025-09-23
+### Fixed
+- SingleViewDepthSensorAsset correctly sets position, orientation, translation on __init__.
+
 ## [1.3.5] - 2025-09-22
 ### Fixed
 - SingleViewDepthSensorAsset.initialize validates depth sensor attributes before setting on render product prims.
