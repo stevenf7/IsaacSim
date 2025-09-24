@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.29] - 2025-09-24
+### Changed
+- Update Asset converter dependency
+
 ## [2.4.28] - 2025-09-20
 ### Changed
 - Add test output directory to gitignore
