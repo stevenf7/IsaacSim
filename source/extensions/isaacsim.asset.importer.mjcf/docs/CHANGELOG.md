@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.12] - 2025-09-24
+### Changed
+- Update Asset converter dependency
+
 ## [2.5.11] - 2025-08-27
 ### Fixed
 - Fix the broken documentation links
