@@ -123,6 +123,14 @@ function create_tests()
             "tests-nativepython-testing-isaacsim.simulation_app.test_multiprocess",
             "standalone_examples/testing/isaacsim.simulation_app/test_multiprocess.py",
         },
+        {
+            "tests-nativepython-testing-isaacsim.simulation_app.test_viewport_ready",
+            "standalone_examples/testing/isaacsim.simulation_app/test_viewport_ready.py",
+        },
+        {
+            "tests-nativepython-testing-isaacsim.simulation_app.test_headless_no_rendering",
+            "standalone_examples/testing/isaacsim.simulation_app/test_headless_no_rendering.py",
+        },
     }
 
     for _, test in ipairs(simulation_app_tests) do
