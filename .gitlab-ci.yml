@@ -1928,7 +1928,8 @@ check_externals:
     expire_in: 1 week
   script:
     - ./tools/packman/python.sh tools/check_externals/download_all_kits.py
-    - ./tools/packman/python.sh tools/check_externals/check_externals.py --allowed-external linbuild
+    - ./tools/packman/python.sh -m pip install -r tools/check_externals/requirements.txt
+    - ./tools/packman/python.sh tools/check_externals/new_check_externals.py --allowed-external linbuild
 
 # ==============================================================================================================
 check-python-packages-dependencies-linux-x86_64:
