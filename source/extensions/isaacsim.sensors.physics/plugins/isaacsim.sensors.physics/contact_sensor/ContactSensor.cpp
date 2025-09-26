@@ -60,7 +60,7 @@ CsRawData* ContactSensor::getRawData(size_t& size)
     }
     else
     {
-        size = 1;
+        size = m_size; // Return the actual number of contacts processed
     }
     return m_contactsRawData;
 }
@@ -132,19 +132,25 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             // Check if the distance from sensor to contact position is within sensor radius
             if (m_props.radius <= 0.0f || distance.GetLength() < static_cast<double>(m_props.radius))
             {
+                pxr::GfVec3d contactImpulse(rawContact[i].impulse.x, rawContact[i].impulse.y, rawContact[i].impulse.z);
                 m_readingPair[index].inContact = true;
-                // compute force from impulse (F = i/dt) and add to sensor output
-                totalImpulse += pxr::GfVec3d(static_cast<double>(rawContact[i].impulse.x),
-                                             static_cast<double>(rawContact[i].impulse.y),
-                                             static_cast<double>(rawContact[i].impulse.z));
-                // CARB_LOG_WARN(
-                //     "contact sensor value: %lu, %f, %lf", index, m_readingPair[index].value,
-                //     pxr::GfVec3d(rawContact[i].impulse.x, rawContact[i].impulse.y,
-                //     rawContact[i].impulse.z).GetLength());
+
+                // Determine if impulse should be inverted based on which body the sensor belongs to
+                // Following RigidContactView logic: invert if sensor's parent is body1
+                uint64_t sensorParentToken = asInt(m_parentPrim.GetPath());
+                bool shouldInvert = (sensorParentToken == rawContact[i].body1);
+
+                // Apply impulse along normal direction, with proper sign
+                if (shouldInvert)
+                {
+                    contactImpulse = -contactImpulse;
+                }
+                totalImpulse += contactImpulse;
             }
         }
-        m_readingPair[index].value =
-            std::min(static_cast<float>((totalImpulse.GetLength()) / rawContact[0].dt), m_props.maxThreshold);
+        // Calculate final force value
+        float forceValue = static_cast<float>((totalImpulse.GetLength()) / rawContact[0].dt);
+        m_readingPair[index].value = std::min(forceValue, m_props.maxThreshold);
 
         // if force reading is lower than the min threshold, override to no contact
         if (m_readingPair[index].value < m_props.minThreshold)
