@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.1]
+### Changed 
+- Updated cosmos writer test example to generate multiple video clips
+
 ## [1.3.0] - 2025-09-18
 ### Changed
 - Added cosmos writer tests
