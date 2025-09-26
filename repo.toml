@@ -77,6 +77,7 @@ fetch.pip.files_to_pull = [
 enable_compiler_version_check = true
 
 "platform:linux-x86_64".version_check_gcc_version = "11.*.*"
+"platform:linux-aarch64".version_check_gcc_version = "11.*.*"
 
 # AUTOREMOVE: BEGIN
 "platform:linux-aarch64".fetch.pip.licensing_enabled = false # Disable licensing for aarch64 platforms, as it is not supported.
