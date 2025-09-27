@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.2] - 2025-05-30
+## [1.3.2] - 2025-08-30
 ### Changed
 - Update nvidia-srl-usd-to-urdf==1.0.2
 - Update nvidia-srl-usd==2.0.0

@@ -2,7 +2,7 @@
 
 ## [1.4.1] - 2025-09-18
 ### Fixed
-- Update is_absolute_path function to also check http:// and https:// 
+- Update is_absolute_path function to also check http:// and https://
 
 ## [1.4.0] - 2025-09-08
 ### Added

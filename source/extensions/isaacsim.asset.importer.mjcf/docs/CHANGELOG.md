@@ -1,4 +1,7 @@
 # Changelog
+## [2.5.13] - 2025-09-26
+### Changed
+- Update license headers
 
 ## [2.5.12] - 2025-09-24
 ### Changed

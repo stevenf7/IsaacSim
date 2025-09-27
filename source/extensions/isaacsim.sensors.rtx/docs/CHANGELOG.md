@@ -7,25 +7,29 @@
 ## [15.8.1] - 2025-09-15
 ### Added
 - GenericModelOutput explicitly added to valid arguments in LidarRtx.attach_annotator
+
 ### Fixed
 - LidarRtx no longer resets prim orientation and position if called with existing prim path
 
 ## [15.8.0] - 2025-09-09
 ### Added
 - New APIs to apply non-visual material attributes to Material prims, resolve non-visual material ID as base/coating/attribute.
+
 ### Removed
 - No longer using CSV mapping from visual to non-visual materials as default behavior, favoring USD attribute specification instead
 
 ## [15.7.0] - 2025-09-05
 ### Added
 - Per-frame output option to IsaacCreateRTXLidarScanBuffer
+
 ### Changed
 - Use CUDA graphs, improved kernels, and cached device properties in IsaacCreateRTXLidarScanBuffer to improve perf
-- IsaacExtractRTXSensorPointCloudNoAccumulator annotator now uses IsaacCreateRTXLidarScanBuffer node with per-frame
-  output enabled
+- IsaacExtractRTXSensorPointCloudNoAccumulator annotator now uses IsaacCreateRTXLidarScanBuffer node with per-frame output enabled
+
 ### Removed
 - IsaacExtractRTXSensorPointCloud node no longer used
 - Unused CUDA kernels removed
+
 ### Fixed
 - IsaacCreateRTXLidarScanBuffer outputs correct timestamps
 
