@@ -1,4 +1,8 @@
 # Changelog
+## [3.0.10] - 2025-09-26
+### Fixed
+- Gripper placement when gripper base prim is not at the origin
+
 ## [3.0.9] - 2025-09-17
 ### Removed
 - Deleted dead code
