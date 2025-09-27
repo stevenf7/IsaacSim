@@ -14,7 +14,7 @@
 
 ## [1.2.0] - 2025-09-02
 ### Added
-- Simulation Interfaces v1.1.0 (World services) now supported. 
+- Simulation Interfaces v1.1.0 (World services) now supported.
 
 ### Changed
 - Hidden /Render* prims are excluded from Entity retrieval services

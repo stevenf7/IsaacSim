@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.1] - 2025-09-26
+### Changed
+- Update license headers
+
 ## [0.5.0] - 2025-09-22
 ### Changed
 - Can now optionally exclude blank pixels from image_comparison.compute_difference_metrics.

@@ -3,7 +3,7 @@
 ## [2.12.2] - 2025-09-20
 ### Fixed
 - Fix hang on shutdown by forcing the current stage to close
-- Fix issues where simulation app viewport was not fully initialized on startup 
+- Fix issues where simulation app viewport was not fully initialized on startup
 - Fix issue where experience could not be None
 
 ## [2.12.1] - 2025-09-15
