@@ -1,5 +1,11 @@
 # Changelog
 
+## [15.8.3] - 2025-09-26
+### Added
+- kwargs to LidarRtx.attach_annotator and LidarRtx.attach_writer to specify keywords upon Annotator or Writer initialization
+### Fixed
+- Fixed docstring references to nonexistent annotators
+
 ## [15.8.2] - 2025-09-17
 ### Changed
 - Specify rtx.materialDb.nonVisualMaterialSemantics.prefix as "omni:simready:nonvisual" to align with SimReady spec
