@@ -1232,6 +1232,13 @@ verify-publish-extensions-linux-aarch64:
       #    [repo_publish_exts]
       #    platforms = ["linux-x86_64"]
       # Currently, extensions are published frome the 'develop' branch only
+# We can't use the default job so disable it here
+publish-extensions:
+  rules:
+    - if: '"false" == "true"'
+      when: never
+
+
 .publish-extensions-common:
     extends:
       - .deploy-common
