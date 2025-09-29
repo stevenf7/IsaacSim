@@ -1268,6 +1268,8 @@ publish-extensions-windows-x86_64:
       - job: build-windows-x86_64-debug
         artifacts: true
         optional: false
+    script:
+      - ./repo.sh ci publish_extensions -p windows-x86_64
 
 publish-extensions-linux-x86_64:
     extends:
@@ -1279,6 +1281,8 @@ publish-extensions-linux-x86_64:
       - job: build-linux-x86_64-debug
         artifacts: true
         optional: false
+    script:
+      - ./repo.sh ci publish_extensions -p linux-x86_64
 
 publish-extensions-linux-aarch64:
     extends:
@@ -1290,6 +1294,8 @@ publish-extensions-linux-aarch64:
       - job: build-linux-aarch64-debug
         artifacts: true
         optional: false
+    script:
+      - ./repo.sh ci publish_extensions -p linux-aarch64
 
 
 
