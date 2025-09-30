@@ -630,6 +630,7 @@ function create_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.simready_assets_sdg",
             "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
+            "--num_scenarios 2",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.multi_camera",
