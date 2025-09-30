@@ -1300,12 +1300,15 @@ verify-publish-extensions-linux-aarch64:
 publish-extensions:
     extends:
       - .deploy-common
-      - .runner-utility-linux-x86_64
+      - .ipp_lnx_x86_64_cpu_small
     image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
     timeout: 6 hour
     script:
       - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package
+    variables:
+      IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 150Gi
+      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 200Gi
     needs:
       # We set all dependencies as optional just in case a platform is not needed,
       # then the yml file can override both build/test on one platform and deploy will still work.
