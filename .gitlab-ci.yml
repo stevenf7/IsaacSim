@@ -1185,7 +1185,7 @@ verify-publish-extensions:
       # - ./repo.sh ci publish_extensions
     variables:
       IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 150Gi
-      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 200Gi
+      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 150Gi
     needs:
       # We set all dependencies as optional just in case a platform is not needed,
       # then the yml file can override both build/test on one platform and deploy will still work.
@@ -1236,7 +1236,7 @@ publish-extensions:
       - ./repo.sh publish_exts -a --from-package
     variables:
       IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 150Gi
-      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 200Gi
+      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 150Gi
     needs:
       # We set all dependencies as optional just in case a platform is not needed,
       # then the yml file can override both build/test on one platform and deploy will still work.
