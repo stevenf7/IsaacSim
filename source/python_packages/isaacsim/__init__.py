@@ -55,16 +55,7 @@ loaded before others, using one of the following options.
     queue.put(message)
 
 
-def bootstrap_kernel():
-    # isaac-sim path
-    isaacsim_path = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-
-    # check if it is a non-Python package manager installation
-    split_path = isaacsim_path.split(os.sep)
-    if len(split_path) >= 2 and split_path[-1] == "isaacsim" and split_path[-2] == "python_packages":
-        return
-
-    # DGX/ARM LD_PRELOAD checking
+def aarch_preload_checking():
     machine = platform.machine().lower()
     if sys.platform == "linux" and ("arm" in machine or "aarch" in machine):
         queue = multiprocessing.Queue()
@@ -74,6 +65,21 @@ def bootstrap_kernel():
         msg = queue.get()
         if msg:
             sys.exit(msg)
+
+
+def bootstrap_kernel():
+    # isaac-sim path
+    isaacsim_path = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+
+    # check for non-Python package manager installation
+    if isaacsim_path.split(os.sep)[-2:] == ["python_packages", "isaacsim"]:
+        # DGX/ARM LD_PRELOAD checking when a (virtual) Python environment is used
+        if not sys.executable.startswith(os.path.abspath(os.path.join(isaacsim_path, "..", "..", "kit", "python"))):
+            aarch_preload_checking()
+        return
+
+    # DGX/ARM LD_PRELOAD checking
+    aarch_preload_checking()
 
     # kit path (internal kernel)
     if os.path.isdir(os.path.join(isaacsim_path, "kit", "extscore")):
