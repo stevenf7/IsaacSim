@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.2] - 2025-09-24
+### Changed
+- Kept only arxiv paper link in sphere point distribution comments in `test_sdg_randomizer_snippets.py`
+
 ## [1.3.1]
 ### Changed
 - Updated cosmos writer test example to generate multiple video clips
