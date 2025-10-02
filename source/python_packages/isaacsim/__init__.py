@@ -74,7 +74,7 @@ def bootstrap_kernel():
     # check for non-Python package manager installation
     if isaacsim_path.split(os.sep)[-2:] == ["python_packages", "isaacsim"]:
         # DGX/ARM LD_PRELOAD checking when a (virtual) Python environment is used
-        if not sys.executable.startswith(os.path.abspath(os.path.join(isaacsim_path, "..", "..", "kit", "python"))):
+        if os.path.join("kit", "python") not in sys.executable:
             aarch_preload_checking()
         return
 
