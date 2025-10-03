@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.3] - 2025-10-02
+### Fixed
+- Orientation bug for contact and IMU sensor
+
 ## [0.4.2] - 2025-09-23
 ### Changed
 - Fixed contact sensor implementation

@@ -116,18 +116,18 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
     {
         usdrt::GfMatrix4d usdTransform =
             isaacsim::core::includes::pose::computeWorldXformNoCache(m_stage, m_usdrtStage, m_prim.GetPath());
-        const double* sensorPose = usdTransform.ExtractTranslation().GetArray();
-        pxr::GfVec3d pose(sensorPose[0], sensorPose[1], sensorPose[2]);
+        const usdrt::GfVec3d sensorPos = usdTransform.ExtractTranslation();
+        pxr::GfVec3d pos(sensorPos[0], sensorPos[1], sensorPos[2]);
         pxr::GfVec3d totalImpulse(0.0, 0.0, 0.0);
         for (size_t i = 0; i < size; ++i)
         {
             pxr::GfVec3d contactPoint(rawContact[i].position.x, rawContact[i].position.y, rawContact[i].position.z);
-            // CARB_LOG_WARN("contact Pose: %f %f %f", contactPoint[0], contactPoint[1], contactPoint[2]);
-            // CARB_LOG_WARN("sensor Pose: %f %f %f", pose[0],pose[1], pose[2]);
+            // CARB_LOG_WARN("contact Pos: %f %f %f", contactPoint[0], contactPoint[1], contactPoint[2]);
+            // CARB_LOG_WARN("sensor Pos: %f %f %f", pos[0],pos[1], pos[2]);
             auto d = pxr::GfVec3d(0.0f); // dp*rawContact->dt; Pending update on physics contact position being delayed
                                          // a few frames dp is the linear vel of the parent
-            auto distance = pose - contactPoint - d;
-            // pose.GetLength(), m_props.radius);
+            auto distance = pos - contactPoint - d;
+            // pos.GetLength(), m_props.radius);
 
             // Check if the distance from sensor to contact position is within sensor radius
             if (m_props.radius <= 0.0f || distance.GetLength() < static_cast<double>(m_props.radius))
