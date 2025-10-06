@@ -209,7 +209,8 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         # Gaussian noise augmentation on depth data in numpy (CPU) and warp (GPU)
         def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
             np.random.seed(seed)
-            return data_in + np.random.randn(*data_in.shape) * sigma
+            result = data_in.astype(np.float32) + np.random.randn(*data_in.shape) * sigma
+            return np.clip(result, 0, None).astype(data_in.dtype)
 
         rep.AnnotatorRegistry.register_augmentation(
             "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=seed)
@@ -349,9 +350,11 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         # Gaussian noise augmentation on rgba data in numpy (CPU) and warp (GPU)
         def gaussian_noise_rgb_np(data_in, sigma: float, seed: int):
             np.random.seed(seed)
+            data_in = data_in.astype(np.float32)
             data_in[:, :, 0] = data_in[:, :, 0] + np.random.randn(*data_in.shape[:-1]) * sigma
             data_in[:, :, 1] = data_in[:, :, 1] + np.random.randn(*data_in.shape[:-1]) * sigma
             data_in[:, :, 2] = data_in[:, :, 2] + np.random.randn(*data_in.shape[:-1]) * sigma
+            data_in = np.clip(data_in, 0, 255).astype(np.uint8)
             return data_in
 
         @wp.kernel
@@ -378,7 +381,8 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         # Gaussian noise augmentation on depth data in numpy (CPU) and warp (GPU)
         def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
             np.random.seed(seed)
-            return data_in + np.random.randn(*data_in.shape) * sigma
+            result = data_in.astype(np.float32) + np.random.randn(*data_in.shape) * sigma
+            return np.clip(result, 0, None).astype(data_in.dtype)
 
         rep.AnnotatorRegistry.register_augmentation(
             "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=seed)

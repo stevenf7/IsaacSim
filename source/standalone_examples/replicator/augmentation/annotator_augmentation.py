@@ -62,7 +62,8 @@ def rgb_to_bgr_wp(data_in: wp.array3d(dtype=wp.uint8), data_out: wp.array3d(dtyp
 # Gaussian noise augmentation on depth data in numpy (CPU) and warp (GPU)
 def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
     np.random.seed(seed)
-    return data_in + np.random.randn(*data_in.shape) * sigma
+    result = data_in.astype(np.float32) + np.random.randn(*data_in.shape) * sigma
+    return np.clip(result, 0, None).astype(data_in.dtype)
 
 
 rep.AnnotatorRegistry.register_augmentation(

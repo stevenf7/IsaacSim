@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.3] - 2025-10-06
+### Fixed
+- Fixed data augmentation conversion issues
+
 ## [1.3.2] - 2025-09-24
 ### Changed
 - Kept only arxiv paper link in sphere point distribution comments in `test_sdg_randomizer_snippets.py`
