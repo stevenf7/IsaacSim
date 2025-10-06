@@ -215,6 +215,11 @@ function create_tests()
         "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_pinhole.py"
     )
     python_sample_test(
+        "tests-nativepython-isaacsim.sensors.camera.camera_pre_isp_pipeline",
+        "standalone_examples/api/isaacsim.sensors.camera/camera_pre_isp_pipeline.py",
+        "--draw-output"
+    )
+    python_sample_test(
         "tests-nativepython-isaacsim.sensors.camera.camera_ros",
         "standalone_examples/api/isaacsim.sensors.camera/camera_ros.py",
         "--test"
