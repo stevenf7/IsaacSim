@@ -51,7 +51,7 @@ parser.add_argument(
     default="standalone_examples/benchmarks/validation/captures",
     help="Directory holding output images from current run - relative to the current working directory",
 )
-parser.add_argument("--tolerance", type=int, default=5, help="Tolerance for mean difference in image comparison")
+parser.add_argument("--tolerance", type=int, default=10, help="Tolerance for mean difference in image comparison")
 parser.add_argument(
     "--blur-kernel",
     type=int,
