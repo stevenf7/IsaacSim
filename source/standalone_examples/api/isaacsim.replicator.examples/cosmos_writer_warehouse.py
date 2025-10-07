@@ -116,6 +116,10 @@ def run_example(num_frames, capture_interval=1, start_delay=None, use_instance_i
     omni.usd.get_context().open_stage(stage_path)
     stage = omni.usd.get_context().get_stage()
     simulation_app.update()
+
+    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
     # Enable script nodes
     carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 

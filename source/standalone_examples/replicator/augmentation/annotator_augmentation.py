@@ -43,6 +43,9 @@ ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
 # Enable scripts
 carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 
+# Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
 
 # Illustrative augmentation switching red and blue channels in rgb data using numpy (CPU) and warp (GPU)
 def rgb_to_bgr_np(data_in):
