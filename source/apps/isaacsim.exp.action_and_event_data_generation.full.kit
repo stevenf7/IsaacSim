@@ -120,6 +120,8 @@ name = "Action and Event Data Generation"
 version = "0.1.5"
 file.ignoreUnsavedOnExit = false
 window.title = "Action and Event Data Generation"
+runLoops.main.rateLimitEnabled = true  # Enable rate limiting, simulation runs at specified rendering rate (default 60 hz)
+runLoops.main.manualModeEnabled = true # Enable manual mode, dt is fixed at requested rate
 gatherRenderResults = true # True to prevent artifacts in multiple viewport configurations, can be set to false for better performance in some cases
 
 # Register extension folder from this repo in kit
