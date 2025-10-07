@@ -147,6 +147,9 @@ def run_example(
     # Disable capture on play on the new stage, data is captured manually using the step function
     rep.orchestrator.set_capture_on_play(False)
 
+    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
     # Load carter nova asset with its navigation graph
     carter_url_path = assets_root_path + CARTER_NAV_ASSET_URL
     print(f"Loading carter nova asset: '{carter_url_path}' at prim path: '{CARTER_NAV_PATH}'")

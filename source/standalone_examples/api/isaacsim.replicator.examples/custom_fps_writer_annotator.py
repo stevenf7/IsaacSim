@@ -35,6 +35,9 @@ def run_custom_fps_example(duration_seconds):
     # Create a new stage
     omni.usd.get_context().new_stage()
 
+    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
     # Disable capture on play (data will only be accessed at custom times)
     carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
 
@@ -89,7 +92,7 @@ def run_custom_fps_example(duration_seconds):
             rp.hydra_texture.set_updates_enabled(True)
 
             # Step needs to be called after scheduling the write
-            rep.orchestrator.step(delta_time=0.0, pause_timeline=False)
+            rep.orchestrator.step(delta_time=0.0, pause_timeline=False, rt_subframes=16)
 
             # After step, the annotator data is available and in sync with the stage
             annot_data = annot_depth.get_data()

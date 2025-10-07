@@ -22,6 +22,7 @@ import asyncio
 import os
 import random
 
+import carb.settings
 import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
@@ -181,6 +182,9 @@ def run_simready_randomizations(num_scenarios):
     stage = omni.usd.get_context().get_stage()
     rep.orchestrator.set_capture_on_play(False)
     random.seed(15)
+
+    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
     # Add lights to the scene
     dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")

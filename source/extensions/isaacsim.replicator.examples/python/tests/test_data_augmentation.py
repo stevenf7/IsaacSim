@@ -17,6 +17,7 @@ import io
 import os
 from unittest.mock import patch
 
+import carb.settings
 import numpy as np
 import omni.kit
 import omni.usd
@@ -35,11 +36,13 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
+        self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
+        carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     # Compare PNG files with the specified prefix using mean pixel difference
     def compare_images_with_mean_diff(self, golden_dir, test_dir, prefix, tolerance):
@@ -192,6 +195,9 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
 
         # Enable scripts
         carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
+
+        # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+        carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
         # Illustrative augmentation switching red and blue channels in rgb data using numpy (CPU) and warp (GPU)
         def rgb_to_bgr_np(data_in):
@@ -346,6 +352,9 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
 
         # Enable scripts
         carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
+
+        # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+        carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
         # Gaussian noise augmentation on rgba data in numpy (CPU) and warp (GPU)
         def gaussian_noise_rgb_np(data_in, sigma: float, seed: int):

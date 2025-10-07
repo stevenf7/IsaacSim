@@ -36,6 +36,9 @@ def run_cosmos_example(num_frames, segmentation_mapping=None):
     # Create a new stage
     omni.usd.get_context().new_stage()
 
+    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
     # CosmosWriter requires script nodes to be enabled
     carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 

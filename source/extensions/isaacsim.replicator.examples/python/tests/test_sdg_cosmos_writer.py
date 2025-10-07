@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import carb.settings
 import omni.kit
 import omni.usd
 from isaacsim.test.utils.file_validation import validate_folder_contents
@@ -23,6 +24,7 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
+        self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
     async def tearDown(self):
         omni.usd.get_context().close_stage()
@@ -30,6 +32,7 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
+        carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_sdg_snippet_cosmos_simple(self):
         import asyncio
@@ -50,6 +53,9 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         async def run_cosmos_example_async(num_frames, segmentation_mapping=None):
             # Create a new stage
             omni.usd.get_context().new_stage()
+
+            # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+            carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
             # CosmosWriter requires script nodes to be enabled
             carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
@@ -241,6 +247,9 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
 
             # Enable script nodes
             carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
+
+            # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+            carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
             # Disable capture on play on the new stage, data is captured manually using the step function
             rep.orchestrator.set_capture_on_play(False)

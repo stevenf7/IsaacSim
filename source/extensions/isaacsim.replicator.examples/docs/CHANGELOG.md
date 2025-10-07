@@ -1,4 +1,9 @@
 # Changelog
+## [1.3.4] - 2025-10-06
+### Changed
+- Set DLSS (`rtx/post/dlss/execMode`) to Quality mode (2) in the replicator tests
+- Added `rt_subframes` to the custom fps example
+
 ## [1.3.3] - 2025-10-06
 ### Fixed
 - Fixed data augmentation conversion issues
