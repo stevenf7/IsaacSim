@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.5] - 2025-10-07
+### Changed
+- Updated subscribers and events example snippet to use a custom number of app updates for capturing events
+
 ## [1.3.4] - 2025-10-06
 ### Changed
 - Set DLSS (`rtx/post/dlss/execMode`) to Quality mode (2) in the replicator tests
