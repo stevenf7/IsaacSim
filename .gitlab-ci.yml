@@ -1654,10 +1654,8 @@ publish-container-multi-arch:
 test-container:
   extends:
     - .test-common
-    - .omni_nvks_gpu
+    - .ipp_lnx_x86_64_gpu
     - .kit-runner-test-linux-x86_64-1x-gpu
-  tags:
-    - lnx-x86_64-gpu-1x-570.158.01
   image: nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-x86_64
   # variables:
   #   GIT_STRATEGY: none
