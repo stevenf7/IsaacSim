@@ -18,6 +18,7 @@ from .ui_widget_wrappers import (
     CheckBox,
     CollapsableFrame,
     ColorPicker,
+    ComboBoxField,
     DropDown,
     FloatField,
     Frame,

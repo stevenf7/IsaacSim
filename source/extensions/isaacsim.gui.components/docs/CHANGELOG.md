@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.0] - 2025-10-07
+### Added
+- Combo Box UI Wrapper
+
 ## [1.1.9] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.1.8)
