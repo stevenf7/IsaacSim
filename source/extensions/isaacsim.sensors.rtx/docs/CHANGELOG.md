@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.8.4] - 2025-10-07
+### Fixed
+- LidarRtx warns if rational time is 0/0 and will not collect simulation time or Annotator data in that case
+
 ## [15.8.3] - 2025-09-26
 ### Added
 - kwargs to LidarRtx.attach_annotator and LidarRtx.attach_writer to specify keywords upon Annotator or Writer initialization
