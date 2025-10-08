@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.7.4] - 2025-10-02
+### Changed
+- Updated franka, humanoid, quadruped examples
+
 ## [4.7.3] - 2025-08-30
 ### Changed
 - Updated Surface Gripper sample
