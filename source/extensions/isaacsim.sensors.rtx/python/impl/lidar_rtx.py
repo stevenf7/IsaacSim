@@ -396,9 +396,15 @@ class LidarRtx(BaseSensor):
             .get(),
         )
 
-        self._current_frame["rendering_time"] = self._simulation_manager_interface.get_simulation_time_at_time(
-            self._current_frame["rendering_frame"]
-        )
+        if self._current_frame["rendering_frame"][1] == 0:
+            carb.log_warn(
+                f"Reference time is {self._current_frame['rendering_frame'][0]}/{self._current_frame['rendering_frame'][1]}, cannot get simulation time on this frame."
+            )
+        else:
+            self._current_frame["rendering_time"] = self._simulation_manager_interface.get_simulation_time_at_time(
+                self._current_frame["rendering_frame"]
+            )
+
         for annotator_name, annotator in self._annotators.items():
             self._current_frame[annotator_name] = annotator.get_data()
 

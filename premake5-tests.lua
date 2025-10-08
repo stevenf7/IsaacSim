@@ -248,8 +248,7 @@ function create_tests()
     )
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.rtx.resolve_object_ids_from_gmo",
-        "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py",
-        "--test"
+        "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py"
     )
     python_sample_test(
         "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",
