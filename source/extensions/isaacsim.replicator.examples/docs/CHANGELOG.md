@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.6] - 2025-10-08
+### Changed
+- Added physics to custom fps example snippet, changed to dome light
+
 ## [1.3.5] - 2025-10-07
 ### Changed
 - Updated subscribers and events example snippet to use a custom number of app updates for capturing events
