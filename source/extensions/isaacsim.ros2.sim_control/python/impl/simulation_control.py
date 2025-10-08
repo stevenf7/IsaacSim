@@ -30,7 +30,7 @@ from isaacsim.storage.native import (
     get_assets_root_path_async,
     is_local_path,
     is_valid_usd_file,
-    path_exists,
+    resolve_asset_path_async,
 )
 from pxr import Sdf
 from usdrt import Usd
@@ -773,6 +773,25 @@ class SimulationControl:
         try:
             from simulation_interfaces.msg import Result
 
+            # Path validation and resolution
+            path_to_load = None
+            if request.uri:
+                # Validate USD format
+                if not is_valid_usd_file(request.uri, []):
+                    response.result.result = response.UNSUPPORTED_FORMAT
+                    response.result.error_message = f"Unsupported format. Only USD files (.usd, .usda, .usdc, .usdz) are supported. Got: {request.uri}"
+                    return response
+
+                # Use the new utility function to resolve the asset path
+                path_to_load = await resolve_asset_path_async(request.uri)
+
+                # Use the path that exists, or report error if neither exists
+                if not path_to_load:
+                    response.result.result = response.RESOURCE_PARSE_ERROR
+                    response.result.error_message = (
+                        f"Could not find path '{request.uri}' or default asset root based path"
+                    )
+                    return response
             # Get regular stage for prim operations
             stage = stage_utils.get_current_stage()
             if not stage:
@@ -783,11 +802,11 @@ class SimulationControl:
             # Check name validity and try to get default prim name from URI if possible
             entity_name = request.name
 
-            # If name is empty, try to get default prim name from URI
-            if not entity_name and request.uri:
+            # If name is empty, try to get default prim name from URI if possible
+            if not entity_name and path_to_load:
                 try:
                     # Try to open the stage and get its default prim
-                    temp_stage = Usd.Stage.Open(request.uri)
+                    temp_stage = Usd.Stage.Open(path_to_load)
                     if temp_stage:
                         default_prim = temp_stage.GetDefaultPrim()
                         if default_prim:
@@ -859,25 +878,12 @@ class SimulationControl:
                     ]
 
             # Create the entity based on URI or create a new Xform
-            if request.uri:
-                # Check if the URI is accessible without opening the stage
-                try:
-                    result, _ = omni.client.stat(request.uri)
-                    if result != omni.client.Result.OK:
-                        response.result.result = response.RESOURCE_PARSE_ERROR
-                        response.result.error_message = f"Cannot access USD file: {request.uri}"
-                        return response
-
-                except Exception as e:
-                    response.result.result = response.RESOURCE_PARSE_ERROR
-                    response.result.error_message = f"Failed to validate USD file: {e}"
-                    return response
-
+            if path_to_load:
                 # Load USD file as reference
                 try:
-                    # Create a reference
+                    # Create a reference using the validated path
                     prim = stage.DefinePrim(entity_name)
-                    prim.GetReferences().AddReference(request.uri)
+                    prim.GetReferences().AddReference(path_to_load)
 
                     try:
                         # Create XformPrim wrapper for the spawned entity
@@ -892,7 +898,7 @@ class SimulationControl:
                         carb.log_error(f"Error setting transform for {entity_name}: {e}")
 
                     carb.log_info(
-                        f"Successfully spawned entity from URI: {entity_name} with reference to {request.uri}"
+                        f"Successfully spawned entity from URI: {entity_name} with reference to {path_to_load}"
                     )
                 except Exception as e:
                     response.result.result = response.RESOURCE_PARSE_ERROR
@@ -1506,7 +1512,7 @@ class SimulationControl:
                 )
                 return response
 
-            # Validate USD format using Isaac Sim's utility function
+            # Validate USD format
             if not is_valid_usd_file(request.uri, []):
                 response.result.result = response.UNSUPPORTED_FORMAT
                 response.result.error_message = (
@@ -1514,27 +1520,8 @@ class SimulationControl:
                 )
                 return response
 
-            original_path = request.uri
-            path_to_load = None
-
-            original_exists = await path_exists(original_path)
-            if original_exists:
-                path_to_load = original_path
-            else:
-                try:
-                    # Construct alternate path with asset root
-                    assets_root_path = await get_assets_root_path_async()
-                    if assets_root_path:
-                        alternate_path = (
-                            assets_root_path + original_path
-                            if original_path.startswith("/")
-                            else assets_root_path + "/" + original_path
-                        )
-
-                        if await path_exists(alternate_path):
-                            path_to_load = alternate_path
-                except Exception as e:
-                    carb.log_warn(f"Could not get assets root path: {e}")
+            # Use the new utility function to resolve the asset path
+            path_to_load = await resolve_asset_path_async(request.uri)
 
             # Load the path that exists, or report error if neither exists
             if path_to_load:
@@ -1552,9 +1539,7 @@ class SimulationControl:
                     return response
             else:
                 response.result.result = response.RESOURCE_PARSE_ERROR
-                response.result.error_message = (
-                    f"Could not find path '{original_path}' or default asset root based path"
-                )
+                response.result.error_message = f"Could not find path '{request.uri}' or default asset root based path"
                 return response
 
             await omni.kit.app.get_app().next_update_async()
@@ -1569,7 +1554,7 @@ class SimulationControl:
             response.world.world_resource.uri = path_to_load
             response.world.name = os.path.splitext(os.path.basename(path_to_load))[0]
             response.result.result = Result.RESULT_OK
-            if path_to_load != original_path:
+            if path_to_load != request.uri:
                 response.result.error_message = (
                     f"Successfully loaded world: {response.world.name} (using default asset root path)"
                 )
