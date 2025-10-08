@@ -206,12 +206,14 @@ Congratulations on installing Isaac Sim! To get started with using Isaac Sim, fo
 
 - Please see the [FAQ](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/faq_index.html), [Troubleshooting](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/troubleshooting.html), and [Known Issues](https://docs.isaacsim.omniverse.nvidia.com/latest/overview/known_issues.html) for common questions, fixes, and workarounds.
 
-- On linux, if you encounter network connectivity issues when building (such as corporate firewalls), run the following commands:
+- On Linux, if you encounter network connectivity issues when building (such as corporate firewalls), run the following commands:
 
   ```bash
   export http_proxy="http://{Your IP address}:7890"
   export https_proxy="http://{Your IP address}:7890"
   ```
+
+  - Note: The above command should be used only if you have enabled a proxy software or behind a corporate firewall. Port 7890 should be replaced with the proxy port set by the proxy software.
 
 
 ## Support
