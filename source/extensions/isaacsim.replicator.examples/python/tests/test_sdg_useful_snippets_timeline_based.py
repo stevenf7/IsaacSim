@@ -44,6 +44,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         import omni.timeline
         import omni.usd
 
+        # Configuration
+        NUM_CAPTURES = 6
+        VERBOSE = True
+
         # NOTE: To avoid FPS delta misses make sure the sensor framerate is divisible by the timeline framerate
         STAGE_FPS = 100.0
         SENSOR_FPS = 10.0
@@ -53,14 +57,14 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Create a new stage
             await omni.usd.get_context().new_stage_async()
 
+            # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+            carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
             # Disable capture on play (data will only be accessed at custom times)
             carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
 
             # Make sure fixed time stepping is set (the timeline will be advanced with the same delta time)
             carb.settings.get_settings().set("/app/player/useFixedTimeStepping", True)
-
-            # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
-            carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
             # Set the timeline parameters
             timeline = omni.timeline.get_timeline_interface()
@@ -71,15 +75,17 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             timeline.play()
             timeline.commit()
 
-            # Create a light and a semantically annotated cube
-            rep.create.light()
-            rep.create.cube(semantics=[("class", "cube")])
+            # Create scene with a semantically annotated cube with physics
+            rep.functional.create.dome_light(intensity=250)
+            cube = rep.functional.create.cube(position=(0, 0, 3), semantics={"class": "cube"})
+            rep.functional.physics.apply_collider(cube)
+            rep.functional.physics.apply_rigid_body(cube)
 
-            # Create a render product and disable it (it will re-enabled when data is needed)
+            # Create render product (disabled until data capture is needed)
             rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="rp")
             rp.hydra_texture.set_updates_enabled(False)
 
-            # Create a writer and an annotator as different ways to access the data
+            # Create a writer and an annotator as examples of different ways of accessing data
             out_dir_rgb = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
             print(f"Writer data will be written to: {out_dir_rgb}")
             writer_rgb = rep.WriterRegistry.get("BasicWriter")
@@ -89,53 +95,51 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             annot_depth.attach(rp)
 
             # Run the simulation for the given number of frames and access the data at the desired framerates
-            written_frames = 0
+            print(
+                f"Starting simulation: {duration_seconds:.2f}s duration, {SENSOR_FPS:.0f} FPS sensor, {STAGE_FPS:.0f} FPS timeline"
+            )
+
+            frame_count = 0
             previous_time = timeline.get_current_time()
             elapsed_time = 0.0
-            loop_iteration_count = 0
+            iteration = 0
+
             while timeline.get_current_time() < duration_seconds:
                 current_time = timeline.get_current_time()
                 delta_time = current_time - previous_time
                 elapsed_time += delta_time
-                print(
-                    f"[{loop_iteration_count}] current_time={current_time:.4f}; delta_time={delta_time:.4f}; elapsed_time={elapsed_time:.4f}/{SENSOR_DT:.4f};"
-                )
 
-                # Check if enough time has passed to trigger the sensor
-                if elapsed_time >= SENSOR_DT:
-                    # Reset the elapsed time with the difference to the optimal trigger time (when the timeline fps is not divisible by the sensor framerate)
-                    elapsed_time = elapsed_time - SENSOR_DT
+                # Simulation progress
+                if VERBOSE:
+                    print(f"Step {iteration}: timeline time={current_time:.3f}s, elapsed time={elapsed_time:.3f}s")
 
-                    # Enable render products for data access
+                # Trigger sensor at desired framerate (use small epsilon for floating point comparison)
+                if elapsed_time >= SENSOR_DT - 1e-9:
+                    elapsed_time -= SENSOR_DT  # Reset with remainder to maintain accuracy
+
                     rp.hydra_texture.set_updates_enabled(True)
-
-                    # Step needs to be called after scheduling the write
                     await rep.orchestrator.step_async(delta_time=0.0, pause_timeline=False, rt_subframes=16)
-
-                    # After step, the annotator data is available and in sync with the stage
                     annot_data = annot_depth.get_data()
 
-                    # Count the number of frames written
-                    print(f"\t Writing frame {written_frames}; annotator data shape={annot_data.shape};")
-                    written_frames += 1
+                    print(
+                        f"\n  >> Capturing frame {frame_count} at time={current_time:.3f}s | shape={annot_data.shape}\n"
+                    )
+                    frame_count += 1
 
-                    # Disable render products to avoid unnecessary rendering
                     rp.hydra_texture.set_updates_enabled(False)
 
                 previous_time = current_time
                 # Advance the app (timeline) by one frame
                 await omni.kit.app.get_app().next_update_async()
-                loop_iteration_count += 1
+                iteration += 1
 
-            # Make sure the writer finishes writing the data to disk
+            # Wait for writer to finish
             await rep.orchestrator.wait_until_complete_async()
 
-        # Run the example.
-        # NOTE: The simulation duration is calculated to ensure 'target_num_writes' are captured.
-        # It includes the time for all sensor intervals plus a small buffer of a few stage frames.
-        target_num_writes = 6
-        duration_for_target_writes = (target_num_writes * SENSOR_DT) + (5.0 / STAGE_FPS)
-        await run_custom_fps_example_async(duration_seconds=duration_for_target_writes)
+        # Run example with duration for all captures plus a buffer of 5 frames
+        duration = (NUM_CAPTURES * SENSOR_DT) + (5.0 / STAGE_FPS)
+        # asyncio.ensure_future(run_custom_fps_example_async(duration_seconds=duration))
+        await run_custom_fps_example_async(duration_seconds=duration)
 
         # Cleanup the timeline
         timeline = omni.timeline.get_timeline_interface()
@@ -145,7 +149,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
         # Validate the output directory contents
         out_dir = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
-        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": target_num_writes})
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": NUM_CAPTURES})
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_snippet_subscribers_and_events(self):
