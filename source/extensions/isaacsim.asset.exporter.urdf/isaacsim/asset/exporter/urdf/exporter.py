@@ -28,7 +28,7 @@ import numpy as np
 import omni
 import omni.ui as ui
 from isaacsim.core.utils.stage import open_stage
-from isaacsim.gui.components.element_wrappers import Button, CheckBox, CollapsableFrame, ComboBoxField, StringField
+from isaacsim.gui.components.element_wrappers import Button, CheckBox, CollapsableFrame, DropDown, StringField
 from isaacsim.gui.components.ui_utils import get_style
 from omni.physx import get_physx_property_query_interface
 from omni.physx.bindings._physx import PhysxPropertyQueryMode, PhysxPropertyQueryResult
@@ -92,12 +92,17 @@ class UrdfExporter:
                 self._package_name_frame.visible = new_value == "package://"
                 # ui.refresh()
 
-            ComboBoxField(
+            # Replaced ComboBoxField with DropDown
+            def populate_mesh_prefix_options():
+                return mesh_path_prefix_options
+
+            dropdown = DropDown(
                 label="Mesh Path Prefix",
-                items=mesh_path_prefix_options,
                 tooltip="Prefix to add to URDF mesh filename values.",
-                default_index=mesh_path_prefix_options.index("file://"),
+                populate_fn=populate_mesh_prefix_options,
                 on_selection_fn=on_mesh_path_prefix_changed,
+                keep_old_selections=False,
+                add_flourish=True,
             )
 
             self._package_name_frame = ui.Frame()
@@ -110,8 +115,8 @@ class UrdfExporter:
                         tooltip="Name of the ROS package for 'package://' mesh paths.",
                         on_value_changed_fn=lambda v: setattr(self, "_package_name", v),
                     )
-            # Default selection is "file://" so hide the package name frame initially.
-            self._package_name_frame.visible = False
+            # Initialize items and trigger default selection callback
+            dropdown.repopulate()
 
             root_path_field = StringField(
                 "Root Prim Path",
