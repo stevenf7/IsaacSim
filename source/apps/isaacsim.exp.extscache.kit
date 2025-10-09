@@ -347,6 +347,7 @@ folders = [
 # Non-AARCH64 dependencies
 [dependencies."filter:platform"."linux-x86_64"]  # TODO: Remove when supported
 # XR
+"isaacsim.xr.input_devices" = {}
 "isaacsim.xr.openxr" = {}
 
 # Livestreaming
@@ -583,6 +584,7 @@ enabled = [
 
 [settings.app.exts."filter:platform"."*-x86_64"]
 enabled = [
+	"isaacsim.xr.input_devices-1.0.1",
 	"isaacsim.xr.openxr-1.0.0",
 	"omni.kit.converter.cad-205.0.0",
 	"omni.kit.converter.common-507.1.2",
