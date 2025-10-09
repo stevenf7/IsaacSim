@@ -2021,7 +2021,7 @@ stage-to-github:
       - git config user.name "sheikh-nv"
       - echo "Isaac Sim Update"
       - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
-      - git add -A && git commit -m "Isaac Sim Update"
+      - git add -Af && git commit -m "Isaac Sim Update"
       - git push --set-upstream origin upstream/update_from_${CI_COMMIT_SHORT_SHA}
     # when: manual
     rules:
@@ -2061,7 +2061,7 @@ stage-to-gitlab:
       - git config user.name "gitlab"
       - echo "Isaac Sim Update"
       - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
-      - git add -A && git commit -m "Isaac Sim Update"
+      - git add -Af && git commit -m "Isaac Sim Update"
       - git push --set-upstream origin upstream/update_from_${CI_COMMIT_SHORT_SHA}
     # when: manual
     rules:
