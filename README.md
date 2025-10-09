@@ -151,9 +151,15 @@ build.bat
 
 Navigate to the corresponding binary directory for your platform and run the executable.
 
-**Linux:**
+**Linux (x86_64):**
 ```bash
 cd _build/linux-x86_64/release
+./isaac-sim.sh
+```
+
+**Linux (aarch64):**
+```bash
+cd _build/linux-aarch64/release
 ./isaac-sim.sh
 ```
 
