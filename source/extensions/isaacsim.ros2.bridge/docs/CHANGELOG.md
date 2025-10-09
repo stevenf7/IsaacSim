@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.12.4] - 2025-10-04
+### Fixed
+- Nitros bridge tasking
+
 ## [4.12.3] - 2025-09-22
 ### Fixed
 - CameraInfo message always sets fy == fx, as renderer assumes square pixels.
