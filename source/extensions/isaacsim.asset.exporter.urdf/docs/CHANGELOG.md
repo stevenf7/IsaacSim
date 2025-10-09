@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.4] - 2025-10-09
+### Changed
+- Switch UI element to remove duplicate code
+
 ## [1.3.3] - 2025-10-07
 ### Changed
 - Updated UI to handle local path for mesh
