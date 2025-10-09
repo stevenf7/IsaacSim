@@ -24,6 +24,7 @@ from isaacsim.core.experimental.objects import (
     DiskLight,
     DistantLight,
     DomeLight,
+    GroundPlane,
     Light,
     Mesh,
     Plane,
@@ -48,6 +49,11 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     async def tearDown(self):
         """Method called immediately after the test method has been called"""
         super().tearDown()
+
+    # --------------------------------------------------------------------
+
+    async def test_ground_plane_docstrings(self):
+        await self.assertDocTests(GroundPlane)
 
     # --------------------------------------------------------------------
 

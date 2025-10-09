@@ -18,6 +18,12 @@ The following table summarizes the available objects.
 
 .. currentmodule:: isaacsim.core.experimental.objects
 
+.. rubric:: ground plane
+.. autosummary::
+    :nosignatures:
+
+    GroundPlane
+
 .. rubric:: shapes
 .. autosummary::
     :nosignatures:
@@ -51,6 +57,15 @@ The following table summarizes the available objects.
 .. Details
 
 .. API
+
+Ground Plane
+^^^^^^^^^^^^
+
+.. autoclass:: isaacsim.core.experimental.objects.GroundPlane
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Shapes
 ^^^^^^

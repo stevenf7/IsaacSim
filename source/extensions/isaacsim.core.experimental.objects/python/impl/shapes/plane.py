@@ -30,6 +30,11 @@ from .shape import Shape
 class Plane(Shape):
     """High level class for creating/wrapping USD Plane (primitive plane centered at the origin) prims.
 
+    .. warning::
+
+        USD Plane is currently not supported by Omniverse Hydra rendering.
+        Authoring operations can still be applied, but there will be no rendering in the viewport.
+
     .. note::
 
         This class creates or wraps (one of both) USD Plane prims according to the following rules:
