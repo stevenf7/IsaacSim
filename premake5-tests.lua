@@ -247,6 +247,11 @@ function create_tests()
         "--test"
     )
     python_sample_test(
+        "tests-nativepython-isaacsim.sensors.rtx.inspect_radar_metadata",
+        "standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_metadata.py",
+        "--test"
+    )
+    python_sample_test(
         "tests-nativepython-isaacsim.sensors.rtx.resolve_object_ids_from_gmo",
         "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py"
     )
