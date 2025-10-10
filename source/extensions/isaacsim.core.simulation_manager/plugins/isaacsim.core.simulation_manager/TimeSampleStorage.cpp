@@ -146,7 +146,7 @@ std::optional<double> TimeSampleStorage::getSimulationTimeAt(const omni::fabric:
     // Validate input
     if (!isValidTime(time))
     {
-        CARB_LOG_ERROR("getSimulationTimeAt: Invalid RationalTime - zero denominator");
+        CARB_LOG_WARN("getSimulationTimeAt: Invalid RationalTime - zero denominator");
         return std::nullopt;
     }
 
