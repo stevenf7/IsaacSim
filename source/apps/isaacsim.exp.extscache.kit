@@ -344,34 +344,97 @@ folders = [
 "semantics.schema.property" = {}
 
 
-# Non-AARCH64 dependencies
-[dependencies."filter:platform"."linux-x86_64"]  # TODO: Remove when supported
+# Linux x86_64 dependencies
+[dependencies."filter:platform"."linux-x86_64"]
 # XR
-"isaacsim.xr.input_devices" = {}
-"isaacsim.xr.openxr" = {}
+"isaacsim.xr.input_devices" = { version = "1.0.1", exact = true }
+"isaacsim.xr.openxr" = { version = "1.0.0", exact = true }
+
+# CAD Converters
+"omni.kit.converter.cad" = { version = "205.0.0", exact = true }
+"omni.kit.converter.common" = { version = "507.1.2", exact = true }
+"omni.kit.converter.dgn" = { version = "509.1.0", exact = true }
+"omni.kit.converter.dgn_core" = { version = "510.1.0", exact = true }
+"omni.kit.converter.hoops" = { version = "509.1.0", exact = true }
+"omni.kit.converter.hoops_core" = { version = "509.1.0", exact = true }
+"omni.kit.converter.jt" = { version = "508.1.0", exact = true }
+"omni.kit.converter.jt_core" = { version = "508.1.0", exact = true }
 
 # Livestreaming
-"omni.services.livestream.nvcf" = {}
-"omni.kit.gfn" = {}
-"omni.kit.pointclouds" = {}
-"omni.kit.xr.profile.ar" = {}
-"omni.kit.xr.profile.tabletar" = {}
-"omni.kit.xr.profile.vr" = {}
-"omni.kit.xr.system.simulatedxr" = {}
+"omni.services.livestream.nvcf" = { version = "7.2.0", exact = true }
+"omni.kit.gfn" = { version = "107.0.4", exact = true }
+"omni.kit.livestream.core" = { version = "7.5.0", exact = true }
+"omni.kit.livestream.webrtc" = { version = "7.0.0", exact = true }
+"omni.kit.pointclouds" = { version = "1.5.14", exact = true }
+"omni.kit.streamsdk.plugins" = { version = "7.6.3", exact = true }
 
-# Windows only
+# XR Extensions
+"omni.kit.xr.advertise" = { version = "107.3.109", exact = true }
+"omni.kit.xr.core" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.ar" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.common" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.tabletar" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.vr" = { version = "107.3.109", exact = true }
+"omni.kit.xr.scene_view.core" = { version = "107.3.109", exact = true }
+"omni.kit.xr.scene_view.utils" = { version = "107.3.109", exact = true }
+"omni.kit.xr.system.openxr" = { version = "107.3.109", exact = true }
+"omni.kit.xr.system.simulatedxr" = { version = "107.3.109", exact = true }
+"omni.kit.xr.ui.stage" = { version = "107.3.109", exact = true }
+"omni.kit.xr.ui.window.profile" = { version = "107.3.109", exact = true }
+"omni.kit.xr.ui.window.viewport" = { version = "107.3.109", exact = true }
+
+# Services
+"omni.services.convert.asset" = { version = "508.0.2", exact = true }
+"omni.services.convert.cad" = { version = "507.0.2", exact = true }
+
+# USD
+"omni.usdex.libs" = { version = "1.2.2", exact = true }
+
+# Windows x86_64 dependencies
 [dependencies."filter:platform"."windows-x86_64"]
 "omni.kit.window.modifier.titlebar" = { version = "105.2.16", exact = true }
 # XR
-"isaacsim.xr.openxr" = {}
+"isaacsim.xr.openxr" = { version = "1.0.0", exact = true }
+
+# CAD Converters
+"omni.kit.converter.cad" = { version = "205.0.0", exact = true }
+"omni.kit.converter.common" = { version = "507.1.2", exact = true }
+"omni.kit.converter.dgn" = { version = "509.1.0", exact = true }
+"omni.kit.converter.dgn_core" = { version = "510.1.0", exact = true }
+"omni.kit.converter.hoops" = { version = "509.1.0", exact = true }
+"omni.kit.converter.hoops_core" = { version = "509.1.0", exact = true }
+"omni.kit.converter.jt" = { version = "508.1.0", exact = true }
+"omni.kit.converter.jt_core" = { version = "508.1.0", exact = true }
+
 # Livestreaming
-"omni.services.livestream.nvcf" = {}
-"omni.kit.gfn" = {}
-"omni.kit.pointclouds" = {}
-"omni.kit.xr.profile.ar" = {}
-"omni.kit.xr.profile.tabletar" = {}
-"omni.kit.xr.profile.vr" = {}
-"omni.kit.xr.system.simulatedxr" = {}
+"omni.services.livestream.nvcf" = { version = "7.2.0", exact = true }
+"omni.kit.gfn" = { version = "107.0.4", exact = true }
+"omni.kit.livestream.core" = { version = "7.5.0", exact = true }
+"omni.kit.livestream.webrtc" = { version = "7.0.0", exact = true }
+"omni.kit.pointclouds" = { version = "1.5.14", exact = true }
+"omni.kit.streamsdk.plugins" = { version = "7.6.3", exact = true }
+
+# XR Extensions
+"omni.kit.xr.advertise" = { version = "107.3.109", exact = true }
+"omni.kit.xr.core" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.ar" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.common" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.tabletar" = { version = "107.3.109", exact = true }
+"omni.kit.xr.profile.vr" = { version = "107.3.109", exact = true }
+"omni.kit.xr.scene_view.core" = { version = "107.3.109", exact = true }
+"omni.kit.xr.scene_view.utils" = { version = "107.3.109", exact = true }
+"omni.kit.xr.system.openxr" = { version = "107.3.109", exact = true }
+"omni.kit.xr.system.simulatedxr" = { version = "107.3.109", exact = true }
+"omni.kit.xr.ui.stage" = { version = "107.3.109", exact = true }
+"omni.kit.xr.ui.window.profile" = { version = "107.3.109", exact = true }
+"omni.kit.xr.ui.window.viewport" = { version = "107.3.109", exact = true }
+
+# Services
+"omni.services.convert.asset" = { version = "508.0.2", exact = true }
+"omni.services.convert.cad" = { version = "507.0.2", exact = true }
+
+# USD
+"omni.usdex.libs" = { version = "1.2.2", exact = true }
 
 ########################################################################################################################
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
@@ -380,7 +443,35 @@ folders = [
 # Kit SDK Version: 107.3.3+isaac.229672.69cbf6ad.gl
 
 # Exact Version dependencies:
+# 	isaacsim.xr.input_devices-1.0.1
+# 	isaacsim.xr.openxr-1.0.0
+# 	omni.kit.converter.cad-205.0.0
+# 	omni.kit.converter.common-507.1.2
+# 	omni.kit.converter.dgn-509.1.0
+# 	omni.kit.converter.dgn_core-510.1.0
+# 	omni.kit.converter.hoops-509.1.0
+# 	omni.kit.converter.hoops_core-509.1.0
+# 	omni.kit.converter.jt-508.1.0
+# 	omni.kit.converter.jt_core-508.1.0
+# 	omni.kit.gfn-107.0.4
+# 	omni.kit.livestream.core-7.5.0
+# 	omni.kit.livestream.webrtc-7.0.0
+# 	omni.kit.pointclouds-1.5.14
+# 	omni.kit.streamsdk.plugins-7.6.3
 # 	omni.kit.tool.asset_importer-4.3.2
+# 	omni.kit.xr.advertise-107.3.109
+# 	omni.kit.xr.core-107.3.109
+# 	omni.kit.xr.profile.ar-107.3.109
+# 	omni.kit.xr.profile.common-107.3.109
+# 	omni.kit.xr.profile.tabletar-107.3.109
+# 	omni.kit.xr.profile.vr-107.3.109
+# 	omni.kit.xr.scene_view.core-107.3.109
+# 	omni.kit.xr.scene_view.utils-107.3.109
+# 	omni.kit.xr.system.openxr-107.3.109
+# 	omni.kit.xr.system.simulatedxr-107.3.109
+# 	omni.kit.xr.ui.stage-107.3.109
+# 	omni.kit.xr.ui.window.profile-107.3.109
+# 	omni.kit.xr.ui.window.viewport-107.3.109
 # 	omni.physics.tensors-107.3.26
 # 	omni.physx.bundle-107.3.26
 # 	omni.physx.fabric-107.3.26
@@ -388,6 +479,10 @@ folders = [
 # 	omni.physx.tensors-107.3.26
 # 	omni.physx.tests-107.3.26
 # 	omni.physx.tests.visual-107.3.26
+# 	omni.services.convert.asset-508.0.2
+# 	omni.services.convert.cad-507.0.2
+# 	omni.services.livestream.nvcf-7.2.0
+# 	omni.usdex.libs-1.2.2
 
 # Version lock for all dependencies:
 [settings.app.exts]
@@ -582,41 +677,6 @@ enabled = [
 	"semantics.schema.property-2.0.1",
 ]
 
-[settings.app.exts."filter:platform"."*-x86_64"]
-enabled = [
-	"isaacsim.xr.input_devices-1.0.1",
-	"isaacsim.xr.openxr-1.0.0",
-	"omni.kit.converter.cad-205.0.0",
-	"omni.kit.converter.common-507.1.2",
-	"omni.kit.converter.dgn-509.1.0",
-	"omni.kit.converter.dgn_core-510.1.0",
-	"omni.kit.converter.hoops-509.1.0",
-	"omni.kit.converter.hoops_core-509.1.0",
-	"omni.kit.converter.jt-508.1.0",
-	"omni.kit.converter.jt_core-508.1.0",
-	"omni.kit.gfn-107.0.4",
-	"omni.kit.livestream.core-7.5.0",
-	"omni.kit.livestream.webrtc-7.0.0",
-	"omni.kit.pointclouds-1.5.14",
-	"omni.kit.streamsdk.plugins-7.6.3",
-	"omni.kit.xr.advertise-107.3.109",
-	"omni.kit.xr.core-107.3.109",
-	"omni.kit.xr.profile.ar-107.3.109",
-	"omni.kit.xr.profile.common-107.3.109",
-	"omni.kit.xr.profile.tabletar-107.3.109",
-	"omni.kit.xr.profile.vr-107.3.109",
-	"omni.kit.xr.scene_view.core-107.3.109",
-	"omni.kit.xr.scene_view.utils-107.3.109",
-	"omni.kit.xr.system.openxr-107.3.109",
-	"omni.kit.xr.system.simulatedxr-107.3.109",
-	"omni.kit.xr.ui.stage-107.3.109",
-	"omni.kit.xr.ui.window.profile-107.3.109",
-	"omni.kit.xr.ui.window.viewport-107.3.109",
-	"omni.services.convert.asset-508.0.2",
-	"omni.services.convert.cad-507.0.2",
-	"omni.services.livestream.nvcf-7.2.0",
-	"omni.usdex.libs-1.0.2",
-]
 ########################################################################################################################
 # END GENERATED PART
 ########################################################################################################################
