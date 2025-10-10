@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.4] - 2025-10-09
+### Fixed
+- Change log level of invalid rational time error to WARN
+- Change log level of no data found for time warning to INFO
+
 ## [1.4.3] - 2025-09-19
 ### Fixed
 - Reduce verbosity of log messages
