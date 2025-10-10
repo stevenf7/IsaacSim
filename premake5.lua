@@ -79,7 +79,7 @@ function setup_isaacsim_folder_links()
     }
 
     if not os.isdir(root .. "/_build/PACKAGE-LICENSES") then os.mkdir(root .. "/_build/PACKAGE-LICENSES") end
-    
+
 -- AUTOREMOVE: BEGIN
     -- Link all licenses (if not present just link empty dir)
     repo_build.prebuild_copy {
@@ -116,7 +116,6 @@ function setup_isaacsim_folder_links()
         { "source/scripts/run_tests.py", "_build/%{platform}/%{config}" },
         { "source/scripts/test_config.json", "_build/%{platform}/%{config}/tests" },
         { "source/scripts/warmup${shell_ext}", "_build/%{platform}/%{config}" },
-        { "source/scripts/isaac-sim.docker*${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/clear_caches*${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/post_install*${shell_ext}", "_build/%{platform}/%{config}" },
         { "source/scripts/vscode/%{platform}", "_build/%{platform}/%{config}/.vscode" },
@@ -166,13 +165,13 @@ function process_git_branch(official_branch_roots)
     if official_branch_roots == nil then
         official_branch_roots = {"release"}
     end
-    
+
     print("process_git_branch: Starting with official_branch_roots = " .. table.concat(official_branch_roots, ", "))
-    
+
     -- Check for environment variables first (CI context)
     local gitbranch = os.getenv("buildbranch") or os.getenv("CI_COMMIT_BRANCH") or os.getenv("CI_COMMIT_REF_SLUG") or ""
     print("process_git_branch: Initial gitbranch from env vars = '" .. gitbranch .. "'")
-    
+
     -- If we're in a merge request, use MR format
     local mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
     if mr_iid ~= nil and mr_iid ~= "" then
@@ -188,11 +187,11 @@ function process_git_branch(official_branch_roots)
         else
             print("process_git_branch: Using branch from env vars = '" .. gitbranch .. "'")
         end
-        
+
         if gitbranch ~= nil and gitbranch ~= "" then
             local original_gitbranch = gitbranch
             print("process_git_branch: Processing branch = '" .. gitbranch .. "'")
-            
+
             -- Handle merge-request branches
             if string.find(string.lower(gitbranch), "merge%-request") then
                 print("process_git_branch: Detected merge-request branch pattern")
@@ -223,7 +222,7 @@ function process_git_branch(official_branch_roots)
                         break
                     end
                 end
-                
+
                 -- If not official, take the last part after final "/"
                 if not is_official then
                     print("process_git_branch: Not an official branch, extracting last part after '/'")
@@ -241,7 +240,7 @@ function process_git_branch(official_branch_roots)
                     print("process_git_branch: Using official branch = '" .. gitbranch .. "'")
                 end
             end
-            
+
             -- Clean up the branch name
             local pre_cleanup = gitbranch
             gitbranch = string.gsub(gitbranch, "/", "_")
@@ -256,7 +255,7 @@ function process_git_branch(official_branch_roots)
             print("process_git_branch: Warning: gitbranch is empty or nil after git query")
         end
     end
-    
+
     print("process_git_branch: Returning final branch = '" .. (gitbranch or "nil") .. "'")
     return gitbranch
 end
@@ -265,16 +264,16 @@ end
 function generate_version_header()
     shortSha = get_git_info("rev-parse --short HEAD", "ISAACSIM_BUILD_SHA")
     commitDate = get_git_info('show -s --format="%ad"', "ISAACSIM_BUILD_DATE")
-    
+
     local branch
 -- AUTOREMOVE: BEGIN
     branch = process_git_branch({"release", "develop"})
 -- AUTOREMOVE: END
     branch = branch or get_git_info("rev-parse --abbrev-ref HEAD", "ISAACSIM_BUILD_BRANCH")
-    
+
     -- Always print the final branch value
     print("ISAACSIM_BUILD_BRANCH " .. (branch or "UNKNOWN"))
-    
+
     version = get_git_info("show HEAD:VERSION", "ISAACSIM_BUILD_VERSION")
     repo = get_git_info("config --get remote.origin.url", "ISAACSIM_BUILD_REPO")
     print(
