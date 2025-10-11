@@ -4,7 +4,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 ROOT_DIR="$(dirname "$(realpath $SCRIPT_DIR/../../../)")"
 "$ROOT_DIR/tools/packman/packman" install connect-samples-launcher 1112-linux-x86_64 -l $ROOT_DIR/_build/_omnicli
 OMNICLI="$ROOT_DIR/_build/_omnicli/omnicli.sh"
-SOURCE_PATH="https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac"
+SOURCE_PATH="https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac"
 OUTPUT_PATH="$ROOT_DIR/_assets-2_temp"
 VERSION="5.1"
 NAME="isaac-sim-assets-2"
