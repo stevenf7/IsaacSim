@@ -276,6 +276,7 @@ function generate_version_header()
 
     version = get_git_info("show HEAD:VERSION", "ISAACSIM_BUILD_VERSION")
     repo = get_git_info("config --get remote.origin.url", "ISAACSIM_BUILD_REPO")
+    repo = string.gsub(repo, "(https://)([^@]+)@", "%1")
     print(
         "Generating version header file: "
             .. branch
