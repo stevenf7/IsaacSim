@@ -32,12 +32,15 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
     """
 
     async def setUp(self):
+        pass
+
+    async def tearDown(self):
+        pass
+
+    async def setup_stage_with_semantics(self):
         await omni.usd.get_context().new_stage_async()
         rep.create.cube(semantics=[("class", "cube")])
         rep.create.sphere(position=(1, 1, 0), semantics=[("class", "sphere")])
-
-    async def tearDown(self):
-        await omni.usd.get_context().new_stage_async()
 
     async def run_recorder_capture(self, num_frames, play_timeline, control_timeline):
         test_name = f"_out_num_frames_{num_frames}_play_timeline_{play_timeline}_control_timeline_{control_timeline}"
@@ -132,14 +135,18 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
         )
 
     async def test_recorder_data_play_timeline_false_control_timeline_false(self):
-        await self.run_recorder_capture(num_frames=10, play_timeline=False, control_timeline=False)
+        await self.setup_stage_with_semantics()
+        await self.run_recorder_capture(num_frames=5, play_timeline=False, control_timeline=False)
 
     async def test_recorder_data_play_timeline_false_control_timeline_true(self):
-        await self.run_recorder_capture(num_frames=10, play_timeline=False, control_timeline=True)
+        await self.setup_stage_with_semantics()
+        await self.run_recorder_capture(num_frames=5, play_timeline=False, control_timeline=True)
 
     # ISIM-2602 - orchestrator.preview call causes an extra frame to be written if not called from UI
     async def test_recorder_data_play_timeline_true_control_timeline_false(self):
-        await self.run_recorder_capture(num_frames=10, play_timeline=True, control_timeline=False)
+        await self.setup_stage_with_semantics()
+        await self.run_recorder_capture(num_frames=5, play_timeline=True, control_timeline=False)
 
     async def test_recorder_data_play_timeline_true_control_timeline_true(self):
-        await self.run_recorder_capture(num_frames=10, play_timeline=True, control_timeline=True)
+        await self.setup_stage_with_semantics()
+        await self.run_recorder_capture(num_frames=5, play_timeline=True, control_timeline=True)

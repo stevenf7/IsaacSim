@@ -1,4 +1,9 @@
 # Changelog
+## [2.2.18] - 2025-10-14
+### Changed
+- decreased number of captured frames for tests
+- increased test timeout to 900 seconds
+
 ## [2.2.17] - 2025-09-26
 ### Changed
 - Restored capture on play flag to its original value after recording
