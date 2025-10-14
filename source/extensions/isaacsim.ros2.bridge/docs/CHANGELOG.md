@@ -30,7 +30,7 @@
 - Improvements to test stability and cleanup test code
 
 ## [4.11.0] - 2025-08-19
-## Changed
+### Changed
 - Set default ROS bridge lib setting to system_default and cleanup ROS Bridge loading
 
 ## [4.10.1] - 2025-08-14
@@ -67,21 +67,22 @@
 - Fix bugs with registering and deregistering examples in the browser
 
 ## [4.9.3] - 2025-07-29
-## Changed
+### Changed
 - CycloneDDS is now supported for Jazzy
 
 ## [4.9.2] - 2025-07-26
-## Changed
+### Changed
 - Update test settings and exclude error messages from test logs
 
 ## [4.9.1] - 2025-07-26
-## Changed
+### Changed
 - PublishPointCloudBuffer writer uses IsaacCreateRTXLidarScanBuffer annotator.
 
 ## [4.9.0] - 2025-07-25
-## Changed
+### Changed
 - NITROS bridge image publishing is disabled by default
-## Added
+
+### Added
 - Added carb setting enable_nitros_bridge to enable NITROS image publishing
 
 ## [4.8.17] - 2025-07-16
