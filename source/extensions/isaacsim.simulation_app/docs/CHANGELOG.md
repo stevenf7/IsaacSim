@@ -11,7 +11,7 @@
 - Add builtins flag to indicate that the `SimulationApp` class has been launched
 
 ## [2.12.0] - 2025-09-10
-## Changed
+### Changed
 - Added skip_cleanup parameter to close method
 - Update docstrings
 

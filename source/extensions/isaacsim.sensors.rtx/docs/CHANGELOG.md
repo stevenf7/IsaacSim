@@ -7,6 +7,7 @@
 ## [15.8.3] - 2025-09-26
 ### Added
 - kwargs to LidarRtx.attach_annotator and LidarRtx.attach_writer to specify keywords upon Annotator or Writer initialization
+
 ### Fixed
 - Fixed docstring references to nonexistent annotators
 
@@ -227,7 +228,7 @@
 - exts."isaacsim.sensors.rtx".supportedLidarConfigs specifies OmniLidar USDs (some including meshes) that can be added via sensor create commands.
 - Sensor creation commands now have "force_camera_prim" bool argument to forcibly create Camera prims as RTX Sensors (see below).
 
-## Changed
+### Changed
 - Deprecated Camera prims as RTX Sensors
 - LidarRTX no longer implicitly attaches annotators or writers; user must now explicitly attach annotators or writers using helper methods.
 - LidarRTX get_current_frame() data dictionary exposes data from each attached annotator
@@ -237,13 +238,13 @@
 - IsaacSensorCreateRtxLidar and IsaacSensorCreateRtxRadar will now create OmniSensor prims on the stage by default
 - OgnIsaacComputeRTXLidarFlatScan now only works with lidar configurations or OmniLidar prims specifying 2D lidars, with all emitters at 0 degrees elevation.
 
-## Removed
+### Removed
 - OgnIsaacComputeRTXLidarPointCloud node removed in favor of OgnIsaacExtractRTXSensorPointCloud
 - OgnIsaacComputeRTXRadarPointCloud node removed in favor of OgnIsaacExtractRTXSensorPointCloud
 - OgnIsaacCreateRTXLidarScanBuffer node removed in favor of OgnIsaacExtractRTXSensorPointCloud
 - OgnIsaacReadRTXLidarData node removed in favor of standalone examples
 
-## Fixed
+### Fixed
 - OgnIsaacComputeRTXLidarFlatScan properly outputs all returns from full scan of 2D lidar.
 
 ## [14.4.2] - 2025-05-10

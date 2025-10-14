@@ -547,6 +547,7 @@ class ChangelogValidator:
 
         # First run all validation checks
         self.validate_header()
+        self.validate_line_format()
         self.validate_versions_and_dates()
         self.validate_sections()
         self.validate_bullet_points()
@@ -566,13 +567,15 @@ class ChangelogValidator:
         if not self.lines[0].strip().startswith("# Changelog"):
             self.errors.append(f"File {self.rel_changelog_path} should start with '# Changelog'")
 
-    def extract_versions_and_dates(self) -> List[Tuple[str, Optional[datetime.date]]]:
-        """Extract version numbers and dates from the changelog."""
+    def extract_versions_and_dates(self) -> List[Tuple[str, Optional[datetime.date], int]]:
+        """Extract version numbers, dates, and line numbers from the changelog."""
         versions_and_dates = []
         # This pattern now captures any separator character between the version and date
         version_pattern = re.compile(r"## \[([^\]]+)\](?:[ ]([^\w\s])[ ](\d{4}-\d{2}-\d{2}))?")
+        # Pattern to detect malformed dates (e.g., 2023-12-1 instead of 2023-12-01)
+        malformed_date_pattern = re.compile(r"## \[([^\]]+)\][ ][-][ ](.+)")
 
-        for line in self.lines:
+        for line_num, line in enumerate(self.lines, 1):
             match = version_pattern.match(line.strip())
             if match:
                 version_str = match.group(1)
@@ -582,7 +585,7 @@ class ChangelogValidator:
                 # Check for invalid separator
                 if separator and separator != "-":
                     self.errors.append(
-                        f"Invalid separator '{separator}' in {self.rel_changelog_path}: '{line.strip()}'. "
+                        f"Line {line_num}: Invalid separator '{separator}': '{line.strip()}'. "
                         f"Use a hyphen (-) between version and date."
                     )
 
@@ -591,11 +594,20 @@ class ChangelogValidator:
                     try:
                         date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
                     except ValueError:
-                        self.errors.append(
-                            f"Invalid date format in {self.rel_changelog_path}: {date_str}. Use YYYY-MM-DD."
-                        )
+                        self.errors.append(f"Line {line_num}: Invalid date format: {date_str}. Use YYYY-MM-DD.")
+                else:
+                    # Check if there's a malformed date (something after the version that didn't match)
+                    malformed_match = malformed_date_pattern.match(line.strip())
+                    if malformed_match and malformed_match.group(1) == version_str:
+                        malformed_date_text = malformed_match.group(2).strip()
+                        # Only flag as malformed if it's not "Unreleased"
+                        if version_str.lower() != "unreleased" and malformed_date_text:
+                            self.errors.append(
+                                f"Line {line_num}: Invalid date format for version [{version_str}]: '{malformed_date_text}'. "
+                                f"Use YYYY-MM-DD format with zero-padded months and days (e.g., 2023-12-01, not 2023-12-1)."
+                            )
 
-                versions_and_dates.append((version_str, date_obj))
+                versions_and_dates.append((version_str, date_obj, line_num))
 
         return versions_and_dates
 
@@ -604,20 +616,34 @@ class ChangelogValidator:
         versions_and_dates = self.extract_versions_and_dates()
 
         if not versions_and_dates:
-            self.errors.append(f"No version entries found in {self.rel_changelog_path}")
+            self.errors.append(f"No version entries found")
             return
 
         # Check if first entry is "Unreleased" (if required)
         if self.require_unreleased and versions_and_dates[0][0].lower() != "unreleased":
-            self.errors.append(f"First version entry in {self.rel_changelog_path} should be [Unreleased]")
+            line_num = versions_and_dates[0][2]
+            self.errors.append(f"Line {line_num}: First version entry should be [Unreleased]")
 
         # Skip "Unreleased" when checking version order
-        actual_versions = [(v, d) for v, d in versions_and_dates if v.lower() != "unreleased"]
+        actual_versions = [(v, d, ln) for v, d, ln in versions_and_dates if v.lower() != "unreleased"]
+
+        # Check that all released versions have dates
+        # Note: malformed dates are already caught in extract_versions_and_dates()
+        # so we only report "missing date" for truly missing dates (no date text at all)
+        for ver_str, date_obj, line_num in actual_versions:
+            if date_obj is None:
+                # Check if this was already reported as a malformed date
+                already_reported = any(f"Invalid date format for version [{ver_str}]" in err for err in self.errors)
+                if not already_reported:
+                    self.errors.append(
+                        f"Line {line_num}: Version [{ver_str}] is missing a date. "
+                        f"Released versions must have a date in format: ## [{ver_str}] - YYYY-MM-DD"
+                    )
 
         # Check version order
         for i in range(len(actual_versions) - 1):
-            current_ver_str, current_date = actual_versions[i]
-            next_ver_str, next_date = actual_versions[i + 1]
+            current_ver_str, current_date, current_line_num = actual_versions[i]
+            next_ver_str, next_date, next_line_num = actual_versions[i + 1]
 
             try:
                 current_ver = parse_version(current_ver_str)
@@ -625,19 +651,19 @@ class ChangelogValidator:
 
                 if current_ver <= next_ver:
                     self.errors.append(
-                        f"Version {current_ver_str} should be greater than {next_ver_str} "
-                        f"in {self.rel_changelog_path} (versions should be in descending order)"
+                        f"Line {current_line_num}: Version {current_ver_str} should be greater than {next_ver_str} "
+                        f"(line {next_line_num}) - versions should be in descending order"
                     )
             except Exception as e:
                 self.errors.append(
-                    f"Invalid version format in {self.rel_changelog_path}: {current_ver_str} or {next_ver_str}. Error: {e}"
+                    f"Lines {current_line_num}/{next_line_num}: Invalid version format: {current_ver_str} or {next_ver_str}. Error: {e}"
                 )
 
             # Check date order if both dates exist
             if current_date and next_date and current_date < next_date:
                 self.errors.append(
-                    f"Date {current_date} for version {current_ver_str} should not be before "
-                    f"{next_date} for version {next_ver_str} in {self.rel_changelog_path}"
+                    f"Line {current_line_num}: Date {current_date} for version {current_ver_str} should not be before "
+                    f"{next_date} for version {next_ver_str} (line {next_line_num})"
                 )
 
     def validate_sections(self) -> None:
@@ -654,14 +680,40 @@ class ChangelogValidator:
                     # Check if it's just a case issue
                     if section_name.lower() in [s.lower() for s in self.valid_sections]:
                         self.errors.append(
-                            f"Line {i+1} in {self.rel_changelog_path}: Section '{section_name}' has incorrect capitalization. "
+                            f"Line {i+1}: Section '{section_name}' has incorrect capitalization. "
                             f"Should be one of: {', '.join(self.valid_sections)}"
                         )
                     else:
                         self.errors.append(
-                            f"Line {i+1} in {self.rel_changelog_path}: Invalid section '{section_name}'. "
+                            f"Line {i+1}: Invalid section '{section_name}'. "
                             f"Should be one of: {', '.join(self.valid_sections)}"
                         )
+
+    def validate_line_format(self) -> None:
+        """Validate that all lines follow proper format (strict line pattern checking)."""
+        # Allowed line start patterns based on Keep a Changelog format
+        allowed_patterns = ("# Changelog", "## [", "### ", "-", "The format is based on")
+
+        for line_num, line in enumerate(self.lines, 1):
+            # Skip empty lines
+            if not line.strip():
+                continue
+
+            # Check for bullet points with indentation (nested lists)
+            # Allow any amount of leading whitespace followed by a dash
+            stripped_line = line.lstrip()
+            if stripped_line.startswith("-") and line[0] in (" ", "\t"):
+                # This is a nested bullet point (indented dash), which is valid
+                continue
+
+            # Check if line starts with allowed patterns
+            if not line.startswith(allowed_patterns):
+                line_preview = line.rstrip()[:50] + "..." if len(line.rstrip()) > 50 else line.rstrip()
+                self.errors.append(
+                    f"Line {line_num}: Incorrect format. "
+                    f"Lines should start with: '# Changelog', '## [', '### ', '-', or nested bullet points. "
+                    f"Got: '{line_preview}'"
+                )
 
     def validate_bullet_points(self) -> None:
         """Validate that all entries are bullet points."""
@@ -698,21 +750,19 @@ class ChangelogValidator:
 
                 # Check if line starts with a bullet point
                 if not line.startswith("-") and not line.startswith("*"):
-                    self.errors.append(
-                        f"Line {line_num} in {self.rel_changelog_path} should start with a bullet point (- or *)"
-                    )
+                    self.errors.append(f"Line {line_num} should start with a bullet point (- or *)")
 
     def validate_extension_version(self) -> None:
         """Validate that the latest version in the changelog matches the version in extension.toml."""
         # Get the latest version from the changelog (excluding "Unreleased")
         versions = self.extract_versions_and_dates()
-        actual_versions = [(v, d) for v, d in versions if v.lower() != "unreleased"]
+        actual_versions = [(v, d, ln) for v, d, ln in versions if v.lower() != "unreleased"]
 
         if not actual_versions:
-            self.errors.append(f"No actual version entries found in {self.rel_changelog_path}")
+            self.errors.append(f"No actual version entries found")
             return
 
-        latest_version_str = actual_versions[0][0]
+        latest_version_str, _, latest_line_num = actual_versions[0]
 
         # Check if extension.toml exists
         if not self.extension_toml_path or not os.path.exists(self.extension_toml_path):
@@ -738,8 +788,8 @@ class ChangelogValidator:
             # Compare versions
             if toml_version != latest_version_str:
                 self.errors.append(
-                    f"Version mismatch: {latest_version_str} in {self.rel_changelog_path} doesn't match "
-                    f"{toml_version} in {self.rel_extension_toml_path}"
+                    f"Line {latest_line_num}: Version mismatch: {latest_version_str} in CHANGELOG.md doesn't match "
+                    f"{toml_version} in extension.toml"
                 )
 
         except Exception as e:
@@ -994,7 +1044,11 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     if extensions_with_errors:
         print("\nExtensions with issues:")
         for ext_name, errors in extensions_with_errors:
-            print(f"❌ Extension '{ext_name}' had {len(errors)} issues:")
+            # Show changelog path once per extension
+            changelog_path = f"{ext_name}/docs/CHANGELOG.md"
+            print(
+                f"❌ Extension '{ext_name}' ({changelog_path}) had {len(errors)} issue{'s' if len(errors) != 1 else ''}:"
+            )
             for error in errors:
                 print(f"  - {error}")
 

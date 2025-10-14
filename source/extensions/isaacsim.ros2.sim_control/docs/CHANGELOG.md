@@ -1,6 +1,5 @@
 # Changelog
 ## [1.3.2] - 2025-10-04
-
 ### Changed
 - Spawn Entity service now attempts to load given path with default asset root prefix if given path is initially not found.
 

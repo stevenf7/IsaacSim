@@ -52,52 +52,6 @@ def parse_version(line: str):
     return None
 
 
-def validate_changelog(change: str, final_version: str):
-    i = 0
-    prev_version = None
-    prev_date = None
-    for line in change.splitlines():
-        i += 1
-        # line should not begin with space
-        # line should begin with #, ##, ###, - or emptyline
-
-        if len(line) > 0 and not line.startswith(
-            ("# Changelog", "## [", "### ", "    -", "-", "\n", "The format is based on")
-        ):
-            print("Line looks incorrect: ")
-            print(line, i)
-            return False
-
-        # Check for an approved types
-        if line.startswith("### "):
-            temp = line.strip("### ")
-            if not temp.startswith(("Added", "Changed", "Deprecated", "Fixed", "Removed", "Security")):
-                print(temp, i)
-                return False
-        res = parse_version(line)
-        if res is not None:
-            version, date = res
-            if version is not None and date is not None:
-                if prev_version is not None and prev_date is not None:
-                    if LooseVersion(version) > LooseVersion(prev_version):
-                        print(f"Version decresed: {version} vs {prev_version}")
-                        return False
-                    if date > prev_date:
-                        print(f"date decresed: {date} vs {prev_date}")
-                        return False
-                pass
-            else:
-                print("Version or date is None: ")
-                print(version, date, line, i)
-            if final_version != version and prev_version == None:
-                print(f" extension toml version {final_version} does not match {prev_version}")
-                return False
-            prev_version = version
-            prev_date = date
-
-    return True
-
-
 def parse_changelog(change: str) -> Tuple[str, datetime.date, List]:
     """Parse an extension changelog content and yield tuples of version, date and list of strings"""
     version = None
@@ -182,25 +136,6 @@ def read_extension_data_from_app_kitfiles(repo_root: str) -> Dict[str, str]:
 
     # return a dict of extension name : version
     return ext_to_version_map
-
-
-def validate(changelog_path: str, config_path: str) -> bool:
-    """
-    returns for this extension a list of tuples of (version, changelog strings) for each version between old and new
-    """
-
-    if os.path.exists(changelog_path) and os.path.exists(config_path):
-        print("validating", changelog_path, config_path)
-        loaded_config = toml.load(config_path)
-        with open(changelog_path) as changelog_file:
-            changelog_str = changelog_file.read()
-            if not validate_changelog(changelog_str, loaded_config["package"]["version"]):
-                print("FAIL")
-                exit()
-                return False
-    else:
-        print("Path doesn't exist")
-    return True
 
 
 def get_extension_diff_data(
@@ -356,9 +291,26 @@ def generate_extscache_diff_report(
 
         # merge results to "dependencies"
         if merge_extscache_sections:
-            data["exact_version_dependencies"].update(data["dependencies"])
-            data["exact_version_dependencies"].update(data["version_lock_dependencies"])
-            data["dependencies"] = OrderedDict(sorted(data["exact_version_dependencies"].items()))
+            # Merge all three dictionaries by combining version info (not overwriting)
+            merged = {}
+
+            # Process all three sections
+            for section_data in [
+                data["dependencies"],
+                data["exact_version_dependencies"],
+                data["version_lock_dependencies"],
+            ]:
+                for ext_name, versions in section_data.items():
+                    if ext_name not in merged:
+                        merged[ext_name] = {}
+                    # Merge version info - if same key exists, keep both values
+                    for status, version in versions.items():
+                        if status not in merged[ext_name]:
+                            merged[ext_name][status] = version
+                        # If status already exists with different version, keep the first one
+                        # (this shouldn't happen in practice, but handles edge cases)
+
+            data["dependencies"] = OrderedDict(sorted(merged.items()))
             data["exact_version_dependencies"] = {}
             data["version_lock_dependencies"] = {}
 
@@ -394,7 +346,9 @@ def generate_extscache_diff_report(
             for k, v in data["dependencies"].items():
                 # changed
                 if "+" in list(v.keys()) and "-" in list(v.keys()):
-                    extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
+                    # Only show as changed if versions are actually different
+                    if v["-"] != v["+"]:
+                        extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
                 # added
                 elif "+" in list(v.keys()):
                     extension_added.append(f"{k}: {v['+']}")
@@ -425,7 +379,9 @@ def generate_extscache_diff_report(
             for k, v in data["exact_version_dependencies"].items():
                 # changed
                 if "+" in list(v.keys()) and "-" in list(v.keys()):
-                    extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
+                    # Only show as changed if versions are actually different
+                    if v["-"] != v["+"]:
+                        extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
                 # added
                 elif "+" in list(v.keys()):
                     extension_added.append(f"{k}: {v['+']}")
@@ -460,7 +416,9 @@ def generate_extscache_diff_report(
             for k, v in data["version_lock_dependencies"].items():
                 # changed
                 if "+" in list(v.keys()) and "-" in list(v.keys()):
-                    extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
+                    # Only show as changed if versions are actually different
+                    if v["-"] != v["+"]:
+                        extension_changed.append(f"{k}: {v['-']} -> {v['+']}")
                 # added
                 elif "+" in list(v.keys()):
                     extension_added.append(f"{k}: {v['+']}")
@@ -556,19 +514,18 @@ def get_range(range: str):
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Generate changelog documentation"
     parser.add_argument(
-        "--validate",
-        dest="validate",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Validate all changelogs and exit",
-    )
-    parser.add_argument(
         "--extscache",
         required=False,
         default=False,
         action="store_true",
         help="Generate extscache changelog",
+    )
+    parser.add_argument(
+        "--changelog",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Generate extensions changelog",
     )
     parser.add_argument(
         "-r",
@@ -585,11 +542,11 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         help="Output format: reStructuredText (rst) or Markdown (md)",
     )
     parser.add_argument(
-        "--merge-extscache-sections",
+        "--merge-extscache",
         required=False,
         default=False,
         action="store_true",
-        help="Whether to merge the section generated for the extscache changelog",
+        help="Whether to merge the sections generated for the extscache changelog",
     )
 
     def run_repo_tool(options: Dict, config: Dict):
@@ -599,16 +556,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         home_path = tool_config["home_path"]
         extensions = sorted(os.listdir(home_path))
 
-        # validate CHANGELOGs
-        if options.validate:
-            for e in extensions:
-                if e not in tool_config["exts_exclude"]:
-                    name = e.split("\\")[-1]
-                    changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
-                    config_path = os.path.join(home_path, e, "config", "extension.toml")
-                    validate(changelog_path, config_path)
-            exit()
-
         # get range
         if options.range is None:
             omni.repo.man.print_log(f"Missing --range argument", logging.ERROR)
@@ -617,25 +564,30 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         range = get_range(options.range)
         omni.repo.man.print_log(f"Report range: {range}", logging.INFO)
 
+        # If neither flag is specified, generate both (backward compatibility)
+        generate_changelog = options.changelog or (not options.extscache and not options.changelog)
+        generate_extscache = options.extscache or (not options.extscache and not options.changelog)
+
         # generate extscache report
-        if options.extscache:
+        if generate_extscache:
             generate_extscache_diff_report(
-                tool_config["extscache_paths"], range, options.format, options.merge_extscache_sections
+                tool_config["extscache_paths"], range, options.format, options.merge_extscache
             )
 
         # generate extensions report
-        print("# Extensions" if options.format == "md" else "Extensions\n==========")
-        for e in extensions:
-            if e not in tool_config["exts_exclude"]:
-                name = e.split("\\")[-1]
-                changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
-                config_path = os.path.join(home_path, e, "config", "extension.toml")
-                generate_extension_diff_report(
-                    name,
-                    changelog_path,
-                    datetime.date.fromisoformat(range[0]["date"]),
-                    datetime.date.fromisoformat(range[1]["date"]),
-                    options.format,
-                )
+        if generate_changelog:
+            print("# Extensions" if options.format == "md" else "Extensions\n==========")
+            for e in extensions:
+                if e not in tool_config["exts_exclude"]:
+                    name = e.split("\\")[-1]
+                    changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
+                    config_path = os.path.join(home_path, e, "config", "extension.toml")
+                    generate_extension_diff_report(
+                        name,
+                        changelog_path,
+                        datetime.date.fromisoformat(range[0]["date"]),
+                        datetime.date.fromisoformat(range[1]["date"]),
+                        options.format,
+                    )
 
     return run_repo_tool
