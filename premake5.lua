@@ -351,33 +351,20 @@ end
 
 
 -- Check for system NVCC first, but only on ARM64 (aarch64) where glibc compatibility issues exist
-filter { "system:linux", "platforms:aarch64" }
-    local systemNvccPath = "/usr/local/cuda/bin/nvcc"
-    if os.isfile(systemNvccPath) then
-        nvccPath = systemNvccPath
-        cudaIncludePath = "/usr/local/cuda/include"
-        cudaLibPathLinux = "/usr/local/cuda/lib64"
-        buildmessage("Using system NVCC (ARM64): " .. nvccPath)
-        buildmessage("Using system CUDA includes (ARM64): " .. cudaIncludePath)
-        buildmessage("Using system CUDA libs (ARM64): " .. cudaLibPathLinux)
-    else
-        nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc")
-        cudaIncludePath = path.getabsolute("_build/target-deps/cuda/include")
-        cudaLibPathLinux = path.getabsolute("_build/target-deps/cuda/lib64")
-        buildmessage("Using target-deps NVCC (ARM64, system NVCC not found): " .. nvccPath)
-    end
-
-filter { "platforms:x86_64" }
-
-    nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc")
-    cudaIncludePath = path.getabsolute("_build/target-deps/cuda/include")
-    cudaLibPathLinux = path.getabsolute("_build/target-deps/cuda/lib64")
-    buildmessage("Using target-deps NVCC (x86_64): " .. nvccPath)
-    buildmessage("Using target-deps CUDA includes: " .. cudaIncludePath)
-    buildmessage("Using target-deps CUDA libs: " .. cudaLibPathLinux)
-
-filter {}
-
+local osHostArch = os.hostarch()
+local osTarget = os.target()
+local systemNvccPath = "/usr/local/cuda/bin/nvcc"
+nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc")
+cudaIncludePath = path.getabsolute("_build/target-deps/cuda/include")
+cudaLibPathLinux = path.getabsolute("_build/target-deps/cuda/lib64")
+if osTarget == "linux" and os.isfile(systemNvccPath) and (osHostArch == "aarch64" or osHostArch == "arm64" or osHostArch == "ARM64") then
+    nvccPath = systemNvccPath
+    cudaIncludePath = "/usr/local/cuda/include"
+    cudaLibPathLinux = "/usr/local/cuda/lib64"
+end
+print("Using NVCC binary: " .. nvccPath)
+print("Using CUDA includes directory: " .. cudaIncludePath)
+print("Using CUDA libs directory: " .. cudaLibPathLinux)
 
 filter { "system:windows" }
 nvccHostCompilerVS = path.getabsolute("_build/host-deps/msvc/VC")
