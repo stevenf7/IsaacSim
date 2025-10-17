@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.5.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [1.4.10] - 2025-08-29
 ### Changed
 - Renamed CARB profiling zones to include [IsaacSim] prefix

@@ -21,7 +21,6 @@ from typing import Callable, List, Optional, Tuple, Union
 import carb
 import numpy as np
 import omni
-import omni.physx as _physx
 import omni.ui as ui
 from isaacsim.gui.components.ui_utils import (
     BUTTON_WIDTH,
@@ -967,8 +966,8 @@ class StateButton(UIWidgetWrapper):
         self._on_b_click_fn = on_b_click_fn
 
         self._physics_callback_fn = physics_callback_fn
-        self._physx_subscription = None
-        self._physxIFace = _physx.get_physx_interface()
+        self._physics_subscription = None
+        self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
 
         state_btn_frame = self._creat_ui_widget(label, a_text, b_text, tooltip)
 
@@ -1061,10 +1060,12 @@ class StateButton(UIWidgetWrapper):
         self._remove_physics_callback()
 
     def _create_physics_callback(self):
-        self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._physics_callback_fn)
+        self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
+            pre_step=False, order=0, on_update=self._physics_callback_fn
+        )
 
     def _remove_physics_callback(self):
-        self._physx_subscription = None
+        self._physics_subscription = None
 
     def _on_clicked_fn_wrapper(self, value):
         # Button pressed while saying a_text

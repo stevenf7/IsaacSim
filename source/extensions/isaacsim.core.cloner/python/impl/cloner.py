@@ -22,7 +22,7 @@ import torch
 import usdrt
 from isaacsim.core.cloner._isaac_cloner import _fabric_clone
 from isaacsim.core.simulation_manager import SimulationManager
-from omni.physx import get_physx_replicator_interface, get_physx_simulation_interface
+from omni.physx import get_physx_replicator_interface
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt
 
 

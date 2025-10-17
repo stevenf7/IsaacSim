@@ -479,7 +479,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
 
         self.physics_step_count = 0
 
-        def physics_step_count(step_size):
+        def physics_step_count(step_size, context):
             self.physics_step_count += 1
 
         timeline = omni.timeline.get_timeline_interface()

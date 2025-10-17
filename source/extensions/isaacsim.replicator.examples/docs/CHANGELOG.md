@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [1.3.6] - 2025-10-08
 ### Changed
 - Added physics to custom fps example snippet, changed to dome light

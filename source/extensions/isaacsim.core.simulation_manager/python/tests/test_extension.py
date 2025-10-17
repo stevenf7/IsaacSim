@@ -72,11 +72,11 @@ class TestExtension(omni.kit.test.AsyncTestCase):
         global var
         var = 1
 
-        def add_one(dt):
+        def add_one(dt, context):
             global var
             var += 1
 
-        def multiply_two(dt):
+        def multiply_two(dt, context):
             global var
             var *= 2
 

@@ -18,6 +18,7 @@ import carb
 import numpy as np
 import omni
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
+import omni.physics.core
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from isaacsim.core.utils.stage import get_current_stage
@@ -80,8 +81,10 @@ class RotatingLidarPhysX(BaseSensor):
 
     def initialize(self, physics_sim_view=None) -> None:
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
-        self._acquisition_callback = omni.physx.get_physx_interface().subscribe_physics_step_events(
-            self._data_acquisition_callback
+        self._acquisition_callback = (
+            omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+                pre_step=False, order=0, on_update=self._data_acquisition_callback
+            )
         )
         self._stage_open_callback = (
             omni.usd.get_context()
@@ -171,7 +174,7 @@ class RotatingLidarPhysX(BaseSensor):
         del self._current_frame["semantics"]
         return
 
-    def _data_acquisition_callback(self, step_size: float) -> None:
+    def _data_acquisition_callback(self, step_size: float, context) -> None:
         self._current_time += step_size
         self._number_of_physics_steps += 1
         if not self._pause:

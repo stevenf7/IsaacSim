@@ -20,6 +20,7 @@ import carb.settings
 import omni.kit
 import omni.usd
 from isaacsim.test.utils.file_validation import validate_folder_contents
+from pxr import PhysicsSchemaTools
 
 
 class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
@@ -53,7 +54,7 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
         import omni.usd
         from isaacsim.core.utils.bounds import create_bbox_cache
         from isaacsim.storage.native import get_assets_root_path
-        from omni.physx import get_physx_scene_query_interface
+        from omni.physics.core import get_physics_scene_query_interface
         from PIL import Image
         from pxr import UsdShade
 
@@ -166,8 +167,7 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 origin = bin_pose.ExtractTranslation()
                 quat_gf = bin_pose.ExtractRotation().GetQuaternion()
 
-                any_hit_flag = False
-                hit_info = get_physx_scene_query_interface().overlap_box(
+                hit_info = get_physics_scene_query_interface().overlap_box(
                     carb.Float3(self._overlap_extent),
                     carb.Float3(origin[0], origin[1], origin[2]),
                     carb.Float4(
@@ -177,15 +177,15 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                         quat_gf.GetReal(),
                     ),
                     self._on_overlap_hit,
-                    any_hit_flag,
                 )
 
             def _on_overlap_hit(self, hit):
-                if hit.rigid_body == self._active_bin.GetPrimPath():
+                prim_path = str(PhysicsSchemaTools.intToSdfPath(hit.rigid_body))
+                if prim_path == self._active_bin.GetPrimPath():
                     return True  # Self hit, return True to continue the query
 
                 # First contact with the flip helper
-                if hit.rigid_body.startswith(self.FLIP_HELPER_PATH) and not self._bin_flip_scenario_done:
+                if prim_path.startswith(self.FLIP_HELPER_PATH) and not self._bin_flip_scenario_done:
                     self._timeline.pause()
                     self._timeline_sub.unsubscribe()
                     self._timeline_sub = None
@@ -193,8 +193,8 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                     return False  # Relevant hit, return False to finish the hit query
 
                 # Contact with the pallet or other bin on the pallet
-                pallet_hit = hit.rigid_body.startswith(self.PALLET_PRIM_MESH_PATH)
-                other_bin_hit = hit.rigid_body.startswith(f"{self.BINS_FOLDER_PATH}/bin_")
+                pallet_hit = prim_path.startswith(self.PALLET_PRIM_MESH_PATH)
+                other_bin_hit = prim_path.startswith(f"{self.BINS_FOLDER_PATH}/bin_")
                 if pallet_hit or other_bin_hit:
                     self._timeline.pause()
                     self._timeline_sub.unsubscribe()

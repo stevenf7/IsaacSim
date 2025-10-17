@@ -1016,7 +1016,9 @@ class SimulationContext:
             carb.log_error(f"Physics callback `{callback_name}` already exists")
             return
         self._physics_callback_functions[callback_name] = (
-            self._physics_context._physx_interface.subscribe_physics_step_events(callback_fn)
+            self._physics_context._physics_sim_interface.subscribe_physics_on_step_events(
+                pre_step=False, order=0, on_update=lambda step_dt, context: callback_fn(step_dt)
+            )
         )
         self._physics_functions[callback_name] = callback_fn
         return
@@ -1395,8 +1397,8 @@ class SimulationContext:
         return self.stage
 
     def _setup_default_callback_fns(self):
-        self._physics_timer_callback = self._physics_context._physx_interface.subscribe_physics_step_events(
-            self._physics_timer_callback_fn
+        self._physics_timer_callback = self._physics_context._physics_sim_interface.subscribe_physics_on_step_events(
+            pre_step=False, order=0, on_update=self._physics_timer_callback_fn
         )
         self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
             int(omni.timeline.TimelineEventType.STOP), self._timeline_timer_callback_fn
@@ -1416,7 +1418,7 @@ class SimulationContext:
     Default Callbacks.
     """
 
-    def _physics_timer_callback_fn(self, step_size: int):
+    def _physics_timer_callback_fn(self, step_size: int, context):
         self._current_time += step_size
         self._number_of_steps += 1
         return
@@ -1450,5 +1452,7 @@ class SimulationContext:
     def _on_post_physics_ready(self, event):
         for callback_name, callback_function in self._physics_functions.items():
             self._physics_callback_functions[callback_name] = (
-                self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
+                self._physics_context._physics_sim_interface.subscribe_physics_on_step_events(
+                    pre_step=False, order=0, on_update=lambda step_dt, context: callback_function(step_dt)
+                )
             )

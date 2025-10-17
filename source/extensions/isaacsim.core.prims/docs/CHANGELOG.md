@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [0.6.1] - 2025-09-16
 ### Fixed
 - Fix ill-formed SdfPath when querying XFormPrim's applied visual materials

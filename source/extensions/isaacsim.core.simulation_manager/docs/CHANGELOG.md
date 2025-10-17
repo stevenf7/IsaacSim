@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [1.4.4] - 2025-10-09
 ### Fixed
 - Change log level of invalid rational time error to WARN

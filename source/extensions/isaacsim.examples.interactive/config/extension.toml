@@ -1,5 +1,5 @@
 [package]
-version = "4.7.4"
+version = "4.8.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -31,7 +31,8 @@ writeTarget.kit = true
 "omni.graph.nodes" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.kit.uiapp" = {}
-"omni.physx" = {}
+"omni.physics" = {}
+"omni.physics.physx" = {}
 "isaacsim.core.experimental.utils" = {}
 
 [[python.module]]

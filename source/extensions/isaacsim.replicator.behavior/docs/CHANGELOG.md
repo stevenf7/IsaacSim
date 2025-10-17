@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [1.1.16] - 2025-09-16
 ### Fixed
 - Added kit update after timeline.stop to fix flaky test due to stage loading status

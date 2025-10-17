@@ -1,5 +1,5 @@
 [package]
-version = "1.4.4"
+version = "1.5.0"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -12,6 +12,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.utils" = {}
+"omni.physics" = {}
 "omni.physics.physx" = {}
 "omni.physics.stageupdate" = {}
 "omni.physx.tensors" = {}

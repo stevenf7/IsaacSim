@@ -1,5 +1,5 @@
 [package]
-version = "3.1.1"
+version = "3.2.0"
 category = "Simulation"
 title = "Benchmark Services"
 description = "This extension provides benchmarking utilities"
@@ -16,6 +16,8 @@ writeTarget.kit = true
 "isaacsim.core.api" = {}
 "isaacsim.storage.native" = {}
 "omni.kit.test" = {} # we derrive from the base test class and need this dependency
+"omni.physics" = {}
+"omni.physics.physx" = {}
 
 [[python.module]]
 name = "isaacsim.benchmark.services"

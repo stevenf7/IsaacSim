@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [2.0.12] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

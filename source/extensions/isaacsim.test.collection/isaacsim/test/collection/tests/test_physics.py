@@ -16,7 +16,6 @@
 import carb
 import numpy as np
 import omni.kit.test
-import omni.physx
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.prims import get_prim_at_path
@@ -73,11 +72,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
 
         dt = 1.0 / self._physics_rate
 
-        # def physics_update(dt):
-        #     print("physics update step:", dt, "seconds")
-
-        # physics_sub = omni.physx.get_physx_interface().subscribe_physics_step_events(physics_update)
-
         # add scene
         self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
@@ -128,29 +122,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
-
-    # test is a known failure on 102, will be fixed on 103
-    # async def test_subscription(self):
-    #     await omni.usd.get_context().new_stage_async()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     timeline = omni.timeline.get_timeline_interface()
-    #     self.check_dt = 0.0  # set this to zero to start
-
-    #     def on_update(dt):
-    #         print("on_update called")
-    #         self.check_dt = dt
-
-    #     sub = omni.physx.get_physx_interface().subscribe_physics_step_events(on_update)
-    #     timeline.play()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     self.assertNotEqual(self.check_dt, 0.0)
-    #     timeline.stop()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     self.check_dt = 0.0  # reset this to zero to see if it changes after a stop/play
-    #     timeline.play()
-    #     await omni.kit.app.get_app().next_update_async()
-    #     self.assertNotEqual(self.check_dt, 0.0)
-    #     sub = None
 
     async def test_stage_up_axis(self):
         timeline = omni.timeline.get_timeline_interface()

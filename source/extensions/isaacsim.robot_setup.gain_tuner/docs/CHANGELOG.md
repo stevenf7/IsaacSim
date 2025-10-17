@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.1.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [3.0.6] - 2025-08-04
 ### Fixed
 - Natural Frequency and Damping Ratio computations
