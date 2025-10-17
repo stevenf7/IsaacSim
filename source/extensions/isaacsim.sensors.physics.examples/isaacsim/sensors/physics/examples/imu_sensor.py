@@ -20,7 +20,7 @@ import weakref
 import carb
 import omni
 import omni.kit.commands
-import omni.physx as _physx
+import omni.physics.core
 import omni.ui as ui
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
@@ -77,7 +77,9 @@ class Extension(omni.ext.IExt):
         self._is = _sensor.acquire_imu_sensor_interface()
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
+        self.sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+            pre_step=False, order=0, on_update=self._on_update
+        )
 
         self.body_path = "/Ant/Sphere"
 
@@ -157,7 +159,7 @@ class Extension(omni.ext.IExt):
             self._window.destroy()
             self._window = None
 
-    def _on_update(self, dt):
+    def _on_update(self, dt, context):
         if self._timeline.is_playing() and self.sliders:
             reading = self._is.get_sensor_reading(self.body_path + "/sensor")
             if reading.is_valid:

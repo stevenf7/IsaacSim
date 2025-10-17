@@ -1,5 +1,5 @@
 [package]
-version = "3.5.1"
+version = "3.6.0"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
@@ -18,6 +18,8 @@ writeTarget.platform = true
 "isaacsim.storage.native" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ml_archive" = {}
+"omni.physics" = {}
+"omni.physics.physx" = {}
 "omni.physics.tensors" = {}
 "omni.physx" = {}
 "omni.usd.metrics.assembler" = {}

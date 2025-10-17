@@ -17,6 +17,7 @@ from typing import List, Optional, Tuple
 import carb
 import omni
 import omni.kit.app
+import omni.physics.core
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.carb import get_carb_setting, set_carb_setting
 from isaacsim.core.utils.constants import AXES_INDICES
@@ -82,8 +83,7 @@ class PhysicsContext(object):
                 self._physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(current_physics_prim)
         # set the default physics scene
         SimulationManager.set_default_physics_scene(self._prim_path)
-        self._physx_interface = omni.physx.get_physx_interface()
-        self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
+        self._physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         self._device = SimulationManager.get_physics_sim_device()
         if "cuda" in self._device:
@@ -561,8 +561,8 @@ class PhysicsContext(object):
         )
 
     def _step(self, current_time: float, update_fabric: bool = False) -> None:
-        self._physx_sim_interface.simulate(self.get_physics_dt(), current_time)
-        self._physx_sim_interface.fetch_results()
+        self._physics_sim_interface.simulate(self.get_physics_dt(), current_time)
+        self._physics_sim_interface.fetch_results()
         if update_fabric:
             if self._physx_fabric_interface is None:
                 if omni.kit.app.get_app().get_extension_manager().is_extension_enabled("omni.physx.fabric"):

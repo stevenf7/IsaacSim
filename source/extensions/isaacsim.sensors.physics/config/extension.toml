@@ -1,5 +1,5 @@
 [package]
-version = "0.4.3"
+version = "0.5.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -21,6 +21,8 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.kit.numpy.common" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
+"omni.physics" = {}
+"omni.physics.physx" = {}
 "omni.physx" = {}
 "omni.replicator.core" = {}
 "omni.timeline" = {} # Needed for simulation to occur

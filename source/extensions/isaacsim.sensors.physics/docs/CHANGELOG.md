@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [0.4.3] - 2025-10-02
 ### Fixed
 - Orientation bug for contact and IMU sensor

@@ -1,5 +1,5 @@
 [package]
-version = "2.0.20"
+version = "2.1.0"
 category = "Simulation"
 title = "Grasp Editor"
 description = "Author grasps by hand for a specific robot gripper and USD asset."
@@ -17,6 +17,8 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.gui.components" = {}
 "omni.kit.uiapp" = {}
+"omni.physics" = {}
+"omni.physics.physx" = {}
 
 [[python.module]]
 name = "isaacsim.robot_setup.grasp_editor"

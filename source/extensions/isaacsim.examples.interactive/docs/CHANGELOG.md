@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [4.7.4] - 2025-10-02
 ### Changed
 - Updated franka, humanoid, quadruped examples

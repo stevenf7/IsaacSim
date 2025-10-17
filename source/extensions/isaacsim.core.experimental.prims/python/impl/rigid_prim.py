@@ -130,7 +130,7 @@ class RigidPrim(XformPrim):
         )
         # setup physics-related configuration if simulation is running
         if SimulationManager._physics_sim_view__warp is not None:
-            SimulationManager._physx_sim_interface.flush_changes()
+            SimulationManager._physics_sim_interface.flush_changes()
             self._on_physics_ready(None)
 
     def __del__(self):

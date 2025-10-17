@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.2.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [3.1.11] - 2025-07-14
 ### Added
 - Warning message when an existing XRDF file isn't valid for merging

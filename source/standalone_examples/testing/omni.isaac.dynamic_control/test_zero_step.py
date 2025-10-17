@@ -18,16 +18,19 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 import carb
 import omni
+import omni.physics.core
 from isaacsim.core.api import SimulationContext
 from isaacsim.storage.native import get_assets_root_path
 from omni.isaac.dynamic_control import _dynamic_control
+from pxr import UsdUtils
 
 stage = simulation_app.context.get_stage()
+stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
 sim_context = SimulationContext(stage_units_in_meters=1.0)
 
-physx_interface = omni.physx.get_physx_interface()
-physx_interface.start_simulation()
-physx_interface.force_load_physics_from_usd()
+physics_stage_update_interface = omni.physics.core.get_physics_stage_update_interface()
+physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
+physics_sim_interface.attach_stage(stage_id)
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
@@ -35,9 +38,10 @@ asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka
 
 prim = stage.DefinePrim("/panda", "Xform")
 prim.GetReferences().AddReference(asset_path)
-physx_interface.force_load_physics_from_usd()
+physics_stage_update_interface.force_load_physics_from_usd()
 sim_context._timeline.play()
-omni.physx.get_physx_interface().update_simulation(elapsedStep=0, currentTime=0)
+physics_sim_interface.simulate(elapsed_time=0, current_time=0)
+physics_sim_interface.fetch_results()
 dc = _dynamic_control.acquire_dynamic_control_interface()
 # Get the handle to force it to refresh, this should not crash.
 art = dc.get_articulation("/panda")

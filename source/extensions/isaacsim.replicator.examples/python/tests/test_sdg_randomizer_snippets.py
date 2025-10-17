@@ -414,10 +414,10 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
 
         import carb
         import omni.kit.app
+        import omni.physics.core
         import omni.usd
         from isaacsim.core.utils.bounds import compute_aabb, compute_obb, create_bbox_cache
         from isaacsim.storage.native import get_assets_root_path
-        from omni.physx import get_physx_simulation_interface
         from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
 
         # Add transformation properties to the prim (if not already present)
@@ -556,7 +556,7 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             force_forward = Gf.Vec3d(pallet_rot.TransformDir(Gf.Vec3d(1, 0, 0))) * strength
             force_right = Gf.Vec3d(pallet_rot.TransformDir(Gf.Vec3d(0, 1, 0))) * strength
 
-            physx_api = get_physx_simulation_interface()
+            physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
             stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
             for box_prim in boxes:
                 body_path = PhysicsSchemaTools.sdfPathToInt(box_prim.GetPath())
@@ -566,7 +566,9 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                         Usd.TimeCode.Default()
                     )
                     box_position = carb.Float3(*box_tf.ExtractTranslation())
-                    physx_api.apply_force_at_pos(stage_id, body_path, carb.Float3(force), box_position, "Force")
+                    physics_simulation_interface.add_force_at_pos(
+                        stage_id, body_path, carb.Float3(force), box_position, omni.physics.core.ForceMode.FORCE
+                    )
                     for _ in range(10):
                         await omni.kit.app.get_app().next_update_async()
 
@@ -576,8 +578,12 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 box_tf: Gf.Matrix4d = UsdGeom.Xformable(box_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
                 box_location = box_tf.ExtractTranslation()
                 force_to_center = (pallet_center - box_location) * strength * strength_center_multiplier
-                physx_api.apply_force_at_pos(
-                    stage_id, body_path, carb.Float3(*force_to_center), carb.Float3(*box_location)
+                physics_simulation_interface.add_force_at_pos(
+                    stage_id,
+                    body_path,
+                    carb.Float3(*force_to_center),
+                    carb.Float3(*box_location),
+                    omni.physics.core.ForceMode.FORCE,
                 )
             for _ in range(20):
                 await omni.kit.app.get_app().next_update_async()

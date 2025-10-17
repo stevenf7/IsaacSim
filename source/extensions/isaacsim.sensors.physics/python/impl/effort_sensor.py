@@ -18,6 +18,7 @@ from typing import Optional
 import carb
 import numpy as np
 import omni.kit.utils
+import omni.physics.core
 import omni.usd
 from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.core.prims import SingleArticulation
@@ -60,8 +61,10 @@ class EffortSensor(SingleArticulation):
         return
 
     def initialize_callbacks(self) -> None:
-        self._acquisition_callback = omni.physx.get_physx_interface().subscribe_physics_step_events(
-            self._data_acquisition_callback
+        self._acquisition_callback = (
+            omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+                pre_step=False, order=0, on_update=self._data_acquisition_callback
+            )
         )
         self._stage_open_callback = (
             omni.usd.get_context()
@@ -93,7 +96,7 @@ class EffortSensor(SingleArticulation):
             self.is_initialized = False
         return
 
-    def _data_acquisition_callback(self, step_size: float) -> None:
+    def _data_acquisition_callback(self, step_size: float, context) -> None:
         # update sensor reading pair
         self.step_size = step_size
         self.current_time = float(self.core_nodes.get_sim_time())

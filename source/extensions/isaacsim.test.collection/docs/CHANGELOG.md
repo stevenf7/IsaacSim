@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2025-10-17
+### Removed
+- Remove commented code
+
 ## [2.2.1] - 2025-09-05
 ### Fixed
 - Fix test failure

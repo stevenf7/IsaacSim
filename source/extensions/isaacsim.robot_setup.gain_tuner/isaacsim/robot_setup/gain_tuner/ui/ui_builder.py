@@ -700,7 +700,7 @@ class UIBuilder:
 
             self._reset_ui_next_frame = True
 
-    def _update_gains_test(self, step: float):
+    def _update_gains_test(self, step: float, context):
         if not self._test_running:
             return
         done = self._gains_tuner.update_gains_test(step)

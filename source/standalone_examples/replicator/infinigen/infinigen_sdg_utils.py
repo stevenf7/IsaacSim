@@ -21,7 +21,7 @@ from itertools import chain
 
 import omni.kit.app
 import omni.kit.commands
-import omni.physx
+import omni.physics.core
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
@@ -576,12 +576,12 @@ def run_simulation(num_frames: int, render: bool = True) -> None:
 
         # Get simulation parameters
         physx_dt = 1 / physx_scene.GetTimeStepsPerSecondAttr().Get()
-        physx_sim_interface = omni.physx.get_physx_simulation_interface()
+        physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
 
         # Run physics simulation for each frame
         for _ in range(num_frames):
-            physx_sim_interface.simulate(physx_dt, 0)
-            physx_sim_interface.fetch_results()
+            physics_sim_interface.simulate(physx_dt, 0)
+            physics_sim_interface.fetch_results()
 
 
 def register_dome_light_randomizer() -> None:

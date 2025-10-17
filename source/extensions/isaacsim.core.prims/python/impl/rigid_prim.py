@@ -198,7 +198,7 @@ class RigidPrim(XFormPrim):
             )
         )
         if SimulationManager.get_physics_sim_view() is not None:
-            SimulationManager._physx_sim_interface.flush_changes()
+            SimulationManager._physics_sim_interface.flush_changes()
             RigidPrim._on_physics_ready(self, None)
         return
 

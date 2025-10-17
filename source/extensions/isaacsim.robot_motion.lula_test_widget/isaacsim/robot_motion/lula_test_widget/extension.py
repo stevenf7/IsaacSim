@@ -22,7 +22,7 @@ import carb
 import numpy as np
 import omni
 import omni.kit.commands
-import omni.physx as _physx
+import omni.physics.core
 import omni.timeline
 import omni.ui as ui
 import omni.usd
@@ -79,8 +79,8 @@ class Extension(omni.ext.IExt):
 
         # Events
         self._usd_context = omni.usd.get_context()
-        self._physxIFace = _physx.get_physx_interface()
-        self._physx_subscription = None
+        self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
+        self._physics_subscription = None
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -135,7 +135,7 @@ class Extension(omni.ext.IExt):
         self._usd_context = None
         self._stage_event_sub = None
         self._timeline_event_sub = None
-        self._physx_subscription = None
+        self._physics_subscription = None
         self._models = {}
         remove_menu_items(self._menu_items, "Tools")
         if self._window:
@@ -222,8 +222,10 @@ class Extension(omni.ext.IExt):
             self._refresh_ui(self.articulation)
 
             # start event subscriptions
-            if not self._physx_subscription:
-                self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
+            if not self._physics_subscription:
+                self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
+                    pre_step=False, order=0, on_update=self._on_physics_step
+                )
 
         # Deselect and Reset
         else:
@@ -366,7 +368,7 @@ class Extension(omni.ext.IExt):
 
         elif event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
             # stage was opened or closed, cleanup
-            self._physx_subscription = None
+            self._physics_subscription = None
 
         elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):
             self._refresh_selection_combobox()
@@ -378,7 +380,7 @@ class Extension(omni.ext.IExt):
             if self._timeline.is_stopped():
                 self._on_selection("None")
 
-    def _on_physics_step(self, step):
+    def _on_physics_step(self, step, context):
         """Callback for Physics Step.
 
         Args:

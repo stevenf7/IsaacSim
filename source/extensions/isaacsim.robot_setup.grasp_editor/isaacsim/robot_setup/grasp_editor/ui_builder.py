@@ -903,7 +903,7 @@ class UIBuilder:
 
         return grasp_test_settings
 
-    def _update_test(self, step: float):
+    def _update_test(self, step: float, context):
         result = self._grasp_tester.update_grasp_test(step)
 
         # The grasp test generates status messages until a final result.

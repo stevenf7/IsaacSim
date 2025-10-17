@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [2.0.20] - 2025-10-08
 ### Fixed
 - Fix issue where rigid body was re-scaled

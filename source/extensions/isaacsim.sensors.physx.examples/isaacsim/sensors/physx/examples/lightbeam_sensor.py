@@ -19,7 +19,7 @@ import carb
 import omni
 import omni.graph.core as og
 import omni.kit.commands
-import omni.physx as _physx
+import omni.physics.core
 import omni.ui as ui
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.viewports import set_camera_view
@@ -83,7 +83,9 @@ class LightBeamSensorDemo(omni.ext.IExt):
         self._ls = _range_sensor.acquire_lightbeam_sensor_interface()
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
+        self.sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+            pre_step=False, order=0, on_update=self._on_update
+        )
 
         self.colors = [
             0xFFBBBBFF,
@@ -166,7 +168,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
             self._window.destroy()
             self._window = None
 
-    def _on_update(self, dt):
+    def _on_update(self, dt, context):
         if self._timeline.is_playing():
             lin_depth = self._ls.get_linear_depth_data(self.sensor_path)
             hit_pos = self._ls.get_hit_pos_data(self.sensor_path)

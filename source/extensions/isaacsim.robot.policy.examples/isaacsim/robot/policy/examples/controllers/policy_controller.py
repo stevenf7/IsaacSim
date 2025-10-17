@@ -23,7 +23,7 @@ import torch
 from isaacsim.core.api.controllers.base_controller import BaseController
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
-from omni.physx import get_physx_simulation_interface
+from omni.physics.core import get_physics_simulation_interface
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
@@ -107,7 +107,7 @@ class PolicyController(BaseController):
 
         # TODO: Must flush when FSD is enabled.
         # Otherwise the delayed FSD handling next frame will overwrite set_max_efforts below
-        get_physx_simulation_interface().flush_changes()
+        get_physics_simulation_interface().flush_changes()
 
         self.robot.get_articulation_controller().switch_control_mode(control_mode)
         max_effort, max_vel, stiffness, damping, self.default_pos, self.default_vel = get_robot_joint_properties(
@@ -120,7 +120,7 @@ class PolicyController(BaseController):
 
             # TODO: Must flush when FSD is enabled.
             # Otherwise the delayed FSD handling next frame will overwrite set_max_efforts below
-            get_physx_simulation_interface().flush_changes()
+            get_physics_simulation_interface().flush_changes()
 
             self.robot._articulation_view.set_max_joint_velocities(max_vel)
         if set_articulation_props:

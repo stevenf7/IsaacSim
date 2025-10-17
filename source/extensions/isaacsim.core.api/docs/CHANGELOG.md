@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.9.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [4.8.0] - 2025-09-23
 ### Added
 - Expose PhysX scene attribute to reorder the articulation contact constraints to be solved last

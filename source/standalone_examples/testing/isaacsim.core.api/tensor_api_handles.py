@@ -16,7 +16,7 @@
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
-import omni.physx as _physx
+import omni.physics.core
 from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.utils.stage import add_reference_to_stage
@@ -30,11 +30,13 @@ add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
 articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka", name="my_franka_1"))
 
 
-def step_callback_1(step_size):
+def step_callback_1(step_size, context):
     b = articulated_system_1.get_joint_velocities()
 
 
-physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(step_callback_1)
+sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+    pre_step=False, order=0, on_update=step_callback_1
+)
 my_world.reset()
 for j in range(10):
     for i in range(5):

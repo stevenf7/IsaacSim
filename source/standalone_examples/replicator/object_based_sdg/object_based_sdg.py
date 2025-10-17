@@ -113,14 +113,15 @@ import carb.settings
 
 # Custom util functions for the example
 import object_based_sdg_utils
+import omni.physics.core
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 import usdrt
 from isaacsim.core.utils.semantics import add_labels, remove_labels, upgrade_prim_semantics_to_labels
 from isaacsim.storage.native import get_assets_root_path
-from omni.physx import get_physx_interface, get_physx_scene_query_interface
-from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
+from omni.physics.core import get_physics_scene_query_interface
+from pxr import PhysicsSchemaTools, PhysxSchema, Sdf, UsdGeom, UsdPhysics
 
 # Isaac nucleus assets root path
 assets_root_path = get_assets_root_path()
@@ -325,7 +326,8 @@ if writer_type is not None and len(render_products) > 0:
 # RANDOMIZERS
 # Apply a random (mostly) uppwards velocity to the objects overlapping the 'bounce' area
 def on_overlap_hit(hit):
-    prim = stage.GetPrimAtPath(hit.rigid_body)
+    prim_path = str(PhysicsSchemaTools.intToSdfPath(hit.rigid_body))
+    prim = stage.GetPrimAtPath(prim_path)
     # Skip the camera collision spheres
     if prim not in camera_colliders:
         rand_vel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(4, 8))
@@ -344,18 +346,19 @@ overlap_area_extent = (
 
 
 # Triggered every physics update step to check for overlapping objects
-def on_physics_step(dt: float):
-    hit_info = get_physx_scene_query_interface().overlap_box(
+def on_physics_step(dt: float, context):
+    hit_info = get_physics_scene_query_interface().overlap_box(
         carb.Float3(overlap_area_extent),
         carb.Float3(overlap_area_origin),
         carb.Float4(0, 0, 0, 1),
         on_overlap_hit,
-        False,  # pass 'False' to indicate an 'overlap multiple' query.
     )
 
 
 # Subscribe to the physics step events to check for objects overlapping the 'bounce' area
-physx_sub = get_physx_interface().subscribe_physics_step_events(on_physics_step)
+physics_sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+    pre_step=False, order=0, on_update=on_physics_step
+)
 
 
 # Pull assets towards the working area center by applying a random velocity towards the given target
@@ -614,8 +617,7 @@ print(
 )
 
 # Unsubscribe the physics overlap checks and stop the timeline
-physx_sub.unsubscribe()
-physx_sub = None
+physics_sub = None
 simulation_app.update()
 timeline.stop()
 

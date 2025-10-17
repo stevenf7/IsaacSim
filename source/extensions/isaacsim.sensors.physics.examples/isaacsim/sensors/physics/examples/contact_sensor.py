@@ -19,7 +19,7 @@ import weakref
 import carb
 import omni
 import omni.kit.commands
-import omni.physx as _physx
+import omni.physics.core
 import omni.ui as ui
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
@@ -75,7 +75,9 @@ class Extension(omni.ext.IExt):
         self._cs = _sensor.acquire_contact_sensor_interface()
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
+        self.sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+            pre_step=False, order=0, on_update=self._on_update
+        )
 
         self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
 
@@ -126,7 +128,7 @@ class Extension(omni.ext.IExt):
             self._window.destroy()
             self._window = None
 
-    def _on_update(self, dt):
+    def _on_update(self, dt, context):
         if self._timeline.is_playing() and self.sliders:
             for i in range(4):
                 reading = self._cs.get_sensor_reading(self.leg_paths[i] + "/sensor")

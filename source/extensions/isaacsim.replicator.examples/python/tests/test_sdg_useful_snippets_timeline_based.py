@@ -159,7 +159,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         import carb.eventdispatcher
         import carb.settings
         import omni.kit.app
-        import omni.physx
+        import omni.physics.core
         import omni.timeline
         import omni.usd
         from pxr import PhysxSchema, UsdPhysics
@@ -198,11 +198,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                     if VERBOSE:
                         print(f"  [timeline][{len(timeline_events)}] {event.payload}")
 
-            def on_physics_step(dt: float):
-                nonlocal physx_events
-                physx_events.append(dt)
+            def on_physics_step(dt: float, context):
+                nonlocal physics_events
+                physics_events.append(dt)
                 if VERBOSE:
-                    print(f"  [physics][{len(physx_events)}] dt={dt}")
+                    print(f"  [physics][{len(physics_events)}] dt={dt}")
 
             def on_stage_render_event(event: carb.eventdispatcher.Event):
                 nonlocal stage_render_events
@@ -319,8 +319,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             print(f"Subscribing to events...")
             timeline_events = []
             timeline_sub = timeline.get_timeline_event_stream().create_subscription_to_pop(on_timeline_event)
-            physx_events = []
-            physx_sub = omni.physx.get_physx_interface().subscribe_physics_step_events(on_physics_step)
+            physics_events = []
+            physics_sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+                pre_step=False, order=0, on_update=on_physics_step
+            )
             stage_render_events = []
             stage_render_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
                 event_name=omni.usd.get_context().stage_rendering_event_name(
@@ -354,9 +356,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             if stage_render_sub:
                 stage_render_sub.reset()
                 stage_render_sub = None
-            if physx_sub:
-                physx_sub.unsubscribe()
-                physx_sub = None
+            if physics_sub:
+                physics_sub.unsubscribe()
+                physics_sub = None
             if timeline_sub:
                 timeline_sub.unsubscribe()
                 timeline_sub = None
@@ -366,13 +368,13 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             print(f"- App updates: {NUM_APP_UPDATES}")
             print(f"- Wall time: {elapsed_wall_time:.4f} seconds")
             print(f"- Timeline events: {len(timeline_events)}")
-            print(f"- Physics events: {len(physx_events)}")
+            print(f"- Physics events: {len(physics_events)}")
             print(f"- Stage render events: {len(stage_render_events)}")
             print(f"- App update events: {len(app_update_events)}")
 
             # Calculate and display real-time performance factor
-            if len(physx_events) > 0:
-                sim_time = sum(physx_events)
+            if len(physics_events) > 0:
+                sim_time = sum(physics_events)
                 realtime_factor = sim_time / elapsed_wall_time if elapsed_wall_time > 0 else 0
                 print(f"- Simulation time: {sim_time:.4f}s")
                 print(f"- Real-time factor: {realtime_factor:.2f}x")
@@ -385,13 +387,13 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
             # Check that events were captured
             self.assertTrue(len(timeline_events) > 0, "Timeline events should be captured")
-            self.assertTrue(len(physx_events) > 0, "Physx events should be captured")
+            self.assertTrue(len(physics_events) > 0, "Physx events should be captured")
             self.assertTrue(len(stage_render_events) > 0, "Stage render events should be captured")
             self.assertTrue(len(app_update_events) > 0, "App update events should be captured")
 
             # Check that all events have been captured and the subscribers have been reset
             self.assertTrue(timeline_sub is None, "Timeline subscriber should be reset")
-            self.assertTrue(physx_sub is None, "Physx subscriber should be reset")
+            self.assertTrue(physics_sub is None, "Physx subscriber should be reset")
             self.assertTrue(stage_render_sub is None, "Stage render subscriber should be reset")
             self.assertTrue(app_sub is None, "App update subscriber should be reset")
 

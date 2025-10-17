@@ -1,5 +1,5 @@
 [package]
-version = "2.2.1"
+version = "2.2.2"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -28,6 +28,8 @@ writeTarget.kit = true
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 "omni.kit.uiapp" = {}
 "omni.kit.viewport.window" = {} # snippet tests need this
+"omni.physics" = {}
+"omni.physics.physx" = {}
 "omni.physx" = {}
 "omni.physx.commands" = {}
 "omni.syntheticdata" = {}

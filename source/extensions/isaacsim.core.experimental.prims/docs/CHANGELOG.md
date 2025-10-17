@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [0.8.1] - 2025-09-24
 ### Fixed
 - Fix deformable prim's docstrings test

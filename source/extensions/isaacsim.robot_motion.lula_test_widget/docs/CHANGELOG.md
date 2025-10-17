@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [1.0.12] - 2025-07-16
 ### Fixed
 - Only send action to active joints

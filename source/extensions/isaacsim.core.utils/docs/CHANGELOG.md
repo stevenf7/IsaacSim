@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.6.0] - 2025-10-17
+### Changed
+- Migrate PhysX subscription and simulation control interfaces to Omni Physics
+
 ## [3.5.1] - 2025-09-08
 ### Fixed
 - Fix test configuration to allow runing all tests

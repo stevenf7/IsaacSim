@@ -19,6 +19,7 @@ from typing import List, Optional, Tuple
 
 import carb
 import omni.kit.test
+import omni.physics
 
 
 def get_last_gpu_time_ms(
@@ -70,12 +71,10 @@ class IsaacUpdateFrametimeCollector:
                 self.hydra_engine_stats = None
 
         try:
-            import omni.physx
-
-            self.__physx_benchmarks_iface = omni.physx.get_physx_benchmarks_interface()
+            self.__physics_benchmarks_iface = omni.physics.core.get_physics_benchmarks_interface()
         except:
-            self.__physx_benchmarks_iface = None
-            carb.log_warn("physx interface not loaded, physics frametimes will not be measured")
+            self.__physics_benchmarks_iface = None
+            carb.log_warn("IPhysicsBenchmarks interface not loaded, physics frametimes will not be measured")
 
         self.app_frametimes_ms: List[float] = []
         self.gpu_frametimes_ms: List[float] = []
@@ -87,7 +86,7 @@ class IsaacUpdateFrametimeCollector:
         self.__last_render_frametime_timestamp_ns = 0
 
         self.__subscription: Optional[carb.events.ISubscription] = None
-        self.__physx_subscription = None
+        self.__physics_subscription = None
 
         self.elapsed_sim_time = 0.0
 
@@ -138,7 +137,7 @@ class IsaacUpdateFrametimeCollector:
             observer_name="IsaacUpdateFrametimeCollector.__update_event_callback",
         )
 
-        self.__physx_subscription = self.__physx_benchmarks_iface.subscribe_profile_stats_events(
+        self.__physics_subscription = self.__physics_benchmarks_iface.subscribe_profile_stats_events(
             self.__physics_stats_callback
         )
 
@@ -152,7 +151,7 @@ class IsaacUpdateFrametimeCollector:
 
     def stop_collecting(self) -> Tuple[List[float], List[float], List[float]]:
         self.__subscription = None
-        self.__physx_subscription = None
+        self.__physics_subscription = None
 
         # drop the first frame since the interval approach doesn't work for
         # the render frame

@@ -20,7 +20,7 @@ import isaacsim.core.utils.numpy as np_utils
 import isaacsim.core.utils.torch as torch_utils
 import isaacsim.core.utils.warp as warp_utils
 import omni.kit
-import omni.physx
+import omni.physics.core
 import omni.timeline
 import omni.usd
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
@@ -39,8 +39,8 @@ class SimulationManager:
     _warmup_needed = True
     _timeline = omni.timeline.get_timeline_interface()
     _message_bus = carb.eventdispatcher.get_eventdispatcher()
-    _physx_sim_interface = omni.physx.get_physx_simulation_interface()
-    _physx_interface = omni.physx.get_physx_interface()
+    _physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
+    _physics_stage_update_interface = omni.physics.core.get_physics_stage_update_interface()
     _physics_sim_view = None
     _physics_sim_view__warp = None
     _backend = "numpy"
@@ -187,7 +187,8 @@ class SimulationManager:
             "warp", stage_id=get_current_stage_id()
         )
         SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
-        SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
+        SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
+        SimulationManager._physics_sim_interface.fetch_results()
         SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
         SimulationManager._simulation_view_created = True
         SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})
@@ -234,10 +235,9 @@ class SimulationManager:
     @classmethod
     def initialize_physics(cls) -> None:
         if SimulationManager._warmup_needed:
-            SimulationManager._physx_interface.force_load_physics_from_usd()
-            SimulationManager._physx_interface.start_simulation()
-            SimulationManager._physx_interface.update_simulation(SimulationManager.get_physics_dt(), 0.0)
-            SimulationManager._physx_sim_interface.fetch_results()
+            SimulationManager._physics_stage_update_interface.force_load_physics_from_usd()
+            SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
+            SimulationManager._physics_sim_interface.fetch_results()
             SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
             SimulationManager._warmup_needed = False
 
@@ -294,10 +294,10 @@ class SimulationManager:
             raise Exception(
                 "Stepping the renderer is not supported at the moment through SimulationManager, use SimulationContext instead."
             )
-        SimulationManager._physx_sim_interface.simulate(
+        SimulationManager._physics_sim_interface.simulate(
             SimulationManager.get_physics_dt(physics_scene=None), SimulationManager.get_simulation_time()
         )
-        SimulationManager._physx_sim_interface.fetch_results()
+        SimulationManager._physics_sim_interface.fetch_results()
 
     @classmethod
     def set_physics_sim_device(cls, val) -> None:
@@ -754,9 +754,11 @@ class SimulationManager:
         elif event == IsaacEvents.POST_PHYSICS_STEP:
             if proxy_needed:
                 SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
-                        lambda step_dt, obj=weakref.proxy(callback.__self__): (
-                            getattr(obj, callback_name)(step_dt) if SimulationManager._simulation_view_created else None
+                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
+                        on_update=lambda step_dt, context, obj=weakref.proxy(callback.__self__): (
+                            getattr(obj, callback_name)(step_dt, context)
+                            if SimulationManager._simulation_view_created
+                            else None
                         ),
                         pre_step=False,
                         order=order,
@@ -764,8 +766,10 @@ class SimulationManager:
                 )
             else:
                 SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
-                        lambda step_dt: callback(step_dt) if SimulationManager._simulation_view_created else None,
+                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
+                        on_update=lambda step_dt, context: (
+                            callback(step_dt, context) if SimulationManager._simulation_view_created else None
+                        ),
                         pre_step=False,
                         order=order,
                     )
@@ -773,9 +777,11 @@ class SimulationManager:
         elif event == IsaacEvents.PRE_PHYSICS_STEP:
             if proxy_needed:
                 SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
-                        lambda step_dt, obj=weakref.proxy(callback.__self__): (
-                            getattr(obj, callback_name)(step_dt) if SimulationManager._simulation_view_created else None
+                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
+                        on_update=lambda step_dt, context, obj=weakref.proxy(callback.__self__): (
+                            getattr(obj, callback_name)(step_dt, context)
+                            if SimulationManager._simulation_view_created
+                            else None
                         ),
                         pre_step=True,
                         order=order,
@@ -783,8 +789,10 @@ class SimulationManager:
                 )
             else:
                 SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physx_interface.subscribe_physics_on_step_events(
-                        lambda step_dt: callback(step_dt) if SimulationManager._simulation_view_created else None,
+                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
+                        on_update=lambda step_dt, context: (
+                            callback(step_dt, context) if SimulationManager._simulation_view_created else None
+                        ),
                         pre_step=True,
                         order=order,
                     )

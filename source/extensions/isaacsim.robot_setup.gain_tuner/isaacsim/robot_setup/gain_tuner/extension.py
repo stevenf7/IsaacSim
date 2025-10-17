@@ -20,7 +20,7 @@ import carb
 import omni
 import omni.kit.app
 import omni.kit.commands
-import omni.physx as _physx
+import omni.physics.core
 import omni.timeline
 import omni.ui as ui
 import omni.usd
@@ -86,8 +86,8 @@ class Extension(omni.ext.IExt):
 
         # Events
         self._usd_context = omni.usd.get_context()
-        self._physxIFace = _physx.get_physx_interface()
-        self._physx_subscription = None
+        self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
+        self._physics_subscription = None
         self._event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
         # self._update_stream = omni.kit.app.get_app().get_update_event_stream()
         self._render_subscription = None
@@ -152,8 +152,10 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_menu_callback()
 
         if self._timeline.is_playing():
-            if not self._physx_subscription:
-                self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
+            if not self._physics_subscription:
+                self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
+                    pre_step=False, order=0, on_update=self._on_physics_step
+                )
         if not self._render_subscription:
             self._render_subscription = self._event_dispatcher.observe_event(
                 event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
@@ -163,8 +165,10 @@ class Extension(omni.ext.IExt):
 
     def _on_timeline_event(self, event):
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
-            if not self._physx_subscription:
-                self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
+            if not self._physics_subscription:
+                self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
+                    pre_step=False, order=0, on_update=self._on_physics_step
+                )
             if not self._render_subscription:
                 self._render_subscription = self._event_dispatcher.observe_event(
                     event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
@@ -172,17 +176,17 @@ class Extension(omni.ext.IExt):
                     observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_render_step",
                 )
         elif event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._physx_subscription = None
+            self._physics_subscription = None
 
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step):
+    def _on_physics_step(self, step, context):
         self.ui_builder.on_physics_step(step)
 
     def _on_stage_event(self, event):
         if event.type == int(StageEventType.OPENED) or event.type == int(StageEventType.CLOSED):
             # stage was opened or closed, cleanup
-            self._physx_subscription = None
+            self._physics_subscription = None
             self._render_subscription = None
             self.ui_builder.reset()
 
