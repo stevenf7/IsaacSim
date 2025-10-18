@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.8] - 2025-10-17
+### Fixed
+- Issue where setting manual mode to false in the carb settings did not work if set before app startup completed
+
 ## [1.3.7] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.3.6)
