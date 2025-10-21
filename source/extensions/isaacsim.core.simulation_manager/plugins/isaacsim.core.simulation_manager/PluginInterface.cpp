@@ -694,8 +694,6 @@ public:
                 switch (e->type)
                 {
                 case omni::physx::SimulationEvent::eStopped:
-                case omni::physx::SimulationEvent::eAttachedToStage:
-                case omni::physx::SimulationEvent::eDetachedFromStage:
                     g_simulating = false;
                     g_paused = false;
                     break;
