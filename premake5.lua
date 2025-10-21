@@ -19,8 +19,6 @@ repo_build = require("omni/repo/build")
 -- Repo root
 root = repo_build.get_abs_path(".")
 
--- Deprecated Extension Path
-deprecated_exts_path = "%{root}/_build/%{platform}/%{config}/extsDeprecated"
 -- extensions needed to build isaac sim
 isaac_sim_extsbuild_dir = "%{root}/_build/%{platform}/%{config}/extsbuild"
 -- Shared build scripts from repo_build package
@@ -126,9 +124,6 @@ end
 
 function include_extensions()
     group("exts")
-    for _, ext in ipairs(os.matchdirs(root .. "/source/deprecated/*")) do
-        if os.isfile(ext .. "/premake5.lua") then include(ext) end
-    end
     for _, ext in ipairs(os.matchdirs(root .. "/source/extensions/*")) do
         if os.isfile(ext .. "/premake5.lua") then include(ext) end
     end

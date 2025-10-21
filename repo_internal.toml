@@ -70,7 +70,6 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extsbuild/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
-  "${root}/_build/${platform}/${config}/extsDeprecated/*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.commands*",
   # archives
@@ -181,7 +180,6 @@ sphinx_exclude_patterns = [
   "SECURITY.md",
   "**/*LICENSE.md",
   "_deps_acl",
-  "source/deprecated_extensions",
   "schemas",
   ".cache",
   ".local",
@@ -192,14 +190,7 @@ sphinx_exclude_patterns = [
   "CODING.md"
 ]
 
-doxygen_input = ["source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Conversions.h",
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/DynamicControl.h",
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/DynamicControlTypes.h",
-  "source/deprecated/omni.isaac.dynamic_control/include/omni/isaac/dynamic_control/Math.h",
-  "source/deprecated/omni.isaac.dynamic_control/plugins/DcCommon.h",
-  "source/deprecated/omni.isaac.dynamic_control/plugins/DcPhysx.h",
-  "source/deprecated/omni.isaac.dynamic_control/plugins/DcTypes.h",
-  "source/extensions/isaacsim.asset.gen.conveyor/include/isaacsim/asset/gen/conveyor/IOmniIsaacConveyor.h",
+doxygen_input = ["source/extensions/isaacsim.asset.gen.conveyor/include/isaacsim/asset/gen/conveyor/IOmniIsaacConveyor.h",
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/IOccupancyMap.h",
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/MapGenerator.h",
   "source/extensions/isaacsim.asset.importer.mjcf/include/isaacsim/asset/importer/mjcf/IMjcf.h",
@@ -445,7 +436,6 @@ excluded_extensions = [
 ]
 extension_folder = [
   "${root}/source/extensions",
-  "${root}/source/deprecated",
 ]
 kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
 omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
@@ -476,8 +466,7 @@ root_folder = "${root}/_build/${platform}/${config}"
 
 [repo_generate_doxygen_input]
 scan_dirs = [
-  "${root}/source/extensions",
-  "${root}/source/deprecated"
+  "${root}/source/extensions"
 ]
 ignore_folders = []
 ignore_files = ["UsdPCH.h"]
@@ -497,8 +486,7 @@ verbose = false
 update = false
 # Path to extensions directories (relative to repo root)
 extensions_dir = [
-  "source/extensions",
-  "source/deprecated"
+  "source/extensions"
 ]
 
 ########################################################################################################################

@@ -186,11 +186,6 @@ inventory.includes.all = [
     "exts/isaacsim.app.selector",
     "exts/isaacsim.app.setup",
     "exts/isaacsim.core.version",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.app.selector",
-    "extsDeprecated/omni.isaac.app.setup",
-    "extsDeprecated/omni.isaac.version",
-    "extsDeprecated/omni.isaac.window.about",
     # others
     "VERSION",
     # compatibility check
@@ -221,15 +216,6 @@ inventory.includes.all = [
     "exts/isaacsim.asset.importer.urdf",
     "exts/isaacsim.asset.importer.mjcf",
     "exts/isaacsim.asset.validation",
-    # deprecated extensions
-    "extsDeprecated/omni.exporter.urdf",
-    "extsDeprecated/omni.isaac.asset_browser",
-    "extsDeprecated/omni.isaac.assets_check",
-    "extsDeprecated/omni.isaac.block_world",
-    "extsDeprecated/omni.isaac.conveyor.ui",
-    "extsDeprecated/omni.isaac.conveyor",
-    "extsDeprecated/omni.isaac.occupancy_map.ui",
-    "extsDeprecated/omni.isaac.occupancy_map",
 ]
 
 [isaacsim-benchmark]
@@ -246,9 +232,6 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.benchmark.examples",
     "exts/isaacsim.benchmark.services",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.benchmark.services",
-    "extsDeprecated/omni.isaac.benchmarks",
 ]
 
 [isaacsim-code-editor]
@@ -265,9 +248,6 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.code_editor.jupyter",
     "exts/isaacsim.code_editor.vscode",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.jupyter_notebook",
-    "extsDeprecated/omni.isaac.vscode",
 ]
 
 [isaacsim-core]
@@ -382,15 +362,6 @@ inventory.includes.all = [
     "exts/isaacsim.core.version",
     "exts/isaacsim.simulation_app",
     "exts/omni.kit.loop-isaac",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.cloner",
-    "extsDeprecated/omni.isaac.core",
-    "extsDeprecated/omni.isaac.core_nodes",
-    "extsDeprecated/omni.isaac.dynamic_control",
-    "extsDeprecated/omni.isaac.kit",
-    "extsDeprecated/omni.isaac.throttling",
-    "extsDeprecated/omni.isaac.utils",
-    "extsDeprecated/omni.isaac.version",
     # others
     "VERSION",
 ]
@@ -410,9 +381,6 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.cortex.behaviors",
     "exts/isaacsim.cortex.framework",
-    # deprecate extensions
-    "extsDeprecated/omni.isaac.cortex.sample_behaviors",
-    "extsDeprecated/omni.isaac.cortex",
 ]
 
 [isaacsim-example]
@@ -431,10 +399,6 @@ inventory.includes.all = [
     "exts/isaacsim.examples.extension",
     "exts/isaacsim.examples.interactive",
     "exts/isaacsim.examples.ui",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.examples",
-    "extsDeprecated/omni.isaac.examples_nodes",
-    "extsDeprecated/omni.isaac.ui_template",
 ]
 
 [isaacsim-gui]
@@ -454,11 +418,6 @@ inventory.includes.all = [
     "exts/isaacsim.gui.property",
     "exts/isaacsim.gui.sensors.icon",
     "exts/isaacsim.gui.content_browser",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.menu",
-    "extsDeprecated/omni.isaac.ui",
-    "extsDeprecated/omni.kit.property.isaac",
-    "extsDeprecated/omni.usd.schema.isaac",
 ]
 
 [isaacsim-replicator]
@@ -485,11 +444,6 @@ inventory.includes.all = [
     "exts/isaacsim.replicator.mobility_gen.ui",
     "exts/isaacsim.replicator.synthetic_recorder",
     "exts/isaacsim.replicator.writers",
-    # deprecated extensions
-    "extsDeprecated/isaacsim.replicator.scene_blox",
-    "extsDeprecated/omni.isaac.scene_blox",
-    "extsDeprecated/omni.isaac.synthetic_recorder",
-    "extsDeprecated/omni.replicator.isaac",
 ]
 
 [isaacsim-rl]
@@ -528,16 +482,6 @@ inventory.includes.all = [
     "exts/isaacsim.robot.surface_gripper.ui",
     "exts/isaacsim.robot.wheeled_robots",
     "exts/isaacsim.robot.wheeled_robots.ui",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.surface_gripper.ui",
-    "extsDeprecated/omni.isaac.surface_gripper",
-    "extsDeprecated/omni.isaac.franka",
-    "extsDeprecated/omni.isaac.manipulators.ui",
-    "extsDeprecated/omni.isaac.manipulators",
-    "extsDeprecated/omni.isaac.quadruped",
-    "extsDeprecated/omni.isaac.universal_robots",
-    "extsDeprecated/omni.isaac.wheeled_robots.ui",
-    "extsDeprecated/omni.isaac.wheeled_robots",
 ]
 
 [isaacsim-robot-motion]
@@ -555,10 +499,6 @@ inventory.includes.all = [
     "exts/isaacsim.robot_motion.lula",
     "exts/isaacsim.robot_motion.lula_test_widget",
     "exts/isaacsim.robot_motion.motion_generation",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.motion_generation",
-    "extsDeprecated/omni.isaac.lula",
-    "extsDeprecated/omni.isaac.lula_test_widget",
 ]
 
 [isaacsim-robot-setup]
@@ -578,13 +518,6 @@ inventory.includes.all = [
     "exts/isaacsim.robot_setup.grasp_editor",
     "exts/isaacsim.robot_setup.xrdf_editor",
     "exts/isaacsim.robot_setup.wizard",
-
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.articulation_inspector",
-    "extsDeprecated/omni.isaac.gain_tuner",
-    "extsDeprecated/omni.isaac.physics_inspector",
-    "extsDeprecated/omni.isaac.robot_assembler",
-    "extsDeprecated/omni.isaac.robot_description_editor",
 ]
 
 [isaacsim-ros1]
@@ -617,10 +550,6 @@ inventory.includes.all = [
     "exts/isaacsim.ros2.sim_control",
     "exts/isaacsim.ros2.tf_viewer",
     "exts/isaacsim.ros2.urdf",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.ros2_bridge.robot_description",
-    "extsDeprecated/omni.isaac.ros2_bridge",
-    "extsDeprecated/omni.isaac.tf_viewer",
 ]
 
 [isaacsim-sensor]
@@ -647,14 +576,6 @@ inventory.includes.all = [
     "exts/isaacsim.sensors.physx",
     "exts/isaacsim.sensors.rtx.ui",
     "exts/isaacsim.sensors.rtx",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.camera_inspector",
-    "extsDeprecated/omni.isaac.proximity_sensor",
-    "extsDeprecated/omni.isaac.range_sensor.examples",
-    "extsDeprecated/omni.isaac.range_sensor.ui",
-    "extsDeprecated/omni.isaac.range_sensor",
-    "extsDeprecated/omni.isaac.sensor",
-    "extsDeprecated/omni.usd.schema.isaac",
 ]
 
 [isaacsim-storage]
@@ -671,9 +592,6 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.core.version",
     "exts/isaacsim.storage.native",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.nucleus",
-    "extsDeprecated/omni.isaac.version",
     # others
     "VERSION",
 ]
@@ -690,8 +608,6 @@ pyproject.dependencies.all = [
 inventory.includes.all = [
     # license
     "LICENSE.txt",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.extension_templates",
 ]
 
 [isaacsim-test]
@@ -709,9 +625,6 @@ inventory.includes.all = [
     "exts/isaacsim.test.collection",
     "exts/isaacsim.test.docstring",
     "exts/isaacsim.test.utils",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.doctest",
-    "extsDeprecated/omni.isaac.tests",
 ]
 
 [isaacsim-utils]
@@ -729,9 +642,4 @@ inventory.includes.all = [
     "exts/isaacsim.util.camera_inspector",
     "exts/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
-    # deprecated extensions
-    "extsDeprecated/omni.isaac.debug_draw",
-    "extsDeprecated/omni.isaac.merge_mesh",
-    "extsDeprecated/omni.isaac.physics_utilities",
-    "extsDeprecated/omni.isaac.grasp_editor",
 ]
