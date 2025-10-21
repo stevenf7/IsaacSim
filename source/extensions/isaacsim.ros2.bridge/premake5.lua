@@ -275,7 +275,6 @@ cppdialect("C++17")
         "%{target_deps}/doctest/include",
         "%{root}/source/extensions/isaacsim.ros2.bridge/include",
         "%{root}/_build/target-deps/nlohmann_json/include",
-        "%{root}/source/deprecated/omni.isaac.dynamic_control/include",
         "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/python/include/python3.11",
         "%{root}/_build/target-deps/python/include",

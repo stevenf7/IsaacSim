@@ -103,7 +103,6 @@ vscode.python_env.PYTHONPATH = [
   "$root/_build/$platform/$config/kit/python/lib/python3.11/site-packages",
   "$root/_build/$platform/$config/python_packages",
   "$root/_build/$platform/$config/exts/isaacsim.simulation_app",
-  "$root/_build/$platform/$config/extsDeprecated/omni.isaac.kit",
   "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/exts/isaacsim.robot_motion.lula/pip_prebundle",
@@ -258,7 +257,6 @@ cache_path = "${root}/_build/${platform}/${config}/extscache"
 
 ext_folders = [
   "${root}/_build/$platform/$config/exts",
-  "${root}/_build/$platform/$config/extsDeprecated",
 ]
 
 # Apps to run and precache
@@ -525,9 +523,6 @@ tc_report_enabled = false
 timeout = 3600
 
 [[repo_test.suites.pythontests.bucket]]
-include = ["tests-omni.isaac*${shell_ext}"]
-name = "deprecated"
-[[repo_test.suites.pythontests.bucket]]
 include = ["tests-isaacsim.asset*${shell_ext}"]
 name = "asset"
 [[repo_test.suites.pythontests.bucket]]
@@ -704,7 +699,7 @@ platforms = [
 
 publish_root = "${root}/_build/$platform/$config"
 
-ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
+ext_folders = ["${publish_root}/exts"]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.exclude = []
@@ -817,12 +812,10 @@ limitations under the License.
 [repo_extension_docs]
 build_extension_paths = [
   "${root}/_build/${platform}/${config}/exts",
-  "${root}/_build/${platform}/${config}/extsDeprecated",
   "${root}/_build/${platform}/${config}/extsbuild",
 ]
 source_extension_paths = [
   "${root}/source/extensions",
-  "${root}/source/deprecated",
 ]
 
 sections = [
@@ -847,77 +840,6 @@ excluded_extensions = [
     "omni.isaac.ml_archive",
     "omni.pip.cloud",
     "omni.pip.compute",
-    # deprecated
-    "omni.exporter.urdf",
-    "omni.isaac.app.selector",
-    "omni.isaac.app.setup",
-    "omni.isaac.articulation_inspector",
-    "omni.isaac.asset_browser",
-    "omni.isaac.assets_check",
-    "omni.isaac.benchmarks",
-    "omni.isaac.benchmark.services",
-    "omni.isaac.block_world",
-    "omni.isaac.camera_inspector",
-    "omni.isaac.cloner",
-    "omni.isaac.common_includes",
-    "omni.isaac.conveyor",
-    "omni.isaac.conveyor.ui",
-    "omni.isaac.core",
-    "omni.isaac.core_nodes",
-    "omni.isaac.cortex",
-    "omni.isaac.cortex.sample_behaviors",
-    "omni.isaac.debug_draw",
-    "omni.isaac.doctest",
-    "omni.isaac.examples",
-    "omni.isaac.examples_nodes",
-    "omni.isaac.extension_templates",
-    "omni.isaac.franka",
-    "omni.isaac.gain_tuner",
-    "omni.isaac.grasp_editor",
-    "omni.isaac.jupyter_notebook",
-    "omni.isaac.kit",
-    "omni.isaac.lula",
-    "omni.isaac.lula_test_widget",
-    "omni.isaac.manipulators",
-    "omni.isaac.manipulators.ui",
-    "omni.isaac.menu",
-    "omni.isaac.merge_mesh",
-    "omni.isaac.motion_generation",
-    "omni.isaac.nucleus",
-    "omni.isaac.occupancy_map",
-    "omni.isaac.occupancy_map.ui",
-    "omni.isaac.physics_inspector",
-    "omni.isaac.physics_utilities",
-    "omni.isaac.proximity_sensor",
-    "omni.isaac.quadruped",
-    "omni.isaac.range_sensor",
-    "omni.isaac.range_sensor.examples",
-    "omni.isaac.range_sensor.ui",
-    "omni.isaac.robot_assembler",
-    "omni.isaac.robot_description_editor",
-    "omni.isaac.ros2_bridge",
-    "omni.isaac.ros2_bridge.robot_description",
-    "omni.isaac.scene_blox",
-    "omni.isaac.sensor",
-    "omni.isaac.surface_gripper",
-    "omni.isaac.surface_gripper.ui",
-    "omni.isaac.synthetic_recorder",
-    "omni.isaac.tests",
-    "omni.isaac.tf_viewer",
-    "omni.isaac.throttling",
-    "omni.isaac.ui",
-    "omni.isaac.ui_template",
-    "omni.isaac.unit_converter",
-    "omni.isaac.universal_robots",
-    "omni.isaac.utils",
-    "omni.isaac.version",
-    "omni.isaac.vscode",
-    "omni.isaac.wheeled_robots",
-    "omni.isaac.wheeled_robots.ui",
-    "omni.isaac.window.about",
-    "omni.kit.property.isaac",
-    "omni.replicator.isaac",
-    "omni.usd.schema.isaac",
     # extsbuild,
     "omni.graph.tools",
     "omni.kit.test",
@@ -1045,7 +967,6 @@ template_paths = [
 # paths specific to python autocomplete, not added to pythonpath/env
 python_analysis_extra_mapping = [
   "$root/_build/$platform/$config/exts/*",
-  "$root/_build/$platform/$config/extsDeprecated/*",
   "$root/_build/$platform/$config/extscache/*",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
