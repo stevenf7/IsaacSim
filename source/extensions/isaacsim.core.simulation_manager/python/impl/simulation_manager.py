@@ -21,6 +21,7 @@ import isaacsim.core.utils.torch as torch_utils
 import isaacsim.core.utils.warp as warp_utils
 import omni.kit
 import omni.physics.core
+import omni.physx
 import omni.timeline
 import omni.usd
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
@@ -41,6 +42,8 @@ class SimulationManager:
     _message_bus = carb.eventdispatcher.get_eventdispatcher()
     _physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
     _physics_stage_update_interface = omni.physics.core.get_physics_stage_update_interface()
+    _physx_sim_interface = omni.physx.get_physx_simulation_interface()
+    _physx_interface = omni.physx.get_physx_interface()
     _physics_sim_view = None
     _physics_sim_view__warp = None
     _backend = "numpy"
@@ -236,6 +239,7 @@ class SimulationManager:
     def initialize_physics(cls) -> None:
         if SimulationManager._warmup_needed:
             SimulationManager._physics_stage_update_interface.force_load_physics_from_usd()
+            SimulationManager._physx_interface.start_simulation()
             SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
             SimulationManager._physics_sim_interface.fetch_results()
             SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
