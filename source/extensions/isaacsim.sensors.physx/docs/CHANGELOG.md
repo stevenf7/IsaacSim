@@ -1,4 +1,7 @@
 # Changelog
+## [2.4.1] - 2025-10-18
+### Changed
+- Remove extra carb settings from tests
 
 ## [2.4.0] - 2025-10-17
 ### Changed
