@@ -1,4 +1,7 @@
 # Changelog
+## [4.9.1] - 2025-10-18
+### Changed
+- Remove extra carb settings from tests
 
 ## [4.9.0] - 2025-10-17
 ### Changed

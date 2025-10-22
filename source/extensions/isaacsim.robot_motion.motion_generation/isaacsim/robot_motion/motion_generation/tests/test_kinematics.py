@@ -62,11 +62,6 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
             self._policy_map = json.load(policy_map)
 
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", self._physics_fps)
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", self._physics_fps)
-        omni.timeline.get_timeline_interface().set_target_framerate(self._physics_fps)
-
         pass
 
     # After running each test

@@ -1,4 +1,8 @@
 # Changelog
+## [8.0.27] - 2025-10-18
+### Changed
+- Remove extra carb settings from tests
+
 ## [8.0.26] - 2025-09-17
 ### Fixed
 - Fixed bug in RMPflow collision sphere visualization where updating the robot position did not update the positions of visualized spheres.

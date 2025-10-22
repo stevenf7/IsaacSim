@@ -31,10 +31,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
         # force editor and physics to have the same rate (should be 60)
         self._physics_rate = 60
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-        omni.timeline.get_timeline_interface().set_target_framerate(self._physics_rate)
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
 
@@ -129,7 +125,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
-        stage.SetTimeCodesPerSecond(self._physics_rate)
         # Add a cube for testing gravity
         cubePath = "/World/Cube"
         cubeGeom = UsdGeom.Cube.Define(stage, cubePath)
@@ -163,7 +158,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("persistent/app/stage/upAxis", "Z")
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
-        stage.SetTimeCodesPerSecond(self._physics_rate)
         # Add a cube for testing gravity
         cubePath = "/World/Cube"
         cubeGeom = UsdGeom.Cube.Define(stage, cubePath)

@@ -34,11 +34,6 @@ class TestPhysicsStep(omni.kit.test.AsyncTestCase):
 
     async def test_physics_step_node(self):
         carb.settings.get_settings().set_bool("/app/player/useFixedTimeStepping", True)
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", 60)
-        # carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", 0)
-        omni.timeline.get_timeline_interface().set_target_framerate(60)
-        omni.timeline.get_timeline_interface().set_time_codes_per_second(20)
 
         stage = omni.usd.get_context().get_stage()
 

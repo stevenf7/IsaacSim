@@ -34,18 +34,12 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await create_new_stage_async()
-        self._physics_rate = 60
         self._provider = carb.input.acquire_input_provider()
         self._gamepad = self._provider.create_gamepad("test", "0")
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-        omni.usd.get_context().get_stage().SetTimeCodesPerSecond(self._physics_rate)
-        omni.timeline.get_timeline_interface().set_target_framerate(self._physics_rate)
         await update_stage_async()
         self._sample = KayaGamepad()
         World.clear_instance()
-        self._sample.set_world_settings(physics_dt=1.0 / self._physics_rate, stage_units_in_meters=1.0)
+        self._sample.set_world_settings(physics_dt=1.0 / 60, stage_units_in_meters=1.0)
         await self._sample.load_world_async()
         return
 
