@@ -157,7 +157,8 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
     # get extension names
     extensions = []
     for folder in extension_folder:
-        extensions += [d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d))]
+        if os.path.isdir(folder):
+            extensions += [d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d))]
 
     missing_extensions = False
     for extension in extensions:
