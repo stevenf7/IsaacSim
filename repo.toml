@@ -257,6 +257,7 @@ cache_path = "${root}/_build/${platform}/${config}/extscache"
 
 ext_folders = [
   "${root}/_build/$platform/$config/exts",
+  "${root}/_build/$platform/$config/extsDeprecated",
 ]
 
 # Apps to run and precache
@@ -523,6 +524,9 @@ tc_report_enabled = false
 timeout = 3600
 
 [[repo_test.suites.pythontests.bucket]]
+include = ["tests-omni.isaac*${shell_ext}"]
+name = "deprecated"
+[[repo_test.suites.pythontests.bucket]]
 include = ["tests-isaacsim.asset*${shell_ext}"]
 name = "asset"
 [[repo_test.suites.pythontests.bucket]]
@@ -699,7 +703,7 @@ platforms = [
 
 publish_root = "${root}/_build/$platform/$config"
 
-ext_folders = ["${publish_root}/exts"]
+ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.exclude = []
@@ -812,10 +816,12 @@ limitations under the License.
 [repo_extension_docs]
 build_extension_paths = [
   "${root}/_build/${platform}/${config}/exts",
+  "${root}/_build/${platform}/${config}/extsDeprecated",
   "${root}/_build/${platform}/${config}/extsbuild",
 ]
 source_extension_paths = [
   "${root}/source/extensions",
+  "${root}/source/deprecated",
 ]
 
 sections = [
@@ -967,6 +973,7 @@ template_paths = [
 # paths specific to python autocomplete, not added to pythonpath/env
 python_analysis_extra_mapping = [
   "$root/_build/$platform/$config/exts/*",
+  "$root/_build/$platform/$config/extsDeprecated/*",
   "$root/_build/$platform/$config/extscache/*",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",

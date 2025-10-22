@@ -180,6 +180,7 @@ sphinx_exclude_patterns = [
   "SECURITY.md",
   "**/*LICENSE.md",
   "_deps_acl",
+  "source/deprecated",
   "schemas",
   ".cache",
   ".local",
@@ -436,6 +437,7 @@ excluded_extensions = [
 ]
 extension_folder = [
   "${root}/source/extensions",
+  "${root}/source/deprecated",
 ]
 kit_sdk_packman = "${root}/deps/kit-sdk.packman.xml"
 omniverse_kit_version = "${major}.${minor}.${patch}.${build_number}"
@@ -466,7 +468,8 @@ root_folder = "${root}/_build/${platform}/${config}"
 
 [repo_generate_doxygen_input]
 scan_dirs = [
-  "${root}/source/extensions"
+  "${root}/source/extensions",
+  "${root}/source/deprecated"
 ]
 ignore_folders = []
 ignore_files = ["UsdPCH.h"]
@@ -486,7 +489,8 @@ verbose = false
 update = false
 # Path to extensions directories (relative to repo root)
 extensions_dir = [
-  "source/extensions"
+  "source/extensions",
+  "source/deprecated"
 ]
 
 ########################################################################################################################
