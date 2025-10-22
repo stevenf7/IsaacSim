@@ -20,7 +20,6 @@ import omni.kit.app
 import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
-import omni.timeline
 import omni.usd
 from isaacsim.replicator.synthetic_recorder.synthetic_recorder import RecorderState, SyntheticRecorder
 
@@ -74,10 +73,10 @@ class TestRecorderBasic(omni.kit.test.AsyncTestCase):
         rep.create.cube(semantics=[("class", "cube")])
         rep.create.sphere(position=(1, 1, 0), semantics=[("class", "sphere")])
 
-    async def run_recorder_loop_basic_writer_all_annotators_async(self, out_dir=None):
+    async def run_recorder_loop_basic_writer_all_annotators_async(self, num_iterations, num_frames, out_dir=None):
         # Create a new instance of the SyntheticRecorder
         recorder = SyntheticRecorder()
-        recorder.num_frames = 3
+        recorder.num_frames = num_frames
         recorder.rt_subframes = 0
         recorder.control_timeline = False
         recorder.verbose = True
@@ -101,7 +100,7 @@ class TestRecorderBasic(omni.kit.test.AsyncTestCase):
         recorder.out_working_dir = os.getcwd()
 
         # Run the recorder a few times
-        for i in range(3):
+        for i in range(num_iterations):
             recorder.out_dir = f"_out_sdrec_test_{i}" if out_dir is None else f"{out_dir}_{i}"
             print(f"Starting recorder {i}; writing data to {os.path.join(recorder.out_working_dir, recorder.out_dir)}")
             await recorder.start_stop_async()
@@ -112,12 +111,18 @@ class TestRecorderBasic(omni.kit.test.AsyncTestCase):
 
     async def test_recorder_empty_stage(self):
         await self.setup_stage_empty_async()
-        await self.run_recorder_loop_basic_writer_all_annotators_async(out_dir="_out_sdrec_test_empty")
+        await self.run_recorder_loop_basic_writer_all_annotators_async(
+            num_iterations=3, num_frames=3, out_dir="_out_sdrec_test_empty"
+        )
 
     async def test_recorder_no_semantics(self):
         await self.setup_stage_with_no_semantics()
-        await self.run_recorder_loop_basic_writer_all_annotators_async(out_dir="_out_sdrec_test_no_semantics")
+        await self.run_recorder_loop_basic_writer_all_annotators_async(
+            num_iterations=3, num_frames=3, out_dir="_out_sdrec_test_no_semantics"
+        )
 
     async def test_recorder_with_semantics(self):
         await self.setup_stage_with_semantics()
-        await self.run_recorder_loop_basic_writer_all_annotators_async(out_dir="_out_sdrec_test_with_semantics")
+        await self.run_recorder_loop_basic_writer_all_annotators_async(
+            num_iterations=3, num_frames=3, out_dir="_out_sdrec_test_with_semantics"
+        )
