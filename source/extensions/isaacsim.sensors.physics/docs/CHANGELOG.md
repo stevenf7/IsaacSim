@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.1] - 2025-10-22
+### Changed
+- Remove deprecated time related APIs from CoreNodes interface
+
 ## [0.5.0] - 2025-10-17
 ### Changed
 - Migrate PhysX subscription and simulation control interfaces to Omni Physics

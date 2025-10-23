@@ -20,8 +20,8 @@ import numpy as np
 import omni.kit.utils
 import omni.physics.core
 import omni.usd
-from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
 from isaacsim.core.prims import SingleArticulation
+from isaacsim.core.simulation_manager import SimulationManager
 
 
 class EsSensorReading:
@@ -48,7 +48,6 @@ class EffortSensor(SingleArticulation):
         self.data_buffer_size = 10
         self.sensor_reading_buffer = [EsSensorReading() for i in range(self.data_buffer_size)]
         self.interpolation_buffer = copy.deepcopy(self.sensor_reading_buffer)
-        self.core_nodes = _isaacsim_core_nodes.acquire_interface()
         self.physics_num_steps = 0
         self.is_initialized = False
         self.dof = None
@@ -99,8 +98,8 @@ class EffortSensor(SingleArticulation):
     def _data_acquisition_callback(self, step_size: float, context) -> None:
         # update sensor reading pair
         self.step_size = step_size
-        self.current_time = float(self.core_nodes.get_sim_time())
-        self.physics_num_steps = float(self.core_nodes.get_physics_num_steps())
+        self.current_time = float(SimulationManager.get_simulation_time())
+        self.physics_num_steps = float(SimulationManager.get_num_physics_steps())
         if self.physics_num_steps <= 2:
             return
 

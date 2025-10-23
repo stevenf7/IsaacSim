@@ -30,7 +30,7 @@ import omni.syntheticdata._syntheticdata as _syntheticdata
 import torch
 import warp as wp
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
-from isaacsim.core.nodes.bindings import _isaacsim_core_nodes
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.carb import get_carb_setting
 from isaacsim.core.utils.prims import (
     define_prim,
@@ -268,7 +268,6 @@ class Camera(BaseSensor):
         self._pause = False
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
-        self._core_nodes_interface = _isaacsim_core_nodes.acquire_interface()
         self._sdg_interface = _syntheticdata.acquire_syntheticdata_interface()
 
         self._elapsed_time = 0
@@ -469,7 +468,7 @@ class Camera(BaseSensor):
         if parsed_payload[0] == self._render_product_path:
             self._og_controller.evaluate_sync(graph_id=self._sdg_graph_pipeline)
             frame_number = self._fabric_time_annotator.get_data()
-            current_time = self._core_nodes_interface.get_sim_time_at_time(
+            current_time = SimulationManager._simulation_manager_interface.get_simulation_time_at_time(
                 (frame_number["referenceTimeNumerator"], frame_number["referenceTimeDenominator"])
             )
             if self._previous_time is not None:

@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.0] - 2025-10-20
+### Changed
+- Remove deprecated time related APIs from CoreNodes interface
+
 ## [3.4.4] - 2025-10-18
 ### Changed
 - Remove extra carb settings from tests
