@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.3.0] - 2025-10-20
+### Added
+- Expose function to import a deprecated/removed module safely
+
 ## [0.2.7] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
