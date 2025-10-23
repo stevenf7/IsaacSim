@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.7] - 2025-10-22
+### Changed
+- Remove deprecated time related APIs from CoreNodes interface
+
 ## [1.3.6] - 2025-09-23
 ### Fixed
 - SingleViewDepthSensorAsset correctly sets position, orientation, translation on __init__.
