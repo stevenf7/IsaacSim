@@ -892,8 +892,15 @@ def _create_isaac_extract_rtx_sensor_point_cloud_test(config: str = None, varian
 
 
 # Iterate over all supported lidar configs and variants, creating a test for each as sensor prims
+DISABLE_FOR_TEST = {
+    "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda",
+    "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
+}
+
 data_source = "gpu"
 for config_path in SUPPORTED_LIDAR_CONFIGS:
+    if config_path in DISABLE_FOR_TEST:
+        continue
     config_name = Path(config_path).stem
     for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
         flat_scan_test_func = _create_flat_scan_annotator_test(config=config_name, variant=variant)

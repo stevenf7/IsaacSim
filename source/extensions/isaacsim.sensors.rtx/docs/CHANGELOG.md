@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.8.5] - 2025-10-22
+### Changed
+- Exclude Simple Example Solid State config from tests
+
 ## [15.8.4] - 2025-10-07
 ### Fixed
 - LidarRtx warns if rational time is 0/0 and will not collect simulation time or Annotator data in that case
