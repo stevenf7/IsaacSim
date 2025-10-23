@@ -37,7 +37,6 @@ Extensions
    :caption: Extensions (App)
 
    isaacsim.app.about <source/extensions/isaacsim.app.about/docs/index>
-   isaacsim.app.selector <source/extensions/isaacsim.app.selector/docs/index>
    isaacsim.app.setup <source/extensions/isaacsim.app.setup/docs/index>
 
 .. toctree::

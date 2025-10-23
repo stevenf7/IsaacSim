@@ -501,7 +501,6 @@ extensions_dir = [
 # Extensions to ignore during validation
 ignored_extensions = [
   "isaacsim.robot.schema",
-  "isaacsim.app.selector",
 ]
 
 

@@ -60,30 +60,6 @@ function create_tests()
         },
     })
 
-    -- Selector test group
-    define_test_group("selector_tests", {
-        {
-            name = "tests-selector.default",
-            kit_file = "isaacsim.exp.selector",
-            extra_args = "--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=false",
-        },
-        {
-            name = "tests-selector.autolaunch_and_persist",
-            kit_file = "isaacsim.exp.selector",
-            extra_args = '--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args="--/app/quitAfter=10 --/app/file/ignoreUnsavedOnExit=1"',
-        },
-        {
-            name = "tests-selector.no_show_console",
-            kit_file = "isaacsim.exp.selector",
-            extra_args = '--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=true --/persistent/ext/isaacsim.app.selector/show_console=false --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args="--/app/quitAfter=10 --/app/file/ignoreUnsavedOnExit=1"',
-        },
-        {
-            name = "tests-selector.persist",
-            kit_file = "isaacsim.exp.selector",
-            extra_args = '--/app/quitAfter=500 --/persistent/ext/isaacsim.app.selector/auto_start=false --/persistent/ext/isaacsim.app.selector/show_console=true --/persistent/ext/isaacsim.app.selector/persistent_selector=true --/persistent/ext/isaacsim.app.selector/extra_args="--/app/quitAfter=10"',
-        },
-    })
-
     -- Python samples
     group("python_samples")
     -- smoke tests for python.sh itself
