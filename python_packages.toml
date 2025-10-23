@@ -183,7 +183,6 @@ inventory.includes.all = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.app.about",
-    "exts/isaacsim.app.selector",
     "exts/isaacsim.app.setup",
     "exts/isaacsim.core.version",
     # others

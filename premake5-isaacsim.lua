@@ -445,7 +445,6 @@ set SCRIPT_DIR=%%~dp0
 set NO_ROS_ENV=false
 
 REM don't set up ros env for the following apps
-if /i "%%~n0"=="isaac-sim.selector" set NO_ROS_ENV=true
 if /i "%%~n0"=="isaac-sim.compatibility_check" set NO_ROS_ENV=true
 
 REM Check args for a flag to disable ROS environment setup
