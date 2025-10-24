@@ -1,4 +1,7 @@
 # Changelog
+## [3.6.1] - 2025-10-22
+### Changed
+- Remove deprecated dependencies
 
 ## [3.6.0] - 2025-10-17
 ### Changed

@@ -1,5 +1,5 @@
 [package]
-version = "2.0.29"
+version = "2.0.30"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "The Isaac Sim Occupancy Map extension provides tools to generate occupancy maps for a Scene"
@@ -17,6 +17,7 @@ writeTarget.kit = true
 "isaacsim.util.debug_draw" = {}
 "omni.kit.pip_archive" = {}
 "omni.physx" = {}
+"omni.physics.stageupdate" = {}
 
 [[python.module]]
 name = "isaacsim.asset.gen.omap"
@@ -34,7 +35,7 @@ dependencies = [
     "isaacsim.core.utils",
     "isaacsim.storage.native",
     "omni.hydra.usdrt_delegate",
-    "isaacsim.test.docstring",
+    "isaacsim.test.docstring"
 ]
 args = [
     "--enable",

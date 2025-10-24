@@ -1,5 +1,5 @@
 [package]
-version = "4.0.24"
+version = "4.0.25"
 category = "Simulation"
 title = "Wheeled Robots"
 description = "This extension provides wheeled robot utilities"
@@ -20,7 +20,6 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.isaac.core_archive" = {} # scipy, osqp, qdldl
-"omni.isaac.dynamic_control" = {}
 "omni.physx" = {}
 
 [[python.module]]

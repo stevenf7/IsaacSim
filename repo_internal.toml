@@ -158,16 +158,10 @@ sphinx_conf_py_extra = """
 """
 
 sphinx_exclude_patterns = [
-  "**/omni.isaac.app",
-  "**/omni.isaac.assets_check",
   "**/omni.isaac.core_archive",
   "**/omni.isaac.ml_archive",
   "**/omni.pip.compute",
   "**/omni.pip.cloud",
-  "**/omni.isaac.tests",
-  "**/omni.usd.schema.isaac",         #TODO?
-  "**/omni.isaac.window.about",
-  "**/omni.isaac.unit_converter",
   "include",
   "tools",
   "tests",
@@ -431,9 +425,6 @@ excluded_extensions = [
   "omni.isaac.ml_archive",
   "omni.pip.compute",
   "omni.pip.cloud",
-  # others
-  "omni.isaac.common_includes",
-  "omni.isaac.unit_converter",
 ]
 extension_folder = [
   "${root}/source/extensions",

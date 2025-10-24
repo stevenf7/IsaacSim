@@ -1,5 +1,5 @@
 [package]
-version = "4.0.0"
+version = "4.0.1"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Common Isaac Sim OmniGraph nodes"
@@ -18,7 +18,6 @@ writeTarget.kit = true
 "isaacsim.core.simulation_manager" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
-"omni.isaac.dynamic_control" = {}
 "omni.kit.viewport.utility" = {}
 "omni.kit.viewport.window" = {}
 "omni.replicator.core" = {}

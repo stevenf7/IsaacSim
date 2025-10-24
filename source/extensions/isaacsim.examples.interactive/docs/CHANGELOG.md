@@ -1,4 +1,8 @@
 # Changelog
+## [4.8.2] - 2025-10-22
+### Changed
+- Remove deprecated dependencies
+
 ## [4.8.1] - 2025-10-18
 ### Changed
 - Remove extra carb settings from tests

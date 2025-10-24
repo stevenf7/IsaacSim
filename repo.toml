@@ -688,15 +688,13 @@ ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.exclude = []
 exts.include = [
-  "omni.isaac.*",
+  "omni.isaac.core_archive",
+  "omni.isaac.ml_archive",
   "omni.exporter.urdf",
   "isaacsim.*",
   "omni.kit.loop-isaac",
   "omni.pip.cloud",
   "omni.pip.compute",
-  "omni.usd.schema.isaac",
-  "omni.kit.property.isaac",
-  "omni.replicator.isaac",
 ]
 
 # This is hardcoded in template
