@@ -33,12 +33,14 @@ print_help() {
     echo "  --physics          Update physics components"
     echo "  --exts             Update and clean extension cache"
     echo "  --all              Run all updates"
+    echo "  --clean            Clean extensions from extscache that exist in build tree (exclusive mode)"
     echo "  --commit-hash      Specific commit hash for template URL (used with --exts)"
     echo ""
     echo "Examples:"
     echo "  $0 --kit           # Update only kit components"
     echo "  $0 --kit --physics # Update kit and physics components"
     echo "  $0 --all           # Run all updates"
+    echo "  $0 --clean         # Clean extensions only (cannot be combined with other modes)"
     echo "  $0 --exts --commit-hash abc123def456  # Update extensions with specific commit hash"
     echo ""
     exit 0
@@ -83,6 +85,14 @@ update_extensions() {
     popd
 }
 
+# Function to clean extensions from extscache
+clean_extensions() {
+    echo "Cleaning extensions from extscache..."
+    pushd ../
+    python3 tools/isaac/clean_extscache.py
+    popd
+}
+
 # Get the directory where this script is located
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 cd "$SCRIPT_DIR"
@@ -96,6 +106,7 @@ fi
 UPDATE_KIT=false
 UPDATE_PHYSICS=false
 UPDATE_EXTS=false
+CLEAN_EXTS=false
 COMMIT_HASH=""
 
 # Process arguments
@@ -114,6 +125,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --exts)
             UPDATE_EXTS=true
+            shift
+            ;;
+        --clean)
+            CLEAN_EXTS=true
             shift
             ;;
         --all)
@@ -144,6 +159,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Validate that --clean is not combined with other modes
+if [ "$CLEAN_EXTS" = true ]; then
+    if [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ]; then
+        echo "Error: --clean cannot be combined with --kit, --physics, --exts, or --all"
+        print_help
+    fi
+fi
+
 # Run selected updates
 if [ "$UPDATE_KIT" = true ]; then
     update_kit
@@ -155,6 +178,10 @@ fi
 
 if [ "$UPDATE_EXTS" = true ]; then
     update_extensions "$COMMIT_HASH"
+fi
+
+if [ "$CLEAN_EXTS" = true ]; then
+    clean_extensions
 fi
 
 echo "Update completed successfully!"

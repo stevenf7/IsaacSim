@@ -92,8 +92,9 @@ function create_tests()
             "--usd_path /Isaac/Environments/Simple_Room/simple_room.usd --test --headless",
         },
         {
-            "tests-nativepython-testing-isaacsim.simulation_app.test_createstage_config",
-            "standalone_examples/testing/isaacsim.simulation_app/test_createstage_config.py",
+            "tests-nativepython-testing-isaacsim.simulation_app.test_config",
+            "standalone_examples/testing/isaacsim.simulation_app/test_config.py",
+            "--/persistent/isaac/asset_root/default=omniverse://ov-test-this-is-working",
         },
         {
             "tests-nativepython-testing-isaacsim.simulation_app.test_multiprocess",
@@ -498,11 +499,6 @@ function create_tests()
     -- Simulation app tests
     local simulation_app_additional_tests = {
         {
-            "tests-nativepython-testing-isaacsim.simulation_app.test_extra_args",
-            "standalone_examples/testing/isaacsim.simulation_app/test_extra_args.py",
-            '--/persistent/isaac/asset_root/default="omniverse://ov-test-this-is-working"',
-        },
-        {
             "tests-nativepython-testing-isaacsim.simulation_app.test_frame_delay_basic",
             "standalone_examples/testing/isaacsim.simulation_app/test_frame_delay.py",
             "--/app/renderer/waitIdle=true --/app/hydraEngine/waitIdle=true",
@@ -523,10 +519,6 @@ function create_tests()
         {
             "tests-nativepython-testing-isaacsim.simulation_app.test_fetch_results",
             "standalone_examples/testing/isaacsim.simulation_app/test_fetch_results.py",
-        },
-        {
-            "tests-nativepython-testing-isaacsim.simulation_app.test_unsaved_on_exit",
-            "standalone_examples/testing/isaacsim.simulation_app/test_unsaved_on_exit.py",
         },
         {
             "tests-nativepython-testing-isaacsim.benchmark.services.test_no_rendering",

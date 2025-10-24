@@ -125,7 +125,7 @@ class SimulationApp:
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
         fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
         profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
-        create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True
+        create_new_stage (bool): Set False to not create a new stage on application startup. Defaults to True, does not have an effect if open_usd is not None.
         extra_args: (list): List of extra command line arguments to pass down to the kit process
         enable_crashreporter (bool): Enable crash reporter. Defaults to True
         limit_cpu_threads (int): Limit the number of CPU threads created to the lesser of cpu core count or specified value. Defaults to 32.
@@ -300,11 +300,9 @@ class SimulationApp:
                 create_new_stage()
             else:
                 print("Done.")
-
-        if self.config["create_new_stage"] is True:
+        elif self.config["create_new_stage"] is True:
             carb.log_info("SimulationApp.__init__: Creating new stage")
             create_new_stage()
-
         # Update the app
         self._app.update()
         self._prepare_ui()
@@ -411,7 +409,8 @@ class SimulationApp:
             args.extend(self.config.get("extra_args", []))
         else:
             print("Ignoring extra_args, extra_args must be of type list")
-
+        if self.config["create_new_stage"] is False:
+            args.append("--/app/content/emptyStageOnStart=false")
         if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         if self.config.get("physics_gpu") is not None:
