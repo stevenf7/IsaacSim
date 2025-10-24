@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.12.3] - 2025-10-23
+### Added
+- fix create_new_stage not working correctly
+
 ## [2.12.2] - 2025-09-20
 ### Fixed
 - Fix hang on shutdown by forcing the current stage to close
