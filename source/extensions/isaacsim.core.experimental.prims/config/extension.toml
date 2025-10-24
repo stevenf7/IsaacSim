@@ -1,10 +1,10 @@
 [package]
-version = "0.9.0"
+version = "0.9.1"
 category = "Simulation"
 title = "Isaac Sim Core (Prims)"
 description = "The Core Prims extension provides a set of APIs to wrap one or more USD prims in the stage in order to manipulate (read/write) their attributes and perform other operations during the simulation."
 authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.prims"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.experimental.prims"
 keywords = ["isaacsim", "core", "prims"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -16,7 +16,6 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.core.simulation_manager" = {}
-"isaacsim.core.utils" = {}
 "isaacsim.test.docstring" = {} # needed for tests to load in test runner
 "omni.hydra.usdrt_delegate" = {}
 "omni.isaac.core_archive" = {}

@@ -823,3 +823,26 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                         check_allclose(
                             (default_v0, default_v1), (prim._default_dof_stiffnesses, prim._default_dof_dampings)
                         )
+
+    @parametrize(
+        backends=["usd"],
+        operations=["wrap"],
+        instances=["many"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
+    )
+    async def test_fetch_articulation_root_api_prim_paths(self, prim, num_prims, device, backend):
+        for backend in ["usd", "usdrt", "fabric"]:
+            with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
+                self.assertListEqual(Articulation.fetch_articulation_root_api_prim_paths("/World"), ["/World/A_0"])
+                self.assertListEqual(
+                    Articulation.fetch_articulation_root_api_prim_paths("/World/A_.*"),
+                    ["/World/A_0", "/World/A_1", "/World/A_2", "/World/A_3", "/World/A_4"],
+                )
+                self.assertListEqual(
+                    Articulation.fetch_articulation_root_api_prim_paths(["/World/A_0"]), ["/World/A_0"]
+                )
+                self.assertListEqual(
+                    Articulation.fetch_articulation_root_api_prim_paths(["/", "/World/.*1", "/World/A_2/Arm"]),
+                    ["/World/A_0", "/World/A_1", None],
+                )

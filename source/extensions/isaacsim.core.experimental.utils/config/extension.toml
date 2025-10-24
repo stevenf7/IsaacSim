@@ -1,10 +1,10 @@
 [package]
-version = "0.3.0"
+version = "0.4.0"
 category = "Simulation"
 title = "Isaac Sim Core (Utils)"
 description = "The Core Utils extension provides a set of utility functions."
 authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.utils"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.experimental.utils"
 keywords = ["isaacsim", "core", "utils"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"

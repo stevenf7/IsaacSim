@@ -15,10 +15,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Callable, Literal
 
 import usdrt
-from pxr import Sdf, Usd
+from pxr import Sdf, Usd, UsdPhysics
 
 from . import foundation as foundation_utils
 from . import stage as stage_utils
@@ -181,6 +182,72 @@ def get_prim_path(prim: Usd.Prim | usdrt.Usd.Prim) -> str:
         '/World/Cube'
     """
     return prim.GetPath().pathString
+
+
+def find_matching_prim_paths(path: str, *, traverse: bool = False) -> list[str]:
+    """Find all the prim paths in the stage that match the given (regex) path.
+
+    Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
+
+    Args:
+        path: Path to match against the stage. It can be a regex expression or a valid prim path.
+        traverse: Whether to traverse the stage hierarchy to find all matching prims. If ``True``, the function will
+            return all the prim paths in the stage that match the given (regex) path, including its descendants, if any.
+            Otherwise, only the paths of the first matching prim (performing a segment-wise search) will be returned.
+
+    Returns:
+        List of matching prim paths.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.prim as prim_utils
+        >>> import isaacsim.core.experimental.utils.stage as stage_utils
+        >>>
+        >>> # / (root prim)
+        >>> #  |-- World
+        >>> #  |    |-- prim_0
+        >>> #  |    |    |-- prim_a
+        >>> #  |    |    |-- prim_b
+        >>> stage_utils.define_prim("/World/prim_0/prim_a")  # doctest: +NO_CHECK
+        >>> stage_utils.define_prim("/World/prim_0/prim_b")  # doctest: +NO_CHECK
+        >>>
+        >>> prim_utils.find_matching_prim_paths("/World/prim_.*")
+        ['/World/prim_0']
+        >>> prim_utils.find_matching_prim_paths("/World/prim_.*", traverse=True)
+        ['/World/prim_0', '/World/prim_0/prim_a', '/World/prim_0/prim_b']
+        >>>
+        >>> prim_utils.find_matching_prim_paths(".*_[ab]")
+        []
+        >>> prim_utils.find_matching_prim_paths(".*_[ab]", traverse=True)
+        ['/World/prim_0/prim_a', '/World/prim_0/prim_b']
+    """
+    stage = stage_utils.get_current_stage()
+    # check for a valid prim path first to avoid unnecessary regex search
+    if Sdf.Path.IsValidPathString(path):
+        prim = stage.GetPrimAtPath(path)
+        if prim.IsValid():
+            if traverse:
+                prim_range = Usd.PrimRange(prim) if isinstance(prim, Usd.Prim) else usdrt.Usd.PrimRange(prim)
+                return [prim.GetPath().pathString for prim in prim_range]
+            else:
+                return [path]
+    # regex search
+    if traverse:
+        pattern = re.compile(path)
+        return [res.string for prim in stage.Traverse() if (res := pattern.match(prim.GetPath().pathString))]
+    else:
+        roots, matches = ["/"], []
+        patterns = [re.compile(f"^{token}$") for token in path.strip("/").split("/")]
+        for i, pattern in enumerate(patterns):
+            for root in roots:
+                for child in stage.GetPrimAtPath(root).GetChildren():
+                    if pattern.fullmatch(child.GetName()):
+                        matches.append(child.GetPath().pathString)
+            if i < len(patterns) - 1:
+                roots, matches = matches, []
+        return matches
 
 
 def get_all_matching_child_prims(
@@ -404,7 +471,7 @@ def create_prim_attribute(
 ) -> Usd.Attribute | usdrt.Usd.Attribute:
     """Create a new attribute on a USD prim.
 
-    Backends: :guilabel:`usd`.
+    Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
 
     Args:
         prim: Prim path or prim instance.
@@ -440,3 +507,70 @@ def create_prim_attribute(
         )
         attribute = prim.CreateAttribute(name, type_name, custom=True)
     return attribute
+
+
+def is_prim_non_root_articulation_link(prim: str | Usd.Prim | usdrt.Usd.Prim) -> bool:
+    """Check whether a prim corresponds to a non-root link in an articulation.
+
+    Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
+
+    This function returns ``True`` only if all the following conditions are met:
+
+    - The prim belongs to an articulation.
+    - The prim is a link (has the ``RigidBodyAPI`` applied).
+    - The prim is related to a joint.
+
+    .. warning::
+
+        While a ``True`` return value guarantees that the prim is a non-root link in an articulation,
+        a ``False`` return value does not guarantee that the prim is an articulation root link.
+
+    Args:
+        prim: Prim path or prim instance.
+
+    Returns:
+        Whether the prim corresponds to a non-root link in an articulation.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.prim as prim_utils
+        >>> import isaacsim.core.experimental.utils.stage as stage_utils
+        >>> from isaacsim.storage.native import get_assets_root_path
+        >>>
+        >>> stage_utils.open_stage(
+        ...     get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        ... )  # doctest: +NO_CHECK
+        >>>
+        >>> prim_utils.is_prim_non_root_articulation_link("/panda")
+        False
+        >>> prim_utils.is_prim_non_root_articulation_link("/panda/panda_link0")
+        True
+    """
+    prim = stage_utils.get_current_stage().GetPrimAtPath(prim) if isinstance(prim, str) else prim
+    backend = "usd" if isinstance(prim, Usd.Prim) else "usdrt"
+    # check if the prim belongs to an articulation
+    articulation_root_api = (
+        UsdPhysics.ArticulationRootAPI if backend == "usd" else usdrt.UsdPhysics.ArticulationRootAPI.GetSchemaTypeName()
+    )
+    parent = get_first_matching_parent_prim(prim, predicate=lambda prim, _: prim.HasAPI(articulation_root_api))
+    if parent is None:
+        return False
+    # check if the prim is a link (rigid body)
+    rigid_body_api = UsdPhysics.RigidBodyAPI if backend == "usd" else usdrt.UsdPhysics.RigidBodyAPI.GetSchemaTypeName()
+    if not prim.HasAPI(rigid_body_api):
+        return False
+    # check if the prim is not a root link
+    joint_type = UsdPhysics.Joint if backend == "usd" else usdrt.UsdPhysics.Joint.GetSchemaTypeName()
+    joint_class = UsdPhysics.Joint if backend == "usd" else usdrt.UsdPhysics.Joint
+    joint_prims = get_all_matching_child_prims(parent, predicate=lambda prim, _: prim.IsA(joint_type))
+    for joint_prim in joint_prims:
+        joint = joint_class(joint_prim)
+        if joint_prim.HasAttribute("physics:excludeFromArticulation") and joint.GetExcludeFromArticulationAttr().Get():
+            continue
+        body_targets = joint.GetBody0Rel().GetTargets() + joint.GetBody1Rel().GetTargets()
+        for target in body_targets:
+            if str(target) == get_prim_path(prim):
+                return True
+    return False
