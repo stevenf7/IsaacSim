@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0] - 2025-10-22
+### Added
+- Add prim utils functions to:
+  - Find all the prim paths in the stage that match the given (regex) path
+  - Check whether a prim corresponds to a non-root link in an articulation
+
 ## [0.3.0] - 2025-09-09
 ### Added
 - Add stage utils functions to:

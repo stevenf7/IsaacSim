@@ -1061,10 +1061,12 @@ class DeformablePrim(XformPrim):
         # - get material properties
         E = np.empty((0, 1))
         nu = np.empty((0, 1))
-        for material in self.get_applied_physics_materials():
-            if material is not None:
-                E = np.append(E, material.get_youngs_moduli().numpy(), axis=0)
-                nu = np.append(nu, material.get_poissons_ratios().numpy(), axis=0)
+        with backend_utils.use_backend("usd"):
+            applied_physics_materials = self.get_applied_physics_materials()
+        for physics_material in applied_physics_materials:
+            if physics_material is not None:
+                E = np.append(E, physics_material.get_youngs_moduli().numpy(), axis=0)
+                nu = np.append(nu, physics_material.get_poissons_ratios().numpy(), axis=0)
             else:
                 E = np.append(E, np.zeros((1, 1)), axis=0)
                 nu = np.append(nu, np.zeros((1, 1)), axis=0)

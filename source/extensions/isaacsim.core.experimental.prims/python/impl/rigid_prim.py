@@ -20,13 +20,13 @@ import weakref
 import carb
 import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.ops as ops_utils
-import isaacsim.core.utils.numpy as numpy_utils
 import numpy as np
 import omni.physics.tensors
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
+from . import _transform
 from .prim import _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID, _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
@@ -326,7 +326,7 @@ class RigidPrim(XformPrim):
                     ),
                     dtype=np.float32,
                 )
-            local_translations, local_orientations = numpy_utils.transformations.get_local_from_world(
+            local_translations, local_orientations = _transform.local_from_world(
                 parent_transforms, world_positions.numpy(), world_orientations.numpy()
             )
             return (
@@ -402,7 +402,7 @@ class RigidPrim(XformPrim):
                     ),
                     dtype=np.float32,
                 )
-            world_positions, world_orientations = numpy_utils.transformations.get_world_from_local(
+            world_positions, world_orientations = _transform.world_from_local(
                 parent_transforms, translations.numpy(), orientations.numpy()
             )
             self.set_world_poses(positions=world_positions, orientations=world_orientations, indices=indices)

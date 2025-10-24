@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.2] - 2025-10-23
+### Changed
+- Update test cases to use Python's compliant regex when instantiating the view class
+
 ## [3.3.1] - 2025-08-30
 ### Changed
 - Performance improvements
