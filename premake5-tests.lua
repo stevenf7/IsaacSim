@@ -293,12 +293,6 @@ function create_tests()
         "--test"
     )
 
-    -- omni.isaac.dynamic_control
-    python_sample_test(
-        "tests-nativepython-omni.isaac.dynamic_control.franka_articulation",
-        "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py"
-    )
-
     -- isaacsim.asset.importer.urdf
     python_sample_test(
         "tests-nativepython-isaacsim.asset.importer.urdf.urdf_import",
@@ -464,10 +458,6 @@ function create_tests()
         {
             "tests-nativepython-testing-isaacsim.core.api.test_articulation_determinism",
             "standalone_examples/testing/isaacsim.core.api/test_articulation_determinism.py",
-        },
-        {
-            "tests-nativepython-testing-omni.isaac.dynamic_control.test_zero_step",
-            "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py",
         },
     }
 

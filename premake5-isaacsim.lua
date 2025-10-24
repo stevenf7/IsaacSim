@@ -280,7 +280,6 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
     local os_target = os.target()
     if
         string.find(name, "ros2")
-        or string.find(name, "omni.isaac.benchmarks")
         or string.find(name, "tf_viewer")
         or string.find(name, "isaacsim.app.setup")
         or string.find(name, "isaacsim.test.collection")

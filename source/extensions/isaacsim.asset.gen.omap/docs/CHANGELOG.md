@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.30] - 2025-10-23
+### Changed
+- Add omni.physics.stageupdate to extension.toml
+
 ## [2.0.29] - 2025-09-26
 ### Changed
 - Update license headers

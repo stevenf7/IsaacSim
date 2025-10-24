@@ -1,4 +1,7 @@
 # Changelog
+## [4.0.1] - 2025-10-22
+### Changed
+- Remove deprecated dependencies
 
 ## [4.0.0] - 2025-10-20
 ### Changed
