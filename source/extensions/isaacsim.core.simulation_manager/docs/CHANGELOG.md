@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2025-10-27
+### Changed
+- Replace the use of deprecated core utils functions by the core experimental implementations
+
 ## [1.5.0] - 2025-10-17
 ### Changed
 - Migrate PhysX subscription and simulation control interfaces to Omni Physics

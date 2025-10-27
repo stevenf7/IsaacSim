@@ -27,9 +27,9 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as _syntheticdata
-import torch
 import warp as wp
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.carb import get_carb_setting
 from isaacsim.core.utils.prims import (
@@ -43,6 +43,8 @@ from isaacsim.core.utils.prims import (
 from isaacsim.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
 from pxr import Gf, Sdf, Usd, UsdGeom, Vt
+
+torch = import_module("torch")
 
 # Attribute maps for lens distortion models
 OPENCV_PINHOLE_ATTRIBUTE_MAP = ["k1", "k2", "p1", "p2", "k3", "k4", "k5", "k6", "s1", "s2", "s3", "s4"]

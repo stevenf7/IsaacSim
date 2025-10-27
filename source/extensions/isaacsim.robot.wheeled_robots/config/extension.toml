@@ -1,5 +1,5 @@
 [package]
-version = "4.0.25"
+version = "4.0.26"
 category = "Simulation"
 title = "Wheeled Robots"
 description = "This extension provides wheeled robot utilities"
@@ -38,7 +38,9 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 timeout = 900
-dependencies = []
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -90,6 +92,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

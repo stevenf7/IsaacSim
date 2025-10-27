@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.1] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [2.3.0] - 2025-08-12
 ### Added
 - Tashan TS-F-A sensor under "LightBeam" menu

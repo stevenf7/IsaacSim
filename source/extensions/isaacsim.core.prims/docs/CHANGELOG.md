@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.0] - 2025-10-27
+### Changed
+- Replace import statements with the deprecation function when importing PyTorch
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [0.7.0] - 2025-10-17
 ### Changed
 - Migrate PhysX subscription and simulation control interfaces to Omni Physics

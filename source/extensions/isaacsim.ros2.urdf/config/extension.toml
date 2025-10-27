@@ -1,5 +1,5 @@
 [package]
-version = "1.1.20"
+version = "1.1.21"
 category = "Simulation"
 title = "Ros2 Robot Description URDF Importer"
 description = "This extensions expands the URDF Importer by enabling importing the robot description from a given ROS node"
@@ -23,6 +23,9 @@ writeTarget.kit = true
 name = "isaacsim.ros2.urdf"
 
 [[test]]
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -74,6 +77,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

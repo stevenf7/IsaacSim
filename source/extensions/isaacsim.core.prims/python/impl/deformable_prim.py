@@ -18,10 +18,12 @@ from typing import List, Optional, Union
 import carb
 import numpy as np
 import omni.kit.app
-import torch
+from isaacsim.core.deprecation_manager import import_module
 from pxr import PhysxSchema, UsdShade
 
 from .xform_prim import XFormPrim
+
+torch = import_module("torch")
 
 
 class DeformablePrim(XFormPrim):

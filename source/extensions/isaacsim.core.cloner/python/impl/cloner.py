@@ -18,7 +18,6 @@ import carb
 import carb.settings
 import numpy as np
 import omni.usd
-import torch
 import usdrt
 from isaacsim.core.cloner._isaac_cloner import _fabric_clone
 from isaacsim.core.simulation_manager import SimulationManager
@@ -173,8 +172,8 @@ class Cloner:
         self,
         source_prim_path: str,
         prim_paths: List[str],
-        positions: Union[np.ndarray, torch.Tensor] = None,
-        orientations: Union[np.ndarray, torch.Tensor] = None,
+        positions: Union[np.ndarray, "torch.Tensor"] = None,
+        orientations: Union[np.ndarray, "torch.Tensor"] = None,
         replicate_physics: bool = False,
         base_env_path: str = None,
         root_path: str = None,
@@ -211,9 +210,13 @@ class Cloner:
             if len(positions) != len(prim_paths):
                 raise ValueError("Dimension mismatch between positions and prim_paths!")
             # convert to numpy array
-            if isinstance(positions, torch.Tensor):
+            # - convert from torch (without explicit importing it)
+            try:
                 positions = positions.detach().cpu().numpy()
-            elif not isinstance(positions, np.ndarray):
+            except:
+                pass
+            # - convert from other types
+            if not isinstance(positions, np.ndarray):
                 positions = np.asarray(positions)
             # convert to pxr gf
             positions = Vt.Vec3fArray.FromNumpy(positions)
@@ -221,9 +224,13 @@ class Cloner:
             if len(orientations) != len(prim_paths):
                 raise ValueError("Dimension mismatch between orientations and prim_paths!")
             # convert to numpy array
-            if isinstance(orientations, torch.Tensor):
+            # - convert from torch (without explicit importing it)
+            try:
                 orientations = orientations.detach().cpu().numpy()
-            elif not isinstance(orientations, np.ndarray):
+            except:
+                pass
+            # - convert from other types
+            if not isinstance(orientations, np.ndarray):
                 orientations = np.asarray(orientations)
             # convert to pxr gf -- wxyz to xyzw
             orientations = np.roll(orientations, -1, -1)

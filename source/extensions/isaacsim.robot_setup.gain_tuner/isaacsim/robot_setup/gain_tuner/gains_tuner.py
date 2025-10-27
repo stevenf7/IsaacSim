@@ -434,10 +434,6 @@ class GainTuner:
         self._test_duration = duration
 
     ############################ Run Gains Test ######################################
-    # def get_next_action(self, timestep, position_command_fn, velocity_command_fn, joint_indices):
-    #     p = position_command_fn(timestep)
-    #     v = velocity_command_fn(timestep)
-    #     return ArticulationAction(p, v, joint_indices=joint_indices)
 
     def sinusoidal_step(self, timestep, sequence_index: int):
 

@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.2] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [2.4.1] - 2025-10-18
 ### Changed
 - Remove extra carb settings from tests

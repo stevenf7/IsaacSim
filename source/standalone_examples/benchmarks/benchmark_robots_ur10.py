@@ -36,7 +36,6 @@ device = args.device
 visual = args.visual
 
 import numpy as np
-import torch
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": not visual, "max_gpu_count": n_gpu})
@@ -48,6 +47,7 @@ import isaacsim.core.utils.stage as stage_utils
 import omni.physics.core
 import omni.timeline
 from isaacsim.core.api import PhysicsContext, World
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.types import ArticulationActions
@@ -56,6 +56,8 @@ from omni.kit.viewport.utility import get_active_viewport
 
 enable_extension("isaacsim.benchmark.services")
 from isaacsim.benchmark.services import BaseIsaacBenchmark
+
+torch = import_module("torch")
 
 # Create the benchmark
 benchmark = BaseIsaacBenchmark(

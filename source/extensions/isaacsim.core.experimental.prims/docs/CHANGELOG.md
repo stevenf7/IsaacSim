@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.2] - 2025-10-27
+### Changed
+- Make isaacsim.storage.native an explicit test dependency
+
 ## [0.9.1] - 2025-10-22
 ### Changed
 - Replace the use of deprecated core utils functions within implementations

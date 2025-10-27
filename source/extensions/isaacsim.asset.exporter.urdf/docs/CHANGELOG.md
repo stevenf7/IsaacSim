@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.5] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.3.4] - 2025-10-09
 ### Changed
 - Switch UI element to remove duplicate code

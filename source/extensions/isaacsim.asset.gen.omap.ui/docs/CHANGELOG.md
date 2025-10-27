@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.4] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [2.2.3] - 2025-10-08
 ### Changed
 - Fix incorrect image origin calculation

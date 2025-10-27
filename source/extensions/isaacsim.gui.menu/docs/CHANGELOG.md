@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.5] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [2.4.4] - 2025-09-19
 ### Changed
 - Update test to use isaacsim.test.utils for image capture and comparison

@@ -18,11 +18,13 @@ from typing import List, Optional, Tuple, Union
 import carb
 import numpy as np
 import omni.kit.app
-import torch
 import warp as wp
+from isaacsim.core.deprecation_manager import import_module
 from pxr import PhysxSchema, UsdGeom, UsdPhysics, UsdShade
 
 from .xform_prim import XFormPrim
+
+torch = import_module("torch")
 
 
 class GeometryPrim(XFormPrim):

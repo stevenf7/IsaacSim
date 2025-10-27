@@ -1,5 +1,5 @@
 [package]
-version = "1.1.12"
+version = "1.1.13"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -44,6 +44,7 @@ exts."isaacsim.benchmark.examples".scene_path = ""
 timeout = 900
 # these are not cached
 dependencies = [
+    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",
@@ -98,6 +99,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

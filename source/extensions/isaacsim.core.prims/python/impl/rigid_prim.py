@@ -19,14 +19,16 @@ from typing import List, Optional, Tuple, Union
 import carb
 import numpy as np
 import omni.physics.tensors
-import torch
 import warp as wp
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.core.utils.prims import get_prim_parent
 from isaacsim.core.utils.types import DynamicsViewState, XFormPrimViewState
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 from .xform_prim import XFormPrim
+
+torch = import_module("torch")
 
 
 class RigidPrim(XFormPrim):

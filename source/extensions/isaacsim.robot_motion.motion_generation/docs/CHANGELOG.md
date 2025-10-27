@@ -1,4 +1,10 @@
 # Changelog
+
+## [8.1.0] - 2025-10-27
+### Changed
+- Replace import statements with the deprecation function when importing PyTorch
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [8.0.27] - 2025-10-18
 ### Changed
 - Remove extra carb settings from tests

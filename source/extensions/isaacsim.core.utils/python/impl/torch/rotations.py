@@ -16,10 +16,12 @@
 import typing
 
 import numpy as np
-import torch
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.torch.maths import *
 from pxr import Gf
 from scipy.spatial.transform import Rotation
+
+torch = import_module("torch")
 
 
 def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device=None) -> torch.Tensor:

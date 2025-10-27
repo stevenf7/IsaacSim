@@ -23,7 +23,6 @@ import omni.physics.tensors as physics_tensors
 import omni.timeline
 import omni.ui as ui
 import pxr
-from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.gui.components.element_wrappers import (
     Button,
     CheckBox,

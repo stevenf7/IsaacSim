@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2025-10-27
+### Changed
+- Convert input arguments to NumPy without explicitly import PyTorch
+
 ## [1.5.0] - 2025-10-17
 ### Changed
 - Migrate PhysX subscription and simulation control interfaces to Omni Physics

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2025-10-27
+### Changed
+- Replace import statements with the deprecation function when importing PyTorch
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.3.7] - 2025-10-22
 ### Changed
 - Remove deprecated time related APIs from CoreNodes interface

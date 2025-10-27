@@ -1,5 +1,5 @@
 [package]
-version = "4.12.5"
+version = "4.12.6"
 category = "Simulation"
 title = "ROS 2 Bridge"
 description = "The ROS 2 Bridge extension enables communication between the Isaac Sim and ROS 2 systems. It allows for the publishing and subscribing of ROS 2 topics and services via OmniGraph nodes and Action graphs. ROS 2 publishers, subscribers and services are only active when play is pressed. To enable this extension, ensure ROS 2 libraries are sourced in the terminal before running Isaac Sim or source the lightweight ROS 2 libraries included with Isaac Sim as an alternative."
@@ -76,6 +76,7 @@ timeout = 900
 dependencies = [
     "isaacsim.robot.wheeled_robots",
     "omni.graph.ui",
+    "omni.isaac.ml_archive",
     "isaacsim.test.utils",
 ]
 
@@ -152,6 +153,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]
@@ -163,6 +167,7 @@ enabled = true
 timeout = 900
 dependencies = [
     "isaacsim.test.utils", # needed for test discovery to pass, python tests are excluded already
+    "omni.isaac.ml_archive",
 ]
 # apps = [""]
 args = ["--/app/settings/fabricDefaultStageFrameHistoryCount=3",]

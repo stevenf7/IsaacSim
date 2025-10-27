@@ -1,5 +1,5 @@
 [package]
-version = "0.2.0"
+version = "0.2.1"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation Examples"
 description = "Isaac Sim Physics Sensor Simulation Examples extension provides example usage and snippets for Isaac Sim physics-based sensors."
@@ -28,6 +28,9 @@ name = "isaacsim.sensors.physics.examples.contact_sensor"
 name = "isaacsim.sensors.physics.examples.imu_sensor"
 
 [[test]]
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -75,6 +78,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import torch
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -22,11 +20,15 @@ simulation_app = SimulationApp({"headless": False})
 import argparse
 from abc import abstractmethod
 
+import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid, DynamicSphere
 from isaacsim.core.api.tasks import BaseTask
 from isaacsim.core.cloner import GridCloner
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import RigidPrim
+
+torch = import_module("torch")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

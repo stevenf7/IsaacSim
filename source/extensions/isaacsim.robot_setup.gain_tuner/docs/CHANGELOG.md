@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.1] - 2025-10-27
+### Removed
+- Remove unused import statement and commented code
+
 ## [3.1.0] - 2025-10-17
 ### Changed
 - Migrate PhysX subscription and simulation control interfaces to Omni Physics

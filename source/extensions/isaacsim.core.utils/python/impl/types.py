@@ -15,8 +15,10 @@
 from typing import List, Optional, Union
 
 import numpy as np
-import torch
+from isaacsim.core.deprecation_manager import import_module
 from pxr import Usd
+
+torch = import_module("torch")
 
 
 class DataFrame(object):

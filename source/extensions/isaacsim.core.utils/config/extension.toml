@@ -1,5 +1,5 @@
 [package]
-version = "3.6.1"
+version = "3.7.0"
 category = "Simulation"
 title = "Isaac Sim Utilities"
 description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
@@ -16,7 +16,6 @@ writeTarget.platform = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.storage.native" = {}
-"omni.isaac.ml_archive" = {}
 "omni.physics" = {}
 "omni.physics.physx" = {}
 "omni.physics.tensors" = {}
@@ -38,6 +37,7 @@ name = "isaacsim.core.utils.tests"
 dependencies = [
     "isaacsim.core.api",
     "isaacsim.sensors.camera",
+    "omni.isaac.ml_archive",
     "omni.replicator.core",
 ]
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.2] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [0.5.1] - 2025-10-22
 ### Changed
 - Remove deprecated time related APIs from CoreNodes interface

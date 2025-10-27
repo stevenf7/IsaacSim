@@ -1,4 +1,10 @@
 # Changelog
+
+## [3.7.0] - 2025-10-27
+### Changed
+- Replace import statements with the deprecation function when importing PyTorch
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [3.6.1] - 2025-10-22
 ### Changed
 - Remove deprecated dependencies

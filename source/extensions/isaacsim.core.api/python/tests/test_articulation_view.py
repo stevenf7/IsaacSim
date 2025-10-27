@@ -25,10 +25,10 @@ import numpy as np
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.physics.core
-import torch
 import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects.cuboid import FixedCuboid
+from isaacsim.core.deprecation_manager import import_module
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.prims import Articulation, RigidPrim
@@ -37,6 +37,8 @@ from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.storage.native import get_assets_root_path_async
 
 from .common import CoreTestCase
+
+torch = import_module("torch")
 
 INDEXED = [True, False]
 USD_PATH = [True, False]

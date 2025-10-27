@@ -26,12 +26,14 @@ import carb
 import isaacsim.core.utils.prims as prim_utils
 import isaacsim.core.utils.stage as stage_utils
 import numpy as np
-import torch
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import Articulation, RigidPrim
 from isaacsim.core.utils.prims import get_prim_attribute_value
 from isaacsim.storage.native import get_assets_root_path
+
+torch = import_module("torch")
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

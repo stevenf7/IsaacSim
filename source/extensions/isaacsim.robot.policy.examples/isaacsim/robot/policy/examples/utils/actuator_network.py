@@ -15,8 +15,10 @@
 from typing import Tuple, Union
 
 import numpy as np
-import torch
+from isaacsim.core.deprecation_manager import import_module
 from numpy import genfromtxt
+
+torch = import_module("torch")
 
 
 class LstmSeaNetwork:
