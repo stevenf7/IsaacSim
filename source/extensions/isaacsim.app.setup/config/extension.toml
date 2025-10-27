@@ -1,5 +1,5 @@
 [package]
-version = "1.6.0"
+version = "1.6.1"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -51,6 +51,7 @@ dependencies = [
     "isaacsim.examples.browser",         # robotics examples,
     "isaacsim.replicator.synthetic_recorder",    # extension with synthetic_recorder,
     "omni.graph.window.action",          # window for action graph,
+    "omni.isaac.ml_archive",
     "omni.kit.viewport.window",                 # viewport,
     "omni.kit.widget.layers",        # layer window,
     "omni.kit.window.console",           # console,

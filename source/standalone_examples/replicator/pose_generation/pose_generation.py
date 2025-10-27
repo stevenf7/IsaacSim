@@ -20,7 +20,6 @@ import os
 import signal
 
 import numpy as np
-import torch
 import yaml
 from isaacsim import SimulationApp
 
@@ -93,11 +92,14 @@ import math
 import carb
 import omni.replicator.core as rep
 from isaacsim.core.api import World
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.replicator.writers import PoseWriter, YCBVideoWriter
 from isaacsim.storage.native import get_assets_root_path
+
+torch = import_module("torch")
 
 # Since the simulation is mostly collision checking, a larger physics dt can be used to speed up the object movements
 world = World(physics_dt=1.0 / 30.0)

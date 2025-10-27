@@ -1,5 +1,5 @@
 [package]
-version = "4.0.1"
+version = "4.0.2"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Common Isaac Sim OmniGraph nodes"
@@ -39,6 +39,7 @@ exclude = ["Ogn*Database.py"]
 [[test]]
 timeout = 900
 dependencies = [
+    "omni.isaac.ml_archive",
     "omni.kit.viewport.actions"
 ]
 args = [
@@ -105,6 +106,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

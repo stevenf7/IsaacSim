@@ -23,14 +23,16 @@ import sys
 
 import carb
 import numpy as np
-import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.omni_glass import OmniGlass
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.storage.native import get_assets_root_path
+
+torch = import_module("torch")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

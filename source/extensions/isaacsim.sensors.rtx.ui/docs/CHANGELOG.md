@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.7] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.1.6] - 2025-08-21
 ### Changed
 - RTX Lidar menu options now use IsaacSensorCreateRtxLidar command to align with other APIs

@@ -16,7 +16,6 @@ from typing import List, Union
 
 import numpy as np
 import omni.usd
-import torch
 from isaacsim.core.cloner import Cloner
 from pxr import Gf, Usd, UsdGeom
 
@@ -63,17 +62,25 @@ class GridCloner(Cloner):
             if len(position_offsets) != num_clones:
                 raise ValueError("Dimension mismatch between position_offsets and prim_paths!")
             # convert to numpy array
-            if isinstance(position_offsets, torch.Tensor):
+            # - convert from torch (without explicit importing it)
+            try:
                 position_offsets = position_offsets.detach().cpu().numpy()
-            elif not isinstance(position_offsets, np.ndarray):
+            except:
+                pass
+            # - convert from other types
+            if not isinstance(position_offsets, np.ndarray):
                 position_offsets = np.asarray(position_offsets)
         if orientation_offsets is not None:
             if len(orientation_offsets) != num_clones:
                 raise ValueError("Dimension mismatch between orientation_offsets and prim_paths!")
             # convert to numpy array
-            if isinstance(orientation_offsets, torch.Tensor):
+            # - convert from torch (without explicit importing it)
+            try:
                 orientation_offsets = orientation_offsets.detach().cpu().numpy()
-            elif not isinstance(orientation_offsets, np.ndarray):
+            except:
+                pass
+            # - convert from other types
+            if not isinstance(orientation_offsets, np.ndarray):
                 orientation_offsets = np.asarray(orientation_offsets)
 
         if self._positions is not None and self._orientations is not None:

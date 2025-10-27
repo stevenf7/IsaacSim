@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.3.7] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [3.3.6] - 2025-09-06
 ### Changed
 - Update the Suction Gripper to use Enums for status

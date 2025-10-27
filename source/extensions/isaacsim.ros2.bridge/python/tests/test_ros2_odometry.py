@@ -21,10 +21,10 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
-import torch
 import usdrt.Sdf
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.api.scenes.scene import Scene
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import XFormPrim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.physics import simulate_async
@@ -33,6 +33,8 @@ from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.string import find_unique_string_name
 
 from .common import ROS2TestCase, get_qos_profile
+
+torch = import_module("torch")
 
 
 class TestRos2Odometry(ROS2TestCase):

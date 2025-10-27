@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.6.0] - 2025-09-18
 ### Added
 - Added setting to enable ROS Simulation Control extension on startup

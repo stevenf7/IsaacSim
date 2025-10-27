@@ -19,13 +19,15 @@ from typing import Optional
 import carb
 import numpy as np
 import omni
-import torch
 from isaacsim.core.api.controllers.base_controller import BaseController
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from omni.physics.core import get_physics_simulation_interface
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
+
+torch = import_module("torch")
 
 
 class PolicyController(BaseController):

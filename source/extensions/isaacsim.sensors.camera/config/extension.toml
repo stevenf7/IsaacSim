@@ -1,5 +1,5 @@
 [package]
-version = "1.3.7"
+version = "1.4.0"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation"
 description = "Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering."
@@ -38,6 +38,7 @@ public = false
 timeout = 900
 dependencies = [
     "isaacsim.util.debug_draw",
+    "omni.isaac.ml_archive",
 ]
 
 args = [
@@ -92,6 +93,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

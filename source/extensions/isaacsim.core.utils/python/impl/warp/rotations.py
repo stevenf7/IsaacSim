@@ -16,10 +16,12 @@ import typing
 from typing import Any
 
 import numpy as np
-import torch
 import warp as wp
+from isaacsim.core.deprecation_manager import import_module
 from pxr import Gf
 from scipy.spatial.transform import Rotation
+
+torch = import_module("torch")
 
 
 def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device=None) -> wp.types.array:

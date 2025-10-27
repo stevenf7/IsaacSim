@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.torch.rotations import (
     gf_quat_to_tensor,
     quat_apply,
@@ -24,6 +24,8 @@ from isaacsim.core.utils.torch.rotations import (
 from isaacsim.core.utils.torch.tensor import create_zeros_tensor
 from pxr import Gf
 from scipy.spatial.transform import Rotation
+
+torch = import_module("torch")
 
 
 def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tensor, device=None) -> torch.Tensor:

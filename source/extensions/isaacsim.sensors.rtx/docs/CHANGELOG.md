@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.8.6] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [15.8.5] - 2025-10-22
 ### Changed
 - Exclude Simple Example Solid State config from tests

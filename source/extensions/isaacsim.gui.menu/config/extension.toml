@@ -1,5 +1,5 @@
 [package]
-version = "2.4.4"
+version = "2.4.5"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Menus specific to Isaac Sim"
@@ -35,6 +35,7 @@ dependencies = [
     "isaacsim.sensors.physics.ui",
     "isaacsim.sensors.physx.ui",
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",
@@ -99,6 +100,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

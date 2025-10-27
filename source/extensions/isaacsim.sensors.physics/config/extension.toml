@@ -1,5 +1,5 @@
 [package]
-version = "0.5.1"
+version = "0.5.2"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -42,6 +42,9 @@ recursive = false
 
 [[test]]
 timeout = 900
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",
@@ -101,6 +104,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

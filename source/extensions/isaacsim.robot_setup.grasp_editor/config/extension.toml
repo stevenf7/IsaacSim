@@ -1,5 +1,5 @@
 [package]
-version = "2.1.0"
+version = "2.1.1"
 category = "Simulation"
 title = "Grasp Editor"
 description = "Author grasps by hand for a specific robot gripper and USD asset."
@@ -27,6 +27,7 @@ name = "isaacsim.robot_setup.grasp_editor"
 dependencies = [
     "omni.graph.nodes",
     "omni.hydra.rtx",
+    "omni.isaac.ml_archive",
     "omni.kit.viewport.window",
 ]
 
@@ -77,6 +78,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

@@ -1,5 +1,5 @@
 [package]
-version = "2.4.1"
+version = "2.4.2"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensors"
 description = "Isaac Sim PhysX Sensors extension provides APIs for PhysX-raycast-based lidars and sensors including Proximity Sensor and Lightbeam Sensor."
@@ -51,6 +51,7 @@ stdoutFailPatterns.exclude = [
 ]
 
 dependencies = [
+    "omni.isaac.ml_archive",
     "omni.kit.hydra_texture",
     "isaacsim.test.docstring",
 ]
@@ -102,6 +103,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

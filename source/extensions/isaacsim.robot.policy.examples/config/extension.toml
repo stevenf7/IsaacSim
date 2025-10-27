@@ -1,7 +1,7 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "4.2.0"
+version = "4.3.0"
 category = "Simulation"
 title = "Reinforcement Learning Inference Example for Robots in Isaac Sim"
 description = "The Policy Based Robot Control Examples extension provides utilities for deploying reinforcement learning policies in Isaac Sim, as well as locomotion examples for humanoid and quadruped robots."
@@ -32,7 +32,9 @@ timeout = 900
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
 ]
-
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -80,6 +82,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

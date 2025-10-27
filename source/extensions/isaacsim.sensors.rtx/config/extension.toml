@@ -1,5 +1,5 @@
 [package]
-version = "15.8.5"
+version = "15.8.6"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -78,6 +78,9 @@ rtx.materialDb.nonVisualMaterialSemantics.prefix="omni:simready:nonvisual"
 
 [[test]]
 timeout = 1200
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",
@@ -151,6 +154,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

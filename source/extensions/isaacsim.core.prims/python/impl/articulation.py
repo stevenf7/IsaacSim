@@ -24,8 +24,8 @@ import numpy as np
 import omni.kit.app
 import omni.physics.tensors
 import omni.physx
-import torch
 import warp as wp
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.core.utils.prims import (
     get_articulation_root_api_prim_path,
@@ -38,6 +38,8 @@ from isaacsim.core.utils.types import ArticulationActions, JointsState, XFormPri
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 from .xform_prim import XFormPrim
+
+torch = import_module("torch")
 
 
 class Articulation(XFormPrim):

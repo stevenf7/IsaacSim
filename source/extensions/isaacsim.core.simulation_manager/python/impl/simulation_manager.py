@@ -16,16 +16,13 @@ import weakref
 from collections import OrderedDict
 
 import carb
-import isaacsim.core.utils.numpy as np_utils
-import isaacsim.core.utils.torch as torch_utils
-import isaacsim.core.utils.warp as warp_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit
 import omni.physics.core
 import omni.physx
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
-from isaacsim.core.utils.stage import get_current_stage, get_current_stage_id
 from pxr import PhysxSchema
 
 from .isaac_events import IsaacEvents
@@ -152,7 +149,7 @@ class SimulationManager:
 
     def _track_physics_scenes() -> None:
         def add_physics_scenes(physics_scene_prim_path):
-            prim = get_prim_at_path(physics_scene_prim_path)
+            prim = prim_utils.get_prim_at_path(physics_scene_prim_path)
             if prim.GetTypeName() == "PhysicsScene":
                 SimulationManager._physics_scene_apis[physics_scene_prim_path] = PhysxSchema.PhysxSceneAPI.Apply(prim)
 
@@ -182,12 +179,22 @@ class SimulationManager:
         if "cuda" in SimulationManager.get_physics_sim_device() and SimulationManager._backend == "numpy":
             SimulationManager._backend = "torch"
             carb.log_warn("changing backend from numpy to torch since numpy backend cannot be used with GPU piplines")
-        SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(
-            SimulationManager.get_backend(), stage_id=get_current_stage_id()
-        )
-        SimulationManager._physics_sim_view.set_subspace_roots("/")
+        stage_id = stage_utils.get_stage_id(stage_utils.get_current_stage(backend="usd"))
+        # check for PyTorch
+        create_simulation_view = True
+        if SimulationManager.get_backend() == "torch":
+            try:
+                import torch
+            except ModuleNotFoundError:
+                create_simulation_view = False
+        # create simulation views
+        if create_simulation_view:
+            SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(
+                SimulationManager.get_backend(), stage_id=stage_id
+            )
+            SimulationManager._physics_sim_view.set_subspace_roots("/")
         SimulationManager._physics_sim_view__warp = omni.physics.tensors.create_simulation_view(
-            "warp", stage_id=get_current_stage_id()
+            "warp", stage_id=stage_id
         )
         SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
         SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
@@ -198,11 +205,18 @@ class SimulationManager:
 
     @classmethod
     def _get_backend_utils(cls) -> str:
+        # defer imports to avoid an explicit dependency on the deprecated core API
         if SimulationManager._backend == "numpy":
+            import isaacsim.core.utils.numpy as np_utils
+
             return np_utils
         elif SimulationManager._backend == "torch":
+            import isaacsim.core.utils.torch as torch_utils
+
             return torch_utils
         elif SimulationManager._backend == "warp":
+            import isaacsim.core.utils.warp as warp_utils
+
             return warp_utils
         else:
             raise Exception(
@@ -274,8 +288,8 @@ class SimulationManager:
             SimulationManager._default_physics_scene_idx = list(SimulationManager._physics_scene_apis.keys()).index(
                 physics_scene_prim_path
             )
-        elif is_prim_path_valid(physics_scene_prim_path):
-            prim = get_prim_at_path(physics_scene_prim_path)
+        elif prim_utils.get_prim_at_path(physics_scene_prim_path).IsValid():
+            prim = prim_utils.get_prim_at_path(physics_scene_prim_path)
             if prim.GetTypeName() == "PhysicsScene":
                 SimulationManager._physics_scene_apis[physics_scene_prim_path] = PhysxSchema.PhysxSceneAPI.Apply(prim)
                 SimulationManager._default_physics_scene_idx = list(SimulationManager._physics_scene_apis.keys()).index(
@@ -363,7 +377,7 @@ class SimulationManager:
             if dt < 0:
                 raise ValueError("physics dt cannot be <0")
             # if no stage or no change in physics timestep, exit.
-            if get_current_stage() is None:
+            if stage_utils.get_current_stage(backend="usd") is None:
                 return
             if dt == 0:
                 physics_scene_api.GetTimeStepsPerSecondAttr().Set(0)

@@ -16,11 +16,13 @@ from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 import omni.replicator.core as rep
-import torch
 import warp as wp
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.carb import get_carb_setting
 from pxr import Usd, Vt
+
+torch = import_module("torch")
 
 # from ROS camera convention to USD camera convention
 U_R_TRANSFORM = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])

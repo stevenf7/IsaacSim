@@ -1,5 +1,5 @@
 [package]
-version = "0.1.9"
+version = "0.1.10"
 category = "Simulation"
 title = "MobilityGen UI"
 description = "User interface for recording data with MobilityGen"
@@ -27,6 +27,9 @@ name = "isaacsim.replicator.mobility_gen.ui"
 name = "isaacsim.replicator.mobility_gen.ui.tests"
 
 [[test]]
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -74,6 +77,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

@@ -17,15 +17,15 @@ from typing import Sequence, Tuple, Union
 
 import numpy as np
 
-# python
-import torch
-
 # isaacsim
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.rotations import gf_quat_to_np_array
 
 # omniverse
 from pxr import Gf, Usd, UsdGeom
 from scipy.spatial.transform import Rotation
+
+torch = import_module("torch")
 
 
 def tf_matrix_from_pose(translation: Sequence[float], orientation: Sequence[float]) -> np.ndarray:

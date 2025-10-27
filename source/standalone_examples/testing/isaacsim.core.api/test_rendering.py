@@ -19,10 +19,12 @@ simulation_app = SimulationApp({"headless": False})
 
 import sys
 
-import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import XFormPrim
+
+torch = import_module("torch")
 
 my_world = World(stage_units_in_meters=1.0, device="cuda:0", backend="torch")
 cube_2 = my_world.scene.add(

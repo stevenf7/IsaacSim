@@ -1,5 +1,5 @@
 [package]
-version = "2.2.3"
+version = "2.2.4"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -45,6 +45,7 @@ name = "isaacsim.test.collection.tests"
 timeout = 900
 dependencies = [
     "isaacsim.ros2.bridge",
+    "omni.isaac.ml_archive",
     "omni.kit.window.toolbar",
 ]
 
@@ -111,6 +112,9 @@ args = [
 
 [[test]]
 name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]

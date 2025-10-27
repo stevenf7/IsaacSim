@@ -22,14 +22,16 @@ import sys
 
 import carb
 import numpy as np
-import torch
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.cloner import Cloner
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import GeometryPrim, RigidPrim
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.storage.native import get_assets_root_path
+
+torch = import_module("torch")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.2] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [4.0.1] - 2025-10-22
 ### Changed
 - Remove deprecated dependencies

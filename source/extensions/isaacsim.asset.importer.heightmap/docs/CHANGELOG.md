@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.7] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [2.0.6] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

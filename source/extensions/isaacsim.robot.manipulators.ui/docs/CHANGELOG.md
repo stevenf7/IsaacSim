@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.24] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [2.1.23] - 2025-09-16
 ### Fixed
 - Fix graph creation for Articulation Position, Velocity, and Gripper windows so that reopening usd after save works correctly. Add unit tests for these cases.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.3] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [3.3.2] - 2025-10-23
 ### Changed
 - Update test cases to use Python's compliant regex when instantiating the view class

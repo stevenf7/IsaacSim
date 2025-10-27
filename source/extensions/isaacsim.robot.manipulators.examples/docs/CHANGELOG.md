@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.3] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.1.2] - 2025-09-26
 ### Changed
 - Update license headers

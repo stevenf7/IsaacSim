@@ -20,11 +20,13 @@ import numpy as np
 
 # isaac-core
 import omni.kit.app
-import torch
+from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path, is_prim_path_valid
 
 # omniverse
 from pxr import PhysxSchema, Usd, UsdShade
+
+torch = import_module("torch")
 
 
 class ParticleSystem:

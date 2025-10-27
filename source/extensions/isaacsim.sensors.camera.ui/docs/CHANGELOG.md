@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.3] - 2025-10-27
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [0.2.2] - 2025-09-27
 ### Added
 - Restored SICK Inspector83x

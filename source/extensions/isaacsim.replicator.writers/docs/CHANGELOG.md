@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.1.0] - 2025-10-27
+### Changed
+- Replace import statements with the deprecation function when importing PyTorch
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.0.17] - 2025-09-01
 ### Fixed
 - Make sure custom writers reset annotators list (`self.annotators = []`) on initialization
