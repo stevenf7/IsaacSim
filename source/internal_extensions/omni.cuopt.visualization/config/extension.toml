@@ -1,0 +1,34 @@
+[package]
+version = "1.3.1"
+title = "cuOpt Simple Visualization"
+description="Extension demonstrating the visualization of cuOpt specific data in Isaac Sim"
+
+readme  = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+category = "Example"
+
+keywords = ["kit", "example", "cuopt", "isaac", "sim", "visualization"]
+writeTarget.kit = true
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"isaacsim.core.api" = {}
+"omni.cuopt.service" = {}
+"omni.kit.material.library" = {}
+
+[[python.module]]
+name = "omni.cuopt.visualization"
+
+[[test]]
+dependencies = [
+    "omni.isaac.ml_archive",
+
+]
+[[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
