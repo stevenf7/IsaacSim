@@ -213,7 +213,7 @@ Extensions
    :caption: Extensions (Util)
 
    isaacsim.util.camera_inspector <source/extensions/isaacsim.util.camera_inspector/docs/index>
-   isaacsim.util.debug_draw <docs/extsbuild/isaacsim.util.debug_draw/docs/index>
+   isaacsim.util.debug_draw <source/internal_extensions/isaacsim.util.debug_draw/docs/index>
    isaacsim.util.merge_mesh <source/extensions/isaacsim.util.merge_mesh/docs/index>
    isaacsim.util.physics <source/extensions/isaacsim.util.physics/docs/index>
 

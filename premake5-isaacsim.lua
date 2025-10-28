@@ -219,6 +219,9 @@ function define_ext_test_experience(ext_name, args)
         '--ext-folder "' .. script_dir_token .. '/../exts" ',
         '--ext-folder "' .. script_dir_token .. '/../extscache" ',
         '--ext-folder "' .. script_dir_token .. '/../extsDeprecated" ',
+-- AUTOREMOVE: BEGIN
+        '--ext-folder "' .. script_dir_token .. '/../extsInternal" ',
+-- AUTOREMOVE: END
         '--ext-folder "' .. script_dir_token .. '/../apps" ',
         "--/app/enableStdoutOutput=0", -- this app just runs the test command, hide its output
         "--no-window",

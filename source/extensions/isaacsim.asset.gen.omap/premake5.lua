@@ -82,13 +82,13 @@ includedirs {
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
-    isaac_sim_extsbuild_dir .. "/isaacsim.util.debug_draw/include",
+    isaac_sim_extra_extsbuild_dir .. "/isaacsim.util.debug_draw/include",
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
-    isaac_sim_extsbuild_dir .. "/isaacsim.util.debug_draw/bin",
+    isaac_sim_extra_extsbuild_dir .. "/isaacsim.util.debug_draw/bin",
 }
 links { "isaacsim.util.debug_draw.primitive_drawing", "isaacsim.asset.gen.omap.generator", "omni.usd" }
 

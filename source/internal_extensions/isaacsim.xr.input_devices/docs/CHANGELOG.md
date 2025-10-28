@@ -1,0 +1,42 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.3] - 2025-10-28
+
+### Added
+- Add test dependency on `omni.isaac.ml_archive`
+
+## [1.0.2] - 2025-10-16
+
+### Fixed
+- Remove pysurvive prebundle to avoid re-dist
+
+## [1.0.1] - 2025-10-08
+
+### Fixed
+- Force publish the platform type for kit registery
+- Increment version numbr for axis fix
+
+## [1.0.0] - 2025-08-08
+
+### Added
+- Initial release of `isaacsim.xr.input_devices` extension
+- Hand-tracker integration via pluggable C API, exposed through Python bindings
+- Vive tracker integration via `pysurvive` (libsurvive)
+- Unified Python API via `get_manus_vive_integration()`
+- Per-device connection status structure
+- Documentation and basic tests
+
+### Notes
+- Orientation conventions: `[w, x, y, z]` (right handed)
+- Set `ISAACSIM_HANDTRACKER_LIB` or `ISAACSIM_HANDTRACKER_NAME` to control the hand-tracker library loaded by the plugin
+
+### Dependencies
+- Isaac Sim Core APIs
+- Omniverse Kit runtime (for logging and extension lifecycle)
+- Vendor hand-tracker library implementing `IsaacSimHandTrackerCAPI.h` (optional at runtime)
+- libsurvive / pysurvive (optional at runtime)

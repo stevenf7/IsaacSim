@@ -1,0 +1,65 @@
+{
+    "DebugDrawPointCloud": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "Take a point cloud as input and display it in the scene."
+        ],
+        "metadata": {
+            "uiName": "Isaac Debug Draw Point Cloud"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacDebugDraw",
+        "inputs": {
+            "exec": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The matrix to transform the points by"
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Buffer of points containing point cloud data"
+            },
+            "cudaDeviceIndex": {
+                "type": "int",
+                "description": "Index of the device where the data lives (-1 for host data)",
+                "default": -1
+            },
+            "cudaStream": {
+                "description" : "Cuda Stream Input",
+                "type" : "uint64",
+                "default" : 0
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "color": {
+                "type": "colorf[4]",
+                "description": "Color of points",
+                "default": [0.75,0.75,1,1]
+            },
+            "size": {
+                "type": "float",
+                "description": "Size of points",
+                "default": 0.02
+            },
+            "doTransform": {
+                "type": "bool",
+                "description": "Translate and Rotate point cloud by transform",
+                "default": true,
+                "uiName": "Do Transform"
+            },
+            "testMode":{
+                "type": "bool",
+                "description": "Act as Writer with no rendering"
+            }
+        },
+        "state": {
+            "$comment": "This section exists solely to inform the scheduler that there is internal state information."
+        }
+    }
+}

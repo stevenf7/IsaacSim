@@ -1,0 +1,48 @@
+[package]
+version = "1.3.1"
+title = "cuOpt Service Examples"
+description="A set of UI based examples using the NVIDIA cuOpt Service"
+
+readme  = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+category = "Example"
+
+keywords = ["kit", "example", "cuopt", "isaac", "sim"]
+writeTarget.kit = true
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"isaacsim.gui.components" = {}
+"isaacsim.core.api" = {}
+"isaacsim.util.debug_draw" = {}
+"omni.cuopt.service" = {}
+"omni.cuopt.visualization" = {}
+
+
+
+
+[[python.module]]
+name = "omni.cuopt.examples.create_network"
+
+[[python.module]]
+name = "omni.cuopt.examples.costmat"
+
+[[python.module]]
+name = "omni.cuopt.examples.wpgraph"
+
+[[python.module]]
+name = "omni.cuopt.examples.warehouse_transport_demo"
+
+[[test]]
+dependencies = [
+    "omni.isaac.ml_archive",
+
+]
+[[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]

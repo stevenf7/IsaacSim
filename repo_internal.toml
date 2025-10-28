@@ -543,7 +543,11 @@ platforms = [
 
 publish_root = "${root}/_build/$platform/$config"
 
-ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
+ext_folders = [
+  "${publish_root}/exts", 
+  "${publish_root}/extsDeprecated",
+  "${publish_root}/extsInternal",
+]
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.exclude = []
@@ -634,6 +638,7 @@ exclude = [
     "tools/test*",
     "tools/thumbnail_generator",
     "tools/update.sh",
+    "source/internal_extensions",
 ]
 
 [[repo_stage_for_github.trim]]

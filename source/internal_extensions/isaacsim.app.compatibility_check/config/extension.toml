@@ -1,0 +1,62 @@
+[package]
+version = "1.1.1"
+category = "Utility"
+title = "Isaac Sim compatibility check"
+description = "Tool for checking system Isaac Sim requirements and compatibility"
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.app.compatibility_check"
+keywords = ["isaac", "compatibility", "check"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+writeTarget.platform = true
+
+[dependencies]
+"omni.gpu_foundation" = {}
+"omni.kit.renderer.core" = {}
+"omni.kit.uiapp" = { optional = true }
+"omni.ui" = { optional = true }
+
+[[python.module]]
+name = "isaacsim.app.compatibility_check"
+
+[[python.module]]
+name = "isaacsim.app.compatibility_check.tests"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+
+[settings]
+# GPU: supported driver version
+exts."isaacsim.app.compatibility_check".gpu_driver = [
+    { platform = "linux", minimum = "535.161", unsupported = [] },
+    { platform = "win32", minimum = "537.58", unsupported = [] },
+]
+# GPU: VRAM requirements (GB)
+exts."isaacsim.app.compatibility_check".gpu_vram = { minimum = 10, good = 16, ideal = 48 }
+# CPU: cores requirements
+exts."isaacsim.app.compatibility_check".cpu_cores = { minimum = 4, good = 8, ideal = 16 }
+# RAM requirements (GB)
+exts."isaacsim.app.compatibility_check".ram = { minimum = 32, good = 64, ideal = 128 }
+# Available storage requirements (GB)
+exts."isaacsim.app.compatibility_check".storage = { minimum = 50, good = 500, ideal = 1000 }
+# Supported Operating Systems
+exts."isaacsim.app.compatibility_check".operating_system = [
+    { name = "ubuntu", versions = ["22.04", "24.04"] },
+    { name = "windows", versions = ["10", "11"] },
+]
+# Test case: Kit app (relative to ``kit`` folder)
+exts."isaacsim.app.compatibility_check".test_kit_app = "omni.app.mini"
+# Test case: Kit app arguments
+exts."isaacsim.app.compatibility_check".test_kit_args = [
+    "--/app/quitAfter=100",
+    "--no-window",
+]
+
+[[test]]
+dependencies=[
+    "omni.kit.test",
+]
+pythonTests.include = ["isaacsim.app.compatibility_check.tests.*"]

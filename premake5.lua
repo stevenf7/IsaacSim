@@ -19,6 +19,11 @@ repo_build = require("omni/repo/build")
 -- Repo root
 root = repo_build.get_abs_path(".")
 
+isaac_sim_extra_extsbuild_dir = "%{root}/_build/%{platform}/%{config}/extsbuild"
+-- AUTOREMOVE: BEGIN
+-- Override path for internal source builds
+isaac_sim_extra_extsbuild_dir = "%{root}/_build/%{platform}/%{config}/extsInternal"
+-- AUTOREMOVE: END
 -- Deprecated Extension Path
 deprecated_exts_path = "%{root}/_build/%{platform}/%{config}/extsDeprecated"
 -- extensions needed to build isaac sim
@@ -132,6 +137,22 @@ function include_extensions()
     for _, ext in ipairs(os.matchdirs(root .. "/source/extensions/*")) do
         if os.isfile(ext .. "/premake5.lua") then include(ext) end
     end
+-- AUTOREMOVE: BEGIN
+--[[
+    include(root.."/source/internal_extensions/isaacsim.app.compatibility_check/premake5.lua")
+    include(root.."/source/internal_extensions/isaacsim.util.clash_detection/premake5.lua")
+    include(root.."/source/internal_extensions/isaacsim.util.debug_draw/premake5.lua")
+    include(root.."/source/internal_extensions/omni.cuopt.examples/premake5.lua")
+    include(root.."/source/internal_extensions/omni.cuopt.service/premake5.lua")
+    include(root.."/source/internal_extensions/omni.cuopt.visualization/premake5.lua")
+]]--
+
+    for _, ext in ipairs(os.matchdirs(root .. "/source/internal_extensions/*")) do
+        if os.isfile(ext .. "/premake5.lua") then
+            include(ext)
+        end
+    end
+-- AUTOREMOVE: END
 end
 
 function get_git_info(params, env_var)
@@ -396,6 +417,9 @@ function setup_all(options)
     -- Isaac Sim Specific Setup
     include("premake5-isaacsim.lua") -- Shared build scripts from isaac sim
     include("premake5-tests.lua")
+    -- AUTOREMOVE: BEGIN
+    includedirs { "%{root}/source/internal_extensions" }
+    -- AUTOREMOVE: END
     isaacsim_build_settings()
     isaacsim_kit_settings()
     generate_version_header()

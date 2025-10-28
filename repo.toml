@@ -63,6 +63,11 @@ fetch.packman_target_files_to_pull = [
   "${root}/deps/kit-sdk-deps.packman.xml",
   "${root}/deps/ext-deps.packman.xml",
   "${root}/deps/isaac-sim.packman.xml",
+# AUTOREMOVE: BEGIN
+  "${root}/source/internal_extensions/deps/rtx-plugins.packman.xml",
+  "${root}/source/internal_extensions/deps/ext-deps.packman.xml",
+# AUTOREMOVE: END
+
 ]
 
 fetch.pip.files_to_pull = [
@@ -258,6 +263,9 @@ cache_path = "${root}/_build/${platform}/${config}/extscache"
 ext_folders = [
   "${root}/_build/$platform/$config/exts",
   "${root}/_build/$platform/$config/extsDeprecated",
+# AUTOREMOVE: BEGIN
+  "${root}/_build/$platform/$config/extsInternal",
+# AUTOREMOVE: END
 ]
 
 # Apps to run and precache
@@ -280,7 +288,10 @@ links.exts.include = [
   "omni.graph.tools",
   "omni.kit.test",
   "isaacsim.util.debug_draw",
-  "omni.kit.asset_converter"
+  "omni.kit.asset_converter",
+  # AUTOREMOVE: BEGIN
+  "omni.kit.xr.core",
+  # AUTOREMOVE: END
 ]
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
 
@@ -740,10 +751,16 @@ build_extension_paths = [
   "${root}/_build/${platform}/${config}/exts",
   "${root}/_build/${platform}/${config}/extsDeprecated",
   "${root}/_build/${platform}/${config}/extsbuild",
+# AUTOREMOVE: BEGIN
+  "${root}/_build/${platform}/${config}/extsInternal",
+# AUTOREMOVE: END
 ]
 source_extension_paths = [
   "${root}/source/extensions",
   "${root}/source/deprecated",
+# AUTOREMOVE: BEGIN
+  "${root}/source/internal_extensions",
+# AUTOREMOVE: END
 ]
 
 sections = [
@@ -774,6 +791,13 @@ excluded_extensions = [
     "omni.syntheticdata",
     "omni.usd.core",
     "usdrt.scenegraph",
+# AUTOREMOVE: BEGIN
+    # internal extensions
+    "isaacsim.app.compatibility_check",
+    # TODO: Is it a problem this is also explicitly included in extsbuild_exts_includes?
+    "isaacsim.util.debug_draw",
+    "isaacsim.xr.input_devices",
+# AUTOREMOVE: END
 ]
 
 # Extensions from extsbuild that needed to be included in docs

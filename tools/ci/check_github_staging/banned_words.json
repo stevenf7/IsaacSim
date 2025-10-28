@@ -6,7 +6,9 @@
         "content.ov.nvidia.com",
         "urm.nvidia.com",
         "nvidia.slack.com",
-        "jirasw.nvidia.com"
+        "jirasw.nvidia.com",
+        "extsInternal",
+        "internal_extensions"
     ],
     "whitelisted_files": [
         "tools/internal-licenses/omniverse-LICENSE.txt"
