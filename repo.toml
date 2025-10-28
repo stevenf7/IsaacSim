@@ -404,9 +404,9 @@ env_vars = [
     "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib",
   ],
 ]
-# AUTOREMOVE: BEGIN
-test_root = "$root/_build/$platform/$config/tests"
-# AUTOREMOVE: END
+
+test_root = "$root/_build/$platform/$config"
+
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim*.7z"
@@ -667,63 +667,6 @@ name = "ar"
 # ]
 
 
-########################################################################################################################
-# Extensions publisher
-########################################################################################################################
-# For publishing an ext locally, set the extension you want in exts.include (wild cards work) and run the following:
-# ./repo.sh publish_exts -c release
-[repo_publish_exts]
-enabled = true
-
-platforms = [
-    "windows-x86_64",
-    "linux-x86_64",
-    "linux-aarch64"
-]
-
-publish_root = "${root}/_build/$platform/$config"
-
-ext_folders = ["${publish_root}/exts", "${publish_root}/extsDeprecated"]
-
-# Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
-exts.exclude = []
-exts.include = [
-  "omni.isaac.core_archive",
-  "omni.isaac.ml_archive",
-  "omni.exporter.urdf",
-  "isaacsim.*",
-  "omni.kit.loop-isaac",
-  "omni.pip.cloud",
-  "omni.pip.compute",
-  "isaacsim.etm.list.isaacsim_app_template*",  # ETM lists
-]
-
-# This is hardcoded in template
-# # Registries to publish to.
-# registries = [
-#     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
-# ]
-
-# Signing must be enabled for us to publish to external registry as part of app template release process
-signing.enabled = true
-
-# verify before publishing
-publish_verification = true
-
-# upload archives using packman (switch to using packman by default to reduce load on nucleus registry)
-use_packman_to_upload_archive = true
-
-# When running from package, look for package using that path/pattern:
-archive_pattern = "${root}/_build/packages/isaac-sim-standalone@*${publish_platform_target_abi}.${config}.*"
-
-
-# AUTOREMOVE: BEGIN
-
-# ETM (extension test matrix) settings
-enroll_in_etm = false
-etm_emails = ["hmazhar@nvidia.com"]
-
-# AUTOREMOVE: END
 
 ########################################################################################################################
 # Code formatting
