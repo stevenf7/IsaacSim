@@ -170,3 +170,6 @@ source/standalone_examples/testing/external_workflow_tests/**
 exclude_list.txt
 generated_rsync_package.sh
 .container_venv/
+
+# Generated ETM lists
+source/apps/isaacsim.etm.list.isaacsim_app_template.*

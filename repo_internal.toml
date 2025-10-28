@@ -357,6 +357,8 @@ script = "${config_root}/tools/ci/standalone_report.py"
 [repo_ci.jobs.test_isaaclab]
 script = "${config_root}/tools/ci/test_isaac_lab.py"
 
+[repo_ci.jobs."generate_etm_list"]
+script = "${root}/tools/ci/generate_etm_list.py"
 
 
 ########################################################################################################################
