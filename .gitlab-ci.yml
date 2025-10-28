@@ -1916,6 +1916,44 @@ publish-to-packman:
       - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
+# Generate and publish isaacsim.etm.list.isaacsim_app_template.* from source/apps/isaacsim.exp.extscache.kit
+# It's safe to always run the job. The operation will be skipped if there is no change comparing to the latest version.
+publish-etm-list:
+  extends:
+    - .deploy-common
+    - .ipp_lnx_x86_64_cpu_small
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+  timeout: 1 hour
+  script:
+    - ./repo.sh build --fetch-only -r
+    - ./repo.sh ci generate_etm_list
+    - mkdir -p _build/linux-x86_64/release/exts && cp -f source/apps/*.etm.list.*.kit _build/linux-x86_64/release/exts
+    - ./repo.sh publish_exts -c release
+  # needs: []  # Test it immediately, for development
+  needs:
+    - job: publish-extensions
+      artifacts: false
+      optional: true
+  dependencies: []
+  rules:
+    # For development: allow manual testing independently.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - source/apps/isaacsim.exp.extscache.kit
+      when: manual
+      allow_failure: true
+    # For production: match rules of publish-extensions.
+    - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+      when: never
+    - if: $RUN_BUMP_VERSION == "true"
+      when: never
+    - if: '$CI_COMMIT_BRANCH != "develop"'
+      when: never
+    - !reference [.rules-version-changed, rules]
+    - !reference [.rules-push-manual, rules]
+  interruptible: false
+
+# ==============================================================================================================
 check_externals:
   extends:
     - .repo-artifacts
