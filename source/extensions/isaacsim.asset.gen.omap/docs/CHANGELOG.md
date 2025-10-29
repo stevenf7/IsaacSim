@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2025-10-29
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [2.0.30] - 2025-10-23
 ### Changed
 - Add omni.physics.stageupdate to extension.toml
