@@ -42,12 +42,7 @@ from .base_ui_element_wrappers import UIWidgetWrapper
 
 
 def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
-    """Get the dynamic control object type of the USD Prim at the given path.
-
-    Copied over from isaacsim.core.utils.prims, to avoid a heavy dependency on UI elements.
-
-    Example:
-    """
+    """Get the dynamic control object type of the USD Prim at the given path."""
     prim = omni.usd.get_context().get_stage().GetPrimAtPath(prim_path)
     if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
         return "articulation"
