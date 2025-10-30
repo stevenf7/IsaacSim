@@ -19,7 +19,6 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 "isaacsim.gui.components" = {}
 "omni.kit.pip_archive" = {}
 
-
 [[python.module]]
 path = "pip_prebundle"
 

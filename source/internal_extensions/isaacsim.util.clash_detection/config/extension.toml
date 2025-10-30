@@ -30,9 +30,10 @@ name = "isaacsim.util.clash_detection.tests"
 pyCoverageEnabled = false
 
 dependencies=[
+"omni.isaac.ml_archive",
 "omni.kit.property.bundle",
 "omni.kit.test",
-"omni.isaac.ml_archive",
+
 ]
 
 args = [

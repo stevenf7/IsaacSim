@@ -106,5 +106,5 @@ stdoutFailPatterns.exclude = [
 name = "startup"
 enabled = false
 args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

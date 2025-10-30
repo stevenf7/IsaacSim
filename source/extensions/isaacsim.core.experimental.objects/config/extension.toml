@@ -29,8 +29,8 @@ name = "isaacsim.core.experimental.objects.tests"
 [[test]]
 timeout = 900
 dependencies = [
+    "isaacsim.core.experimental.materials",  # for visual/physics materials,
     "omni.kit.material.library",
-    "isaacsim.core.experimental.materials",  # for visual/physics materials
 ]
 args = [
     "--enable",

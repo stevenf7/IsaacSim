@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2025-10-29
+### Changed
+- Standardize test args in extension.toml
+
 ## [0.4.0] - 2025-09-18
 ### Added
 - Add support for input data expressed as basic Python types (bool, int, float)

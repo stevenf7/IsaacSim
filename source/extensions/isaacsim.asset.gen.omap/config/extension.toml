@@ -16,9 +16,9 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.kit.pip_archive" = {}
-"omni.physx" = {}
 "omni.physics.physx" = {}
 "omni.physics.stageupdate" = {}
+"omni.physx" = {}
 
 [[python.module]]
 name = "isaacsim.asset.gen.omap"
