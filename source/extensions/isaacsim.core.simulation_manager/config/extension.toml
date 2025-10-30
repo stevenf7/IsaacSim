@@ -32,9 +32,9 @@ recursive = false
 [[test]]
 enabled = true
 dependencies = [
+    "omni.hydra.scene_delegate", # required for fabric time to update,
     "omni.kit.test",
     "omni.physx.ui",
-    "omni.hydra.scene_delegate" # required for fabric time to update
 ]
 args = [
     "--enable",

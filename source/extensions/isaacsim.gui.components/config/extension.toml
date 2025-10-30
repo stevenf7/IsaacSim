@@ -40,8 +40,8 @@ dependencies = [
     "isaacsim.core.api",
     "isaacsim.core.utils",
     "isaacsim.storage.native",
-    "omni.isaac.ml_archive",
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
+    "omni.isaac.ml_archive",
     "omni.kit.viewport.window",
 ]
 args = [

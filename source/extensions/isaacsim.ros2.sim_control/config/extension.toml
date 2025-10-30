@@ -86,7 +86,5 @@ dependencies = [
     "omni.isaac.ml_archive",
 ]
 args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
-
-

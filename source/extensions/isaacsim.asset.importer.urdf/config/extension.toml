@@ -76,9 +76,9 @@ exts."omni.kit.window.filepicker".detail_width_max = 600
 
 [[test]]
 dependencies = [
-    "omni.hydra.usdrt_delegate",
-    "isaacsim.test.docstring",
     "isaacsim.core.experimental.utils",
+    "isaacsim.test.docstring",
+    "omni.hydra.usdrt_delegate",
 ]
 stdoutFailPatterns.exclude = [
     "*[Error] [isaacsim.asset.importer.urdf] Failed to resolve mesh 'does_not/exist.obj'*",

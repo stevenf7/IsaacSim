@@ -40,9 +40,9 @@ recursive = false
 
 [[test]]
 dependencies = [ 
-    "omni.hydra.usdrt_delegate",
-    "isaacsim.test.docstring",
     "isaacsim.core.experimental.utils",
+    "isaacsim.test.docstring",
+    "omni.hydra.usdrt_delegate",
 ]
 # this is to catch issues where our assimp is out of sync with the one that comes with
 # asset importer as this can cause segfaults due to binary incompatibility.

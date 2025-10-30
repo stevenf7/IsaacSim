@@ -75,9 +75,9 @@ exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 timeout = 900
 dependencies = [
     "isaacsim.robot.wheeled_robots",
+    "isaacsim.test.utils",
     "omni.graph.ui",
     "omni.isaac.ml_archive",
-    "isaacsim.test.utils",
 ]
 
 stdoutFailPatterns.exclude = [
@@ -157,9 +157,8 @@ dependencies = [
     "omni.isaac.ml_archive",
 ]
 args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
-
 
 [[test]]
 name = "doctest"

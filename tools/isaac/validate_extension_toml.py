@@ -68,14 +68,17 @@ import difflib
 import os
 import re
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import toml
 
 
-# Define color codes for terminal output
-class Colors:
+class Colors(str, Enum):
+    """ANSI color codes for terminal output."""
+
     RESET = "\033[0m"
     RED = "\033[91m"
     GREEN = "\033[92m"
@@ -83,8 +86,45 @@ class Colors:
     BOLD = "\033[1m"
 
 
-# Check if terminal supports colors
-USE_COLORS = sys.stdout.isatty()
+@dataclass
+class ValidationConfig:
+    """Configuration for validation and fixing behavior."""
+
+    fix_whitespace: bool = False
+    fix_section_order: bool = False
+    fix_package_order: bool = False
+    fix_dependencies_order: bool = False
+    check_settings_comments: bool = True
+    check_write_target: bool = False
+    dry_run: bool = False
+    show_diff: bool = False
+    verbose: bool = False
+    use_colors: bool = True
+
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> "ValidationConfig":
+        """Create config from command-line arguments."""
+        fix_all = args.fix
+        return cls(
+            fix_whitespace=fix_all or args.fix_whitespace,
+            fix_section_order=fix_all or args.fix_section_order,
+            fix_package_order=fix_all or args.fix_package_order,
+            fix_dependencies_order=fix_all or args.fix_dependencies_order,
+            check_write_target=args.check_write_target,
+            dry_run=args.dry_run,
+            show_diff=args.dry_run and not args.no_diff,
+            verbose=args.verbose,
+            use_colors=sys.stdout.isatty() and not args.no_color,
+        )
+
+
+@dataclass
+class FixResult:
+    """Result of a fix operation."""
+
+    was_fixed: bool
+    fixed_content: str
+
 
 # Define the expected section order
 SECTION_ORDER = [
@@ -137,16 +177,17 @@ TEST_FIELD_ORDER = [
 DEPRECATION_FIELDS = ["warning"]
 
 
+@dataclass
 class ValidationError:
-    """Class representing a validation error."""
+    """Represents a validation error with context."""
 
-    def __init__(self, file_path: str, error_type: str, message: str, line_number: Optional[int] = None):
-        self.file_path = file_path
-        self.error_type = error_type
-        self.message = message
-        self.line_number = line_number
+    file_path: str
+    error_type: str
+    message: str
+    line_number: Optional[int] = None
 
     def __str__(self) -> str:
+        """Format error message with optional line number."""
         location = f" at line {self.line_number}" if self.line_number is not None else ""
         return f"{self.file_path}{location}: {self.error_type}: {self.message}"
 
@@ -154,10 +195,15 @@ class ValidationError:
 class ExtensionTomlValidator:
     """Validator for extension.toml files."""
 
-    def __init__(self):
-        self.errors = []
-        self.fixes_applied = []
-        self._verbose = False  # Add internal flag
+    def __init__(self, config: Optional[ValidationConfig] = None):
+        """Initialize validator with optional configuration.
+
+        Args:
+            config: Validation configuration. If None, uses default config.
+        """
+        self.errors: List[ValidationError] = []
+        self.fixes_applied: List[str] = []
+        self.config = config or ValidationConfig()
 
     def _create_line_mapping(self, content: str) -> Dict[str, int]:
         """
@@ -623,6 +669,94 @@ class ExtensionTomlValidator:
 
         return package_section_start, package_section_end, field_lines, package_section_comments
 
+    def _parse_dependency_line(self, line: str) -> Tuple[str, str, str]:
+        """Parse a dependency line into its components: value, comma, and comment.
+
+        Args:
+            line: A dependency line like '"omni.kit.test", # comment' or '"omni.kit.test"'
+
+        Returns:
+            Tuple of (dependency_value, has_comma, comment)
+            Example: ('"omni.kit.test"', ',', ' # comment') or ('"omni.kit.test"', '', '')
+        """
+        line_stripped = line.strip()
+
+        # Find the end of the quoted dependency value
+        if not line_stripped.startswith('"'):
+            # Not a standard quoted dependency
+            return line_stripped, "", ""
+
+        # Find the closing quote
+        closing_quote_idx = line_stripped.find('"', 1)
+        if closing_quote_idx == -1:
+            # Malformed, return as-is
+            return line_stripped, "", ""
+
+        # Extract the dependency value (including quotes)
+        dep_value = line_stripped[: closing_quote_idx + 1]
+        remainder = line_stripped[closing_quote_idx + 1 :]
+
+        # Check for comma and comment in the remainder
+        has_comma = ""
+        comment = ""
+
+        remainder_stripped = remainder.lstrip()
+        if remainder_stripped.startswith(","):
+            has_comma = ","
+            remainder_stripped = remainder_stripped[1:].lstrip()
+
+        if remainder_stripped.startswith("#"):
+            comment = " " + remainder_stripped
+
+        return dep_value, has_comma, comment
+
+    def _format_dependency_line(self, dep_value: str, comment: str, is_last: bool = False) -> str:
+        """Format a dependency line with proper comma placement.
+
+        Args:
+            dep_value: The dependency value (e.g., '"omni.kit.test"')
+            comment: The comment (e.g., ' # some comment' or '')
+            is_last: Whether this is the last item in the array (no trailing comma)
+
+        Returns:
+            Properly formatted dependency line
+        """
+        if is_last:
+            # Last item should not have a trailing comma
+            if comment:
+                return f"{dep_value}{comment}"
+            else:
+                return dep_value
+        else:
+            # Non-last items should have comma after the value
+            if comment:
+                return f"{dep_value},{comment}"
+            else:
+                return f"{dep_value},"
+
+    def _validate_toml_syntax(self, content: str, file_path: str) -> bool:
+        """Validate that the content is valid TOML syntax.
+
+        Args:
+            content: TOML content to validate
+            file_path: Path to file for error reporting
+
+        Returns:
+            True if valid, False if there are syntax errors
+        """
+        try:
+            toml.loads(content)
+            return True
+        except Exception as e:
+            self.errors.append(
+                ValidationError(
+                    file_path,
+                    "TOML Syntax Error",
+                    f"Invalid TOML syntax: {str(e)}",
+                )
+            )
+            return False
+
     def _validate_settings_comments(self, file_path: str, content: str) -> bool:
         """
         Check if each setting in the [settings] section has at least one comment line above it.
@@ -722,23 +856,22 @@ class ExtensionTomlValidator:
 
     def _validate_and_fix_dependencies_order(
         self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate that dependencies in the [dependencies] section are alphabetically sorted and fix if needed.
+    ) -> FixResult:
+        """Validate that dependencies in the [dependencies] section are alphabetically sorted and fix if needed.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            toml_data: Parsed TOML data
-            line_mapping: Mapping of section names to line numbers
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            toml_data: Parsed TOML data.
+            line_mapping: Mapping of section names to line numbers.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # If there's no dependencies section, nothing to do
         if "dependencies" not in toml_data or not toml_data["dependencies"]:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         # Extract the dependencies section
         dependencies = toml_data["dependencies"]
@@ -751,10 +884,10 @@ class ExtensionTomlValidator:
         if has_order_issue:
             self.errors.append(
                 ValidationError(
-                    file_path,
-                    "Dependencies Order",
-                    f"Dependencies in [dependencies] section should be alphabetically sorted",
-                    line_mapping.get("dependencies", 0),
+                    file_path=file_path,
+                    error_type="Dependencies Order",
+                    message="Dependencies in [dependencies] section should be alphabetically sorted",
+                    line_number=line_mapping.get("dependencies", 0),
                 )
             )
 
@@ -841,30 +974,35 @@ class ExtensionTomlValidator:
                 # Replace in original content
                 fixed_content = "\n".join(lines[:section_start] + new_section + lines[section_end:])
 
-                self.fixes_applied.append("Sorted dependencies alphabetically in [dependencies] section")
-                return True, fixed_content
+                # Validate TOML syntax after fixing
+                if not self._validate_toml_syntax(fixed_content, file_path):
+                    # If validation fails, return original content
+                    self.fixes_applied.append("ERROR: Failed to fix dependencies - invalid TOML syntax after changes")
+                    return FixResult(was_fixed=False, fixed_content=content)
 
-        return False, content
+                self.fixes_applied.append("Sorted dependencies alphabetically in [dependencies] section")
+                return FixResult(was_fixed=True, fixed_content=fixed_content)
+
+        return FixResult(was_fixed=False, fixed_content=content)
 
     def _validate_and_fix_test_dependencies_order(
         self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate that dependencies in the [[test]] section(s) are alphabetically sorted and fix if needed.
+    ) -> FixResult:
+        """Validate that dependencies in the [[test]] section(s) are alphabetically sorted and fix if needed.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            toml_data: Parsed TOML data
-            line_mapping: Mapping of section names to line numbers
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            toml_data: Parsed TOML data.
+            line_mapping: Mapping of section names to line numbers.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # If there's no test section, nothing to do
         if "test" not in toml_data or not isinstance(toml_data["test"], list) or not toml_data["test"]:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         # Extract all test sections
         test_sections = toml_data["test"]
@@ -944,26 +1082,24 @@ class ExtensionTomlValidator:
                     # Extract dependency lines
                     dep_lines = section_lines[deps_start : deps_end + 1]
 
-                    # Parse dependency values
+                    # Parse dependency values with their comments
                     dependencies = []
                     for line in dep_lines[1 : deps_end - deps_start]:  # Skip start and end lines
                         line_stripped = line.strip()
                         if line_stripped and line_stripped != "]" and not line_stripped.startswith("#"):
-                            # Remove trailing comma if any
-                            if line_stripped.endswith(","):
-                                line_stripped = line_stripped[:-1]
-                            dependencies.append((line_stripped, line))
+                            # Parse the dependency line to separate value, comma, and comment
+                            dep_value, _, comment = self._parse_dependency_line(line_stripped)
+                            dependencies.append((dep_value, comment, line))
 
                     # Sort dependencies by their values
                     sorted_deps = sorted(dependencies, key=lambda x: x[0])
 
-                    # Create new dependency block
+                    # Create new dependency block with proper comma placement
                     new_deps = [dep_lines[0]]  # Start line with "dependencies = ["
-                    for dep_value, _ in sorted_deps:
-                        # Ensure there's a comma at the end
-                        if not dep_value.endswith(","):
-                            dep_value += ","
-                        new_deps.append("    " + dep_value)
+                    for i, (dep_value, comment, _) in enumerate(sorted_deps):
+                        is_last = i == len(sorted_deps) - 1
+                        formatted_line = self._format_dependency_line(dep_value, comment, is_last)
+                        new_deps.append("    " + formatted_line)
                     new_deps.append(dep_lines[-1])  # End line with "]"
 
                     # Replace in section lines
@@ -974,44 +1110,32 @@ class ExtensionTomlValidator:
 
             # Rebuild content
             fixed_content = "\n".join(lines)
+
+            # Validate TOML syntax after fixing
+            if not self._validate_toml_syntax(fixed_content, file_path):
+                # If validation fails, return original content
+                self.fixes_applied.append("ERROR: Failed to fix dependencies - invalid TOML syntax after changes")
+                return FixResult(was_fixed=False, fixed_content=content)
+
             self.fixes_applied.append("Sorted dependencies alphabetically in [[test]] section(s)")
-            return True, fixed_content
+            return FixResult(was_fixed=True, fixed_content=fixed_content)
 
-        return False, content
+        return FixResult(was_fixed=False, fixed_content=content)
 
-    def validate_file(
-        self,
-        file_path: str,
-        fix_whitespace: bool = False,
-        fix_section_order: bool = False,
-        fix_package_order: bool = False,
-        fix_dependencies_order: bool = False,
-        check_settings_comments: bool = True,
-        dry_run: bool = False,
-        show_diff: bool = False,
-        check_write_target: bool = False,
-        verbose: bool = False,  # Add verbose parameter
-    ) -> List[ValidationError]:
-        """
-        Validate a TOML file against the extension.toml style guide.
+    def validate_file(self, file_path: str, config: Optional[ValidationConfig] = None) -> List[ValidationError]:
+        """Validate a TOML file against the extension.toml style guide.
 
         Args:
-            file_path: Path to the TOML file
-            fix_whitespace: Whether to fix whitespace issues
-            fix_section_order: Whether to fix section order issues
-            fix_package_order: Whether to fix package field order issues
-            fix_dependencies_order: Whether to fix dependency alphabetical order issues
-            check_settings_comments: Whether to check for missing comments in [settings] section
-            dry_run: Whether to show changes without applying them
-            show_diff: Whether to show diff of changes
-            check_write_target: Whether to check for writeTarget.kit field
-            verbose: Enable verbose output for debugging
+            file_path: Path to the TOML file.
+            config: Validation configuration. If None, uses the instance config.
 
         Returns:
-            List of validation errors
+            List of validation errors found.
         """
-        self._verbose = verbose  # Store verbose flag for use in other methods
-        if verbose:
+        # Use provided config or fall back to instance config
+        config = config or self.config
+
+        if config.verbose:
             print(f"DEBUG: Starting validation of {file_path}")
         if not os.path.exists(file_path):
             self.errors.append(ValidationError(file_path, "File Not Found", f"File {file_path} does not exist"))
@@ -1028,26 +1152,47 @@ class ExtensionTomlValidator:
         self.errors = []
         self.fixes_applied = []
 
+        # Validate TOML syntax first
         try:
             toml_data = toml.loads(content)
         except Exception as e:
             self.errors.append(ValidationError(file_path, "TOML Parse Error", str(e)))
+            # Try to give more specific error for missing commas in arrays
+            if "Expected" in str(e) or "Invalid" in str(e):
+                # Check for common patterns of missing commas
+                lines = content.split("\n")
+                for i, line in enumerate(lines):
+                    line_stripped = line.strip()
+                    # Check if this looks like a dependency without a trailing comma
+                    if (
+                        line_stripped.startswith('"')
+                        and line_stripped.endswith('"')
+                        and i + 1 < len(lines)
+                        and lines[i + 1].strip().startswith('"')
+                    ):
+                        self.errors.append(
+                            ValidationError(
+                                file_path,
+                                "Possible Missing Comma",
+                                f"Line {i+1} may be missing a trailing comma: {line_stripped}",
+                                i + 1,
+                            )
+                        )
             return self.errors
 
         # Create a mapping of section names to line numbers for error reporting
         line_mapping = self._create_line_mapping(content)
 
-        # If we're using the fix flag, these will be set to true
+        # Track if any fixes were applied
         fixed = False
         fixed_content = content
 
         # Check for redundant [core] section and fix if requested
-        if fix_section_order:  # Reuse fix_section_order flag for core section removal
-            core_fixed, fixed_content = self._validate_and_fix_core_section(
-                file_path, fixed_content, toml_data, line_mapping, True
-            )
-            if core_fixed:
+        if config.fix_section_order:  # Reuse fix_section_order flag for core section removal
+            core_result = self._validate_and_fix_core_section(file_path, fixed_content, toml_data, line_mapping, True)
+            if core_result.was_fixed:
                 fixed = True
+                fixed_content = core_result.fixed_content
                 # Reload TOML data and line mapping since content has changed
                 try:
                     toml_data = toml.loads(fixed_content)
@@ -1056,7 +1201,7 @@ class ExtensionTomlValidator:
                     pass
 
         # Check for whitespace issues and fix if requested
-        if fix_whitespace:
+        if config.fix_whitespace:
             fixed_whitespace = self._fix_whitespace(fixed_content)
             if fixed_whitespace != fixed_content:
                 fixed_content = fixed_whitespace
@@ -1069,12 +1214,13 @@ class ExtensionTomlValidator:
                     pass
 
         # Check for section order issues and fix if requested
-        if fix_section_order:
-            sections_fixed, fixed_content = self._validate_and_fix_section_order(
+        if config.fix_section_order:
+            sections_result = self._validate_and_fix_section_order(
                 file_path, fixed_content, toml_data, line_mapping, True
             )
-            if sections_fixed:
+            if sections_result.was_fixed:
                 fixed = True
+                fixed_content = sections_result.fixed_content
                 # Reload TOML data and line mapping since content has changed
                 try:
                     toml_data = toml.loads(fixed_content)
@@ -1085,12 +1231,13 @@ class ExtensionTomlValidator:
         # Check [package] section
         if "package" in toml_data:
             # Check and fix [package] field order
-            if fix_package_order:
-                package_fields_fixed, fixed_content = self._validate_and_fix_package_fields(
+            if config.fix_package_order:
+                package_result = self._validate_and_fix_package_fields(
                     file_path, fixed_content, toml_data["package"], line_mapping.get("package", 0), True
                 )
-                if package_fields_fixed:
+                if package_result.was_fixed:
                     fixed = True
+                    fixed_content = package_result.fixed_content
                     # Reload TOML data and line mapping since content has changed
                     try:
                         toml_data = toml.loads(fixed_content)
@@ -1099,12 +1246,13 @@ class ExtensionTomlValidator:
                         pass
 
             # Check for appropriate writeTarget.kit presence
-            if check_write_target:
-                write_target_fixed, fixed_content = self._validate_required_write_target_kit(
+            if config.check_write_target:
+                write_target_result = self._validate_required_write_target_kit(
                     file_path, fixed_content, toml_data["package"], line_mapping.get("package", 0), True
                 )
-                if write_target_fixed:
+                if write_target_result.was_fixed:
                     fixed = True
+                    fixed_content = write_target_result.fixed_content
                     # Reload TOML data and line mapping since content has changed
                     try:
                         toml_data = toml.loads(fixed_content)
@@ -1116,37 +1264,34 @@ class ExtensionTomlValidator:
         self._check_section_spacing(file_path, fixed_content)
 
         # Check for redundant [core] section (validation only when not fixing)
-        if not fix_section_order:
+        if not config.fix_section_order:
             self._validate_and_fix_core_section(file_path, fixed_content, toml_data, line_mapping, False)
 
         # Check that [package] is the first section if there's no [core] section
         self._validate_package_first_section(file_path, fixed_content, toml_data)
 
         # Check [settings] section comments
-        if check_settings_comments and "settings" in toml_data:
+        if config.check_settings_comments and "settings" in toml_data:
             self._validate_settings_comments(file_path, fixed_content)
 
         # Check and fix test section field order
-        if "test" in toml_data and fix_package_order:  # Reuse fix_package_order flag for test order fixes
-            test_fields_fixed, fixed_content = self._validate_and_fix_test_fields(
+        if "test" in toml_data and config.fix_package_order:  # Reuse fix_package_order flag for test order fixes
+            test_fields_result = self._validate_and_fix_test_fields(
                 file_path, fixed_content, toml_data, line_mapping, True
             )
 
-            if test_fields_fixed:
+            if test_fields_result.was_fixed:
                 fixed = True
+                fixed_content = test_fields_result.fixed_content
 
         # Check and fix test section order
-        # print("DEBUG: About to call _validate_test_section_order") # <<< Removed debug print
         has_multiple_unnamed, has_order_issue = self._validate_test_section_order(file_path, fixed_content)
-        # print(f"DEBUG: _validate_test_section_order returned: multiple_unnamed={has_multiple_unnamed}, order_issue={has_order_issue}") # <<< Removed debug print
 
-        if (has_order_issue or has_multiple_unnamed) and fix_section_order:  # Reuse fix_section_order flag
-            # print("DEBUG: Order issue detected, fixing with _validate_and_fix_test_section_order") # <<< Removed debug print
-            test_order_fixed, fixed_content = self._validate_and_fix_test_section_order(file_path, fixed_content, True)
-            # print(f"DEBUG: _validate_and_fix_test_section_order returned: {test_order_fixed}") # <<< Removed debug print
-            if test_order_fixed:
+        if (has_order_issue or has_multiple_unnamed) and config.fix_section_order:  # Reuse fix_section_order flag
+            test_order_result = self._validate_and_fix_test_section_order(file_path, fixed_content, True)
+            if test_order_result.was_fixed:
                 fixed = True
-                # print(f"DEBUG: Fixed content length after test order fix: {len(fixed_content)}") # <<< Removed debug print
+                fixed_content = test_order_result.fixed_content
                 # Reload TOML data and line mapping since content has changed
                 try:
                     toml_data = toml.loads(fixed_content)
@@ -1155,14 +1300,15 @@ class ExtensionTomlValidator:
                     pass
 
         # Check and fix dependencies alphabetical order
-        if fix_dependencies_order:
+        if config.fix_dependencies_order:
             # Fix dependencies section
             if "dependencies" in toml_data:
-                deps_fixed, fixed_content = self._validate_and_fix_dependencies_order(
+                deps_result = self._validate_and_fix_dependencies_order(
                     file_path, fixed_content, toml_data, line_mapping, True
                 )
-                if deps_fixed:
+                if deps_result.was_fixed:
                     fixed = True
+                    fixed_content = deps_result.fixed_content
                     # Reload TOML data and line mapping since content has changed
                     try:
                         toml_data = toml.loads(fixed_content)
@@ -1172,17 +1318,18 @@ class ExtensionTomlValidator:
 
             # Fix test dependencies
             if "test" in toml_data:
-                test_deps_fixed, fixed_content = self._validate_and_fix_test_dependencies_order(
+                test_deps_result = self._validate_and_fix_test_dependencies_order(
                     file_path, fixed_content, toml_data, line_mapping, True
                 )
-                if test_deps_fixed:
+                if test_deps_result.was_fixed:
                     fixed = True
+                    fixed_content = test_deps_result.fixed_content
 
         # If the file was fixed, apply changes
-        if fixed and not dry_run:
+        if fixed and not config.dry_run:
             self._apply_fixes(file_path, fixed_content, toml_data)
-        elif fixed and dry_run:
-            self._report_fixes(file_path, content, fixed_content, show_diff)
+        elif fixed and config.dry_run:
+            self._report_fixes(file_path, content, fixed_content, config.show_diff)
 
         return self.errors
 
@@ -1266,19 +1413,18 @@ class ExtensionTomlValidator:
 
     def _validate_and_fix_section_order(
         self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate that sections appear in the correct order and fix if needed.
+    ) -> FixResult:
+        """Validate that sections appear in the correct order and fix if needed.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            toml_data: Parsed TOML data
-            line_mapping: Mapping of section names to line numbers
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            toml_data: Parsed TOML data.
+            line_mapping: Mapping of section names to line numbers.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # Extract sections from the content to preserve order
         sections, section_types, regular_sections, array_sections = self._extract_sections(content)
@@ -1288,9 +1434,16 @@ class ExtensionTomlValidator:
 
         # If there's an order issue, reorder the sections
         if has_order_issue and fix:
-            return self._reorder_sections(content, regular_sections, array_sections)
+            result = self._reorder_sections(content, regular_sections, array_sections)
+            if result.was_fixed:
+                # Validate TOML syntax after fixing
+                if not self._validate_toml_syntax(result.fixed_content, file_path):
+                    # If validation fails, return original content
+                    self.fixes_applied.append("ERROR: Failed to reorder sections - invalid TOML syntax after changes")
+                    return FixResult(was_fixed=False, fixed_content=content)
+            return result
 
-        return False, content
+        return FixResult(was_fixed=False, fixed_content=content)
 
     def _check_section_order(self, file_path: str, sections: List[str], line_mapping: Dict[str, int]) -> bool:
         """
@@ -1341,17 +1494,16 @@ class ExtensionTomlValidator:
 
     def _reorder_sections(
         self, content: str, regular_sections: Dict[str, List[str]], array_sections: Dict[str, List[List[str]]]
-    ) -> Tuple[bool, str]:
-        """
-        Reorder sections according to the expected order.
+    ) -> FixResult:
+        """Reorder sections according to the expected order.
 
         Args:
-            content: Original content
-            regular_sections: Regular sections extracted from content
-            array_sections: Array sections extracted from content
+            content: Original content.
+            regular_sections: Regular sections extracted from content.
+            array_sections: Array sections extracted from content.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # Get preamble (comments before first section)
         preamble = []
@@ -1434,23 +1586,22 @@ class ExtensionTomlValidator:
         ]
 
         self.fixes_applied.append(f"Reordered sections to match standard order: {', '.join(ordered_sections)}")
-        return True, new_content
+        return FixResult(was_fixed=True, fixed_content=new_content)
 
     def _validate_and_fix_package_fields(
         self, file_path: str, content: str, package_data: Dict, section_line: int, fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate that fields in the [package] section appear in the correct order and fix if needed.
+    ) -> FixResult:
+        """Validate that fields in the [package] section appear in the correct order and fix if needed.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            package_data: Parsed data for the [package] section
-            section_line: Line number where the [package] section starts
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            package_data: Parsed data for the [package] section.
+            section_line: Line number where the [package] section starts.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # Extract the package section and its fields
         try:
@@ -1467,16 +1618,30 @@ class ExtensionTomlValidator:
 
             # Fix the order if needed
             if has_order_issue and fix:
-                return self._reorder_package_fields(
+                result = self._reorder_package_fields(
                     content, field_lines, package_section_comments, package_section_start, package_section_end
                 )
+                if result.was_fixed:
+                    # Validate TOML syntax after fixing
+                    if not self._validate_toml_syntax(result.fixed_content, file_path):
+                        # If validation fails, return original content
+                        self.fixes_applied.append(
+                            "ERROR: Failed to reorder package fields - invalid TOML syntax after changes"
+                        )
+                        return FixResult(was_fixed=False, fixed_content=content)
+                return result
 
         except Exception as e:
             self.errors.append(
-                ValidationError(file_path, "Error", f"Error validating package fields: {str(e)}", section_line)
+                ValidationError(
+                    file_path=file_path,
+                    error_type="Error",
+                    message=f"Error validating package fields: {str(e)}",
+                    line_number=section_line,
+                )
             )
 
-        return False, content
+        return FixResult(was_fixed=False, fixed_content=content)
 
     def _check_package_field_order(
         self, file_path: str, field_lines: List[Tuple[str, Tuple[int, str]]], section_line: int
@@ -1520,19 +1685,18 @@ class ExtensionTomlValidator:
         package_section_comments: Dict[str, List[Tuple[int, str]]],
         package_section_start: int,
         package_section_end: int,
-    ) -> Tuple[bool, str]:
-        """
-        Reorder fields in the package section.
+    ) -> FixResult:
+        """Reorder fields in the package section.
 
         Args:
-            content: Original content
-            field_lines: List of field names and their lines
-            package_section_comments: Comments for each field
-            package_section_start: Start line of package section
-            package_section_end: End line of package section
+            content: Original content.
+            field_lines: List of field names and their lines.
+            package_section_comments: Comments for each field.
+            package_section_start: Start line of package section.
+            package_section_end: End line of package section.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         lines = content.split("\n")
 
@@ -1580,7 +1744,7 @@ class ExtensionTomlValidator:
         self.fixes_applied.append(
             f"Reordered [package] section fields to match standard order: {', '.join(ordered_fields)}"
         )
-        return True, new_content
+        return FixResult(was_fixed=True, fixed_content=new_content)
 
     def _validate_deprecation_section(self, file_path: str, deprecation_data: Dict, section_line: int) -> None:
         """
@@ -1612,29 +1776,28 @@ class ExtensionTomlValidator:
 
     def _validate_and_fix_test_fields(
         self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate that fields in [[test]] sections appear in the correct order and fix if needed.
+    ) -> FixResult:
+        """Validate that fields in [[test]] sections appear in the correct order and fix if needed.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            toml_data: Parsed TOML data
-            line_mapping: Mapping of section names to line numbers
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            toml_data: Parsed TOML data.
+            line_mapping: Mapping of section names to line numbers.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # If there's no test section, nothing to do
         if "test" not in toml_data or not isinstance(toml_data["test"], list) or not toml_data["test"]:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         # Extract the test sections - this will automatically filter out empty test sections
         test_section_lines, array_section_content, _, _ = self._extract_test_sections(content)  # Fix unpacking
 
         if not test_section_lines or not array_section_content:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         # Make sure we have the same number of sections in TOML data as we extracted
         # This can be different if there are empty test sections
@@ -1706,9 +1869,14 @@ class ExtensionTomlValidator:
             fixed_content = self._reorder_test_fields(
                 content, non_empty_test_sections, test_section_lines, array_section_content
             )
-            return True, fixed_content
+            # Validate TOML syntax after fixing
+            if not self._validate_toml_syntax(fixed_content, file_path):
+                # If validation fails, return original content
+                self.fixes_applied.append("ERROR: Failed to reorder test fields - invalid TOML syntax after changes")
+                return FixResult(was_fixed=False, fixed_content=content)
+            return FixResult(was_fixed=True, fixed_content=fixed_content)
 
-        return False, content
+        return FixResult(was_fixed=False, fixed_content=content)
 
     def _extract_test_sections(self, content: str) -> Tuple[List[int], List[List[str]]]:
         """
@@ -1800,7 +1968,7 @@ class ExtensionTomlValidator:
         Returns:
             Tuple of (has_multiple_unnamed_sections, has_order_issue)
         """
-        if self._verbose:
+        if self.config.verbose:
             print(f"DEBUG: Validating test section order in {file_path}")
         lines = content.split("\n")
 
@@ -1854,7 +2022,7 @@ class ExtensionTomlValidator:
         unnamed_sections = [section for section in test_sections_info if not section[1]]
         named_sections = [section for section in test_sections_info if section[1]]
 
-        if self._verbose:
+        if self.config.verbose:
             print(f"DEBUG: test_sections_info = {test_sections_info}")
             print(f"DEBUG: unnamed_sections = {unnamed_sections}")
             print(f"DEBUG: named_sections = {named_sections}")
@@ -1880,7 +2048,7 @@ class ExtensionTomlValidator:
             # Find the line number of the first named section
             min_named_line = min(section[0] for section in named_sections)
 
-            if self._verbose:
+            if self.config.verbose:
                 print(f"DEBUG: max_unnamed_line={max_unnamed_line}, min_named_line={min_named_line}")
 
             if max_unnamed_line > min_named_line:
@@ -1898,35 +2066,35 @@ class ExtensionTomlValidator:
                     )
                 )
 
-        if self._verbose:
+        if self.config.verbose:
             print(
                 f"DEBUG: has_multiple_unnamed_sections={has_multiple_unnamed_sections}, has_order_issue={has_order_issue}"
             )
 
         return has_multiple_unnamed_sections, has_order_issue
 
-    def _validate_and_fix_test_section_order(self, file_path: str, content: str, fix: bool = False) -> Tuple[bool, str]:
-        """
-        Validate and fix the order of test sections:
+    def _validate_and_fix_test_section_order(self, file_path: str, content: str, fix: bool = False) -> FixResult:
+        """Validate and fix the order of test sections.
+
         1. Ensure only one unnamed test section (keeps the first one found)
         2. Ensure the unnamed test section appears before named test sections
         3. Sort named test sections alphabetically by their 'name' field.
 
         Args:
-            file_path: Path to the file being validated
-            content: Raw TOML content
-            fix: Whether to fix found issues
+            file_path: Path to the file being validated.
+            content: Raw TOML content.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         has_multiple_unnamed_sections, has_order_issue = self._validate_test_section_order(file_path, content)
 
         # If there are no issues or we're not fixing, just return
         if (not has_multiple_unnamed_sections and not has_order_issue) or not fix:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
-        if self._verbose:
+        if self.config.verbose:
             print(f"DEBUG: Fixing issues: multi_unnamed={has_multiple_unnamed_sections}, order_issue={has_order_issue}")
 
         lines = content.split("\n")
@@ -1936,7 +2104,7 @@ class ExtensionTomlValidator:
 
         # If no test sections found, something is wrong (or file changed)
         if block_start == -1:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         unnamed_test_sections = []
         named_test_sections = []  # List of tuples: (section_content_list, name_value)
@@ -1960,11 +2128,11 @@ class ExtensionTomlValidator:
                     break  # Found name, no need to check further lines in this section
 
             if has_name:
-                if self._verbose:
+                if self.config.verbose:
                     print(f"DEBUG: Found named section: {section_name}")
                 named_test_sections.append((section_content, section_name))
             else:
-                if self._verbose:
+                if self.config.verbose:
                     print(f"DEBUG: Found unnamed section")
                 unnamed_test_sections.append(section_content)
 
@@ -2032,7 +2200,7 @@ class ExtensionTomlValidator:
             if original_named_names != sorted_original_names:
                 self.fixes_applied.append("Sorted named [[test]] sections alphabetically")
 
-        if self._verbose:
+        if self.config.verbose:
             print(f"DEBUG: Test position: {block_start}")  # Use block_start as test position indicator
 
         fixed_content = "\n".join(fixed_content_lines)
@@ -2060,7 +2228,7 @@ class ExtensionTomlValidator:
                 final_fixes.insert(0, fix_msg)
         self.fixes_applied = final_fixes
 
-        if self._verbose:
+        if self.config.verbose:
             print(f"DEBUG: Original content length: {len(content)}, Fixed content length: {len(fixed_content)}")
 
         # Return True if any structural change was made
@@ -2069,7 +2237,15 @@ class ExtensionTomlValidator:
             or has_order_issue
             or (named_test_sections and original_named_names != sorted_original_names)
         )
-        return was_fixed, fixed_content
+
+        # Validate TOML syntax if content was modified
+        if was_fixed:
+            if not self._validate_toml_syntax(fixed_content, file_path):
+                # If validation fails, return original content
+                self.fixes_applied.append("ERROR: Failed to reorder test sections - invalid TOML syntax after changes")
+                return FixResult(was_fixed=False, fixed_content=content)
+
+        return FixResult(was_fixed=was_fixed, fixed_content=fixed_content)
 
     def _check_test_field_order(self, file_path: str, test_section: Dict, section_line: int) -> bool:
         """
@@ -2266,57 +2442,55 @@ class ExtensionTomlValidator:
         )
 
         # If terminal supports colors, add coloring
-        if USE_COLORS:
+        if self.config.use_colors:
             return self._colorize_diff(diff_lines)
         else:
             return "\n".join(diff_lines)
 
     def _colorize_diff(self, diff_lines: List[str]) -> str:
-        """
-        Add color formatting to diff lines.
+        """Add color formatting to diff lines.
 
         Args:
-            diff_lines: List of diff lines
+            diff_lines: List of diff lines.
 
         Returns:
-            Colored diff as a string
+            Colored diff as a string.
         """
         colored_diff = []
         for line in diff_lines:
             if line.startswith("+"):
                 if line.startswith("+++"):  # File header
-                    colored_diff.append(f"{Colors.BOLD}{Colors.BLUE}{line}{Colors.RESET}")
+                    colored_diff.append(f"{Colors.BOLD.value}{Colors.BLUE.value}{line}{Colors.RESET.value}")
                 else:
-                    colored_diff.append(f"{Colors.GREEN}{line}{Colors.RESET}")
+                    colored_diff.append(f"{Colors.GREEN.value}{line}{Colors.RESET.value}")
             elif line.startswith("-"):
                 if line.startswith("---"):  # File header
-                    colored_diff.append(f"{Colors.BOLD}{Colors.BLUE}{line}{Colors.RESET}")
+                    colored_diff.append(f"{Colors.BOLD.value}{Colors.BLUE.value}{line}{Colors.RESET.value}")
                 else:
-                    colored_diff.append(f"{Colors.RED}{line}{Colors.RESET}")
+                    colored_diff.append(f"{Colors.RED.value}{line}{Colors.RESET.value}")
             elif line.startswith("@@"):
-                colored_diff.append(f"{Colors.BLUE}{line}{Colors.RESET}")
+                colored_diff.append(f"{Colors.BLUE.value}{line}{Colors.RESET.value}")
             else:
                 colored_diff.append(line)
         return "\n".join(colored_diff)
 
     def _validate_required_write_target_kit(
         self, file_path: str, content: str, package_data: Dict, section_line: int, fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate that the package section contains the required writeTarget.kit = true field.
+    ) -> FixResult:
+        """Validate that the package section contains the required writeTarget.kit = true field.
+
         If fix=True, adds the missing field if needed.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            package_data: Parsed data for the [package] section
-            section_line: Line number where the [package] section starts
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            package_data: Parsed data for the [package] section.
+            section_line: Line number where the [package] section starts.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
-        fixed = False
         fixed_content = content
 
         # Check for existing writeTarget.kit in the raw content
@@ -2352,7 +2526,7 @@ class ExtensionTomlValidator:
                     section_line,
                 )
             )
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         # Check if writeTarget.kit exists and is set to true
         if not field_exists_in_content and "writeTarget.kit" not in package_data:
@@ -2494,33 +2668,32 @@ class ExtensionTomlValidator:
                         break
 
                 fixed_content = "\n".join(lines)
-                fixed = True
                 self.fixes_applied.append("Fixed 'writeTarget.kit' value to true in [package] section")
+                return FixResult(was_fixed=True, fixed_content=fixed_content)
 
-        return fixed, fixed_content
+        return FixResult(was_fixed=False, fixed_content=fixed_content)
 
     def _validate_and_fix_core_section(
         self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
-    ) -> Tuple[bool, str]:
-        """
-        Validate the [core] section and remove it if it only contains default values.
+    ) -> FixResult:
+        """Validate the [core] section and remove it if it only contains default values.
 
         If the [core] section only contains reloadable = true and order = 0 (or just one of these),
         it should be removed as these are default values.
 
         Args:
-            file_path: Path to the TOML file
-            content: Raw TOML content
-            toml_data: Parsed TOML data
-            line_mapping: Mapping of section names to line numbers
-            fix: Whether to fix found issues
+            file_path: Path to the TOML file.
+            content: Raw TOML content.
+            toml_data: Parsed TOML data.
+            line_mapping: Mapping of section names to line numbers.
+            fix: Whether to fix found issues.
 
         Returns:
-            Tuple of (was_fixed, fixed_content)
+            FixResult indicating whether content was fixed and the new content.
         """
         # If there's no core section, nothing to do
         if "core" not in toml_data:
-            return False, content
+            return FixResult(was_fixed=False, fixed_content=content)
 
         core_data = toml_data["core"]
 
@@ -2590,9 +2763,9 @@ class ExtensionTomlValidator:
                     fixed_content = self._fix_whitespace(fixed_content)
 
                     self.fixes_applied.append("Removed redundant [core] section with default values")
-                    return True, fixed_content
+                    return FixResult(was_fixed=True, fixed_content=fixed_content)
 
-        return False, content
+        return FixResult(was_fixed=False, fixed_content=content)
 
     def _validate_package_first_section(self, file_path: str, content: str, toml_data: Dict) -> None:
         """
@@ -2716,36 +2889,13 @@ def main():
 
     args = parser.parse_args()
 
-    # Update color settings based on arguments
-    global USE_COLORS
-    if args.no_color:
-        USE_COLORS = False
+    # Create validation configuration from arguments
+    config = ValidationConfig.from_args(args)
 
-    # Set fix modes
-    fix_whitespace = args.fix or args.fix_whitespace
-    fix_section_order = args.fix or args.fix_section_order
-    fix_package_order = args.fix or args.fix_package_order
-    fix_dependencies_order = args.fix or args.fix_dependencies_order
-    check_write_target = args.check_write_target
+    # Create validator with config
+    validator = ExtensionTomlValidator(config)
 
-    # Settings comments are always checked by default
-    check_settings_comments = True
-
-    # Enable verbose output when running without arguments - Removed this default behavior
-    # if len(sys.argv) == 1:
-    #     args.verbose = True
-
-    validator = ExtensionTomlValidator()
-    return process_files(
-        args,
-        validator,
-        fix_whitespace,
-        fix_section_order,
-        fix_package_order,
-        fix_dependencies_order,
-        check_settings_comments,
-        check_write_target,
-    )
+    return process_files(args, validator, config)
 
 
 def _print_file_diagnostics(file_path: str):
@@ -2798,31 +2948,16 @@ def _print_file_diagnostics(file_path: str):
         print(f"Error analyzing file: {str(e)}")
 
 
-def process_files(
-    args,
-    validator,
-    fix_whitespace,
-    fix_section_order,
-    fix_package_order,
-    fix_dependencies_order,
-    check_settings_comments,
-    check_write_target,
-):
-    """
-    Process files based on the provided arguments.
+def process_files(args: argparse.Namespace, validator: ExtensionTomlValidator, config: ValidationConfig) -> int:
+    """Process files based on the provided arguments.
 
     Args:
-        args: Command line arguments
-        validator: Validator instance
-        fix_whitespace: Whether to fix whitespace issues
-        fix_section_order: Whether to fix section order issues
-        fix_package_order: Whether to fix package field order issues
-        fix_dependencies_order: Whether to fix dependencies alphabetical order issues
-        check_settings_comments: Whether to check for comments above settings
-        check_write_target: Whether to check for and add writeTarget.kit field
+        args: Command line arguments.
+        validator: Validator instance.
+        config: Validation configuration.
 
     Returns:
-        Exit code (0 for success, 1 for errors)
+        Exit code (0 for success, 1 for errors).
     """
     all_errors = []
     fix_count = 0
@@ -2842,21 +2977,10 @@ def process_files(
             print(f"File {file_path} does not exist.")
             return 1
 
-        if args.verbose:
+        if config.verbose:
             print(f"Validating {file_path}...")
 
-        errors = validator.validate_file(
-            file_path,
-            fix_whitespace=fix_whitespace,
-            fix_section_order=fix_section_order,
-            fix_package_order=fix_package_order,
-            fix_dependencies_order=fix_dependencies_order,
-            check_settings_comments=check_settings_comments,
-            dry_run=args.dry_run,
-            show_diff=args.dry_run and not args.no_diff,
-            check_write_target=check_write_target,
-            verbose=args.verbose,  # Pass verbose flag here
-        )
+        errors = validator.validate_file(file_path, config)
         all_errors.extend(errors)
         if validator.fixes_applied:
             fix_count += 1
@@ -2869,8 +2993,8 @@ def process_files(
             print(f"No extension.toml files found to validate.")
             return 1
 
-        # Simplify the check here, just use args.verbose
-        if args.verbose:
+        # Simplify the check here, just use config.verbose
+        if config.verbose:
             print(f"Found {len(toml_files)} extension.toml files to validate.")
 
         for file_path in toml_files:
@@ -2878,23 +3002,24 @@ def process_files(
             if args.diagnostics and "isaacsim.examples.interactive" in file_path:
                 _print_file_diagnostics(file_path)
 
-            if args.verbose:
+            if config.verbose:
                 print(f"Validating {file_path}...")
 
             # Only show diffs for the first few files in dry-run mode to avoid overwhelming output
-            show_diff = args.dry_run and not args.no_diff and fix_count < 5
-            errors = validator.validate_file(
-                file_path,
-                fix_whitespace=fix_whitespace,
-                fix_section_order=fix_section_order,
-                fix_package_order=fix_package_order,
-                fix_dependencies_order=fix_dependencies_order,
-                check_settings_comments=check_settings_comments,
-                dry_run=args.dry_run,
-                show_diff=show_diff,
-                check_write_target=check_write_target,
-                verbose=args.verbose,  # Pass verbose flag here
+            # Update config for this specific file
+            file_config = ValidationConfig(
+                fix_whitespace=config.fix_whitespace,
+                fix_section_order=config.fix_section_order,
+                fix_package_order=config.fix_package_order,
+                fix_dependencies_order=config.fix_dependencies_order,
+                check_settings_comments=config.check_settings_comments,
+                check_write_target=config.check_write_target,
+                dry_run=config.dry_run,
+                show_diff=config.dry_run and not args.no_diff and fix_count < 5,
+                verbose=config.verbose,
+                use_colors=config.use_colors,
             )
+            errors = validator.validate_file(file_path, file_config)
             all_errors.extend(errors)
             if validator.fixes_applied:
                 fix_count += 1

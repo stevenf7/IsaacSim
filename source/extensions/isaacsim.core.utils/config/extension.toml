@@ -16,6 +16,7 @@ writeTarget.platform = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.storage.native" = {}
+"omni.kit.usd.layers" = {}
 "omni.physics" = {}
 "omni.physics.physx" = {}
 "omni.physics.tensors" = {}
@@ -25,7 +26,6 @@ writeTarget.platform = true
 "omni.usd.schema.semantics" = {}
 "omni.usdphysics" = {}
 "omni.warp.core" = {}
-"omni.kit.usd.layers" = {}
 
 [[python.module]]
 name = "isaacsim.core.utils"

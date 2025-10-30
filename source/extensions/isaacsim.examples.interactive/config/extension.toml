@@ -14,6 +14,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.core.prims" = {}
 "isaacsim.cortex.behaviors" = {}
 "isaacsim.cortex.framework" = {}
@@ -32,7 +33,6 @@ writeTarget.kit = true
 "omni.kit.uiapp" = {}
 "omni.physics" = {}
 "omni.physics.physx" = {}
-"isaacsim.core.experimental.utils" = {}
 
 [[python.module]]
 name = "isaacsim.examples.interactive.tests"
@@ -160,5 +160,5 @@ dependencies = [
     "omni.isaac.ml_archive",
 ]
 args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

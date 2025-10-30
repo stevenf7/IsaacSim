@@ -31,9 +31,21 @@ Every extension MUST include:
    - Must contain `CHANGELOG.md` file
    - Must contain `README.md` file
    - Must contain `index.rst` file
+   - Must contain `api.rst` file if the extension has a `bindings/` folder OR contains Python implementation files in `python/impl/` (other than `extension.py` and `__init__.py`)
    - May contain additional `.rst` files
 
 4. **premake5.lua** file in the root of the extension
+
+## Extension Configuration
+
+### extension.toml requirements
+- All extensions must have `config/extension.toml`
+- Extensions containing C++ files (in `bindings/`, `nodes/`, `plugins/`, or `src/` directories) without a `[[native.plugin]]` entry MUST set `writeTarget.platform = true` in the `[package]` section
+  - Example:
+    ```toml
+    [package]
+    writeTarget.platform = true
+    ```
 
 ## Optional Folders
 
@@ -65,8 +77,13 @@ If present:
 - Must NOT contain header (`.h`) files directly in the nodes folder
 - Must NOT contain any `.cpp` files that do not correspond to an `.ogn` file (every `.cpp` file must have a matching `.ogn` file)
 
+#### OGN File Requirements
 - The category names defined in `CategoryDefinition.json` (e.g., "isaacReplicatorWriters") MUST match the "categories" tag in all associated `.ogn` files in that extension
-- Every `.ogn` file MUST have a "categories" tag - omitting this tag is an error
+- Every `.ogn` file MUST have the following required fields:
+  - `version`: Version number of the node
+  - `description`: Description of what the node does
+  - `categories`: Category tag(s) - omitting this tag is an error
+- If an `.ogn` file has `categoryDefinitions`, it MUST also have `icon`, and vice versa (both must be present together or both absent)
 
 
 ### plugins/ (Optional)
