@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2025-10-30
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [1.3.1] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency
