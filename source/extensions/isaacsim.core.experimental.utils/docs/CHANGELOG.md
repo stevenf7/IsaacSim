@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0] - 2025-10-29
+### Added
+- Add stage utils functions to:
+  - Check whether the stage is loading
+  - Generate a string representation of the stage
+  - Move a prim to a different location on the stage hierarchy
+  - Delete a prim from the stage
+
 ## [0.4.0] - 2025-10-22
 ### Added
 - Add prim utils functions to:
