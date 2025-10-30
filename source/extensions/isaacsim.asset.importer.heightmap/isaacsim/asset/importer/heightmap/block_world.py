@@ -19,12 +19,11 @@ import os
 import weakref
 
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.ext
 import omni.kit.commands
 import omni.ui
 import omni.ui as ui
-from isaacsim.core.api import PhysicsContext
-from isaacsim.core.utils.stage import set_stage_up_axis
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import btn_builder, float_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
@@ -129,9 +128,8 @@ class Extension(omni.ext.IExt):
         # Set up ground plane and physics scene
         self._stage = omni.usd.get_context().get_stage()
         UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
-        set_stage_up_axis("z")
+        stage_utils.set_stage_up_axis("Z")
         add_ground_plane(self._stage, "/World/groundPlane", "Z", kGroundPlaneSize, kGroundPlanePosition, Gf.Vec3f(1.0))
-        PhysicsContext(physics_dt=1.0 / 60.0)
 
         # Set up distant light
         light_prim = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
