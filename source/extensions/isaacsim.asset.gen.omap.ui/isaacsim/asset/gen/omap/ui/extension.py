@@ -17,6 +17,7 @@ import gc
 import os
 
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
 import omni.ext
 import omni.kit.app
@@ -24,7 +25,6 @@ import omni.kit.usd.layers
 import omni.ui as ui
 from isaacsim.asset.gen.omap.bindings import _omap
 from isaacsim.asset.gen.omap.utils import compute_coordinates, generate_image, update_location
-from isaacsim.core.utils.stage import get_stage_units
 from isaacsim.gui.components.element_wrappers import ScrollingWindow
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
@@ -130,7 +130,7 @@ class OccupancyMapWindow(MenuHelperWindow):
 
         self.units = 0.05  # default assumes 5cm in meters
         if omni.usd.get_context().get_stage():
-            self.units = 0.05 / get_stage_units()
+            self.units = 0.05 / stage_utils.get_stage_units()[0]
 
         self.build_ui()
 
@@ -486,7 +486,7 @@ class OccupancyMapWindow(MenuHelperWindow):
         image_details_text += f"\nCoordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
         image_details_text += f"\nImage size in pixels: {int(size[0] / scale)}, {int(size[1] / scale)}"
 
-        scale_to_meters = 1.0 / get_stage_units()
+        scale_to_meters = 1.0 / stage_utils.get_stage_units()[0]
 
         stage = omni.usd.get_context().get_stage()
         root = stage.GetRootLayer()
