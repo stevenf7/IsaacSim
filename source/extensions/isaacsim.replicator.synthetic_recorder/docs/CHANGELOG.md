@@ -1,4 +1,12 @@
 # Changelog
+## [2.3.0] - 2025-10-28
+### Changed
+- Separated recorder and UI configuration
+- Refactored to use explicit `backend_type` and `backend_params` for custom backend support
+- Added file validation to tests and reorganized them by specific test cases for clarity and speed
+- Renamed test files (`test_recorder_outputs.py`, `test_recorder_timeline.py`)
+- Added `colorize_depth` parameter for depth visualization
+
 ## [2.2.18] - 2025-10-14
 ### Changed
 - decreased number of captured frames for tests

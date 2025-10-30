@@ -35,12 +35,15 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-        pass
+        await omni.kit.app.get_app().next_update_async()
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
 
     async def setup_stage_with_semantics(self):
         await omni.usd.get_context().new_stage_async()
-        rep.create.cube(semantics=[("class", "cube")])
-        rep.create.sphere(position=(1, 1, 0), semantics=[("class", "sphere")])
+        rep.functional.create.cube(semantics=[("class", "cube")])
+        rep.functional.create.sphere(position=(1, 1, 0), semantics=[("class", "sphere")])
 
     async def run_recorder_capture(self, num_frames, play_timeline, control_timeline):
         test_name = f"_out_num_frames_{num_frames}_play_timeline_{play_timeline}_control_timeline_{control_timeline}"
@@ -50,7 +53,7 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
         recorder.rt_subframes = 0
         recorder.verbose = True
         recorder.writer_name = "BasicWriter"
-        recorder.basic_writer_params = {
+        recorder.writer_params = {
             "rgb": True,
             "bounding_box_2d_tight": False,
             "bounding_box_2d_loose": False,
@@ -62,6 +65,7 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
             "colorize_instance_segmentation": False,
             "distance_to_camera": False,
             "distance_to_image_plane": False,
+            "colorize_depth": False,
             "bounding_box_3d": False,
             "occlusion": False,
             "normals": False,
@@ -77,10 +81,10 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
         recorder.num_frames = num_frames
         recorder.control_timeline = control_timeline
 
-        # Location to save the recording folder
-        recorder.out_working_dir = os.getcwd()
-        recorder.out_dir = test_name
-        out_dir_path = os.path.join(recorder.out_working_dir, recorder.out_dir)
+        # Configure backend
+        out_dir_path = os.path.join(os.getcwd(), test_name)
+        recorder.backend_type = "DiskBackend"
+        recorder.backend_params = {"output_dir": out_dir_path}
 
         # Clear the files in the output directory, keep the directory
         if os.path.exists(out_dir_path):
@@ -142,7 +146,6 @@ class TestRecorderData(omni.kit.test.AsyncTestCase):
         await self.setup_stage_with_semantics()
         await self.run_recorder_capture(num_frames=5, play_timeline=False, control_timeline=True)
 
-    # ISIM-2602 - orchestrator.preview call causes an extra frame to be written if not called from UI
     async def test_recorder_data_play_timeline_true_control_timeline_false(self):
         await self.setup_stage_with_semantics()
         await self.run_recorder_capture(num_frames=5, play_timeline=True, control_timeline=False)
