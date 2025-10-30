@@ -1,5 +1,5 @@
 [package]
-version = "1.3.1"
+version = "1.4.0"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -26,6 +26,7 @@ writeTarget.kit = true
 "omni.kit.window.property" = {}
 "omni.physics" = {}
 "omni.physics.physx" = {}
+"omni.physics.stageupdate" = {}
 "omni.physx" = {}
 
 [[python.module]]
@@ -37,11 +38,9 @@ name = "isaacsim.gui.components.tests"
 [[test]]
 
 dependencies = [
-    "isaacsim.core.api",
-    "isaacsim.core.utils",
+    "isaacsim.core.experimental.utils",
     "isaacsim.storage.native",
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
-    "omni.isaac.ml_archive",
     "omni.kit.viewport.window",
 ]
 args = [
