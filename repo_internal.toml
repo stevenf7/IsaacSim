@@ -1,5 +1,19 @@
 # Repo.toml files for internal tools
 
+########################################################################################################################
+# Code coverage settings
+########################################################################################################################
+
+[repo_cxx_coverage]
+# This is required for the C++ coverage pipeline to work.
+# If OMNI_CI_ENABLE_CXX_COVERAGE is set to true in .gitlab-ci.yml.
+enabled = true
+
+# This will cause cxx_coverage to launch into docker for its subcommands on gitlab, like it does
+# locally (by default it assumes you're already running your job in the correct container image).
+use_linbuild_on_gitlab = false
+
+
 
 ########################################################################################################################
 # Documentation building
@@ -348,11 +362,15 @@ folder_output = "${root}/_signedpackages"
 [repo_ci.jobs.build]
 script = "${config_root}/tools/ci/build_isaac.py"
 
+[repo_ci.jobs.build-coverage]
+script = "${config_root}/tools/ci/build_isaac_coverage.py"
+
 [repo_ci.jobs.test]
 script = "${config_root}/tools/ci/test_isaac.py"
 
 [repo_ci.jobs.standalone_report]
 script = "${config_root}/tools/ci/standalone_report.py"
+
 
 [repo_ci.jobs.test_isaaclab]
 script = "${config_root}/tools/ci/test_isaac_lab.py"

@@ -170,6 +170,9 @@ variables:
 # overrides for compliance/osec job
 osec:sonarqube:
     stage: security
+    needs:
+      - job: gather-coverage
+        artifacts: true
     allow_failure:
       exit_codes:
         - 2
@@ -177,7 +180,7 @@ osec:sonarqube:
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
-      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=1000 -Dsonar.branch.name=$CI_COMMIT_REF_NAME"
+      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=1000 -Dsonar.branch.name=$CI_COMMIT_REF_NAME -Dsonar.python.coverage.reportPaths=coverage.xml"
       SONAR_EXCLUSIONS:  "**/_build/**,**/_repo/**,**/_compiler/**,\
         \
         **/*.js,**/*.ts,**/*.css,**/*.html,\
@@ -188,7 +191,7 @@ osec:sonarqube:
         \
         "
     before_script:
-      - set -eu && ./repo.sh build --generate --config release --no-licensing --/repo_build/fetch/after_pull_commands=''
+      - set -eu && ./repo.sh build --generate --config release --no-licensing --skip-compiler-version-check --/repo_build/fetch/after_pull_commands='' --/repo_build/post_build/commands='' --/repo_build/pre_build/commands=''
       # OSEC-1623 (originally OSEC-1511) patch the compile_commands.json sonarqube will use for analysis to include our behaviour changing "SONAR" ifdef
       # - sed -i -e 's/"g++ /"g++ -DNV_SONAR_BUILD=1 /' $SONAR_CFAMILY_COMPILE_COMMANDS
     rules:
@@ -196,7 +199,7 @@ osec:sonarqube:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
       - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-        when: never
+        allow_failure: true
       # - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
@@ -351,8 +354,13 @@ build-linux-x86_64-release:
       # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
-      - ./repo.sh ci build -c release
-
+      - ./repo.sh ci build -c release 
+# ==============================================================================================================
+.build-linux-x86_64-c++-coverage:
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+    # Override to remove yum install bsdtar
+    before_script:
+      - set -eu
 # ==============================================================================================================
 build-linux-x86_64-debug:
     extends:
@@ -455,11 +463,18 @@ build-windows-x86_64-debug:
           - _repo/repo.log
           - _repo/repolog*.txt
           - _build/**/_testoutput/
+          - .coverage
+          - .coveragemergerc
+          - coverage.xml
+          - _testoutput
         reports:
             junit:
               - _build/**/debug/*.xml
               - _build/**/release/*.xml
               - _build/**/_testoutput/results.xml
+            coverage_report:
+              coverage_format: cobertura
+              path: coverage.xml
 
 # ==============================================================================================================
 .test-common:
@@ -663,16 +678,6 @@ test-linux-x86_64-pythontests-other:
     script:
       - ./repo.sh ci test -- -s pythontests -b other
 
-test-linux-x86_64-selectortests:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s selectortests
-
 test-linux-x86_64-warmuptests:
     extends:
       - .test-common
@@ -843,14 +848,6 @@ test-windows-x86_64-pythontests-other:
     script:
       - ./repo.bat ci test -- -s pythontests -b other
 
-test-windows-x86_64-selectortests:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s selectortests
-
 test-windows-x86_64-warmuptests:
     extends:
       - .test-common
@@ -922,6 +919,60 @@ test-windows-x86_64-nativepythontests-testing:
       - .kit-runner-test-windows-x86_64-1x-gpu
     script:
       - ./repo.bat ci test -- -s nativepythontests -b testing
+
+
+
+gather-coverage:
+    extends:
+      - .test-common
+      - .ipp_lnx_x86_64_cpu_small
+    timeout: 2h
+    needs:
+      - job: test-linux-x86_64-startuptests
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-deprecated
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-asset
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-core
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-examples_tests
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-replicator
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-ros
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-sensors
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-utils_gui
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-robot
+        artifacts: true
+      - job: test-linux-x86_64-pythontests-other
+        artifacts: true
+      - job: test-linux-x86_64-warmuptests
+        artifacts: true
+      - job: test-linux-x86_64-postinstalltests
+        artifacts: true
+      # - job: test-linux-x86_64-nativepythontests-api
+      #   artifacts: true
+      # - job: test-linux-x86_64-nativepythontests-replicator
+      #   artifacts: true
+      # - job: test-linux-x86_64-nativepythontests-testing
+      #   artifacts: true
+
+
+    script:
+      - ./build.sh -r --fetch-only --no-docker
+      - PACKAGE_FOLDER=$(find _build/packages -iname '_testoutput')
+      - ./tools/packman/python.sh -m pip install -r _repo/deps/repo_test/requirements.txt
+      - ./tools/packman/python.sh tools/ci/coverage/read_pycov_paths.py "${PACKAGE_FOLDER}/**/*.pycov"
+      - ./tools/packman/python.sh -m coverage combine --rcfile=.coveragemergerc --keep ${PACKAGE_FOLDER}/**/*.pycov
+      - ./tools/packman/python.sh -m coverage xml --rcfile=.coveragemergerc --ignore-errors
+      - ./tools/packman/python.sh -m coverage report --rcfile=.coveragemergerc --format=text 2>/dev/null | grep TOTAL
+    coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+
+
 
 # ==============================================================================================================
 # external-tests

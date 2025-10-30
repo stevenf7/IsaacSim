@@ -48,6 +48,7 @@ stdoutFailPatterns.exclude = [
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLidarPointCloud: [/TestGraph] no prim path found for the lidar*",
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLightBeam: [/TestGraph] Invalid Light Beam Sensor prim*",
  "*[Error] [isaacsim.sensors.physx.impl.commands] Must specify curtain length if num rays > 1*",
+ '*The NumPy module was reloaded*',
 ]
 
 dependencies = [

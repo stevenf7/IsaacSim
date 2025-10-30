@@ -82,6 +82,7 @@ dependencies = [
 ]
 stdoutFailPatterns.exclude = [
     "*[Error] [isaacsim.asset.importer.urdf] Failed to resolve mesh 'does_not/exist.obj'*",
+    '*The NumPy module was reloaded*',
 ]
 
 args = [

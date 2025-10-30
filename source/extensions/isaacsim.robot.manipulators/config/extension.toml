@@ -35,6 +35,7 @@ dependencies = [
 stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_robot_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
+    '*The NumPy module was reloaded*',
 ]
 
 args = [
@@ -82,6 +83,7 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
+
 [[test]]
 name = "startup"
 dependencies = [
@@ -89,4 +91,8 @@ dependencies = [
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
 ]

@@ -173,3 +173,11 @@ generated_rsync_package.sh
 
 # Generated ETM lists
 source/apps/isaacsim.etm.list.isaacsim_app_template.*
+
+# Coverage temp file
+.coverage
+# Coverage related files
+.coverage
+.coveragerc
+.coveragemergerc
+coverage.xml

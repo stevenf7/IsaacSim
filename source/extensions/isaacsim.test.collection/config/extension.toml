@@ -61,7 +61,7 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physx.plugin] Generic Sensor does not exist*',
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',
     '*[Error] [asyncio] Task exception was never retrieved*',
-
+    '*The NumPy module was reloaded*',
 ]
 
 

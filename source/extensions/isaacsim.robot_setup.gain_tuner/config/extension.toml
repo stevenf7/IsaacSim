@@ -24,3 +24,9 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.robot_setup.gain_tuner"
+
+[[test]]
+
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
+]

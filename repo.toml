@@ -447,6 +447,7 @@ path = "${test_root}/tests"
 tests_per_process = 1
 stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 
+
 #-----------------------------------------------------------------------------------------------------------------------
 # Test Suite: 	Startup Tests
 # Description: 	Just run and exit big app configuration for both smoke testing and compiling shaders.
@@ -463,6 +464,8 @@ args = [
   "--portable",
   "--/log/flushStandardStreamOutput=1",                    # Prevents mixed up piped stdout
   "--reset-user",
+  "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/exts/omni.kit.test/pyCoverageEnabled=True",
 ]
 exclude = []
 include = ["tests-startup*${shell_ext}"]
@@ -490,11 +493,24 @@ timeout = 1500
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 
+python_source_path = "${root}/source"
+
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "pythontests",
+]
+
+
 [[repo_test.suites.pythontests.group]]
 args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/exts/omni.kit.test/pyCoverageEnabled=True",
 ]
 exclude = [
   "tests-startup*${shell_ext}",
@@ -517,35 +533,43 @@ timeout = 3600
 [[repo_test.suites.pythontests.bucket]]
 include = ["tests-omni.isaac*${shell_ext}"]
 name = "deprecated"
+
 [[repo_test.suites.pythontests.bucket]]
 include = ["tests-isaacsim.asset*${shell_ext}"]
 name = "asset"
+
 [[repo_test.suites.pythontests.bucket]]
 include = ["tests-isaacsim.core*${shell_ext}"]
 name = "core"
+
 [[repo_test.suites.pythontests.bucket]]
 include = [
   "tests-isaacsim.examples*${shell_ext}",
   "tests-isaacsim.test*${shell_ext}",
 ]
 name = "examples_tests"
+
 [[repo_test.suites.pythontests.bucket]]
 include = ["tests-isaacsim.replicator*${shell_ext}"]
 name = "replicator"
+
 [[repo_test.suites.pythontests.bucket]]
 include = [
   "tests-isaacsim.ros2*${shell_ext}",
 ]
 name = "ros"
+
 [[repo_test.suites.pythontests.bucket]]
 include = ["tests-isaacsim.sensors*${shell_ext}"]
 name = "sensors"
+
 [[repo_test.suites.pythontests.bucket]]
 include = [
   "tests-isaacsim.gui*${shell_ext}",
   "tests-isaacsim.utils*${shell_ext}",
 ]
 name = "utils_gui"
+
 [[repo_test.suites.pythontests.bucket]]
 include = [
   "tests-isaacsim.robot_motion*${shell_ext}",
@@ -553,6 +577,7 @@ include = [
   "tests-isaacsim.robot*${shell_ext}",
 ]
 name = "robot"
+
 [[repo_test.suites.pythontests.bucket]]
 include = ["*"]
 name = "other"
@@ -575,6 +600,7 @@ args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/exts/omni.kit.test/pyCoverageEnabled=True",
 ]
 exclude = []
 include = [
@@ -617,9 +643,11 @@ timeout = 960
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["tests-nativepython-replicator*${shell_ext}"]
 name = "replicator"
+
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["tests-nativepython-testing*${shell_ext}"]
 name = "testing"
+
 [[repo_test.suites.nativepythontests.bucket]]
 include = ["*"]
 name = "api"
@@ -642,6 +670,7 @@ args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/exts/omni.kit.test/pyCoverageEnabled=True",
 ]
 exclude = []
 include = [
@@ -875,6 +904,7 @@ extra_args = [
   "--quiet",
   "--warnings-as-errors=-*"
 ]
+
 
 
 ########################################################################################################################
