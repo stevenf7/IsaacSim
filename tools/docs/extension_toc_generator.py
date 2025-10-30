@@ -31,9 +31,9 @@ def _load_extension_config(ext_path: str, error_as_warn: bool) -> Mapping[str, A
             config = tomli.load(file)
         except Exception as e:
             if error_as_warn:
-                omni.repo.man.print_log(f"  |-- Wrong extension.toml format: {e}", logging.WARN)
+                omni.repo.man.print_log(f"  |-- Wrong extension.toml format in file {file.name}: {e}", logging.WARN)
             else:
-                omni.repo.man.print_log(f"  |-- Wrong extension.toml format: {e}", logging.ERROR)
+                omni.repo.man.print_log(f"  |-- Wrong extension.toml format in file {file.name}: {e}", logging.ERROR)
                 sys.exit(1)
             return {}
     return config

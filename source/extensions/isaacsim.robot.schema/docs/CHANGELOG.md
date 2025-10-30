@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.6.1] - 2025-10-30
+### Changed
+- Fixed issue in `__init__.py` with running with `coverage.py`
+
 ## [3.6.0] - 2025-07-10
 ### Added
 - Added `robot_type`, `license`, `version`, `source`, and `changelog` to the Isaac Robot API.

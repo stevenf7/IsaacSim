@@ -15,6 +15,7 @@
 from enum import Enum
 
 import pxr
+from pxr import Sdf, Usd
 
 
 class Classes(Enum):

@@ -76,6 +76,10 @@ args = [
     "--/app/window/scaleToMonitor=false",
 ]
 
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "startup"
 dependencies = [
@@ -83,4 +87,8 @@ dependencies = [
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
 ]

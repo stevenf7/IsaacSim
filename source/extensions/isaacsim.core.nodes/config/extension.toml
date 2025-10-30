@@ -101,7 +101,8 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.physx.tensors.plugin] Pattern '/panda' did not match any rigid bodies*",
     "*[Error] [omni.physx.tensors.plugin] Provided pattern list did not match any articulations*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacJointNameResolver: [/TestGraph] OmniGraph Error: no articulation root prim found*",
-    "*Invalid RationalTime - zero denominator*"
+    "*Invalid RationalTime - zero denominator*",
+    '*The NumPy module was reloaded*',
 ]
 
 [[test]]
@@ -111,4 +112,8 @@ dependencies = [
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
