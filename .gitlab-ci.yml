@@ -347,7 +347,7 @@ build-linux-x86_64-release:
       - .build-common
       - .ipp_lnx_x86_64_cpu_large
       - .osec:vault:v3:prod_token_job
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     before_script:
       - set -eu
       - apt-get install -y libarchive-tools
@@ -357,7 +357,7 @@ build-linux-x86_64-release:
       - ./repo.sh ci build -c release 
 # ==============================================================================================================
 .build-linux-x86_64-c++-coverage:
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     # Override to remove yum install bsdtar
     before_script:
       - set -eu
@@ -367,7 +367,7 @@ build-linux-x86_64-debug:
       - .build-common
       - .ipp_lnx_x86_64_cpu_large
       - .osec:vault:v3:prod_token_job
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     before_script:
       - set -eu
       - apt-get install -y libarchive-tools
@@ -382,7 +382,7 @@ build-linux-aarch64-release:
     - .build-common
     - .runner-build-linux-aarch64
     - .osec:vault:v3:prod_token_job
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.11-1cf1ab9a
   variables:
     OMNI_REPO_BUILD_NO_DOCKER: "1"
   before_script:
@@ -406,7 +406,7 @@ build-linux-aarch64-debug:
     - .build-common
     - .runner-build-linux-aarch64
     - .osec:vault:v3:prod_token_job
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.6-97c67f00
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.11-1cf1ab9a
   variables:
     OMNI_REPO_BUILD_NO_DOCKER: "1"
   before_script:
@@ -1229,7 +1229,7 @@ verify-publish-extensions:
     extends:
       - .deploy-common
       - .ipp_lnx_x86_64_cpu_small
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     script:
       - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package --verify
@@ -1280,7 +1280,7 @@ publish-extensions:
     extends:
       - .deploy-common
       - .ipp_lnx_x86_64_cpu_small
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     timeout: 6 hour
     script:
       - ./repo.sh build --fetch-only -r
@@ -1976,7 +1976,7 @@ publish-to-packman:
   extends:
     - .deploy-common
     - .ipp_lnx_x86_64_cpu_small
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.6-97c67f00
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
   timeout: 1 hour
   script:
     - ./repo.sh build --fetch-only -r
