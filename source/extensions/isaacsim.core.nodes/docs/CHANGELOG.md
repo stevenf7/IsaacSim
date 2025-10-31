@@ -1,4 +1,7 @@
 # Changelog
+## [4.0.3] - 2025-10-31
+### Changed
+- update deprecated python unittest methods
 
 ## [4.0.2] - 2025-10-27
 ### Changed
