@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.2] - 2025-10-31
+### Changed
+- Update deprecated numpy in1d to np.isin
+
 ## [3.2.1] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

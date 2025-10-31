@@ -1494,7 +1494,7 @@ class Extension(omni.ext.IExt):
 
         default_q_map = parsed_file["default_joint_positions"]
 
-        in_mask = np.in1d(cspace, dof_names)
+        in_mask = np.isin(cspace, dof_names)
         if not np.all(in_mask):
             carb.log_warn(
                 "Some joints listed in the cspace of the provided robot_description YAML file are not present in the robot Articulation:"
@@ -1552,7 +1552,7 @@ class Extension(omni.ext.IExt):
 
         file_jerk_limits = parsed_file.get("jerk_limits", None)
 
-        in_mask = np.in1d(cspace, dof_names)
+        in_mask = np.isin(cspace, dof_names)
         if not np.all(in_mask):
             carb.log_warn(
                 "Some joints listed in the cspace of the provided robot_description YAML file are not present in the robot Articulation:"
