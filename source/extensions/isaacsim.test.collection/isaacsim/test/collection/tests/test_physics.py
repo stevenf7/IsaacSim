@@ -52,7 +52,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell due to gravity
         position = np.array(omni.usd.get_world_transform_matrix(cube_prim).ExtractTranslation())
-        self.assertAlmostEquals(position[2], 20.013252, 0)
+        self.assertAlmostEqual(position[2], 20.013252, 0)
         carb.settings.get_settings().set_int("physics/updateToUsd", False)
         omni.timeline.get_timeline_interface().stop()
         await omni.kit.app.get_app().next_update_async()
@@ -60,7 +60,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         position = np.array(omni.usd.get_world_transform_matrix(cube_prim).ExtractTranslation())
-        self.assertAlmostEquals(position[2], 25.0, 0)
+        self.assertAlmostEqual(position[2], 25.0, 0)
         carb.settings.get_settings().set_int("physics/updateToUsd", True)
         pass
 
