@@ -1,4 +1,7 @@
 # Changelog
+## [2.3.2] - 2025-10-31
+### Changed
+- fix invalid escape sequences
 
 ## [2.3.1] - 2025-10-27
 ### Changed

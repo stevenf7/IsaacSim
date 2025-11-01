@@ -64,7 +64,7 @@ def main(args):
         Returns:
             str: Base name (or full name if no match)
         """
-        match = re.match("(.*)_\d+", prim.GetName())
+        match = re.match(r"(.*)_\d+", prim.GetName())
         if prim.GetCustomData():
             return prim.GetCustomData()["tile_name"]
         if match is None:

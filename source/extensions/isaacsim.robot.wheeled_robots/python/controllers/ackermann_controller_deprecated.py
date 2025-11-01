@@ -26,12 +26,12 @@ class AckermannController(BaseController):
 
         .. math::
 
-            \theta_R = \\arctan[frac{1}{R + t}(b)] \n
-            \theta_L = \\arctan[frac{1}{R - t}(b)] \n
+            \\theta_R = \\arctan[frac{1}{R + t}(b)] \n
+            \\theta_L = \\arctan[frac{1}{R - t}(b)] \n
 
-            \pi_wRV = \\frac{1}{r}(s)
+            \\pi_wRV = \\frac{1}{r}(s)
 
-    where :math:`\theta` is the desired angle, `\pi` is the desired wheel rotation velocity, :math:`R` is the turning radius, :math:`b` is the distance between rear and front axles, :math:`t` is the wheel turning distance, :math:`r` is the wheel turning radius, and :math:`s` is the speed of the robot.
+    where :math:`\\theta` is the desired angle, `\\pi` is the desired wheel rotation velocity, :math:`R` is the turning radius, :math:`b` is the distance between rear and front axles, :math:`t` is the wheel turning distance, :math:`r` is the wheel turning radius, and :math:`s` is the speed of the robot.
 
 
     Args:
