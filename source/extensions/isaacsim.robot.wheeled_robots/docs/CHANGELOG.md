@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.28] - 2025-10-31
+### Changed
+- fix invalid escape sequences
+
 ## [4.0.27] - 2025-10-31
 ### Changed
 - update deprecated python unittest methods
