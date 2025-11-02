@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.0.0] - 2025-10-31
+### Changed
+- Remove omni.pip.cloud from dependencies, users should explicitly enable if needed
+- remove unused tornado and pint packages
+- remove markupsafe from dependencies, its in omni.kit.pip_archive
+
 ## [3.0.0] - 2025-08-25
 ### Changed
 - Removed unused python packages: numpy-quaternion, selenium, construct, nvsmi, plotly

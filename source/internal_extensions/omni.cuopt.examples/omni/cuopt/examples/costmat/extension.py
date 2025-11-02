@@ -14,8 +14,6 @@ import weakref
 import isaacsim.util.debug_draw as debug_draw
 import omni.ext
 import omni.ui as ui
-import requests
-import requests as req
 from isaacsim.gui.components.ui_utils import (
     btn_builder,
     float_builder,

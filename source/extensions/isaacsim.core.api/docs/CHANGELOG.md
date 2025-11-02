@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.11.0] - 2025-10-31
+### Changed
+- Remove unused omni.pip.cloud from dependencies
+
 ## [4.10.0] - 2025-10-27
 ### Changed
 - Replace import statements with the deprecation function when importing PyTorch

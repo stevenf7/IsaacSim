@@ -3,7 +3,7 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "nvidia_lula_no_cuda==0.10.1"            # SWIPAT filed under: N/A (NVIDIA-authored)
+    "nvidia_lula_no_cuda==0.10.1"            # SWIPAT filed under: N/A (NVIDIA-authored) # Used by: (none found)
 ]
 target = "../_build/target-deps/isaac_lula_prebundle"
 platforms = ["*-x86_64", "*aarch64"]
