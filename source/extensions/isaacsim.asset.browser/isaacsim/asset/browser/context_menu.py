@@ -14,12 +14,13 @@
 # limitations under the License.
 
 import os
+import urllib.error
+import urllib.request
 from urllib.parse import unquote
 
 import carb
 import carb.settings
 import omni.ui as ui
-import requests
 import toml
 from omni.kit.browser.folder.core import FileDetailItem
 from omni.kit.notification_manager import post_notification
@@ -161,11 +162,13 @@ class ContextMenu(ui.Menu):
         download_path = download_folder + filename
 
         try:
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()
+            with urllib.request.urlopen(url) as response:
                 with open(download_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=8192):
+                    while True:
+                        chunk = response.read(8192)
+                        if not chunk:
+                            break
                         f.write(chunk)
             post_notification(f"Downloaded {filename} to {download_path}")
-        except requests.exceptions.RequestException as e:
+        except (urllib.error.URLError, urllib.error.HTTPError) as e:
             post_notification(f"Failed to download {filename}: {e}")

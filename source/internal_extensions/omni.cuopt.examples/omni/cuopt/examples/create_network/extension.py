@@ -10,15 +10,12 @@
 import gc
 import weakref
 
-import isaacsim.util.debug_draw as debug_draw
 import omni.ext
 import omni.ui as ui
-import requests as req
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
 from omni.cuopt.visualization.generate_waypoint_graph import NetworkSimpleViz
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from pxr import Gf
-from scipy.spatial.distance import pdist, squareform
 
 EXTENSION_NAME = "Create Network"
 

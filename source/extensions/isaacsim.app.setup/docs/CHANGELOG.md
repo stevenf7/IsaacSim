@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.2] - 2025-10-31
+### Changed
+- Remove unused omni.pip.cloud from test dependencies
+- Remove extra omni.rtx.settings.core from test dependencies
+
 ## [1.6.1] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

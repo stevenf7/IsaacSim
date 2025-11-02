@@ -24,31 +24,25 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import jinja2
         import kiwisolver
         import llvmlite
-        import markupsafe
         import matplotlib
         import nest_asyncio
         import numba
         import osqp
         import packaging
-        import pint
         import pyparsing
         import pyperclip
         import qdldl
-        import tornado
 
         self.assertIsNotNone(numba)
         self.assertIsNotNone(llvmlite)
         self.assertIsNotNone(nest_asyncio)
         self.assertIsNotNone(jinja2)
-        self.assertIsNotNone(markupsafe)
         self.assertIsNotNone(matplotlib)
         self.assertIsNotNone(pyparsing)
         self.assertIsNotNone(cycler)
         self.assertIsNotNone(kiwisolver)
-        self.assertIsNotNone(pint)
         self.assertIsNotNone(packaging)
         self.assertIsNotNone(gunicorn)
         self.assertIsNotNone(osqp)
         self.assertIsNotNone(qdldl)
-        self.assertIsNotNone(tornado)
         self.assertIsNotNone(pyperclip)

@@ -12,7 +12,6 @@ import weakref
 
 import omni.ext
 import omni.ui as ui
-import requests
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, str_builder
 from omni.cuopt.service.common import show_vehicle_routes, test_connection_managed_service, test_connection_microservice
 from omni.cuopt.service.cuopt_data_proc import preprocess_cuopt_data

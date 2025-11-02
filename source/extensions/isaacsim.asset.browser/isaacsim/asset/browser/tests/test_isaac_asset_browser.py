@@ -47,7 +47,6 @@ class TestAssetBrowser(OmniUiTest):
     async def tearDown(self):
         await super().tearDown()
 
-    @unittest.expectedFailure
     async def test_browser_ui(self):
         try:
             carb.windowing.acquire_windowing_interface()

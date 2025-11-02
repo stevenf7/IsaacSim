@@ -15,12 +15,13 @@
 
 import asyncio
 import os
+import urllib.error
+import urllib.request
 from typing import List
 
 import omni.kit.app
 import omni.ui as ui
 import omni.usd
-import requests
 from isaacsim.core.utils.stage import get_next_free_path, open_stage
 from omni.kit.browser.folder.core import BrowserPropertyDelegate, FileDetailItem
 from omni.kit.notification_manager import post_notification
@@ -47,10 +48,10 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
             except FileNotFoundError:
                 try:
                     # remote files
-                    response = requests.head(url)
-                    if response.status_code == 200:
+                    request = urllib.request.Request(url, method="HEAD")
+                    with urllib.request.urlopen(request) as response:
                         file_size_raw = int(response.headers.get("content-length", 0))
-                except requests.exceptions.RequestException as e:
+                except (urllib.error.URLError, urllib.error.HTTPError) as e:
                     print(e)
             except Exception as e:
                 print(e)
@@ -214,11 +215,13 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
         download_path = download_folder + filename
 
         try:
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()
+            with urllib.request.urlopen(url) as response:
                 with open(download_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=8192):
+                    while True:
+                        chunk = response.read(8192)
+                        if not chunk:
+                            break
                         f.write(chunk)
             post_notification(f"Downloaded {filename} to {download_path}")
-        except requests.exceptions.RequestException as e:
+        except (urllib.error.URLError, urllib.error.HTTPError) as e:
             post_notification(f"Failed to download {filename}: {e}")

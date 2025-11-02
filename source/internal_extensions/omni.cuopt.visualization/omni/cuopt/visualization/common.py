@@ -10,7 +10,6 @@
 import json
 import math
 
-import omni.ext
 from isaacsim.core.utils.bounds import create_bbox_cache
 from pxr import Gf, Usd, UsdGeom
 

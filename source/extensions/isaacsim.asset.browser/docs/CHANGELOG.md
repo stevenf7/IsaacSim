@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2025-10-31
+### Changed
+- Remove omni.pip.cloud from extension.toml
+- remove requests dependency, use urllib instead
+
 ## [1.3.23] - 2025-10-10
 ### Changed
 - Update assets path to production
