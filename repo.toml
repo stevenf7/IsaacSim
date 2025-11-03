@@ -358,6 +358,18 @@ strip_package_infos = true
 windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
 manylinux_platform = "2_35"
 
+# Capture the intermediate gcno files
+[repo_package.packages.isaac-sim-standalone-coverage]
+append_config = true
+omniverse_flow_version_scheme = true
+package_per_config = true
+replace_authors_in_kit_extensions = true
+root = "_build"
+strip_package_infos = true
+windows_max_path_length = 220            #TODO: changed from default of 180 to make builds pass
+manylinux_platform = "2_35"
+
+
 # to generate docs package for isaac sim
 [repo_package.packages.docs]
 omniverse_flow_version_scheme = true

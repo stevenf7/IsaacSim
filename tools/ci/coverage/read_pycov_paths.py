@@ -84,14 +84,56 @@ def find_pycov_files(pattern: str) -> List[Path]:
     return sorted(pycov_files)
 
 
-def collect_all_file_paths(pycov_files: List[Path]) -> Set[str]:
+def filter_file_paths(file_paths: List[str], exclude_prefixes: List[str]) -> List[str]:
+    """Filter out file paths that start with specified prefixes.
+    
+    Args:
+        file_paths: List of file paths to filter.
+        exclude_prefixes: List of prefix strings to exclude from file paths.
+        
+    Returns:
+        Filtered list of file paths with excluded prefixes removed.
+        
+    Example:
+    
+    .. code-block:: python
+    
+        >>> paths = ["/path/extscache/file.py", "/path/normal/file.py"]
+        >>> filtered = filter_file_paths(paths, ["extscache"])
+        >>> len(filtered)
+        1
+    """
+    if not exclude_prefixes:
+        return file_paths
+    
+    filtered_paths = []
+    excluded_count = 0
+    
+    for file_path in file_paths:
+        should_exclude = False
+        for prefix in exclude_prefixes:
+            if file_path.startswith(prefix) or f"/{prefix}" in file_path:
+                should_exclude = True
+                excluded_count += 1
+                break
+        
+        if not should_exclude:
+            filtered_paths.append(file_path)
+    
+    if excluded_count > 0:
+        print(f"Filtered out {excluded_count} files matching exclude prefixes: {exclude_prefixes}")
+    
+    return filtered_paths
+
+def collect_all_file_paths(pycov_files: List[Path], exclude_prefixes: List[str] = None) -> Set[str]:
     """Collect all unique file paths from multiple .pycov files.
     
     Args:
         pycov_files: List of Path objects pointing to .pycov files.
+        exclude_prefixes: Optional list of prefix strings to exclude from file paths.
         
     Returns:
-        Set of unique file paths found across all coverage data.
+        Set of unique file paths found across all coverage data, with excluded prefixes filtered out.
         
     Example:
     
@@ -99,7 +141,7 @@ def collect_all_file_paths(pycov_files: List[Path]) -> Set[str]:
     
         >>> from pathlib import Path
         >>> files = [Path("test1.pycov"), Path("test2.pycov")]
-        >>> paths = collect_all_file_paths(files)
+        >>> paths = collect_all_file_paths(files, ["extscache"])
         >>> isinstance(paths, set)
         True
     """
@@ -108,6 +150,11 @@ def collect_all_file_paths(pycov_files: List[Path]) -> Set[str]:
     for pycov_file in pycov_files:
         print(f"Reading: {pycov_file}")
         file_paths = extract_file_paths_from_pycov(pycov_file)
+        
+        # Apply filtering if exclude_prefixes is provided
+        if exclude_prefixes:
+            file_paths = filter_file_paths(file_paths, exclude_prefixes)
+        
         all_paths.update(file_paths)
         print(f"  Found {len(file_paths)} files in this pycov")
     
@@ -119,6 +166,7 @@ def create_path_mappings(package_file_paths: List[str]) -> Dict[str, str]:
     
     Analyzes package file paths from _build/packages/ directories and attempts
     to map them to their corresponding source files using glob patterns.
+    Handles multiple hash folders under _build/packages/.
     
     Args:
         package_file_paths: List of file paths from package build directories.
@@ -138,52 +186,62 @@ def create_path_mappings(package_file_paths: List[str]) -> Dict[str, str]:
     if not package_file_paths:
         return {}
         
-    # Get hash from first package file path
-    sample_file_path = package_file_paths[0]
-    hash_value = sample_file_path.split('_build/packages/')[1].split('/')[0]
-    
     path_mappings = {}
     found_files = 0
     
+    # Group files by hash to handle multiple package folders
+    hash_groups = {}
     for file_path in package_file_paths:
-        mapped_path = file_path.replace(f'_build/packages/{hash_value}/', '')
-        extension_name = mapped_path.split('/')[1]
-        file_name = mapped_path.split('/')[-1]
+        if '_build/packages/' in file_path:
+            hash_value = file_path.split('_build/packages/')[1].split('/')[0]
+            if hash_value not in hash_groups:
+                hash_groups[hash_value] = []
+            hash_groups[hash_value].append(file_path)
+    
+    print(f"Found {len(hash_groups)} package hash folders: {list(hash_groups.keys())}")
+    
+    # Process each hash group separately
+    for hash_value, hash_file_paths in hash_groups.items():
+        print(f"Processing hash folder: {hash_value} ({len(hash_file_paths)} files)")
         
-        # Let's start with a specific glob first
-        specific_glob = glob.glob(f"source/*/{'/'.join(mapped_path.split('/')[1:])}")
-        if len(specific_glob) == 1:
-            build_folder = "/".join(file_path.split('/')[:-1]) + "/"
-            source_folder = "/".join(specific_glob[0].split('/')[:-1]) + "/"
-            path_mappings[build_folder] = source_folder
-            found_files += 1
-        else:
-
-            # Try to find the file using glob pattern
-            glob_pattern = f"source/*/{extension_name}/**/{file_name}"
-            glob_matches = glob.glob(glob_pattern, recursive=True)
+        for file_path in hash_file_paths:
+            mapped_path = file_path.replace(f'_build/packages/{hash_value}/', '')
+            extension_name = mapped_path.split('/')[1]
+            file_name = mapped_path.split('/')[-1]
             
-            if len(glob_matches) == 1:
-                # Extract folders for both sides
+            # Let's start with a specific glob first
+            specific_glob = glob.glob(f"source/*/{'/'.join(mapped_path.split('/')[1:])}")
+            if len(specific_glob) == 1:
                 build_folder = "/".join(file_path.split('/')[:-1]) + "/"
-                source_folder = "/".join(glob_matches[0].split('/')[:-1]) + "/"
+                source_folder = "/".join(specific_glob[0].split('/')[:-1]) + "/"
                 path_mappings[build_folder] = source_folder
                 found_files += 1
-            elif len(glob_matches) > 1:
-                # Try with more specific pattern including parent folder
-                parent_folder = mapped_path.split('/')[-2]
-                specific_pattern = f"source/*/{extension_name}/**/{parent_folder}/{file_name}"
-                specific_matches = glob.glob(specific_pattern, recursive=True)
+            else:
+                # Try to find the file using glob pattern
+                glob_pattern = f"source/*/{extension_name}/**/{file_name}"
+                glob_matches = glob.glob(glob_pattern, recursive=True)
                 
-                if len(specific_matches) == 1:
+                if len(glob_matches) == 1:
+                    # Extract folders for both sides
                     build_folder = "/".join(file_path.split('/')[:-1]) + "/"
-                    source_folder = "/".join(specific_matches[0].split('/')[:-1]) + "/"
+                    source_folder = "/".join(glob_matches[0].split('/')[:-1]) + "/"
                     path_mappings[build_folder] = source_folder
                     found_files += 1
+                elif len(glob_matches) > 1:
+                    # Try with more specific pattern including parent folder
+                    parent_folder = mapped_path.split('/')[-2]
+                    specific_pattern = f"source/*/{extension_name}/**/{parent_folder}/{file_name}"
+                    specific_matches = glob.glob(specific_pattern, recursive=True)
+                    
+                    if len(specific_matches) == 1:
+                        build_folder = "/".join(file_path.split('/')[:-1]) + "/"
+                        source_folder = "/".join(specific_matches[0].split('/')[:-1]) + "/"
+                        path_mappings[build_folder] = source_folder
+                        found_files += 1
+                    else:
+                        print(f"Unable to uniquely map file: {mapped_path} (extension: {extension_name}, file: {file_name}), matches {len(specific_matches)}")
                 else:
-                    print(f"Unable to uniquely map file: {mapped_path} (extension: {extension_name}, file: {file_name}), matches {len(specific_matches)}")
-            else:
-                print(f"Unable to find file: {mapped_path} (extension: {extension_name}, file: {file_name})")
+                    print(f"Unable to find file: {mapped_path} (extension: {extension_name}, file: {file_name})")
     
     print(f"Successfully mapped {found_files} out of {len(package_file_paths)} package files")
     return path_mappings
@@ -248,7 +306,8 @@ def parse_arguments() -> argparse.Namespace:
         epilog="""Examples:
   %(prog)s _testoutput/pycov/py_cov.exttest_2025-10-06_17-25-37-632200.pycov
   %(prog)s "_testoutput/pycov/*.pycov"
-  %(prog)s "_testoutput/pycov/py_cov.exttest*.pycov" --output custom.coveragerc"""
+  %(prog)s "_testoutput/pycov/py_cov.exttest*.pycov" --output custom.coveragerc
+  %(prog)s "*.pycov" --exclude-prefix extscache --exclude-prefix kit"""
     )
     
     parser.add_argument(
@@ -262,14 +321,21 @@ def parse_arguments() -> argparse.Namespace:
         help="Output coverage rc file (default: .coveragemergerc)"
     )
     
+    parser.add_argument(
+        "--exclude-prefix",
+        action="append",
+        dest="exclude_prefixes",
+        help="Exclude file paths containing this prefix (can be used multiple times)"
+    )
+    
     return parser.parse_args()
 
 
 def main():
     """Main entry point for the coverage mapping generator.
     
-    Parses command line arguments, processes .pycov files, and generates
-    a coverage.py rc file with path mappings.
+    Parses command line arguments, processes .pycov files with optional filtering,
+    and generates a coverage.py rc file with path mappings.
     """
     args = parse_arguments()
     
@@ -284,7 +350,7 @@ def main():
     print("=" * 60)
     
     # Read all file paths from all pycov files
-    all_file_paths = collect_all_file_paths(pycov_files)
+    all_file_paths = collect_all_file_paths(pycov_files, args.exclude_prefixes)
     
     # Filter for package file paths that need mapping
     package_file_paths = [fp for fp in all_file_paths if '_build/packages/' in fp]

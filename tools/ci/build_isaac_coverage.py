@@ -51,19 +51,8 @@ def main(args: argparse.Namespace):
         if omni.repo.ci.get_repo_config().get("repo_deploy_exts", {}).get("enabled", False):
             omni.repo.ci.launch(["${root}/repo${shell_ext}", "deploy_exts"])
 
-    # Use repo_docs.enabled as indicator for whether to build docs
-    repo_docs_enabled = omni.repo.ci.get_repo_config().get("repo_docs", {}).get("enabled", True)
 
-
-    # Docs
-    if repo_docs_enabled:
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_toc"])
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_docs"])
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "examples_list"])
-        # Temporarily ignore warnings in docs build
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config, "--warn-as-error=0"])
-        # omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config])
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "docs", "-c", build_config])
+    # This build exists specifically for coverage so we can skip docs
 
     # Package release
-    omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])
+    omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone-coverage", "-c", build_config])
