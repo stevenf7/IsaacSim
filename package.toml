@@ -64,7 +64,9 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
-    ["**/*.a"], # static libs
+    ["**/isaacsim.ros2.**/*.a"],
+    ["**/extscache/**/*.a"],
+    ["**/pip_prebundle/**/*.a"],
     ["apps/exts.deps.generated.kit"],
     ["apps/isaacsim.exp.extscache.*"],
     ["kit/data/**"], # This can contain portable files we don't want to package
