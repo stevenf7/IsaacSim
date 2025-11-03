@@ -129,7 +129,7 @@ variables:
         value: "true"
         description: "Set to false to skip sending tests results to Datadog (internal)"
     OMNI_CI_ENABLE_CXX_COVERAGE:
-        value: "false"
+        value: "true"
         description: "Set to 'true' to enable C++ code coverage testing."
     OMNI_CI_ENABLE_SANITIZERS:
         value: "false"
@@ -180,7 +180,7 @@ osec:sonarqube:
     variables:
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
-      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=1000 -Dsonar.branch.name=$CI_COMMIT_REF_NAME -Dsonar.python.coverage.reportPaths=coverage.xml"
+      SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=1000 -Dsonar.branch.name=$CI_COMMIT_REF_NAME -Dsonar.python.coverage.reportPaths=coverage.xml -Dsonar.cfamily.cobertura.reportPaths=cpp_coverage.xml"
       SONAR_EXCLUSIONS:  "**/_build/**,**/_repo/**,**/_compiler/**,\
         \
         **/*.js,**/*.ts,**/*.css,**/*.html,\
@@ -356,7 +356,7 @@ build-linux-x86_64-release:
     script:
       - ./repo.sh ci build -c release 
 # ==============================================================================================================
-.build-linux-x86_64-c++-coverage:
+build-linux-x86_64-c++-coverage:
     image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     # Override to remove yum install bsdtar
     before_script:
@@ -460,6 +460,8 @@ build-windows-x86_64-debug:
           - _build/**/release/*.xml
           - _build/coverage.info
           - _build/coverage/**
+          - _build/**/*.gcda
+          - _build/**/*.gcno
           - _repo/repo.log
           - _repo/repolog*.txt
           - _build/**/_testoutput/
@@ -467,6 +469,7 @@ build-windows-x86_64-debug:
           - .coveragemergerc
           - coverage.xml
           - _testoutput
+          - cpp_coverage.xml
         reports:
             junit:
               - _build/**/debug/*.xml
@@ -474,7 +477,7 @@ build-windows-x86_64-debug:
               - _build/**/_testoutput/results.xml
             coverage_report:
               coverage_format: cobertura
-              path: coverage.xml
+              path: ./*coverage.xml
 
 # ==============================================================================================================
 .test-common:
@@ -522,8 +525,10 @@ build-windows-x86_64-debug:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
       - ./repo.sh ci test -- --generate-report
+      - INTERMEDIATE_FOLDER=$(find _build/packages/ -type d -iname 'intermediate')
+      - cp -r ${INTERMEDIATE_FOLDER}/* _build/intermediate
     needs:
-      - job: build-linux-x86_64-release
+      - job: build-linux-x86_64-c++-coverage
         artifacts: true
 
 .test-windows-common:
@@ -677,6 +682,7 @@ test-linux-x86_64-pythontests-other:
       - .kit-runner-test-linux-x86_64-1x-gpu
     script:
       - ./repo.sh ci test -- -s pythontests -b other
+
 
 test-linux-x86_64-warmuptests:
     extends:
@@ -923,6 +929,7 @@ test-windows-x86_64-nativepythontests-testing:
 
 
 gather-coverage:
+    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     extends:
       - .test-common
       - .ipp_lnx_x86_64_cpu_small
@@ -954,28 +961,41 @@ gather-coverage:
         artifacts: true
       - job: test-linux-x86_64-postinstalltests
         artifacts: true
-      # - job: test-linux-x86_64-nativepythontests-api
-      #   artifacts: true
-      # - job: test-linux-x86_64-nativepythontests-replicator
-      #   artifacts: true
-      # - job: test-linux-x86_64-nativepythontests-testing
-      #   artifacts: true
-
 
     script:
       - ./build.sh -r --fetch-only --no-docker
-      - PACKAGE_FOLDER=$(find _build/packages -iname '_testoutput')
+      - lcov --capture --directory _build/intermediate/ --output-file _build/coverage.info --base-directory ./_build/intermediate/linux-x86_64
+      - lcov --remove _build/coverage.info '/usr/include/*' --output-file _build/coverage.filtered.info
+      - ./tools/packman/python.sh -m pip install lcov_cobertura==2.1.1
+      - ./tools/packman/python.sh -m lcov_cobertura _build/coverage.filtered.info  -o cpp_coverage.xml
       - ./tools/packman/python.sh -m pip install -r _repo/deps/repo_test/requirements.txt
-      - ./tools/packman/python.sh tools/ci/coverage/read_pycov_paths.py "${PACKAGE_FOLDER}/**/*.pycov"
-      - ./tools/packman/python.sh -m coverage combine --rcfile=.coveragemergerc --keep ${PACKAGE_FOLDER}/**/*.pycov
+      - ./tools/packman/python.sh tools/ci/coverage/read_pycov_paths.py "_build/packages/**/*.pycov" --exclude-prefix extscache
+      # Find all .pycov files and combine them in one command
+      - |
+        PYCOV_FILES=$(find _build/packages -name "*.pycov" 2>/dev/null || true)
+        
+        if [ -n "$PYCOV_FILES" ]; then
+          PYCOV_COUNT=$(echo "$PYCOV_FILES" | wc -l)
+          echo "Found $PYCOV_COUNT .pycov files to combine"
+          ./tools/packman/python.sh -m coverage combine --rcfile=.coveragemergerc --keep $PYCOV_FILES
+        else
+          echo "No .pycov files found in _build/packages"
+          exit 1
+        fi
       - ./tools/packman/python.sh -m coverage xml --rcfile=.coveragemergerc --ignore-errors
-      - ./tools/packman/python.sh -m coverage report --rcfile=.coveragemergerc --format=text 2>/dev/null | grep TOTAL
+      - ./tools/packman/python.sh ./tools/ci/coverage/combine_line_counts.py cpp_coverage.xml coverage.xml
     coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
 
 
 
 # ==============================================================================================================
 # external-tests
+
+# We do coverage in all test jobs, need to disable the automatic one
+test-linux-x86_64-c++-coverage:
+   rules: 
+     - if: $CI_COMMIT_BRANCH == $CI_COMMIT_BRANCH
+       when: never
 
 test-linux-x86_64-external-ar:
     extends:

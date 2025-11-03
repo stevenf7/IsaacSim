@@ -317,7 +317,12 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         )
         f:close()
     else
-        local executable = executable or "kit"
+        local exe = "kit"
+        if _OPTIONS["enable-gcov"] then
+            exe = "kit-gcov"
+        end
+        local executable = executable or exe
+        -- local executable = "kit"
         local arch = io.popen("arch", "r"):read("*l")
         local platform_name = "linux"
 

@@ -13,6 +13,8 @@ enabled = true
 # locally (by default it assumes you're already running your job in the correct container image).
 use_linbuild_on_gitlab = false
 
+# This setting lets us use a newer container image tag for the cxx_coverage job
+linbuild_container_tag = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a"
 
 
 ########################################################################################################################

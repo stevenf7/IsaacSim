@@ -181,3 +181,13 @@ source/apps/isaacsim.etm.list.isaacsim_app_template.*
 .coveragerc
 .coveragemergerc
 coverage.xml
+
+# Generated ETM lists
+source/apps/isaacsim.etm.list.isaacsim_app_template.*
+
+# Coverage related files
+.coverage
+.coveragerc
+.coveragemergerc
+coverage.xml
+cpp_coverage.xml
