@@ -1,4 +1,7 @@
 # Changelog
+## [3.3.4] - 2025-10-29
+### Changed
+- Performance Updates
 
 ## [3.3.3] - 2025-10-27
 ### Changed
