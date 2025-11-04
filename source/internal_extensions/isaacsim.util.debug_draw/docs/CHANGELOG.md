@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.1] - 2025-11-03
+### Changed
+- Fix missing static library from published extension
+
 ## [3.1.0] - 2025-06-24
 ### Added
 - Added CUDA support to OgnDebugDrawPointCloud
