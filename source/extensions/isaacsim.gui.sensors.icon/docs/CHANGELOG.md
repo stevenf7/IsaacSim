@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.4] - 2025-11-03
+### Removed
+- Remove the deprecated and unused isaacsim.core.utils dependency
+
 ## [2.0.3] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.0.2)
