@@ -430,6 +430,10 @@ env_vars = [
 
 test_root = "$root/_build/$platform/$config"
 
+# AUTOREMOVE: BEGIN
+# Since we use parallel:matrix we want to disable auto parallelization in our repo_test execution
+disable_auto_parallelization = true
+# AUTOREMOVE: END
 
 # When running from package, look for package using that path/pattern:
 archive_pattern = "${root}/_build/packages/isaac-sim*.7z"

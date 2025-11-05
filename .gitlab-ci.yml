@@ -522,11 +522,16 @@ build-windows-x86_64-debug:
       - !reference [.rules-workflow, rules]
 
 .test-linux-common:
+    variables:
+      REPORT_TIMING: "after_script"
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
       - ./repo.sh ci test -- --generate-report
       - INTERMEDIATE_FOLDER=$(find _build/packages/ -type d -iname 'intermediate')
       - cp -r ${INTERMEDIATE_FOLDER}/* _build/intermediate
+      - if [ "$REPORT_TIMING" == "after_script" ]; then
+      -   ./repo.sh ci test -- --generate-report
+      - fi
     needs:
       - job: build-linux-x86_64-c++-coverage
         artifacts: true
@@ -573,172 +578,53 @@ build-windows-x86_64-debug:
     entrypoint: [""]
 
 # ==============================================================================================================
-test-linux-x86_64-startuptests:
-    extends:
+
+test-linux-x86_64:
+  extends:
       - .test-common
       - .test-linux-common
       - .install-linux-test-packages
       - .ipp_lnx_x86_64_gpu
       - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s startuptests
-
-test-linux-x86_64-pythontests-deprecated:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b deprecated
-
-test-linux-x86_64-pythontests-asset:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b asset
-
-test-linux-x86_64-pythontests-core:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b core
-
-test-linux-x86_64-pythontests-examples_tests:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b examples_tests
-
-test-linux-x86_64-pythontests-replicator:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b replicator
-
-test-linux-x86_64-pythontests-ros:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b ros
-
-test-linux-x86_64-pythontests-sensors:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b sensors
-
-test-linux-x86_64-pythontests-utils_gui:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b utils_gui
-
-test-linux-x86_64-pythontests-robot:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b robot
-
-test-linux-x86_64-pythontests-other:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s pythontests -b other
+  parallel:
+    matrix:
+      - SUITE: startuptests
+      - SUITE: pythontests
+        BUCKET:
+          - deprecated
+          - asset
+          - core
+          - examples_tests
+          - replicator
+          - ros
+          - sensors
+          - utils_gui
+          - robot
+          - other
+      - SUITE: warmuptests
+      - SUITE: postinstalltests
+      - SUITE: nativepythontests
+        BUCKET:
+          - api
+          - replicator
+          - testing
+        REPORT_TIMING: ["inline"]
+  script:
+    - if [ "$REPORT_TIMING" == "inline" ]; then
+    -   GEN_REPORT_CMD="--generate-report"
+    - else
+    -   GEN_REPORT_CMD=""
+    - fi
+    - if [ -n "$BUCKET" ]; then
+    -   BUCKET_CMD="-b $BUCKET"
+    - else
+    -   BUCKET_CMD=""
+    - fi
+    - echo "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
+    - ./repo.sh ci test -- -s $SUITE $BUCKET_CMD $GEN_REPORT_CMD
 
 
-test-linux-x86_64-warmuptests:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s warmuptests
 
-test-linux-x86_64-postinstalltests:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s postinstalltests
-
-test-linux-x86_64-nativepythontests-api:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s nativepythontests -b api --generate-report
-    after_script:
-      - !reference [.datadog-test-visibility-linux-x86_64, script]
-
-test-linux-x86_64-nativepythontests-replicator:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s nativepythontests -b replicator --generate-report
-    after_script:
-      - !reference [.datadog-test-visibility-linux-x86_64, script]
-
-test-linux-x86_64-nativepythontests-testing:
-    extends:
-      - .test-common
-      - .test-linux-common
-      - .install-linux-test-packages
-      - .ipp_lnx_x86_64_gpu
-      - .kit-runner-test-linux-x86_64-1x-gpu
-    script:
-      - ./repo.sh ci test -- -s nativepythontests -b testing --generate-report
-    after_script:
-      - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-benchmarks-1-gpu:
     extends:
@@ -766,109 +652,31 @@ test-linux-x86_64-benchmarks-2-gpu:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
 
-test-windows-x86_64-startuptests:
+test-windows-x86_64:
     extends:
       - .test-common
       - .test-windows-common
       - .kit-runner-test-windows-x86_64-1x-gpu
+    parallel:
+      matrix:
+        - SUITE: startuptests
+        - SUITE: pythontests
+          BUCKET: 
+            - deprecated
+            - asset
+            - core
+            - examples_tests
+            - replicator
+            - ros
+            - sensors
+            - utils_gui
+            - robot
+            - other
+        - SUITE: warmuptests
+        - SUITE: postinstalltests
     script:
-      - ./repo.bat ci test -- -s startuptests
-
-test-windows-x86_64-pythontests-deprecated:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b deprecated
-
-test-windows-x86_64-pythontests-asset:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b asset
-
-test-windows-x86_64-pythontests-core:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b core
-
-test-windows-x86_64-pythontests-examples_tests:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b examples_tests
-
-test-windows-x86_64-pythontests-replicator:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b replicator
-
-test-windows-x86_64-pythontests-ros:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b ros
-
-test-windows-x86_64-pythontests-sensors:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b sensors
-
-test-windows-x86_64-pythontests-utils_gui:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b utils_gui
-
-test-windows-x86_64-pythontests-robot:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b robot
-
-test-windows-x86_64-pythontests-other:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s pythontests -b other
-
-test-windows-x86_64-warmuptests:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s warmuptests
-
-test-windows-x86_64-postinstalltests:
-    extends:
-      - .test-common
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s postinstalltests
+      - if ($BUCKET) { $BUCKET_CMD = @("-b", $BUCKET)} else { $BUCKET_CMD = @() }
+      - ./repo.bat ci test -- -s $SUITE @BUCKET_CMD
 
 # ==============================================================================================================
 # nightly-tests
@@ -902,30 +710,20 @@ test-windows-x86_64-internalpythontests-1:
     script:
       - ./repo.bat ci test -- -s internalpythontests -b 1
 
-test-windows-x86_64-nativepythontests-api:
+
+test-windows-x86_64-nativepythontests:
     extends:
       - .test-nightly
       - .test-windows-common
       - .kit-runner-test-windows-x86_64-1x-gpu
+    parallel:
+      matrix:
+        - BUCKET:
+          - api
+          - replicator
+          - testing
     script:
-      - ./repo.bat ci test -- -s nativepythontests -b api
-
-test-windows-x86_64-nativepythontests-replicator:
-    extends:
-      - .test-nightly
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s nativepythontests -b replicator
-
-test-windows-x86_64-nativepythontests-testing:
-    extends:
-      - .test-nightly
-      - .test-windows-common
-      - .kit-runner-test-windows-x86_64-1x-gpu
-    script:
-      - ./repo.bat ci test -- -s nativepythontests -b testing
-
+      - ./repo.bat ci test -- -s nativepythontests -b %BUCKET%
 
 
 gather-coverage:
@@ -935,35 +733,12 @@ gather-coverage:
       - .ipp_lnx_x86_64_cpu_small
     timeout: 2h
     needs:
-      - job: test-linux-x86_64-startuptests
+      - job: test-linux-x86_64
         artifacts: true
-      - job: test-linux-x86_64-pythontests-deprecated
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-asset
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-core
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-examples_tests
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-replicator
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-ros
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-sensors
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-utils_gui
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-robot
-        artifacts: true
-      - job: test-linux-x86_64-pythontests-other
-        artifacts: true
-      - job: test-linux-x86_64-warmuptests
-        artifacts: true
-      - job: test-linux-x86_64-postinstalltests
-        artifacts: true
-
     script:
       - ./build.sh -r --fetch-only --no-docker
+      # Remove previous results.xml file to prevent double reporting
+      - find _build/packages -iname 'results.xml' -type f -delete
       - lcov --capture --directory _build/intermediate/ --output-file _build/coverage.info --base-directory ./_build/intermediate/linux-x86_64
       - lcov --remove _build/coverage.info '/usr/include/*' --output-file _build/coverage.filtered.info
       - ./tools/packman/python.sh -m pip install lcov_cobertura==2.1.1
@@ -986,17 +761,14 @@ gather-coverage:
       - ./tools/packman/python.sh ./tools/ci/coverage/combine_line_counts.py cpp_coverage.xml coverage.xml
     coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
 
-
-
-# ==============================================================================================================
-# external-tests
-
 # We do coverage in all test jobs, need to disable the automatic one
 test-linux-x86_64-c++-coverage:
    rules: 
      - if: $CI_COMMIT_BRANCH == $CI_COMMIT_BRANCH
        when: never
 
+# ==============================================================================================================
+# external-tests
 test-linux-x86_64-external-ar:
     extends:
       - .test-external
