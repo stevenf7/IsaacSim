@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.8.4] - 2025-11-04
+### Fixed
+- Fix Kaya Gamepad example test
+
 ## [4.8.3] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency
