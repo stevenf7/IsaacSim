@@ -23,6 +23,7 @@ import omni.kit
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from isaacsim.core.api.world.world import World
+from isaacsim.core.prims import RigidPrim
 from isaacsim.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -58,18 +59,36 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
-    # # Run all functions with simulation enabled
-    # async def test_simulation(self):
-    #     await update_stage_async()
-    #     while is_stage_loading():
-    #         await update_stage_async()
-    #     self._provider.set_gamepad_connected(self._gamepad, True)
-    #     self.assertLess(self._sample._kaya.get_world_pose()[0][1], 1)
-    #     await update_stage_async()
-    #     for i in range(100):
-    #         self._provider.buffer_gamepad_event(self._gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
-    #         await update_stage_async()
-    #     self._provider.set_gamepad_connected(self._gamepad, False)
-    #     await update_stage_async()
-    #     self.assertGreater(self._sample._kaya.get_world_pose()[0][1], 64.0)
-    #     pass
+    # Run all functions with simulation enabled
+    async def test_simulation(self):
+        await update_stage_async()
+        while is_stage_loading():
+            await update_stage_async()
+
+        # Access the kaya robot prim directly by path
+        kaya_prim = RigidPrim("/kaya/base_link")
+
+        # Connect the gamepad so OmniGraph nodes can detect it
+        self._provider.set_gamepad_connected(self._gamepad, True)
+        await update_stage_async()
+
+        # Check initial position
+        self.assertLess(kaya_prim.get_world_poses()[0][0][0], 0.1)
+
+        # Start the simulation - Action Graphs only execute when timeline is playing
+        world = self._sample.get_world()
+        await world.play_async()
+        await update_stage_async()
+
+        # Send gamepad input to move the robot forward
+        for i in range(100):
+            self._provider.buffer_gamepad_event(self._gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
+            await update_stage_async()
+
+        # Stop simulation and disconnect gamepad
+        await world.pause_async()
+        self._provider.set_gamepad_connected(self._gamepad, False)
+        await update_stage_async()
+        # Verify robot moved forward (positive X direction)
+        self.assertGreater(kaya_prim.get_world_poses()[0][0][0], 0.9)
+        pass
