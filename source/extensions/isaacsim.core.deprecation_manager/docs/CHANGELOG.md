@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2025-11-05
+### Changed
+- Enable the `omni.isaac.ml_archive` extension when importing PyTorch via `import_module`
+
 ## [0.3.0] - 2025-10-20
 ### Added
 - Expose function to import a deprecated/removed module safely
