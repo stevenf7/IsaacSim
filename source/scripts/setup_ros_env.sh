@@ -38,8 +38,8 @@ if [ -z "$ROS_DISTRO" ]; then
     # Set ROS distro based on Ubuntu version
     export ROS_DISTRO="$DEFAULT_ROS_DISTRO"
     
-    # Path to the ROS2 bridge extension
-    BRIDGE_EXT_PATH="$ISAAC_SIM_ROOT/exts/isaacsim.ros2.bridge"
+    # Path to the ROS2 core extension
+    BRIDGE_EXT_PATH="$ISAAC_SIM_ROOT/exts/isaacsim.ros2.core"
 
     # Update LD_LIBRARY_PATH to include the extension libraries
     if [ -n "$LD_LIBRARY_PATH" ]; then

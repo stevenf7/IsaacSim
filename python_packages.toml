@@ -543,6 +543,10 @@ inventory.includes.all = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.ros2.bridge",
+    "exts/isaacsim.ros2.core",
+    "exts/isaacsim.ros2.examples",
+    "exts/isaacsim.ros2.nodes",
+    "exts/isaacsim.ros2.ui",
     "exts/isaacsim.ros2.sim_control",
     "exts/isaacsim.ros2.tf_viewer",
     "exts/isaacsim.ros2.urdf",

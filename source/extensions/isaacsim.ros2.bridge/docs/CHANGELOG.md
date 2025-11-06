@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.0.0] - 2025-11-02
+### Changed
+- Split extension into multiple extensions. 
+- isaacsim.ros2.core: Core ROS 2 libraries and backend functionality
+- isaacsim.ros2.examples: ROS 2 examples
+- isaacsim.ros2.nodes: ROS 2 OmniGraph nodes and components
+- isaacsim.ros2.ui: ROS 2 UI components
+
 ## [4.12.6] - 2025-10-27
 ### Changed
 - Replace import statements with the deprecation function when importing PyTorch in tests

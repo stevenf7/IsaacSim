@@ -35,6 +35,7 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/rosidl_runtime_cpp",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/console_bridge_vendor",
         "%{root}/source/extensions/isaacsim.ros2.tf_viewer/include",
+        "%{root}/source/extensions/isaacsim.ros2.core/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/lib",
@@ -62,7 +63,7 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/geometry_msgs",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2_msgs",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/tf2",
-        "%{root}/source/extensions/isaacsim.ros2.bridge/include",
+        "%{root}/source/extensions/isaacsim.ros2.core/include",
     }
     -- avoid inconsistent dll linkage
     defines { "TF2__VISIBILITY_CONTROL_H_" }
@@ -93,8 +94,7 @@ includedirs {
     "%{root}/_build/target-deps/python/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/nlohmann_json/include",
-    "%{root}/source/extensions/isaacsim.ros2.bridge",
-    "%{root}/source/extensions/isaacsim.ros2.bridge/include",
+    "%{root}/source/extensions/isaacsim.ros2.core/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/extensions/isaacsim.ros2.tf_viewer/include",
 }
