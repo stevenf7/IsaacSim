@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.2] - 2025-11-05
+### Changed
+- Update assets path to development
+
 ## [1.5.1] - 2025-10-10
 ### Changed
 - Update assets path to production
