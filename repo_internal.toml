@@ -84,6 +84,7 @@ library_paths = [
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
   "${root}/_build/${platform}/${config}/extsbuild/*",
+  "${root}/_build/${platform}/${config}/extsInternal/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
@@ -116,6 +117,7 @@ sphinx_conf_py_extra = """
         "omni.kit.actions",
         "omni.kit.commands",
         "omni.kit.menu",
+        "omni.kit.notification_manager",
         "omni.kit.property",
         "omni.kit.stage_templates",
         "omni.kit.test",
@@ -139,6 +141,7 @@ sphinx_conf_py_extra = """
         "Semantics",
         "usdrt",
         "warp",
+        "OmniGraphSchema",
         "omni.isaac.IsaacSensorSchema", # This cannot be documented because usd plugin needs to be loaded first
         "omni.isaac.RangeSensorSchema", # This cannot be documented because usd plugin needs to be loaded first
     ]
@@ -261,7 +264,7 @@ doxygen_input = ["source/extensions/isaacsim.asset.gen.conveyor/include/isaacsim
   "source/extensions/isaacsim.robot.surface_gripper/include/isaacsim/robot/surface_gripper/SurfaceGripperComponent.h",
   "source/extensions/isaacsim.robot.surface_gripper/include/isaacsim/robot/surface_gripper/SurfaceGripperManager.h",
   "source/extensions/isaacsim.robot.wheeled_robots/include/isaacsim/robot/wheeled_robots/IWheeledRobots.h",
-  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IRos2Bridge.h",
+  "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IRos2Core.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/IpcBufferManager.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Distro.h",
   "source/extensions/isaacsim.ros2.bridge/include/isaacsim/ros2/bridge/Ros2Factory.h",
@@ -296,7 +299,12 @@ doxygen_input = ["source/extensions/isaacsim.asset.gen.conveyor/include/isaacsim
   "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
 ]
 
-doxygen_predefined = ["CARB_PLUGIN_INTERFACE="]
+doxygen_predefined = [
+  "CARB_PLUGIN_INTERFACE=",
+  "__restrict=",
+  "PXR_NAMESPACE_OPEN_SCOPE=",
+  "PXR_NAMESPACE_CLOSE_SCOPE=",
+]
 
 
 doxygen_conf_extra = """
@@ -304,6 +312,7 @@ WARN_IF_UNDOCUMENTED  = YES
 WARN_IF_INCOMPLETE_DOC= YES
 WARN_IF_UNDOC_ENUM_VAL= YES
 CASE_SENSE_NAMES=NO
+EXCLUDE_SYMBOLS = omni::physics omni::physics::*
 """
 
 api_output_directory = "api"

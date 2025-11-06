@@ -266,7 +266,7 @@ set ROS_DISTRO=humble
 set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 set ROS_DOMAIN_ID=93
 pushd %~dp0\..\exts
-set basedir=%cd%\isaacsim.ros2.bridge\humble\lib
+set basedir=%cd%\isaacsim.ros2.core\humble\lib
 popd
 set PATH=%PATH%;%basedir%
 ]],
@@ -274,7 +274,7 @@ set PATH=%PATH%;%basedir%
 export ROS_DISTRO=humble
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=$((($RANDOM % 18) + 80))
-INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/isaacsim.ros2.bridge/humble/lib)
+INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/../exts/isaacsim.ros2.core/humble/lib)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
 ]],
 }
