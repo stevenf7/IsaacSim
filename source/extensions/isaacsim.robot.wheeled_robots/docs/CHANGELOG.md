@@ -1,4 +1,10 @@
 # Changelog
+
+## [5.0.0] - 2025-11-07
+### Changed
+- delete deprecated AckermannControllerDeprecated node
+- delete deprecated ackermann_controller_deprecated.py file
+
 ## [4.0.28] - 2025-10-31
 ### Changed
 - fix invalid escape sequences
