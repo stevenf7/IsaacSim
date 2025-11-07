@@ -413,7 +413,7 @@ packages = ["isaac-sim*"]
 ########################################################################################################################
 [repo_test]
 
-env_vars = [
+"token:in_ci==false".env_vars = [
   [
     "LD_PRELOAD",
     "${root}/_build/${platform}/${config}/kit/libcarb.so",
@@ -427,6 +427,16 @@ env_vars = [
     "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.bridge/humble/lib",
   ],
 ]
+
+
+"token:in_ci==true".env_vars = [
+  [
+    "RMW_IMPLEMENTATION",
+    "rmw_fastrtps_cpp",
+  ],
+]
+
+
 
 test_root = "$root/_build/$platform/$config"
 
