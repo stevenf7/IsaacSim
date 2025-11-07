@@ -200,6 +200,7 @@ osec:sonarqube:
         when: never
       - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
         allow_failure: true
+        interruptible: true
       # - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
@@ -474,7 +475,7 @@ build-windows-x86_64-debug:
             junit:
               - _build/**/debug/*.xml
               - _build/**/release/*.xml
-              - _build/**/_testoutput/results.xml
+              - _build/**/_testoutput/**/results.xml
             coverage_report:
               coverage_format: cobertura
               path: ./*coverage.xml
@@ -527,11 +528,16 @@ build-windows-x86_64-debug:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
       - ./repo.sh ci test -- --generate-report
+      - mkdir -p _build/intermediate/${CI_JOB_ID}
+      - mv _build/intermediate/linux-x86_64 _build/intermediate/${CI_JOB_ID}/
       - INTERMEDIATE_FOLDER=$(find _build/packages/ -type d -iname 'intermediate')
-      - cp -r ${INTERMEDIATE_FOLDER}/* _build/intermediate
+      - cp -r ${INTERMEDIATE_FOLDER}/* _build/intermediate/${CI_JOB_ID}
       - if [ "$REPORT_TIMING" == "after_script" ]; then
       -   ./repo.sh ci test -- --generate-report
       - fi
+      - TESTOUTPUT_FOLDER=$(find _build/packages -type d -iname '_testoutput')
+      - mkdir -p ${TESTOUTPUT_FOLDER}/${CI_JOB_ID}
+      - cp -r ${TESTOUTPUT_FOLDER}/* ${TESTOUTPUT_FOLDER}/${CI_JOB_ID}
     needs:
       - job: build-linux-x86_64-c++-coverage
         artifacts: true
@@ -735,11 +741,15 @@ gather-coverage:
     needs:
       - job: test-linux-x86_64
         artifacts: true
+      - job: test-linux-x86_64-benchmarks-1-gpu
+        artifacts: true
+      - job: test-linux-x86_64-benchmarks-2-gpu
+        artifacts: true
     script:
       - ./build.sh -r --fetch-only --no-docker
       # Remove previous results.xml file to prevent double reporting
       - find _build/packages -iname 'results.xml' -type f -delete
-      - lcov --capture --directory _build/intermediate/ --output-file _build/coverage.info --base-directory ./_build/intermediate/linux-x86_64
+      - lcov --capture --directory _build/intermediate --output-file _build/coverage.info
       - lcov --remove _build/coverage.info '/usr/include/*' --output-file _build/coverage.filtered.info
       - ./tools/packman/python.sh -m pip install lcov_cobertura==2.1.1
       - ./tools/packman/python.sh -m lcov_cobertura _build/coverage.filtered.info  -o cpp_coverage.xml
