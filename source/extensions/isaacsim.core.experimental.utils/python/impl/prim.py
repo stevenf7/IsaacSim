@@ -419,10 +419,11 @@ def has_api(
     Args:
         prim: Prim path or prim instance.
         api: API schema name or type, or a list of them.
-        test: Checking operation to test for.
-            - "all": All APIs must be present.
-            - "any": Any API must be present.
-            - "none": No APIs must be present.
+        test: Checking operation to test for. Supported values are:
+
+            - ``"all"``: All APIs must be present.
+            - ``"any"``: Any API must be present.
+            - ``"none"``: No APIs must be present.
 
     Returns:
         Whether the prim has or not (depending on the test) the given API schema applied.
@@ -442,7 +443,7 @@ def has_api(
         >>> prim_utils.has_api(prim, UsdLux.LightAPI)
         True
     """
-    prim = stage_utils.get_current_stage().GetPrimAtPath(prim) if isinstance(prim, str) else prim
+    prim = stage_utils.get_current_stage(backend="usd").GetPrimAtPath(prim) if isinstance(prim, str) else prim
     # get applied status
     status = []
     applied_schemas = prim.GetAppliedSchemas()
