@@ -1,10 +1,5 @@
 # Changelog
 
-## [0.3.2] - 2025-11-07
-### Changed
-- Add the `omni.isaac.ml_archive` extension as dependency temporarily
-- Remove enabling the `omni.isaac.ml_archive` extension when importing PyTorch via `import_module`
-
 ## [0.3.1] - 2025-11-05
 ### Changed
 - Enable the `omni.isaac.ml_archive` extension when importing PyTorch via `import_module`
