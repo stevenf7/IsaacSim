@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2025-11-06
+### Added
+- New Realsense category, with D455, D457, and D55 models.
+### Removed
+- Intel as category
+
 ## [0.2.3] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency
