@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2025-11-04
+### Added
+- Add app utils
+- Add semantics utils
+
 ## [0.5.0] - 2025-10-29
 ### Added
 - Add stage utils functions to:
@@ -39,7 +44,7 @@
 
 ## [0.2.0] - 2025-07-16
 ### Added
-- Add funtion to check if a prim has or not the given API schema(s) applied
+- Add function to check if a prim has or not the given API schema(s) applied
 
 ### Changed
 - Update the predicate function signatures of the prim utils to forward the test prim instance

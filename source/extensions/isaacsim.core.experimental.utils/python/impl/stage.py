@@ -585,8 +585,9 @@ def set_stage_units(*, meters_per_unit: float | None = None, kilograms_per_unit:
     | ounce (oz)       | 0.0283 |
     +------------------+--------+
 
-    Returns:
-        Current stage meters per unit and kilograms per unit.
+    Args:
+        meters_per_unit: Meters per unit.
+        kilograms_per_unit: Kilograms per unit.
 
     Example:
 

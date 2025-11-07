@@ -15,6 +15,13 @@ Python API
 
 .. API
 
+App Utils
+^^^^^^^^^
+
+.. automodule:: isaacsim.core.experimental.utils.impl.app
+    :members:
+    :undoc-members:
+
 Backend Utils
 ^^^^^^^^^^^^^
 
@@ -40,6 +47,13 @@ Prim Utils
 ^^^^^^^^^^
 
 .. automodule:: isaacsim.core.experimental.utils.impl.prim
+    :members:
+    :undoc-members:
+
+Semantics Utils
+^^^^^^^^^^^^^^^
+
+.. automodule:: isaacsim.core.experimental.utils.impl.semantics
     :members:
     :undoc-members:
 
