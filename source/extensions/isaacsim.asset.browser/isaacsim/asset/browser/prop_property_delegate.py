@@ -22,7 +22,7 @@ from typing import List
 import omni.kit.app
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.utils.stage import get_next_free_path, open_stage
+from isaacsim.core.experimental.utils.stage import generate_next_free_path, open_stage
 from omni.kit.browser.folder.core import BrowserPropertyDelegate, FileDetailItem
 from omni.kit.notification_manager import post_notification
 from pxr import Usd
@@ -186,8 +186,10 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
             base_prim_path = default_prim.GetPath().pathString
         else:
             base_prim_path = "/"
+        if not base_prim_path.endswith("/"):
+            base_prim_path += "/"
         robot_name, _ = os.path.splitext(robot_filename)
-        asset_stage_path = get_next_free_path(robot_name, base_prim_path)
+        asset_stage_path = generate_next_free_path(base_prim_path + robot_name)
         ref_prim = stage.DefinePrim(asset_stage_path, "Xform")
         ref_prim.GetReferences().AddReference(url)
 

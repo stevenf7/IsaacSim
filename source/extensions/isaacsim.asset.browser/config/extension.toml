@@ -1,5 +1,5 @@
 [package]
-version = "1.4.0"
+version = "1.4.1"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
@@ -15,7 +15,7 @@ feature = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.utils" = {}
+"isaacsim.core.experimental.utils" = {}
 "omni.kit.browser.folder.core" = {}
 "omni.kit.clipboard" = { optional=true }
 "omni.kit.commands" = {}
@@ -62,7 +62,6 @@ menu.window = "Isaac Sim Assets"
 
 [[test]]
 dependencies = [
-    "omni.hydra.usdrt_delegate",
     "omni.kit.browser.asset",
     "omni.kit.menu.stage",
     "omni.kit.tool.collect",
