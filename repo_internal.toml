@@ -98,6 +98,8 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",  # PIL
 ]
 
+
+sphinx_parallel = "auto"
 sphinx_conf_py_extra = """
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
