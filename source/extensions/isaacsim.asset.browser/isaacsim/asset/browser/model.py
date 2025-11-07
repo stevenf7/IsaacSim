@@ -18,7 +18,7 @@ import os
 import carb.settings
 import omni.kit.commands
 import omni.usd
-from isaacsim.core.utils.stage import open_stage
+from isaacsim.core.experimental.utils.stage import open_stage
 from omni.kit.browser.core import DetailItem
 from omni.kit.browser.folder.core import FileSystemFolder, TreeFolderBrowserModel
 from pxr import Sdf, Tf, Usd

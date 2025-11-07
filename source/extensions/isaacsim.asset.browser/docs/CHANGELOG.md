@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2025-11-03
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [1.4.0] - 2025-10-31
 ### Changed
 - Remove omni.pip.cloud from extension.toml
