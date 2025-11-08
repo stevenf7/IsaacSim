@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.0] - 2025-11-05
+### Changed
+- Improve docstrings and cleanup codebase
+
 ## [2.1.1] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

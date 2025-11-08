@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2025-11-05
+### Changed
+- Refactor codebase and improve docstrings
+
 ## [2.3.0] - 2025-10-30
 ### Changed
 - Migrate extension implementation to core experimental API
