@@ -18,6 +18,7 @@ writeTarget.platform = true
 "omni.kit.renderer.core" = {}
 "omni.kit.uiapp" = { optional = true }
 "omni.ui" = { optional = true }
+"omni.isaac.core_archive" = {}
 
 [[python.module]]
 name = "isaacsim.app.compatibility_check"

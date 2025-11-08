@@ -320,8 +320,8 @@ void onPlay()
     for (const usdrt::SdfPath& usdrtPath : surfaceGripperPaths)
     {
         // For any already existing grippers, add them to the manager
-        const omni::fabric::PathC pathC(usdrtPath);
-        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+        const omni::fabric::Path path(usdrtPath);
+        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
         // CARB_LOG_WARN("Surface Gripper found: %s", usdPath.GetString().c_str());
 
         if (g_surfaceGripperManager)

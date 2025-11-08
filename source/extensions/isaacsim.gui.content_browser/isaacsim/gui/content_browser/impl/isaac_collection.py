@@ -48,9 +48,10 @@ class IsaacConnectionItem(NucleusItem):
 class IsaacCollection(CollectionItem):
     def __init__(self):
         super().__init__(
-            "https",
-            "Isaac Sim",
-            f"{ICON_PATH}/cloud.svg",
+            identifier="https",
+            title="Isaac Sim",
+            protocol="https",
+            icon=f"{ICON_PATH}/cloud.svg",
             access=omni.client.AccessFlags.READ,
             populated=False,
             order=5,

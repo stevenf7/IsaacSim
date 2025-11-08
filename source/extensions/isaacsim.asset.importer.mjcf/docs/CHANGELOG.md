@@ -1,4 +1,8 @@
 # Changelog
+## [2.5.14] - 2025-11-07
+### Changed
+- Update to Kit 109 and Python 3.12
+
 ## [2.5.13] - 2025-09-26
 ### Changed
 - Update license headers

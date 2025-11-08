@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
+import re
 import typing
 
+import carb
 import numpy
 from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, PhysxSchema, Sdf, Tf, Usd, UsdGeom, UsdPhysics, Vt

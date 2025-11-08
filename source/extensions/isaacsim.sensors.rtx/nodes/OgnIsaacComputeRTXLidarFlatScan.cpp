@@ -17,11 +17,11 @@
 
 #include "GenericModelOutput.h"
 #include "LidarConfigHelper.h"
-#include "LidarMetaData.h"
 #include "OgnIsaacComputeRTXLidarFlatScanDatabase.h"
 #include "isaacsim/core/includes/BaseResetNode.h"
 #include "isaacsim/core/includes/ScopedCudaDevice.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
+#include "omni/sensors/lidar/LidarMetaData.h"
 
 #include <cstddef>
 #include <math.h>

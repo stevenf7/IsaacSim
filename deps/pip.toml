@@ -43,11 +43,11 @@
 # The SWIPAT template is here: http://nvbugs/2732212
 # Dependencies for aiohttp should not be installed by default as we do not want to pull in chardet due to its license. Use cchardet instead
 
-# Target kit 107.x
+# Target kit 109.x
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "numba==0.59.1",                # SWIPAT filed under: https://nvbugs/3430475 # Used by: (none found)
+    "numba==0.62.1",                # SWIPAT filed under: https://nvbugs/3430475 # Used by: (none found)
     "llvmlite==0.42.0",             # SWIPAT filed under: https://nvbugs/3433740 # Used by: (dependency of numba)
     "nest_asyncio==1.5.6",          # SWIPAT filed under: https://nvbugs/3433748 # Used by: isaacsim.ros2.sim_control, isaacsim.simulation_app
     "matplotlib==3.10.3",           # SWIPAT filed under: https://nvbugs/3430500 # Used by: isaacsim.sensors.rtx

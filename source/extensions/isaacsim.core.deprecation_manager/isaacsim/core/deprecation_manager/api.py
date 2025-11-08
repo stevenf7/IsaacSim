@@ -49,11 +49,6 @@ def import_module(name: str) -> ModuleType:
 
     # PyTorch
     if name == "torch":
-        # ------------------------------------------------------------------------------
-        # TODO: Remove this once we are on Kit 109
-        extension_manager = omni.kit.app.get_app().get_extension_manager()
-        extension_manager.set_extension_enabled_immediate("omni.isaac.ml_archive", True)
-        # ------------------------------------------------------------------------------
         try:
             return importlib.import_module(name)
         except (ModuleNotFoundError, ImportError) as e:

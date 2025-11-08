@@ -228,8 +228,8 @@ void onPlay()
     // First create the sensors and find the sensor parents to create physics views
     for (const usdrt::SdfPath& usdrtPath : imuSensorPaths)
     {
-        const omni::fabric::PathC pathC(usdrtPath);
-        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+        const omni::fabric::Path path(usdrtPath);
+        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
         pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
         if (prim)
         {
@@ -258,8 +258,8 @@ void onPlay()
         // First create the sensors and find the sensor parents to create physics views
         for (const usdrt::SdfPath& usdrtPath : contactSensorPaths)
         {
-            const omni::fabric::PathC pathC(usdrtPath);
-            const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+            const omni::fabric::Path path(usdrtPath);
+            const pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
             pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
 
             if (prim)
@@ -299,8 +299,8 @@ void onPlay()
     // pass in the view data and index to the sensor
     for (const usdrt::SdfPath& usdrtPath : imuSensorPaths)
     {
-        const omni::fabric::PathC pathC(usdrtPath);
-        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(pathC);
+        const omni::fabric::Path path(usdrtPath);
+        const pxr::SdfPath usdPath = omni::fabric::toSdfPath(path);
         pxr::UsdPrim prim = g_stage->GetPrimAtPath(usdPath);
 
         isaacsim::sensors::physics::ImuSensor* imuSensor = g_isaacSensorManager->getImuSensor(prim);

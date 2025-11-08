@@ -34,7 +34,7 @@ includedirs {
     target_deps .. "/pybind11/include",
     target_deps .. "/usd/%{cfg.buildcfg}/include",
     target_deps .. "/usd_ext_physics/%{cfg.buildcfg}/include",
-    target_deps .. "/python/include/python3.11",
+    target_deps .. "/python/include/python3.12",
     target_deps .. "/tinyxml2/include",
     target_deps .. "/omni_client_library/include",
     extsbuild_dir .. "%{root}/source/extensions/isaacsim.robot.schema/include",
@@ -71,7 +71,7 @@ add_usd(extra_usd_libs)
 if os.target() == "linux" then
     includedirs {
         target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
-        target_deps .. "/python/include/python3.11",
+        target_deps .. "/python/include/python3.12",
     }
     libdirs {}
     links {

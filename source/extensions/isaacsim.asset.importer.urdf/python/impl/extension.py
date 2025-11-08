@@ -102,7 +102,7 @@ class Extension(omni.ext.IExt):
         self.window = UrdfImporter(ext_id)
 
         self._delegate = UrdfImporterDelegate(
-            "Urdf Importer", ["(.*\\.urdf$)|(.*\\.URDF$)"], ["Urdf Files (*.urdf, *.URDF)"], ext_id
+            "Urdf Importer", [r"(.*\.urdf$)|(.*\.URDF$)"], ["Urdf Files (*.urdf, *.URDF)"], ext_id
         )
         ai.register_importer(self._delegate)
 

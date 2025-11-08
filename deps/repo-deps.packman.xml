@@ -23,7 +23,7 @@
   <dependency name="repo_kit_tools" linkPath="../_repo/deps/repo_kit_tools">
     <package name="repo_kit_tools" version="1.10.0" />
   </dependency>
-  <dependency name="repo_usd" linkPath="../_repo/deps/repo_usd">
+  <!-- <dependency name="repo_usd" linkPath="../_repo/deps/repo_usd">
     <package name="repo_usd" version="5.0.12" />
-  </dependency>
+  </dependency> -->
 </project>

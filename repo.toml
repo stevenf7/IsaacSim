@@ -25,7 +25,7 @@ python_executable."platform:linux-x86_64".python_executable_path = "python3${exe
 python_executable."platform:linux-aarch64".python_executable_path = "python3${exe_ext}"
 python_executable."platform:windows-x86_64".python_executable_path = "python${exe_ext}"
 python_executable.packman_package_name = "python"
-python_executable.packman_package_version = "3.11.11+nv3-${platform}"
+python_executable.packman_package_version = "3.12.11+nv4-${platform}"
 python_executable.packman_link_path = "_repo/python/"
 
 ########################################################################################################################
@@ -104,8 +104,8 @@ enable_compiler_version_check = true
 
 vscode.python_env.PYTHONPATH = [
   "$$$${PYTHONPATH}",
-  "$root/_build/$platform/$config/kit/python/lib/python3.11",
-  "$root/_build/$platform/$config/kit/python/lib/python3.11/site-packages",
+  "$root/_build/$platform/$config/kit/python/lib/python3.12",
+  "$root/_build/$platform/$config/kit/python/lib/python3.12/site-packages",
   "$root/_build/$platform/$config/python_packages",
   "$root/_build/$platform/$config/exts/isaacsim.simulation_app",
   "$root/_build/$platform/$config/kit/kernel/py",
@@ -154,7 +154,10 @@ licensing.packages = [
 "platform:linux-x86_64".licensing.fail_on_missing = true
 
 # By default, precache_exts is run after pull. Instead, running it after generating projects and staging files, so the necessary app file exists.
-fetch.after_pull_commands = []
+fetch.after_pull_commands = [
+   ["${root}/_build/${platform}/${config}/kit/dev/tools/packman/python${shell_ext}"]
+]
+
 # Extensions precache before build to pick up headers/binaries for linking
 post_build.commands = [
   # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
@@ -173,11 +176,18 @@ post_build.commands = [
     "${config}",
   ],
   [
-    "${root}/repo${shell_ext}",
-    "usd",
-    "-c",
+    "${root}/schemas/generate-schema${shell_ext}",
+    "-c", 
     "${config}",
+    "-p",
+    "${platform}",
   ],
+  # [
+  #   "${root}/repo${shell_ext}",
+  #   "usd",
+  #   "-c",
+  #   "${config}",
+  # ],
 ]
 pre_build.commands = [
   [
@@ -273,12 +283,6 @@ apps = [
     "${root}/_build/$platform/$config/apps/isaacsim.exp.extscache.kit"
 ]
 
-# Registries to use
-registries = [
-  {name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default"},
-  {name = "kit/sdk", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/sdk/${kit_version_short}/${kit_git_hash}"},
-]
-
 # Link selected extensions into a separate folder without a version. Used for build-time referencing extensions.
 # Wildcards are supported in the list.
 links.exts.include = [
@@ -299,31 +303,31 @@ links.path = "${root}/_build/${platform}/${config}/extsbuild"
 # #####################################################################
 # # schema
 # #############################
-[repo_usd]
-generate_plugin_buildfiles = false
-plugin_buildfile_format = "premake"
-usd_python_root = "${root}/_build/target-deps/python"
-usd_root = "${root}/_build/target-deps/usd/%{cfg.buildcfg}"
+# [repo_usd]
+# generate_plugin_buildfiles = false
+# plugin_buildfile_format = "premake"
+# usd_python_root = "${root}/_build/target-deps/python"
+# usd_root = "${root}/_build/target-deps/usd/%{cfg.buildcfg}"
 
-[repo_usd.plugin.robotSchema]
-schema_file = "${root}/source/extensions/isaacsim.robot.schema/robot_schema/RobotSchema.usda"
-generate_dir = "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
-plugin_dir = "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
-install_root =  "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
-build_dir =  "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+# [repo_usd.plugin.robotSchema]
+# schema_file = "${root}/source/extensions/isaacsim.robot.schema/robot_schema/RobotSchema.usda"
+# generate_dir = "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+# plugin_dir = "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+# install_root =  "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
+# build_dir =  "${root}/source/extensions/isaacsim.robot.schema/robot_schema"
 
-library_prefix = "RobotSchema"
-generate_module_deps_cpp_file = false
-is_codeless = true
-usd_lib_dependencies = [
-  "arch",
-  "tf",
-  "vt",
-  "sdf",
-  "usd",
-  "usdPhysics",
-  "usdGeom",
-]
+# library_prefix = "RobotSchema"
+# generate_module_deps_cpp_file = false
+# is_codeless = true
+# usd_lib_dependencies = [
+#   "arch",
+#   "tf",
+#   "vt",
+#   "sdf",
+#   "usd",
+#   "usdPhysics",
+#   "usdGeom",
+# ]
 
 # ########################################################################################################################
 # # Build Number
@@ -986,5 +990,5 @@ python_analysis_extra_mapping = [
 ########################################################################################################################
 
 [repo_edit_sysconfig]
-"platform:linux-x86_64".sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_x86_64-linux-gnu.py"
-"platform:linux-aarch64".sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.11/_sysconfigdata__linux_aarch64-linux-gnu.py"
+"platform:linux-x86_64".sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.12/_sysconfigdata__linux_x86_64-linux-gnu.py"
+"platform:linux-aarch64".sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.12/_sysconfigdata__linux_aarch64-linux-gnu.py"

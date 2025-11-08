@@ -1,4 +1,8 @@
 # Changelog
+## [3.3.5] - 2025-11-07
+### Changed
+- Update to Kit 109 and Python 3.12
+
 ## [3.3.4] - 2025-10-29
 ### Changed
 - Performance Updates

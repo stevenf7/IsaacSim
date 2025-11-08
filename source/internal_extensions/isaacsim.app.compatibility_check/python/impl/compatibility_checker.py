@@ -24,13 +24,7 @@ from enum import Enum
 import carb
 import omni.kit.app
 import omni.platforminfo
-
-try:
-    from packaging.version import parse as parse_version
-except:
-    import setuptools  # noqa: F401
-    from packaging.version import parse as parse_version
-
+from packaging.version import parse as parse_version
 
 from .. import _compatibility_check
 

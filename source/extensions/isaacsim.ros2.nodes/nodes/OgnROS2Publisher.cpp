@@ -434,8 +434,8 @@ private:
     {
         GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
         GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-        ConstAttributeDataHandle handle =
-            getAttributeR(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
+        ConstAttributeDataHandle handle = getAttributeR(
+            context, nodeObj.nodeContextHandle, omni::fabric::Token(attrName.c_str()), kAccordingToContextIndex);
         const T* value = getDataR<T>(context, handle);
         return value;
     }
@@ -445,8 +445,8 @@ private:
     {
         GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
         GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-        ConstAttributeDataHandle handle =
-            getAttributeR(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
+        ConstAttributeDataHandle handle = getAttributeR(
+            context, nodeObj.nodeContextHandle, omni::fabric::Token(attrName.c_str()), kAccordingToContextIndex);
         // Get size
         context.iAttributeData->getElementCount(&countOut, context, &handle, 1u);
         // Get readable data
@@ -463,7 +463,7 @@ private:
         ConstAttributeDataHandle handle =
             attrObj.iAttribute->getConstAttributeDataHandle(attrObj, kAccordingToContextIndex);
         auto const token = getDataR<NameToken>(context, handle);
-        return context.iToken->getText(*token);
+        return token->getText();
     }
 
     static const char* getTokenText(const NodeObj& nodeObj, const std::string& attrName)
@@ -475,7 +475,7 @@ private:
     {
         GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
         GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-        return context.iToken->getText(token);
+        return token.getText();
     }
 
     static bool setAllowedTokens(const NodeObj& nodeObj,
