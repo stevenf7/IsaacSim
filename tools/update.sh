@@ -71,8 +71,11 @@ update_extensions() {
     echo "Updating extension cache..."
     pushd ../
     
-    # Build the command with optional commit hash
+    # Build the command with optional commit hash and platform-specific paths
     local cmd="python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat"
+    cmd="$cmd --build-dir _build/$PLATFORM/release/exts"
+    cmd="$cmd --deprecated-dir _build/$PLATFORM/release/extsDeprecated"
+    cmd="$cmd --apps-dir _build/$PLATFORM/release/apps"
     if [ -n "$commit_hash" ]; then
         cmd="$cmd --commit-hash $commit_hash"
         echo "Using commit hash: $commit_hash"
@@ -89,13 +92,25 @@ update_extensions() {
 clean_extensions() {
     echo "Cleaning extensions from extscache..."
     pushd ../
-    python3 tools/isaac/clean_extscache.py
+    python3 tools/isaac/clean_extscache.py \
+        --build-dir "_build/$PLATFORM/release/exts" \
+        --deprecated-dir "_build/$PLATFORM/release/extsDeprecated" \
+        --apps-dir "_build/$PLATFORM/release/apps"
     popd
 }
 
 # Get the directory where this script is located
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 cd "$SCRIPT_DIR"
+
+# Detect architecture
+ARCH=$(uname -m)
+if [ "$ARCH" = "aarch64" ]; then
+    PLATFORM="linux-aarch64"
+else
+    PLATFORM="linux-x86_64"
+fi
+echo "Detected platform: $PLATFORM"
 
 # Parse command line arguments
 if [ $# -eq 0 ]; then

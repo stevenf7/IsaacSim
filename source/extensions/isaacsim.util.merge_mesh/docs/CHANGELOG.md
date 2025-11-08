@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.16] - 2025-11-07
+### Changed
+- Update to Kit 109 and Python 3.12
+
 ## [2.0.15] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.0.14)

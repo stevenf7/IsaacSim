@@ -96,8 +96,8 @@ inline T* getAttributeWritableData(const NodeObj& nodeObj, const std::string& at
 {
     GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
     GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-    AttributeDataHandle handle =
-        getAttributeW(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
+    AttributeDataHandle handle = getAttributeW(
+        context, nodeObj.nodeContextHandle, omni::fabric::Token(attrName.c_str()), kAccordingToContextIndex);
     T* value = getDataW<T>(context, handle);
     return value;
 }
@@ -119,8 +119,8 @@ inline T* getAttributeWritableArrayData(const NodeObj& nodeObj, const std::strin
 {
     GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
     GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-    AttributeDataHandle handle =
-        getAttributeW(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
+    AttributeDataHandle handle = getAttributeW(
+        context, nodeObj.nodeContextHandle, omni::fabric::Token(attrName.c_str()), kAccordingToContextIndex);
     // Resize first
     context.iAttributeData->setElementCount(context, handle, newCount);
     // Get writable data
@@ -144,8 +144,8 @@ inline T const* getAttributeReadableData(const NodeObj& nodeObj, const std::stri
 {
     GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
     GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-    const ConstAttributeDataHandle handle =
-        getAttributeR(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
+    const ConstAttributeDataHandle handle = getAttributeR(
+        context, nodeObj.nodeContextHandle, omni::fabric::Token(attrName.c_str()), kAccordingToContextIndex);
     T const* value = getDataR<T>(context, handle);
     return value;
 }
@@ -167,8 +167,8 @@ inline T const* getAttributeReadableArrayData(const NodeObj& nodeObj, const std:
 {
     GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
     GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
-    const ConstAttributeDataHandle constHandle =
-        getAttributeR(context, nodeObj.nodeContextHandle, Token(attrName.c_str()), kAccordingToContextIndex);
+    const ConstAttributeDataHandle constHandle = getAttributeR(
+        context, nodeObj.nodeContextHandle, omni::fabric::Token(attrName.c_str()), kAccordingToContextIndex);
     context.iAttributeData->getElementCount(&newCount, context, &constHandle, 1);
     T const* value = getDataR<T>(context, constHandle);
     return value;

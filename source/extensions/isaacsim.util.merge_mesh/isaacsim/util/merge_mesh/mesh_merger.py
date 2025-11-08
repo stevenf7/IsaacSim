@@ -206,7 +206,7 @@ class MeshMerger(object):
                 else:
                     world_mtx = world_mtx * prim_transform.GetInverse()
                 world_rot = world_mtx.ExtractRotation()
-                mesh["points"][:] = [world_mtx.TransformAffine(x) for x in mesh["points"]]
+                mesh["points"][:] = [Gf.Vec3f(world_mtx.TransformAffine(x)) for x in mesh["points"]]
                 mesh["normals"] = usdMesh.GetNormalsAttr().Get()
                 mesh["attr_normals"] = usdMesh.GetPrim().GetAttribute("primvars:normals").Get()
                 mesh["attr_normals_indices"] = usdMesh.GetPrim().GetAttribute("primvars:normals:indices").Get()
@@ -215,12 +215,12 @@ class MeshMerger(object):
                 if not mesh["attr_normals_indices"]:
                     mesh["attr_normals_indices"] = []
                 if mesh["normals"]:
-                    mesh["normals"][:] = [world_rot.TransformDir(x).GetNormalized() for x in mesh["normals"]]
+                    mesh["normals"][:] = [Gf.Vec3f(world_rot.TransformDir(x).GetNormalized()) for x in mesh["normals"]]
                 else:
                     mesh["normals"] = []
                     carb.log_warn(f"mesh doesn't contain normals: ({prim.GetName()})")
                 if mesh["attr_normals"]:
-                    mesh["attr_normals"][:] = [world_rot.TransformDir(x) for x in mesh["attr_normals"]]
+                    mesh["attr_normals"][:] = [Gf.Vec3f(world_rot.TransformDir(x)) for x in mesh["attr_normals"]]
                 mesh["vertex_counts"] = usdMesh.GetFaceVertexCountsAttr().Get()
                 mesh["vertex_indices"] = usdMesh.GetFaceVertexIndicesAttr().Get()
                 mesh["name"] = prim.GetName()
@@ -286,8 +286,6 @@ class MeshMerger(object):
             all_normals_attr.extend(mesh["attr_normals"])
             mesh["attr_normals_indices"][:] = [x + normals_offset for x in mesh["attr_normals_indices"]]
             all_normals_indices.extend(mesh["attr_normals_indices"])
-            if mesh["normals"]:
-                mesh["normals"][:] = [world_rot.TransformDir(x).GetNormalized() for x in mesh["normals"]]
             all_vertex_counts.extend(mesh["vertex_counts"])
             mesh["vertex_indices"][:] = [x + index_offset for x in mesh["vertex_indices"]]
             all_vertex_indices.extend(mesh["vertex_indices"])

@@ -115,8 +115,8 @@ public:
                 usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
                 for (auto& usdrtPath : usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("UsdPhysicsScene")))
                 {
-                    const omni::fabric::PathC pathC(usdrtPath);
-                    const pxr::SdfPath primPath = omni::fabric::toSdfPath(pathC);
+                    const omni::fabric::Path path(usdrtPath);
+                    const pxr::SdfPath primPath = omni::fabric::toSdfPath(path);
                     pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
                     if (m_usdNoticeListener->getPhysicsScenes().count(primPath) == 0)
                     {

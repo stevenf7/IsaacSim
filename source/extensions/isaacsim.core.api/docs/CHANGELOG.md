@@ -1,4 +1,7 @@
 # Changelog
+## [4.11.1] - 2025-11-07
+### Changed
+- Update to Kit 109 and Python 3.12
 
 ## [4.11.0] - 2025-10-31
 ### Changed

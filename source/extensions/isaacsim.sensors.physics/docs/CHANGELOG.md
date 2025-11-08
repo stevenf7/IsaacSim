@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.4] - 2025-11-07
+### Changed
+- Update to Kit 109 and Python 3.12
+
 ## [0.5.3] - 2025-10-31
 ### Changed
 - update deprecated python unittest methods

@@ -47,7 +47,7 @@ exceptionhandling("On")
 removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
 includedirs {
     target_deps .. "/usd/%{config}/include/boost",
-    target_deps .. "/python/include/python3.11",
+    target_deps .. "/python/include/python3.12",
 }
 filter {}
 

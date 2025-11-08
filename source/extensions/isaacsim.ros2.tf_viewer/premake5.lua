@@ -90,7 +90,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
-    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include/python3.12",
     "%{root}/_build/target-deps/python/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/nlohmann_json/include",

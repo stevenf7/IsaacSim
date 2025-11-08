@@ -49,7 +49,7 @@ add_usd(extra_usd_libs)
 filter { "system:linux" }
 disablewarnings { "error=pragmas" }
 includedirs {
-    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include/python3.12",
 }
 buildoptions("-fvisibility=default")
 libdirs {
@@ -83,6 +83,7 @@ includedirs {
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
     isaac_sim_extra_extsbuild_dir .. "/isaacsim.util.debug_draw/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
@@ -100,7 +101,7 @@ add_usd(extra_usd_libs)
 
 includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
-    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include/python3.12",
 }
 
 filter { "system:linux" }
@@ -148,6 +149,7 @@ includedirs {
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/source/extensions/isaacsim.asset.gen.omap/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 
 libdirs {
@@ -167,7 +169,7 @@ links { "tbb", "pthread" }
 buildoptions { "-pthread" }
 includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include/python3.12",
 }
 -- libdirs {
 --     "%{root}/_build/target-deps/octomap/%{cfg.buildcfg}/lib64",

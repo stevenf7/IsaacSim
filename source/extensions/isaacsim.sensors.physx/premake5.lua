@@ -63,7 +63,7 @@ add_usd(extra_usd_libs)
 filter { "system:linux" }
 includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
-    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include/python3.12",
 }
 filter { "system:windows" }
 libdirs {

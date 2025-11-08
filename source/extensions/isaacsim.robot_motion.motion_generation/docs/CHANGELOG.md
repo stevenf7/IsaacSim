@@ -1,4 +1,8 @@
 # Changelog
+## [8.1.2] - 2025-11-07
+### Changed
+- Update to Kit 109 and Python 3.12
+
 ## [8.1.1] - 2025-10-31
 ### Changed
 - fix invalid escape sequences

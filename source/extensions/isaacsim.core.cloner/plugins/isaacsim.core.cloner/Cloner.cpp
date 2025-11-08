@@ -26,23 +26,18 @@
 #include <usdrt/population/IUtils.h>
 #include <usdrt/scenegraph/usd/usd/stage.h>
 
-const omni::fabric::IToken* omni::fabric::Token::iToken = nullptr;
-
 void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
                                 omni::fabric::IStageReaderWriter* iStageReaderWriter,
                                 omni::fabric::StageReaderWriterId stageInProgress,
                                 usdrt::UsdStageRefPtr usdrtStage)
 {
-
-    omni::fabric::Token::iToken = carb::getFramework()->tryAcquireInterface<omni::fabric::IToken>();
-
     omni::fabric::StageReaderWriter stage(stageInProgress);
 
     struct RigidBodyInitData
     {
         bool validPath;
         bool usdPath;
-        omni::fabric::PathC path;
+        omni::fabric::Path path;
         bool dynamicBody;
     };
 
@@ -53,8 +48,8 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
 
     for (size_t i = 0; i < numPaths; i++)
     {
-        const omni::fabric::PathC pathC(rbPaths[i]);
-        usdrt::UsdPrim usdrt_prim = usdrtStage->GetPrimAtPath(usdrt::SdfPath(pathC));
+        const omni::fabric::Path path(rbPaths[i]);
+        usdrt::UsdPrim usdrt_prim = usdrtStage->GetPrimAtPath(usdrt::SdfPath(path));
         if (!usdrt_prim)
         {
             rbInitData[i].validPath = false;
@@ -64,28 +59,28 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
         {
             bool kinematic = false;
             usdrt_prim.GetAttribute(kinematicEnabledToken).Get(&kinematic);
-            rbInitData[i].path = omni::fabric::PathC(rbPaths[i]);
+            rbInitData[i].path = omni::fabric::Path(rbPaths[i]);
             rbInitData[i].dynamicBody = !kinematic;
             rbInitData[i].validPath = true;
             rbInitData[i].usdPath = false;
         }
     }
 
-    omni::fabric::Token rigidBodyWorldPositionToken = omni::fabric::Token::iToken->getHandle("_rigidBodyWorldPosition");
+    omni::fabric::Token rigidBodyWorldPositionToken = omni::fabric::Token::createImmortal("_rigidBodyWorldPosition");
     omni::fabric::Token rigidBodyWorldOrientationToken =
-        omni::fabric::Token::iToken->getHandle("_rigidBodyWorldOrientation");
-    omni::fabric::Token rigidBodyWorldScaleToken = omni::fabric::Token::iToken->getHandle("_rigidBodyWorldScale");
+        omni::fabric::Token::createImmortal("_rigidBodyWorldOrientation");
+    omni::fabric::Token rigidBodyWorldScaleToken = omni::fabric::Token::createImmortal("_rigidBodyWorldScale");
 
 
-    omni::fabric::Token worldForceToken = omni::fabric::Token::iToken->getHandle("_worldForce");
-    omni::fabric::Token worldTorqueToken = omni::fabric::Token::iToken->getHandle("_worldTorque");
+    omni::fabric::Token worldForceToken = omni::fabric::Token::createImmortal("_worldForce");
+    omni::fabric::Token worldTorqueToken = omni::fabric::Token::createImmortal("_worldTorque");
 
-    omni::fabric::Token physXPtrToken = omni::fabric::Token::iToken->getHandle("_physxPtr");
+    omni::fabric::Token physXPtrToken = omni::fabric::Token::createImmortal("_physxPtr");
 
-    omni::fabric::Token dynamicBodyToken = omni::fabric::Token::iToken->getHandle("dynamicBody");
+    omni::fabric::Token dynamicBodyToken = omni::fabric::Token::createImmortal("dynamicBody");
 
-    omni::fabric::Token linVelToken = omni::fabric::Token::iToken->getHandle("physics:velocity");
-    omni::fabric::Token angVelToken = omni::fabric::Token::iToken->getHandle("physics:angularVelocity");
+    omni::fabric::Token linVelToken = omni::fabric::Token::createImmortal("physics:velocity");
+    omni::fabric::Token angVelToken = omni::fabric::Token::createImmortal("physics:angularVelocity");
 
     omni::fabric::Type float3Type(omni::fabric::BaseDataType::eFloat, 3, 0, omni::fabric::AttributeRole::eNone);
     omni::fabric::Type double3Type(omni::fabric::BaseDataType::eDouble, 3, 0, omni::fabric::AttributeRole::eNone);
@@ -153,11 +148,11 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
         return false;
     }
 
+    omni::fabric::FabricId fabricId{};
+    omni::fabric::StageReaderWriterId stageReaderWriterId = iStageReaderWriter->get(stageId);
+
     {
         CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric get or create");
-
-        omni::fabric::FabricId fabricId{};
-        omni::fabric::StageReaderWriterId stageReaderWriterId = iStageReaderWriter->get(stageId);
         if (!stageReaderWriterId.id)
         {
             // populate fabric
@@ -195,7 +190,8 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             {
                 CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric populate");
                 populationUtils->populateFromUsd(stageReaderWriterId, stageId,
-                                                 omni::fabric::asInt(PXR_NS::SdfPath::AbsoluteRootPath()), nullptr, 0.0);
+                                                 omni::fabric::Path(PXR_NS::SdfPath::AbsoluteRootPath().GetAsString()),
+                                                 nullptr, 0.0);
             }
         }
         else
@@ -222,7 +218,8 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             {
                 CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric populate");
                 populationUtils->populateFromUsd(stageReaderWriterId, stageId,
-                                                 omni::fabric::asInt(PXR_NS::SdfPath::AbsoluteRootPath()), nullptr, 0.0);
+                                                 omni::fabric::Path(PXR_NS::SdfPath::AbsoluteRootPath().GetAsString()),
+                                                 nullptr, 0.0);
             }
 
             fabricId = iStageReaderWriter->getFabricId(stageReaderWriterId);
@@ -251,7 +248,7 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             return false;
         }
 
-        omni::fabric::Path world_envs_env_0(source_prim_path.c_str());
+        omni::fabric::Path world_envs_env_0(fabricId, source_prim_path.c_str());
 
         // convert prim_paths to fabric paths, this is quite unfortunate and will slow down the cloning process
         std::vector<omni::fabric::Path> list_of_clones;
@@ -262,7 +259,7 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
                 // compare if its not the same as the source prim path
                 if (prim_path != source_prim_path)
                 {
-                    list_of_clones.push_back(omni::fabric::Path(prim_path.c_str()));
+                    list_of_clones.push_back(omni::fabric::Path(fabricId, prim_path.c_str()));
                 }
             }
         }
@@ -272,7 +269,7 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric batch clone");
             isrwLegacy->batchClone(
                 iStageReaderWriter->getFabricId(stageInProgress), world_envs_env_0,
-                { reinterpret_cast<const omni::fabric::PathC*>(list_of_clones.data()), list_of_clones.size() });
+                { static_cast<const omni::fabric::Path*>(list_of_clones.data()), list_of_clones.size() });
         }
         else
         {

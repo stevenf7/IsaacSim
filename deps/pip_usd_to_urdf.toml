@@ -1,4 +1,4 @@
-# Target kit 107.x
+# Target kit 109.x, python 3.12
 # the scene converter is a python tool created by the SRL to export USD to URDF
 [[dependency]]
 python = "../_build/target-deps/python"

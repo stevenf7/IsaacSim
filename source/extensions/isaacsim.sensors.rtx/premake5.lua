@@ -33,6 +33,7 @@ add_cuda_dependencies()
 
 includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
+    "%{kit_sdk_bin_dir}/dev/internal/include/",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/extensions/isaacsim.sensors.rtx/include",
@@ -59,7 +60,7 @@ add_usd(extra_usd_libs)
 filter { "system:linux" }
 includedirs {
     target_deps .. "/usd/%{cfg.buildcfg}/include/boost",
-    target_deps .. "/python/include/python3.11",
+    target_deps .. "/python/include/python3.12",
 }
 filter { "system:windows" }
 libdirs {

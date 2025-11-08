@@ -40,7 +40,7 @@ includedirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include/python3.12",
 
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
     "%{root}/source/extensions/isaacsim.robot.wheeled_robots/include",
