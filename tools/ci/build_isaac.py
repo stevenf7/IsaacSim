@@ -59,6 +59,14 @@ def main(args: argparse.Namespace):
     repo_docs_enabled = omni.repo.ci.get_repo_config().get("repo_docs", {}).get("enabled", True)
     # repo_docs_enabled = repo_docs_enabled and omni.repo.ci.is_windows()
 
+    # We don't need to build docs for windows release builds
+    if omni.repo.ci.is_windows() and build_config == "release":
+        repo_docs_enabled = False
+
+    # We don't need to build docs for debug builds
+    if build_config == "debug":
+        repo_docs_enabled = False
+
     # Docs
     if repo_docs_enabled:
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_toc"])

@@ -15,14 +15,6 @@ from typing import Callable, Dict
 import omni.repo.ci
 
 
-def pull_library_from_linbuild_usr_lib64(d: str, name: str):
-    # Hack to be able to link to libasan.
-    # Our toolchain is using an older version of GCC that can't statically link ASAN, so we need
-    # to pull the library out of docker
-    omni.repo.ci.launch(["${root}/repo${shell_ext}", "build", "--fetch", "-rd"])
-    omni.repo.ci.launch(["_build/host-deps/linbuild/linbuild.sh", "--", "cp", f"/usr/lib64/{name}", d])
-
-
 def main(args: argparse.Namespace):
     build_config = args.build_config
 
@@ -40,16 +32,6 @@ def main(args: argparse.Namespace):
 
     # Full rebuild config
     omni.repo.ci.launch(build_cmd)
-
-
-    if build_config == "release":
-        # Extensions verification for publishing (if publishing enabled)
-        if omni.repo.ci.get_repo_config().get("repo_publish_exts", {}).get("enabled", True):
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "publish_exts", "--verify"])
-
-        # Tool to promote extensions to the public registry pipeline, if enabled (for apps)
-        if omni.repo.ci.get_repo_config().get("repo_deploy_exts", {}).get("enabled", False):
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "deploy_exts"])
 
 
     # This build exists specifically for coverage so we can skip docs
