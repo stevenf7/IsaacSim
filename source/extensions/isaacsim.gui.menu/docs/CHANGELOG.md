@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.6] - 2025-11-05
+### Changed
+- Renamed Block World Generator to Heightmap Importer
+
 ## [2.4.5] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

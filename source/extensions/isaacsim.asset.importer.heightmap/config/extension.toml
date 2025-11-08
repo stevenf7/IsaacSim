@@ -1,8 +1,8 @@
 [package]
-version = "2.1.0"
+version = "2.2.0"
 category = "Simulation"
-title = "Height Map extension for Isaac Sim Occupancy Map"
-description = "The Height Map extension provides tools for 2D Occupancy Map generation"
+title = "Heightmap extension for Isaac Sim Occupancy Map"
+description = "The Heightmap extension converts heightmap images into 3D terrain environments"
 authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.importer.heightmap"
 keywords = ["isaac", "occupancy map"]
