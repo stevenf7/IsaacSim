@@ -467,15 +467,13 @@ generate_report_cmd = [
   "--/exts/omni.kit.test/testExtGenerateReport=1",
 ]
 stdout_fail_patterns.exclude = [
-  '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
-  "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
 ]
 
 [repo_test.suites.startuptests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 tests_per_process = 1
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -545,7 +543,7 @@ args = [
 exclude = [
   "tests-startup*${shell_ext}",
   "tests-unit*${shell_ext}",
-  "tests-isaacsim.benchmarks*${shell_ext}",
+  "tests-isaacsim.benchmark*${shell_ext}",
   "tests-standalone*${shell_ext}",
   "tests-nativepython*${shell_ext}",
   "tests-internaldocker*${shell_ext}",
@@ -553,9 +551,6 @@ exclude = [
 ]
 include = ["tests-*${shell_ext}"]
 stdout_fail_patterns.exclude = [
-  "*Remote server does not support WebSockets*",
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
 ]
 tc_report_enabled = false
 timeout = 3600
@@ -638,10 +633,8 @@ include = [
   "tests-standalone_benchmarks*${shell_ext}",
 ]
 stdout_fail_patterns.exclude = [
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
 ]
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
 tc_report_enabled = false
 timeout = 5000
 
@@ -666,7 +659,7 @@ args = [
 ]
 exclude = []
 include = ["tests-nativepython*${shell_ext}"]
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
 tc_report_enabled = false
 timeout = 960
 
@@ -707,10 +700,8 @@ include = [
   "tests-external*${shell_ext}",
 ]
 stdout_fail_patterns.exclude = [
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*", # optix disk cache errors
-  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*",           # optix disk cache errors
 ]
-stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
 tc_report_enabled = false
 timeout = 5000
 
