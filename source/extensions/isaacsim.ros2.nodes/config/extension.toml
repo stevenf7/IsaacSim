@@ -84,7 +84,8 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishJointState: [/TestGraph] The prim /NonExistentPrim is not valid*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishJointState: [/TestGraph] Could not find target prim*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishTransformTree: [/TestGraph] Please specify at least one valid target prim for the ROS pose tree component*",
-    "*[Error] [omni.graph.core.plugin] /TestGraph/PublishTransformTree: [/TestGraph] The prim /NonExistentPrim* is not valid. Please specify at least one valid target prim for the ROS pose tree component*"
+    "*[Error] [omni.graph.core.plugin] /TestGraph/PublishTransformTree: [/TestGraph] The prim /NonExistentPrim* is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
+    '*The NumPy module was reloaded*',
 ]
 
 args = [
@@ -142,4 +143,8 @@ dependencies = [
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]

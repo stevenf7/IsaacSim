@@ -77,3 +77,7 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 pythonTests.include = ["isaacsim.core.experimental.objects.tests.*"]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

@@ -80,3 +80,7 @@ args = [
     '--/persistent/physics/enableDeformableBeta=true',
 ]
 pythonTests.include = ["isaacsim.core.experimental.materials.tests.*"]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
