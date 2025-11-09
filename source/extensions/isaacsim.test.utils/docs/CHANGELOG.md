@@ -1,4 +1,8 @@
 # Changelog
+## [0.6.0] - 2025-11-07
+### Added
+- Added `compare_images_in_directories()` function to compare images in two directories
+
 ## [0.5.1] - 2025-09-26
 ### Changed
 - Update license headers

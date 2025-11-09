@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.0] - 2025-11-07
+### Changed
+- Updated pose writer to support explicit backends
+- Updated pose writer tests to use golden images and functional API
 
 ## [1.1.0] - 2025-10-27
 ### Changed
