@@ -39,6 +39,10 @@ class AssetBrowserModel(TreeFolderBrowserModel):
         extension_path = ext_manager.get_extension_path(ext_id)
         cache_path = os.path.abspath(os.path.join(f"{extension_path}", "cache/isaacsim.asset.browser.cache.json"))
 
+        # Ensure the cache directory exists
+        cache_dir = os.path.dirname(cache_path)
+        os.makedirs(cache_dir, exist_ok=True)
+
         super().__init__(
             *args,
             setting_folders=SETTING_FOLDER,

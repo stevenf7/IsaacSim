@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2025-11-10
+### Fixed
+- Replaced deprecated `onclick_fn` with `onclick_action` in "Robotics Examples" menu item to eliminate deprecation warnings
+- Registered proper toggle action for the examples browser
+
 ## [0.2.1] - 2025-08-25
 ### Changed
 - Highlight the selected item label green

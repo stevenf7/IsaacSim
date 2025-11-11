@@ -1,5 +1,5 @@
 [package]
-version = "1.4.1"
+version = "1.4.2"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "The Isaac Sim Asset Browser extension provides an user interface for loading isaac sim assets and files."
