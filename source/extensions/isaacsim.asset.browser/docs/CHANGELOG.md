@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.2] - 2025-11-10
+### Fixed
+- Replaced deprecated `onclick_fn` with `onclick_action` in "Isaac Sim Assets" menu item to eliminate deprecation warnings
+- Registered proper toggle action for the asset browser
+- Fix issue where cache json file could not be created if the cache directory did not exist
+
 ## [1.4.1] - 2025-11-03
 ### Changed
 - Migrate extension implementation to core experimental API

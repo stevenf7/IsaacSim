@@ -67,6 +67,7 @@ class AssetBrowserExtension(omni.ext.IExt):
         omni.kit.menu.utils.remove_menu_items(self._menu_entry, name=BROWSER_MENU_ROOT)
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self._ext_id, f"open_isaac_sim_asset_browser")
+        action_registry.deregister_action(self._ext_id, f"toggle_isaac_sim_asset_browser")
 
         if self._window is not None:
             self._window.destroy()
@@ -99,13 +100,22 @@ class AssetBrowserExtension(omni.ext.IExt):
             lambda: self._show_window(True),
             description=f"Open Isaac Sim Asset Browser",
         )
+        action_registry.register_action(
+            "isaacsim.asset.browser",
+            f"toggle_isaac_sim_asset_browser",
+            self._toggle_window,
+            description=f"Toggle Isaac Sim Asset Browser",
+        )
 
         self._menu_entry = [
             omni.kit.menu.utils.MenuItemDescription(
                 name="Browsers",
                 sub_menu=[
                     omni.kit.menu.utils.MenuItemDescription(
-                        name="Isaac Sim Assets", ticked=True, ticked_fn=self._is_visible, onclick_fn=self._toggle_window
+                        name="Isaac Sim Assets",
+                        ticked=True,
+                        ticked_fn=self._is_visible,
+                        onclick_action=("isaacsim.asset.browser", "toggle_isaac_sim_asset_browser"),
                     )
                 ],
             )

@@ -18,6 +18,7 @@ import weakref
 
 import carb
 import omni.ext
+import omni.kit.actions.core
 import omni.usd
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native.nucleus import get_assets_root_path
@@ -29,6 +30,7 @@ from .og_utils import Ros2ClockGraph, Ros2GenericPubGraph, Ros2JointStatesGraph,
 
 class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
     def on_startup(self, ext_id: str):
+        self._ext_id = ext_id
         carb.log_info("ROS2 Shortcuts Menu startup")
 
         # Create ROS 2 OmniGraph menu items using MenuHelperExtensionFull
@@ -75,6 +77,27 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
             "Tools/Robotics/ROS 2 OmniGraphs",
         )
 
+        # Register actions for ROS 2 Assets
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            self._ext_id,
+            "create_nova_carter_ros",
+            lambda: self.create_asset("/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd", "/nova_carter_ROS"),
+            description="Create Nova Carter ROS robot in scene",
+        )
+        action_registry.register_action(
+            self._ext_id,
+            "create_leatherback_ros",
+            lambda: self.create_asset("/Isaac/Samples/ROS2/Robots/leatherback_ROS.usd", "/leatherback_ROS"),
+            description="Create Leatherback ROS robot in scene",
+        )
+        action_registry.register_action(
+            self._ext_id,
+            "create_iw_hub_ros",
+            lambda: self.create_asset("/Isaac/Samples/ROS2/Robots/iw_hub_ROS.usd", "/iw_hub_ROS"),
+            description="Create iw.hub ROS robot in scene",
+        )
+
         # ROS 2 Assets
         ros_assets_sub_menu = [
             MenuItemDescription(
@@ -82,21 +105,15 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
             ),
             MenuItemDescription(
                 name="Nova Carter",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd", "/nova_carter_ROS"
-                ),
+                onclick_action=(self._ext_id, "create_nova_carter_ros"),
             ),
             MenuItemDescription(
                 name="Leatherback",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Samples/ROS2/Robots/leatherback_ROS.usd", "/leatherback_ROS"
-                ),
+                onclick_action=(self._ext_id, "create_leatherback_ros"),
             ),
             MenuItemDescription(
                 name="iw.hub ROS",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Samples/ROS2/Robots/iw_hub_ROS.usd", "/iw_hub_ROS"
-                ),
+                onclick_action=(self._ext_id, "create_iw_hub_ros"),
             ),
         ]
 
@@ -150,6 +167,12 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         carb.log_info("ROS2 Shortcuts Menu shutdown")
         self.menu_shutdown()
         remove_menu_items(self._ros_assets_menu, "Create")
+
+        # Deregister actions
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_id, "create_nova_carter_ros")
+        action_registry.deregister_action(self._ext_id, "create_leatherback_ros")
+        action_registry.deregister_action(self._ext_id, "create_iw_hub_ros")
         # remove_layout(self.__ros_menu_layout)
 
     #     if self.window_handle:
