@@ -1,4 +1,8 @@
 # Changelog
+## [0.6.1] - 2025-11-10
+### Changed
+- Fix invalid escape sequence
+
 ## [0.6.0] - 2025-11-07
 ### Added
 - Added `compare_images_in_directories()` function to compare images in two directories
