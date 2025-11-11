@@ -20,16 +20,13 @@ import omni
 import omni.replicator.core as rep
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
-from isaacsim.core.nodes import BaseWriterNode, WriterRequest
+from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.ros2.core import collect_namespace
-from omni.kit.viewport.utility import get_viewport_from_window_name
 from pxr import Usd
 
 
 class OgnROS2CameraHelperInternalState(BaseWriterNode):
     def __init__(self):
-        self.viewport = None
-        self.viewport_name = ""
         self.rv = ""
         self.resetSimulationTimeOnStop = False
         self.publishStepSize = 1
@@ -69,31 +66,15 @@ class OgnROS2CameraHelper:
             db.per_instance_state.initialized = True
             stage = omni.usd.get_context().get_stage()
             with Usd.EditContext(stage, stage.GetSessionLayer()):
-                if db.inputs.viewport:
-                    db.log_warn(
-                        "viewport input is deprecated, please use renderProductPath and the IsaacGetViewportRenderProduct to get a viewports render product path"
-                    )
-                    viewport_api = get_viewport_from_window_name(db.inputs.viewport)
-                    if viewport_api:
-                        db.per_instance_state.viewport = viewport_api
-                        db.per_instance_state.viewport_name = db.inputs.viewport
-                    if db.per_instance_state.viewport == None:
-                        carb.log_warn("viewport name {db.inputs.viewport} not found")
-                        db.per_instance_state.initialized = False
-                        return False
-
-                    viewport = db.per_instance_state.viewport
-                    render_product_path = viewport.get_render_product_path()
-                else:
-                    render_product_path = db.inputs.renderProductPath
-                    if not render_product_path:
-                        carb.log_warn("Render product not valid")
-                        db.per_instance_state.initialized = False
-                        return False
-                    if stage.GetPrimAtPath(render_product_path) is None:
-                        carb.log_warn("Render product no created yet, retrying on next call")
-                        db.per_instance_state.initialized = False
-                        return False
+                render_product_path = db.inputs.renderProductPath
+                if not render_product_path:
+                    carb.log_warn("Render product not valid")
+                    db.per_instance_state.initialized = False
+                    return False
+                if stage.GetPrimAtPath(render_product_path) is None:
+                    carb.log_warn("Render product no created yet, retrying on next call")
+                    db.per_instance_state.initialized = False
+                    return False
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
 
                 db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
