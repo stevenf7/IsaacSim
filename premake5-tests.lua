@@ -88,6 +88,7 @@ function create_tests()
         {
             "tests-nativepython-isaacsim.simulation_app.change_resolution",
             "standalone_examples/api/isaacsim.simulation_app/change_resolution.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.simulation_app.load_stage",

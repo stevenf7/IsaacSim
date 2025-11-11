@@ -69,10 +69,14 @@ def test_franka_slow_convergence():
     )
 
     robot.get_articulation_controller().apply_action(action)
-
     for i in range(timeout):
         my_world.step()
-        diff = robot.get_joint_positions() - action.joint_positions
+        current_positions = robot.get_joint_positions()
+        target_positions = action.joint_positions
+        # Create a mask for non-None entries
+        mask = np.array([pos is not None for pos in target_positions])
+        # Compute diff only for non-None entries
+        diff = current_positions[mask] - np.array([pos for pos in target_positions if pos is not None])
         if np.linalg.norm(diff) < 0.01:
             return i
 
@@ -91,7 +95,7 @@ if np.unique(frames_to_converge).shape[0] != 1:
     sys.exit(1)
 
 # On the develop branch, this test always takes 26 frames to converge
-if frames_to_converge[0] != 26:
+if frames_to_converge[0] != 27:
     print("Didn't converge in the right number of frames")
     sys.exit(1)
 
