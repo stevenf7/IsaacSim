@@ -21,6 +21,19 @@ The JUnit XML format is widely supported by CI tools and provides a structured w
 - Execution time
 - Error messages and stack traces
 
+Enhanced Error Reporting:
+    This script can parse detailed error messages for failed tests from the full test output.
+    The full output file should be named 'full_output.txt' in the report folder.
+    
+    When using test_isaac.py (recommended), the full output is automatically captured.
+    This provides much richer failure information in the JUnit XML report, which will be
+    displayed by GitLab and other CI systems.
+    
+    Manual usage (if not using test_isaac.py):
+    
+        ./repo.sh test -s benchmarks --generate-report 2>&1 | tee _build/linux-x86_64/release/_testoutput/full_output.txt
+        ./repo.sh ci standalone_report -- _build/linux-x86_64/release/_testoutput benchmarks
+
 Usage:
     python standalone_report.py <report_folder_path> <suite_name>
 """
@@ -35,6 +48,9 @@ import xml.dom.minidom as minidom
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple, Union
+
+# Debug mode: set to True to enable detailed logging
+DEBUG_MODE = False
 
 
 class Config:
@@ -65,6 +81,7 @@ class Config:
     # File patterns
     RESULTS_FILENAME = "repo_test_results.txt"
     OUTPUT_FILENAME = "results.xml"
+    FULL_OUTPUT_FILENAME = "full_output.txt"  # Optional file with detailed errors
     
     # Regex patterns
     class Patterns:
@@ -99,6 +116,7 @@ class TestCase(NamedTuple):
     name: str
     status: str
     execution_time: float
+    error_message: Optional[str] = None
 
 
 class TestStats:
@@ -337,7 +355,10 @@ class JUnitXMLGenerator:
         # Add failure element for failed tests
         if test_case.status == Config.Status.FAIL:
             failure = ET.SubElement(testcase, "failure")
-            failure.text = f"{test_case.name} failed"
+            if test_case.error_message:
+                failure.text = test_case.error_message
+            else:
+                failure.text = f"{test_case.name} failed"
         elif test_case.status == Config.Status.FLAKY:
             # Mark flaky tests with a note
             system_out = ET.SubElement(testcase, "system-out")
@@ -489,8 +510,15 @@ class TestReportProcessor:
         self.report_folder = Path(report_folder)
         self.suite_name = suite_name
         self.results_file_path = self.report_folder / Config.RESULTS_FILENAME
+        
+        # Check for full output file in the report folder
+        self.full_output_file = self.report_folder / Config.FULL_OUTPUT_FILENAME
+        if not self.full_output_file.exists():
+            self.full_output_file = None
+        
         self.parser = TestResultParser()
         self.xml_generator = JUnitXMLGenerator()
+        self.error_details_map = {}
     
     def validate_inputs(self) -> None:
         """Validate input files and directories exist."""
@@ -508,6 +536,56 @@ class TestReportProcessor:
         except (IOError, OSError) as e:
             ErrorHandler.fatal(f"Failed to read results file '{self.results_file_path}': {e}")
     
+    def parse_full_output_for_errors(self) -> Dict[str, str]:
+        """
+        Parse the full output file to extract detailed error messages for failed tests.
+        
+        Returns:
+            Dict[str, str]: Mapping of test names to their error messages
+        """
+        if not self.full_output_file or not self.full_output_file.exists():
+            return {}
+        
+        error_map = {}
+        try:
+            with open(self.full_output_file, 'r', encoding='utf-8', errors='replace') as f:
+                lines = f.readlines()
+            
+            capturing = False
+            error_lines = []
+            
+            for line in lines:
+                stripped = line.strip()
+                
+                # Look for test process failure marker
+                if '[fail] test process failed.' in stripped:
+                    capturing = True
+                    error_lines = []
+                    continue
+                
+                # If capturing, look for ERROR and test name
+                if capturing:
+                    # Check if this is the end of error block
+                    if re.search(r'-+\s+\[TEST PROCESS FAILED:', stripped):
+                        # Extract test name from the end marker
+                        match = re.search(r'\[TEST PROCESS FAILED:\s+([^\]]+)\]', stripped)
+                        if match:
+                            test_name = match.group(1).strip()
+                            if error_lines:
+                                error_map[test_name] = '\n'.join(error_lines)
+                        capturing = False
+                        error_lines = []
+                        continue
+                    
+                    # Accumulate error lines
+                    if stripped:
+                        error_lines.append(stripped)
+            
+        except (IOError, OSError) as e:
+            ErrorHandler.warn(f"Failed to read full output file '{self.full_output_file}': {e}")
+        
+        return error_map
+    
     def process_test_results(self) -> Tuple[ET.Element, List[TestCase]]:
         """
         Parse test results from report file and generate JUnit XML structure.
@@ -516,6 +594,11 @@ class TestReportProcessor:
             Tuple[ET.Element, List[TestCase]]: XML root element and list of TestCase objects
         """
         self.validate_inputs()
+        
+        # Parse error details from full output file if available
+        self.error_details_map = self.parse_full_output_for_errors()
+        if self.error_details_map:
+            print(f"Loaded error details for {len(self.error_details_map)} failed tests from full output")
         
         testsuites = ET.Element("testsuites")
         testcases = []
@@ -526,25 +609,26 @@ class TestReportProcessor:
         lines = self.read_results_file()
         
         for line_num, line in enumerate(lines, 1):
-            line = line.strip()
-            if not line:
+            stripped_line = line.strip()
+            
+            if not stripped_line:
                 continue
 
             # Try to parse as test result line
-            test_case = self.parser.parse_test_line(line)
+            test_case = self.parser.parse_test_line(stripped_line)
             if test_case:
                 self._process_test_case(test_case, stats, testcases, test_case_list)
                 continue
 
             # Try to extract total time
-            total_time = self.parser.extract_total_time(line)
+            total_time = self.parser.extract_total_time(stripped_line)
             if total_time is not None:
                 stats.total_time = total_time
                 continue
 
             # Handle error lines
-            if re.search(Config.Patterns.ERROR_LINE, line, re.IGNORECASE):
-                self._process_error_line(line, stats, errors)
+            if re.search(Config.Patterns.ERROR_LINE, stripped_line, re.IGNORECASE):
+                self._process_error_line(stripped_line, stats, errors)
         
         # Create and populate test suite
         testsuite = self.xml_generator.create_test_suite_element(self.suite_name, stats)
@@ -568,9 +652,21 @@ class TestReportProcessor:
         # Update statistics
         stats.update_for_status(test_case.status)
         
+        # If this is a failed test and we have error details, attach them
+        enhanced_test_case = test_case
+        if test_case.status == Config.Status.FAIL and self.error_details_map:
+            error_detail = self.error_details_map.get(test_case.name)
+            if error_detail:
+                enhanced_test_case = TestCase(
+                    test_case.name,
+                    test_case.status,
+                    test_case.execution_time,
+                    error_detail
+                )
+        
         # Create XML element
         testcase_element = self.xml_generator.create_test_case_element(
-            test_case, (suite_comp, class_comp)
+            enhanced_test_case, (suite_comp, class_comp)
         )
         testcases.append(testcase_element)
         
