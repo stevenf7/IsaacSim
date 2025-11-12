@@ -358,6 +358,10 @@ build-linux-x86_64-release:
       - ./repo.sh ci build -c release 
 # ==============================================================================================================
 build-linux-x86_64-c++-coverage:
+    extends:
+      - .build-common
+      - .ipp_lnx_x86_64_cpu_large
+      - .osec:vault:v3:prod_token_job
     image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     # Override to remove yum install bsdtar
     before_script:
