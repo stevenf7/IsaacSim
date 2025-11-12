@@ -30,8 +30,8 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 dependencies = [
-    "omni.isaac.ml_archive",
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 args = [
     "--enable",
