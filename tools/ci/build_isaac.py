@@ -69,5 +69,14 @@ def main(args: argparse.Namespace):
         # omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "docs", "-c", build_config])
 
+    # store the debugging symbols for release builds only.
+    if build_config == "release":
+        # For CICD builds against protected branches only set the TTL to 30 days
+        if os.getenv("CI_COMMIT_REF_PROTECTED") == "true":
+            omni.repo.ci.launch(["${root}/repo${shell_ext}", "symstore", "--ttl-seconds", "259200"])
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "symstore", "--process-mrs"], warning_only=True)
+
+
+
     # Package release
     omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])

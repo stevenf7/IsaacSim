@@ -702,3 +702,16 @@ destination_file = "tools/packman/config.packman.xml"
 source_file = "repo.toml"
 patch_file = "./tools/ci/repo_toml_patch.toml"
 destination_file = "repo.toml"
+
+
+
+########################################################################################################################
+# Symstore
+########################################################################################################################
+
+[repo_symstore]
+enabled = true
+strip = true
+strip_nowarn = true
+extra_files = []
+paths = ["$root/_build/$platform/release"]
