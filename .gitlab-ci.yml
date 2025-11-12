@@ -1088,8 +1088,8 @@ publish-extensions:
       - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package
     variables:
-      IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 150Gi
-      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 150Gi
+      IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 250Gi
+      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 250Gi
     needs:
       # We set all dependencies as optional just in case a platform is not needed,
       # then the yml file can override both build/test on one platform and deploy will still work.
