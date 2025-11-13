@@ -15,10 +15,10 @@ writeTarget.platform = true
 
 [dependencies]
 "omni.gpu_foundation" = {}
+"omni.isaac.core_archive" = {}
 "omni.kit.renderer.core" = {}
 "omni.kit.uiapp" = { optional = true }
 "omni.ui" = { optional = true }
-"omni.isaac.core_archive" = {}
 
 [[python.module]]
 name = "isaacsim.app.compatibility_check"

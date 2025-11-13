@@ -26,7 +26,8 @@ This comprehensive validation script checks and can automatically fix multiple a
    ensures only one unnamed test section exists, and sorts named test sections alphabetically
 
 ## Content Validation:
-5. **Dependencies Sorting**: Verifies dependencies in [dependencies] and [[test]] sections are alphabetically sorted
+5. **Dependencies Sorting**: Verifies dependencies in [dependencies] and [[test]] sections are alphabetically sorted.
+   Note: Whitespace is automatically re-fixed after dependency reordering to maintain proper section spacing.
 6. **Settings Documentation**: Checks that each setting in [settings] sections has descriptive comments above it
 7. **Required Fields**: Optionally validates presence of required fields like writeTarget.kit = true
 8. **Deprecation Section**: Validates structure and content of [deprecation] sections
@@ -34,7 +35,7 @@ This comprehensive validation script checks and can automatically fix multiple a
 
 ## Formatting and Spacing:
 10. **Section Spacing**: Ensures exactly one blank line between sections (not more, not less)
-11. **File Boundaries**: Removes extra empty lines at start/end of file, ensures exactly one empty line at EOF
+11. **File Boundaries**: Removes extra empty lines at start/end of file (allows 0 or 1 empty line at EOF, but not more)
 12. **Whitespace Standardization**: Converts lines with only whitespace characters to empty lines
 13. **Line Ending Normalization**: Standardizes line endings to Unix format (\n)
 
@@ -268,7 +269,7 @@ class ExtensionTomlValidator:
         Fix whitespace between sections by ensuring each section is preceded by exactly one blank line.
         If there are more than one consecutive blank lines, reduce them to exactly one.
         Don't add blank lines between comments and the section headers they describe.
-        Also ensures exactly one empty line at the end of the file.
+        Also ensures at most one empty line at the end of the file (0 or 1 is acceptable).
         Ensures lines with only whitespace characters are treated as empty lines.
         Standardizes line endings to \n.
 
@@ -285,7 +286,6 @@ class ExtensionTomlValidator:
         fixed_lines = []
         reduced_excessive_whitespace = False
         removed_leading_trailing = False
-        added_trailing_line = False
         removed_whitespace_only_lines = False
 
         # Remove leading empty lines and lines with only whitespace
@@ -351,14 +351,18 @@ class ExtensionTomlValidator:
             fixed_lines.append(line)
             i += 1
 
-        # Remove all trailing empty lines
+        # Remove excessive trailing empty lines (keep at most one)
+        trailing_empty_count = 0
         while fixed_lines and not fixed_lines[-1].strip():
+            trailing_empty_count += 1
             fixed_lines.pop()
-            removed_leading_trailing = True
 
-        # Ensure exactly one empty line at the end of the file
-        fixed_lines.append("")
-        added_trailing_line = True
+        # If there was at least one trailing empty line, keep exactly one
+        # (0 or 1 trailing empty lines is acceptable)
+        if trailing_empty_count > 0:
+            fixed_lines.append("")
+            if trailing_empty_count > 1:
+                removed_leading_trailing = True
 
         # Add a message if we reduced excessive whitespace
         if reduced_excessive_whitespace:
@@ -374,11 +378,7 @@ class ExtensionTomlValidator:
 
         # Add a message if we removed leading/trailing empty lines
         if removed_leading_trailing:
-            self.fixes_applied.append("Removed extra empty lines at start and/or end of file")
-
-        # Add a message if we added a trailing empty line
-        if added_trailing_line:
-            self.fixes_applied.append("Ensured exactly one empty line at end of file")
+            self.fixes_applied.append("Removed excessive empty lines at start and/or end of file")
 
         # Add a message if we standardized whitespace-only lines
         if removed_whitespace_only_lines:
@@ -392,7 +392,7 @@ class ExtensionTomlValidator:
         Ensures each section has exactly one blank line before it (not more or less),
         except when a section is preceded by a comment that describes it.
         Also checks for extra empty lines at the start or end of the file.
-        Ensures the file ends with exactly one empty line.
+        The file may end with 0 or 1 empty line (both are acceptable), but not more.
 
         Args:
             file_path: Path to the file being validated
@@ -423,7 +423,7 @@ class ExtensionTomlValidator:
             )
             has_spacing_issue = True
 
-        # Check for trailing empty lines
+        # Check for trailing empty lines (0 or 1 is acceptable, but not more)
         trailing_empty_lines = 0
         for line in reversed(lines):
             if not line.strip():
@@ -436,17 +436,7 @@ class ExtensionTomlValidator:
                 ValidationError(
                     file_path,
                     "File Spacing",
-                    f"Extra empty lines ({trailing_empty_lines}) at the end of the file, should be exactly 1",
-                    len(lines),
-                )
-            )
-            has_spacing_issue = True
-        elif trailing_empty_lines == 0:
-            self.errors.append(
-                ValidationError(
-                    file_path,
-                    "File Spacing",
-                    "Missing empty line at the end of the file",
+                    f"Excessive empty lines ({trailing_empty_lines}) at the end of the file, should be at most 1",
                     len(lines),
                 )
             )
@@ -1301,6 +1291,8 @@ class ExtensionTomlValidator:
 
         # Check and fix dependencies alphabetical order
         if config.fix_dependencies_order:
+            deps_were_fixed = False
+
             # Fix dependencies section
             if "dependencies" in toml_data:
                 deps_result = self._validate_and_fix_dependencies_order(
@@ -1309,6 +1301,7 @@ class ExtensionTomlValidator:
                 if deps_result.was_fixed:
                     fixed = True
                     fixed_content = deps_result.fixed_content
+                    deps_were_fixed = True
                     # Reload TOML data and line mapping since content has changed
                     try:
                         toml_data = toml.loads(fixed_content)
@@ -1324,6 +1317,14 @@ class ExtensionTomlValidator:
                 if test_deps_result.was_fixed:
                     fixed = True
                     fixed_content = test_deps_result.fixed_content
+                    deps_were_fixed = True
+
+            # Re-run whitespace fix after dependency reordering to ensure proper spacing
+            if config.fix_whitespace and deps_were_fixed:
+                fixed_whitespace = self._fix_whitespace(fixed_content)
+                if fixed_whitespace != fixed_content:
+                    fixed_content = fixed_whitespace
+                    # No need to reload TOML data since whitespace changes don't affect parsing
 
         # If the file was fixed, apply changes
         if fixed and not config.dry_run:

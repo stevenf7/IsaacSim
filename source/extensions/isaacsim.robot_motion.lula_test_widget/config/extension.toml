@@ -33,7 +33,6 @@ stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
 
-
 [[test]]
 name = "startup"
 dependencies = [
