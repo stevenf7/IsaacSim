@@ -16,11 +16,6 @@
 import platform
 import sys
 
-# Exit early if running on ARM64 (aarch64) architecture
-if platform.machine().lower() in ["aarch64", "arm64"]:
-    print("Livestream is not supported on ARM64 architecture. Exiting.")
-    sys.exit(0)
-
 from isaacsim import SimulationApp
 
 # This sample enables a livestream server to connect to when running headless
@@ -45,7 +40,7 @@ from isaacsim.core.utils.extensions import enable_extension
 kit.set_setting("/app/window/drawMouse", True)
 
 # Enable Livestream extension
-enable_extension("omni.services.livestream.nvcf")
+enable_extension("omni.kit.livestream.app")
 
 # Run until closed
 while kit._app.is_running() and not kit.is_exiting():
