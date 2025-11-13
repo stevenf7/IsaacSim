@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import argparse
-import distutils.dir_util
 import glob
 import logging
 import os
