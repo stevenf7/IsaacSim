@@ -16,6 +16,12 @@ import os
 import re
 import sys
 
+# List of packages to update with the kit version
+PACKAGES_TO_UPDATE = [
+    "generic-model-output",
+    "sensor-checker",
+]
+
 
 def extract_kit_version(file_path):
     """Extract the kit version from kit-sdk.packman.xml.
@@ -59,18 +65,19 @@ def extract_kit_version(file_path):
     sys.exit(1)
 
 
-def update_isaac_sim_version(file_path, new_version):
-    """Update the generic-model-output version in isaac-sim.packman.xml.
+def update_isaac_sim_version(file_path, new_version, packages=None):
+    """Update package versions in isaac-sim.packman.xml.
 
-    The function finds the generic-model-output package entry and updates its version
+    The function finds the specified package entries and updates their versions
     to match the specified new version while preserving the rest of the version string.
 
     Args:
         file_path: Path to the isaac-sim.packman.xml file.
         new_version: The new version string to be used.
+        packages: List of package names to update. If None, uses PACKAGES_TO_UPDATE.
 
     Returns:
-        True if the update was successful, False otherwise.
+        True if all updates were successful, False otherwise.
 
     Example:
 
@@ -79,29 +86,36 @@ def update_isaac_sim_version(file_path, new_version):
         >>> update_isaac_sim_version("deps/isaac-sim.packman.xml", "107.3.0+master.187456.39f199e7")
         True
     """
+    if packages is None:
+        packages = PACKAGES_TO_UPDATE
+
     with open(file_path, "r") as f:
         lines = f.readlines()
 
-    updated = False
+    updated_packages = []
     for i, line in enumerate(lines):
-        if 'name="generic-model-output"' in line and "version=" in line:
-            # Extract the current version pattern
-            current_version_match = re.search(r'version="([^"]+)"', line)
-            if current_version_match:
-                current_version = current_version_match.group(1)
-                # Extract base version pattern from current version
-                base_version_pattern = r"(\d+\.\d+\.\d+\+\w+\.\d+\.[0-9a-f]+)"
-                base_version_match = re.search(base_version_pattern, current_version)
+        for package in packages:
+            if f'name="{package}"' in line and "version=" in line:
+                # Extract the current version pattern
+                current_version_match = re.search(r'version="([^"]+)"', line)
+                if current_version_match:
+                    current_version = current_version_match.group(1)
+                    # Extract base version pattern from current version
+                    base_version_pattern = r"(\d+\.\d+\.\d+\+\w+\.\d+\.[0-9a-f]+)"
+                    base_version_match = re.search(base_version_pattern, current_version)
 
-                if base_version_match:
-                    # Replace only the base version part while keeping the rest
-                    new_full_version = current_version.replace(base_version_match.group(1), new_version)
-                    lines[i] = line.replace(f'version="{current_version}"', f'version="{new_full_version}"')
-                    updated = True
-                    break
+                    if base_version_match:
+                        # Replace only the base version part while keeping the rest
+                        new_full_version = current_version.replace(base_version_match.group(1), new_version)
+                        lines[i] = line.replace(f'version="{current_version}"', f'version="{new_full_version}"')
+                        updated_packages.append(package)
+                        print(f"Updated {package} version")
+                        break
 
-    if not updated:
-        print("Warning: Could not find the generic-model-output version pattern.")
+    # Check if all packages were updated
+    missing_packages = set(packages) - set(updated_packages)
+    if missing_packages:
+        print(f"Warning: Could not find version patterns for packages: {', '.join(missing_packages)}")
         return False
 
     with open(file_path, "w") as f:
@@ -111,10 +125,11 @@ def update_isaac_sim_version(file_path, new_version):
 
 
 def main():
-    """Main function that updates generic-model-output version in isaac-sim.packman.xml.
+    """Main function that updates package versions in isaac-sim.packman.xml.
 
     The function extracts the kit version from kit-sdk.packman.xml and updates
-    the generic-model-output version in isaac-sim.packman.xml to match.
+    the package versions in isaac-sim.packman.xml to match. The list of packages
+    to update is defined in PACKAGES_TO_UPDATE.
 
     Raises:
         SystemExit: If required files are not found.
@@ -125,7 +140,8 @@ def main():
 
         >>> main()
         Extracted kit version: 107.3.0+master.187456.39f199e7
-        Successfully updated generic-model-output version in /path/to/deps/isaac-sim.packman.xml
+        Updated generic-model-output version
+        Successfully updated package versions in /path/to/deps/isaac-sim.packman.xml
     """
     # Get script directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -151,9 +167,9 @@ def main():
 
     # Update isaac-sim.packman.xml
     if update_isaac_sim_version(isaac_sim_path, kit_version):
-        print(f"Successfully updated generic-model-output version in {isaac_sim_path}")
+        print(f"Successfully updated package versions in {isaac_sim_path}")
     else:
-        print("Failed to update version.")
+        print("Failed to update versions.")
         sys.exit(1)
 
 
