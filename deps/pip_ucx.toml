@@ -1,0 +1,17 @@
+# Target kit 109.x
+# UCX Core dependencies
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "libucxx-cu12==0.44.0",             # SWIPAT filed under: https://nvbugs/5585451    # UCX core
+    "libucx-cu12==1.19.0",              # SWIPAT filed under: https://nvbugs/5585468    # UCX core
+    "librmm-cu12==25.6.0",              # SWIPAT filed under: https://nvbugs/5585481    # UCX core
+    "rapids-logger==0.1.1",             # SWIPAT filed under: https://nvbugs/5585556    # UCX core
+]
+
+target = "../_build/target-deps/pip_ucx_prebundle"
+platforms = ["linux-x86_64", "linux-aarch64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"

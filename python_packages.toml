@@ -630,6 +630,22 @@ inventory.includes.all = [
     "exts/isaacsim.test.utils",
 ]
 
+[isaacsim-ucx]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for UCX communication"
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ucx"]
+pyproject.dependencies.all = [
+    "isaacsim-sensor==${version}",
+]
+# inventory (relative to the build config)
+inventory.includes.all = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/isaacsim.ucx.core",
+]
+
+
 [isaacsim-utils]
 # pyproject.toml
 pyproject.description = "Isaac Sim utilities"

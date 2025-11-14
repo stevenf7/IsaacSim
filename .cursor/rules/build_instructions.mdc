@@ -176,6 +176,7 @@ Dependencies are defined in `deps/` directory:
 - `pip_lula.toml`: Lula motion planning packages
 - `pip_cloud.toml`: Cloud-related packages
 - `pip_usd_to_urdf.toml`: USD to URDF converter packages
+- `pip_ucx.toml`: UCX packages
 
 ### Build Outputs
 - `_build/linux-x86_64/release/`: Linux release build
