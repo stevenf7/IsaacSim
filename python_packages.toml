@@ -354,6 +354,7 @@ inventory.includes.all = [
     "exts/isaacsim.core.includes",
     "exts/isaacsim.core.nodes",
     "exts/isaacsim.core.prims",
+    "exts/isaacsim.core.rendering_manager",
     "exts/isaacsim.core.simulation_manager",
     "exts/isaacsim.core.throttling",
     "exts/isaacsim.core.utils",

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.1] - 2025-11-12
+### Changed
+- Return the input as it is when getting a prim or prim path, provided that the input is of the expected return type
+
 ## [0.6.0] - 2025-11-04
 ### Added
 - Add app utils

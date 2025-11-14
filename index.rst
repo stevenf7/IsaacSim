@@ -85,6 +85,7 @@ Extensions
    isaacsim.core.includes <source/extensions/isaacsim.core.includes/docs/index>
    isaacsim.core.nodes <source/extensions/isaacsim.core.nodes/docs/index>
    isaacsim.core.prims <source/extensions/isaacsim.core.prims/docs/index>
+   isaacsim.core.rendering_manager <source/extensions/isaacsim.core.rendering_manager/docs/index>
    isaacsim.core.simulation_manager <source/extensions/isaacsim.core.simulation_manager/docs/index>
    isaacsim.core.throttling <source/extensions/isaacsim.core.throttling/docs/index>
    isaacsim.core.utils <source/extensions/isaacsim.core.utils/docs/index>

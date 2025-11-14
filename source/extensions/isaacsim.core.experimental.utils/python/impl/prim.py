@@ -133,13 +133,13 @@ def get_prim_variant_collection(prim: str | Usd.Prim) -> dict[str, list[str]]:
     }
 
 
-def get_prim_at_path(path: str) -> Usd.Prim | usdrt.Usd.Prim:
+def get_prim_at_path(path: str | Sdf.Path) -> Usd.Prim | usdrt.Usd.Prim:
     """Get the prim at a given path.
 
     Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
 
     Args:
-        path: Prim path.
+        path: Prim path. If the input is already a prim instance, it will be returned as is.
 
     Returns:
         Prim.
@@ -156,6 +156,8 @@ def get_prim_at_path(path: str) -> Usd.Prim | usdrt.Usd.Prim:
         >>> prim_utils.get_prim_at_path("/World/Cube")
         Usd.Prim(</World/Cube>)
     """
+    if isinstance(path, (Usd.Prim, usdrt.Usd.Prim)):
+        return path
     return stage_utils.get_current_stage().GetPrimAtPath(path)
 
 
@@ -165,7 +167,7 @@ def get_prim_path(prim: Usd.Prim | usdrt.Usd.Prim) -> str:
     Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
 
     Args:
-        prim: Prim instance.
+        prim: Prim instance. If the input is already a path, it will be returned as is.
 
     Returns:
         Prim path.
@@ -181,6 +183,8 @@ def get_prim_path(prim: Usd.Prim | usdrt.Usd.Prim) -> str:
         >>> prim_utils.get_prim_path(prim)
         '/World/Cube'
     """
+    if isinstance(prim, (str, Sdf.Path)):
+        return prim.pathString if isinstance(prim, Sdf.Path) else prim
     return prim.GetPath().pathString
 
 
