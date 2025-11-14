@@ -13,14 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import omni.kit.test
-
-################################################################################
-### !!!IMPORTANT!!!
-### The tests below are replicator alternative randomizer snippets from the docs.
-### If you fix an issue here make sure to update the code in the docs as well
-### The idea is that we can catch any api changes and update the docs appropriately
-################################################################################
+import omni.kit
+import omni.usd
+from isaacsim.test.utils.file_validation import validate_folder_contents
 
 
 class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
@@ -35,7 +30,7 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_randomizing_a_light_source(self):
+    async def test_randomize_lights(self):
         import asyncio
         import os
 
@@ -83,13 +78,16 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 lights.append(light_prim)
             return lights
 
-        async def run_randomizations_async(num_frames, lights, write_data=True, delay=0):
+        async def run_randomizations_async(num_frames, lights, write_data, delay=None):
             if write_data:
-                writer = rep.WriterRegistry.get("BasicWriter")
                 out_dir = os.path.join(os.getcwd(), "_out_rand_lights")
                 print(f"Writing data to {out_dir}..")
-                writer.initialize(output_dir=out_dir, rgb=True)
-                rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
+                backend = rep.backends.get("DiskBackend")
+                backend.initialize(output_dir=out_dir)
+                writer = rep.WriterRegistry.get("BasicWriter")
+                writer.initialize(backend=backend, rgb=True)
+                cam = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), name="Camera")
+                rp = rep.create.render_product(cam, resolution=(512, 512))
                 writer.attach(rp)
 
             for _ in range(num_frames):
@@ -109,15 +107,26 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                     await rep.orchestrator.step_async(rt_subframes=16)
                 else:
                     await omni.kit.app.get_app().next_update_async()
-                if delay > 0:
+                # Optional delay between frames to better visualize the randomization in the viewport
+                if delay is not None and delay > 0:
                     await asyncio.sleep(delay)
+
+            # Wait for the data to be written to disk and cleanup writer and render product
+            if write_data:
+                await rep.orchestrator.wait_until_complete_async()
+                writer.detach()
+                rp.destroy()
 
         num_frames = 10
         lights = sphere_lights(10)
-        # asyncio.ensure_future(run_randomizations_async(num_frames=num_frames, lights=lights, delay=0.2))
-        await run_randomizations_async(num_frames=num_frames, lights=lights, delay=0.2)
+        # asyncio.ensure_future(run_randomizations_async(num_frames=num_frames, lights=lights, write_data=True, delay=0.2))
+        await run_randomizations_async(num_frames=num_frames, lights=lights, write_data=True)
 
-    async def test_randomizing_textures(self):
+        out_dir = os.path.join(os.getcwd(), "_out_rand_lights")
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": num_frames})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+
+    async def test_randomize_textures(self):
         import asyncio
         import os
 
@@ -205,13 +214,25 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
 
         materials = create_materials(len(shapes))
 
-        async def run_randomizations_async(num_frames, materials, textures, write_data=True, delay=0):
+        async def run_randomizations_async(num_frames, materials, write_data, delay=None):
+            assets_root_path = await get_assets_root_path_async()
+            textures = [
+                assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/aggregate_exposed_diff.jpg",
+                assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/gravel_track_ballast_diff.jpg",
+                assets_root_path
+                + "/NVIDIA/Materials/vMaterials_2/Ground/textures/gravel_track_ballast_multi_R_rough_G_ao.jpg",
+                assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/rough_gravel_rough.jpg",
+            ]
+
             if write_data:
-                writer = rep.WriterRegistry.get("BasicWriter")
                 out_dir = os.path.join(os.getcwd(), "_out_rand_textures")
                 print(f"Writing data to {out_dir}..")
-                writer.initialize(output_dir=out_dir, rgb=True)
-                rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512))
+                backend = rep.backends.get("DiskBackend")
+                backend.initialize(output_dir=out_dir)
+                writer = rep.WriterRegistry.get("BasicWriter")
+                writer.initialize(backend=backend, rgb=True)
+                cam = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), name="Camera")
+                rp = rep.create.render_product(cam, resolution=(512, 512))
                 writer.attach(rp)
 
             # Apply the new materials and store the initial ones to reassign later
@@ -237,8 +258,16 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                     await rep.orchestrator.step_async(rt_subframes=4)
                 else:
                     await omni.kit.app.get_app().next_update_async()
-                if delay > 0:
+
+                # Optional delay between frames to better visualize the randomization in the viewport
+                if delay is not None and delay > 0:
                     await asyncio.sleep(delay)
+
+            # Wait for the data to be written to disk and cleanup writer and render product
+            if write_data:
+                await rep.orchestrator.wait_until_complete_async()
+                writer.detach()
+                rp.destroy()
 
             # Reassign the initial materials
             for shape, mat in initial_materials.items():
@@ -247,20 +276,15 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 else:
                     UsdShade.MaterialBindingAPI(shape).UnbindAllBindings()
 
-        assets_root_path = await get_assets_root_path_async()
-        textures = [
-            assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/aggregate_exposed_diff.jpg",
-            assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/gravel_track_ballast_diff.jpg",
-            assets_root_path
-            + "/NVIDIA/Materials/vMaterials_2/Ground/textures/gravel_track_ballast_multi_R_rough_G_ao.jpg",
-            assets_root_path + "/NVIDIA/Materials/vMaterials_2/Ground/textures/rough_gravel_rough.jpg",
-        ]
-
         num_frames = 10
-        # asyncio.ensure_future(run_randomizations_async(num_frames, materials, textures, delay=0.2))
-        await run_randomizations_async(num_frames, materials, textures, delay=0.2)
+        # asyncio.ensure_future(run_randomizations_async(num_frames, materials, write_data=True, delay=0.2))
+        await run_randomizations_async(num_frames, materials, write_data=True)
 
-    async def test_sequential_randomizations(self):
+        out_dir = os.path.join(os.getcwd(), "_out_rand_textures")
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": num_frames})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+
+    async def test_randomize_sequential_sphere_scan(self):
         import asyncio
         import itertools
         import os
@@ -313,23 +337,26 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         if not bin_prim.GetAttribute("xformOp:rotateXYZ"):
             UsdGeom.Xformable(bin_prim).AddRotateXYZOp()
 
-        cam = stage.DefinePrim("/World/Camera", "Camera")
-        if not cam.GetAttribute("xformOp:translate"):
-            UsdGeom.Xformable(cam).AddTranslateOp()
-        if not cam.GetAttribute("xformOp:orient"):
-            UsdGeom.Xformable(cam).AddOrientOp()
+        view_cam = stage.DefinePrim("/World/Camera", "Camera")
+        if not view_cam.GetAttribute("xformOp:translate"):
+            UsdGeom.Xformable(view_cam).AddTranslateOp()
+        if not view_cam.GetAttribute("xformOp:orient"):
+            UsdGeom.Xformable(view_cam).AddOrientOp()
 
         async def run_randomizations_async(
-            num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True, delay=0
+            num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data, delay=None
         ):
             if write_data:
-                writer = rep.WriterRegistry.get("BasicWriter")
                 out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
                 print(f"Writing data to {out_dir}..")
-                writer.initialize(output_dir=out_dir, rgb=True)
-                rp_persp = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="PerspView")
-                rp_cam = rep.create.render_product(str(cam.GetPath()), (512, 512), name="SphereView")
-                writer.attach([rp_cam, rp_persp])
+                backend = rep.backends.get("DiskBackend")
+                backend.initialize(output_dir=out_dir)
+                writer = rep.WriterRegistry.get("BasicWriter")
+                writer.initialize(backend=backend, rgb=True)
+                persp_cam = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), name="PerspCamera")
+                rp_persp = rep.create.render_product(persp_cam, (512, 512), name="PerspView")
+                rp_view = rep.create.render_product(view_cam, (512, 512), name="SphereView")
+                writer.attach([rp_view, rp_persp])
 
             textures_cycle = itertools.cycle(dome_textures)
 
@@ -380,22 +407,30 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 rand_radius = np.random.normal(3, 0.5) * pallet_length
                 bin_pos = omni.usd.get_world_transform_matrix(bin_prim).ExtractTranslation()
                 cam_pos = next_point_on_sphere(i, num_points=num_frames, radius=rand_radius, origin=bin_pos)
-                cam.GetAttribute("xformOp:translate").Set(Gf.Vec3d(*cam_pos))
+                view_cam.GetAttribute("xformOp:translate").Set(Gf.Vec3d(*cam_pos))
 
                 eye = Gf.Vec3d(*cam_pos)
                 target = Gf.Vec3d(*bin_pos)
                 up_axis = Gf.Vec3d(0, 0, 1)
                 look_at_quatd = Gf.Matrix4d().SetLookAt(eye, target, up_axis).GetInverse().ExtractRotation().GetQuat()
-                cam.GetAttribute("xformOp:orient").Set(Gf.Quatf(look_at_quatd))
+                view_cam.GetAttribute("xformOp:orient").Set(Gf.Quatf(look_at_quatd))
 
                 if write_data:
-                    await rep.orchestrator.step_async(rt_subframes=4)
+                    await rep.orchestrator.step_async(rt_subframes=4, delta_time=0.0)
                 else:
                     await omni.kit.app.get_app().next_update_async()
-                if delay > 0:
+                # Optional delay between frames to better visualize the randomization in the viewport
+                if delay is not None and delay > 0:
                     await asyncio.sleep(delay)
 
-        num_frames = 90
+            # Wait for the data to be written to disk and cleanup writer and render products
+            if write_data:
+                await rep.orchestrator.wait_until_complete_async()
+                writer.detach()
+                rp_persp.destroy()
+                rp_view.destroy()
+
+        num_frames = 10  # 90
         dome_textures = [
             assets_root_path + "/NVIDIA/Assets/Skies/Cloudy/champagne_castle_1_4k.hdr",
             assets_root_path + "/NVIDIA/Assets/Skies/Clear/evening_road_01_4k.hdr",
@@ -403,21 +438,28 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             assets_root_path + "/NVIDIA/Assets/Skies/Clear/qwantani_4k.hdr",
         ]
         # asyncio.ensure_future(
-        #     run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, delay=0.2)
+        #     run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True, delay=0.2)
         # )
-        await run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, delay=0.2)
+        await run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True)
 
-    async def test_physics_based_randomized_volume_filling(self):
+        out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
+        folder_contents_success = validate_folder_contents(
+            path=out_dir, expected_counts={"png": num_frames * 2}, recursive=True
+        )
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+
+    async def test_randomize_physics_based_volume_filling(self):
         import asyncio
+        import os
         import random
         from itertools import chain
 
         import carb
         import omni.kit.app
         import omni.physics.core
+        import omni.replicator.core as rep
         import omni.usd
-        from isaacsim.core.utils.bounds import compute_aabb, compute_obb, create_bbox_cache
-        from isaacsim.storage.native import get_assets_root_path
+        from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
 
         # Add transformation properties to the prim (if not already present)
@@ -479,9 +521,8 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         # Create a new prim with the provided asset URL and transform properties
         def create_asset(stage, asset_url, path, location=None, rotation=None, orientation=None, scale=None):
             prim_path = omni.usd.get_stage_next_free_path(stage, path, False)
-            reference_url = asset_url if asset_url.startswith("omniverse://") else get_assets_root_path() + asset_url
             prim = stage.DefinePrim(prim_path, "Xform")
-            prim.GetReferences().AddReference(reference_url)
+            prim.GetReferences().AddReference(asset_url)
             set_transform_attributes(prim, location=location, rotation=rotation, orientation=orientation, scale=scale)
             return prim
 
@@ -687,22 +728,25 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             return boxes
 
         # Run the example scenario
-        async def run_box_stacking_scenarios_async(num_pallets=1, env_url=None):
+        async def run_box_stacking_scenarios_async(num_pallets, env_url=None, write_data=False):
+            # Get assets root path once for all asset loading operations
+            assets_root_path = await get_assets_root_path_async()
+
             # List of pallets and boxes to randomly choose from with their respective weights
             pallets_urls_and_weights = [
-                ("/Isaac/Environments/Simple_Warehouse/Props/SM_PaletteA_01.usd", 0.25),
-                ("/Isaac/Environments/Simple_Warehouse/Props/SM_PaletteA_02.usd", 0.75),
+                (assets_root_path + "/Isaac/Environments/Simple_Warehouse/Props/SM_PaletteA_01.usd", 0.25),
+                (assets_root_path + "/Isaac/Environments/Simple_Warehouse/Props/SM_PaletteA_02.usd", 0.75),
             ]
             boxes_urls_and_weights = [
-                ("/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxA_01.usd", 0.02),
-                ("/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxB_01.usd", 0.06),
-                ("/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxC_01.usd", 0.12),
-                ("/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_01.usd", 0.80),
+                (assets_root_path + "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxA_01.usd", 0.02),
+                (assets_root_path + "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxB_01.usd", 0.06),
+                (assets_root_path + "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxC_01.usd", 0.12),
+                (assets_root_path + "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_01.usd", 0.80),
             ]
 
             # Load a predefined or create a new stage
             if env_url is not None:
-                env_path = env_url if env_url.startswith("omniverse://") else get_assets_root_path() + env_url
+                env_path = env_url if env_url.startswith("omniverse://") else assets_root_path + env_url
                 omni.usd.get_context().open_stage(env_path)
                 stage = omni.usd.get_context().get_stage()
             else:
@@ -768,4 +812,32 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 await omni.kit.app.get_app().next_update_async()
             timeline.pause()
 
-        await run_box_stacking_scenarios_async(num_pallets=1)
+            if write_data:
+                out_dir = os.path.join(os.getcwd(), "_out_box_stacking")
+                print(f"Writing data to {out_dir}..")
+                backend = rep.backends.get("DiskBackend")
+                backend.initialize(output_dir=out_dir)
+                writer = rep.WriterRegistry.get("BasicWriter")
+                writer.initialize(backend=backend, rgb=True)
+                cam = rep.functional.create.camera(position=(5, -5, 2), look_at=(0, 0, 0), name="PalletCamera")
+                rp = rep.create.render_product(cam, resolution=(512, 512))
+                writer.attach(rp)
+
+                # Capture the data and wait for the data to be written to disk
+                await rep.orchestrator.step_async(rt_subframes=8)
+
+                # Cleanup the writer and render product
+                writer.detach()
+                rp.destroy()
+
+        # asyncio.ensure_future(run_box_stacking_scenarios_async(num_pallets=1, write_data=True))
+        # asyncio.ensure_future(
+        #     run_box_stacking_scenarios_async(
+        #         num_pallets=6, env_url="/Isaac/Environments/Simple_Warehouse/warehouse.usd", write_data=True
+        #     )
+        # )
+        await run_box_stacking_scenarios_async(num_pallets=1, write_data=True)
+
+        out_dir = os.path.join(os.getcwd(), "_out_box_stacking")
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": 1})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
