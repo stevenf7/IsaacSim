@@ -572,7 +572,8 @@ function create_tests()
         },
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_short",
-            "/standalone_examples/testing/isaacsim.replicator.examples/motion_blur_short.py",
+            "/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py",
+            "--delta_times None 0.00416666666 --samples_per_pixel 32 --motion_blur_subsamples 4"
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.subscribers_and_events",

@@ -25,8 +25,19 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
+        # Save the original timeline states to ensure they are restored after the test
+        timeline = omni.timeline.get_timeline_interface()
+        self.original_timeline_looping = timeline.is_looping()
+        self.original_timeline_end_time = timeline.get_end_time()
 
     async def tearDown(self):
+        # Set the timeline to the original states after the test
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.stop()
+        timeline.set_looping(self.original_timeline_looping)
+        timeline.set_end_time(self.original_timeline_end_time)
+        timeline.commit()
+
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -57,14 +68,48 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Create a new stage
             await omni.usd.get_context().new_stage_async()
 
+            # Disable capture on play to capture data manually using step
+            rep.orchestrator.set_capture_on_play(False)
+
             # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
             carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
-            # Disable capture on play (data will only be accessed at custom times)
-            carb.settings.get_settings().set("/omni/replicator/captureOnPlay", False)
-
             # Make sure fixed time stepping is set (the timeline will be advanced with the same delta time)
             carb.settings.get_settings().set("/app/player/useFixedTimeStepping", True)
+
+            # Create scene with a semantically annotated cube with physics
+            rep.functional.create.xform(name="World")
+            rep.functional.create.dome_light(intensity=250, parent="/World", name="DomeLight")
+            cube = rep.functional.create.cube(
+                position=(0, 0, 2), parent="/World", name="Cube", semantics={"class": "cube"}
+            )
+            rep.functional.physics.apply_collider(cube)
+            rep.functional.physics.apply_rigid_body(cube)
+
+            # Create render product (disabled until data capture is needed)
+            cam = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), parent="/World", name="Camera")
+            rp = rep.create.render_product(cam, resolution=(512, 512), name="rp")
+            rp.hydra_texture.set_updates_enabled(False)
+
+            # Create the backend for the writer
+            out_dir_rgb = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
+            print(f"Writer data will be written to: {out_dir_rgb}")
+            backend = rep.backends.get("DiskBackend")
+            backend.initialize(output_dir=out_dir_rgb)
+
+            # Create a writer and an annotator as examples of different ways of accessing data
+            writer_rgb = rep.WriterRegistry.get("BasicWriter")
+            writer_rgb.initialize(backend=backend, rgb=True)
+            writer_rgb.attach(rp)
+
+            # Create an annotator to access the data directly
+            annot_depth = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
+            annot_depth.attach(rp)
+
+            # Run the simulation for the given number of frames and access the data at the desired framerates
+            print(
+                f"Starting simulation: {duration_seconds:.2f}s duration, {SENSOR_FPS:.0f} FPS sensor, {STAGE_FPS:.0f} FPS timeline"
+            )
 
             # Set the timeline parameters
             timeline = omni.timeline.get_timeline_interface()
@@ -75,30 +120,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             timeline.play()
             timeline.commit()
 
-            # Create scene with a semantically annotated cube with physics
-            rep.functional.create.dome_light(intensity=250)
-            cube = rep.functional.create.cube(position=(0, 0, 3), semantics={"class": "cube"})
-            rep.functional.physics.apply_collider(cube)
-            rep.functional.physics.apply_rigid_body(cube)
-
-            # Create render product (disabled until data capture is needed)
-            rp = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="rp")
-            rp.hydra_texture.set_updates_enabled(False)
-
-            # Create a writer and an annotator as examples of different ways of accessing data
-            out_dir_rgb = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
-            print(f"Writer data will be written to: {out_dir_rgb}")
-            writer_rgb = rep.WriterRegistry.get("BasicWriter")
-            writer_rgb.initialize(output_dir=out_dir_rgb, rgb=True)
-            writer_rgb.attach(rp)
-            annot_depth = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
-            annot_depth.attach(rp)
-
             # Run the simulation for the given number of frames and access the data at the desired framerates
-            print(
-                f"Starting simulation: {duration_seconds:.2f}s duration, {SENSOR_FPS:.0f} FPS sensor, {STAGE_FPS:.0f} FPS timeline"
-            )
-
             frame_count = 0
             previous_time = timeline.get_current_time()
             elapsed_time = 0.0
@@ -136,16 +158,16 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Wait for writer to finish
             await rep.orchestrator.wait_until_complete_async()
 
+            # Cleanup
+            timeline.pause()
+            writer_rgb.detach()
+            annot_depth.detach()
+            rp.destroy()
+
         # Run example with duration for all captures plus a buffer of 5 frames
         duration = (NUM_CAPTURES * SENSOR_DT) + (5.0 / STAGE_FPS)
         # asyncio.ensure_future(run_custom_fps_example_async(duration_seconds=duration))
         await run_custom_fps_example_async(duration_seconds=duration)
-
-        # Cleanup the timeline
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-        timeline.commit()
-        timeline.set_looping(True)
 
         # Validate the output directory contents
         out_dir = os.path.join(os.getcwd(), "_out_writer_fps_rgb")

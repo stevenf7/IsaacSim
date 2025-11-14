@@ -1,4 +1,12 @@
 # Changelog
+## [1.5.0] - 2025-10-21
+### Changed
+- Updated replicator examples to use replicator functional api where applicable
+- Writers use explicit backends to write data to disk
+- Changed data augmentation tests to use a fixed seed in the kernel functions as well, updated golden images
+- UR10 palletizing example uses realtime pathtracing and backend for its writer
+- Switched to core.experimental rigid prims where applicable
+- Switched to SimulationManager instead of World
 
 ## [1.4.1] - 2025-10-27
 ### Changed
