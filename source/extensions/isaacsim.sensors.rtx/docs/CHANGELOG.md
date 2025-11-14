@@ -1,4 +1,9 @@
 # Changelog
+## [15.9.0] - 2025-11-10
+### Added
+- Link sensor_checker utility as Python module
+- Add sensor_checker to unit tests to verify supported Lidar configs
+
 ## [15.8.7] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

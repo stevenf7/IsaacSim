@@ -36,4 +36,7 @@
   <dependency name="rapidjson" linkPath="../_build/target-deps/rapidjson">
     <package name="rapidjson" version="5.2.1-5-b4cf59b6" />
   </dependency>
+  <dependency name="sensor-checker" linkPath="../_build/target-deps/sensor-checker/${platform_target}/${config}">
+    <package name="sensor-checker" version="109.0.0+feature.246579.7fc407c7.gl.${platform_target_abi}.${config}"/>
+  </dependency>
 </project>

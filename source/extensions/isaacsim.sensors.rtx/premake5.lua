@@ -38,6 +38,7 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/extensions/isaacsim.sensors.rtx/include",
     target_deps .. "/generic_model_output/%{platform}/%{config}/include",
+    target_deps .. "/sensor-checker/%{platform}/%{config}/include",
     target_deps .. "/omni_client_library/include",
     target_deps .. "/python/include",
     target_deps .. "/rapidjson/include",
@@ -105,6 +106,10 @@ repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },
     {
         "%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/omni/sensors",
+        ogn.python_target_path,
+    },
+    {
+        "%{root}/_build/target-deps/sensor-checker/%{platform}/%{config}/omni/sensors",
         ogn.python_target_path,
     },
 }

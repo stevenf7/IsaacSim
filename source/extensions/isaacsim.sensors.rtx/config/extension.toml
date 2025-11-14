@@ -1,5 +1,5 @@
 [package]
-version = "15.8.7"
+version = "15.9.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -42,6 +42,9 @@ name = "isaacsim.sensors.rtx"
 
 [[python.module]]
 name = "isaacsim.sensors.rtx.generic_model_output"
+
+[[python.module]]
+name = "isaacsim.sensors.rtx.sensor_checker"
 
 [[python.module]]
 name = "isaacsim.sensors.rtx.tests"
