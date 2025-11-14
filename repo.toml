@@ -493,7 +493,7 @@ args = [
   "--/log/flushStandardStreamOutput=1",                    # Prevents mixed up piped stdout
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
-  "--/exts/omni.kit.test/pyCoverageEnabled=True",
+  "--/exts/omni.kit.test/pyCoverageEnabled=False",
 ]
 exclude = []
 include = ["tests-startup*${shell_ext}"]
@@ -538,7 +538,7 @@ args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
-  "--/exts/omni.kit.test/pyCoverageEnabled=True",
+  "--/exts/omni.kit.test/pyCoverageEnabled=False",
 ]
 exclude = [
   "tests-startup*${shell_ext}",
@@ -625,7 +625,7 @@ args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
-  "--/exts/omni.kit.test/pyCoverageEnabled=True",
+  "--/exts/omni.kit.test/pyCoverageEnabled=False",
 ]
 exclude = []
 include = [
@@ -693,7 +693,7 @@ args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
-  "--/exts/omni.kit.test/pyCoverageEnabled=True",
+  "--/exts/omni.kit.test/pyCoverageEnabled=False",
 ]
 exclude = []
 include = [
