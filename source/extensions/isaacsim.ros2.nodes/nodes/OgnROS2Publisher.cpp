@@ -473,8 +473,6 @@ private:
 
     static const char* getTokenText(const NodeObj& nodeObj, const omni::graph::core::NameToken& token)
     {
-        GraphObj graphObj = nodeObj.iNode->getGraph(nodeObj);
-        GraphContextObj context = graphObj.iGraph->getDefaultGraphContext(graphObj);
         return token.getText();
     }
 

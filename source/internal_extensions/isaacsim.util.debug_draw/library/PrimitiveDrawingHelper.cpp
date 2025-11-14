@@ -41,9 +41,9 @@ PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext
       m_renderingMode(renderingMode),
       m_worldSpace(worldSpace),
       m_depthTest(depthTest),
-      m_primitiveList(nullptr),
       m_dirty(false),
-      m_vertexData(new VertexData())
+      m_vertexData(new VertexData()),
+      m_primitiveList(nullptr)
 {
 }
 
