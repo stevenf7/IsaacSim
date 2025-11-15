@@ -73,7 +73,7 @@ public:
         // The idea is that node is reset whenever stop is pressed
         m_timeline = carb::getCachedInterface<omni::timeline::ITimeline>();
         m_timelineEventSub = carb::events::createSubscriptionToPopByType(
-            m_timeline->getTimelineEventStream(),
+            m_timeline->getTimeline()->getTimelineEventStream(),
             static_cast<carb::events::EventType>(omni::timeline::TimelineEventType::eStop),
             [this](carb::events::IEvent* e) { reset(); }, 0, "IsaacSimOGNTimelineEventHandler");
     }

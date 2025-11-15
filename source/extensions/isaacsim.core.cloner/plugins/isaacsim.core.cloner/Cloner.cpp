@@ -189,9 +189,8 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             // Fill the stage in progress with USD values
             {
                 CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric populate");
-                populationUtils->populateFromUsd(stageReaderWriterId, stageId,
-                                                 omni::fabric::Path(PXR_NS::SdfPath::AbsoluteRootPath().GetAsString()),
-                                                 nullptr, 0.0);
+                populationUtils->populateFromUsd(
+                    stageReaderWriterId, stageId, omni::fabric::Path::getAbsoluteRootPath(), nullptr, 0.0);
             }
         }
         else
@@ -217,9 +216,8 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             // Fill the stage in progress with USD values
             {
                 CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric populate");
-                populationUtils->populateFromUsd(stageReaderWriterId, stageId,
-                                                 omni::fabric::Path(PXR_NS::SdfPath::AbsoluteRootPath().GetAsString()),
-                                                 nullptr, 0.0);
+                populationUtils->populateFromUsd(
+                    stageReaderWriterId, stageId, omni::fabric::Path::getAbsoluteRootPath(), nullptr, 0.0);
             }
 
             fabricId = iStageReaderWriter->getFabricId(stageReaderWriterId);
