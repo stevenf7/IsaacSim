@@ -366,7 +366,7 @@ function python_sample_test(name, sample_path, args)
 end
 function create_python_sample_runner(name, sample_path, config, extra_args)
     local os_target = os.target()
-    if string.find(name, "ros2") then
+    if string.find(name, "ros2") or string.find(name, "scene_loading") then
         extra = ROS2_EXTRA[os_target]
     else
         extra = ""
