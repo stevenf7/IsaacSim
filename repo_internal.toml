@@ -590,6 +590,7 @@ exts.include = [
   "omni.kit.loop-isaac",
   "omni.pip.cloud",
   "omni.pip.compute",
+  "omni.cuopt.*",
   "isaacsim.etm.list.isaacsim_app_template*",  # ETM lists
 ]
 
