@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.0.0] - 2025-11-14
+### Changed
+- Removed numba and gunicorn from dependencies
+
 ## [4.0.0] - 2025-10-31
 ### Changed
 - Remove omni.pip.cloud from dependencies, users should explicitly enable if needed
