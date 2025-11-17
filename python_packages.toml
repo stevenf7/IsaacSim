@@ -657,6 +657,6 @@ inventory.includes.all = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.util.camera_inspector",
-    "exts/isaacsim.util.merge_mesh",
+    "extsDeprecated/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
 ]

@@ -38,6 +38,10 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Called to load the extension"""
 
+        carb.log_warn(
+            f"Extension {EXTENSION_NAME} is deprecated since ISaac Sim 6.0.0. Replaced with the Scene Optimizer"
+        )
+
         self._stage = omni.usd.get_context().get_stage()
         self._window = ScrollingWindow(
             title=EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
