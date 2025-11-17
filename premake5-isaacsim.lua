@@ -286,6 +286,7 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         or string.find(name, "tf_viewer")
         or string.find(name, "isaacsim.app.setup")
         or string.find(name, "isaacsim.test.collection")
+        or string.find(name, "startup")
     then
         extra = ROS2_EXTRA[os_target]
     else
