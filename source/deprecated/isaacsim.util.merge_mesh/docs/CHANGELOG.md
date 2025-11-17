@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.17] - 2025-11-14
+### Deprecated
+- Extension deprecated. Functionality replaced with Scene Optimizer.
+
 ## [2.0.16] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12
