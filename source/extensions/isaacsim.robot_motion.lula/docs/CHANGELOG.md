@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.9] - 2025-11-17
+### Changed
+- Update fix build issues with py 3.12 lula package
+
 ## [4.0.8] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
