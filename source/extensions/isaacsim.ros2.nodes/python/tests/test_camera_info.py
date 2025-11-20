@@ -30,17 +30,13 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
-import omni.replicator.core as rep
 import usdrt
-from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.sensors.camera import Camera
-from isaacsim.test.utils import compute_difference_metrics, save_depth_image
-from pxr import Gf, Sdf, UsdGeom, UsdLux
+from isaacsim.test.utils import save_depth_image
+from pxr import Sdf, UsdLux
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py import point_cloud2
 
@@ -57,6 +53,7 @@ class TestRos2CameraInfo(ROS2TestCase):
     async def setUp(self):
         await super().setUp()
 
+        self._visualize = False
         omni.usd.get_context().new_stage()
 
         await omni.kit.app.get_app().next_update_async()
@@ -480,8 +477,9 @@ class TestRos2CameraInfo(ROS2TestCase):
         """
         left_image_rect = self._get_rectified_image(self._image_left, self._camera_info_left, "left")
         right_image_rect = self._get_rectified_image(self._image_right, self._camera_info_right, "right")
-        cv2.imwrite("left_image_rect.png", left_image_rect)
-        cv2.imwrite("right_image_rect.png", right_image_rect)
+        if self._visualize:
+            cv2.imwrite("left_image_rect.png", left_image_rect)
+            cv2.imwrite("right_image_rect.png", right_image_rect)
 
         # Find checkerboard corners
         checkerboard_size = (6, 10)  # Internal corners on the checkerboard
@@ -553,7 +551,6 @@ class TestRos2CameraInfo(ROS2TestCase):
 
     async def test_stereo_camera_opencv_pinhole(self):
 
-        self._visualize = False
         left_camera, right_camera = self._prepare_scene_for_stereo_camera(
             baseline=0.15, resolution=(2048, 1024), focal_length=1.8, focus_distance=400
         )
@@ -575,7 +572,6 @@ class TestRos2CameraInfo(ROS2TestCase):
 
     async def test_stereo_camera_opencv_fisheye(self):
 
-        self._visualize = False
         left_camera, right_camera = self._prepare_scene_for_stereo_camera(
             baseline=0.15, resolution=(2048, 1024), focal_length=1.8, focus_distance=400
         )
