@@ -24,7 +24,6 @@
 #include "isaacsim/core/includes/Buffer.h"
 #include "isaacsim/core/includes/ScopedCudaDevice.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
-#include "omni/sensors/lidar/LidarMetaData.h"
 
 #include <carb/tasking/ITasking.h>
 
@@ -217,9 +216,44 @@ public:
     {
         CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacCreateRTXLidarScanBuffer initialize");
 
-        omni::sensors::lidar::LidarMetaData* lidarMetaData =
-            reinterpret_cast<omni::sensors::lidar::LidarMetaData*>(db.inputs.metadataPtr());
-        m_maxPoints = lidarMetaData->maxPoints;
+        // Retrieve lidar prim from render product path, then validate its attributes
+        const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
+        if (renderProductPath.length() == 0)
+        {
+            CARB_LOG_ERROR("IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.");
+            return false;
+        }
+        pxr::UsdPrim lidarPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
+        if (lidarPrim.IsA<pxr::UsdGeomCamera>())
+        {
+            CARB_LOG_WARN(
+                "RTX sensors as camera prims are deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniLidar prim with the new OmniSensorGenericLidarCoreAPI schema.");
+            LidarConfigHelper configHelper;
+            configHelper.updateLidarConfig(renderProductPath.c_str());
+            if (configHelper.scanType == LidarScanType::kUnknown)
+            {
+                CARB_LOG_ERROR(
+                    "IsaacComputeRTXLidarFlatScan: Lidar prim scanType is Unknown, and node will not execute. Stop the simulation, correct the issue, and restart.");
+                return false;
+            }
+            m_maxPoints = configHelper.numChannels * configHelper.maxReturns *
+                          static_cast<size_t>(std::ceil(static_cast<float>(configHelper.reportRateBaseHz) /
+                                                        static_cast<float>(configHelper.scanRateBaseHz)));
+        }
+        else
+        {
+            uint32_t maxReturns;
+            uint32_t numChannels;
+            uint32_t patternFiringRateHz;
+            uint32_t scanRateBaseHz;
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:maxReturns")).Get(&maxReturns);
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:numberOfChannels")).Get(&numChannels);
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:patternFiringRateHz")).Get(&patternFiringRateHz);
+            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:scanRateBaseHz")).Get(&scanRateBaseHz);
+            m_maxPoints = numChannels * maxReturns *
+                          static_cast<size_t>(
+                              std::ceil(static_cast<float>(patternFiringRateHz) / static_cast<float>(scanRateBaseHz)));
+        }
 
         int cudaDeviceIndex = db.inputs.cudaDeviceIndex() == -1 ? 0 : db.inputs.cudaDeviceIndex();
         isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
@@ -765,12 +799,6 @@ public:
         if (!db.inputs.dataPtr())
         {
             CARB_LOG_INFO("IsaacCreateRTXLidarScanBuffer: dataPtr input is empty. Skipping execution.");
-            return false;
-        }
-
-        if (!db.inputs.metadataPtr())
-        {
-            CARB_LOG_INFO("IsaacCreateRTXLidarScanBuffer: metadataPtr input is empty. Skipping execution.");
             return false;
         }
 

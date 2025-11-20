@@ -23,12 +23,6 @@
                 "uiName": "Data Pointer",
                 "default": 0
             },
-            "metaDataPtr": {
-                "type": "uint64",
-                "description": "Pointer to Lidar metadata.",
-                "uiName": "Metadata Pointer",
-                "default": 0
-            },
             "cudaDeviceIndex": {
                 "type": "int",
                 "description": "Index of the device on which data was originally generated.",

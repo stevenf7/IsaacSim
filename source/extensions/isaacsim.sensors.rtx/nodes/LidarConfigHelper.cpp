@@ -63,7 +63,7 @@ float LidarConfigHelper::getNearRange() const
 
 uint32_t LidarConfigHelper::getNumChannels() const
 {
-    return this->numberOfEmitters;
+    return this->numChannels;
 }
 
 uint32_t LidarConfigHelper::getNumEchos() const
@@ -149,6 +149,8 @@ bool LidarConfigHelper::updateLidarConfig(const char* renderProductPath)
     this->azimuthStartDeg = profile["emitterStates"][0]["azimuthDeg"][0].GetFloat();
     this->azimuthEndDeg = profile["emitterStates"][0]["azimuthDeg"][this->numberOfEmitters - 1].GetFloat();
     this->is2D = true;
+    this->maxReturns = profile["maxReturns"].GetInt();
+    this->numChannels = profile["numberOfChannels"].GetInt();
 
     this->emitterStateCount = profile["emitterStates"].Size();
     this->emitterStates.resize(this->emitterStateCount);
