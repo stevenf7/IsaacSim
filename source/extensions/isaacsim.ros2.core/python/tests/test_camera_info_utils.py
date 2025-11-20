@@ -113,7 +113,7 @@ class TestCameraInfoUtils(ROS2TestCase):
 
     async def test_read_camera_info_fisheye_unset_distortion(self):
         """Test reading camera info for a fisheye camera with unset distortion attributes"""
-        self._camera.set_projection_type("OmniLensDistortionFthetaAPI")
+        self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
 
         self._camera.set_focal_length(24.0)
         self._camera.set_horizontal_aperture(36.0)
@@ -141,7 +141,7 @@ class TestCameraInfoUtils(ROS2TestCase):
     async def test_read_camera_info_fisheye_plumb_bob_distortion(self):
         """Test reading camera info for a fisheye camera with plumb_bob distortion model"""
         # Set the camera to be a fisheye camera
-        self._camera.set_projection_type("OmniLensDistortionFthetaAPI")
+        self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
         self._camera.set_horizontal_aperture(36.0)
 
@@ -182,7 +182,7 @@ class TestCameraInfoUtils(ROS2TestCase):
     async def test_read_camera_info_fisheye_rational_polynomial_distortion(self):
         """Test reading camera info for a fisheye camera with rational_polynomial distortion model"""
         # Set the camera to be a fisheye camera
-        self._camera.set_projection_type("OmniLensDistortionFthetaAPI")
+        self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
         self._camera.set_horizontal_aperture(36.0)
 
@@ -220,7 +220,7 @@ class TestCameraInfoUtils(ROS2TestCase):
     async def test_read_camera_info_fisheye_equidistant_distortion(self):
         """Test reading camera info for a fisheye camera with equidistant distortion model"""
         # Set the camera to be a fisheye camera
-        self._camera.set_projection_type("OmniLensDistortionFthetaAPI")
+        self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
         self._camera.set_horizontal_aperture(36.0)
 
@@ -258,7 +258,7 @@ class TestCameraInfoUtils(ROS2TestCase):
     async def test_read_camera_info_fisheye_unsupported_distortion(self):
         """Test reading camera info for a fisheye camera with an unsupported distortion model"""
         # Set the camera to be a fisheye camera
-        self._camera.set_projection_type("OmniLensDistortionFthetaAPI")
+        self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
         self._camera.set_horizontal_aperture(36.0)
 

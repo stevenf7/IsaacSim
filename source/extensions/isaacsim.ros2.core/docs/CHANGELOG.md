@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.2] - 2025-11-20
+### Changed
+- Use set_lens_distortion_model in TestCameraInfoUtils
+
 ## [1.0.1] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12
