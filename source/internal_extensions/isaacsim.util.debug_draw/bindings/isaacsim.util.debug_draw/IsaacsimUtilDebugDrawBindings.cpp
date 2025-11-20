@@ -110,15 +110,95 @@ PYBIND11_MODULE(_debug_draw, m)
         )pbdoc";
     defineInterfaceClass<DebugDraw>(m, "DebugDraw", "acquire_debug_draw_interface", "release_debug_draw_interface")
 
-        .def("draw_points", wrapInterfaceFunction(&DebugDraw::drawPoints), "Draw a set of points to the screen")
-        .def("clear_points", wrapInterfaceFunction(&DebugDraw::clearPoints), "Clear points")
+        .def("draw_points", wrapInterfaceFunction(&DebugDraw::drawPoints),
+             R"doc(
+                Draw a set of points to the screen.
+                
+                Args:
+                    points (list[tuple]): List of 3D positions (x, y, z) for each point.
+                    colors (list[tuple]): List of RGBA colors (r, g, b, a) for each point, values in [0, 1].
+                    sizes (list[int]): List of sizes in pixels for each point.
+                    
+                Returns:
+                    None
+                    
+                Note:
+                    All lists must have the same length. Points persist until cleared.
+             )doc")
+        .def("clear_points", wrapInterfaceFunction(&DebugDraw::clearPoints),
+             R"doc(
+                Clear all drawn points from the screen.
+                
+                Args:
+                    None
+                    
+                Returns:
+                    None
+             )doc")
         .def("get_num_points", wrapInterfaceFunction(&DebugDraw::getNumPoints),
-             "Return the current number of points being drawn")
-        .def("draw_lines", wrapInterfaceFunction(&DebugDraw::drawLines), "Draw a set of lines to the screen")
+             R"doc(
+                Get the current number of points being drawn.
+                
+                Args:
+                    None
+                    
+                Returns:
+                    int: Number of points currently being rendered.
+             )doc")
+        .def("draw_lines", wrapInterfaceFunction(&DebugDraw::drawLines),
+             R"doc(
+                Draw a set of lines to the screen.
+                
+                Args:
+                    start_points (list[tuple]): List of 3D start positions (x, y, z) for each line.
+                    end_points (list[tuple]): List of 3D end positions (x, y, z) for each line.
+                    colors (list[tuple]): List of RGBA colors (r, g, b, a) for each line, values in [0, 1].
+                    widths (list[int]): List of line widths in pixels for each line.
+                    
+                Returns:
+                    None
+                    
+                Note:
+                    All lists must have the same length. Lines persist until cleared.
+             )doc")
         .def("draw_lines_spline", wrapInterfaceFunction(&DebugDraw::drawLinesSpline),
-             "Draw spline between a list of points as line segments")
-        .def("clear_lines", wrapInterfaceFunction(&DebugDraw::clearLines), "Clear lines")
+             R"doc(
+                Draw a smooth spline curve through a list of points.
+                
+                Creates a smooth interpolated curve passing through all control points
+                and renders it as connected line segments.
+                
+                Args:
+                    control_points (list[tuple]): List of 3D control points (x, y, z) defining the spline path.
+                    color (tuple): RGBA color (r, g, b, a) for the spline, values in [0, 1].
+                    width (int): Line width in pixels.
+                    closed (bool): If True, connects the last point back to the first to form a closed loop.
+                    
+                Returns:
+                    None
+                    
+                Note:
+                    The spline persists until lines are cleared.
+             )doc")
+        .def("clear_lines", wrapInterfaceFunction(&DebugDraw::clearLines),
+             R"doc(
+                Clear all drawn lines and splines from the screen.
+                
+                Args:
+                    None
+                    
+                Returns:
+                    None
+             )doc")
         .def("get_num_lines", wrapInterfaceFunction(&DebugDraw::getNumLines),
-             "Return the current number of lines being drawn");
+             R"doc(
+                Get the current number of lines being drawn.
+                
+                Args:
+                    None
+                    
+                Returns:
+                    int: Number of line segments currently being rendered.
+             )doc");
 }
 }
