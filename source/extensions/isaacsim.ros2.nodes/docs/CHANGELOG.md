@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.1] - 2025-11-20
+### Changed
+- Cleaned up test_camera_info.py: removed unused imports and centralized visualization flag 
+
 ## [1.1.0] - 2025-11-10
 ### Changed
 - Removed "viewport" input from ROS2 camera helper node
