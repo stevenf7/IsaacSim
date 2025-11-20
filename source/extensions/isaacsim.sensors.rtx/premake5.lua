@@ -33,7 +33,6 @@ add_cuda_dependencies()
 
 includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
-    "%{kit_sdk_bin_dir}/dev/internal/include/",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{root}/source/extensions/isaacsim.sensors.rtx/include",

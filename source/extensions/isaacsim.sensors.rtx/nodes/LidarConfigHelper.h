@@ -196,6 +196,10 @@ public:
     LidarRotationDirection rotationDirection{ LidarRotationDirection::CW };
     /** @brief Whether the LiDAR sensor is 2D (single line) or 3D (multiple lines) */
     bool is2D{ false };
+    /**
+     * @brief Number of channels of the sensor; Runtime changes not supported, yet.
+     */
+    uint32_t numChannels{ 128 };
 
 
     /**

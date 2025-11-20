@@ -1,4 +1,11 @@
 # Changelog
+
+## [15.10.0] - 2025-11-20
+### Changed
+- Compute maximum points per Lidar scan from Lidar configuration
+### Removed
+- No longer dependent on RtxSensorMetadata AOV
+
 ## [15.9.0] - 2025-11-10
 ### Added
 - Link sensor_checker utility as Python module

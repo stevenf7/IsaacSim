@@ -21,11 +21,6 @@
                 "description": "Pointer to Lidar render result.",
                 "uiName": "Data Pointer"
             },
-            "metadataPtr": {
-                "type": "uint64",
-                "description": "Pointer to Lidar metadata.",
-                "uiName": "Metadata Pointer"
-            },
             "cudaDeviceIndex": {
                 "type": "int",
                 "description": "Index of the device where the data lives (-1 for host data)",
@@ -60,7 +55,7 @@
             },
             "renderProductPath": {
                 "type": "token",
-                "description": "DEPRECATED - Config is gotten from this"
+                "description": "Used to retrieve Lidar configuration."
             },
             "outputIntensity": {
                 "type": "bool",
