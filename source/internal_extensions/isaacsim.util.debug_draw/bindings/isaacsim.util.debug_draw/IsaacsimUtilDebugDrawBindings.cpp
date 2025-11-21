@@ -18,15 +18,6 @@
 
 CARB_BINDINGS("isaacsim.util.debug_draw.python")
 
-namespace isaacsim
-{
-namespace util
-{
-namespace debug_draw
-{
-}
-}
-}
 
 namespace
 {

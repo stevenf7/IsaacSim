@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2025-11-19
+### Changed
+- Update to use new debug draw plugin interface
+
 ## [2.2.0] - 2025-11-05
 ### Changed
 - Improve docstrings and cleanup codebase
