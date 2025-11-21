@@ -16,6 +16,13 @@ import omni.repo.ci
 
 
 def main(args: argparse.Namespace):
+
+
+    if os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline":
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "ci", "build_isaac_from_kit"])
+
+
+
     build_config = args.build_config
 
     extra_flags = []

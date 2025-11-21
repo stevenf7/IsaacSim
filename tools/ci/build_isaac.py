@@ -24,6 +24,14 @@ def pull_library_from_linbuild_usr_lib64(d: str, name: str):
 
 
 def main(args: argparse.Namespace):
+
+
+    downstream_pipeline = os.getenv("CI_PIPELINE_SOURCE","") == "pipeline"
+
+    if downstream_pipeline:
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "ci", "build_isaac_from_kit"])
+
+
     build_config = args.build_config
 
     extra_flags = []
@@ -66,6 +74,11 @@ def main(args: argparse.Namespace):
     # We don't need to build docs for debug builds
     if build_config == "debug":
         repo_docs_enabled = False
+
+
+    if downstream_pipeline:
+        repo_docs_enabled = False
+        print("Docs are disabled for downstream pipeline")
 
     # Docs
     if repo_docs_enabled:
