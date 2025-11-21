@@ -1,0 +1,5 @@
+<project toolsVersion="5.0"> 
+  <dependency name="kit_sdk_${config}" linkPath="../_build/${platform}/${config}/kit" tags="${config} non-redist"> 
+    <source path="../_kit/_build/${platform}/${config}/" /> 
+  </dependency> 
+</project>

@@ -391,6 +391,9 @@ script = "${config_root}/tools/ci/test_isaac_lab.py"
 [repo_ci.jobs."generate_etm_list"]
 script = "${root}/tools/ci/generate_etm_list.py"
 
+[repo_ci.jobs.build_isaac_from_kit]
+script = "${root}/tools/ci/upstream_kit_build/build_isaac_from_kit.py"
+
 
 ########################################################################################################################
 # Python packages generation
