@@ -26,15 +26,6 @@
 
 CARB_BINDINGS("isaacsim.core.utils.python")
 
-namespace isaacsim
-{
-namespace core
-{
-namespace utils
-{
-}
-}
-}
 
 namespace
 {

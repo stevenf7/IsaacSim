@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.12] - 2025-11-20
+### Changed
+- Update test arguments
+
 ## [0.1.11] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

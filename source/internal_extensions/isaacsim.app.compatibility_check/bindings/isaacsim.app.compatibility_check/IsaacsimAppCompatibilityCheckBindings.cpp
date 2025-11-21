@@ -14,15 +14,6 @@
 
 CARB_BINDINGS("isaacsim.app.compatibility_check")
 
-namespace isaacsim
-{
-namespace app
-{
-namespace compatibility_check
-{
-} // namespace compatibility_check
-} // namespace app
-} // namespace isaacsim
 
 namespace py = pybind11;
 

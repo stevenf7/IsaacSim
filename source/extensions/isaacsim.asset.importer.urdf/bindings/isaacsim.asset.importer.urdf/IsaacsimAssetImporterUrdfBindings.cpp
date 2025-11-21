@@ -23,18 +23,6 @@
 CARB_BINDINGS("isaacsim.asset.importer.urdf.python")
 PYBIND11_MAKE_OPAQUE(std::map<std::string, isaacsim::asset::importer::urdf::UrdfMaterial>);
 
-namespace isaacsim
-{
-namespace asset
-{
-namespace importer
-{
-namespace urdf
-{
-}
-}
-}
-}
 namespace
 {
 // Helper function that creates a python type for a std::map with a string key and a custom value type
