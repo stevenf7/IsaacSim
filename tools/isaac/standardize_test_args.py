@@ -337,8 +337,8 @@ def find_repo_root() -> Optional[str]:
 def find_extension_tomls(root_dir: str) -> List[str]:
     """Find all extension.toml files under the given directory.
 
-    Walks through the source/extensions directory and collects paths to all
-    extension.toml files.
+    Walks through the source/extensions and source/internal_extensions directories
+    and collects paths to all extension.toml files.
 
     Args:
         root_dir: Root directory of the repository.
@@ -346,16 +346,24 @@ def find_extension_tomls(root_dir: str) -> List[str]:
     Returns:
         List of absolute paths to extension.toml files found.
     """
-    extensions_dir = os.path.join(root_dir, "source", "extensions")
-    if not os.path.isdir(extensions_dir):
-        print(f"Directory {extensions_dir} not found.")
-        return []
-
     toml_files = []
-    for root, dirs, files in os.walk(extensions_dir):
-        for file in files:
-            if file == "extension.toml":
-                toml_files.append(os.path.join(root, file))
+
+    # Search directories
+    search_dirs = [
+        os.path.join(root_dir, "source", "extensions"),
+        os.path.join(root_dir, "source", "internal_extensions"),
+    ]
+
+    for extensions_dir in search_dirs:
+        if not os.path.isdir(extensions_dir):
+            print(f"Directory {extensions_dir} not found, skipping.")
+            continue
+
+        for root, dirs, files in os.walk(extensions_dir):
+            for file in files:
+                if file == "extension.toml":
+                    toml_files.append(os.path.join(root, file))
+
     return toml_files
 
 
@@ -381,7 +389,11 @@ Examples:
         """,
     )
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--all", action="store_true", help="Process all extension.toml files under source/extensions")
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="Process all extension.toml files under source/extensions and source/internal_extensions",
+    )
     group.add_argument("--file", type=str, help="Process a specific extension.toml file")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 

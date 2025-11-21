@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.6.2] - 2025-11-20
+### Changed
+- Add omni.replicator.core as an explicit dependency for image capture utils
+
 ## [0.6.1] - 2025-11-10
 ### Changed
 - Fix invalid escape sequence

@@ -55,7 +55,7 @@ public:
     /**
      * @brief Enumeration of supported rendering modes
      */
-    enum RenderingMode
+    enum class RenderingMode
     {
         /**
          * @brief Render vertices as points
@@ -152,18 +152,18 @@ private:
     /**
      * @brief Creates a new primitive list for rendering
      */
-    void createList();
+    void _createList();
 
     /**
      * @brief Releases the current primitive list
      */
-    void releaseList();
+    void _releaseList();
 
     /**
      * @brief Checks if the primitive list is valid
      * @return True if the list is valid, false otherwise
      */
-    bool isValid();
+    bool _isValid();
 
     // Basic members
     omni::usd::UsdContext* m_usdContext;

@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.2.0] - 2025-11-19
+### Changed
+- Refactor PrimitiveDrawingHelper to use size_t for loops
+- Use enum class for RenderingMode
+- Update to use new debug draw plugin interface
+- Add docstrings to python code
+- Update unit tests to have beetter coverage
+
 ## [3.1.1] - 2025-11-03
 ### Changed
 - Fix missing static library from published extension

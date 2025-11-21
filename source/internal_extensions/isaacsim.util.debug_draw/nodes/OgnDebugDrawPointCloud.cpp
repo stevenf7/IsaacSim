@@ -133,6 +133,6 @@ private:
 };
 
 REGISTER_OGN_NODE()
-} // debug_draw
-} // isaac
-} // omni
+}
+}
+}

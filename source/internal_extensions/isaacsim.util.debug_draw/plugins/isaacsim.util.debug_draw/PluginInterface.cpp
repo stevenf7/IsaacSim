@@ -38,20 +38,12 @@ CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::util::debug_draw::DebugDraw)
 CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::graph::core::IGraphRegistry, omni::fabric::IToken)
 DECLARE_OGN_NODES()
 
+namespace
+{
 
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::usd::UsdContext* g_usdContext = nullptr;
-
-
-void convertColor(uint32_t inColor, carb::ColorRgba& outColor)
-{
-    outColor.a = ((inColor & 0xFF000000) >> 24) / 255.0f;
-    outColor.r = ((inColor & 0xFF0000) >> 16) / 255.0f;
-    outColor.g = ((inColor & 0xFF00) >> 8) / 255.0f;
-    outColor.b = (inColor & 0xFF) / 255.0f;
-}
-
 
 pxr::GfVec3f getOrientation(pxr::GfVec3f& normal, pxr::GfVec3f& tangent)
 {
@@ -74,9 +66,14 @@ void CARB_ABI drawPoints(const std::vector<carb::Float3>& points,
                          const std::vector<carb::ColorRgba>& colors,
                          const std::vector<float>& size)
 {
-    for (size_t i = 0; i < points.size(); i++)
+    if (points.size() == colors.size() && colors.size() == size.size())
     {
-        g_pointDrawing->addVertex(points[i], colors[i], size[i]);
+        g_pointDrawing->addVertices(points, colors, size);
+    }
+    else
+    {
+        CARB_LOG_ERROR(
+            "points %zu, colors %zu, and sizes %zu not the same size", points.size(), colors.size(), size.size());
     }
 }
 
@@ -256,6 +253,8 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
     g_pointDrawing.reset();
     g_lineDrawing.reset();
+}
+
 }
 
 void fillInterface(isaacsim::util::debug_draw::DebugDraw& iface)
