@@ -27,15 +27,6 @@
 
 CARB_BINDINGS("isaacsim.robot.surface_gripper.python")
 
-namespace isaacsim
-{
-namespace robot
-{
-namespace surface_gripper
-{
-} // namespace surface_gripper
-} // namespace robot
-} // namespace isaacsim
 
 namespace
 {
