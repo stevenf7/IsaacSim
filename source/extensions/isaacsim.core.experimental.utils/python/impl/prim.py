@@ -133,13 +133,20 @@ def get_prim_variant_collection(prim: str | Usd.Prim) -> dict[str, list[str]]:
     }
 
 
-def get_prim_at_path(path: str | Sdf.Path) -> Usd.Prim | usdrt.Usd.Prim:
+def get_prim_at_path(
+    path: str | Sdf.Path | Usd.Prim | usdrt.Usd.Prim | Usd.SchemaBase | usdrt.Usd.SchemaBase,
+) -> Usd.Prim | usdrt.Usd.Prim:
     """Get the prim at a given path.
 
     Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
 
+    .. hint::
+
+        To maximize robustness and versatility, this method supports either a USD/USDRT prim or schema
+        instance as input. In such a case, the held prim is returned.
+
     Args:
-        path: Prim path. If the input is already a prim instance, it will be returned as is.
+        path: Prim path. It also accepts a prim/schema instance as input.
 
     Returns:
         Prim.
@@ -158,16 +165,23 @@ def get_prim_at_path(path: str | Sdf.Path) -> Usd.Prim | usdrt.Usd.Prim:
     """
     if isinstance(path, (Usd.Prim, usdrt.Usd.Prim)):
         return path
+    elif isinstance(path, (Usd.SchemaBase, usdrt.Usd.SchemaBase)):
+        return path.GetPrim()
     return stage_utils.get_current_stage().GetPrimAtPath(path)
 
 
-def get_prim_path(prim: Usd.Prim | usdrt.Usd.Prim) -> str:
+def get_prim_path(prim: Usd.Prim | usdrt.Usd.Prim | Usd.SchemaBase | usdrt.Usd.SchemaBase | str | Sdf.Path) -> str:
     """Get the path of a given prim.
 
     Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
 
+    .. hint::
+
+        To maximize robustness and versatility, this method supports either a USD/USDRT schema
+        instance or a path as input. In such a case, the held prim path is returned.
+
     Args:
-        prim: Prim instance. If the input is already a path, it will be returned as is.
+        prim: Prim instance. It also accepts a schema instance or a path as input.
 
     Returns:
         Prim path.
@@ -185,6 +199,8 @@ def get_prim_path(prim: Usd.Prim | usdrt.Usd.Prim) -> str:
     """
     if isinstance(prim, (str, Sdf.Path)):
         return prim.pathString if isinstance(prim, Sdf.Path) else prim
+    elif isinstance(prim, usdrt.Usd.SchemaBase):  # USDRT SchemaBase uses `GetPrimPath` instead of `GetPath`
+        return prim.GetPrimPath().pathString
     return prim.GetPath().pathString
 
 

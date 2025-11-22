@@ -21,7 +21,7 @@ import omni.kit.stage_templates
 import omni.kit.test
 import usdrt
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Sdf, Usd, UsdLux, UsdPhysics
+from pxr import Sdf, Usd, UsdGeom, UsdLux, UsdPhysics
 
 
 class TestPrim(omni.kit.test.AsyncTestCase):
@@ -59,23 +59,27 @@ class TestPrim(omni.kit.test.AsyncTestCase):
         self.assertEqual(prim_utils.get_prim_variants(prim), ground_truth, "Wrong authored variants")
 
     async def test_prim_and_path(self):
-        stage_utils.define_prim("/World/A", "Cube")
+        usd_prim = stage_utils.define_prim("/World/A", "Cube")
+        with backend_utils.use_backend("usdrt"):
+            usdrt_prim = stage_utils.define_prim("/World/B", "Cube")
         # test cases
         # - USD
-        prim = prim_utils.get_prim_at_path("/World/A")
-        path = prim_utils.get_prim_path(prim)
-        self.assertIsInstance(prim, Usd.Prim)
-        self.assertTrue(prim.IsValid())
-        self.assertEqual(path, "/World/A")
+        for item in ["/World/A", usd_prim, UsdGeom.Cube(usd_prim)]:
+            prim = prim_utils.get_prim_at_path(item)
+            path = prim_utils.get_prim_path(item)
+            self.assertIsInstance(prim, Usd.Prim)
+            self.assertTrue(prim.IsValid())
+            self.assertEqual(path, "/World/A")
         # - USDRT/Fabric
-        with backend_utils.use_backend("usdrt"):
-            prim = prim_utils.get_prim_at_path("/World/A")
-        path = prim_utils.get_prim_path(prim)
-        self.assertIsInstance(prim, usdrt.Usd.Prim)
-        self.assertTrue(prim.IsValid())
-        self.assertEqual(path, "/World/A")
+        for item in ["/World/B", usdrt_prim, usdrt.UsdGeom.Cube(usdrt_prim)]:
+            with backend_utils.use_backend("usdrt"):
+                prim = prim_utils.get_prim_at_path(item)
+                path = prim_utils.get_prim_path(item)
+            self.assertIsInstance(prim, usdrt.Usd.Prim)
+            self.assertTrue(prim.IsValid())
+            self.assertEqual(path, "/World/B")
         # - Invalid path
-        self.assertFalse(prim_utils.get_prim_at_path("/World/B").IsValid())
+        self.assertFalse(prim_utils.get_prim_at_path("/World/C").IsValid())
 
     async def test_find_matching_prim_paths(self):
         stage_utils.define_prim(f"/World/A")

@@ -15,7 +15,7 @@
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
-from isaacsim.core.rendering_manager import RenderingManager
+from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
@@ -33,3 +33,6 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
 
     async def test_rendering_manager_docstrings(self):
         await self.assertDocTests(RenderingManager)
+
+    async def test_viewport_manager_docstrings(self):
+        await self.assertDocTests(ViewportManager)

@@ -70,3 +70,10 @@ Transform Utils
 .. automodule:: isaacsim.core.experimental.utils.impl.transform
     :members:
     :undoc-members:
+
+Xform Utils
+^^^^^^^^^^^^^^^
+
+.. automodule:: isaacsim.core.experimental.utils.impl.xform
+    :members:
+    :undoc-members:

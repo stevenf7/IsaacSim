@@ -13,6 +13,7 @@ Python API
 
     RenderingEvent
     RenderingManager
+    ViewportManager
 
 |
 
@@ -23,6 +24,12 @@ Python API
     :undoc-members:
 
 .. autoclass:: isaacsim.core.rendering_manager.RenderingManager
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.core.rendering_manager.ViewportManager
     :members:
     :undoc-members:
     :inherited-members:
