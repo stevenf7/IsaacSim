@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.0] - 2025-11-21
+### Added
+- Add xform utils
+- Support USD schemas when getting a prim or prim path
+
 ## [0.6.1] - 2025-11-12
 ### Changed
 - Return the input as it is when getting a prim or prim path, provided that the input is of the expected return type

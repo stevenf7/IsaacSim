@@ -21,7 +21,11 @@ import isaacsim.core.experimental.utils.impl.prim as prim_utils
 import isaacsim.core.experimental.utils.impl.semantics as semantics_utils
 import isaacsim.core.experimental.utils.impl.stage as stage_utils
 import isaacsim.core.experimental.utils.impl.transform as transform_utils
+import isaacsim.core.experimental.utils.impl.xform as xform_utils
 import isaacsim.test.docstring
+import warp as wp
+
+wp.init()  # init warp to avoid undesired stdout output
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
@@ -58,3 +62,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
 
     async def test_transform_docstrings(self):
         await self.assertDocTests(transform_utils)
+
+    async def test_xform_docstrings(self):
+        stage_utils.define_prim("/A")
+        stage_utils.define_prim("/A/B")
+        await self.assertDocTests(xform_utils)
