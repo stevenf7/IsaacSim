@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.3] - 2025-11-21
+### Fixed
+- Update unit tests for kit 109.0
+- Add missing documentation for the asset browser extension
+
 ## [1.4.2] - 2025-11-10
 ### Fixed
 - Replaced deprecated `onclick_fn` with `onclick_action` in "Isaac Sim Assets" menu item to eliminate deprecation warnings
