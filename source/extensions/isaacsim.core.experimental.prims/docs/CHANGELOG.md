@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.3] - 2025-11-21
+### Changed
+- Update implementation to Warp 1.10.0
+- Update array output in docstrings example due to changes in the NumPy representation
+
 ## [0.9.2] - 2025-10-27
 ### Changed
 - Make isaacsim.storage.native an explicit test dependency

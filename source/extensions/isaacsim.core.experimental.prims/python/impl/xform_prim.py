@@ -205,13 +205,13 @@ class XformPrim(Prim):
 
             >>> # get the visibility states of all prims
             >>> visibilities = prims.get_visibilities()
-            >>> visibilities.list()
-            [True, True, True]
+            >>> print(visibilities)
+            [[ True] [ True] [ True]]
             >>>
             >>> # get the visibility states of the first and last prims
             >>> visibilities = prims.get_visibilities(indices=[0, 2])
-            >>> visibilities.list()
-            [True, True]
+            >>> print(visibilities)
+            [[ True] [ True]]
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
