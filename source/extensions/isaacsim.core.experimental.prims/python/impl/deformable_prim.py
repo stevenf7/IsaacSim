@@ -1367,10 +1367,10 @@ def _wf_compute_deformation_matrix(
     inverse: bool,
 ) -> wp.mat33:
     tetrahedron_indices = indices[body_index][tetrahedron_index]
-    v0 = positions[body_index][tetrahedron_indices[0]]
-    v1 = positions[body_index][tetrahedron_indices[1]]
-    v2 = positions[body_index][tetrahedron_indices[2]]
-    v3 = positions[body_index][tetrahedron_indices[3]]
+    v0 = positions[body_index][wp.int32(tetrahedron_indices[0])]
+    v1 = positions[body_index][wp.int32(tetrahedron_indices[1])]
+    v2 = positions[body_index][wp.int32(tetrahedron_indices[2])]
+    v3 = positions[body_index][wp.int32(tetrahedron_indices[3])]
     # compute displacement field
     u1 = wp.vec3(v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2])
     u2 = wp.vec3(v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2])
@@ -1418,7 +1418,7 @@ def _wf_extract_rotation(A: wp.mat33, q: wp.quat, max_iterations: int, eps: floa
     return q
 
 
-@wp.kernel
+@wp.kernel(enable_backward=False)
 def _wk_compute_deformable_rotation(
     simulation_indices: wp.array3d(dtype=wp.uint32),
     simulation_positions: wp.array3d(dtype=wp.float32),
@@ -1451,7 +1451,7 @@ def _wk_compute_deformable_rotation(
     simulation_rotations[body_index][tetrahedron_index][3] = quaternion.w
 
 
-@wp.kernel
+@wp.kernel(enable_backward=False)
 def _wk_compute_deformable_gradient(
     simulation_indices: wp.array3d(dtype=wp.uint32),
     simulation_positions: wp.array3d(dtype=wp.float32),
@@ -1469,7 +1469,7 @@ def _wk_compute_deformable_gradient(
     )
 
 
-@wp.kernel
+@wp.kernel(enable_backward=False)
 def _wk_compute_deformable_stress(
     simulation_indices: wp.array3d(dtype=wp.uint32),
     simulation_positions: wp.array3d(dtype=wp.float32),
