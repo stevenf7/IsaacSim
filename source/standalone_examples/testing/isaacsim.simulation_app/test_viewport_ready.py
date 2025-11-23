@@ -55,7 +55,7 @@ try:
 
     # Check if callback was called on first frame
     if not callback_called:
-        print("ERROR: Rendering callback was not called on the first frame")
+        print("[error] Rendering callback was not called on the first frame")
 
         # Wait for viewport to be ready before exiting to prevent app hang
         max_wait_frames = 100

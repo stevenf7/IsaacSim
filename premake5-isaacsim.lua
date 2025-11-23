@@ -373,7 +373,8 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         extra = ""
     end
     if os.target() == "linux" then
-        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local platform_target = _OPTIONS["platform-target"] or "linux-x86_64"
+        local sh_file_dir = root .. "/_build/" .. platform_target .. "/" .. config .. "/tests"
         local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
         local f = io.open(sh_file_path, "w")
         print(sh_file_path)
@@ -423,7 +424,8 @@ function jupyter_sample_test(name, sample_path, args)
 end
 function jupyter_sample_runner(name, sample_path, config, extra_args)
     if os.target() == "linux" then
-        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local platform_target = _OPTIONS["platform-target"] or "linux-x86_64"
+        local sh_file_dir = root .. "/_build/" .. platform_target .. "/" .. config .. "/tests"
         local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
         local f = io.open(sh_file_path, "w")
         print(sh_file_path)
@@ -534,7 +536,8 @@ function python_script_test(name, script)
 end
 function create_python_script_runner(name, script, config)
     if os.target() == "linux" then
-        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local platform_target = _OPTIONS["platform-target"] or "linux-x86_64"
+        local sh_file_dir = root .. "/_build/" .. platform_target .. "/" .. config .. "/tests"
         local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
         local f = io.open(sh_file_path, "w")
         print(sh_file_path)
@@ -578,7 +581,8 @@ function docker_test(name, script, args)
 end
 function docker_test_runner(name, script, config, extra_args)
     if os.target() == "linux" then
-        local sh_file_dir = root .. "/_build/linux-x86_64/" .. config .. "/tests"
+        local platform_target = _OPTIONS["platform-target"] or "linux-x86_64"
+        local sh_file_dir = root .. "/_build/" .. platform_target .. "/" .. config .. "/tests"
         local sh_file_path = sh_file_dir .. "/" .. name .. ".sh"
         local f = io.open(sh_file_path, "w")
         print(sh_file_path)

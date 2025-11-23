@@ -31,7 +31,7 @@ pvd_output_dir = carb.settings.get_settings().get_as_string("/persistent/physics
 print("omniPvdOvdRecordingDirectory: ", pvd_output_dir)
 my_file = Path(os.path.join(pvd_output_dir, "tmp.ovd"))
 if not my_file.is_file():
-    print(f"[FAIL] {my_file} does not exist")
+    print(f"[fatal] {my_file} does not exist")
     sys.exit(1)
 
 kit.close()
