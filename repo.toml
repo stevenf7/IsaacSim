@@ -474,7 +474,7 @@ stdout_fail_patterns.exclude = [
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 tests_per_process = 1
-stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -635,7 +635,7 @@ include = [
 ]
 stdout_fail_patterns.exclude = [
 ]
-stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 tc_report_enabled = false
 timeout = 5000
 
@@ -660,7 +660,7 @@ args = [
 ]
 exclude = []
 include = ["tests-nativepython*${shell_ext}"]
-stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 tc_report_enabled = false
 timeout = 960
 
@@ -702,7 +702,7 @@ include = [
 ]
 stdout_fail_patterns.exclude = [
 ]
-stdout_fail_patterns.include = ["*[error]*", "*[fatal]*"]
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 tc_report_enabled = false
 timeout = 5000
 

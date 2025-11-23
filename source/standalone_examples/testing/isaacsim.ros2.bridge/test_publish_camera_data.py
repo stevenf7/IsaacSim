@@ -98,7 +98,7 @@ class TimestampChecker(Node):
             # print(f"Timestamp: {time_val}")
             # Check for duplicate timestamps
             if time_val in self.topic_timestamps[topic_name]:
-                print(f"ERROR: Duplicate timestamp {time_val} detected on topic {topic_name}")
+                print(f"[error] Duplicate timestamp {time_val} detected on topic {topic_name}")
                 self.error_detected = True
                 return
 
@@ -114,7 +114,7 @@ class TimestampChecker(Node):
 
                 if current_total_ns < last_total_ns:
                     print(
-                        f"ERROR: Backwards timestamp detected on topic {topic_name}: "
+                        f"[error] Backwards timestamp detected on topic {topic_name}: "
                         f"current {time_val} < previous {last_timestamp}"
                     )
                     self.error_detected = True
@@ -392,7 +392,7 @@ simulation_context.play()
 for _ in range(args.test_steps):
     simulation_context.step(render=True)
     if checker.error_detected:
-        print("Exiting simulation loop due to timestamp error")
+        print("[error] Exiting simulation loop due to timestamp error")
         break
 
 # Clean up

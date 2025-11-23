@@ -93,7 +93,7 @@ else:
     print(f"Got articulation ({prim_path})")
 
 # perform simulation
-for frame in range(1000):
+for frame in range(10):
     kit.update()
 
 # Shutdown and exit

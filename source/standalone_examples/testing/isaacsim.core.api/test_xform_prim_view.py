@@ -92,6 +92,6 @@ print(frankas_view.get_applied_visual_materials())
 
 my_world.reset()
 
-for i in range(10000):
+for i in range(10):
     my_world.step(render=True)
 simulation_app.close()

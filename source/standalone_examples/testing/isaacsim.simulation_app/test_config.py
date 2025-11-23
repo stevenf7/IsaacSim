@@ -44,12 +44,12 @@ def test_createstage_config(kit):
     omni.kit.app.get_app().print_and_log("Config: No empty stage was created")
 
     if omni.usd.get_context().get_stage() is not None:
-        print("[FAIL] Stage is not None")
+        print("[fatal] Stage is not None")
         sys.exit(1)
     stage_utils.create_new_stage()
 
     if omni.usd.get_context().get_stage() is None:
-        print("[FAIL] Stage is None")
+        print("[fatal] Stage is None")
         sys.exit(1)
 
     for i in range(100):
@@ -73,18 +73,18 @@ def test_extra_args(kit):
     server_check = carb.settings.get_settings().get_as_string("/persistent/isaac/asset_root/default")
 
     if server_check != "omniverse://ov-test-this-is-working":
-        print(f"[FAIL] isaac nucleus default setting not omniverse://ov-test-this-is-working, instead: {server_check}")
+        print(f"[fatal] isaac nucleus default setting not omniverse://ov-test-this-is-working, instead: {server_check}")
         sys.exit(1)
 
     arg_1 = carb.settings.get_settings().get_as_int("/app/extra/arg")
     arg_2 = carb.settings.get_settings().get_as_int("/app/some/other/arg")
 
     if arg_1 != 1:
-        print(f"[FAIL] /app/extra/arg was not 1 and was {arg_1} instead")
+        print(f"[fatal] /app/extra/arg was not 1 and was {arg_1} instead")
         sys.exit(1)
 
     if arg_2 != 2:
-        print(f"[FAIL] /app/some/other/arg was not 2 and was {arg_2} instead")
+        print(f"[fatal] /app/some/other/arg was not 2 and was {arg_2} instead")
         sys.exit(1)
 
     print("[TEST 2] PASSED - extra_args configuration works correctly")
@@ -110,7 +110,7 @@ def test_unsaved_on_exit(kit):
         kit.update()
         # we should exit this loop before we hit frame 200 unless we are stuck on an exit screen
         if frame_idx >= 200:
-            print("[FAIL] App is stuck on exit screen (frame >= 200)")
+            print("[fatal] App is stuck on exit screen (frame >= 200)")
             sys.exit(1)
         # try exiting, it should exit unless a save file dialog shows up.
         if frame_idx == 100:
@@ -135,7 +135,7 @@ try:
     print("=" * 60)
 
 except Exception as e:
-    print(f"\n[FAIL] Test suite failed with exception: {e}")
+    print(f"\n[fatal] Test suite failed with exception: {e}")
     import traceback
 
     traceback.print_exc()

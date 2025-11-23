@@ -66,7 +66,7 @@ distantLight.CreateIntensityAttr(500)
 # Start simulation
 omni.timeline.get_timeline_interface().play()
 # perform simulation
-for frame in range(1000):
+for frame in range(10):
     kit.update()
 
 # Shutdown and exit
