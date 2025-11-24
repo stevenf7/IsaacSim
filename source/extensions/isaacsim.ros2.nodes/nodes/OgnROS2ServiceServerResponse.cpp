@@ -22,7 +22,6 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
-#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <isaacsim/ros2/core/Ros2Node.h>
 #include <isaacsim/ros2/nodes/Ros2OgnUtils.h>
 #include <omni/fabric/FabricUSD.h>
@@ -47,7 +46,6 @@ public:
         attrMessageSubfolderObj.iAttribute->registerValueChangedCallback(attrMessageSubfolderObj, onPackageChanged, true);
         attrMessageNameObj.iAttribute->registerValueChangedCallback(attrMessageNameObj, onPackageChanged, true);
         attrHandle.iAttribute->registerValueChangedCallback(attrHandle, onServiceChanged, true);
-        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
     }
 
     static bool compute(OgnROS2ServiceServerResponseDatabase& db)
@@ -104,7 +102,11 @@ public:
         {
             if (db.inputs.serverHandle())
             {
-                void* voidPtr = state.m_coreNodeFramework->getHandle(db.inputs.serverHandle());
+                if (state.m_ros2Bridge == nullptr)
+                {
+                    return false;
+                }
+                void* voidPtr = state.m_ros2Bridge->getHandle(db.inputs.serverHandle());
                 if (voidPtr == nullptr)
                 {
                     return false;
@@ -175,8 +177,6 @@ private:
     std::string m_messageSubfolder;
     std::string m_messageName;
 
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
-
     template <bool removeAttributes>
     void updateNodeState(OgnROS2ServiceServerResponseDatabase& db,
                          const NodeObj& nodeObj,
@@ -234,7 +234,11 @@ private:
         {
             if (serverHandle)
             {
-                void* voidPtr = state.m_coreNodeFramework->getHandle(serverHandle);
+                if (state.m_ros2Bridge == nullptr)
+                {
+                    return;
+                }
+                void* voidPtr = state.m_ros2Bridge->getHandle(serverHandle);
                 if (voidPtr == nullptr)
                 {
                     return;

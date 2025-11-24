@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2025-11-24
+### Changed
+- Update code to use new handle interface from isaacsim.ros2.core extension.
+
 ## [1.1.1] - 2025-11-20
 ### Changed
 - Cleaned up test_camera_info.py: removed unused imports and centralized visualization flag 

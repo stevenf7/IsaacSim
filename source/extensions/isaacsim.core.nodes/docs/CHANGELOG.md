@@ -1,4 +1,9 @@
 # Changelog
+
+## [5.0.0] - 2025-11-24
+### Changed
+- Moved handle interface to isaacsim.ros2.nodes extension where it was used.
+
 ## [4.0.4] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

@@ -25,6 +25,7 @@
 #include <carb/Defines.h>
 #include <carb/Types.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -51,7 +52,7 @@ struct Ros2Bridge
      * @brief Plugin interface definition for the ROS 2 core.
      * @details Defines the plugin interface with version information.
      */
-    CARB_PLUGIN_INTERFACE("isaacsim::ros2::core::Ros2Bridge", 0, 2);
+    CARB_PLUGIN_INTERFACE("isaacsim::ros2::core::Ros2Bridge", 1, 0);
 
     /**
      * @brief Retrieves the memory address of the ROS 2 context handler.
@@ -94,6 +95,33 @@ struct Ros2Bridge
      * @warning Using other methods when this returns false may result in undefined behavior.
      */
     bool const(CARB_ABI* getStartupStatus)();
+
+    /**
+     * @brief Registers a handle within the ROS 2 handle registry.
+     * @details Stores the provided handle pointer and returns an identifier that can be used to retrieve it later.
+     *
+     * @param[in] handle Pointer to the handle that needs to be tracked.
+     * @return Unique identifier for the stored handle.
+     */
+    uint64_t const(CARB_ABI* addHandle)(void* handle);
+
+    /**
+     * @brief Retrieves a registered handle from the registry.
+     * @details Looks up the handle associated with the provided identifier.
+     *
+     * @param[in] handleId Identifier returned by addHandle.
+     * @return Pointer to the registered handle, or nullptr if it does not exist.
+     */
+    void* const(CARB_ABI* getHandle)(const uint64_t handleId);
+
+    /**
+     * @brief Removes a registered handle from the registry.
+     * @details Erases the handle tracked by the given identifier.
+     *
+     * @param[in] handleId Identifier of the handle to remove.
+     * @return True if the handle existed and was removed, false otherwise.
+     */
+    bool const(CARB_ABI* removeHandle)(const uint64_t handleId);
 };
 
 } // namespace core

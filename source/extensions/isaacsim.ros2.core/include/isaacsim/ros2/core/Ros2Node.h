@@ -29,7 +29,6 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/settings/ISettings.h>
 
-#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <isaacsim/ros2/core/IRos2Core.h>
 #include <isaacsim/ros2/core/Ros2Factory.h>
 #include <omni/usd/UsdContextIncludes.h>
@@ -70,7 +69,6 @@ public:
      */
     Ros2Node()
     {
-        m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
         m_ros2Bridge = carb::getCachedInterface<isaacsim::ros2::core::Ros2Bridge>();
 
         m_settings = carb::getCachedInterface<carb::settings::ISettings>();
@@ -148,7 +146,7 @@ public:
         if (contextHandleAddr)
         {
             // CARB_LOG_WARN("GET HANDLE %" PRIu64 "\n", contextHandleAddr);
-            void* contextHandlePtr = m_coreNodeFramework->getHandle(contextHandleAddr);
+            void* contextHandlePtr = m_ros2Bridge->getHandle(contextHandleAddr);
             if (contextHandlePtr == nullptr)
             {
                 // CARB_LOG_WARN("CONTEXT DOES NOT EXIST");
@@ -332,7 +330,6 @@ protected:
     carb::settings::ISettings* m_settings = nullptr; //!< Settings (carb) interface.
     bool m_publishWithoutVerification; //!< Whether to publish in a topic even if there are no subscription to it.
     std::shared_ptr<Ros2ContextHandle>* m_contextHandle; //!< Context handler.
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework; //!< CoreNodes (carb) interface.
     Ros2Factory* m_factory = nullptr; //!< Factory instance for creating ROS 2 related objects according to the sourced
                                       //!< ROS 2 distribution.
     std::string m_namespaceName; //!< Namespace name.

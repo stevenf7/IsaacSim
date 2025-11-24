@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.0] - 2025-11-24
+### Changed
+- Moved handle interface from isaacsim.core.nodes extension to this extension.
+
 ## [1.0.2] - 2025-11-20
 ### Changed
 - Use set_lens_distortion_model in TestCameraInfoUtils

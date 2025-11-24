@@ -38,34 +38,7 @@ namespace nodes
  */
 struct CoreNodes
 {
-    CARB_PLUGIN_INTERFACE("isaacsim::core::nodes", 2, 0);
-
-    /**
-     * @brief Adds a handle to the handle registry.
-     * @details Registers a new handle in the handle registry and returns a unique identifier for it.
-     *
-     * @param[in] handle Pointer to the handle to add.
-     * @return Unique identifier for the added handle.
-     */
-    uint64_t(CARB_ABI* addHandle)(void* handle);
-
-    /**
-     * @brief Retrieves a handle from the handle registry.
-     * @details Looks up and returns a handle by its unique identifier.
-     *
-     * @param[in] handleId Unique identifier of the handle to retrieve.
-     * @return Pointer to the handle if found, nullptr otherwise.
-     */
-    void*(CARB_ABI* getHandle)(const uint64_t handleId);
-
-    /**
-     * @brief Removes a handle from the handle registry.
-     * @details Unregisters a handle from the handle registry by its unique identifier.
-     *
-     * @param[in] handleId Unique identifier of the handle to remove.
-     * @return True if handle was successfully removed, false otherwise.
-     */
-    bool(CARB_ABI* removeHandle)(const uint64_t handleId);
+    CARB_PLUGIN_INTERFACE("isaacsim::core::nodes", 3, 0);
 };
 } // nodes
 } // core
