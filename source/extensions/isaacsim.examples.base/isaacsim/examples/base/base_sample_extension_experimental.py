@@ -20,7 +20,7 @@ import omni.kit.app
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from isaacsim.base_sample.base_sample_experimental import BaseSample
+from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
 
 

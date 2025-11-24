@@ -17,9 +17,9 @@ import time
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.timeline
-from isaacsim.base_sample.base_sample_experimental import BaseSample
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
 
 

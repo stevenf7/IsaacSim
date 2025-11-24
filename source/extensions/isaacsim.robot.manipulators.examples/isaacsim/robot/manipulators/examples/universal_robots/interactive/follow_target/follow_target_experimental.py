@@ -23,8 +23,8 @@ the robot follow it through the UI.
 
 import numpy as np
 import omni.kit.app
-from isaacsim.base_sample.base_sample_experimental import BaseSample
 from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.manipulators.examples.universal_robots import UR10FollowTarget
 
 

@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from isaacsim.base_sample.base_sample_experimental import BaseSample
-from isaacsim.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
+from isaacsim.examples.base.base_sample_experimental import BaseSample
+from isaacsim.examples.base.base_sample_extension_experimental import BaseSampleUITemplate
