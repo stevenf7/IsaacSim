@@ -18,15 +18,17 @@ import os
 
 import omni.ext
 import omni.ui as ui
+from isaacsim.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.examples.browser import get_instance as get_browser_instance
-from isaacsim.examples.interactive.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
-from isaacsim.examples.interactive.ur_follow_target.follow_target_experimental import UR10FollowTargetInteractive
 from isaacsim.gui.components.ui_utils import (
     btn_builder,
     dropdown_builder,
     get_style,
     setup_ui_headers,
     state_btn_builder,
+)
+from isaacsim.robot.manipulators.examples.universal_robots.interactive.follow_target.follow_target_experimental import (
+    UR10FollowTargetInteractive,
 )
 
 
@@ -49,16 +51,12 @@ class UR10FollowTargetExtension(omni.ext.IExt):
 
         get_browser_instance().register_example(
             name=self.example_name,
-            execute_entrypoint=ui_handle.build_window,
             ui_hook=ui_handle.build_ui,
             category=self.category,
         )
 
-        return
-
     def on_shutdown(self):
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
-        return
 
 
 class UR10FollowTargetUI(BaseSampleUITemplate):
@@ -104,7 +102,7 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
             )
 
             # 4. Extra frames container
-            self.extra_stacks = ui.VStack(margin=5, spacing=5, height=0)
+            self._extra_stacks = ui.VStack(margin=5, spacing=5, height=0)
 
         # Build World Controls content
         with self._controls_frame:
@@ -130,7 +128,6 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
 
         # Build extra frames (Task Control and Robot Status)
         self.build_extra_frames()
-        return
 
     def build_extra_frames(self):
         """Build additional UI frames for task control."""
@@ -322,13 +319,11 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
         if self.task_ui_elements["Follow Target"].text == "STOP":
             self.task_ui_elements["Follow Target"].text = "START"
         self._update_status("Ready")
-        return
 
     def post_load_button_event(self):
         """Called after the load button is pressed."""
         self._set_task_buttons_enabled(True)
         self._update_status("Scene loaded - ready to start")
-        return
 
     def post_clear_button_event(self):
         """Called after the clear button is pressed."""
@@ -336,4 +331,3 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
         if self.task_ui_elements["Follow Target"].text == "STOP":
             self.task_ui_elements["Follow Target"].text = "START"
         self._update_status("Scene cleared")
-        return

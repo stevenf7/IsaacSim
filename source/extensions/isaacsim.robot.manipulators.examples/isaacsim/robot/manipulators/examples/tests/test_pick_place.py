@@ -21,8 +21,12 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.core.experimental.utils.stage import create_new_stage_async
-from isaacsim.examples.interactive.pick_place.pick_place_example import FrankaPickPlaceInteractive
-from isaacsim.examples.interactive.pick_place.pick_place_example_extension import FrankaPickPlaceUI
+from isaacsim.robot.manipulators.examples.franka.interactive.pick_place.pick_place_example import (
+    FrankaPickPlaceInteractive,
+)
+from isaacsim.robot.manipulators.examples.franka.interactive.pick_place.pick_place_example_extension import (
+    FrankaPickPlaceUI,
+)
 from omni.kit.app import get_app
 
 
@@ -76,8 +80,9 @@ class TestPickPlace(omni.kit.test.AsyncTestCase):
         if self._timeline.is_playing():
             self._timeline.stop()
 
+        # Clean up physics callbacks if any
         if hasattr(self, "sample") and self.sample:
-            self.sample.simulation_context_cleanup()
+            self.sample.physics_cleanup()
 
         await get_app().next_update_async()
 
@@ -94,11 +99,10 @@ class TestPickPlace(omni.kit.test.AsyncTestCase):
         for _ in range(30):
             await get_app().next_update_async()
 
-        sim_context = self.sample.get_simulation_context()
-        self.assertIsNotNone(sim_context, "Simulation context should exist after load")
-        sim_context.play()
+        # Verify simulation is set up by playing and pausing timeline
+        self._timeline.play()
         await asyncio.sleep(0.5)
-        sim_context.pause()
+        self._timeline.pause()
 
         # Verify scene was loaded
         self.assertTrue(self.sample.controller is not None, "Controller should be initialized after load")
@@ -132,24 +136,20 @@ class TestPickPlace(omni.kit.test.AsyncTestCase):
         await get_app().next_update_async()
         await asyncio.sleep(0.5)
 
-        sim_context = self.sample.get_simulation_context()
-        self.assertIsNotNone(sim_context, "Simulation context should exist after load")
-
-        sim_context.play()
+        # Use timeline to play and pause
+        self._timeline.play()
         await asyncio.sleep(0.5)  # Let physics initialize and settle
 
         # Get initial robot and cube positions
         initial_robot_pos = self.sample.controller.robot.get_dof_positions().numpy()
         initial_cube_pos = self.sample.controller.cube.get_world_poses()[0].numpy()
         # Move robot and cube to different positions
-        self.sample.controller.robot.set_dof_positions(np.array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.0, 0.0]]))
-        self.sample.controller.cube.set_world_poses(
-            positions=np.array([[0.6, 0.1, 0.1]]), orientations=np.array([[1.0, 0.0, 0.0, 0.0]])
-        )
+        self.sample.controller.robot.set_dof_positions([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.0, 0.0]])
+        self.sample.controller.cube.set_world_poses(positions=[[0.6, 0.1, 0.1]], orientations=[[1.0, 0.0, 0.0, 0.0]])
 
         self.ui_template._on_reset()
 
-        sim_context.play()
+        self._timeline.play()
         await asyncio.sleep(0.5)
 
         current_robot_pos = self.sample.controller.robot.get_dof_positions().numpy()

@@ -21,7 +21,9 @@ without complex layers or RL concepts. Users can trigger pick-and-place actions
 through the UI.
 """
 
-from isaacsim.examples.interactive.base_sample.base_sample_experimental import BaseSample
+import omni.kit.app
+from isaacsim.base_sample.base_sample_experimental import BaseSample
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
 
 
@@ -32,64 +34,66 @@ class FrankaPickPlaceInteractive(BaseSample):
         super().__init__()
         self.controller: FrankaPickPlace = None
         self._is_executing = False
-
-    def get_simulation_context(self):
-        """Get the simulation context for physics callbacks."""
-        return self._simulation_context
+        self._physics_callback_id = None
 
     def setup_scene(self):
         """Set up the scene with robot and cube."""
         # Create controller and setup scene
         self.controller = FrankaPickPlace()
         self.controller.setup_scene()
-
         print("Scene setup complete with simplified controller")
-        return
 
     async def setup_post_load(self):
         """Called after the scene is loaded."""
         print("Simple pick-place scene loaded successfully")
-        return
 
     async def setup_pre_reset(self):
         """Called before world reset."""
         # Stop any ongoing execution and remove callbacks
-        if self._is_executing and self.get_simulation_context():
-            self.get_simulation_context().remove_physics_callback("sim_step")
+        if self._physics_callback_id is not None:
+            try:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            except Exception as e:
+                # Callback may have already been deregistered or doesn't exist
+                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            self._physics_callback_id = None
 
         if self.controller:
             self.controller.reset()
         self._is_executing = False
-        return
 
     async def setup_post_reset(self):
         """Called after world reset."""
         if self.controller:
             # Ensure robot starts in a good position
             self.controller.reset_robot()
-        return
 
     async def setup_post_clear(self):
         """Called after clearing the scene."""
         # Stop any ongoing execution and remove callbacks
-        if self._is_executing and self.get_simulation_context():
-            self.get_simulation_context().remove_physics_callback("sim_step")
-
+        if self._physics_callback_id is not None:
+            try:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            except Exception as e:
+                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            self._physics_callback_id = None
         self.controller = None
         self._is_executing = False
-        return
 
-    def simulation_context_cleanup(self):
+    def physics_cleanup(self):
         """Clean up world resources."""
         # Stop any ongoing execution and remove callbacks
-        if self._is_executing and self.get_simulation_context():
-            self.get_simulation_context().remove_physics_callback("sim_step")
+        if self._physics_callback_id is not None:
+            try:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            except Exception as e:
+                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            self._physics_callback_id = None
 
         self.controller = None
         self._is_executing = False
-        return
 
-    def _pick_place_physics_callback(self, dt):
+    def _pick_place_physics_callback(self, dt, context):
         """Physics callback to execute pick-and-place step by step."""
         if not self._is_executing or self.controller is None:
             return
@@ -99,8 +103,12 @@ class FrankaPickPlaceInteractive(BaseSample):
             self._is_executing = False
 
             # Remove the physics callback
-            if self.get_simulation_context():
-                self.get_simulation_context().remove_physics_callback("sim_step")
+            if self._physics_callback_id is not None:
+                try:
+                    SimulationManager.deregister_callback(self._physics_callback_id)
+                except Exception as deregister_error:
+                    print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                self._physics_callback_id = None
             return
 
         # Execute one step of the pick-and-place operation
@@ -109,13 +117,21 @@ class FrankaPickPlaceInteractive(BaseSample):
             if not step_executed:
                 print("Forward step failed!")
                 self._is_executing = False
-                if self.get_simulation_context():
-                    self.get_simulation_context().remove_physics_callback("sim_step")
+                if self._physics_callback_id is not None:
+                    try:
+                        SimulationManager.deregister_callback(self._physics_callback_id)
+                    except Exception as deregister_error:
+                        print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                    self._physics_callback_id = None
         except Exception as e:
             print(f"Error during pick-and-place step: {e}")
             self._is_executing = False
-            if self.get_simulation_context():
-                self.get_simulation_context().remove_physics_callback("sim_step")
+            if self._physics_callback_id is not None:
+                try:
+                    SimulationManager.deregister_callback(self._physics_callback_id)
+                except Exception as deregister_error:
+                    print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                self._physics_callback_id = None
 
     def get_controller_status(self) -> dict:
         """Get current status of the controller."""
@@ -146,7 +162,13 @@ class FrankaPickPlaceInteractive(BaseSample):
         self.controller.reset()
         print("Robot reset for clean start")
 
-        world = self.get_simulation_context()
-        world.add_physics_callback("sim_step", self._pick_place_physics_callback)
-        await world.play_async()
-        return
+        # Register physics callback using SimulationManager
+        from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
+
+        self._physics_callback_id = SimulationManager.register_callback(
+            self._pick_place_physics_callback, IsaacEvents.POST_PHYSICS_STEP
+        )
+
+        # Start timeline playback
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()

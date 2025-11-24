@@ -13,9 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
-
-from isaacsim.examples.interactive.ur_follow_target.follow_target_experimental import UR10FollowTargetInteractive
-from isaacsim.examples.interactive.ur_follow_target.follow_target_extension_experimental import (
-    UR10FollowTargetExtension,
-)
+from isaacsim.base_sample.base_sample_experimental import BaseSample
+from isaacsim.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
