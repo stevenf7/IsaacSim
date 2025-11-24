@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2025-11-24
+### Changed
+- Define ranges for visual material inputs and clip them accordingly
+
 ## [0.4.1] - 2025-10-29
 ### Changed
 - Standardize test args in extension.toml
