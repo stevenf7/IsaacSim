@@ -13,5 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from isaacsim.examples.interactive.simple_stack.simple_stack import SimpleStack
-from isaacsim.examples.interactive.simple_stack.simple_stack_extension import SimpleStackExtension
+# NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup

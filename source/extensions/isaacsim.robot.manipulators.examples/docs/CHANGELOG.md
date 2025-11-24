@@ -1,4 +1,11 @@
 # Changelog
+## [1.2.1] - 2025-11-21
+### Removed
+- Build window function use
+
+## [1.2.0] - 2025-11-20
+### Added
+- Franka Pick-and-Place and UR10 Follow Target interactive examples
 
 ## [1.1.3] - 2025-10-27
 ### Changed

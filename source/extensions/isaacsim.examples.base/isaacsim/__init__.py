@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2018-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
-
-from isaacsim.examples.interactive.pick_place.pick_place_example import FrankaPickPlaceInteractive
-from isaacsim.examples.interactive.pick_place.pick_place_example_extension import FrankaPickPlaceExtension

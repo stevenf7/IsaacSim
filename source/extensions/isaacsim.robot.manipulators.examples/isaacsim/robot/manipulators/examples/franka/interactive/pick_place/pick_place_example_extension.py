@@ -18,10 +18,12 @@ import os
 
 import omni.ext
 import omni.ui as ui
+from isaacsim.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.examples.browser import get_instance as get_browser_instance
-from isaacsim.examples.interactive.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
-from isaacsim.examples.interactive.pick_place.pick_place_example import FrankaPickPlaceInteractive
 from isaacsim.gui.components.ui_utils import btn_builder
+from isaacsim.robot.manipulators.examples.franka.interactive.pick_place.pick_place_example import (
+    FrankaPickPlaceInteractive,
+)
 
 
 class FrankaPickPlaceExtension(omni.ext.IExt):
@@ -44,16 +46,12 @@ class FrankaPickPlaceExtension(omni.ext.IExt):
 
         get_browser_instance().register_example(
             name=self.example_name,
-            execute_entrypoint=ui_handle.build_window,
             ui_hook=ui_handle.build_ui,
             category=self.category,
         )
 
-        return
-
     def on_shutdown(self):
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
-        return
 
 
 class FrankaPickPlaceUI(BaseSampleUITemplate):
@@ -107,7 +105,6 @@ class FrankaPickPlaceUI(BaseSampleUITemplate):
                     ui.Label("• Simplified robot control", word_wrap=True)
                     ui.Label("• Direct pick-and-place actions", word_wrap=True)
                     ui.Label("• No complex layers or RL concepts", word_wrap=True)
-                    ui.Label("• Easy to understand and modify", word_wrap=True)
 
             # Initially disable buttons
             self.task_ui_elements["Start Pick Place"].enabled = False
@@ -127,16 +124,13 @@ class FrankaPickPlaceUI(BaseSampleUITemplate):
         """Called after the reset button is pressed."""
         self.task_ui_elements["Start Pick Place"].enabled = True
         self._update_status("Ready")
-        return
 
     def post_load_button_event(self):
         """Called after the load button is pressed."""
         self.task_ui_elements["Start Pick Place"].enabled = True
         self._update_status("Scene loaded - ready to start")
-        return
 
     def post_clear_button_event(self):
         """Called after the clear button is pressed."""
         self.task_ui_elements["Start Pick Place"].enabled = False
         self._update_status("Scene cleared")
-        return

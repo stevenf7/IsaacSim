@@ -1,4 +1,15 @@
 # Changelog
+## [4.9.1] - 2025-11-21
+### Removed
+- Build window function use
+
+## [4.9.0] - 2025-11-20
+### Changed
+- The Start with Robot, Kaya Gamepad, Omnigraph Keyboard, and Hello World examples now depend on the new Warp-based APIs
+
+### Removed
+- The Simple Stack example
+- The Franka Pick-and-Place and UR10 Follow Target examples have been removed from this extension and moved to a new location
 
 ## [4.8.4] - 2025-11-04
 ### Fixed
