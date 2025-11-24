@@ -18,7 +18,6 @@
 // clang-format on
 
 #include <isaacsim/core/includes/BaseResetNode.h>
-#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <isaacsim/ros2/core/IRos2Core.h>
 #include <isaacsim/ros2/core/Ros2Factory.h>
 
@@ -32,9 +31,8 @@ public:
     static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
     {
         auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
-        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
-        Ros2Bridge* ros2Bridge = carb::getCachedInterface<Ros2Bridge>();
-        Ros2Factory* factory = ros2Bridge->getFactory();
+        state.m_ros2Bridge = carb::getCachedInterface<Ros2Bridge>();
+        Ros2Factory* factory = state.m_ros2Bridge->getFactory();
         state.m_contextHandle = factory->createContextHandle();
     }
 
@@ -92,7 +90,7 @@ public:
             state.m_contextHandle->init(0, nullptr, true, state.m_domainId);
             // We cast the shared ptr directly (and not the pointer inside of it)
             // This allows us to keep track of the shared pointer properly.
-            state.m_contextHandleAddr = state.m_coreNodeFramework->addHandle(&state.m_contextHandle);
+            state.m_contextHandleAddr = state.m_ros2Bridge->addHandle(&state.m_contextHandle);
             db.outputs.context() = state.m_contextHandleAddr;
             return true;
         }
@@ -103,7 +101,7 @@ public:
         auto& state = OgnROS2ContextDatabase::sPerInstanceState<OgnROS2Context>(nodeObj, instanceId);
         state.reset();
         state.m_contextHandle.reset();
-        state.m_coreNodeFramework->removeHandle(state.m_contextHandleAddr);
+        state.m_ros2Bridge->removeHandle(state.m_contextHandleAddr);
     }
 
     virtual void reset()
@@ -135,7 +133,7 @@ private:
     bool m_cleanUp = false;
     size_t m_domainId = 0;
     uint64_t m_contextHandleAddr = 0;
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
+    Ros2Bridge* m_ros2Bridge = nullptr;
 };
 
 REGISTER_OGN_NODE()

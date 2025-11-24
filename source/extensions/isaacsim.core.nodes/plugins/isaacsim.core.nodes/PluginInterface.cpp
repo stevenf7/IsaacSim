@@ -32,41 +32,6 @@ CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::core::nodes::CoreNodes)
 
 DECLARE_OGN_NODES()
 
-namespace
-{
-std::map<uint64_t, void*> g_handleMap;
-std::mutex g_handleMutex;
-}
-
-
-uint64_t addHandle(void* handle)
-{
-    uint64_t handleId = reinterpret_cast<uint64_t>(handle);
-    std::lock_guard<std::mutex> guard(g_handleMutex);
-    g_handleMap[handleId] = handle;
-    return handleId;
-}
-
-void* getHandle(const uint64_t handleId)
-{
-    std::lock_guard<std::mutex> guard(g_handleMutex);
-    auto it = g_handleMap.find(handleId);
-    if (it == g_handleMap.end())
-    {
-        return nullptr;
-    }
-    else
-    {
-        return it->second;
-    }
-}
-
-bool removeHandle(const uint64_t handleId)
-{
-    std::lock_guard<std::mutex> guard(g_handleMutex);
-    return g_handleMap.erase(handleId);
-}
-
 CARB_EXPORT void carbOnPluginStartup(){ INITIALIZE_OGN_NODES() }
 
 CARB_EXPORT void carbOnPluginShutdown()
@@ -77,9 +42,5 @@ CARB_EXPORT void carbOnPluginShutdown()
 // carbonite interface for this plugin (may contain multiple compute nodes)
 void fillInterface(isaacsim::core::nodes::CoreNodes& iface)
 {
-    using namespace isaacsim::core::nodes;
-    memset(&iface, 0, sizeof(iface));
-    iface.addHandle = addHandle;
-    iface.getHandle = getHandle;
-    iface.removeHandle = removeHandle;
+    iface = {};
 }

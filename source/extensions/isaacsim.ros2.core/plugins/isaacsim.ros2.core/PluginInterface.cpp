@@ -46,6 +46,7 @@
 #    include <experimental/filesystem>
 #endif
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -72,6 +73,8 @@ std::shared_ptr<isaacsim::core::includes::LibraryLoader> g_factoryLoader;
 isaacsim::core::includes::MultiLibraryLoader g_backupLibraryLoader;
 std::unique_ptr<isaacsim::ros2::core::Ros2Factory> g_factory = nullptr;
 std::string g_extensionPath;
+std::unordered_map<uint64_t, void*> g_handleMap;
+std::mutex g_handleMutex;
 
 
 uint64_t const CARB_ABI getDefaultContextHandleAddr()
@@ -91,6 +94,31 @@ bool const CARB_ABI getStartupStatus()
         return true;
     }
     return false;
+}
+
+uint64_t const CARB_ABI addHandle(void* handle)
+{
+    const uint64_t handleId = reinterpret_cast<uint64_t>(handle);
+    std::lock_guard<std::mutex> guard(g_handleMutex);
+    g_handleMap[handleId] = handle;
+    return handleId;
+}
+
+void* const CARB_ABI getHandle(const uint64_t handleId)
+{
+    std::lock_guard<std::mutex> guard(g_handleMutex);
+    auto it = g_handleMap.find(handleId);
+    if (it == g_handleMap.end())
+    {
+        return nullptr;
+    }
+    return it->second;
+}
+
+bool const CARB_ABI removeHandle(const uint64_t handleId)
+{
+    std::lock_guard<std::mutex> guard(g_handleMutex);
+    return g_handleMap.erase(handleId) != 0;
 }
 
 } // namespace anonymous
@@ -280,6 +308,9 @@ void fillInterface(isaacsim::ros2::core::Ros2Bridge& iface)
     iface.getDefaultContextHandleAddr = getDefaultContextHandleAddr;
     iface.getFactory = getFactory;
     iface.getStartupStatus = getStartupStatus;
+    iface.addHandle = addHandle;
+    iface.getHandle = getHandle;
+    iface.removeHandle = removeHandle;
 }
 
 #ifdef _WIN32

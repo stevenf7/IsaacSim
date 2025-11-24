@@ -95,7 +95,7 @@ includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/nlohmann_json/include",
     "%{root}/source/extensions/isaacsim.ros2.core/include",
-    "%{root}/source/extensions/isaacsim.core.nodes/include",
+    "%{root}/source/extensions/isaacsim.ros2.nodes/include",
     "%{root}/source/extensions/isaacsim.ros2.tf_viewer/include",
 }
 libdirs {

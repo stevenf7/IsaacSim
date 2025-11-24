@@ -22,7 +22,6 @@
 #include <carb/Framework.h>
 #include <carb/Types.h>
 
-#include <isaacsim/core/nodes/ICoreNodes.h>
 #include <isaacsim/ros2/core/Ros2Node.h>
 #include <isaacsim/ros2/nodes/Ros2OgnUtils.h>
 #include <omni/fabric/FabricUSD.h>
@@ -39,7 +38,6 @@ public:
         auto& state =
             OgnROS2ServiceServerRequestDatabase::sPerInstanceState<OgnROS2ServiceServerRequest>(nodeObj, instanceId);
         state.m_nodeObj = nodeObj;
-        state.m_coreNodeFramework = carb::getCachedInterface<isaacsim::core::nodes::CoreNodes>();
         // Register change event for message type
         AttributeObj attrMessagePackageObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messagePackage");
         AttributeObj attrMessageSubfolderObj = nodeObj.iNode->getAttribute(nodeObj, "inputs:messageSubfolder");
@@ -146,7 +144,7 @@ public:
             state.m_serviceServer = state.m_factory->createService(
                 state.m_nodeHandle.get(), fullServiceName.c_str(), state.m_messageRequest->getTypeSupportHandle(), qos);
 
-            state.m_serverHandle = state.m_coreNodeFramework->addHandle(&state.m_serviceServer);
+            state.m_serverHandle = state.m_ros2Bridge->addHandle(&state.m_serviceServer);
             db.outputs.serverHandle() = state.m_serverHandle;
             state.m_serviceUpdateNeeded = false;
         }
@@ -183,7 +181,11 @@ public:
 
     virtual void reset()
     {
-        m_coreNodeFramework->removeHandle(m_serverHandle);
+        if (m_serverHandle != 0 && m_ros2Bridge != nullptr)
+        {
+            m_ros2Bridge->removeHandle(m_serverHandle);
+            m_serverHandle = 0;
+        }
         m_serviceServer.reset(); // This should be reset before we reset the handle.
         m_messagePackage.clear();
         m_messageSubfolder.clear();
@@ -207,8 +209,6 @@ private:
     std::string m_messageName;
     std::string m_serviceName;
     std::string m_qosProfile;
-    isaacsim::core::nodes::CoreNodes* m_coreNodeFramework = nullptr;
-
     static void onPackageChanged(AttributeObj const& attrObj, void const* userData)
     {
         // Get message package, subfolder and name
