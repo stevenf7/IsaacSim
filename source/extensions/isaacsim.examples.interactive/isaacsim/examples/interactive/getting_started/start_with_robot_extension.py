@@ -19,7 +19,7 @@ import omni.ext
 import omni.timeline
 import omni.ui as ui
 import omni.usd
-from isaacsim.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
+from isaacsim.examples.base.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.getting_started.start_with_robot import GettingStartedRobot
 from isaacsim.gui.components.ui_utils import btn_builder

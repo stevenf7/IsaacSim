@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.9.2] - 2025-11-24
+### Changed
+- Update imports from isaacsim.base_samples to isaacsim.examples.base
+
 ## [4.9.1] - 2025-11-21
 ### Removed
 - Build window function use

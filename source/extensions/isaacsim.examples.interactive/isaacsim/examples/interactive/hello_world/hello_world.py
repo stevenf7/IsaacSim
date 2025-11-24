@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import isaacsim.core.experimental.utils.stage as stage_utils
-from isaacsim.base_sample.base_sample_experimental import BaseSample
+from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
 
 # Note: checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html

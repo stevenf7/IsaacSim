@@ -1,5 +1,5 @@
 [package]
-version = "1.0.2"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Base Samples"
 description = "Base sample classes for interactive of Isaac Sim"
@@ -20,7 +20,7 @@ writeTarget.kit = true
 "omni.physics" = {}
 
 [[python.module]]
-name = "isaacsim.base_sample"
+name = "isaacsim.examples.base"
 
 [[test]]
 timeout = 900

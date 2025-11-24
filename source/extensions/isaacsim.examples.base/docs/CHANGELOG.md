@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2025-11-24
+### Changed
+- Moved module from isaacsim.base_samples to isaacsim.examples.base
+
 ## [1.0.2] - 2025-11-21
 ### Removed
 - Build window function

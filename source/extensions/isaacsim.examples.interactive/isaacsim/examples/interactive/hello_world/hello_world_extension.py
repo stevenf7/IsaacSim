@@ -16,7 +16,7 @@
 import os
 
 import omni.ext
-from isaacsim.base_sample.base_sample_extension_experimental import BaseSampleUITemplate
+from isaacsim.examples.base.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.hello_world import HelloWorld
 
