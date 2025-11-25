@@ -186,21 +186,21 @@ TEST_SUITE("isaacsim.ucx.core.listener_registry_tests")
         std::vector<int> wireup_data = { 1, 2, 3 };
         std::vector<int> wireup_recv(wireup_data.size());
 
-        auto wireup_send = registry_listener->tagSend(wireup_data.data(), wireup_data.size() * sizeof(int), 0);
+        std::string errorMsg;
+        auto wireup_send_result = registry_listener->tagSend(
+            wireup_data.data(), wireup_data.size() * sizeof(int), 0, errorMsg, std::optional<uint32_t>{ 5000 });
         auto wireup_recv_req = client_connection->tagReceive(
             wireup_recv.data(), wireup_recv.size() * sizeof(int), ucxx::Tag{ 0 }, ucxx::TagMaskFull);
 
         // Wait for wireup to complete
         auto start_time = std::chrono::steady_clock::now();
         auto timeout = std::chrono::seconds(5);
-        while ((std::chrono::steady_clock::now() - start_time < timeout) &&
-               (!wireup_send->isCompleted() || !wireup_recv_req->isCompleted()))
+        while ((std::chrono::steady_clock::now() - start_time < timeout) && (!wireup_recv_req->isCompleted()))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CHECK(wireup_send->isCompleted());
+        CHECK(wireup_send_result == UcxSendResult::eSuccess);
         CHECK(wireup_recv_req->isCompleted());
-        wireup_send->checkError();
         wireup_recv_req->checkError();
         //
         // Test bidirectional communication
@@ -215,24 +215,23 @@ TEST_SUITE("isaacsim.ucx.core.listener_registry_tests")
             client_connection->tagSend(client_send_data.data(), client_send_data.size() * sizeof(int), test_tag1);
         REQUIRE(client_send_request.get() != nullptr);
 
-        // Initiate receive on server - use listener's tag methods
-        std::shared_ptr<ucxx::Request> server_recv_request = registry_listener->tagReceive(
-            server_recv_data.data(), server_recv_data.size() * sizeof(int), test_tag1, ucxx::TagMaskFull);
-        REQUIRE(server_recv_request.get() != nullptr);
+        // Initiate receive on server with timeout
+        std::string recvErrorMsg;
+        auto server_recv_result =
+            registry_listener->tagReceive(server_recv_data.data(), server_recv_data.size() * sizeof(int), test_tag1,
+                                          ucxx::TagMaskFull, recvErrorMsg, 5000);
+        REQUIRE(server_recv_result == UcxReceiveResult::eSuccess);
 
-        // Wait for completion
+        // Wait for client send to complete
         start_time = std::chrono::steady_clock::now();
         timeout = std::chrono::seconds(5);
-        while ((std::chrono::steady_clock::now() - start_time < timeout) &&
-               (!client_send_request->isCompleted() || !server_recv_request->isCompleted()))
+        while ((std::chrono::steady_clock::now() - start_time < timeout) && (!client_send_request->isCompleted()))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         CHECK(client_send_request->isCompleted());
-        CHECK(server_recv_request->isCompleted());
         client_send_request->checkError();
-        server_recv_request->checkError();
         CHECK(server_recv_data == client_send_data);
 
         // Scenario 2: Server sends data to client through registry listener
@@ -241,28 +240,27 @@ TEST_SUITE("isaacsim.ucx.core.listener_registry_tests")
         std::vector<int> client_recv_data(server_send_data.size());
         ucxx::Tag test_tag2{ 2 };
 
-        // Initiate send from server - use listener's tag methods
-        std::shared_ptr<ucxx::Request> server_send_request =
-            registry_listener->tagSend(server_send_data.data(), server_send_data.size() * sizeof(int), test_tag2);
-        REQUIRE(server_send_request.get() != nullptr);
+        // Initiate send from server with timeout
+        std::string sendErrorMsg;
+        auto server_send_result =
+            registry_listener->tagSend(server_send_data.data(), server_send_data.size() * sizeof(int), test_tag2,
+                                       sendErrorMsg, std::optional<uint32_t>{ 5000 });
+        REQUIRE(server_send_result == UcxSendResult::eSuccess);
 
         // Initiate receive on client
         std::shared_ptr<ucxx::Request> client_recv_request = client_connection->tagReceive(
             client_recv_data.data(), client_recv_data.size() * sizeof(int), test_tag2, ucxx::TagMaskFull);
         REQUIRE(client_recv_request.get() != nullptr);
 
-        // Wait for completion
+        // Wait for client receive to complete
         start_time = std::chrono::steady_clock::now();
 
-        while ((std::chrono::steady_clock::now() - start_time < timeout) &&
-               (!server_send_request->isCompleted() || !client_recv_request->isCompleted()))
+        while ((std::chrono::steady_clock::now() - start_time < timeout) && (!client_recv_request->isCompleted()))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
-        CHECK(server_send_request->isCompleted());
         CHECK(client_recv_request->isCompleted());
-        REQUIRE_NOTHROW(server_send_request->checkError());
         REQUIRE_NOTHROW(client_recv_request->checkError());
         CHECK(client_recv_data == server_send_data);
 
@@ -303,21 +301,21 @@ TEST_SUITE("isaacsim.ucx.core.listener_registry_tests")
         std::vector<int> wireup_data = { 1, 2, 3 };
         std::vector<int> wireup_recv(wireup_data.size());
 
-        auto wireup_send = registry_listener->tagSend(wireup_data.data(), wireup_data.size() * sizeof(int), 0);
+        std::string wireupErrorMsg;
+        auto wireup_send_result = registry_listener->tagSend(
+            wireup_data.data(), wireup_data.size() * sizeof(int), 0, wireupErrorMsg, std::optional<uint32_t>{ 10000 });
         auto wireup_recv_req = client_connection->tagReceive(
             wireup_recv.data(), wireup_recv.size() * sizeof(int), ucxx::Tag{ 0 }, ucxx::TagMaskFull);
 
         // Wait for wireup to complete
         auto start_time = std::chrono::steady_clock::now();
         auto timeout = std::chrono::seconds(10);
-        while ((std::chrono::steady_clock::now() - start_time < timeout) &&
-               (!wireup_send->isCompleted() || !wireup_recv_req->isCompleted()))
+        while ((std::chrono::steady_clock::now() - start_time < timeout) && (!wireup_recv_req->isCompleted()))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CHECK(wireup_send->isCompleted());
+        CHECK(wireup_send_result == UcxSendResult::eSuccess);
         CHECK(wireup_recv_req->isCompleted());
-        wireup_send->checkError();
         wireup_recv_req->checkError();
 
         // Test multi-buffer send from client to server
@@ -334,22 +332,20 @@ TEST_SUITE("isaacsim.ucx.core.listener_registry_tests")
         std::shared_ptr<ucxx::Request> multi_send_request =
             client_connection->tagMultiSend(send_buffers, send_sizes, is_cuda, multi_tag);
         REQUIRE(multi_send_request.get() != nullptr);
-        // Receive multi-buffer on server - use listener's tag methods
-        std::shared_ptr<ucxx::Request> multi_recv_request =
-            registry_listener->tagMultiReceive(multi_tag, ucxx::TagMaskFull);
-        REQUIRE(multi_recv_request.get() != nullptr);
-        // Wait for completion
+        // Receive multi-buffer on server with timeout
+        std::string multiRecvErrorMsg;
+        auto multi_recv_result =
+            registry_listener->tagMultiReceive(multi_tag, ucxx::TagMaskFull, multiRecvErrorMsg, 10000);
+        REQUIRE(multi_recv_result == UcxReceiveResult::eSuccess);
+        // Wait for client send to complete
         start_time = std::chrono::steady_clock::now();
         timeout = std::chrono::seconds(10);
-        while ((std::chrono::steady_clock::now() - start_time < timeout) &&
-               (!multi_send_request->isCompleted() || !multi_recv_request->isCompleted()))
+        while ((std::chrono::steady_clock::now() - start_time < timeout) && (!multi_send_request->isCompleted()))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         CHECK(multi_send_request->isCompleted());
-        CHECK(multi_recv_request->isCompleted());
         multi_send_request->checkError();
-        multi_recv_request->checkError();
         // TODO(rhua): Verify the multi-buffer receive worked (basic completion check)
         // Note: Detailed buffer content verification would require accessing
         // the received buffers from the multi-recv request, which depends on

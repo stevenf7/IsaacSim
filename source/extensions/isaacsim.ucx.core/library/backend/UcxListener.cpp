@@ -166,71 +166,244 @@ void UCXListener::shutdown()
     }
 }
 
-std::shared_ptr<ucxx::Request> UCXListener::tagSend(const void* buffer, size_t length, uint64_t tag)
+UcxSendResult UCXListener::tagSend(
+    const void* buffer, size_t length, uint64_t tag, std::string& errorMessage, std::optional<uint32_t> timeout)
 {
-    if (m_shutdown.load())
+    if (length == 0)
     {
-        throw std::runtime_error("Listener is shutting down or shut down");
+        errorMessage = "Empty message buffer";
+        return UcxSendResult::eEmptyMessage;
     }
-    std::lock_guard<std::mutex> lock(m_endpoint_mutex);
-    if (!m_endpoint)
+
+    try
     {
-        throw std::runtime_error("No client connected");
+        std::shared_ptr<ucxx::Request> request;
+        {
+            if (m_shutdown.load())
+            {
+                errorMessage = "Listener is shutting down or shut down";
+                return UcxSendResult::eFailed;
+            }
+            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            if (!m_endpoint)
+            {
+                errorMessage = "No client connected";
+                return UcxSendResult::eFailed;
+            }
+            // Note: ucxx::Endpoint::tagSend expects non-const void* - data won't be modified
+            request = m_endpoint->tagSend(const_cast<void*>(buffer), length, ucxx::Tag{ tag });
+        }
+
+        if (!request)
+        {
+            errorMessage = "tagSend returned null request";
+            return UcxSendResult::eNullRequest;
+        }
+
+        // If no timeout specified, return immediately (async, no wait)
+        if (!timeout.has_value())
+        {
+            errorMessage.clear();
+            return UcxSendResult::eSuccess;
+        }
+
+        // Wait for completion with timeout
+        auto result = waitForRequestWithTimeout(request, timeout.value(), errorMessage);
+
+        if (result == UcxRequestWaitResult::eCompleted)
+        {
+            return UcxSendResult::eSuccess;
+        }
+        else if (result == UcxRequestWaitResult::eTimedOut)
+        {
+            return UcxSendResult::eTimedOut;
+        }
+        else
+        {
+            return UcxSendResult::eFailed;
+        }
     }
-    // Note: ucxx::Endpoint::tagSend expects non-const void* - data won't be modified
-    return m_endpoint->tagSend(const_cast<void*>(buffer), length, ucxx::Tag{ tag });
+    catch (const std::exception& e)
+    {
+        errorMessage = e.what();
+        return UcxSendResult::eException;
+    }
 }
 
-std::shared_ptr<ucxx::Request> UCXListener::tagMultiSend(const std::vector<const void*>& buffer,
-                                                         const std::vector<size_t>& size,
-                                                         const std::vector<int>& isCuda,
-                                                         const uint64_t tag)
+UcxSendResult UCXListener::tagMultiSend(const std::vector<const void*>& buffer,
+                                        const std::vector<size_t>& size,
+                                        const std::vector<int>& isCuda,
+                                        const uint64_t tag,
+                                        std::string& errorMessage,
+                                        std::optional<uint32_t> timeout)
 {
-    if (m_shutdown.load())
+    if (buffer.empty())
     {
-        throw std::runtime_error("Listener is shutting down or shut down");
+        errorMessage = "Empty buffer vector";
+        return UcxSendResult::eEmptyMessage;
     }
-    std::lock_guard<std::mutex> lock(m_endpoint_mutex);
-    if (!m_endpoint)
+
+    try
     {
-        throw std::runtime_error("No client connected");
+        std::shared_ptr<ucxx::Request> request;
+        {
+            if (m_shutdown.load())
+            {
+                errorMessage = "Listener is shutting down or shut down";
+                return UcxSendResult::eFailed;
+            }
+            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            if (!m_endpoint)
+            {
+                errorMessage = "No client connected";
+                return UcxSendResult::eFailed;
+            }
+            // Convert const void* to void* for ucxx API
+            std::vector<void*> non_const_buffer;
+            non_const_buffer.reserve(buffer.size());
+            for (const void* ptr : buffer)
+            {
+                non_const_buffer.push_back(const_cast<void*>(ptr));
+            }
+            request = m_endpoint->tagMultiSend(non_const_buffer, size, isCuda, ucxx::Tag{ tag }, false);
+        }
+
+        if (!request)
+        {
+            errorMessage = "tagMultiSend returned null request";
+            return UcxSendResult::eNullRequest;
+        }
+
+        // If no timeout specified, return immediately (async, no wait)
+        if (!timeout.has_value())
+        {
+            errorMessage.clear();
+            return UcxSendResult::eSuccess;
+        }
+
+        // Wait for completion with timeout
+        auto result = waitForRequestWithTimeout(request, timeout.value(), errorMessage);
+
+        if (result == UcxRequestWaitResult::eCompleted)
+        {
+            return UcxSendResult::eSuccess;
+        }
+        else if (result == UcxRequestWaitResult::eTimedOut)
+        {
+            return UcxSendResult::eTimedOut;
+        }
+        else
+        {
+            return UcxSendResult::eFailed;
+        }
     }
-    // Convert const void* to void* for ucxx API
-    std::vector<void*> non_const_buffer;
-    non_const_buffer.reserve(buffer.size());
-    for (const void* ptr : buffer)
+    catch (const std::exception& e)
     {
-        non_const_buffer.push_back(const_cast<void*>(ptr));
+        errorMessage = e.what();
+        return UcxSendResult::eException;
     }
-    return m_endpoint->tagMultiSend(non_const_buffer, size, isCuda, ucxx::Tag{ tag }, false);
 }
 
-std::shared_ptr<ucxx::Request> UCXListener::tagReceive(void* buffer, size_t length, uint64_t tag, uint64_t mask)
+UcxReceiveResult UCXListener::tagReceive(
+    void* buffer, size_t length, uint64_t tag, uint64_t mask, std::string& errorMessage, uint32_t timeout)
 {
-    if (m_shutdown.load())
+    try
     {
-        throw std::runtime_error("Listener is shutting down or shut down");
+        std::shared_ptr<ucxx::Request> request;
+        {
+            if (m_shutdown.load())
+            {
+                errorMessage = "Listener is shutting down or shut down";
+                return UcxReceiveResult::eFailed;
+            }
+            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            if (!m_endpoint)
+            {
+                errorMessage = "No client connected";
+                return UcxReceiveResult::eFailed;
+            }
+            request = m_endpoint->tagRecv(buffer, length, ucxx::Tag{ tag }, ucxx::TagMask{ mask });
+        }
+
+        if (!request)
+        {
+            errorMessage = "tagRecv returned null request";
+            return UcxReceiveResult::eNullRequest;
+        }
+
+        // Wait for completion with timeout
+        auto result = waitForRequestWithTimeout(request, timeout, errorMessage);
+
+        if (result == UcxRequestWaitResult::eCompleted)
+        {
+            return UcxReceiveResult::eSuccess;
+        }
+        else if (result == UcxRequestWaitResult::eTimedOut)
+        {
+            return UcxReceiveResult::eTimedOut;
+        }
+        else
+        {
+            return UcxReceiveResult::eFailed;
+        }
     }
-    std::lock_guard<std::mutex> lock(m_endpoint_mutex);
-    if (!m_endpoint)
+    catch (const std::exception& e)
     {
-        throw std::runtime_error("No client connected");
+        errorMessage = e.what();
+        return UcxReceiveResult::eException;
     }
-    return m_endpoint->tagRecv(buffer, length, ucxx::Tag{ tag }, ucxx::TagMask{ mask });
 }
 
-std::shared_ptr<ucxx::Request> UCXListener::tagMultiReceive(const uint64_t tag, const uint64_t tagMask)
+UcxReceiveResult UCXListener::tagMultiReceive(const uint64_t tag,
+                                              const uint64_t tagMask,
+                                              std::string& errorMessage,
+                                              uint32_t timeout)
 {
-    if (m_shutdown.load())
+    try
     {
-        throw std::runtime_error("Listener is shutting down or shut down");
+        std::shared_ptr<ucxx::Request> request;
+        {
+            if (m_shutdown.load())
+            {
+                errorMessage = "Listener is shutting down or shut down";
+                return UcxReceiveResult::eFailed;
+            }
+            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            if (!m_endpoint)
+            {
+                errorMessage = "No client connected";
+                return UcxReceiveResult::eFailed;
+            }
+            request = m_endpoint->tagMultiRecv(ucxx::Tag{ tag }, ucxx::TagMask{ tagMask }, false);
+        }
+
+        if (!request)
+        {
+            errorMessage = "tagMultiRecv returned null request";
+            return UcxReceiveResult::eNullRequest;
+        }
+
+        // Wait for completion with timeout
+        auto result = waitForRequestWithTimeout(request, timeout, errorMessage);
+
+        if (result == UcxRequestWaitResult::eCompleted)
+        {
+            return UcxReceiveResult::eSuccess;
+        }
+        else if (result == UcxRequestWaitResult::eTimedOut)
+        {
+            return UcxReceiveResult::eTimedOut;
+        }
+        else
+        {
+            return UcxReceiveResult::eFailed;
+        }
     }
-    std::lock_guard<std::mutex> lock(m_endpoint_mutex);
-    if (!m_endpoint)
+    catch (const std::exception& e)
     {
-        throw std::runtime_error("No client connected");
+        errorMessage = e.what();
+        return UcxReceiveResult::eException;
     }
-    return m_endpoint->tagMultiRecv(ucxx::Tag{ tag }, ucxx::TagMask{ tagMask }, false);
 }
 
 void UCXListener::onConnectionRequest(ucp_conn_request_h conn_request, void* arg)

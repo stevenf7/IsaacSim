@@ -2,6 +2,12 @@
 
 All notable changes to the UCX Core extension will be documented in this file.
 
+## [1.1.0] - 2025-11-24
+### Added
+- Added `UcxUtils.h`.
+### Changed
+- Refactored UCXListener's tag messaging functions.
+
 ## [1.0.0] - 2025-10-15
 
 ### Added
