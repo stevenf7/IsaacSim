@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.1] - 2025-11-25
+### Fixed
+- Fixed issue with tiled sensor data slicing by copying the data from the annotator (do_array_copy=True) (WAR-nvbugs-5689440)
 
 ## [1.4.0] - 2025-10-27
 ### Changed
