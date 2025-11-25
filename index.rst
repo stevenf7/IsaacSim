@@ -53,6 +53,7 @@ Extensions
    isaacsim.asset.importer.heightmap <source/extensions/isaacsim.asset.importer.heightmap/docs/index>
    isaacsim.asset.importer.urdf <source/extensions/isaacsim.asset.importer.urdf/docs/index>
    isaacsim.asset.importer.mjcf <source/extensions/isaacsim.asset.importer.mjcf/docs/index>
+   isaacsim.asset.validation <source/extensions/isaacsim.asset.validation/docs/index>
 
 .. toctree::
    :hidden:
@@ -104,6 +105,7 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Examples)
 
+   isaacsim.examples.base <source/extensions/isaacsim.examples.base/docs/index>
    isaacsim.examples.browser <source/extensions/isaacsim.examples.browser/docs/index>
    isaacsim.examples.extension <source/extensions/isaacsim.examples.extension/docs/index>
    isaacsim.examples.interactive <source/extensions/isaacsim.examples.interactive/docs/index>
@@ -115,8 +117,10 @@ Extensions
    :caption: Extensions (GUI)
 
    isaacsim.gui.components <source/extensions/isaacsim.gui.components/docs/index>
+   isaacsim.gui.content_browser <source/extensions/isaacsim.gui.content_browser/docs/index>
    isaacsim.gui.menu <source/extensions/isaacsim.gui.menu/docs/index>
    isaacsim.gui.property <source/extensions/isaacsim.gui.property/docs/index>
+   isaacsim.gui.sensors.icon <source/extensions/isaacsim.gui.sensors.icon/docs/index>
 
 .. toctree::
    :hidden:
@@ -128,7 +132,10 @@ Extensions
    isaacsim.replicator.domain_randomization <source/extensions/isaacsim.replicator.domain_randomization/docs/index>
    isaacsim.replicator.examples <source/extensions/isaacsim.replicator.examples/docs/index>
    isaacsim.replicator.grasping <source/extensions/isaacsim.replicator.grasping/docs/index>
+   isaacsim.replicator.grasping.ui <source/extensions/isaacsim.replicator.grasping.ui/docs/index>
    isaacsim.replicator.mobility_gen <source/extensions/isaacsim.replicator.mobility_gen/docs/index>
+   isaacsim.replicator.mobility_gen.examples <source/extensions/isaacsim.replicator.mobility_gen.examples/docs/index>
+   isaacsim.replicator.mobility_gen.ui <source/extensions/isaacsim.replicator.mobility_gen.ui/docs/index>
    isaacsim.replicator.synthetic_recorder <source/extensions/isaacsim.replicator.synthetic_recorder/docs/index>
    isaacsim.replicator.writers <source/extensions/isaacsim.replicator.writers/docs/index>
 
@@ -167,7 +174,12 @@ Extensions
    :caption: Extensions (ROS 2)
 
    isaacsim.ros2.bridge <source/extensions/isaacsim.ros2.bridge/docs/index>
+   isaacsim.ros2.core <source/extensions/isaacsim.ros2.core/docs/index>
+   isaacsim.ros2.examples <source/extensions/isaacsim.ros2.examples/docs/index>
+   isaacsim.ros2.nodes <source/extensions/isaacsim.ros2.nodes/docs/index>
+   isaacsim.ros2.sim_control <source/extensions/isaacsim.ros2.sim_control/docs/index>
    isaacsim.ros2.tf_viewer <source/extensions/isaacsim.ros2.tf_viewer/docs/index>
+   isaacsim.ros2.ui <source/extensions/isaacsim.ros2.ui/docs/index>
    isaacsim.ros2.urdf <source/extensions/isaacsim.ros2.urdf/docs/index>
 
 .. toctree::
@@ -207,6 +219,16 @@ Extensions
 
    isaacsim.test.collection <source/extensions/isaacsim.test.collection/docs/index>
    isaacsim.test.docstring <source/extensions/isaacsim.test.docstring/docs/index>
+   isaacsim.test.utils <source/extensions/isaacsim.test.utils/docs/index>
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Extensions (UCX)
+
+   isaacsim.ucx.bridge <source/extensions/isaacsim.ucx.bridge/docs/index>
+   isaacsim.ucx.core <source/extensions/isaacsim.ucx.core/docs/index>
+   isaacsim.ucx.nodes <source/extensions/isaacsim.ucx.nodes/docs/index>
 
 .. toctree::
    :hidden:

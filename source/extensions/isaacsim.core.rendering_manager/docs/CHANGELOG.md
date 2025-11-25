@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2025-11-25
+### Changed
+- Handle Isaac Sim's loop runner import exceptions
+
 ## [0.2.0] - 2025-11-21
 ### Added
 - Add method to set a camera view
