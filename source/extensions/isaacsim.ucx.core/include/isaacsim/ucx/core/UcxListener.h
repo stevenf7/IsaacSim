@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "UcxUtils.h"
+
 #include <ucxx/api.h>
 #include <ucxx/utils/sockaddr.h>
 #include <ucxx/utils/ucx.h>
@@ -151,60 +153,87 @@ public:
 
     // Tag communication methods - forward to the connection
     /**
-     * @brief Send data using tagged communication.
+     * @brief Send data using tagged communication with optional timeout.
      * @details
-     * Forwards the send operation to the active client connection.
+     * Sends message data using UCX tagged send.
+     * - If timeout is not specified (std::nullopt), returns immediately without waiting (async).
+     * - If timeout is kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
+     * - Otherwise, waits up to the specified timeout in milliseconds.
      *
      * @param[in] buffer Memory address of the data buffer to send
      * @param[in] length Size of the data buffer in bytes
      * @param[in] tag UCX tag for message identification
-     * @return Request object for tracking operation status
-     * @throws std::runtime_error if no client is connected
+     * @param[out] errorMessage String for storing error messages
+     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, kUcxInfiniteTimeout = infinite wait)
+     * @return UcxSendResult indicating the outcome (eSuccess, eEmptyMessage, eNullRequest, eTimedOut, eFailed, or
+     * eException)
      */
-    std::shared_ptr<ucxx::Request> tagSend(const void* buffer, size_t length, uint64_t tag);
+    UcxSendResult tagSend(const void* buffer,
+                          size_t length,
+                          uint64_t tag,
+                          std::string& errorMessage,
+                          std::optional<uint32_t> timeout = std::nullopt);
 
     /**
-     * @brief Send multiple buffers using tagged communication.
+     * @brief Send multiple buffers using tagged communication with optional timeout.
      * @details
-     * Forwards the multi-send operation to the active client connection.
+     * Sends multiple buffers using UCX tagged multi-send.
+     * - If timeout is not specified (std::nullopt), returns immediately without waiting (async).
+     * - If timeout is kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
+     * - Otherwise, waits up to the specified timeout in milliseconds.
      *
      * @param[in] buffer List of memory addresses pointing to data buffers
      * @param[in] size List of buffer sizes in bytes
      * @param[in] isCuda List indicating if each buffer is CUDA memory
      * @param[in] tag UCX tag for message identification
-     * @return Request object for tracking operation status
-     * @throws std::runtime_error if no client is connected
+     * @param[out] errorMessage String for storing error messages
+     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, kUcxInfiniteTimeout = infinite wait)
+     * @return UcxSendResult indicating the outcome
      */
-    std::shared_ptr<ucxx::Request> tagMultiSend(const std::vector<const void*>& buffer,
-                                                const std::vector<size_t>& size,
-                                                const std::vector<int>& isCuda,
-                                                const uint64_t tag);
+    UcxSendResult tagMultiSend(const std::vector<const void*>& buffer,
+                               const std::vector<size_t>& size,
+                               const std::vector<int>& isCuda,
+                               const uint64_t tag,
+                               std::string& errorMessage,
+                               std::optional<uint32_t> timeout = std::nullopt);
 
     /**
-     * @brief Receive data using tagged communication.
+     * @brief Receive data using tagged communication with optional timeout.
      * @details
-     * Forwards the receive operation to the active client connection.
+     * Receives message data using UCX tagged receive and waits for completion.
+     * Defaults to infinite wait if timeout is not specified.
      *
      * @param[in] buffer Memory address where received data will be stored
      * @param[in] length Size of the receive buffer in bytes
      * @param[in] tag UCX tag for message identification
      * @param[in] mask Tag mask for selective message matching
-     * @return Request object for tracking operation status
-     * @throws std::runtime_error if no client is connected
+     * @param[out] errorMessage String for storing error messages
+     * @param[in] timeout Timeout in milliseconds (kUcxInfiniteTimeout = infinite wait)
+     * @return UcxReceiveResult indicating the outcome
      */
-    std::shared_ptr<ucxx::Request> tagReceive(void* buffer, size_t length, uint64_t tag, uint64_t mask);
+    UcxReceiveResult tagReceive(void* buffer,
+                                size_t length,
+                                uint64_t tag,
+                                uint64_t mask,
+                                std::string& errorMessage,
+                                uint32_t timeout = kUcxInfiniteTimeout);
 
     /**
-     * @brief Receive multiple buffers using tagged communication.
+     * @brief Receive multiple buffers using tagged communication with optional timeout.
      * @details
-     * Forwards the multi-receive operation to the active client connection.
+     * Receives multiple buffers using UCX tagged multi-receive and waits for completion.
+     * Defaults to infinite wait if timeout is not specified.
      *
      * @param[in] tag UCX tag for message identification
      * @param[in] tagMask Tag mask for selective message matching
-     * @return Request object for tracking operation status
-     * @throws std::runtime_error if no client is connected
+     * @param[out] errorMessage String for storing error messages
+     * @param[in] timeout Timeout in milliseconds (kUcxInfiniteTimeout = infinite wait)
+     * @return UcxReceiveResult indicating the outcome
      */
-    std::shared_ptr<ucxx::Request> tagMultiReceive(const uint64_t tag, const uint64_t tagMask);
+    UcxReceiveResult tagMultiReceive(const uint64_t tag,
+                                     const uint64_t tagMask,
+                                     std::string& errorMessage,
+                                     uint32_t timeout = kUcxInfiniteTimeout);
 
     // TODO(rhua): handle disconnects and reconnects
 

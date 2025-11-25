@@ -643,6 +643,7 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.ucx.bridge",
     "exts/isaacsim.ucx.core",
+    "exts/isaacsim.ucx.nodes",
 ]
 
 

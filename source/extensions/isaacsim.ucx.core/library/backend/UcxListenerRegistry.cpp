@@ -33,6 +33,7 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
     // When port is 0, always create a new listener on an ephemeral port
     if (port == 0)
     {
+        CARB_LOG_INFO("UCXListenerRegistry::addListener: creating new listener on ephemeral port");
         try
         {
             auto context = ucxx::createContext({}, ucxx::Context::defaultFeatureFlags);
@@ -46,6 +47,7 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
             uint16_t actual_port = listener->getPort();
             s_listeners[actual_port] = listener;
 
+            CARB_LOG_INFO("UCXListenerRegistry::addListener: listener created on port %u", actual_port);
             return listener;
         }
         catch (const std::exception& e)
@@ -63,6 +65,7 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
 
     if (s_listeners.find(port) == s_listeners.end())
     {
+        CARB_LOG_INFO("UCXListenerRegistry::addListener: port %u", port);
         try
         {
             auto context = ucxx::createContext({}, ucxx::Context::defaultFeatureFlags);
@@ -73,6 +76,7 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
 
             auto listener = std::make_shared<UCXListener>(context, port);
             s_listeners[port] = listener;
+            CARB_LOG_INFO("UCXListenerRegistry::addListener: listener created on port %u", port);
         }
         catch (const std::exception& e)
         {
@@ -99,6 +103,7 @@ void UCXListenerRegistry::removeListener(uint16_t port)
 
     try
     {
+        CARB_LOG_INFO("UCXListenerRegistry::removeListener: shutting down listener on port %u", port);
         listener->shutdown();
     }
     catch (const std::exception& e)

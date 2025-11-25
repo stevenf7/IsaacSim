@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
 title = "UCX Bridge"
 description = "The UCX bridge extension provides high-performance communication capabilities using UCX (Unified Communication X) for distributed simulation scenarios with low-latency data transfer."
@@ -15,6 +15,7 @@ writeTarget.platform = true
 
 [dependencies]
 "isaacsim.ucx.core" = {}
+"isaacsim.ucx.nodes" = {}
 
 [[python.module]]
 name = "isaacsim.ucx.bridge"

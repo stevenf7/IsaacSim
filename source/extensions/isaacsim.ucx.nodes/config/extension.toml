@@ -1,17 +1,39 @@
 [package]
-version = "1.1.0"
+version = "1.0.0"
 category = "Simulation"
-title = "UCX Core"
-description = "The UCX Core extension provides high-performance communication capabilities using UCX (Unified Communication X) for distributed simulation scenarios with low-latency data transfer"
+title = "UCX Nodes"
+description = "The UCX Nodes extension provides high-performance communication capabilities using UCX (Unified Communication X) for distributed simulation scenarios with low-latency data transfer"
 authors = ["hmazhar@nvidia.com", "rhua@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ucx.core"
-keywords = ["isaac", "UCX", "communication", "core", "networking", "distributed"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ucx.nodes"
+keywords = ["isaac", "UCX", "communication", "nodes", "omnigraph", "networking", "distributed"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
+
+[dependencies]
+"isaacsim.core.api" = {}
+"isaacsim.core.nodes" = {}
+"isaacsim.ucx.core" = {}
+"omni.graph" = {}
+"omni.replicator.core" = {}
+"omni.syntheticdata" = {}
+
+[[python.module]]
+name = "isaacsim.ucx.nodes"
+
+[[python.module]]
+name = "isaacsim.ucx.nodes.tests"
+public = false
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py", "*.toml"]
+exclude = ["Ogn*Database.py"]
+
+[fswatcher.paths]
+exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[native.plugin]]
 path = "bin/*.plugin"
@@ -21,6 +43,7 @@ recursive = false
 timeout = 300
 dependencies = [
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive",
 ]
 
 args = [
@@ -46,7 +69,6 @@ args = [
     "--/crashreporter/skipOldDumpUpload=1",
     "--/exts/omni.usd/locking/onClose=0",
     "--/omni/kit/plugin/syncUsdLoads=1",
-    "--/omni/replicator/asyncRendering=0",
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
@@ -68,10 +90,15 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
+stdoutFailPatterns.exclude = [
+    "*[Error] [omni.graph.core.plugin] /ActionGraph/PublishClock: [/ActionGraph] Invalid port *",
+]
+
 [[test]]
 name = "startup"
 dependencies = [
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive",
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
@@ -79,12 +106,14 @@ args = [
 
 [[test]]
 name = "doctest"
-enabled = true
+enabled = false
 timeout = 300
 dependencies = [
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive",
 ]
-cppTests.libraries = ["bin/${lib_prefix}isaacsim.ucx.core.tests${lib_ext}"]
+pythonTests.include = []
+pythonTests.exclude = ["*"]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
