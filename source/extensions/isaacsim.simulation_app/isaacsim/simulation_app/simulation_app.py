@@ -82,13 +82,13 @@ class SimulationApp:
         "window_height": 900,
         "display_options": 3094,
         "subdiv_refinement_level": 0,
-        "renderer": "RaytracedLighting",  # Can also be PathTracing
+        "renderer": "RealTimePathTracing",  # Can also be PathTracing or RaytracedLighting
         "anti_aliasing": 3,
         "samples_per_pixel_per_frame": 64,
         "denoiser": True,
-        "max_bounces": 4,
-        "max_specular_transmission_bounces": 6,
-        "max_volume_bounces": 4,
+        "max_bounces": 3,
+        "max_specular_transmission_bounces": 3,
+        "max_volume_bounces": 15,
         "open_usd": None,
         "fast_shutdown": True,
         "profiler_backend": [],
@@ -115,13 +115,13 @@ class SimulationApp:
         window_height (int): Height of the application window, independent of viewport, defaults to 900,
         display_options (int): used to specify whats visible in the stage by default. Defaults to 3094 so extra objects do not appear in synthetic data. 3286 is another good default, used for the regular isaac-sim editor experience
         subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
-        renderer (str): Rendering mode, can be  `RaytracedLighting` or `PathTracing`. Defaults to `PathTracing`
+        renderer (str): Rendering mode, can be  `RaytracedLighting`, `PathTracing`, `RealTimePathTracing`. Defaults to `RealTimePathTracing`
         anti_aliasing (int): Antialiasing mode, 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
         samples_per_pixel_per_frame (int): The number of samples to render per frame, increase for improved quality, used for `PathTracing` only. Defaults to 64
         denoiser (bool):  Enable this to use AI denoising to improve image quality, used for `PathTracing` only. Defaults to True
-        max_bounces (int): Maximum number of bounces, used for `PathTracing` only. Defaults to 4
-        max_specular_transmission_bounces (int): Maximum number of bounces for specular or transmission, used for `PathTracing` only. Defaults to 6
-        max_volume_bounces (int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
+        max_bounces (int): Maximum number of bounces, used for `PathTracing` (defaults to 4)and `RealTimePathTracing` (defaults to 3)
+        max_specular_transmission_bounces (int): Maximum number of bounces for specular or transmission, used for `PathTracing` (defaults to 6) or `RealTimePathTracing` (defaults to 3)
+        max_volume_bounces (int): Maximum number of bounces for volumetric materials, used for `PathTracing` (defaults to 64) and 'RealTimePathTracing' (defaults to 15).
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
         fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
         profiler_backend (list): List of profiler backends to enable currently only supports the following backends: ["tracy", "nvtx"]
@@ -560,10 +560,22 @@ class SimulationApp:
             set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", "RaytracedLighting")
         elif self.config["renderer"].lower() == "pathtracing":
             set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", "PathTracing")
+        elif self.config["renderer"].lower() == "realtimepathtracing":
+            set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", "RealTimePathTracing")
         else:
             set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", self.config["renderer"])
         # Raytrace mode settings
         set_carb_setting(self._carb_settings, rtx_mode + "/post/aa/op", self.config["anti_aliasing"])
+
+        # Realtime Path Tracing mode settings
+        set_carb_setting(self._carb_settings, rtx_mode + "/rtpt/maxBounces", self.config["max_bounces"])
+        set_carb_setting(
+            self._carb_settings,
+            rtx_mode + "/rtpt/maxSpecularAndTransmissionBounces",
+            self.config["max_specular_transmission_bounces"],
+        )
+        set_carb_setting(self._carb_settings, rtx_mode + "/rtpt/maxVolumeBounces", self.config["max_volume_bounces"])
+
         # Pathtrace mode settings
         set_carb_setting(self._carb_settings, rtx_mode + "/pathtracing/spp", self.config["samples_per_pixel_per_frame"])
         set_carb_setting(

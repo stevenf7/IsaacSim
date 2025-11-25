@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.13.0] - 2025-11-21
+### Changed
+- Change default renderer to RealTimePathTracing
+### Added
+- Add carb settings for RealTimePathTracing mode
+
 ## [2.12.3] - 2025-10-23
 ### Added
 - fix create_new_stage not working correctly
