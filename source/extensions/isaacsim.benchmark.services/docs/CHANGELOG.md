@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.1] - 2025-11-21
+### Fixed
+- Write privacy.toml file to temporary directory
+
 ## [3.3.0] - 2025-10-27
 ### Changed
 - Get the CUDA device names using Warp API
