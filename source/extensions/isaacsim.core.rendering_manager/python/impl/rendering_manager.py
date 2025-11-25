@@ -47,8 +47,12 @@ class RenderingManager:
     _callback_registry = 0
     _carb_settings = carb.settings.get_settings()
     _event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
-    _loop_runner = kit_loop.acquire_loop_interface()
     _timeline = omni.timeline.get_timeline_interface()
+    try:
+        _loop_runner = kit_loop.acquire_loop_interface()
+    except Exception as e:
+        carb.log_warn(f"Isaac Sim's loop runner not found. Its functionalities will not be used: {e}")
+        _loop_runner = None
 
     @classmethod
     def render(cls) -> None:
