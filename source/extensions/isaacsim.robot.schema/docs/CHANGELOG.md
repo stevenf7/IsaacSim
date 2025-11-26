@@ -1,4 +1,11 @@
 # Changelog
+## [4.0.0] - 2025-11-14
+### Changed
+- Updated Robot Schema definitions:
+   - Removed Attributes for DofOrder
+   - Created DofOrderOP list to be used with DofType tokens
+- Updated Add RobotAPI util such that it automatically scans the robot prim for Links and joints and populates it in the traversal order
+
 ## [3.6.2] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

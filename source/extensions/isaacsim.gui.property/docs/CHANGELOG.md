@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.0] - 2025-11-25
+### Added
+- Introduced widgets for the Robot Schema
+
 ## [1.1.3] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0
