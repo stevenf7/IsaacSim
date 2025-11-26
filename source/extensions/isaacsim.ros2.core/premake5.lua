@@ -130,7 +130,11 @@ for _, ros_distro in ipairs(ros_distributions) do
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include/ackermann_msgs",
     }
     libdirs {
-        "%{root}/_build/target-deps/tbb/lib/intel64/vc14", -- Update for Jazzy if needed
+        "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
+        "%{root}/_build/target-deps/cuda/lib/x64",
+    }
+    links {
+        "cudart",
     }
     filter {}
 

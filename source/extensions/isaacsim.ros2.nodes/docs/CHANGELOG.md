@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2025-11-24
+### Added
+- Added support for pinned memory buffers to increase memcpy performance
+
 ## [1.2.0] - 2025-11-24
 ### Changed
 - Update code to use new handle interface from isaacsim.ros2.core extension.

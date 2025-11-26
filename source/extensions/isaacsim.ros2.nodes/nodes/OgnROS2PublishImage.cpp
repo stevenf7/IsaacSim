@@ -60,7 +60,7 @@ public:
     int width;
     int height;
     size_t bufferSize;
-    size_t totalBytes; // Should be the same as bufferSize, need to refactor this
+    size_t totalBytes;
     int cudaDeviceIndex;
 
     cudaStream_t* stream;
@@ -232,7 +232,8 @@ public:
         }
 
         std::string encoding = db.tokenToString(db.inputs.encoding());
-        state.m_message->generateBuffer(db.inputs.height(), db.inputs.width(), encoding);
+        bool usePinnedMemory = (db.inputs.cudaDeviceIndex() != -1);
+        state.m_message->generateBuffer(db.inputs.height(), db.inputs.width(), encoding, usePinnedMemory);
         size_t totalBytes = state.m_message->getTotalBytes();
         void* dataPtr = state.m_message->getBufferPtr();
 
