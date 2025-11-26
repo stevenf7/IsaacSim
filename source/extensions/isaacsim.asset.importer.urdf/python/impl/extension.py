@@ -151,6 +151,7 @@ class UrdfImporter(object):
     def reset_config(self):
         # Set defaults
         self._config.set_merge_fixed_joints(True)
+        self._config.set_merge_fixed_ignore_inertia(False)
         self._config.set_replace_cylinders_with_capsules(False)
         self._config.set_convex_decomp(False)
         self._config.set_import_inertia_tensor(True)
