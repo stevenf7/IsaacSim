@@ -12,17 +12,32 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#pragma once
+
+#include <carb/logging/Log.h>
+
 #include <pxr/base/tf/token.h>
 #include <pxr/base/vt/array.h>
 #include <pxr/pxr.h>
+#include <pxr/usd/sdf/path.h>
 #include <pxr/usd/usd/attribute.h>
 #include <pxr/usd/usd/prim.h>
+#include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usd/relationship.h>
+#include <pxr/usd/usd/stage.h>
+#include <pxr/usd/usdPhysics/articulationRootAPI.h>
+#include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/limitAPI.h>
+#include <pxr/usd/usdPhysics/tokens.h>
 
+#include <algorithm>
+#include <array>
+#include <deque>
+#include <string>
 #include <unordered_map>
-
-#pragma once
-
+#include <unordered_set>
+#include <utility>
+#include <vector>
 namespace isaacsim
 {
 namespace robot
@@ -30,12 +45,14 @@ namespace robot
 namespace schema
 {
 
+
 // Enum for classes
 enum class Classes
 {
     ROBOT_API,
     LINK_API,
     REFERENCE_POINT_API,
+    SITE_API,
     JOINT_API,
     SURFACE_GRIPPER,
     ATTACHMENT_POINT_API
@@ -51,25 +68,17 @@ enum class Attributes
     VERSION,
     SOURCE,
     CHANGELOG,
-    INDEX,
     NAME_OVERRIDE,
+    REFERENCE_DESCRIPTION,
     FORWARD_AXIS,
-    JOINT_INDEX,
-    ROT_X_OFFSET,
-    ROT_Y_OFFSET,
-    ROT_Z_OFFSET,
-    TR_X_OFFSET,
-    TR_Y_OFFSET,
-    TR_Z_OFFSET,
-    ACCELERATION_LIMIT,
-    JERK_LIMIT,
+    JOINT_NAME_OVERRIDE,
+    DOF_OFFSET_OP_ORDER,
     ACTUATOR,
     STATUS,
     RETRY_INTERVAL,
     SHEAR_FORCE_LIMIT,
     COAXIAL_FORCE_LIMIT,
     MAX_GRIP_DISTANCE,
-    GRIP_DISTANCE,
     CLEARANCE_OFFSET,
 };
 
@@ -82,11 +91,21 @@ enum class Relations
     GRIPPED_OBJECTS
 };
 
+enum class DofOffsetOpOrder
+{
+    TransX,
+    TransY,
+    TransZ,
+    RotX,
+    RotY,
+    RotZ
+};
+
 // Common prefix token
 const std::string _attrPrefix("isaac");
 
 // Map of class names
-const std::string classNames[] = { "IsaacRobotAPI", "IsaacLinkAPI",        "IsaacReferencePointAPI",
+const std::string classNames[] = { "IsaacRobotAPI", "IsaacLinkAPI",        "IsaacReferencePointAPI", "IsaacSiteAPI",
                                    "IsaacJointAPI", "IsaacSurfaceGripper", "IsaacAttachmentPointAPI" };
 
 inline const pxr::TfToken className(Classes name)
@@ -133,25 +152,17 @@ const std::unordered_map<Attributes, std::pair<pxr::TfToken, pxr::SdfValueTypeNa
     { Attributes::VERSION, { pxr::TfToken("version"), pxr::SdfValueTypeNames->String } },
     { Attributes::SOURCE, { pxr::TfToken("source"), pxr::SdfValueTypeNames->String } },
     { Attributes::CHANGELOG, { pxr::TfToken("changelog"), pxr::SdfValueTypeNames->StringArray } },
-    { Attributes::INDEX, { pxr::TfToken("physics:index"), pxr::SdfValueTypeNames->Int } },
     { Attributes::NAME_OVERRIDE, { pxr::TfToken("nameOverride"), pxr::SdfValueTypeNames->String } },
+    { Attributes::REFERENCE_DESCRIPTION, { pxr::TfToken("Description"), pxr::SdfValueTypeNames->String } },
     { Attributes::FORWARD_AXIS, { pxr::TfToken("forwardAxis"), pxr::SdfValueTypeNames->Token } },
-    { Attributes::JOINT_INDEX, { pxr::TfToken("physics:index"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::ROT_X_OFFSET, { pxr::TfToken("physics:Rot_X:DofOffset"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::ROT_Y_OFFSET, { pxr::TfToken("physics:Rot_Y:DofOffset"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::ROT_Z_OFFSET, { pxr::TfToken("physics:Rot_Z:DofOffset"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::TR_X_OFFSET, { pxr::TfToken("physics:Tr_X:DofOffset"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::TR_Y_OFFSET, { pxr::TfToken("physics:Tr_Y:DofOffset"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::TR_Z_OFFSET, { pxr::TfToken("physics:Tr_Z:DofOffset"), pxr::SdfValueTypeNames->Int } },
-    { Attributes::ACCELERATION_LIMIT, { pxr::TfToken("physics:AccelerationLimit"), pxr::SdfValueTypeNames->FloatArray } },
-    { Attributes::JERK_LIMIT, { pxr::TfToken("physics:JerkLimit"), pxr::SdfValueTypeNames->FloatArray } },
-    { Attributes::ACTUATOR, { pxr::TfToken("physics:Actuator"), pxr::SdfValueTypeNames->BoolArray } },
+    { Attributes::JOINT_NAME_OVERRIDE, { pxr::TfToken("NameOverride"), pxr::SdfValueTypeNames->String } },
+    { Attributes::DOF_OFFSET_OP_ORDER, { pxr::TfToken("physics:DofOffsetOpOrder"), pxr::SdfValueTypeNames->TokenArray } },
+    { Attributes::ACTUATOR, { pxr::TfToken("actuator"), pxr::SdfValueTypeNames->BoolArray } },
     { Attributes::STATUS, { pxr::TfToken("status"), pxr::SdfValueTypeNames->Token } },
     { Attributes::RETRY_INTERVAL, { pxr::TfToken("retryInterval"), pxr::SdfValueTypeNames->Float } },
     { Attributes::SHEAR_FORCE_LIMIT, { pxr::TfToken("shearForceLimit"), pxr::SdfValueTypeNames->Float } },
     { Attributes::COAXIAL_FORCE_LIMIT, { pxr::TfToken("coaxialForceLimit"), pxr::SdfValueTypeNames->Float } },
     { Attributes::MAX_GRIP_DISTANCE, { pxr::TfToken("maxGripDistance"), pxr::SdfValueTypeNames->Float } },
-    { Attributes::GRIP_DISTANCE, { pxr::TfToken("gripDistance"), pxr::SdfValueTypeNames->Float } },
     { Attributes::CLEARANCE_OFFSET, { pxr::TfToken("clearanceOffset"), pxr::SdfValueTypeNames->Float } }
 };
 // Map of relation names
@@ -162,24 +173,230 @@ const std::unordered_map<Relations, pxr::TfToken> relationNames = {
     { Relations::GRIPPED_OBJECTS, pxr::TfToken(_attrPrefix + ":grippedObjects") }
 };
 
+inline pxr::TfToken getAttributeName(Attributes attr);
+
+namespace details
+{
+inline const pxr::TfToken kPhysicsD6JointType("PhysicsD6Joint");
+inline const pxr::TfToken kPhysicsSphericalJointType("PhysicsSphericalJoint");
+
+inline bool isMultiAxisJoint(const pxr::UsdPrim& jointPrim)
+{
+    if (!jointPrim)
+    {
+        return false;
+    }
+
+    const pxr::TfToken typeName = jointPrim.GetTypeName();
+    return typeName == kPhysicsD6JointType || typeName == kPhysicsSphericalJointType;
+}
+
+struct DeprecatedDofAttributeDescriptor
+{
+    pxr::TfToken attributeName;
+    std::string tokenName;
+    pxr::TfToken axisToken;
+};
+
+inline const std::array<DeprecatedDofAttributeDescriptor, 6> kDeprecatedDofAttributes = {
+    DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Tr_X:DoFOffset"), "TransX",
+                                      pxr::UsdPhysicsTokens->transX },
+    DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Tr_Y:DoFOffset"), "TransY",
+                                      pxr::UsdPhysicsTokens->transY },
+    DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Tr_Z:DoFOffset"), "TransZ",
+                                      pxr::UsdPhysicsTokens->transZ },
+    DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Rot_X:DoFOffset"), "RotX", pxr::UsdPhysicsTokens->rotX },
+    DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Rot_Y:DoFOffset"), "RotY", pxr::UsdPhysicsTokens->rotY },
+    DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Rot_Z:DoFOffset"), "RotZ", pxr::UsdPhysicsTokens->rotZ }
+};
+
+inline const std::unordered_map<std::string, size_t> kTokenFallbackOrder = []()
+{
+    std::unordered_map<std::string, size_t> order;
+    for (size_t index = 0; index < kDeprecatedDofAttributes.size(); ++index)
+    {
+        order.emplace(kDeprecatedDofAttributes[index].tokenName, index);
+    }
+    return order;
+}();
+
+inline bool axisHasValidLimits(const pxr::UsdPrim& jointPrim, const pxr::TfToken& axisToken)
+{
+    pxr::UsdPhysicsLimitAPI limitApi = pxr::UsdPhysicsLimitAPI::Get(jointPrim, axisToken);
+    if (!limitApi)
+    {
+        return false;
+    }
+
+    pxr::UsdAttribute lowerAttr = limitApi.GetLowAttr();
+    pxr::UsdAttribute upperAttr = limitApi.GetHighAttr();
+    if (!lowerAttr || !upperAttr || !lowerAttr.HasAuthoredValueOpinion() || !upperAttr.HasAuthoredValueOpinion())
+    {
+        return false;
+    }
+
+    double lower = 0.0;
+    double upper = 0.0;
+    if (!lowerAttr.Get(&lower) || !upperAttr.Get(&upper))
+    {
+        return false;
+    }
+
+    return lower < upper;
+}
+
+inline size_t computeFallbackOrder(const std::string& tokenName, int orderIndex)
+{
+    const auto iterator = kTokenFallbackOrder.find(tokenName);
+    if (iterator != kTokenFallbackOrder.end())
+    {
+        return iterator->second;
+    }
+    return static_cast<size_t>(std::max(orderIndex, 0));
+}
+
+inline std::vector<std::string> collectDeprecatedDofEntries(const pxr::UsdPrim& jointPrim)
+{
+    std::vector<std::pair<int, std::string>> entries;
+    entries.reserve(kDeprecatedDofAttributes.size());
+
+    for (const auto& descriptor : kDeprecatedDofAttributes)
+    {
+        pxr::UsdAttribute attribute = jointPrim.GetAttribute(descriptor.attributeName);
+        if (!attribute || !attribute.HasAuthoredValueOpinion())
+        {
+            continue;
+        }
+
+        if (!axisHasValidLimits(jointPrim, descriptor.axisToken))
+        {
+            continue;
+        }
+
+        int value = 0;
+        if (!attribute.Get(&value))
+        {
+            continue;
+        }
+
+        entries.emplace_back(value, descriptor.tokenName);
+    }
+
+    if (entries.empty())
+    {
+        return {};
+    }
+
+    std::sort(entries.begin(), entries.end(),
+              [](const auto& lhs, const auto& rhs)
+              {
+                  if (lhs.first != rhs.first)
+                  {
+                      return lhs.first < rhs.first;
+                  }
+                  const size_t lhsFallback = computeFallbackOrder(lhs.second, lhs.first);
+                  const size_t rhsFallback = computeFallbackOrder(rhs.second, rhs.first);
+                  return lhsFallback < rhsFallback;
+              });
+
+    std::vector<std::string> orderedTokens;
+    orderedTokens.reserve(entries.size());
+    for (const auto& entry : entries)
+    {
+        orderedTokens.push_back(entry.second);
+    }
+
+    return orderedTokens;
+}
+
+inline bool UpdateDeprecatedJointDofOrder(pxr::UsdPrim& jointPrim)
+{
+    if (!jointPrim)
+    {
+        return false;
+    }
+
+    if (!details::isMultiAxisJoint(jointPrim))
+    {
+        return false;
+    }
+
+    const std::vector<std::string> orderedTokens = collectDeprecatedDofEntries(jointPrim);
+    if (orderedTokens.empty())
+    {
+        return false;
+    }
+
+    const pxr::TfToken attributeToken = getAttributeName(Attributes::DOF_OFFSET_OP_ORDER);
+    pxr::UsdAttribute dofAttribute = jointPrim.GetAttribute(attributeToken);
+    pxr::VtTokenArray currentValue;
+
+    bool hasCurrentValue = false;
+    if (dofAttribute && dofAttribute.HasAuthoredValueOpinion())
+    {
+        hasCurrentValue = dofAttribute.Get(&currentValue);
+        if (hasCurrentValue && currentValue.size() == orderedTokens.size())
+        {
+            bool identical = true;
+            for (size_t index = 0; index < orderedTokens.size(); ++index)
+            {
+                if (currentValue[index] != pxr::TfToken(orderedTokens[index]))
+                {
+                    identical = false;
+                    break;
+                }
+            }
+            if (identical)
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        dofAttribute =
+            jointPrim.CreateAttribute(attributeToken, attributeNames.at(Attributes::DOF_OFFSET_OP_ORDER).second, false);
+    }
+
+    pxr::VtTokenArray newValue(orderedTokens.size());
+    for (size_t index = 0; index < orderedTokens.size(); ++index)
+    {
+        newValue[index] = pxr::TfToken(orderedTokens[index]);
+    }
+
+    dofAttribute.Set(newValue);
+    return true;
+}
+}
+
 // Function to get attribute name
 inline pxr::TfToken getAttributeName(Attributes attr)
 {
     return pxr::TfToken(_attrPrefix + ":" + attributeNames.at(attr).first.GetString());
 }
 
-// Function to apply RobotAPI
+inline pxr::SdfPath GetJointBodyRelationship(const pxr::UsdPrim& jointPrim, int bodyIndex);
+inline std::pair<pxr::UsdPrim, pxr::UsdPrim> PopulateRobotSchemaFromArticulation(
+    const pxr::UsdStagePtr& stage, pxr::UsdPrim& robotPrim, pxr::UsdPrim articulationPrim = pxr::UsdPrim());
+
 inline void ApplyRobotAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::ROBOT_API)]));
-    for (const auto& attr : { Attributes::DESCRIPTION, Attributes::NAMESPACE, Attributes::ROBOT_TYPE,
-                              Attributes::LICENSE, Attributes::VERSION, Attributes::SOURCE, Attributes::CHANGELOG })
+    // for (const auto& attr : { Attributes::DESCRIPTION, Attributes::NAMESPACE, Attributes::ROBOT_TYPE,
+    //                           Attributes::LICENSE, Attributes::VERSION, Attributes::SOURCE, Attributes::CHANGELOG })
+    // {
+    //     prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+    // }
+    // for (const auto& rel : { Relations::ROBOT_LINKS, Relations::ROBOT_JOINTS })
+    // {
+    //     prim.CreateRelationship(relationNames.at(rel), false);
+    // }
+
+    pxr::UsdStageWeakPtr stageWeak = prim.GetStage();
+    pxr::UsdStagePtr stage = stageWeak;
+    if (stage)
     {
-        prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
-    }
-    for (const auto& rel : { Relations::ROBOT_LINKS, Relations::ROBOT_JOINTS })
-    {
-        prim.CreateRelationship(relationNames.at(rel), false);
+        PopulateRobotSchemaFromArticulation(stage, prim);
     }
 }
 
@@ -187,33 +404,38 @@ inline void ApplyRobotAPI(pxr::UsdPrim& prim)
 inline void ApplyLinkAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::LINK_API)]));
-    for (const auto& attr : { Attributes::NAME_OVERRIDE })
-    {
-        prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
-    }
+    // for (const auto& attr : { Attributes::NAME_OVERRIDE })
+    // {
+    //     prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+    // }
+}
+
+// Function to apply SiteAPI
+inline void ApplySiteAPI(pxr::UsdPrim& prim)
+{
+    prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::SITE_API)]));
+    // for (const auto& attr : { Attributes::REFERENCE_DESCRIPTION, Attributes::FORWARD_AXIS })
+    // {
+    //     prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+    // }
 }
 
 // Function to apply ReferencePointAPI
 inline void ApplyReferencePointAPI(pxr::UsdPrim& prim)
 {
-    prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::REFERENCE_POINT_API)]));
-    for (const auto& attr : { Attributes::DESCRIPTION, Attributes::FORWARD_AXIS })
-    {
-        prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
-    }
+    CARB_LOG_WARN("ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.");
+    ApplySiteAPI(prim);
 }
 
 // Function to apply JointAPI
 inline void ApplyJointAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::JOINT_API)]));
-    for (const auto& attr :
-         { Attributes::JOINT_INDEX, Attributes::ROT_X_OFFSET, Attributes::ROT_Y_OFFSET, Attributes::ROT_Z_OFFSET,
-           Attributes::TR_X_OFFSET, Attributes::TR_Y_OFFSET, Attributes::TR_Z_OFFSET, Attributes::NAME_OVERRIDE,
-           Attributes::ACCELERATION_LIMIT, Attributes::JERK_LIMIT })
-    {
-        prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
-    }
+    // for (const auto& attr :
+    //      { Attributes::DOF_OFFSET_OP_ORDER, Attributes::JOINT_NAME_OVERRIDE, Attributes::ACTUATOR })
+    // {
+    //     prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+    // }
 }
 
 // /**
@@ -230,17 +452,17 @@ inline pxr::UsdPrim CreateSurfaceGripper(pxr::UsdStagePtr stage, const std::stri
         stage->DefinePrim(pxr::SdfPath(primPath), pxr::TfToken(classNames[static_cast<int>(Classes::SURFACE_GRIPPER)]));
 
     // Create attributes with default values
-    for (const auto& attr : { Attributes::STATUS, Attributes::SHEAR_FORCE_LIMIT, Attributes::COAXIAL_FORCE_LIMIT,
-                              Attributes::MAX_GRIP_DISTANCE, Attributes::GRIP_DISTANCE, Attributes::RETRY_INTERVAL })
-    {
-        prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
-    }
+    // for (const auto& attr : { Attributes::STATUS, Attributes::SHEAR_FORCE_LIMIT, Attributes::COAXIAL_FORCE_LIMIT,
+    //                           Attributes::MAX_GRIP_DISTANCE, Attributes::RETRY_INTERVAL })
+    // {
+    //     prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+    // }
 
     // Create relationships
-    for (const auto& rel : { Relations::ATTACHMENT_POINTS, Relations::GRIPPED_OBJECTS })
-    {
-        prim.CreateRelationship(relationNames.at(rel), false);
-    }
+    // for (const auto& rel : { Relations::ATTACHMENT_POINTS, Relations::GRIPPED_OBJECTS })
+    // {
+    //     prim.CreateRelationship(relationNames.at(rel), false);
+    // }
 
     return prim;
 }
@@ -249,10 +471,303 @@ inline pxr::UsdPrim CreateSurfaceGripper(pxr::UsdStagePtr stage, const std::stri
 inline void ApplyAttachmentPointAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::ATTACHMENT_POINT_API)]));
-    for (const auto& attr : { Attributes::FORWARD_AXIS, Attributes::CLEARANCE_OFFSET })
+    // for (const auto& attr : { Attributes::FORWARD_AXIS, Attributes::CLEARANCE_OFFSET })
+    // {
+    //     prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+    // }
+}
+
+/**
+ * @brief Obtain the path of a joint body relationship.
+ * @details
+ * Reads Body0 or Body1 from a joint while respecting the
+ * exclude-from-articulation flag.
+ *
+ * @param[in] jointPrim Joint prim to query.
+ * @param[in] bodyIndex Body relationship index (0 or 1).
+ *
+ * @return pxr::SdfPath Target path or empty path if unavailable.
+ */
+inline pxr::SdfPath GetJointBodyRelationship(const pxr::UsdPrim& jointPrim, int bodyIndex)
+{
+    pxr::UsdPhysicsJoint joint(jointPrim);
+    if (!joint)
     {
-        prim.CreateAttribute(getAttributeName(attr), attributeNames.at(attr).second, false);
+        return pxr::SdfPath();
     }
+
+    bool exclude = false;
+    pxr::UsdAttribute excludeAttr = joint.GetExcludeFromArticulationAttr();
+    if (excludeAttr && excludeAttr.Get(&exclude) && exclude)
+    {
+        return pxr::SdfPath();
+    }
+
+    pxr::UsdRelationship relation;
+    if (bodyIndex == 0)
+    {
+        relation = joint.GetBody0Rel();
+    }
+    else if (bodyIndex == 1)
+    {
+        relation = joint.GetBody1Rel();
+    }
+    else
+    {
+        return pxr::SdfPath();
+    }
+
+    if (!relation)
+    {
+        return pxr::SdfPath();
+    }
+
+    pxr::SdfPathVector targets;
+    relation.GetTargets(&targets);
+    if (targets.empty())
+    {
+        return pxr::SdfPath();
+    }
+
+    return targets.front();
+}
+
+inline void UpdateDeprecatedSchemas(pxr::UsdPrim& robotPrim)
+{
+    if (!robotPrim)
+    {
+        return;
+    }
+
+    pxr::UsdStageWeakPtr stageWeak = robotPrim.GetStage();
+    pxr::UsdStagePtr stage = stageWeak;
+    if (!stage)
+    {
+        return;
+    }
+
+    const pxr::TfToken referencePointToken(classNames[static_cast<int>(Classes::REFERENCE_POINT_API)]);
+    const pxr::TfToken jointToken(classNames[static_cast<int>(Classes::JOINT_API)]);
+    for (pxr::UsdPrim prim : pxr::UsdPrimRange(robotPrim))
+    {
+        if (!prim)
+        {
+            continue;
+        }
+
+        if (prim.HasAPI(referencePointToken))
+        {
+            prim.RemoveAppliedSchema(referencePointToken);
+            ApplySiteAPI(prim);
+        }
+
+        if (prim.HasAPI(jointToken))
+        {
+            details::UpdateDeprecatedJointDofOrder(prim);
+        }
+    }
+}
+
+/**
+ * @brief Populate robot schema data from a physics articulation.
+ * @details
+ * Discovers the articulation root link and root joint, traverses connected
+ * rigid bodies through their joints, applies the LinkAPI and JointAPI, and
+ * updates the robot relationships with the ordered results.
+ *
+ * @param[in] stage Stage containing the articulation.
+ * @param[in,out] robotPrim Robot prim that stores the relationships.
+ * @param[in] articulationPrim Optional prim that has the
+ *            UsdPhysicsArticulationRootAPI applied.
+ *
+ * @return std::pair<pxr::UsdPrim, pxr::UsdPrim> Root link prim and root joint prim.
+ */
+inline std::pair<pxr::UsdPrim, pxr::UsdPrim> PopulateRobotSchemaFromArticulation(const pxr::UsdStagePtr& stage,
+                                                                                 pxr::UsdPrim& robotPrim,
+                                                                                 pxr::UsdPrim articulationPrim)
+{
+    if (!stage || !robotPrim)
+    {
+        return { pxr::UsdPrim(), pxr::UsdPrim() };
+    }
+
+    pxr::UsdPrim articulationRoot = articulationPrim;
+    if (!articulationRoot)
+    {
+        articulationRoot = robotPrim;
+    }
+
+    pxr::UsdPhysicsArticulationRootAPI articulationApi(articulationRoot);
+    if (!articulationApi)
+    {
+        for (pxr::UsdPrim prim : pxr::UsdPrimRange(articulationRoot))
+        {
+            pxr::UsdPhysicsArticulationRootAPI candidate(prim);
+            if (candidate)
+            {
+                articulationRoot = prim;
+                articulationApi = candidate;
+                break;
+            }
+        }
+    }
+
+    if (!articulationApi)
+    {
+        return { pxr::UsdPrim(), pxr::UsdPrim() };
+    }
+
+    pxr::UsdPrim rootLink = articulationRoot;
+    std::vector<pxr::UsdPrim> articulationJoints;
+    for (pxr::UsdPrim prim : pxr::UsdPrimRange(articulationRoot))
+    {
+        if (pxr::UsdPhysicsJoint(prim))
+        {
+            articulationJoints.push_back(prim);
+        }
+    }
+
+    pxr::UsdPrim rootJoint;
+    if (pxr::UsdPhysicsJoint(articulationRoot))
+    {
+        rootJoint = articulationRoot;
+        pxr::SdfPath bodyPath = GetJointBodyRelationship(rootJoint, 0);
+        if (bodyPath.IsEmpty())
+        {
+            bodyPath = GetJointBodyRelationship(rootJoint, 1);
+        }
+        if (!bodyPath.IsEmpty())
+        {
+            pxr::UsdPrim candidateLink = stage->GetPrimAtPath(bodyPath);
+            if (candidateLink)
+            {
+                rootLink = candidateLink;
+            }
+        }
+    }
+
+    if (!rootLink)
+    {
+        return { pxr::UsdPrim(), rootJoint };
+    }
+
+    const std::string rootPath = rootLink.GetPath().GetString();
+    std::unordered_map<std::string, std::vector<std::pair<pxr::UsdPrim, int>>> bodyToJoints;
+    for (const auto& jointPrim : articulationJoints)
+    {
+        for (int bodyIndex = 0; bodyIndex < 2; ++bodyIndex)
+        {
+            pxr::SdfPath bodyPath = GetJointBodyRelationship(jointPrim, bodyIndex);
+            if (bodyPath.IsEmpty())
+            {
+                continue;
+            }
+            const std::string key = bodyPath.GetString();
+            bodyToJoints[key].emplace_back(jointPrim, bodyIndex);
+            if (!rootJoint && !rootPath.empty() && key == rootPath)
+            {
+                rootJoint = jointPrim;
+            }
+        }
+    }
+
+    std::deque<pxr::UsdPrim> queue;
+    std::unordered_set<std::string> visitedLinks;
+    std::unordered_set<std::string> visitedJoints;
+    std::vector<pxr::UsdPrim> orderedLinks;
+    std::vector<pxr::UsdPrim> orderedJoints;
+
+    if (rootLink)
+    {
+        queue.push_back(rootLink);
+    }
+
+    while (!queue.empty())
+    {
+        pxr::UsdPrim linkPrim = queue.front();
+        queue.pop_front();
+        if (!linkPrim)
+        {
+            continue;
+        }
+
+        const std::string linkKey = linkPrim.GetPath().GetString();
+        if (!visitedLinks.insert(linkKey).second)
+        {
+            continue;
+        }
+
+        ApplyLinkAPI(linkPrim);
+        orderedLinks.push_back(linkPrim);
+
+        auto iterator = bodyToJoints.find(linkKey);
+        if (iterator == bodyToJoints.end())
+        {
+            continue;
+        }
+
+        for (const auto& jointEntry : iterator->second)
+        {
+            pxr::UsdPrim jointPrim = jointEntry.first;
+            if (!jointPrim)
+            {
+                continue;
+            }
+
+            const std::string jointKey = jointPrim.GetPath().GetString();
+            if (visitedJoints.insert(jointKey).second)
+            {
+                ApplyJointAPI(jointPrim);
+                orderedJoints.push_back(jointPrim);
+            }
+
+            const int otherIndex = jointEntry.second == 0 ? 1 : 0;
+            const pxr::SdfPath otherPath = GetJointBodyRelationship(jointPrim, otherIndex);
+            if (otherPath.IsEmpty())
+            {
+                continue;
+            }
+
+            const std::string otherKey = otherPath.GetString();
+            if (visitedLinks.find(otherKey) != visitedLinks.end())
+            {
+                continue;
+            }
+
+            pxr::UsdPrim otherPrim = stage->GetPrimAtPath(otherPath);
+            if (otherPrim)
+            {
+                queue.push_back(otherPrim);
+            }
+        }
+    }
+
+    pxr::SdfPathVector linkTargets;
+    linkTargets.reserve(orderedLinks.size());
+    for (const auto& prim : orderedLinks)
+    {
+        linkTargets.push_back(prim.GetPath());
+    }
+    pxr::UsdRelationship linkRelationship = robotPrim.CreateRelationship(relationNames.at(Relations::ROBOT_LINKS), true);
+    for (const auto& path : linkTargets)
+    {
+        linkRelationship.AddTarget(path);
+    }
+
+    pxr::SdfPathVector jointTargets;
+    jointTargets.reserve(orderedJoints.size());
+    for (const auto& prim : orderedJoints)
+    {
+        jointTargets.push_back(prim.GetPath());
+    }
+    pxr::UsdRelationship jointRelationship =
+        robotPrim.CreateRelationship(relationNames.at(Relations::ROBOT_JOINTS), true);
+    for (const auto& path : jointTargets)
+    {
+        jointRelationship.AddTarget(path);
+    }
+
+    return { rootLink, rootJoint };
 }
 
 }
