@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.32] - 2025-11-25
+### Changed
+- Restore deprecated behavior of merging bodies with inertia; issue warning
+
 ## [2.4.31] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12
