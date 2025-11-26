@@ -1,8 +1,12 @@
 # Changelog
+## [15.10.1] - 2025-11-25
+### Changed
+- Fix tests after updating to kit 109.0.1.
 
 ## [15.10.0] - 2025-11-20
 ### Changed
 - Compute maximum points per Lidar scan from Lidar configuration
+
 ### Removed
 - No longer dependent on RtxSensorMetadata AOV
 

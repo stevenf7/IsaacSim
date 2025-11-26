@@ -33,7 +33,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.api import SimulationContext
-from omni.isaac.core.objects import DynamicCuboid
+from isaacsim.core.api.objects import DynamicCuboid
 
 EXPECTED_LOCATIONS = {
     "initial": (0, 0, 3),

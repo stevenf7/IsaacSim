@@ -115,6 +115,5 @@ rgb_annot.detach()
 sem_annot.detach()
 writer.detach()
 rp.destroy()
-simulation_manager.destroy()
 
 simulation_app.close()

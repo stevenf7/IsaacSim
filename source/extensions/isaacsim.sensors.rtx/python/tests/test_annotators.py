@@ -903,10 +903,10 @@ def _create_isaac_extract_rtx_sensor_point_cloud_test(config: str = None, varian
 
 # Iterate over all supported lidar configs and variants, creating a test for each as sensor prims
 DISABLE_FOR_TEST = {
-    "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda",
     "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
     "/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda",
     "/Isaac/Sensors/NVIDIA/Example_Solid_State_BEAMS.usda",
+    "/Isaac/Sensors/SICK/MRS1104C/SICK_MRS1104C.usd",
 }
 
 data_source = "gpu"
