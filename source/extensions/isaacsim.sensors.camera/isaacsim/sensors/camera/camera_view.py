@@ -244,16 +244,14 @@ class CameraView(XFormPrim):
                 )
             # get annotator
             if annotator_type == "rgba" or annotator_type == "rgb":
-                self._annotators["rgba"] = rep.AnnotatorRegistry.get_annotator(
-                    "rgb", device="cuda", do_array_copy=False
-                )
+                self._annotators["rgba"] = rep.AnnotatorRegistry.get_annotator("rgb", device="cuda", do_array_copy=True)
             elif annotator_type == "depth" or annotator_type == "distance_to_image_plane":
                 self._annotators["distance_to_image_plane"] = rep.AnnotatorRegistry.get_annotator(
-                    "distance_to_image_plane", device="cuda", do_array_copy=False
+                    "distance_to_image_plane", device="cuda", do_array_copy=True
                 )
             else:
                 self._annotators[annotator_type] = rep.AnnotatorRegistry.get_annotator(
-                    annotator_type, device="cuda", do_array_copy=False
+                    annotator_type, device="cuda", do_array_copy=True
                 )
         # attach the annotator to the render product
         for annotator in self._annotators.values():
@@ -544,9 +542,17 @@ class CameraView(XFormPrim):
         if tiled:
             shape = (*self.tiled_resolution, spec["channels"])
             if out is None:
-                out = wp.clone(tiled_data[:, :, :3]) if annotator_type == "rgb" else tiled_data.reshape(shape)
+                if annotator_type == "rgb":
+                    rgb_slice = tiled_data[:, :, :3]
+                    out = wp.clone(rgb_slice)
+                else:
+                    out = tiled_data.reshape(shape)
             else:
-                wp.copy(out, tiled_data[:, :, :3] if annotator_type == "rgb" else tiled_data.reshape(shape))
+                if annotator_type == "rgb":
+                    rgb_slice = tiled_data[:, :, :3]
+                    wp.copy(out, rgb_slice)
+                else:
+                    wp.copy(out, tiled_data.reshape(shape))
         # batched images
         else:
             # define internal variables
