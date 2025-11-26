@@ -735,4 +735,5 @@ class LidarRtx(BaseSensor):
         Returns:
             List[int]: The object IDs as a list of uint128.
         """
-        return [int.from_bytes(item, byteorder="little") for item in obj_ids.view(np.dtype("<U4"))]
+        obj_ids = np.ascontiguousarray(obj_ids).reshape(-1, 4)
+        return [int.from_bytes(group.tobytes(), byteorder="little") for group in obj_ids]

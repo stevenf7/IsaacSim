@@ -237,7 +237,7 @@ def publish_camera_tf(camera: Camera):
 
 
 def publish_camera_info(camera: Camera, freq):
-    from isaacsim.ros2.bridge import read_camera_info
+    from isaacsim.ros2.core import read_camera_info
 
     # The following code will link the camera's render product and publish the data to the specified topic name.
     render_product = camera._render_product_path
