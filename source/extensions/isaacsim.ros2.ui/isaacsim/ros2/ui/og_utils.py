@@ -59,7 +59,7 @@ class Ros2ClockGraph(MenuHelperWindow):
                     ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                 ],
                 keys.SET_VALUES: [
-                    ("ReadSimTime.inputs:resetOnStop", False),
+                    ("ReadSimTime.inputs:resetOnStop", True),
                 ],
             },
         )
@@ -382,7 +382,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadSimTime.inputs:resetOnStop", False),
+                        ("ReadSimTime.inputs:resetOnStop", True),
                     ],
                 },
             )
@@ -661,7 +661,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadSimTime.inputs:resetOnStop", False),
+                        ("ReadSimTime.inputs:resetOnStop", True),
                     ],
                 },
             )
@@ -879,7 +879,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadSimTime.inputs:resetOnStop", False),
+                        ("ReadSimTime.inputs:resetOnStop", True),
                     ],
                 },
             )

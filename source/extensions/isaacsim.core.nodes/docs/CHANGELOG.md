@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.0] - 2025-11-25
+### Changed
+- Set ResetOnStop to True for all Simulation Time OG nodes
+
 ## [5.0.0] - 2025-11-24
 ### Changed
 - Moved handle interface to isaacsim.ros2.nodes extension where it was used.
