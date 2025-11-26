@@ -227,12 +227,16 @@ public:
     virtual void writeHeader(const double timeStamp, const std::string& frameId);
 
     /**
-     * @brief Allocates and initializes the image buffer
+     * @brief Allocates and initializes the image buffer with optional pinned memory
      * @param[in] height Image height in pixels
      * @param[in] width Image width in pixels
      * @param[in] encoding Image encoding format (e.g., "rgb8", "bgr8")
+     * @param[in] usePinnedMemory If true, allocate CUDA pinned memory for faster GPU transfers
      */
-    virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding);
+    virtual void generateBuffer(const uint32_t height,
+                                const uint32_t width,
+                                const std::string& encoding,
+                                bool usePinnedMemory);
 };
 
 /**

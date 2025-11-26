@@ -215,26 +215,32 @@ public:
     virtual void writeHeader(const double timeStamp, const std::string& frameId) = 0;
 
     /**
-     * @brief Generate the buffer (matrix data) according to the image metadata.
+     * @brief Generate the buffer with optional CUDA pinned memory allocation.
      * @details
-     * It allocates memory for the `data` field, and computes and fills in the values of the other message fields.
+     * Allocates memory for the `data` field, and computes and fills in the values of the other message fields.
+     * When usePinnedMemory is true, allocates CUDA (page-locked) memory for faster GPU transfers.
      *
      * @param[in] height Image height.
      * @param[in] width Image width.
      * @param[in] encoding Encoding of pixels.
+     * @param[in] usePinnedMemory If true, allocate CUDA pinned memory instead of regular host memory.
      */
-    virtual void generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding) = 0;
+    virtual void generateBuffer(const uint32_t height,
+                                const uint32_t width,
+                                const std::string& encoding,
+                                bool usePinnedMemory = false) = 0;
 
     /**
      * @brief Get the pointer to the buffer (matrix data).
      * @details
      * Provides direct access to the underlying buffer containing the image data.
+     * Returns pinned memory pointer if allocated, otherwise returns vector buffer pointer.
      *
      * @return Pointer to the buffer.
      */
     void* getBufferPtr()
     {
-        return &m_buffer[0];
+        return m_isPinnedMemory ? m_pinnedBuffer : &m_buffer[0];
     }
 
     /**
@@ -256,9 +262,19 @@ protected:
     std::vector<uint8_t> m_buffer;
 
     /**
+     * @brief Pinned memory buffer pointer.
+     */
+    void* m_pinnedBuffer = nullptr;
+
+    /**
      * @brief Buffer size.
      */
     size_t m_totalBytes = 0;
+
+    /**
+     * @brief Flag indicating if buffer is using CUDA pinned memory.
+     */
+    bool m_isPinnedMemory = false;
 };
 
 /**

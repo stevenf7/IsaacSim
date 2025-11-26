@@ -26,6 +26,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cuda_runtime.h>
 #include <limits>
 
 namespace isaacsim
@@ -453,7 +454,10 @@ void Ros2ImageMessageImpl::writeHeader(const double timeStamp, const std::string
     Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), imageMsg->header);
 }
 
-void Ros2ImageMessageImpl::generateBuffer(const uint32_t height, const uint32_t width, const std::string& encoding)
+void Ros2ImageMessageImpl::generateBuffer(const uint32_t height,
+                                          const uint32_t width,
+                                          const std::string& encoding,
+                                          bool usePinnedMemory)
 {
     if (!m_msg)
     {
@@ -480,15 +484,60 @@ void Ros2ImageMessageImpl::generateBuffer(const uint32_t height, const uint32_t 
 
     uint32_t step = width * channels * byteDepth;
     imageMsg->step = step;
+
+    // Check if pinned memory buffer needs to be reallocated
+    bool needsReallocation = ((step * height) != m_totalBytes) || (usePinnedMemory != m_isPinnedMemory);
     m_totalBytes = step * height;
-    m_buffer.resize(m_totalBytes);
+
+    if (needsReallocation)
+    {
+        if (m_isPinnedMemory && m_pinnedBuffer)
+        {
+            cudaFreeHost(m_pinnedBuffer);
+            m_pinnedBuffer = nullptr;
+            m_isPinnedMemory = false;
+        }
+
+        if (usePinnedMemory && m_totalBytes > 0)
+        {
+            cudaError_t err = cudaMallocHost(&m_pinnedBuffer, m_totalBytes);
+            if (err == cudaSuccess)
+            {
+                m_isPinnedMemory = true;
+                imageMsg->data.data = static_cast<uint8_t*>(m_pinnedBuffer);
+            }
+            else
+            {
+                fprintf(stderr, "[Error] cudaMallocHost failed: %s\n", cudaGetErrorString(err));
+                m_buffer.resize(m_totalBytes);
+                imageMsg->data.data = m_totalBytes > 0 ? m_buffer.data() : nullptr;
+            }
+        }
+        else
+        {
+            m_buffer.resize(m_totalBytes);
+            imageMsg->data.data = m_totalBytes > 0 ? m_buffer.data() : nullptr;
+        }
+    }
+    else
+    {
+        imageMsg->data.data =
+            m_isPinnedMemory ? static_cast<uint8_t*>(m_pinnedBuffer) : (m_totalBytes > 0 ? m_buffer.data() : nullptr);
+    }
+
     imageMsg->data.size = m_totalBytes;
     imageMsg->data.capacity = m_totalBytes;
-    imageMsg->data.data = m_totalBytes > 0 ? m_buffer.data() : nullptr;
 }
 
 Ros2ImageMessageImpl::~Ros2ImageMessageImpl()
 {
+    if (m_isPinnedMemory && m_pinnedBuffer)
+    {
+        cudaFreeHost(m_pinnedBuffer);
+        m_pinnedBuffer = nullptr;
+        m_isPinnedMemory = false;
+    }
+
     if (!m_msg)
     {
         return;
