@@ -1,4 +1,8 @@
 # Changelog
+## [0.6.0] - 2025-11-25
+### Added
+- Add dedicated GPU codepath for IMU to use separate stream and pinned memory buffer
+
 ## [0.5.4] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12
