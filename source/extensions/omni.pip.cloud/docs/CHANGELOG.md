@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.4] - 2025-11-25
+### Changed
+- Update to aioboto3==15.2.0
+- Update to aiobotocore==2.24.2
+- Update to boto3==1.40.18
+- Update to botocore==1.40.18
+- Update to msal==1.29.0
+
 ## [1.4.3] - 2025-09-26
 ### Changed
 - Update to aioboto3==15.1.0
