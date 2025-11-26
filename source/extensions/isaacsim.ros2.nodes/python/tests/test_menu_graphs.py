@@ -1458,8 +1458,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         self.assertIsNotNone(playback_tick_node, "Playback tick node not found in graph")
 
         reset_on_stop_attr = sim_time_node.get_attribute("inputs:resetOnStop")
-        if reset_on_stop_attr:
-            og.Controller.set(reset_on_stop_attr, False)
+        og.Controller.set(reset_on_stop_attr, False)
 
         tick_output_attr = playback_tick_node.get_attribute("outputs:tick")
         clock_exec_in_attr = clock_publisher_node.get_attribute("inputs:execIn")
