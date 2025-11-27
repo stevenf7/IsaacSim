@@ -51,6 +51,7 @@
 #include "vision_msgs/msg/detection3_d_array.h"
 #include "vision_msgs/msg/object_hypothesis_with_pose.h"
 
+#include <isaacsim/core/includes/Buffer.h>
 #include <isaacsim/ros2/core/Ros2FactoryImpl.h>
 #include <nlohmann/json.hpp>
 #include <omni/physics/tensors/IArticulationView.h>
@@ -506,18 +507,38 @@ public:
     virtual const void* getTypeSupportHandle();
 
     /**
-     * @brief Allocates and initializes the point cloud buffer
+     * @brief Allocates and initializes the point cloud message buffer
      * @param[in] timeStamp Time in seconds
      * @param[in] frameId Frame ID for the point cloud
-     * @param[in] width Number of points in a row
-     * @param[in] height Number of rows (1 for unorganized clouds)
-     * @param[in] pointStep Size of a single point in bytes
+     * @param[in] bufferSize Size of the point cloud data buffer in bytes
+     * @param[in] intensityPtr Pointer to the intensity data
+     * @param[in] timestampPtr Pointer to the timestamp data
+     * @param[in] emitterIdPtr Pointer to the emitter ID data
+     * @param[in] channelIdPtr Pointer to the channel ID data
+     * @param[in] materialIdPtr Pointer to the material ID data
+     * @param[in] tickIdPtr Pointer to the tick ID data
+     * @param[in] hitNormalPtr Pointer to the normal data
+     * @param[in] velocityPtr Pointer to the velocity data
+     * @param[in] objectIdPtr Pointer to the object ID data
+     * @param[in] echoIdPtr Pointer to the echo ID data
+     * @param[in] tickStatePtr Pointer to the tick states data
+     * @param[in] radialVelocityMSPtr Pointer to the radial velocity data
      */
     virtual void generateBuffer(const double& timeStamp,
                                 const std::string& frameId,
-                                const size_t& width,
-                                const size_t& height,
-                                const uint32_t& pointStep);
+                                const size_t& bufferSize,
+                                float* intensityPtr,
+                                uint64_t* timestampPtr,
+                                uint32_t* emitterIdPtr,
+                                uint32_t* channelIdPtr,
+                                uint32_t* materialIdPtr,
+                                uint32_t* tickIdPtr,
+                                pxr::GfVec3f* hitNormalPtr,
+                                pxr::GfVec3f* velocityPtr,
+                                uint32_t* objectIdPtr,
+                                uint8_t* echoIdPtr,
+                                uint8_t* tickStatePtr,
+                                float* radialVelocityMSPtr);
 };
 
 /**

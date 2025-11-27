@@ -215,6 +215,19 @@ class Extension(omni.ext.IExt):
         )
         self.registered_annotators.append(annotator_name)
 
+        annotator_name = "IsaacCreateRTXRadarPointCloud"
+        register_annotator_from_node_with_telemetry(
+            name=annotator_name,
+            input_rendervars=[
+                "GenericModelOutputPtr",
+            ],
+            node_type_id="isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer",
+            init_params={"enablePerFrameOutput": True},
+            output_data_type=np.float32,
+            output_channels=3,
+        )
+        self.registered_annotators.append(annotator_name)
+
         annotator_name = "IsaacComputeRTXLidarFlatScan"
 
         def _on_attach_gmo_flatscan(node: og.Node):

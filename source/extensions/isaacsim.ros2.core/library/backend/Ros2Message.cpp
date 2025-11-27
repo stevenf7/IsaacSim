@@ -1249,6 +1249,7 @@ Ros2JointStateMessageImpl::~Ros2JointStateMessageImpl()
 Ros2PointCloudMessageImpl::Ros2PointCloudMessageImpl() : Ros2MessageInterfaceImpl("sensor_msgs", "msg", "PointCloud2")
 {
     m_msg = sensor_msgs__msg__PointCloud2__create();
+    m_bufferPinned.setDevice(-1);
 }
 
 const void* Ros2PointCloudMessageImpl::getTypeSupportHandle()
@@ -1258,9 +1259,19 @@ const void* Ros2PointCloudMessageImpl::getTypeSupportHandle()
 
 void Ros2PointCloudMessageImpl::generateBuffer(const double& timeStamp,
                                                const std::string& frameId,
-                                               const size_t& width,
-                                               const size_t& height,
-                                               const uint32_t& pointStep)
+                                               const size_t& bufferSize,
+                                               float* intensityPtr,
+                                               uint64_t* timestampPtr,
+                                               uint32_t* emitterIdPtr,
+                                               uint32_t* channelIdPtr,
+                                               uint32_t* materialIdPtr,
+                                               uint32_t* tickIdPtr,
+                                               pxr::GfVec3f* hitNormalPtr,
+                                               pxr::GfVec3f* velocityPtr,
+                                               uint32_t* objectIdPtr,
+                                               uint8_t* echoIdPtr,
+                                               uint8_t* tickStatePtr,
+                                               float* radialVelocityMSPtr)
 {
     if (!m_msg)
     {
@@ -1270,36 +1281,109 @@ void Ros2PointCloudMessageImpl::generateBuffer(const double& timeStamp,
 
     pointCloudMsg->is_dense = true;
     Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), pointCloudMsg->header);
-    pointCloudMsg->height = 1;
-    pointCloudMsg->point_step = static_cast<uint32_t>(sizeof(pxr::GfVec3f));
-    pointCloudMsg->width = static_cast<uint32_t>(width);
 
-    pointCloudMsg->row_step = pointCloudMsg->point_step * pointCloudMsg->width;
-
-    m_totalBytes = width * sizeof(pxr::GfVec3f);
-
-    // Use buffer-backed sequence for safe memory management
-    m_buffer.resize(m_totalBytes);
-    pointCloudMsg->data.size = m_totalBytes;
-    pointCloudMsg->data.capacity = m_totalBytes;
-    pointCloudMsg->data.data = m_buffer.data();
-
-    // Ensure fields sequence has capacity 3 and reuse if possible
-    if (!ensureSeqSize(pointCloudMsg->fields, 3))
+    size_t numFields = 3 + (intensityPtr ? 1 : 0) + (timestampPtr ? 1 : 0) + (emitterIdPtr ? 1 : 0) +
+                       (channelIdPtr ? 1 : 0) + (materialIdPtr ? 1 : 0) + (tickIdPtr ? 1 : 0) + (hitNormalPtr ? 3 : 0) +
+                       (velocityPtr ? 3 : 0) + (objectIdPtr ? 1 : 0) + (echoIdPtr ? 1 : 0) + (tickStatePtr ? 1 : 0) +
+                       (radialVelocityMSPtr ? 1 : 0);
+    // Ensure fields sequence has correct capacity and reuse if possible
+    if (!ensureSeqSize(pointCloudMsg->fields, numFields))
     {
         fprintf(stderr, "[Ros2PointCloudMessage] Failed to ensure fields sequence\n");
         return;
     }
-
-    // Assign field names
-    const char* fieldNames[] = { "x", "y", "z" };
-    for (int i = 0; i < 3; i++)
+    // Assign mandatory fields (x, y, z)
+    std::array<const char*, 3> fieldNames = { "x", "y", "z" };
+    for (size_t i = 0; i < fieldNames.size(); i++)
     {
         Ros2MessageInterfaceImpl::writeRosString(fieldNames[i], pointCloudMsg->fields.data[i].name);
-        pointCloudMsg->fields.data[i].count = 1;
+        pointCloudMsg->fields.data[i].offset = static_cast<uint32_t>(i * 4);
         pointCloudMsg->fields.data[i].datatype = sensor_msgs__msg__PointField__FLOAT32;
-        pointCloudMsg->fields.data[i].offset = i * 4;
+        pointCloudMsg->fields.data[i].count = 1;
     }
+    // Assign optional fields
+    size_t backIdx = 3;
+    size_t offset = sizeof(pxr::GfVec3f);
+    auto& fields = pointCloudMsg->fields;
+
+    // Reset optionalFields
+    m_orderedFields.clear();
+
+    // Lambda function to add a field to the point cloud message
+    auto addField = [&](const char* name, uint8_t datatype, uint32_t count, void* ptr, size_t typeSize)
+    {
+        if (!ptr)
+        {
+            return;
+        }
+        Ros2MessageInterfaceImpl::writeRosString(name, fields.data[backIdx].name);
+        fields.data[backIdx].offset = static_cast<uint32_t>(offset);
+        fields.data[backIdx].datatype = datatype;
+        fields.data[backIdx].count = count;
+        m_orderedFields.push_back(std::make_tuple(ptr, typeSize * count, offset));
+        offset += Ros2PointCloudMessageImpl::pointFieldTypeSizes[datatype] * count;
+        backIdx++;
+    };
+
+    // Lambda function to add a Cartesian field to the point cloud message
+    auto addCartesianField = [&](const char* name_x, const char* name_y, const char* name_z, uint8_t datatype,
+                                 uint32_t count, void* ptr, size_t typeSize)
+    {
+        if (!ptr)
+        {
+            return;
+        }
+        std::array<const char*, 3> fieldNames = { name_x, name_y, name_z };
+        for (size_t i = 0; i < fieldNames.size(); i++, backIdx++)
+        {
+            Ros2MessageInterfaceImpl::writeRosString(fieldNames[i], fields.data[backIdx].name);
+            fields.data[backIdx].offset =
+                static_cast<uint32_t>(offset + i * Ros2PointCloudMessageImpl::pointFieldTypeSizes[datatype]);
+            fields.data[backIdx].datatype = datatype;
+            fields.data[backIdx].count = count;
+        }
+        m_orderedFields.push_back(std::make_tuple(ptr, typeSize * fieldNames.size(), offset));
+        offset += Ros2PointCloudMessageImpl::pointFieldTypeSizes[datatype] * fieldNames.size();
+    };
+
+    addField("intensity", sensor_msgs__msg__PointField__FLOAT32, 1, intensityPtr, sizeof(float));
+    // timestamp is provided as uint64_t, but packed as 2 x uint32_t in the message
+    addField("timestamp", sensor_msgs__msg__PointField__UINT32, 2, timestampPtr, sizeof(uint32_t));
+    addField("emitter_id", sensor_msgs__msg__PointField__UINT32, 1, emitterIdPtr, sizeof(uint32_t));
+    addField("channel_id", sensor_msgs__msg__PointField__UINT32, 1, channelIdPtr, sizeof(uint32_t));
+    addField("material_id", sensor_msgs__msg__PointField__UINT32, 1, materialIdPtr, sizeof(uint32_t));
+    addField("tick_id", sensor_msgs__msg__PointField__UINT32, 1, tickIdPtr, sizeof(uint32_t));
+    addCartesianField("nx", "ny", "nz", sensor_msgs__msg__PointField__FLOAT32, 1, hitNormalPtr, sizeof(float));
+    addCartesianField("vx", "vy", "vz", sensor_msgs__msg__PointField__FLOAT32, 1, velocityPtr, sizeof(float));
+    // object_id is provided as uint32_t, but packed as 4 x uint32_t in the message
+    addField("object_id", sensor_msgs__msg__PointField__UINT32, 4, objectIdPtr, sizeof(uint32_t));
+    addField("echo_id", sensor_msgs__msg__PointField__UINT8, 1, echoIdPtr, sizeof(uint8_t));
+    addField("tick_state", sensor_msgs__msg__PointField__UINT8, 1, tickStatePtr, sizeof(uint8_t));
+    addField("radial_velocity_ms", sensor_msgs__msg__PointField__FLOAT32, 1, radialVelocityMSPtr, sizeof(float));
+
+    // Compute message size and shape
+    m_numPoints = bufferSize / sizeof(pxr::GfVec3f);
+    m_pointStep = offset;
+    m_totalBytes = m_pointStep * m_numPoints;
+
+    // Set message size and shape
+    pointCloudMsg->height = 1;
+    pointCloudMsg->width = static_cast<uint32_t>(m_numPoints);
+    pointCloudMsg->point_step = static_cast<uint32_t>(m_pointStep);
+    pointCloudMsg->row_step = static_cast<uint32_t>(m_pointStep * m_numPoints);
+
+    // Use buffer-backed sequence for safe memory management
+    if (m_usePinnedBuffer)
+    {
+        m_bufferPinned.resize(m_totalBytes);
+    }
+    else
+    {
+        m_buffer.resize(m_totalBytes);
+    }
+    pointCloudMsg->data.size = m_totalBytes;
+    pointCloudMsg->data.capacity = m_totalBytes;
+    pointCloudMsg->data.data = reinterpret_cast<uint8_t*>(getBufferPtr());
 }
 
 Ros2PointCloudMessageImpl::~Ros2PointCloudMessageImpl()
@@ -1313,6 +1397,8 @@ Ros2PointCloudMessageImpl::~Ros2PointCloudMessageImpl()
         pointCloudMsg->data.data = nullptr;
         sensor_msgs__msg__PointCloud2__destroy(pointCloudMsg);
     }
+    m_bufferPinned.clear();
+    m_buffer.clear();
 }
 
 // LaserScan message

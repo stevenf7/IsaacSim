@@ -48,7 +48,21 @@ TEST_SUITE("isaacsim.ros2.core.point_cloud_message_tests")
         CHECK(ptr != nullptr);
     }
 
-    TEST_CASE("Ros2PointCloudMessage: generate buffer for unorganized cloud")
+    TEST_CASE("Ros2PointCloudMessage: message parameters are null before buffer generation")
+    {
+        ROS2_TEST_SETUP();
+
+        auto msg = testBase.getFactory()->createPointCloudMessage();
+        REQUIRE(msg != nullptr);
+
+        CHECK(msg->getBufferPtr() == nullptr);
+        CHECK(msg->getTotalBytes() == 0);
+        CHECK(msg->getNumPoints() == 0);
+        CHECK(msg->getPointStep() == 0);
+        CHECK(msg->getOrderedFields().empty());
+    }
+
+    TEST_CASE("Ros2PointCloudMessage: generate buffer for unorganized cloud with no metadata")
     {
         ROS2_TEST_SETUP();
 
@@ -57,12 +71,138 @@ TEST_SUITE("isaacsim.ros2.core.point_cloud_message_tests")
 
         double timestamp = 123.456;
         std::string frameId = "lidar_frame";
-        size_t width = 1000; // Number of points
-        size_t height = 1; // Unorganized cloud
-        uint32_t pointStep = 12; // 3 floats (x, y, z) * 4 bytes each
+        const size_t numPoints = 1000;
+        const size_t bufferSize = numPoints * sizeof(pxr::GfVec3f);
+        float* intensityPtr = nullptr;
+        uint64_t* timestampPtr = nullptr;
+        uint32_t* emitterIdPtr = nullptr;
+        uint32_t* channelIdPtr = nullptr;
+        uint32_t* materialIdPtr = nullptr;
+        uint32_t* tickIdPtr = nullptr;
+        pxr::GfVec3f* hitNormalPtr = nullptr;
+        pxr::GfVec3f* velocityPtr = nullptr;
+        uint32_t* objectIdPtr = nullptr;
+        uint8_t* echoIdPtr = nullptr;
+        uint8_t* tickStatePtr = nullptr;
+        float* radialVelocityMSPtr = nullptr;
 
         // Should not crash when generating buffer
-        CHECK_NOTHROW(msg->generateBuffer(timestamp, frameId, width, height, pointStep));
+        REQUIRE_NOTHROW(msg->generateBuffer(timestamp, frameId, bufferSize, intensityPtr, timestampPtr, emitterIdPtr,
+                                            channelIdPtr, materialIdPtr, tickIdPtr, hitNormalPtr, velocityPtr,
+                                            objectIdPtr, echoIdPtr, tickStatePtr, radialVelocityMSPtr));
+
+        const size_t expectedPointStep = sizeof(pxr::GfVec3f);
+        CHECK(msg->getTotalBytes() == bufferSize);
+        CHECK(msg->getNumPoints() == numPoints);
+        CHECK(msg->getPointStep() == expectedPointStep);
+        CHECK(msg->getOrderedFields().empty());
+    }
+
+    TEST_CASE("Ros2PointCloudMessage: generate buffer for unorganized cloud with partial metadata")
+    {
+        ROS2_TEST_SETUP();
+
+        auto msg = testBase.getFactory()->createPointCloudMessage();
+        REQUIRE(msg != nullptr);
+
+        double timestamp = 123.456;
+        std::string frameId = "lidar_frame";
+        const size_t numPoints = 10;
+        const size_t bufferSize = numPoints * sizeof(pxr::GfVec3f);
+        std::array<float, numPoints> intensityData;
+        std::array<uint64_t, numPoints> timestampData;
+        std::array<pxr::GfVec3f, numPoints> hitNormalData;
+        std::array<uint32_t, numPoints> objectIdData;
+
+        REQUIRE_NOTHROW(msg->generateBuffer(timestamp, frameId, bufferSize, intensityData.data(), timestampData.data(),
+                                            nullptr, nullptr, nullptr, nullptr, hitNormalData.data(), nullptr,
+                                            objectIdData.data(), nullptr, nullptr, nullptr));
+
+        const size_t expectedPointStep =
+            sizeof(pxr::GfVec3f) + sizeof(float) + sizeof(uint64_t) + sizeof(pxr::GfVec3f) + sizeof(uint32_t) * 4;
+        const size_t expectedBufferSize = numPoints * expectedPointStep;
+        CHECK(msg->getTotalBytes() == expectedBufferSize);
+        CHECK(msg->getNumPoints() == numPoints);
+        CHECK(msg->getPointStep() == expectedPointStep);
+        CHECK(msg->getOrderedFields().size() == 4);
+        CHECK(msg->getOrderedFields()[0] == std::make_tuple(intensityData.data(), sizeof(float), sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[1] ==
+              std::make_tuple(timestampData.data(), sizeof(uint64_t),
+                              std::get<1>(msg->getOrderedFields()[0]) + std::get<2>(msg->getOrderedFields()[0])));
+        CHECK(msg->getOrderedFields()[2] ==
+              std::make_tuple(hitNormalData.data(), sizeof(pxr::GfVec3f),
+                              std::get<1>(msg->getOrderedFields()[1]) + std::get<2>(msg->getOrderedFields()[1])));
+        CHECK(msg->getOrderedFields()[3] ==
+              std::make_tuple(objectIdData.data(), sizeof(uint32_t) * 4,
+                              std::get<1>(msg->getOrderedFields()[2]) + std::get<2>(msg->getOrderedFields()[2])));
+    }
+
+    TEST_CASE("Ros2PointCloudMessage: generate buffer for unorganized cloud with full metadata")
+    {
+        ROS2_TEST_SETUP();
+
+        auto msg = testBase.getFactory()->createPointCloudMessage();
+        REQUIRE(msg != nullptr);
+
+        double timestamp = 123.456;
+        std::string frameId = "lidar_frame";
+        const size_t numPoints = 10;
+        const size_t bufferSize = numPoints * sizeof(pxr::GfVec3f);
+        std::array<float, numPoints> intensityData;
+        std::array<uint64_t, numPoints> timestampData;
+        std::array<uint32_t, numPoints> emitterIdData;
+        std::array<uint32_t, numPoints> channelIdData;
+        std::array<uint32_t, numPoints> materialIdData;
+        std::array<uint32_t, numPoints> tickIdData;
+        std::array<pxr::GfVec3f, numPoints> hitNormalData;
+        std::array<pxr::GfVec3f, numPoints> velocityData;
+        std::array<uint32_t, numPoints> objectIdData;
+        std::array<uint8_t, numPoints> echoIdData;
+        std::array<uint8_t, numPoints> tickStateData;
+        std::array<float, numPoints> radialVelocityMSData;
+
+        REQUIRE_NOTHROW(msg->generateBuffer(
+            timestamp, frameId, bufferSize, intensityData.data(), timestampData.data(), emitterIdData.data(),
+            channelIdData.data(), materialIdData.data(), tickIdData.data(), hitNormalData.data(), velocityData.data(),
+            objectIdData.data(), echoIdData.data(), tickStateData.data(), radialVelocityMSData.data()));
+
+        const size_t expectedPointStep = sizeof(pxr::GfVec3f) + sizeof(float) + sizeof(uint64_t) + sizeof(uint32_t) +
+                                         sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(pxr::GfVec3f) +
+                                         sizeof(pxr::GfVec3f) + sizeof(uint32_t) * 4 + sizeof(uint8_t) +
+                                         sizeof(uint8_t) + sizeof(float);
+        const size_t expectedBufferSize = numPoints * expectedPointStep;
+        CHECK(msg->getTotalBytes() == expectedBufferSize);
+        CHECK(msg->getNumPoints() == numPoints);
+        CHECK(msg->getPointStep() == expectedPointStep);
+        CHECK(msg->getOrderedFields().size() == 12);
+        CHECK(msg->getOrderedFields()[0] == std::make_tuple(intensityData.data(), sizeof(float), sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[1] ==
+              std::make_tuple(timestampData.data(), sizeof(uint32_t) * 2, sizeof(float) + sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[2] == std::make_tuple(emitterIdData.data(), sizeof(uint32_t),
+                                                            sizeof(uint32_t) * 2 + sizeof(float) + sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[3] == std::make_tuple(channelIdData.data(), sizeof(uint32_t),
+                                                            sizeof(uint32_t) * 3 + sizeof(float) + sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[4] == std::make_tuple(materialIdData.data(), sizeof(uint32_t),
+                                                            sizeof(uint32_t) * 4 + sizeof(float) + sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[5] == std::make_tuple(tickIdData.data(), sizeof(uint32_t),
+                                                            sizeof(uint32_t) * 5 + sizeof(float) + sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[6] == std::make_tuple(hitNormalData.data(), sizeof(pxr::GfVec3f),
+                                                            sizeof(uint32_t) * 6 + sizeof(float) + sizeof(pxr::GfVec3f)));
+        CHECK(msg->getOrderedFields()[7] ==
+              std::make_tuple(velocityData.data(), sizeof(pxr::GfVec3f),
+                              sizeof(uint32_t) * 6 + sizeof(float) + sizeof(pxr::GfVec3f) * 2));
+        CHECK(msg->getOrderedFields()[8] ==
+              std::make_tuple(objectIdData.data(), sizeof(uint32_t) * 4,
+                              sizeof(uint32_t) * 6 + sizeof(float) + sizeof(pxr::GfVec3f) * 3));
+        CHECK(msg->getOrderedFields()[9] ==
+              std::make_tuple(echoIdData.data(), sizeof(uint8_t),
+                              sizeof(uint32_t) * 10 + sizeof(float) + sizeof(pxr::GfVec3f) * 3));
+        CHECK(msg->getOrderedFields()[10] ==
+              std::make_tuple(tickStateData.data(), sizeof(uint8_t),
+                              sizeof(uint8_t) + sizeof(uint32_t) * 10 + sizeof(float) + sizeof(pxr::GfVec3f) * 3));
+        CHECK(msg->getOrderedFields()[11] ==
+              std::make_tuple(radialVelocityMSData.data(), sizeof(float),
+                              sizeof(uint8_t) * 2 + sizeof(uint32_t) * 10 + sizeof(float) + sizeof(pxr::GfVec3f) * 3));
     }
 
     TEST_CASE("Ros2PointCloudMessage: generate buffer for organized cloud")
@@ -77,9 +217,24 @@ TEST_SUITE("isaacsim.ros2.core.point_cloud_message_tests")
         size_t width = 640; // Image width
         size_t height = 480; // Image height
         uint32_t pointStep = 16; // x, y, z, intensity * 4 bytes each
+        size_t bufferSize = width * height * pointStep;
+        float* intensityPtr = nullptr;
+        uint64_t* timestampPtr = nullptr;
+        uint32_t* emitterIdPtr = nullptr;
+        uint32_t* channelIdPtr = nullptr;
+        uint32_t* materialIdPtr = nullptr;
+        uint32_t* tickIdPtr = nullptr;
+        pxr::GfVec3f* hitNormalPtr = nullptr;
+        pxr::GfVec3f* velocityPtr = nullptr;
+        uint32_t* objectIdPtr = nullptr;
+        uint8_t* echoIdPtr = nullptr;
+        uint8_t* tickStatePtr = nullptr;
+        float* radialVelocityMSPtr = nullptr;
 
         // Should not crash when generating organized cloud buffer
-        CHECK_NOTHROW(msg->generateBuffer(timestamp, frameId, width, height, pointStep));
+        CHECK_NOTHROW(msg->generateBuffer(timestamp, frameId, bufferSize, intensityPtr, timestampPtr, emitterIdPtr,
+                                          channelIdPtr, materialIdPtr, tickIdPtr, hitNormalPtr, velocityPtr,
+                                          objectIdPtr, echoIdPtr, tickStatePtr, radialVelocityMSPtr));
     }
 
     TEST_CASE("Ros2PointCloudMessage: generate buffer with minimal data")
@@ -89,14 +244,26 @@ TEST_SUITE("isaacsim.ros2.core.point_cloud_message_tests")
         auto msg = testBase.getFactory()->createPointCloudMessage();
         REQUIRE(msg != nullptr);
 
+        size_t bufferSize = sizeof(pxr::GfVec3f);
         double timestamp = 0.0;
         std::string frameId = "base_link";
-        size_t width = 1;
-        size_t height = 1;
-        uint32_t pointStep = 12; // Just x, y, z
+        float* intensityPtr = nullptr;
+        uint64_t* timestampPtr = nullptr;
+        uint32_t* emitterIdPtr = nullptr;
+        uint32_t* channelIdPtr = nullptr;
+        uint32_t* materialIdPtr = nullptr;
+        uint32_t* tickIdPtr = nullptr;
+        pxr::GfVec3f* hitNormalPtr = nullptr;
+        pxr::GfVec3f* velocityPtr = nullptr;
+        uint32_t* objectIdPtr = nullptr;
+        uint8_t* echoIdPtr = nullptr;
+        uint8_t* tickStatePtr = nullptr;
+        float* radialVelocityMSPtr = nullptr;
 
         // Should not crash with minimal buffer
-        CHECK_NOTHROW(msg->generateBuffer(timestamp, frameId, width, height, pointStep));
+        CHECK_NOTHROW(msg->generateBuffer(timestamp, frameId, bufferSize, intensityPtr, timestampPtr, emitterIdPtr,
+                                          channelIdPtr, materialIdPtr, tickIdPtr, hitNormalPtr, velocityPtr,
+                                          objectIdPtr, echoIdPtr, tickStatePtr, radialVelocityMSPtr));
     }
 
     TEST_CASE("Ros2PointCloudMessage: use with publisher")
@@ -125,8 +292,24 @@ TEST_SUITE("isaacsim.ros2.core.point_cloud_message_tests")
             testBase.getFactory()->createPublisher(node.get(), "test_pointcloud", msg->getTypeSupportHandle(), qos);
         CHECK(publisher != nullptr);
 
+        size_t bufferSize = 100 * sizeof(pxr::GfVec3f);
+        float* intensityPtr = nullptr;
+        uint64_t* timestampPtr = nullptr;
+        uint32_t* emitterIdPtr = nullptr;
+        uint32_t* channelIdPtr = nullptr;
+        uint32_t* materialIdPtr = nullptr;
+        uint32_t* tickIdPtr = nullptr;
+        pxr::GfVec3f* hitNormalPtr = nullptr;
+        pxr::GfVec3f* velocityPtr = nullptr;
+        uint32_t* objectIdPtr = nullptr;
+        uint8_t* echoIdPtr = nullptr;
+        uint8_t* tickStatePtr = nullptr;
+        float* radialVelocityMSPtr = nullptr;
+
         // Generate buffer and publish - should not crash
-        msg->generateBuffer(1.0, "lidar_frame", 100, 1, 12);
+        msg->generateBuffer(1.0, "lidar_frame", bufferSize, intensityPtr, timestampPtr, emitterIdPtr, channelIdPtr,
+                            materialIdPtr, tickIdPtr, hitNormalPtr, velocityPtr, objectIdPtr, echoIdPtr, tickStatePtr,
+                            radialVelocityMSPtr);
         if (publisher)
         {
             CHECK_NOTHROW(publisher->publish(msg->getPtr()));

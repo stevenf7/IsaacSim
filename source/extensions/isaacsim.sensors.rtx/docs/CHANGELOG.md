@@ -1,4 +1,10 @@
 # Changelog
+## [15.11.0] - 2025-11-26
+### Added
+- IsaacCreateRTXRadarPointCloud annotator to explicitly support RTX Radar
+### Changed
+- OgnIsaacCreateRTXLidarScanBuffer includes support for RTX Radar metadata
+
 ## [15.10.1] - 2025-11-25
 ### Changed
 - Fix tests after updating to kit 109.0.1.

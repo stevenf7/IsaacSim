@@ -17,8 +17,11 @@ import asyncio
 
 import numpy as np
 import omni
+from isaacsim.core.api.materials import OmniPBR
+from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.utils.stage import add_reference_to_stage, open_stage_async
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
+from isaacsim.sensors.rtx import apply_nonvisual_material, get_material_id
 from pxr import UsdPhysics
 
 
@@ -127,10 +130,10 @@ async def add_franka(assets_root_path):
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd")
 
 
-def get_qos_profile():
+def get_qos_profile(depth: int = 1):
     from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 
-    return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=QoSHistoryPolicy.KEEP_LAST, depth=1)
+    return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=QoSHistoryPolicy.KEEP_LAST, depth=depth)
 
 
 def fields_to_dtype(fields, point_step):
@@ -218,3 +221,88 @@ def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value,
             drive.CreateDampingAttr(damping)
         else:
             drive.GetDampingAttr().Set(damping)
+
+
+def _create_cube_with_material(
+    index: int, position: np.ndarray, scale: np.ndarray, color: np.ndarray, material_props: tuple, enable_material: bool
+) -> dict:
+    """Helper to create a cube with optional material."""
+    cube_path = f"/World/cube_{index}"
+    cube = VisualCuboid(
+        prim_path=cube_path,
+        name=f"cube_{index}",
+        position=position,
+        scale=scale,
+    )
+
+    cube_info = {}
+    if enable_material:
+        material = OmniPBR(
+            prim_path=f"{cube_path}/material",
+            name=f"cube_{index}_material",
+            color=color,
+        )
+        apply_nonvisual_material(material.prim, *material_props)
+        cube.apply_visual_material(material)
+        cube_info = {"material_id": get_material_id(material.prim)}
+
+    return {cube_path: cube_info} if cube_info else {}
+
+
+def create_sarcophagus(enable_nonvisual_material: bool = True):
+    # Autogenerate sarcophagus
+    dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
+    cube_configs = [
+        # (position_formula, scale, color, material_props)
+        (
+            lambda l, h1, h, signs: np.multiply(signs, [l + 0.5, l / 2, h1 - h / 2]),
+            lambda l, h: [1, l, h],
+            np.array([1, 0, 0]),
+            ("aluminum", "paint", "emissive"),
+        ),
+        (
+            lambda l, h1, h, signs: np.multiply(signs, [l / 2, l + 0.5, h1 - h / 2]),
+            lambda l, h: [l, 1, h],
+            np.array([0, 1, 0]),
+            ("steel", "clearcoat", "emissive"),
+        ),
+        (
+            lambda l, h1, h, signs: np.multiply(signs, [l / 2, l / 2, h1 + 0.5]),
+            lambda l, h: [l, l, 1],
+            np.array([0, 0, 1]),
+            ("concrete", "clearcoat", "emissive"),
+        ),
+        (
+            lambda l, h1, h, signs: np.multiply(signs, [l / 2, l / 2, -h2 - 0.5]),
+            lambda l, h: [l, l, 1],
+            np.array([1, 1, 0]),
+            ("concrete", "paint", "emissive"),
+        ),
+    ]
+
+    i = 0
+    cube_info = {}
+    for l, h1, h2 in dims:
+        h = h1 + h2
+        x_sign = -1 if 0 < i < 3 else 1
+        y_sign = -1 if i > 1 else 1
+        signs = np.array([x_sign, y_sign, 1])
+
+        for j, (pos_fn, scale_fn, color, mat_props) in enumerate(cube_configs[:3]):
+            position = pos_fn(l, h1, h, signs)
+            scale = np.array(scale_fn(l, h))
+            cube_info.update(
+                _create_cube_with_material(i * 4 + j, position, scale, color, mat_props, enable_nonvisual_material)
+            )
+
+        # Bottom cube needs h2 parameter
+        position = np.multiply(signs, [l / 2, l / 2, -h2 - 0.5])
+        scale = np.array([l, l, 1])
+        cube_info.update(
+            _create_cube_with_material(
+                i * 4 + 3, position, scale, cube_configs[3][2], cube_configs[3][3], enable_nonvisual_material
+            )
+        )
+
+        i += 1
+    return cube_info

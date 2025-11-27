@@ -22,13 +22,14 @@ import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, Sdf
 
-from .common import ROS2TestCase, get_qos_profile
+from .common import get_qos_profile
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRos2Lidar(ROS2TestCase):
+class TestRos2LaserScan(ROS2TestCase):
     # Before running each test
     async def setUp(self):
         await super().setUp()
@@ -43,7 +44,7 @@ class TestRos2Lidar(ROS2TestCase):
     async def tearDown(self):
         await super().tearDown()
 
-    async def test_lidar_buffer(self):
+    async def test_physx_lidar(self):
         # Test Lidar buffer with replicator activated
         import omni.graph.core as og
         import rclpy

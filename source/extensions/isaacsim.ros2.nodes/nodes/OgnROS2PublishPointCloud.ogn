@@ -71,6 +71,259 @@
             "bufferSize": {
                 "type": "uint",
                 "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "intensityPtr": {
+                "uiName": "intensity",
+                "type": "uint64",
+                "description": "intensity [0,1]",
+                "default": 0
+            },
+            "intensityDataType": {
+                "type": "float",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "intensityBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "timestampPtr": {
+                "uiName": "timestamp",
+                "type": "uint64",
+                "description": "timestamp in ns",
+                "default": 0
+            },
+            "timestampDataType": {
+                "type": "uint64",
+                "description": "type",
+                "default": 8,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "timestampBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "emitterIdPtr": {
+                "uiName": "emitterId",
+                "type": "uint64",
+                "description": "emitterId",
+                "default": 0
+            },
+            "emitterIdDataType": {
+                "type": "uint",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "emitterIdBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "channelIdPtr": {
+                "uiName": "channelId",
+                "type": "uint64",
+                "description": "channelId",
+                "default": 0
+            },
+            "channelIdDataType": {
+                "type": "uint",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "channelIdBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "materialIdPtr": {
+                "uiName": "materialId",
+                "type": "uint64",
+                "description": "materialId at hit location",
+                "default": 0
+            },
+            "materialIdDataType": {
+                "type": "uint",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "materialIdBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "tickIdPtr": {
+                "uiName": "tickId",
+                "type": "uint64",
+                "description": "tickId",
+                "default": 0
+            },
+            "tickIdDataType": {
+                "type": "uint",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "tickIdBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "hitNormalPtr": {
+                "uiName": "normal",
+                "type": "uint64",
+                "description": "Normal at the hit location",
+                "default": 0
+            },
+            "hitNormalDataType":{
+                "type": "float[3]",
+                "description": "type",
+                "default": [0,0,0],
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "hitNormalBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "velocityPtr": {
+                "uiName": "velocity",
+                "type": "uint64",
+                "description": "Velocity vector at the hit point (m/s)",
+                "default": 0
+            },
+            "velocityDataType": {
+                "type": "float[3]",
+                "description": "type",
+                "default": [0,0,0],
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "velocityBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "objectIdPtr": {
+                "uiName": "objectId",
+                "type": "uint64",
+                "description": "ObjectId for getting usd prim information",
+                "default": 0
+            },
+            "objectIdDataType": {
+                "type": "uint[]",
+                "description": "type",
+                "default": [0,0,0,0],
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "objectIdBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "echoIdPtr": {
+                "uiName": "echoId",
+                "type": "uint64",
+                "description": "echoId",
+                "default": 0
+            },
+            "echoIdDataType": {
+                "type": "uchar",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "echoIdBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "tickStatePtr": {
+                "uiName": "tickState",
+                "type": "uint64",
+                "description": "tickState",
+                "default": 0
+            },
+            "tickStateDataType": {
+                "type": "uchar",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "tickStateBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "radialVelocityMSPtr": {
+                "uiName": "radialVelocityMS",
+                "type": "uint64",
+                "description": "radialVelocityMS",
+                "default": 0
+            },
+            "radialVelocityMSDataType": {
+                "type": "float",
+                "description": "type",
+                "default": 0,
+                "metadata": {
+                    "hidden": "true"
+                }
+            },
+            "radialVelocityMSBufferSize": {
+                "type": "uint64",
+                "description": "size",
+                "metadata": {
+                    "hidden": "true"
+                }
             }
         }
     }

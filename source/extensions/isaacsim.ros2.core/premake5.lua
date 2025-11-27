@@ -59,6 +59,7 @@ for _, ros_distro in ipairs(ros_distributions) do
     defines { "ROS2_BACKEND_" .. ros_distro:upper() }
     add_files("impl", "library/backend")
     add_files("iface", "include")
+    add_cuda_dependencies()
     includedirs {
         "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/_build/target-deps/cuda/include",
@@ -150,6 +151,7 @@ project_ext_plugin(ext, "isaacsim.ros2.core.plugin")
 
 add_files("impl", "plugins")
 add_files("iface", "include")
+add_cuda_dependencies()
 -- link_boost_for_windows({"boost_python310"})
 
 
@@ -286,6 +288,7 @@ cppdialect("C++17")
         extsbuild_dir.."/omni.kit.test/bin",
     }
     add_usd()
+    add_cuda_dependencies()
     filter { "system:linux" }
     disablewarnings { "error=narrowing", "error=unused-but-set-variable", "error=unused-variable" }
     links { "boost_system", "stdc++fs" }
