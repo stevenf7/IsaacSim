@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.10] - 2025-11-26
+### Fixed
+- Issue with python bindings for lula working with numpy 2.x
+
 ## [4.0.9] - 2025-11-17
 ### Changed
 - Update fix build issues with py 3.12 lula package
