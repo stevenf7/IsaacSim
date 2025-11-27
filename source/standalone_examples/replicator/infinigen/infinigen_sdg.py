@@ -32,20 +32,20 @@ config = {
     },
     "capture": {
         # Number of captures (frames = total_captures * num_cameras)
-        "total_captures": 15,
+        "total_captures": 9,
         # Number of captures per environment before running the simulation (objects in the air)
-        "num_floating_captures_per_env": 3,
+        "num_floating_captures_per_env": 2,
         # Number of captures per environment after running the simulation (objects fallen)
-        "num_dropped_captures_per_env": 4,
+        "num_dropped_captures_per_env": 2,
         # Number of cameras to capture from (each camera will have a render product attached)
         "num_cameras": 2,
         # Resolution of the captured frames
         "resolution": (720, 480),
         # Disable render products throughout the piepline, enable them only when capturing the frames
         "disable_render_products": False,
-        # Number of subframes to render (RayTracedLighting) to avoid temporal rendering artifacts (e.g. ghosting)
+        # Number of subframes to render (RealTimePathTracing) to avoid temporal rendering artifacts (e.g. ghosting)
         "rt_subframes": 8,
-        # Use PathTracing renderer or RayTracedLighting when capturing the frames
+        # Use PathTracing renderer or RealTimePathTracing when capturing the frames
         "path_tracing": False,
         # Offset to avoid the images always being in the image center
         "camera_look_at_target_offset": 0.1,
@@ -71,7 +71,7 @@ config = {
         # Labeled assets with auto-labeling (e.g. 002_banana -> banana) using regex pattern replacement on the asset name
         "auto_label": {
             # Number of labeled assets to create from the given files/folders list
-            "num": 10,
+            "num": 6,
             # Chance to disable gravity for the labeled assets (0.0 - all the assets will fall, 1.0 - all the assets will float)
             "gravity_disabled_chance": 0.25,
             # List of folders and files to search for the labeled assets
@@ -110,7 +110,7 @@ config = {
         # Mesh distractors (unlabeled background assets) to drop in the scene
         "mesh_distractors": {
             # Amount of mesh distractors to create
-            "num": 10,
+            "num": 8,
             # Chance to disable gravity for the mesh distractors
             "gravity_disabled_chance": 0.25,
             # List of folders and files to search to randomly choose from
@@ -163,18 +163,13 @@ config.update(args_config)
 simulation_app = SimulationApp(launch_config={"headless": False})
 
 
-import random
 from itertools import cycle
 
 import carb.settings
 import infinigen_sdg_utils as infinigen_utils
 import numpy as np
-import omni.client
-import omni.kit
 import omni.kit.app
-import omni.physx
 import omni.replicator.core as rep
-import omni.timeline
 import omni.usd
 from isaacsim.core.utils.viewports import set_camera_view
 
@@ -205,15 +200,19 @@ def run_sdg(config):
     # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
     carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
+    # Initialize randomization
+    rep.set_global_seed(11)
+    rng = np.random.default_rng(11)
+
     # Debug mode (hide ceiling, move viewport camera to the top-down view)
     debug_mode = config.get("debug_mode", False)
 
     # Create the cameras
     cameras = []
     num_cameras = capture_config.get("num_cameras", 0)
+    rep.functional.create.scope(name="Cameras")
     for i in range(num_cameras):
-        cam_prim = stage.DefinePrim(f"/Cameras/cam_{i}", "Camera")
-        cam_prim.GetAttribute("clippingRange").Set((0.25, 1000))
+        cam_prim = rep.functional.create.camera(parent="/Cameras", name=f"cam_{i}", clipping_range=(0.25, 1000))
         cameras.append(cam_prim)
     print(f"[SDG-Infinigen] Created {len(cameras)} cameras")
 
@@ -241,27 +240,27 @@ def run_sdg(config):
 
     # Load target assets with auto-labeling (e.g. 002_banana -> banana)
     auto_label_config = labeled_assets_config.get("auto_label", {})
-    auto_floating_assets, auto_falling_assets = infinigen_utils.load_auto_labeled_assets(auto_label_config)
+    auto_floating_assets, auto_falling_assets = infinigen_utils.load_auto_labeled_assets(auto_label_config, rng)
     print(f"[SDG-Infinigen] Loaded {len(auto_floating_assets)} floating auto-labeled assets")
     print(f"[SDG-Infinigen] Loaded {len(auto_falling_assets)} falling auto-labeled assets")
 
     # Load target assets with manual labels
     manual_label_config = labeled_assets_config.get("manual_label", [])
-    manual_floating_assets, manual_falling_assets = infinigen_utils.load_manual_labeled_assets(manual_label_config)
+    manual_floating_assets, manual_falling_assets = infinigen_utils.load_manual_labeled_assets(manual_label_config, rng)
     print(f"[SDG-Infinigen] Loaded {len(manual_floating_assets)} floating manual-labeled assets")
     print(f"[SDG-Infinigen] Loaded {len(manual_falling_assets)} falling manual-labeled assets")
     target_assets = auto_floating_assets + auto_falling_assets + manual_floating_assets + manual_falling_assets
 
     # Load the shape distractors
     shape_distractors_config = distractors_config.get("shape_distractors", {})
-    floating_shapes, falling_shapes = infinigen_utils.load_shape_distractors(shape_distractors_config)
+    floating_shapes, falling_shapes = infinigen_utils.load_shape_distractors(shape_distractors_config, rng)
     print(f"[SDG-Infinigen] Loaded {len(floating_shapes)} floating shape distractors")
     print(f"[SDG-Infinigen] Loaded {len(falling_shapes)} falling shape distractors")
     shape_distractors = floating_shapes + falling_shapes
 
     # Load the mesh distractors
     mesh_distractors_config = distractors_config.get("mesh_distractors", {})
-    floating_meshes, falling_meshes = infinigen_utils.load_mesh_distractors(mesh_distractors_config)
+    floating_meshes, falling_meshes = infinigen_utils.load_mesh_distractors(mesh_distractors_config, rng)
     print(f"[SDG-Infinigen] Loaded {len(floating_meshes)} floating mesh distractors")
     print(f"[SDG-Infinigen] Loaded {len(falling_meshes)} falling mesh distractors")
     mesh_distractors = floating_meshes + falling_meshes
@@ -282,7 +281,7 @@ def run_sdg(config):
     infinigen_utils.register_dome_light_randomizer()
     infinigen_utils.register_shape_distractors_color_randomizer(shape_distractors)
 
-    # Check if the render mode needs to be switched to path tracing for the capture (by default: RayTracedLighting)
+    # Check if the render mode needs to be switched to path tracing for the capture (by default: RealTimePathTracing)
     use_path_tracing = capture_config.get("path_tracing", False)
 
     # Capture detail using subframes (https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/subframes_examples.html)
@@ -333,6 +332,7 @@ def run_sdg(config):
             location_range=target_loc_range,
             rotation_range=(0, 360),
             scale_range=(0.95, 1.15),
+            rng=rng,
         )
 
         # Mesh distractors
@@ -343,6 +343,7 @@ def run_sdg(config):
             location_range=mesh_loc_range,
             rotation_range=(0, 360),
             scale_range=(0.3, 1.0),
+            rng=rng,
         )
 
         # Shape distractors
@@ -353,6 +354,7 @@ def run_sdg(config):
             location_range=shape_loc_range,
             rotation_range=(0, 360),
             scale_range=(0.01, 0.1),
+            rng=rng,
         )
 
         print(f"\tRandomizing {len(scene_lights)} scene lights properties and locations around the working area")
@@ -362,6 +364,7 @@ def run_sdg(config):
             location_range=lights_loc_range,
             intensity_range=(500, 2500),
             color_range=(0.1, 0.1, 0.1, 0.9, 0.9, 0.9),
+            rng=rng,
         )
 
         print(f"\tRandomizing dome lights")
@@ -393,7 +396,7 @@ def run_sdg(config):
             # Randomize the camera poses
             print(f"\tRandomizing {len(cameras)} camera poses")
             infinigen_utils.randomize_camera_poses(
-                cameras, target_assets, camera_distance_to_target_range, polar_angle_range=(0, 75)
+                cameras, target_assets, camera_distance_to_target_range, polar_angle_range=(0, 75), rng=rng
             )
             print(
                 f"\tCapturing floating assets {i+1}/{num_floating_captures_per_env}; total captures: {capture_counter+1}/{total_captures};"
@@ -408,7 +411,7 @@ def run_sdg(config):
 
         # Check if the render mode needs to be switched back to raytracing until the next capture
         if use_path_tracing:
-            carb.settings.get_settings().set("/rtx/rendermode", "RayTracedLighting")
+            carb.settings.get_settings().set("/rtx/rendermode", "RealTimePathTracing")
 
         print(f"\tRunning the simulation")
         infinigen_utils.run_simulation(num_frames=200, render=False)
@@ -429,7 +432,11 @@ def run_sdg(config):
             # Spawn the cameras with a smaller polar angle to have mostly a top-down view of the objects
             print(f"\tRandomizing camera poses")
             infinigen_utils.randomize_camera_poses(
-                cameras, target_assets, distance_range=camera_distance_to_target_range, polar_angle_range=(0, 45)
+                cameras,
+                target_assets,
+                distance_range=camera_distance_to_target_range,
+                polar_angle_range=(0, 45),
+                rng=rng,
             )
             print(
                 f"\tCapturing dropped assets {i+1}/{num_dropped_captures_per_env}; total captures: {capture_counter+1}/{total_captures};"
@@ -444,7 +451,7 @@ def run_sdg(config):
 
         # Check if the render mode needs to be switched back to raytracing until the next capture
         if use_path_tracing:
-            carb.settings.get_settings().set("/rtx/rendermode", "RayTracedLighting")
+            carb.settings.get_settings().set("/rtx/rendermode", "RealTimePathTracing")
 
     # Wait until the data is written to the disk
     rep.orchestrator.wait_until_complete()
@@ -464,11 +471,6 @@ def run_sdg(config):
 
 # Check if debug mode is enabled
 debug_mode = config.get("debug_mode", False)
-
-if debug_mode:
-    np.random.seed(10)
-    random.seed(10)
-    rep.set_global_seed(10)
 
 # Start the SDG pipeline
 print(f"[SDG-Infinigen] Starting the SDG pipeline.")

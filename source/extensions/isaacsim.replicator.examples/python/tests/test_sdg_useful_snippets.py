@@ -180,14 +180,13 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         import omni.replicator.core as rep
         from isaacsim.core.experimental.objects import GroundPlane
         from isaacsim.core.simulation_manager import SimulationManager
-        from omni.replicator.core.functional import write_image
+        from omni.replicator.core.functional import write_image, write_json
         from pxr import UsdPhysics
 
         # Util function to save semantic segmentation annotator data
         def write_sem_data(sem_data, file_path):
             id_to_labels = sem_data["info"]["idToLabels"]
-            with open(file_path + ".json", "w") as f:
-                json.dump(id_to_labels, f)
+            write_json(path=file_path + ".json", data=id_to_labels)
             sem_image_data = sem_data["data"]
             write_image(path=file_path + ".png", data=sem_image_data)
 
@@ -391,9 +390,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         NUM_FRAMES = 3
 
         # Configuration for motion blur examples
-        DELTA_TIMES = [None, 1 / 240]  # [None, 1 / 30, 1 / 60, 1 / 240]
-        SAMPLES_PER_PIXEL = [32]  # [32, 128]
-        MOTION_BLUR_SUBSAMPLES = [4]  # [4, 16]
+        DELTA_TIMES = [None, 1 / 30, 1 / 60, 1 / 240]
+        SAMPLES_PER_PIXEL = [32, 128]
+        MOTION_BLUR_SUBSAMPLES = [4, 16]
 
         def setup_stage():
             """Create a new USD stage with animated and physics-enabled assets with synchronized motion."""
@@ -473,8 +472,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                 # Number of sub samples to render if in PathTracing render mode and motion blur is enabled.
                 settings.set("/omni/replicator/pathTracedMotionBlurSubSamples", motion_blur_subsamples)
             else:
-                print("[MotionBlur] Setting RaytracedLighting render mode motion blur settings")
-                settings.set("/rtx/rendermode", "RaytracedLighting")
+                print("[MotionBlur] Setting RealTimePathTracing render mode motion blur settings")
+                settings.set("/rtx/rendermode", "RealTimePathTracing")
                 # 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
                 settings.set("/rtx/post/aa/op", 2)
                 # (float): The fraction of the largest screen dimension to use as the maximum motion blur diameter.
@@ -536,8 +535,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
             # Switch back to the raytracing render mode
             if use_path_tracing:
-                print("[MotionBlur] Restoring render mode to RaytracedLighting")
-                settings.set("/rtx/rendermode", "RaytracedLighting")
+                print("[MotionBlur] Restoring render mode to RealTimePathTracing")
+                settings.set("/rtx/rendermode", "RealTimePathTracing")
 
             # Wait until the data is fully written
             await rep.orchestrator.wait_until_complete_async()
@@ -569,20 +568,26 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
 
         # asyncio.ensure_future(
         #     run_motion_blur_examples_async(
+        #         num_frames=NUM_FRAMES,
         #         delta_times=DELTA_TIMES,
         #         samples_per_pixel=SAMPLES_PER_PIXEL,
         #         motion_blur_subsamples=MOTION_BLUR_SUBSAMPLES,
         #     )
         # )
+
+        # Test scenario with less examples
+        test_delta_times = [None, 1 / 240]
+        test_samples_per_pixel = [32]
+        test_motion_blur_subsamples = [4]
         await run_motion_blur_examples_async(
             num_frames=NUM_FRAMES,
-            delta_times=DELTA_TIMES,
-            samples_per_pixel=SAMPLES_PER_PIXEL,
-            motion_blur_subsamples=MOTION_BLUR_SUBSAMPLES,
+            delta_times=test_delta_times,
+            samples_per_pixel=test_samples_per_pixel,
+            motion_blur_subsamples=test_motion_blur_subsamples,
         )
 
         # Validate output directories
-        for delta_time in DELTA_TIMES:
+        for delta_time in test_delta_times:
             delta_time_str = "None" if delta_time is None else f"{delta_time:.4f}"
 
             # RayTracing output directory
@@ -591,8 +596,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
             # PathTracing output directories for all combinations of subsamples and samples_per_pixel
-            for motion_blur_subsample in MOTION_BLUR_SUBSAMPLES:
-                for spp in SAMPLES_PER_PIXEL:
+            for motion_blur_subsample in test_motion_blur_subsamples:
+                for spp in test_samples_per_pixel:
                     mode_str = f"pt_subsamples_{motion_blur_subsample}_spp_{spp}"
                     out_dir = os.path.join(os.getcwd(), f"_out_motion_blur_func_dt_{delta_time_str}_{mode_str}")
                     folder_contents_success = validate_folder_contents(
