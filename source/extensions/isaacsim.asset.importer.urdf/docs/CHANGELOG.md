@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.33] - 2025-11-26
+### Fixed
+- Fixed issue that caused crash of Isaac sim on failed mesh conversion
+
 ## [2.4.32] - 2025-11-25
 ### Changed
 - Restore deprecated behavior of merging bodies with inertia; issue warning
