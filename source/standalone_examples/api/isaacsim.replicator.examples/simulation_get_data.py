@@ -15,7 +15,7 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"renderer": "RaytracedLighting", "headless": False})
+simulation_app = SimulationApp(launch_config={"headless": False})
 
 import json
 import os
@@ -26,15 +26,14 @@ import omni
 import omni.replicator.core as rep
 from isaacsim.core.experimental.objects import GroundPlane
 from isaacsim.core.simulation_manager import SimulationManager
-from omni.replicator.core.functional import write_image
+from omni.replicator.core.functional import write_image, write_json
 from pxr import UsdPhysics
 
 
 # Util function to save semantic segmentation annotator data
 def write_sem_data(sem_data, file_path):
     id_to_labels = sem_data["info"]["idToLabels"]
-    with open(file_path + ".json", "w") as f:
-        json.dump(id_to_labels, f)
+    write_json(path=file_path + ".json", data=id_to_labels)
     sem_image_data = sem_data["data"]
     write_image(path=file_path + ".png", data=sem_image_data)
 

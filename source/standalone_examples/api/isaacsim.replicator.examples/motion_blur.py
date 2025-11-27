@@ -149,8 +149,8 @@ def run_motion_blur_example(
         # Number of sub samples to render if in PathTracing render mode and motion blur is enabled.
         settings.set("/omni/replicator/pathTracedMotionBlurSubSamples", motion_blur_subsamples)
     else:
-        print("[MotionBlur] Setting RaytracedLighting render mode motion blur settings")
-        settings.set("/rtx/rendermode", "RaytracedLighting")
+        print("[MotionBlur] Setting RealTimePathTracing render mode motion blur settings")
+        settings.set("/rtx/rendermode", "RealTimePathTracing")
         # 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
         settings.set("/rtx/post/aa/op", 2)
         # (float): The fraction of the largest screen dimension to use as the maximum motion blur diameter.
@@ -212,8 +212,8 @@ def run_motion_blur_example(
 
     # Switch back to the raytracing render mode
     if use_path_tracing:
-        print("[MotionBlur] Restoring render mode to RaytracedLighting")
-        settings.set("/rtx/rendermode", "RaytracedLighting")
+        print("[MotionBlur] Restoring render mode to RealTimePathTracing")
+        settings.set("/rtx/rendermode", "RealTimePathTracing")
 
     # Wait until the data is fully written
     rep.orchestrator.wait_until_complete()

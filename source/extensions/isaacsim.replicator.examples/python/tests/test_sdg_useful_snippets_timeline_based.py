@@ -420,3 +420,4 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             self.assertTrue(app_sub is None, "App update subscriber should be reset")
 
         await run_subscribers_and_events_async()
+        # asyncio.ensure_future(run_subscribers_and_events_async())

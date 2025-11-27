@@ -20,9 +20,9 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 import argparse
 import asyncio
 import os
-import random
 
 import carb.settings
+import numpy as np
 import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
@@ -43,14 +43,16 @@ if not ext_manager.is_extension_enabled("omni.simready.explorer"):
 import omni.simready.explorer as sre
 
 
-def enable_simready_explorer():
+def enable_simready_explorer() -> None:
+    """Enable the SimReady Explorer window if not already open."""
     if sre.get_instance().browser_model is None:
         import omni.kit.actions.core as actions
 
         actions.execute_action("omni.simready.explorer", "toggle_window")
 
 
-def set_prim_variants(prim: Usd.Prim, variants: dict[str, str]):
+def set_prim_variants(prim: Usd.Prim, variants: dict[str, str]) -> None:
+    """Set variant selections on a prim from a dictionary of variant set names to values."""
     vsets = prim.GetVariantSets()
     for name, value in variants.items():
         vset = vsets.GetVariantSet(name)
@@ -58,7 +60,8 @@ def set_prim_variants(prim: Usd.Prim, variants: dict[str, str]):
             vset.SetVariantSelection(value)
 
 
-async def search_assets_async():
+async def search_assets_async() -> tuple[list, list, list]:
+    """Search for SimReady assets (tables, dishes, items) asynchronously."""
     print(f"Searching for simready assets...")
     tables = await sre.find_assets(["table", "furniture"])
     plates = await sre.find_assets(["plate"])
@@ -70,7 +73,18 @@ async def search_assets_async():
     return tables, dishes, items
 
 
-def run_simready_randomization(stage, camera_prim, render_product, tables, dishes, items):
+def run_simready_randomization(
+    stage: Usd.Stage,
+    camera_prim: Usd.Prim,
+    render_product,
+    tables: list,
+    dishes: list,
+    items: list,
+    rng: np.random.Generator = None,
+) -> None:
+    """Randomize a scene with SimReady assets, run physics, and capture the result."""
+    if rng is None:
+        rng = np.random.default_rng()
     print(f"Creating new temp layer for randomizing the scene...")
     timeline = omni.timeline.get_timeline_interface()
     simready_temp_layer = Sdf.Layer.CreateAnonymous("TempSimreadyLayer")
@@ -83,7 +97,7 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
         variants = {"PhysicsVariant": "RigidBody"}
 
         # Choose a random table from the list of tables and add it to the stage with physics
-        table_asset = random.choice(tables)
+        table_asset = tables[rng.integers(len(tables))]
         print(f"\tAdding table '{table_asset.name}' with colliders and disabled rigid body properties")
         table_prim_path = omni.usd.get_stage_next_free_path(stage, f"/Assets/{table_asset.name}", False)
         table_prim = add_reference_to_stage(usd_path=table_asset.main_url, prim_path=table_prim_path)
@@ -103,7 +117,7 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
         table_size = table_bbox.GetRange().GetSize()
 
         # Choose one random plate from the list of plates
-        dish_asset = random.choice(dishes)
+        dish_asset = dishes[rng.integers(len(dishes))]
         # _, dish_prim_path = sre.add_asset_to_stage(dish_asset.main_url, variants=variants, payload=True)
         dish_prim_path = omni.usd.get_stage_next_free_path(stage, f"/Assets/{dish_asset.name}", False)
         dish_prim = add_reference_to_stage(usd_path=dish_asset.main_url, prim_path=dish_prim_path)
@@ -118,8 +132,8 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
         placement_reduction = 0.75
         x_range = (table_size[0] - dish_size[0]) / 2 * placement_reduction
         y_range = (table_size[1] - dish_size[1]) / 2 * placement_reduction
-        dish_x = random.uniform(-x_range, x_range)
-        dish_y = random.uniform(-y_range, y_range)
+        dish_x = rng.uniform(-x_range, x_range)
+        dish_y = rng.uniform(-y_range, y_range)
         dish_z = table_size[2] + dish_size[2] / 2
 
         # Move the plate to the random position on the table
@@ -128,11 +142,11 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
         print(f"\tAdded '{dish_asset.name}' at: {dish_location}")
 
         # Spawn a random number of items above the plate
-        num_items = random.randint(2, 4)
+        num_items = rng.integers(2, 5)
         print(f"\tAdding {num_items} items above the plate '{dish_asset.name}':")
         item_prims = []
         for _ in range(num_items):
-            item_asset = random.choice(items)
+            item_asset = items[rng.integers(len(items))]
             item_prim_path = omni.usd.get_stage_next_free_path(stage, f"/Assets/{item_asset.name}", False)
             item_prim = add_reference_to_stage(usd_path=item_asset.main_url, prim_path=item_prim_path)
             set_prim_variants(item_prim, variants)
@@ -144,8 +158,8 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
         for item_prim in item_prims:
             item_bbox = bbox_cache.ComputeWorldBound(item_prim)
             item_size = item_bbox.GetRange().GetSize()
-            item_x = dish_x + random.uniform(-xy_offset, xy_offset)
-            item_y = dish_y + random.uniform(-xy_offset, xy_offset)
+            item_x = dish_x + rng.uniform(-xy_offset, xy_offset)
+            item_y = dish_y + rng.uniform(-xy_offset, xy_offset)
             item_z = current_z + item_size[2] / 2
             item_location = Gf.Vec3f(item_x, item_y, item_z)
             item_prim.GetAttribute("xformOp:translate").Set(item_location)
@@ -162,7 +176,10 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
         timeline.pause()
 
     print(f"\tMoving the camera above the scene to capture the scene...")
-    camera_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(dish_x, dish_y, dish_z + 2))
+    # camera_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(dish_x, dish_y, dish_z + 2))
+    rep.functional.modify.pose(
+        camera_prim, position_value=(dish_x, dish_y, dish_z + 2), look_at_value=dish_prim, look_at_up_axis=(0, 0, 1)
+    )
     render_product.hydra_texture.set_updates_enabled(True)
     rep.orchestrator.step(delta_time=0.0, rt_subframes=16)
     render_product.hydra_texture.set_updates_enabled(False)
@@ -177,23 +194,25 @@ def run_simready_randomization(stage, camera_prim, render_product, tables, dishe
     simready_temp_layer = None
 
 
-def run_simready_randomizations(num_scenarios):
+def run_simready_randomizations(num_scenarios: int) -> None:
+    """Run multiple SimReady randomization scenarios and capture the results."""
     omni.usd.get_context().new_stage()
     stage = omni.usd.get_context().get_stage()
+
+    # Initialize randomization
+    rng = np.random.default_rng(15)
+    rep.set_global_seed(15)
+
+    # Data capture will happen manually using step()
     rep.orchestrator.set_capture_on_play(False)
-    random.seed(15)
 
     # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
     carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
     # Add lights to the scene
-    dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
-    dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
-    distant_light = stage.DefinePrim("/World/DistantLight", "DistantLight")
-    if not distant_light.GetAttribute("xformOp:rotateXYZ"):
-        UsdGeom.Xformable(distant_light).AddRotateXYZOp()
-    distant_light.GetAttribute("xformOp:rotateXYZ").Set((-75, 0, 0))
-    distant_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(2500)
+    rep.functional.create.xform(name="World")
+    rep.functional.create.dome_light(intensity=500, parent="/World", name="DomeLight")
+    rep.functional.create.distant_light(intensity=2500, parent="/World", name="DistantLight", rotation=(-75, 0, 0))
 
     # Simready explorer window needs to be created for the search to work
     enable_simready_explorer()
@@ -207,14 +226,15 @@ def run_simready_randomizations(num_scenarios):
 
     # Create the writer and the render product for capturing the scene
     output_dir = os.path.join(os.getcwd(), "_out_simready_assets")
-    print(f"\tInitializing writer, output directory: {output_dir}...")
+    backend = rep.backends.get("DiskBackend")
+    backend.initialize(output_dir=output_dir)
     writer = rep.writers.get("BasicWriter")
-    writer.initialize(output_dir=output_dir, rgb=True)
+    print(f"\tInitializing writer, output directory: {output_dir}...")
+    writer.initialize(backend=backend, rgb=True)
 
     # Disable the render by default, enable it when capturing the scene
-    camera_prim = stage.DefinePrim("/World/SceneCamera", "Camera")
-    UsdGeom.Xformable(camera_prim).AddTranslateOp()
-    rp = rep.create.render_product(camera_prim.GetPath(), (512, 512))
+    camera_prim = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), parent="/World", name="Camera")
+    rp = rep.create.render_product(camera_prim, (512, 512))
     rp.hydra_texture.set_updates_enabled(False)
     writer.attach(rp)
 
@@ -222,7 +242,7 @@ def run_simready_randomizations(num_scenarios):
     for i in range(num_scenarios):
         print(f"Running simready randomization scenario {i}..")
         run_simready_randomization(
-            stage=stage, camera_prim=camera_prim, render_product=rp, tables=tables, dishes=dishes, items=items
+            stage=stage, camera_prim=camera_prim, render_product=rp, tables=tables, dishes=dishes, items=items, rng=rng
         )
 
     print("Waiting for the data collection to complete")

@@ -1,4 +1,11 @@
 # Changelog
+## [1.6.0] - 2025-11-26
+### Changed
+- Added scene based SDG example test
+- Added object based SDG example test
+- Added AMR navigation example test
+- Switched to RealtimePathTracing in the motion blur example
+
 ## [1.5.0] - 2025-10-21
 ### Changed
 - Updated replicator examples to use replicator functional api where applicable
