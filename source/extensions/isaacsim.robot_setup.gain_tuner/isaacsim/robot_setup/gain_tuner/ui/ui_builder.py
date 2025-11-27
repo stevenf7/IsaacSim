@@ -294,8 +294,9 @@ class UIBuilder:
 
                     with ui.ZStack(height=self._initial_table_height):
                         with ui.VStack():
+                            joint_entries = self._gains_tuner.get_joint_entries()
                             self._gains_table_widget = JointWidget(
-                                self._gains_tuner._joints.values(), self._gains_tuner._joint_acumulated_inertia
+                                joint_entries, self._gains_tuner._joint_acumulated_inertia
                             )
 
                         self._gains_splitter = ui.Placer(
@@ -362,7 +363,11 @@ class UIBuilder:
             if is_joint_mimic(joint):
                 attrs = [get_mimic_natural_frequency_attr(joint), get_mimic_damping_ratio_attr(joint)]
             else:
-                attrs = [get_stiffness_attr(joint), get_damping_attr(joint), get_joint_drive_type_attr(joint)]
+                attrs = [
+                    get_stiffness_attr(joint, joint_gain.drive_axis),
+                    get_damping_attr(joint, joint_gain.drive_axis),
+                    get_joint_drive_type_attr(joint, joint_gain.drive_axis),
+                ]
             for attr in attrs:
                 if attr is None:
                     continue

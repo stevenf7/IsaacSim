@@ -14,7 +14,11 @@
 # limitations under the License.
 
 import asyncio
+from collections import defaultdict
+from dataclasses import dataclass
 from enum import IntEnum
+from math import e
+from typing import Optional
 
 import carb
 import numpy as np
@@ -24,7 +28,7 @@ import pxr
 import usd.schema.isaac.robot_schema as robot_schema
 import usd.schema.isaac.robot_schema.utils as rs_utils
 from isaacsim.core.experimental.prims import Articulation
-from pxr import Gf, Usd, UsdPhysics
+from pxr import Gf, Tf, Usd, UsdPhysics
 from usd.schema.isaac.robot_schema.utils import RobotLinkNode
 
 from .mass_query import query_prims
@@ -40,6 +44,71 @@ class JointMode(IntEnum):
     POSITION = 0
     VELOCITY = 1
     NONE = 2
+
+
+@dataclass
+class JointListEntry:
+    joint: pxr.Usd.Prim
+    display_name: str
+    dof_index: int
+    drive_axis: str
+
+
+_D6_AXIS_TOKENS = [
+    pxr.UsdPhysics.Tokens.transX,
+    pxr.UsdPhysics.Tokens.transY,
+    pxr.UsdPhysics.Tokens.transZ,
+    pxr.UsdPhysics.Tokens.rotX,
+    pxr.UsdPhysics.Tokens.rotY,
+    pxr.UsdPhysics.Tokens.rotZ,
+]
+
+
+def _extract_d6_axis_token(dof_name: str):
+    lower_name = dof_name.lower()
+    for token in _D6_AXIS_TOKENS:
+        token_name = token.lower()
+        if token_name in lower_name:
+            return token
+    return None
+
+
+def _assign_d6_axis_token(joint_identifier: str, dof_name: str, usage_map):
+    token = _extract_d6_axis_token(dof_name)
+    used_axes = usage_map.setdefault(joint_identifier, set())
+    if token and token not in used_axes:
+        used_axes.add(token)
+        return token
+    for candidate in _D6_AXIS_TOKENS:
+        if candidate not in used_axes:
+            used_axes.add(candidate)
+            return candidate
+    return None
+
+
+def _d6_axis_has_unlocked_limit(joint_prim: pxr.Usd.Prim, axis_token) -> bool:
+    limit_api = pxr.UsdPhysics.LimitAPI.Get(joint_prim, axis_token)
+    if not limit_api:
+        return False
+    lower_attr = limit_api.GetLowAttr()
+    upper_attr = limit_api.GetHighAttr()
+    if not lower_attr or not upper_attr:
+        return False
+    lower = lower_attr.Get()
+    upper = upper_attr.Get()
+    if lower is None or upper is None:
+        return False
+    try:
+        return float(lower) < float(upper)
+    except (TypeError, ValueError):
+        return False
+
+
+def _format_d6_display_name(joint_prim: pxr.Usd.Prim, dof_name: str, axis_token) -> str:
+    suffix = dof_name
+    if suffix == joint_prim.GetName():
+        suffix = axis_token
+    return f"{joint_prim.GetName()}:{suffix}"
 
 
 def get_original_spec_for_drive_API(stage: pxr.Usd.Stage, joint_drive_path: str, drive_type):
@@ -180,6 +249,7 @@ class GainTuner:
 
         self._gains_test_generator = None
         self._joint_acumulated_inertia = {}
+        self._joint_entries = []
 
         self.step = 0
 
@@ -232,13 +302,47 @@ class GainTuner:
         fixed_links += [rs_utils.GetJointBodyRelationship(j, 1) for j in fixed_joints]
         fixed_links = set([l for l in fixed_links if l is not None])
         self._fixed_links = fixed_links
-        self._joints = {i: j for i, j in enumerate(joints) if j in robot_joints}
+        axis_usage = defaultdict(set)
+        self._joints = {}
+        self._joint_entries = []
+        dof_offset = 0
+        index = 0
+        for i, joint in enumerate(joints):
+            display_name = self._articulation.dof_names[index]
+            if joint not in robot_joints:
+                continue
+            if joint.IsA(pxr.UsdPhysics.PrismaticJoint) or joint.IsA(pxr.UsdPhysics.RevoluteJoint):
+                self._joints[index + dof_offset] = joint
+                self._joint_entries.append(
+                    JointListEntry(
+                        joint=joint, display_name=display_name, dof_index=index + dof_offset, drive_axis=None
+                    )
+                )
+                index += 1
+                continue
+            for j in range(len(_D6_AXIS_TOKENS)):
+                display_name = self._articulation.dof_names[index]
+                drive_axis = _D6_AXIS_TOKENS[j]
+                if joint.IsA(pxr.UsdPhysics.Joint) and not joint.IsA(pxr.UsdPhysics.FixedJoint):
+                    carb.log_warn(
+                        f"Joint: {joint.GetName()} is a multi-axis joint and Articulation does not support it. The gains tuner will allow editing the gains but Running tests and Charts may have unpredictable results"
+                    )
+                    if not _d6_axis_has_unlocked_limit(joint, drive_axis):
+                        continue
+                    display_name = _format_d6_display_name(joint, display_name, drive_axis)
+                self._joints[index + dof_offset] = joint
+                self._joint_entries.append(
+                    JointListEntry(
+                        joint=joint, display_name=display_name, dof_index=index + dof_offset, drive_axis=drive_axis
+                    )
+                )
+                dof_offset += 1
+            index += 1
         # print(self._joint_acumulated_inertia)
-        self._joint_names = {i: self._articulation.dof_names[i] for i in self._joints.keys()}
+        self._joint_names = {i: self._joint_entries[i].joint.GetName() for i in self._joints.keys()}
         self._joint_map = {self._joint_names[i]: self._joints[i] for i in self._joints.keys()}
 
         self._all_joint_indices = self._articulation.get_dof_indices(self._joint_names.values()).list()
-
         self.initialize()
 
     def get_dof_type(self, dof_index: int):
@@ -420,6 +524,9 @@ class GainTuner:
 
     def get_all_joint_indices(self):
         return self._all_joint_indices
+
+    def get_joint_entries(self):
+        return list(self._joint_entries)
 
     def get_permanent_fixed_joint_indices(self):
         return self._permanent_fixed_joint_indices

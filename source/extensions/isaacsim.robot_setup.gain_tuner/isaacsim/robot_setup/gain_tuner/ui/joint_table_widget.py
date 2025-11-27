@@ -202,15 +202,21 @@ def get_mimic_damping_ratio_attr(joint):
     return None
 
 
-def get_stiffness_attr(joint):
+def get_stiffness_attr(joint, drive_axis=None):
     """Get the stiffness attribute for a joint.
 
     Args:
         joint: The joint to get the attribute from
+        drive_axis: Optional D6 drive axis token
 
     Returns:
         Attribute: The stiffness attribute if valid joint type, None otherwise
     """
+    if drive_axis:
+        driveAPI = pxr.UsdPhysics.DriveAPI(joint, drive_axis)
+        if driveAPI:
+            return driveAPI.GetStiffnessAttr()
+        return None
     if joint.IsA(pxr.UsdPhysics.RevoluteJoint):
         driveAPI = pxr.UsdPhysics.DriveAPI(joint, "angular")
         return driveAPI.GetStiffnessAttr()
@@ -220,15 +226,21 @@ def get_stiffness_attr(joint):
     return None
 
 
-def get_joint_drive_type_attr(joint):
+def get_joint_drive_type_attr(joint, drive_axis=None):
     """Get the drive type attribute for a joint.
 
     Args:
         joint: The joint to get the attribute from
+        drive_axis: Optional D6 drive axis token
 
     Returns:
         Attribute: The drive type attribute if valid joint type, None otherwise
     """
+    if drive_axis:
+        driveAPI = pxr.UsdPhysics.DriveAPI(joint, drive_axis)
+        if driveAPI:
+            return driveAPI.GetTypeAttr()
+        return None
     driveAPI = None
     if joint.IsA(pxr.UsdPhysics.RevoluteJoint):
         driveAPI = pxr.UsdPhysics.DriveAPI(joint, "angular")
@@ -239,11 +251,12 @@ def get_joint_drive_type_attr(joint):
     return None
 
 
-def get_damping_attr(joint):
+def get_damping_attr(joint, drive_axis=None):
     """Get the damping attribute for a joint.
 
     Args:
         joint: The joint to get the attribute from
+        drive_axis: Optional D6 drive axis token
 
     Returns:
         Attribute: The damping attribute if valid joint type, None otherwise
@@ -252,6 +265,11 @@ def get_damping_attr(joint):
         mimic_axis = [a for a in joint.GetAppliedSchemas() if "MimicJointAPI" in a][-1].split(":")[-1]
         attr = joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:damping")
         return attr
+    if drive_axis:
+        driveAPI = pxr.UsdPhysics.DriveAPI(joint, drive_axis)
+        if driveAPI:
+            return driveAPI.GetDampingAttr()
+        return None
     if joint.IsA(pxr.UsdPhysics.RevoluteJoint):
         driveAPI = pxr.UsdPhysics.DriveAPI(joint, "angular")
         return driveAPI.GetDampingAttr()
@@ -297,20 +315,22 @@ class JointItem(ui.AbstractItem):
     target_type_with_mimic = ["Mimic"]
     joint_drive_type_with_mimic = [""]
 
-    def __init__(self, joint, inertia, value_changed_fn=None):
+    def __init__(self, joint_entry, inertia, value_changed_fn=None):
         super().__init__()
 
-        self.joint = joint
+        self.entry = joint_entry
+        self.joint = joint_entry.joint
+        self.drive_axis = joint_entry.drive_axis
         self.inertia = inertia
         self._value_changed_fn = value_changed_fn
         target_type = JointItem.target_type
         joint_drive_type = JointItem.joint_drive_type
-        stiffness = get_stiffness_attr(joint)
-        damping = get_damping_attr(joint)
+        stiffness = get_stiffness_attr(self.joint, self.drive_axis)
+        damping = get_damping_attr(self.joint, self.drive_axis)
         jointdrive = None
         self.updating_damping_ratio = False
 
-        if is_joint_mimic(joint):
+        if is_joint_mimic(self.joint):
             drive_mode = JointDriveMode.MIMIC
             joint_drive_type = JointItem.joint_drive_type_with_mimic
             target_type = JointItem.target_type_with_mimic
@@ -321,7 +341,7 @@ class JointItem(ui.AbstractItem):
                 drive_mode = JointDriveMode.VELOCITY
             else:
                 drive_mode = JointDriveMode.NONE
-            jointdrive = get_joint_drive_type_attr(joint)
+            jointdrive = get_joint_drive_type_attr(self.joint, self.drive_axis)
         if drive_mode == JointDriveMode.POSITION:
             stiffness = stiffness.Get()
             damping = damping.Get()
@@ -336,7 +356,7 @@ class JointItem(ui.AbstractItem):
         if damping is None:
             damping = 0
         self.model_cols = [None] * 7
-        self.model_cols[WidgetColumns.NAME] = ui.SimpleStringModel(joint.GetName())
+        self.model_cols[WidgetColumns.NAME] = ui.SimpleStringModel(joint_entry.display_name)
         self.model_cols[WidgetColumns.DRIVE_MODE] = ComboListModel(target_type, drive_mode)
         self.model_cols[WidgetColumns.DRIVE_TYPE] = ComboListModel(
             joint_drive_type, JointDriveType.from_token(jointdrive.Get() if jointdrive else "")
@@ -396,7 +416,7 @@ class JointItem(ui.AbstractItem):
             self.compute_drive_stiffness()
 
     def on_update_stiffness(self, model, *args):
-        attr = get_stiffness_attr(self.joint)
+        attr = get_stiffness_attr(self.joint, self.drive_axis)
         if attr:
             if self.drive_mode == JointDriveMode.POSITION:
                 attr.Set(model.get_value_as_float())
@@ -406,7 +426,7 @@ class JointItem(ui.AbstractItem):
 
     def on_update_damping(self, model, *args):
         if self.drive_mode in [JointDriveMode.POSITION, JointDriveMode.VELOCITY, JointDriveMode.MIMIC]:
-            attr = get_damping_attr(self.joint)
+            attr = get_damping_attr(self.joint, self.drive_axis)
             if attr:
                 attr.Set(model.get_value_as_float())
         if not self.updating_damping_ratio:
@@ -446,6 +466,8 @@ class JointItem(ui.AbstractItem):
         if self.drive_type == JointDriveType.FORCE:
             m_eq = self.inertia
         if self.natural_frequency > 0:
+            if m_eq == 0:
+                m_eq = 1
             damping_ratio = self.damping / (2 * np.sqrt(m_eq * self.stiffness))
             return damping_ratio
         return 0
@@ -499,7 +521,7 @@ class JointItem(ui.AbstractItem):
 
     @drive_type.setter
     def drive_type(self, value: JointDriveType):
-        drive_type_attr = get_joint_drive_type_attr(self.joint)
+        drive_type_attr = get_joint_drive_type_attr(self.joint, self.drive_axis)
         if drive_type_attr:
             drive_type_attr.Set(value.to_token())
             if self.mode == JointSettingMode.NATURAL_FREQUENCY:
@@ -543,6 +565,8 @@ class JointItem(ui.AbstractItem):
             m_eq = 1
             if self.drive_type == JointDriveType.FORCE:
                 m_eq = self.inertia
+                if m_eq == 0:
+                    m_eq = 1
             return (np.sqrt(self.stiffness / (m_eq))) / (2 * np.pi)
 
     def compute_drive_stiffness(self):
@@ -865,7 +889,9 @@ class JointItemDelegate(ui.AbstractItemDelegate):
 class JointListModel(ui.AbstractItemModel):
     def __init__(self, joints_list, inertias, value_changed_fn, **kwargs):
         super().__init__()
-        self._children = [JointItem(j, inertias[j], self._on_joint_changed) for j in joints_list]
+        self._children = [
+            JointItem(entry, inertias.get(entry.joint, 0.0), self._on_joint_changed) for entry in joints_list
+        ]
         self._joint_changed_fn = value_changed_fn
         self._items_sort_func = None
         self._items_sort_reversed = False
@@ -940,12 +966,10 @@ class JointListModel(ui.AbstractItemModel):
 
 
 class JointWidget(TableWidget):
-    def __init__(self, joints, inertias, value_changed_fn=None):
-        self.joints = joints
-        self.inertias = inertias
-        if not inertias:
-            return
-        self.model = JointListModel(joints, inertias, self._on_value_changed)
+    def __init__(self, joint_entries, inertias, value_changed_fn=None):
+        self.joints = joint_entries or []
+        self.inertias = inertias or {}
+        self.model = JointListModel(self.joints, self.inertias, self._on_value_changed)
         self.delegate = JointItemDelegate(self.model)
         self._enable_bulk_edit = True
         self._value_changed_fn = value_changed_fn

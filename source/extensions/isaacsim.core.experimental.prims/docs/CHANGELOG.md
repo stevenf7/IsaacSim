@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.4] - 2025-11-26
+### Changed
+- Update check condition on Dof to ensure it checks if it's a valid dof before checking limits
+
 ## [0.9.3] - 2025-11-21
 ### Changed
 - Update implementation to Warp 1.10.0

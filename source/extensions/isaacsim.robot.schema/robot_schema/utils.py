@@ -427,7 +427,7 @@ def GenerateRobotLinkTree(stage: pxr.Usd.Stage, robot_link_prim: pxr.Usd.Prim = 
     for joint in all_joints:
         for body_index in (0, 1):
             body = GetJointBodyRelationship(joint, body_index)
-            if body:
+            if body and pxr.UsdPhysics.RigidBodyAPI(stage.GetPrimAtPath(body)):
                 joints_per_body[body_index][body].append(joint)
 
     # Use a stack for iterative traversal

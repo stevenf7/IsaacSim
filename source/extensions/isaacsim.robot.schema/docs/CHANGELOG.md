@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.1] - 2025-11-26
+### Changed
+- Fixed parsing of robot tree to ignore bodies in joints that are not rigid bodies
+
 ## [4.0.0] - 2025-11-14
 ### Changed
 - Updated Robot Schema definitions:
