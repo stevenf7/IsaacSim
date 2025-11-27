@@ -1,6 +1,6 @@
 {
     "isaacsim.ros2.bridge.ROS2RtxLidarHelper" : {
-        "version" : 1,
+        "version" : 2,
         "icon" : "icons/isaac-sim.svg",
         "description" : "Handles automation of Lidar Sensor pipeline",
         "language" : "Python",
@@ -29,7 +29,7 @@
                 "description" : "Namespace of ROS2 Node, prepends and published/subscribed topic by the node namespace",
                 "default" : ""
             },
-            "frameId": { 
+            "frameId": {
                 "type" : "string",
                 "description" : "FrameID for the ROS2 message, the nodeNamespace will not be prefixed to the frame id",
                 "default" : "sim_lidar"
@@ -91,6 +91,20 @@
                 "type": "uint",
                 "description": "Specifies the number of simulation frames to skip between each message publish. (e.g. Set to 0 to publish each frame. Set 1 to publish every other frame)",
                 "default": 0
+            },
+            "selectedMetadata": {
+                "type": "token[]",
+                "description": "List of metadata to include in the message",
+                "default": []
+            },
+            "enableObjectIdMap": {
+                "type": "bool",
+                "description": "Enable publishing of Object-ID-to-prim-path map, applies only to point_cloud"
+            },
+            "objectIdMapTopicName": {
+                "type": "string",
+                "description": "Topic name used for publishing Object-ID-to-prim-path map, applies only to point_cloud",
+                "default": "object_id_map"
             }
         }
     }

@@ -1,5 +1,5 @@
 [package]
-version = "1.4.0"
+version = "1.5.0"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -57,7 +57,7 @@ exclude = ["Ogn*Database.py"]
 exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
-timeout = 900
+timeout = 1200
 dependencies = [
     "isaacsim.robot.wheeled_robots",
     "isaacsim.ros2.bridge",
@@ -134,6 +134,10 @@ args = [
     ### Extension specific args
     '--/exts/isaacsim.ros2.bridge/# ROS distro and settings centrally managed',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",
+    "--/renderer/raytracingMotion/enabled=true",
+    "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
+    "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
+    "--/rtx-transient/stableIds/enabled=true",
 ]
 
 [[test]]

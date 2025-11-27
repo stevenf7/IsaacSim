@@ -1,4 +1,12 @@
 # Changelog
+## [1.5.0] - 2025-11-26
+### Added
+- OgnROS2RtxLidarPointCloudConfig to simplify setting metadata to include in RTX Lidar PointCloud2
+### Changed
+- OgnROS2RtxLidarHelper now takes selectedMetadata input to specify which metadata to include in RTX Lidar PointCloud2
+- OgnROS2PublishPointCloud updated with new CUDA kernel to add RTX Lidar and Radar metadata to PointCloud2 message
+  when data is on device
+
 ## [1.4.0] - 2025-11-26
 ### Changed
 - Optimized to use a single publish thread rather than tasks. Can be controlled with /exts/isaacsim.ros2.bridge/publish_with_queue_thread=true|false
@@ -13,7 +21,7 @@
 
 ## [1.1.1] - 2025-11-20
 ### Changed
-- Cleaned up test_camera_info.py: removed unused imports and centralized visualization flag 
+- Cleaned up test_camera_info.py: removed unused imports and centralized visualization flag
 
 ## [1.1.0] - 2025-11-10
 ### Changed

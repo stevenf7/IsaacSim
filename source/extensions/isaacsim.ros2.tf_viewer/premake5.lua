@@ -83,6 +83,7 @@ rtti("On")
 
 add_files("include", "include")
 add_files("source", "plugins")
+add_cuda_dependencies()
 -- link_boost_for_windows({"boost_python310"})
 includedirs {
     "include",

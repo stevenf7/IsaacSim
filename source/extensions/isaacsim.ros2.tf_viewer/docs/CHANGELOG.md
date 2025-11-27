@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.24] - 2025-11-10
+### Changed
+- Added CUDA build dependencies
+
 ## [2.1.23] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

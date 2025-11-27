@@ -21,6 +21,7 @@
 // clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
+#include "ROS2PublishPointCloud.cuh"
 #include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/profiler/Profile.h>
@@ -37,7 +38,7 @@ using namespace isaacsim::ros2::core;
 class PublishPointCloudThreadData
 {
 public:
-    PublishPointCloudThreadData()
+    PublishPointCloudThreadData(uint8_t*& messageBufferDevice, size_t& messageBufferDeviceSize)
         : inputDataPtr(nullptr),
           outputDataPtr(nullptr),
           bufferSize(0),
@@ -45,7 +46,9 @@ public:
           cudaDeviceIndex(-1),
           stream(nullptr),
           streamDevice(nullptr),
-          mStreamNotCreated(nullptr)
+          mStreamNotCreated(nullptr),
+          messageBufferDevice(messageBufferDevice),
+          messageBufferDeviceSize(messageBufferDeviceSize)
     {
     }
 
@@ -58,6 +61,11 @@ public:
     cudaStream_t* stream;
     int* streamDevice;
     bool* mStreamNotCreated;
+    int maxThreadsPerBlock{ 0 };
+    int multiProcessorCount{ 0 };
+
+    uint8_t*& messageBufferDevice;
+    size_t& messageBufferDeviceSize;
 
     std::shared_ptr<Ros2Publisher> publisher;
     std::shared_ptr<Ros2PointCloudMessage> message;
@@ -66,6 +74,32 @@ public:
 class OgnROS2PublishPointCloud : public Ros2Node
 {
 public:
+    bool initializeCudaProperties(int cudaDeviceIndex)
+    {
+        if (cudaDeviceIndex == -1)
+        {
+            return true;
+        }
+        isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
+
+        // Query for device props
+        try
+        {
+            cudaDeviceProp prop;
+            CUDA_CHECK(cudaGetDeviceProperties(&prop, cudaDeviceIndex));
+
+            // cache results
+            m_maxThreadsPerBlock = prop.maxThreadsPerBlock;
+            m_multiProcessorCount = prop.multiProcessorCount;
+        }
+        catch (const std::exception& e)
+        {
+            CARB_LOG_ERROR("Failed to get device properties for GPU %d: %s", cudaDeviceIndex, e.what());
+            return false;
+        }
+        return true;
+    }
+
     static bool compute(OgnROS2PublishPointCloudDatabase& db)
     {
         auto& state = db.perInstanceState<OgnROS2PublishPointCloud>();
@@ -86,6 +120,11 @@ public:
                     db.inputs.context()))
             {
                 db.logError("Unable to create ROS2 node, please check that namespace is valid");
+                return false;
+            }
+            if (!state.initializeCudaProperties(db.inputs.cudaDeviceIndex()))
+            {
+                db.logError("Failed to initialize CUDA properties for GPU %d", db.inputs.cudaDeviceIndex());
                 return false;
             }
         }
@@ -139,7 +178,7 @@ public:
                                                 void* dataPtr,
                                                 size_t totalBytes)
     {
-        PublishPointCloudThreadData threadData;
+        PublishPointCloudThreadData threadData(state.m_messageBufferDevice, state.m_messageBufferDeviceSize);
 
         threadData.inputDataPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
         threadData.outputDataPtr = dataPtr;
@@ -153,6 +192,9 @@ public:
 
         threadData.publisher = state.m_publisher;
         threadData.message = state.m_message;
+
+        threadData.maxThreadsPerBlock = state.m_maxThreadsPerBlock;
+        threadData.multiProcessorCount = state.m_multiProcessorCount;
 
         return threadData;
     }
@@ -180,8 +222,34 @@ public:
         }
 
         CARB_PROFILE_ZONE(1, "[IsaacSim] data in cuda memory");
-        CUDA_CHECK(cudaMemcpyAsync(
-            data.outputDataPtr, data.inputDataPtr, data.bufferSize, cudaMemcpyDeviceToHost, *data.stream));
+        if (data.message->getOrderedFields().empty())
+        {
+            // Direct copy when no metadata is needed
+            CUDA_CHECK(cudaMemcpyAsync(
+                data.outputDataPtr, data.inputDataPtr, data.bufferSize, cudaMemcpyDeviceToHost, *data.stream));
+        }
+        else
+        {
+            // Use kernel to fill the buffer with correctly-ordered metadata
+            if (data.messageBufferDeviceSize < data.message->getTotalBytes())
+            {
+                // Reallocate the buffer if it's too small
+                CUDA_CHECK(cudaFree(data.messageBufferDevice));
+                data.messageBufferDevice = nullptr;
+                data.messageBufferDeviceSize = 0;
+            }
+            if (data.messageBufferDevice == nullptr)
+            {
+                data.messageBufferDeviceSize = data.message->getTotalBytes();
+                CUDA_CHECK(cudaMalloc(&data.messageBufferDevice, data.messageBufferDeviceSize));
+            }
+            isaacsim::ros2::nodes::fillPointCloudBuffer(
+                data.messageBufferDevice, reinterpret_cast<const float3*>(data.inputDataPtr),
+                data.message->getOrderedFields(), data.message->getPointStep(), data.message->getNumPoints(),
+                data.maxThreadsPerBlock, data.multiProcessorCount, data.cudaDeviceIndex, *data.stream);
+            CUDA_CHECK(cudaMemcpyAsync(data.outputDataPtr, data.messageBufferDevice, data.message->getTotalBytes(),
+                                       cudaMemcpyDeviceToHost, *data.stream));
+        }
         CUDA_CHECK(cudaStreamSynchronize(*data.stream));
 
         {
@@ -209,34 +277,45 @@ public:
             return false;
         }
 
-        size_t height = 1;
-        uint32_t pointStep = sizeof(GfVec3f);
-        size_t width = 0;
-        size_t rowStep = 0;
+        float* intensityPtr = reinterpret_cast<float*>(db.inputs.intensityPtr());
+        uint64_t* timestampPtr = reinterpret_cast<uint64_t*>(db.inputs.timestampPtr());
+        uint32_t* emitterIdPtr = reinterpret_cast<uint32_t*>(db.inputs.emitterIdPtr());
+        uint32_t* channelIdPtr = reinterpret_cast<uint32_t*>(db.inputs.channelIdPtr());
+        uint32_t* materialIdPtr = reinterpret_cast<uint32_t*>(db.inputs.materialIdPtr());
+        uint32_t* tickIdPtr = reinterpret_cast<uint32_t*>(db.inputs.tickIdPtr());
+        GfVec3f* hitNormalPtr = reinterpret_cast<GfVec3f*>(db.inputs.hitNormalPtr());
+        GfVec3f* velocityPtr = reinterpret_cast<GfVec3f*>(db.inputs.velocityPtr());
+        uint32_t* objectIdPtr = reinterpret_cast<uint32_t*>(db.inputs.objectIdPtr());
+        uint8_t* echoIdPtr = reinterpret_cast<uint8_t*>(db.inputs.echoIdPtr());
+        uint8_t* tickStatePtr = reinterpret_cast<uint8_t*>(db.inputs.tickStatePtr());
+        float* radialVelocityMSPtr = reinterpret_cast<float*>(db.inputs.radialVelocityMSPtr());
 
         if (db.inputs.cudaDeviceIndex() == -1)
         {
+            state.m_message->setUsePinnedBuffer(false);
             if (db.inputs.dataPtr() != 0)
             {
-                width = db.inputs.bufferSize() / pointStep;
-                rowStep = db.inputs.bufferSize();
-                size_t totalBytes = rowStep;
-                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, width, height, pointStep);
+                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, db.inputs.bufferSize(),
+                                                intensityPtr, timestampPtr, emitterIdPtr, channelIdPtr, materialIdPtr,
+                                                tickIdPtr, hitNormalPtr, velocityPtr, objectIdPtr, echoIdPtr,
+                                                tickStatePtr, radialVelocityMSPtr);
                 // Data is on host as ptr, buffer size matches
                 {
-                    memcpy(state.m_message->getBufferPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()), totalBytes);
+                    memcpy(state.m_message->getBufferPtr(), reinterpret_cast<void*>(db.inputs.dataPtr()),
+                           state.m_message->getTotalBytes());
                 }
             }
             else if (db.inputs.dataPtr() == 0)
             {
-                width = db.inputs.data.size();
-                rowStep = pointStep * db.inputs.data.size();
-                size_t totalBytes = rowStep;
-                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, width, height, pointStep);
+                const size_t totalBytes = sizeof(GfVec3f) * db.inputs.data.size();
+                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, totalBytes, intensityPtr,
+                                                timestampPtr, emitterIdPtr, channelIdPtr, materialIdPtr, tickIdPtr,
+                                                hitNormalPtr, velocityPtr, objectIdPtr, echoIdPtr, tickStatePtr,
+                                                radialVelocityMSPtr);
                 // Data is on host as ogn data, copy from cpu
                 {
-                    memcpy(state.m_message->getBufferPtr(),
-                           reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()), totalBytes);
+                    memcpy(state.m_message->getBufferPtr(), reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data()),
+                           state.m_message->getTotalBytes());
                 }
             }
 
@@ -255,29 +334,27 @@ public:
                                  });
             }
         }
-        else
+        else if (db.inputs.dataPtr() != 0)
         {
-            if (db.inputs.dataPtr() != 0)
+            state.m_message->setUsePinnedBuffer(true);
+            state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, db.inputs.bufferSize(),
+                                            intensityPtr, timestampPtr, emitterIdPtr, channelIdPtr, materialIdPtr,
+                                            tickIdPtr, hitNormalPtr, velocityPtr, objectIdPtr, echoIdPtr, tickStatePtr,
+                                            radialVelocityMSPtr);
+
+            PublishPointCloudThreadData publishPointCloudThreadData =
+                buildThreadData(db, state, state.m_message->getBufferPtr(), state.m_message->getTotalBytes());
+
+            if (state.m_multithreadingDisabled)
             {
-                width = db.inputs.bufferSize() / pointStep;
-                rowStep = db.inputs.bufferSize();
-                size_t totalBytes = rowStep;
-                state.m_message->generateBuffer(db.inputs.timeStamp(), state.m_frameId, width, height, pointStep);
-
-                PublishPointCloudThreadData publishPointCloudThreadData =
-                    buildThreadData(db, state, state.m_message->getBufferPtr(), totalBytes);
-
-                if (state.m_multithreadingDisabled)
-                {
-                    return publishPointCloudHelper(publishPointCloudThreadData);
-                }
-                else
-                {
-                    // In order to get the benefits of using a separate stream, do the work in a new thread
-                    tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
-                                     [data = publishPointCloudThreadData]() mutable
-                                     { return publishPointCloudHelper(data); });
-                }
+                return publishPointCloudHelper(publishPointCloudThreadData);
+            }
+            else
+            {
+                // In order to get the benefits of using a separate stream, do the work in a new thread
+                tasking->addTask(carb::tasking::Priority::eHigh, state.m_tasks,
+                                 [data = publishPointCloudThreadData]() mutable
+                                 { return publishPointCloudHelper(data); });
             }
         }
 
@@ -292,18 +369,14 @@ public:
 
     virtual void reset()
     {
+        if (m_messageBufferDevice)
         {
-            CARB_PROFILE_ZONE(1, "[IsaacSim] wait for previous publish");
-            // Wait for last message to publish before starting next
-            m_tasks.wait();
+            CUDA_CHECK(cudaFree(m_messageBufferDevice));
+            m_messageBufferDevice = nullptr;
         }
-        if (m_streamNotCreated == false)
-        {
-            isaacsim::core::includes::ScopedDevice scopedDev(m_streamDevice);
-            CUDA_CHECK(cudaStreamDestroy(m_stream));
-            m_streamDevice = -1;
-            m_streamNotCreated = true;
-        }
+        m_messageBufferDeviceSize = 0;
+        m_maxThreadsPerBlock = 0;
+        m_multiProcessorCount = 0;
 
         m_publisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
@@ -319,8 +392,13 @@ private:
     cudaStream_t m_stream;
     int m_streamDevice = -1;
     bool m_streamNotCreated = true;
+    int m_maxThreadsPerBlock{ 0 };
+    int m_multiProcessorCount{ 0 };
 
     bool m_multithreadingDisabled = false;
+
+    uint8_t* m_messageBufferDevice = nullptr;
+    size_t m_messageBufferDeviceSize = 0;
 };
 
 REGISTER_OGN_NODE()

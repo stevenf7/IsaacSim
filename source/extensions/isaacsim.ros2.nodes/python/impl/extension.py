@@ -294,6 +294,20 @@ class ROS2NodesExtension(omni.ext.IExt):
                 category=BRIDGE_NAME,
             )
 
+            # Object ID Map publisher
+            register_node_writer_with_telemetry(
+                name=f"{BRIDGE_PREFIX}{time_type[1]}PublishObjectIdMap",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishObjectIdMap",
+                annotators=[
+                    "StableIdMap",
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
+
     def unregister_nodes(self):
         for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):
             rep.writers.unregister_writer(writer)

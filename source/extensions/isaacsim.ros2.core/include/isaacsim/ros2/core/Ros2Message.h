@@ -14,6 +14,7 @@
 // limitations under the License.
 #pragma once
 
+#include <isaacsim/core/includes/Buffer.h>
 #include <isaacsim/ros2/core/Ros2Types.h>
 
 namespace omni::physics::tensors
@@ -637,21 +638,52 @@ class Ros2PointCloudMessage : public Ros2Message
 {
 public:
     /**
-     * @brief Generate the buffer (data) according to the point cloud metadata.
-     * @details
-     * It allocates memory for the `data` field, and computes and fills in the values of the other message fields.
-     *
-     * @param[in] timeStamp Time (seconds).
-     * @param[in] frameId Transform frame with which this data is associated.
-     * @param[in] width Point cloud width.
-     * @param[in] height Point cloud height.
-     * @param[in] pointStep Length of a point in bytes.
+     * @brief PointField type sizes. Maps from anonymous enums in sensor_msgs/msg/PointField to the actual size of the
+     * type.
+     */
+    static constexpr std::array<size_t, 9> pointFieldTypeSizes = { 0,
+                                                                   sizeof(int8_t),
+                                                                   sizeof(uint8_t),
+                                                                   sizeof(int16_t),
+                                                                   sizeof(uint16_t),
+                                                                   sizeof(int32_t),
+                                                                   sizeof(uint32_t),
+                                                                   sizeof(float),
+                                                                   sizeof(double) };
+
+    /**
+     * @brief Allocates and initializes the point cloud message buffer
+     * @param[in] timeStamp Time in seconds
+     * @param[in] frameId Frame ID for the point cloud
+     * @param[in] bufferSize Size of the point cloud data buffer in bytes
+     * @param[in] intensityPtr Pointer to the intensity data
+     * @param[in] timestampPtr Pointer to the timestamp data
+     * @param[in] emitterIdPtr Pointer to the emitter ID data
+     * @param[in] channelIdPtr Pointer to the channel ID data
+     * @param[in] materialIdPtr Pointer to the material ID data
+     * @param[in] tickIdPtr Pointer to the tick ID data
+     * @param[in] hitNormalPtr Pointer to the normal data
+     * @param[in] velocityPtr Pointer to the velocity data
+     * @param[in] objectIdPtr Pointer to the object ID data
+     * @param[in] echoIdPtr Pointer to the echo ID data
+     * @param[in] tickStatePtr Pointer to the tick states data
+     * @param[in] radialVelocityMSPtr Pointer to the radial velocity data
      */
     virtual void generateBuffer(const double& timeStamp,
                                 const std::string& frameId,
-                                const size_t& width,
-                                const size_t& height,
-                                const uint32_t& pointStep) = 0;
+                                const size_t& bufferSize,
+                                float* intensityPtr,
+                                uint64_t* timestampPtr,
+                                uint32_t* emitterIdPtr,
+                                uint32_t* channelIdPtr,
+                                uint32_t* materialIdPtr,
+                                uint32_t* tickIdPtr,
+                                pxr::GfVec3f* hitNormalPtr,
+                                pxr::GfVec3f* velocityPtr,
+                                uint32_t* objectIdPtr,
+                                uint8_t* echoIdPtr,
+                                uint8_t* tickStatePtr,
+                                float* radialVelocityMSPtr) = 0;
 
     /**
      * @brief Get the pointer to the buffer (data).
@@ -662,7 +694,7 @@ public:
      */
     void* getBufferPtr()
     {
-        return &m_buffer[0];
+        return m_usePinnedBuffer ? m_bufferPinned.data() : m_buffer.data();
     }
 
     /**
@@ -672,21 +704,90 @@ public:
      *
      * @return Buffer size.
      */
-    size_t getTotalBytes()
+    size_t getTotalBytes() const
     {
         return m_totalBytes;
     }
 
+    /**
+     * @brief Get the number of points.
+     * @details
+     * Returns the number of points in the point cloud.
+     *
+     * @return Number of points.
+     */
+    size_t getNumPoints() const
+    {
+        return m_numPoints;
+    }
+
+    /**
+     * @brief Get the point step.
+     * @details
+     * Returns the point step in the point cloud.
+     *
+     * @return Point step.
+     */
+    size_t getPointStep() const
+    {
+        return m_pointStep;
+    }
+
+    /**
+     * @brief Get the ordered list of metadata pointers and corresponding offsets.
+     * @details
+     * Returns the ordered list of metadata pointers, size of their type in bytes, and corresponding offsets.
+     *
+     * @return Ordered list of metadata pointers, size of their type in bytes, and corresponding offsets.
+     */
+    const std::vector<std::tuple<void*, size_t, size_t>>& getOrderedFields() const
+    {
+        return m_orderedFields;
+    }
+
+    /**
+     * @brief Set whether to use the pinned buffer for the message data.
+     */
+    void setUsePinnedBuffer(bool usePinnedBuffer)
+    {
+        m_usePinnedBuffer = usePinnedBuffer;
+    }
+
 protected:
     /**
-     * @brief Buffer (data).
+     * @brief Buffer (data) in pinned host memory.
+     */
+    isaacsim::core::includes::GenericBuffer m_bufferPinned;
+
+    /**
+     * @brief Buffer (data) in unpinned host memory.
      */
     std::vector<uint8_t> m_buffer;
 
     /**
      * @brief Buffer size.
      */
-    size_t m_totalBytes = 0;
+    size_t m_totalBytes{ 0 };
+
+    /**
+     * @brief Point step.
+     */
+    size_t m_pointStep{ 0 };
+
+    /**
+     * @brief Number of points.
+     */
+    size_t m_numPoints{ 0 };
+
+    /**
+     * @brief Ordered list of metadata pointers, size of their type in bytes, and corresponding offsets.
+     */
+    std::vector<std::tuple<void*, size_t, size_t>> m_orderedFields;
+
+    /**
+     * @brief Whether to use the pinned buffer for the message data.
+     */
+    bool m_usePinnedBuffer{ false };
 };
 
 /**

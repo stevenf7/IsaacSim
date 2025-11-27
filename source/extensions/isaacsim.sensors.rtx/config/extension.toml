@@ -1,5 +1,5 @@
 [package]
-version = "15.10.1"
+version = "15.11.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -154,6 +154,9 @@ args = [
     "--/app/hydraEngine/waitIdle=1",
     "--/app/updateOrder/checkForHydraRenderComplete=1000",
     "--/rtx-transient/stableIds/enabled=true",
+    "--/renderer/raytracingMotion/enabled=true",
+    "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
+    "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
 ]
 
 [[test]]
