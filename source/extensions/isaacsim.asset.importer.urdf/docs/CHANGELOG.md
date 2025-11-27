@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.34] - 2025-11-27
+### Changed
+- Add missing docstrings
+
 ## [2.4.33] - 2025-11-26
 ### Fixed
 - Fixed issue that caused crash of Isaac sim on failed mesh conversion

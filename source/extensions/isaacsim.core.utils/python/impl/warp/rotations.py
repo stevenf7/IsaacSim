@@ -28,7 +28,7 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     """Converts a pxr Quaternion type to a torch array (scalar first).
 
     Args:
-        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): [description]
+        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): Input quaternion from USD.
 
     Returns:
        wp.types.array: quaternion tensor

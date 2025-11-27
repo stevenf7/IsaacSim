@@ -481,7 +481,7 @@ class Extension(omni.ext.IExt):
         """Updates the GUI with a new Articulation's properties.
 
         Args:
-            articulation (SingleArticulation): [description]
+            articulation (SingleArticulation): The articulation to display in the UI.
         """
         # Get the latest articulation values and update the Properties UI
         self.get_articulation_values(articulation)
@@ -566,7 +566,7 @@ class Extension(omni.ext.IExt):
         """Callback for Physics Step.
 
         Args:
-            step ([type]): [description]
+            step (float): Physics step size in seconds.
         """
         if self.articulation is not None:
             if not self.articulation.handles_initialized:

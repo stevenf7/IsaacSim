@@ -76,11 +76,7 @@ class BaseSample(object):
 
     @abstractmethod
     def setup_scene(self) -> None:
-        """used to setup anything in the world, adding tasks happen here for instance.
-
-        Args:
-            scene (Scene): [description]
-        """
+        """used to setup anything in the world, adding tasks happen here for instance."""
         return
 
     @abstractmethod

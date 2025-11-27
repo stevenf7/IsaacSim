@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.1] - 2025-11-27
+### Changed
+- Add missing docstrings
 
 ## [1.4.0] - 2025-10-30
 ### Changed

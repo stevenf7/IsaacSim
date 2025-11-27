@@ -37,7 +37,7 @@ args, unknown = parser.parse_known_args()
 
 class HelloWorld(BaseTask):
     def __init__(self, name, num_envs, env_spacing, offset=None) -> None:
-        """[summary]"""
+        """Initialize the HelloWorld task with environment configuration."""
         BaseTask.__init__(self, name=name, offset=offset)
 
         self._num_envs = num_envs
@@ -48,10 +48,10 @@ class HelloWorld(BaseTask):
         return
 
     def set_up_scene(self, scene) -> None:
-        """[summary]
+        """Set up the simulation scene with cloned objects.
 
         Args:
-            scene (Scene): [description]
+            scene: The scene to populate with objects and ground plane.
         """
 
         super().set_up_scene(scene)
@@ -73,10 +73,10 @@ class HelloWorld(BaseTask):
         raise NotImplementedError
 
     def get_observations(self) -> dict:
-        """[summary]
+        """Get current observations from the simulation.
 
         Returns:
-            dict: [description]
+            Dictionary containing object positions and velocities.
         """
         object_positions, _ = self._object.get_world_poses()
         object_velocities = self._object.get_velocities()
@@ -85,17 +85,17 @@ class HelloWorld(BaseTask):
         return observations
 
     def calculate_metrics(self) -> None:
-        """[summary]"""
+        """Calculate task metrics for all environments."""
         return torch.zeros(self._num_envs, device=self._device)
 
     def is_done(self) -> None:
-        """[summary]"""
+        """Check if the task is completed for each environment."""
         return torch.zeros(self._num_envs, device=self._device)
 
 
 class HelloWorldSphere(HelloWorld):
     def __init__(self, name, num_envs, env_spacing, offset=None) -> None:
-        """[summary]"""
+        """Initialize the HelloWorldSphere task with sphere objects."""
         super().__init__(name=name, num_envs=num_envs, env_spacing=env_spacing, offset=offset)
 
     def set_object(self):
@@ -107,7 +107,7 @@ class HelloWorldSphere(HelloWorld):
 
 class HelloWorldCuboid(HelloWorld):
     def __init__(self, name, num_envs, env_spacing, offset=None) -> None:
-        """[summary]"""
+        """Initialize the HelloWorldCuboid task with cuboid objects."""
         super().__init__(name=name, num_envs=num_envs, env_spacing=env_spacing, offset=offset)
 
     def set_object(self):

@@ -20,7 +20,6 @@ import os
 import re
 import subprocess
 from collections import OrderedDict
-from distutils.version import LooseVersion
 from pprint import pprint
 from typing import Callable, Dict, List, Set, Tuple
 
