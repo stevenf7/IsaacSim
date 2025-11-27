@@ -1,4 +1,7 @@
 # Changelog
+## [1.4.0] - 2025-11-26
+### Changed
+- Optimized to use a single publish thread rather than tasks. Can be controlled with /exts/isaacsim.ros2.bridge/publish_with_queue_thread=true|false
 
 ## [1.3.0] - 2025-11-24
 ### Added

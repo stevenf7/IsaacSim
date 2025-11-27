@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2025-11-26
+### Added
+ - Default setting values to control ROS2PublishImage queue thread optimization.
+
 ## [1.2.0] - 2025-11-24
 ### Added
 - Add flag to generateBuffer() to allocate CUDA pinned memory for image buffers

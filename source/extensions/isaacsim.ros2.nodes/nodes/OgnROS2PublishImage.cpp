@@ -25,16 +25,25 @@
 #include <carb/profiler/Profile.h>
 #include <carb/tasking/ITasking.h>
 #include <carb/tasking/TaskingUtils.h>
+#include <carb/thread/Mutex.h>
+#include <carb/thread/Util.h>
 
 #include <isaacsim/core/includes/Buffer.h>
 #include <isaacsim/core/includes/ScopedCudaDevice.h>
 #include <isaacsim/ros2/core/Ros2Node.h>
 
 #include <OgnROS2PublishImageDatabase.h>
+#include <chrono>
+#include <condition_variable>
+#include <queue>
+#include <thread>
 
 using namespace isaacsim::ros2::core;
 
 extern "C" void textureFloatCopyToRawBuffer(cudaTextureObject_t, uint8_t*, uint32_t, uint32_t, cudaStream_t);
+
+// Forward declaration
+class OgnROS2PublishImage;
 
 class PublishImageThreadData
 {
@@ -110,6 +119,88 @@ public:
     std::shared_ptr<Ros2NitrosBridgeImageMessage> nitrosBridgeMessage;
 };
 
+//
+// A helper class to spin up a thread to publish images from a queue one by one.
+// This ends up being more efficient than using a tasking system because it avoids the overhead of creating a new
+// task for each image and having all the tasks stall each other and the main thread while doing their memcpys.
+//
+class PublishImageWorkerThread
+{
+public:
+    static PublishImageWorkerThread& getInstance()
+    {
+        static PublishImageWorkerThread instance;
+        return instance;
+    }
+
+    void setQueueThreadSleepUs(int64_t durationUs)
+    {
+        m_queueThreadSleepUs = durationUs;
+    }
+
+    void enqueueAndStart(const PublishImageThreadData& data)
+    {
+        {
+            std::unique_lock<carb::thread::mutex> lock(m_queueMutex);
+
+            // Start worker thread on first use
+            if (!m_workerThreadCreated)
+            {
+                m_workerThreadShutdown = false;
+                m_workerThread = std::thread(&PublishImageWorkerThread::workerThreadFunction, this);
+                m_workerThreadCreated = true;
+            }
+
+            // Enqueue the data
+            m_publishQueue.push(data);
+        }
+        m_queueCondition.notify_one();
+    }
+
+    void shutdown()
+    {
+        {
+            std::unique_lock<carb::thread::mutex> lock(m_queueMutex);
+            if (!m_workerThreadCreated)
+            {
+                return;
+            }
+            m_workerThreadShutdown = true;
+        }
+        m_queueCondition.notify_all();
+
+        if (m_workerThread.joinable())
+        {
+            m_workerThread.join();
+        }
+
+        std::unique_lock<carb::thread::mutex> lock(m_queueMutex);
+        m_workerThreadCreated = false;
+        m_workerThreadShutdown = false;
+    }
+
+private:
+    PublishImageWorkerThread() = default;
+    ~PublishImageWorkerThread()
+    {
+        shutdown();
+    }
+
+    PublishImageWorkerThread(const PublishImageWorkerThread&) = delete;
+    PublishImageWorkerThread& operator=(const PublishImageWorkerThread&) = delete;
+
+    void workerThreadFunction();
+
+    std::queue<PublishImageThreadData> m_publishQueue;
+    carb::thread::mutex m_queueMutex;
+    std::condition_variable_any m_queueCondition;
+    std::thread m_workerThread;
+    bool m_workerThreadShutdown = false;
+    bool m_workerThreadCreated = false;
+    // How long the queue thread sleeps between publishes
+    int64_t m_queueThreadSleepUs = 1000; // Default: 1ms = 1000us
+};
+
 class OgnROS2PublishImage : public Ros2Node
 {
 public:
@@ -153,6 +244,16 @@ public:
             carb::settings::ISettings* threadSettings = carb::getCachedInterface<carb::settings::ISettings>();
             static constexpr char s_kThreadDisable[] = "/exts/isaacsim.ros2.bridge/publish_multithreading_disabled";
             state.m_multithreadingDisabled = threadSettings->getAsBool(s_kThreadDisable);
+            // Get extension settings for queue-based thread mode
+            static constexpr char s_kPublishWithQueueThread[] = "/exts/isaacsim.ros2.bridge/publish_with_queue_thread";
+            state.m_publishWithQueueThread = threadSettings->getAsBool(s_kPublishWithQueueThread);
+            // Get extension settings for how long queue thread sleeps between publishes
+            static constexpr char s_kQueueThreadSleepUs[] = "/exts/isaacsim.ros2.bridge/publish_queue_thread_sleep_us";
+            int64_t queueThreadSleepUs = threadSettings->getAsInt64(s_kQueueThreadSleepUs);
+            if (queueThreadSleepUs > 0)
+            {
+                PublishImageWorkerThread::getInstance().setQueueThreadSleepUs(queueThreadSleepUs);
+            }
             // Get extension settings for nitros bridge
             static constexpr char s_kNitrosBridgeEnabled[] = "/exts/isaacsim.ros2.bridge/enable_nitros_bridge";
             state.m_nitrosBridgeEnabled = threadSettings->getAsBool(s_kNitrosBridgeEnabled);
@@ -280,6 +381,11 @@ public:
             if (state.m_multithreadingDisabled)
             {
                 return publishImageHelper(publishImageThreadData);
+            }
+            else if (state.m_publishWithQueueThread)
+            {
+                // Enqueue request and start worker thread if needed (single lock acquisition)
+                PublishImageWorkerThread::getInstance().enqueueAndStart(publishImageThreadData);
             }
             else
             {
@@ -522,6 +628,8 @@ public:
             {
                 publishNitrosBridgeHelper(publishNitrosBridgeImageThreadData);
             }
+            // This path intentionally does not use the queue thread mode. We haven't seen it being a bottleneck,
+            // but if that changes it could be added here.
             else
             {
                 // In order to get the benefits of using a separate stream, do all of the work in a new thread
@@ -616,6 +724,9 @@ public:
             // Wait for last message to publish before starting next
             m_tasks.wait();
             m_nitrosBridgeTasks.wait();
+
+            auto& workerThread = PublishImageWorkerThread::getInstance();
+            workerThread.shutdown();
         }
         if (m_streamNotCreated == false)
         {
@@ -667,6 +778,46 @@ private:
 
     bool m_multithreadingDisabled = false;
     bool m_nitrosBridgeEnabled = false;
+    bool m_publishWithQueueThread = true;
 };
+
+void PublishImageWorkerThread::workerThreadFunction()
+{
+    // Set thread name for profiling (platform-neutral via Carbonite)
+    carb::this_thread::setName("ROS2ImgPubWrk");
+
+    while (true)
+    {
+        CARB_PROFILE_ZONE(1, "[IsaacSim] Ros2 Publish Image Worker Thread");
+
+        PublishImageThreadData data;
+        {
+            std::unique_lock<carb::thread::mutex> lock(m_queueMutex);
+            m_queueCondition.wait(lock, [this] { return m_workerThreadShutdown || !m_publishQueue.empty(); });
+
+            if (m_workerThreadShutdown && m_publishQueue.empty())
+            {
+                break;
+            }
+
+            if (!m_publishQueue.empty())
+            {
+                data = m_publishQueue.front();
+                m_publishQueue.pop();
+            }
+            else
+            {
+                continue;
+            }
+        }
+
+        // Process the request without holding the lock
+        OgnROS2PublishImage::publishImageHelper(data);
+
+        // Configurable delay with no resources held.  This is done to allow other higher priority threads to run
+        // between publish tasks.
+        carb::cpp::this_thread::sleep_for(std::chrono::microseconds(m_queueThreadSleepUs));
+    }
+}
 
 REGISTER_OGN_NODE()
