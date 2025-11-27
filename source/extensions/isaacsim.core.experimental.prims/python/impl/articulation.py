@@ -792,7 +792,7 @@ class Articulation(XformPrim):
                         joint_api = UsdPhysics.PrismaticJoint(dof_prim)
                         lower[i][j] = joint_api.GetLowerLimitAttr().Get()
                         upper[i][j] = joint_api.GetUpperLimitAttr().Get()
-                    else:
+                    elif self.dof_types[dof_index] == omni.physics.tensors.DofType.Rotation:
                         joint_api = UsdPhysics.RevoluteJoint(dof_prim)
                         lower[i][j] = np.deg2rad(joint_api.GetLowerLimitAttr().Get())
                         upper[i][j] = np.deg2rad(joint_api.GetUpperLimitAttr().Get())
