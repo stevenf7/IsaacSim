@@ -1,5 +1,5 @@
 [package]
-version = "1.6.1"
+version = "1.6.2"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -35,6 +35,8 @@ dependencies = [
     "omni.hydra.scene_delegate", # required for fabric time to update,
     "omni.kit.test",
     "omni.physx.ui",
+    "isaacsim.core.utils",
+    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",

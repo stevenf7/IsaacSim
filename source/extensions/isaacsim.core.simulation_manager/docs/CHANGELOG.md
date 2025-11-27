@@ -1,4 +1,9 @@
 # Changelog
+## [1.6.2] - 2025-11-25
+### Changed
+- make set_physics_dt a classmethod
+- add unit tests for SimulationManager
+
 ## [1.6.1] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

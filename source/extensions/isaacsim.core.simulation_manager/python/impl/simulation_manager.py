@@ -356,6 +356,7 @@ class SimulationManager:
         else:
             return "cpu"
 
+    @classmethod
     def set_physics_dt(cls, dt: float = 1.0 / 60.0, physics_scene: str = None) -> None:
         """Sets the physics dt on the physics scene provided.
 
