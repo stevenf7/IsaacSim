@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2025-11-26
+### Added
+- Added `resolve_asset_path` function to synchronously resolve asset paths with the same logic as the async variant.
+
 ## [1.5.2] - 2025-11-05
 ### Changed
 - Update assets path to development
