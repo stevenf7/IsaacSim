@@ -21,7 +21,12 @@ import omni.kit.commands
 import omni.kit.test
 
 # import omni.kit.usd
-from isaacsim.storage.native import find_filtered_files_async, get_assets_root_path, get_assets_root_path_async
+from isaacsim.storage.native import (
+    find_filtered_files_async,
+    get_assets_root_path,
+    get_assets_root_path_async,
+    resolve_asset_path,
+)
 
 
 class TestStorageNative(omni.kit.test.AsyncTestCase):
@@ -334,3 +339,30 @@ class TestStorageNative(omni.kit.test.AsyncTestCase):
             self.assertTrue(
                 has_warehouse and has_shelves, f"File '{file_path}' should match ALL patterns ['warehouse', 'shelves']"
             )
+
+    async def test_resolve_asset_path_resolves_with_assets_root(self):
+        """Test resolve_asset_path resolves using assets root when original is bare path."""
+        assets_root = get_assets_root_path()
+        original_relative = "/Isaac/Environments/Grid/default_environment.usd"
+
+        # Expect resolve_asset_path function to prefix with assets root and resolve
+        resolved = resolve_asset_path(original_relative)
+        self.assertIsNotNone(resolved)
+        self.assertEqual(resolved, assets_root + original_relative)
+
+    async def test_resolve_asset_path_returns_original_if_exists(self):
+        """Test resolve_asset_path returns original when full path already exists."""
+        assets_root = get_assets_root_path()
+        full_path = assets_root + "/Isaac/Environments/Grid/default_environment.usd"
+
+        # Expect the function to return the given full path if it exists
+        resolved = resolve_asset_path(full_path)
+        self.assertIsNotNone(resolved)
+        self.assertEqual(resolved, full_path)
+
+    async def test_resolve_asset_path_returns_none_if_missing(self):
+        """Test resolve_asset_path returns None when neither path exists."""
+        # Expect the function to return None for a non-existent path
+        original = "/nonexistent/path/definitely_missing.usd"
+        resolved = resolve_asset_path(original)
+        self.assertIsNone(resolved)

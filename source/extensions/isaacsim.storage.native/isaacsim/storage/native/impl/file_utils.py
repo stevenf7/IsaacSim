@@ -20,7 +20,7 @@ from typing import List
 import carb
 from pxr import Sdf, UsdUtils
 
-from ..nucleus import get_assets_root_path_async
+from ..nucleus import get_assets_root_path, get_assets_root_path_async
 
 
 def path_join(base, name):
@@ -540,7 +540,7 @@ def path_dirname(path):
 async def resolve_asset_path_async(original_path: str) -> str | None:
     """Resolve asset path by checking original location and fallback to assets root.
 
-    This function attempts to resolve a given asset path by first checking if it exists
+    This async function attempts to resolve a given asset path by first checking if it exists
     in its original location. If not found, it constructs an alternate path using the
     Isaac Sim assets root path and checks if that exists instead.
 
@@ -582,6 +582,62 @@ async def resolve_asset_path_async(original_path: str) -> str | None:
             )
 
             if await path_exists(alternate_path):
+                return alternate_path
+    except Exception as e:
+        carb.log_warn(f"Could not get assets root path: {e}")
+
+    return None
+
+
+def resolve_asset_path(original_path: str) -> str | None:
+    """Resolve asset path by checking original location and fallback to assets root.
+
+    This function attempts to resolve a given asset path by first checking if it exists
+    in its original location. If not found, it constructs an alternate path using the
+    Isaac Sim assets root path and checks if that exists instead.
+
+    Args:
+        original_path: The original asset path to resolve.
+
+    Returns:
+        The resolved path if found, None otherwise.
+        Returns the path that exists (either original or assets root based), or None if neither exists.
+
+    Raises:
+        Exception: May raise exceptions from synchronous stat calls or get_assets_root_path.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> path = resolve_asset_path("/Isaac/Environments/Grid/default_environment.usd")
+        >>> print(path)
+        /path/to/assets/Isaac/Environments/Grid/default_environment.usd
+        >>>
+        >>> invalid_path = resolve_asset_path("/nonexistent/file.usd")
+        >>> print(invalid_path)
+        None
+    """
+    import omni.client
+    from omni.client import Result
+
+    # Check if the original path exists
+    result, _ = omni.client.stat(original_path)
+    if result == Result.OK:
+        return original_path
+
+    try:
+        # Construct alternate path with asset root
+        assets_root_path = get_assets_root_path()
+        if assets_root_path:
+            alternate_path = (
+                assets_root_path + original_path
+                if original_path.startswith("/")
+                else assets_root_path + "/" + original_path
+            )
+
+            result_alt, _ = omni.client.stat(alternate_path)
+            if result_alt == Result.OK:
                 return alternate_path
     except Exception as e:
         carb.log_warn(f"Could not get assets root path: {e}")
