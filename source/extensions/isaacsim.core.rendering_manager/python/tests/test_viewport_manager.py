@@ -271,7 +271,9 @@ class TestViewportManager(omni.kit.test.AsyncTestCase):
         ):
             pose = xform_utils.get_world_pose(camera)
             np.testing.assert_allclose(pose[0].numpy(), np.array(position), rtol=rtol, atol=atol)
-            np.testing.assert_allclose(pose[1].numpy(), np.array(orientation), rtol=rtol, atol=atol)
+            np.testing.assert_allclose(
+                np.abs(np.dot(pose[1].numpy(), np.array(orientation))), 1.0, rtol=rtol, atol=atol
+            )
             if coi is not None:
                 attribute = prim_utils.get_prim_at_path(camera).GetAttribute("omni:kit:centerOfInterest")
                 np.testing.assert_allclose(attribute.Get(), np.array(coi), rtol=rtol, atol=atol)
