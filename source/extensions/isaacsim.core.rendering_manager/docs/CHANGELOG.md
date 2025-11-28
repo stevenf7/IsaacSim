@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2025-11-28
+### Fixed
+- Fix camera view test case by comparing whether the quaternions represent the same orientation
+
 ## [0.2.1] - 2025-11-25
 ### Changed
 - Handle Isaac Sim's loop runner import exceptions
