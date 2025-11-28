@@ -29,14 +29,14 @@ torch = import_module("torch")
 
 
 def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tensor, device=None) -> torch.Tensor:
-    """[summary]
+    """Compute transformation matrices from translation and orientation tensors.
 
     Args:
-        translations (Union[np.ndarray, torch.Tensor]): translations with shape (N, 3).
-        orientations (Union[np.ndarray, torch.Tensor]): quaternion representation (scalar first) with shape (N, 4).
+        translations: Translations with shape (N, 3).
+        orientations: Quaternion orientations (scalar first) with shape (N, 4).
 
     Returns:
-        Union[np.ndarray, torch.Tensor]: transformation matrices with shape (N, 4, 4)
+        Transformation matrices with shape (N, 4, 4).
     """
     result = torch.zeros([orientations.shape[0], 4, 4], dtype=torch.float32, device=device)
     r = Rotation.from_quat(orientations[:, [1, 2, 3, 0]].detach().cpu().numpy())

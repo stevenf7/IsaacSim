@@ -67,14 +67,14 @@ def pose_from_tf_matrix(transformation: np.ndarray) -> Tuple[np.ndarray, np.ndar
 def tf_matrices_from_poses(
     translations: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]
 ) -> Union[np.ndarray, torch.Tensor]:
-    """[summary]
+    """Compute transformation matrices from translation and orientation arrays.
 
     Args:
-        translations (Union[np.ndarray, torch.Tensor]): translations with shape (N, 3).
-        orientations (Union[np.ndarray, torch.Tensor]): quaternion representation (scalar first) with shape (N, 4).
+        translations: Translations with shape (N, 3).
+        orientations: Quaternion orientations (scalar first) with shape (N, 4).
 
     Returns:
-        Union[np.ndarray, torch.Tensor]: transformation matrices with shape (N, 4, 4)
+        Transformation matrices with shape (N, 4, 4).
     """
     # Note: Imported here to prevent cyclic dependency in the module.
     from isaacsim.core.api.simulation_context.simulation_context import SimulationContext

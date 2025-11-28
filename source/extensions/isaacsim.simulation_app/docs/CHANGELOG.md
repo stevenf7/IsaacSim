@@ -1,8 +1,12 @@
 # Changelog
+## [2.13.1] - 2025-11-27
+### Changed
+- Add missing docstrings
 
 ## [2.13.0] - 2025-11-21
 ### Changed
 - Change default renderer to RealTimePathTracing
+
 ### Added
 - Add carb settings for RealTimePathTracing mode
 

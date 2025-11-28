@@ -1001,7 +1001,7 @@ class SimulationContext:
 
         Args:
             callback_name (str): should be unique.
-            callback_fn (Callable[[float], None]): [description]
+            callback_fn (Callable[[float], None]): Function to call before each physics step, receives step size as argument.
 
         Example:
 
@@ -1084,8 +1084,8 @@ class SimulationContext:
         ``callback_fn`` should take an argument of type ``omni.usd.StageEvent`` (e.g., ``event``)
 
         Args:
-            callback_name (str): [description]
-            callback_fn (Callable[[omni.usd.StageEvent], None]): [description]
+            callback_name (str): Unique name for the callback.
+            callback_fn (Callable[[omni.usd.StageEvent], None]): Function to call on stage events, receives stage event as argument.
 
         Example:
 
@@ -1163,8 +1163,8 @@ class SimulationContext:
         ``callback_fn`` should take an argument of type ``omni.timeline.TimelineEvent`` (e.g., ``event``)
 
         Args:
-            callback_name (str): [description]
-            callback_fn (Callable[[omni.timeline.TimelineEvent], None]): [description]
+            callback_name (str): Unique name for the callback.
+            callback_fn (Callable[[omni.timeline.TimelineEvent], None]): Function to call on timeline events, receives timeline event as argument.
 
         Example:
 
@@ -1242,8 +1242,8 @@ class SimulationContext:
         ``callback_fn`` should take an argument of type (e.g., ``event``)
 
         Args:
-            callback_name (str): [description]
-            callback_fn (Callable): [description]
+            callback_name (str): Unique name for the callback.
+            callback_fn (Callable): Function to call after each render, receives event as argument.
 
         Example:
 

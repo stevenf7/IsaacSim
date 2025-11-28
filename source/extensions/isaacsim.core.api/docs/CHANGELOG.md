@@ -1,4 +1,8 @@
 # Changelog
+## [4.11.2] - 2025-11-27
+### Changed
+- Add missing docstrings
+
 ## [4.11.1] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

@@ -1,5 +1,5 @@
 [package]
-version = "1.2.2"
+version = "1.2.3"
 category = "example"
 title = "Manipulators Examples"
 description = "examples of manipulators and grippers"

@@ -1,4 +1,7 @@
 # Changelog
+## [3.2.3] - 2025-11-27
+### Changed
+- Add missing docstrings
 
 ## [3.2.2] - 2025-10-31
 ### Changed
