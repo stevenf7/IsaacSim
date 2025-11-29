@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.6.1] - 2025-11-27
+### Changed
+- Make consistent use of SimulationManager
+
 ## [1.6.0] - 2025-11-26
 ### Changed
 - Added scene based SDG example test

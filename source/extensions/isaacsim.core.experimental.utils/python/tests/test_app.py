@@ -17,6 +17,7 @@ import os
 
 import isaacsim.core.experimental.utils.app as app_utils
 import omni.kit.test
+import omni.timeline
 
 EXTENSION_NAME = "isaacsim.core.version"
 
@@ -134,3 +135,99 @@ class TestApp(omni.kit.test.AsyncTestCase):
         # - disable extension and check return value
         self.assertTrue(app_utils.enable_extension(EXTENSION_NAME, enabled=False))
         self.assertIsNone(app_utils.get_extension_dict(EXTENSION_NAME))
+
+    async def test_timeline(self):
+        def check_timeline_state(*, is_playing, is_paused, is_stopped):
+            self.assertEqual(app_utils.is_playing(), is_playing, "Timeline should be 'playing'")
+            self.assertEqual(app_utils.is_paused(), is_paused, "Timeline should be 'paused'")
+            self.assertEqual(app_utils.is_stopped(), is_stopped, "Timeline should be 'stopped'")
+
+        def _on_play(event):
+            events[0] += 1
+
+        def _on_pause(event):
+            events[1] += 1
+
+        def _on_stop(event):
+            events[2] += 1
+
+        timeline_event_stream = omni.timeline.get_timeline_interface().get_timeline_event_stream()
+        subscriptions = [
+            timeline_event_stream.create_subscription_to_pop_by_type(omni.timeline.TimelineEventType.PLAY, _on_play),
+            timeline_event_stream.create_subscription_to_pop_by_type(omni.timeline.TimelineEventType.PAUSE, _on_pause),
+            timeline_event_stream.create_subscription_to_pop_by_type(omni.timeline.TimelineEventType.STOP, _on_stop),
+        ]
+
+        # setup timeline
+        omni.timeline.get_timeline_interface().set_end_time(1.0)
+        omni.timeline.get_timeline_interface().set_time_codes_per_second(60.0)
+        # test cases
+        # - commit state
+        commit = True
+        events = [0, 0, 0]
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)
+        # -- play
+        app_utils.play(commit=commit)
+        self.assertListEqual(events, [1, 0, 0])
+        check_timeline_state(is_playing=True, is_paused=False, is_stopped=False)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [1, 0, 0])
+        # -- pause
+        app_utils.pause(commit=commit)
+        self.assertListEqual(events, [1, 1, 0])
+        check_timeline_state(is_playing=False, is_paused=True, is_stopped=False)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [1, 1, 0])
+        # -- stop
+        app_utils.stop(commit=commit)
+        self.assertListEqual(events, [1, 1, 1])
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [1, 1, 1])
+        # - commit state (silently)
+        commit = None
+        events = [0, 0, 0]
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)
+        # -- play
+        app_utils.play(commit=commit)
+        self.assertListEqual(events, [0, 0, 0])
+        check_timeline_state(is_playing=True, is_paused=False, is_stopped=False)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [0, 0, 0])
+        # -- pause
+        app_utils.pause(commit=commit)
+        self.assertListEqual(events, [0, 0, 0])
+        check_timeline_state(is_playing=False, is_paused=True, is_stopped=False)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [0, 0, 0])
+        # -- stop
+        app_utils.stop(commit=commit)
+        self.assertListEqual(events, [0, 0, 0])
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [0, 0, 0])
+        # - don't commit state
+        commit = False
+        events = [0, 0, 0]
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)
+        # -- play
+        app_utils.play(commit=commit)
+        self.assertListEqual(events, [0, 0, 0])
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [1, 0, 0])
+        check_timeline_state(is_playing=True, is_paused=False, is_stopped=False)
+        # -- pause
+        app_utils.pause(commit=commit)
+        self.assertListEqual(events, [1, 0, 0])
+        check_timeline_state(is_playing=True, is_paused=False, is_stopped=False)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [1, 1, 0])
+        check_timeline_state(is_playing=False, is_paused=True, is_stopped=False)
+        # -- stop
+        app_utils.stop(commit=commit)
+        self.assertListEqual(events, [1, 1, 0])
+        check_timeline_state(is_playing=False, is_paused=True, is_stopped=False)
+        await app_utils.update_app_async()
+        self.assertListEqual(events, [1, 1, 1])
+        check_timeline_state(is_playing=False, is_paused=False, is_stopped=True)

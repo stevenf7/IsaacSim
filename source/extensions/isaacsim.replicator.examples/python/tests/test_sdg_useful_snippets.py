@@ -235,8 +235,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         sem_annot.attach(rp)
 
         # Initialize the simulation manager
-        simulation_manager = SimulationManager()
-        simulation_manager.initialize_physics()
+        SimulationManager.initialize_physics()
 
         async def run_example_async():
             # Spawn and drop a few cubes, capture data when they stop moving
@@ -248,7 +247,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                 physics_rigid_body_api = UsdPhysics.RigidBodyAPI(cube)
 
                 for s in range(500):
-                    simulation_manager.step(render=False)
+                    SimulationManager.step()
                     linear_velocity = physics_rigid_body_api.GetVelocityAttr().Get()
                     speed = np.linalg.norm(linear_velocity)
 
