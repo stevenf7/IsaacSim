@@ -13,19 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
 from typing import Tuple
 
 from isaacsim.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 from isaacsim.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, Usd, UsdRender
-
-
-def create_hydra_texture(resolution: Tuple[int], camera_prim_path: str):
-    warnings.warn(
-        "This function is deprecated, use omni.replicator.core.create.render_product instead", DeprecationWarning
-    )
-    return None, None
 
 
 def add_aov(render_product_path: str, aov_name: str):

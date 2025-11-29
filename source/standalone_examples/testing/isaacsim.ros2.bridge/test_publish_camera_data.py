@@ -40,9 +40,10 @@ import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.nodes.scripts.utils import set_target_prims
-from isaacsim.core.utils import extensions, nucleus, stage
+from isaacsim.core.utils import extensions, stage
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.sensors.camera import Camera
+from isaacsim.storage.native import nucleus
 
 # Enable ROS2 bridge extension
 extensions.enable_extension("isaacsim.ros2.bridge")
