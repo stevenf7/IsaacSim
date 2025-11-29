@@ -82,8 +82,7 @@ sem_annot = rep.AnnotatorRegistry.get_annotator("semantic_segmentation", init_pa
 sem_annot.attach(rp)
 
 # Initialize the simulation manager
-simulation_manager = SimulationManager()
-simulation_manager.initialize_physics()
+SimulationManager.initialize_physics()
 
 # Spawn and drop a few cubes, capture data when they stop moving
 for i in range(5):
@@ -94,7 +93,7 @@ for i in range(5):
     physics_rigid_body_api = UsdPhysics.RigidBodyAPI(cube)
 
     for s in range(500):
-        simulation_manager.step(render=False)
+        SimulationManager.step()
         linear_velocity = physics_rigid_body_api.GetVelocityAttr().Get()
         speed = np.linalg.norm(linear_velocity)
 

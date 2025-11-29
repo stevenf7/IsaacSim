@@ -160,13 +160,12 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
                 sim_box_geom.set_collision_approximations("convexHull")
                 sim_box_rigid_prims.append(RigidPrim(str(sim_box.GetPrimPath())))
 
-            sim_manager = SimulationManager()
-            sim_manager.set_physics_dt(1.0 / 90.0)
-            sim_manager.initialize_physics()
+            SimulationManager.set_physics_dt(1.0 / 90.0)
+            SimulationManager.initialize_physics()
 
             velocity_threshold = 0.01
             for step in range(max_sim_steps):
-                sim_manager.step(render=False)
+                SimulationManager.step()
                 if sim_box_rigid_prims:
                     top_box_velocity = sim_box_rigid_prims[-1].get_velocities(indices=[0])[0].numpy()
                     if np.linalg.norm(top_box_velocity) < velocity_threshold:

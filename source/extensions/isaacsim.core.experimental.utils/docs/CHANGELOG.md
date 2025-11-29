@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2025-11-26
+### Added
+- Add timeline-related functions to app utils
+
 ## [0.7.0] - 2025-11-21
 ### Added
 - Add xform utils

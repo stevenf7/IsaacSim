@@ -1,8 +1,17 @@
 # Changelog
+
+## [1.7.0] - 2025-11-26
+### Added
+- Add the `SimulationEvent` enum
+- Allow to perform a fabric update when stepping physics
+
+### Changed
+- Mark as deprecated the `IsaacEvents` enum and the backend-related methods
+
 ## [1.6.2] - 2025-11-25
 ### Changed
-- make set_physics_dt a classmethod
-- add unit tests for SimulationManager
+- Make set_physics_dt a classmethod
+- Add unit tests for SimulationManager
 
 ## [1.6.1] - 2025-11-07
 ### Changed

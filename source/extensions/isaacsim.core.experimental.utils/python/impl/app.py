@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Callable
 
 import omni.kit.app
+import omni.timeline
 
 
 def update_app(*, steps: int = 1, callback: Callable[[int, int], bool | None] | None = None) -> None:
@@ -89,6 +90,145 @@ async def update_app_async(*, steps: int = 1, callback: Callable[[int, int], boo
         if callback is not None:
             if callback(step + 1, steps) is False:
                 break
+
+
+def play(*, commit: bool | None = True) -> None:
+    """Play the application timeline.
+
+    .. note::
+
+        After committing the timeline state (silently or not), the new value will be available immediately
+        when querying it (e.g.: via :py:func:`is_playing`). Otherwise, one app update step is required to reflect
+        the new state and trigger any registered callback.
+
+    Args:
+        commit: Whether to commit the "play" state. The following values are supported:
+
+            - ``True``: Commit the state and trigger callbacks.
+            - ``False``: Do not commit the state.
+            - ``None``: Commit the state silently (without triggering callbacks).
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.app as app_utils
+        >>>
+        >>> app_utils.play()
+    """
+    omni.timeline.get_timeline_interface().play()
+    if commit is None:
+        omni.timeline.get_timeline_interface().commit_silently()
+    elif commit:
+        omni.timeline.get_timeline_interface().commit()
+
+
+def pause(*, commit: bool | None = True) -> None:
+    """Pause the application timeline.
+
+    .. note::
+
+        After committing the timeline state (silently or not), the new value will be available immediately
+        when querying it (e.g.: via :py:func:`is_paused`). Otherwise, one app update step is required to reflect
+        the new state and trigger any registered callback.
+
+    Args:
+        commit: Whether to commit the "pause" state. The following values are supported:
+
+            - ``True``: Commit the state and trigger callbacks.
+            - ``False``: Do not commit the state.
+            - ``None``: Commit the state silently (without triggering callbacks).
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.app as app_utils
+        >>>
+        >>> app_utils.pause()
+    """
+    omni.timeline.get_timeline_interface().pause()
+    if commit is None:
+        omni.timeline.get_timeline_interface().commit_silently()
+    elif commit:
+        omni.timeline.get_timeline_interface().commit()
+
+
+def stop(*, commit: bool | None = True) -> None:
+    """Stop the application timeline.
+
+    .. note::
+
+        After committing the timeline state (silently or not), the new value will be available immediately
+        when querying it (e.g.: via :py:func:`is_stopped`). Otherwise, one app update step is required to reflect
+        the new state and trigger any registered callback.
+
+    Args:
+        commit: Whether to commit the "stop" state. The following values are supported:
+
+            - ``True``: Commit the state and trigger callbacks.
+            - ``False``: Do not commit the state.
+            - ``None``: Commit the state silently (without triggering callbacks).
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.app as app_utils
+        >>>
+        >>> app_utils.stop()
+    """
+    omni.timeline.get_timeline_interface().stop()
+    if commit is None:
+        omni.timeline.get_timeline_interface().commit_silently()
+    elif commit:
+        omni.timeline.get_timeline_interface().commit()
+
+
+def is_playing() -> bool:
+    """Check if the application timeline is playing.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.app as app_utils
+        >>>
+        >>> app_utils.is_playing()
+        False
+    """
+    return omni.timeline.get_timeline_interface().is_playing()
+
+
+def is_paused() -> bool:
+    """Check if the application timeline is paused.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.app as app_utils
+        >>>
+        >>> app_utils.is_paused()
+        False
+    """
+    timeline = omni.timeline.get_timeline_interface()
+    return not (timeline.is_playing() or timeline.is_stopped())
+
+
+def is_stopped() -> bool:
+    """Check if the application timeline is stopped.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.app as app_utils
+        >>>
+        >>> app_utils.is_stopped()
+        True
+    """
+    return omni.timeline.get_timeline_interface().is_stopped()
 
 
 def enable_extension(name: str, *, enabled: bool = True) -> bool:

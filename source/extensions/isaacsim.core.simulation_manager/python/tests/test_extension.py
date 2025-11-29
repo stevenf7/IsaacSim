@@ -92,8 +92,7 @@ class TestExtension(omni.kit.test.AsyncTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         timeline.commit()
-        SimulationManager.step(render=False)
-        SimulationManager.step(render=False)
+        SimulationManager.step(steps=2)
         for callback_id in self._callbacks:
             SimulationManager.deregister_callback(callback_id)
         self.assertEqual(var, 13)

@@ -12,13 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import weakref
 from collections import OrderedDict
+from typing import Callable
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import omni.kit
 import omni.physics.core
 import omni.physx
 import omni.timeline
@@ -26,6 +28,9 @@ import omni.usd
 from pxr import PhysxSchema
 
 from .isaac_events import IsaacEvents
+from .simulation_event import SimulationEvent
+
+_SETTING_PLAY_SIMULATION = "/app/player/playSimulations"
 
 
 class SimulationManager:
@@ -41,6 +46,7 @@ class SimulationManager:
     _physics_stage_update_interface = omni.physics.core.get_physics_stage_update_interface()
     _physx_sim_interface = omni.physx.get_physx_simulation_interface()
     _physx_interface = omni.physx.get_physx_interface()
+    _physx_fabric_interface = None
     _physics_sim_view = None
     _physics_sim_view__warp = None
     _backend = "numpy"
@@ -57,7 +63,6 @@ class SimulationManager:
     # callback handles
     _warm_start_callback = None
     _on_stop_callback = None
-    _post_warm_start_callback = None
     _stage_open_callback = None
 
     # Add callback state tracking
@@ -68,43 +73,15 @@ class SimulationManager:
         "stage_open": True,
     }
 
+    """
+    Internal methods.
+    """
+
     @classmethod
     def _initialize(cls) -> None:
         # Initialize all callbacks as enabled by default
         SimulationManager.enable_all_default_callbacks(True)
         SimulationManager._track_physics_scenes()
-
-    @classmethod
-    def _setup_warm_start_callback(cls) -> None:
-        if cls._callbacks_enabled["warm_start"] and cls._warm_start_callback is None:
-            cls._warm_start_callback = cls._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.PLAY), cls._warm_start
-            )
-
-    @classmethod
-    def _setup_on_stop_callback(cls) -> None:
-        if cls._callbacks_enabled["on_stop"] and cls._on_stop_callback is None:
-            cls._on_stop_callback = cls._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.STOP), cls._on_stop
-            )
-
-    @classmethod
-    def _setup_post_warm_start_callback(cls) -> None:
-        if cls._callbacks_enabled["post_warm_start"] and cls._post_warm_start_callback is None:
-            cls._post_warm_start_callback = cls._message_bus.observe_event(
-                event_name=IsaacEvents.PHYSICS_WARMUP.value,
-                on_event=cls._create_simulation_view,
-                observer_name="SimulationManager._post_warm_start_callback",
-            )
-
-    @classmethod
-    def _setup_stage_open_callback(cls) -> None:
-        if cls._callbacks_enabled["stage_open"] and cls._stage_open_callback is None:
-            cls._stage_open_callback = cls._message_bus.observe_event(
-                event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
-                on_event=cls._post_stage_open,
-                observer_name="SimulationManager._stage_open_callback",
-            )
 
     @classmethod
     def _clear(cls) -> None:
@@ -120,32 +97,28 @@ class SimulationManager:
         cls._physics_scene_apis.clear()
         cls._callbacks.clear()
 
-    def _post_stage_open(event) -> None:
-        SimulationManager._simulation_manager_interface.reset()
-        SimulationManager._physics_scene_apis.clear()
-        SimulationManager._callbacks.clear()
-        SimulationManager._track_physics_scenes()
-        SimulationManager._assets_loaded = True
-        SimulationManager._assets_loading_callback = None
-        SimulationManager._assets_loaded_callback = None
+    @classmethod
+    def _setup_warm_start_callback(cls) -> None:
+        if cls._callbacks_enabled["warm_start"] and cls._warm_start_callback is None:
+            cls._warm_start_callback = cls._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+                int(omni.timeline.TimelineEventType.PLAY), cls._on_play
+            )
 
-        def _assets_loading(event):
-            SimulationManager._assets_loaded = False
+    @classmethod
+    def _setup_on_stop_callback(cls) -> None:
+        if cls._callbacks_enabled["on_stop"] and cls._on_stop_callback is None:
+            cls._on_stop_callback = cls._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+                int(omni.timeline.TimelineEventType.STOP), cls._on_stop
+            )
 
-        def _assets_loaded(event):
-            SimulationManager._assets_loaded = True
-
-        SimulationManager._assets_loading_callback = SimulationManager._message_bus.observe_event(
-            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.ASSETS_LOADING),
-            on_event=_assets_loading,
-            observer_name="SimulationManager._assets_loading_callback",
-        )
-
-        SimulationManager._assets_loaded_callback = SimulationManager._message_bus.observe_event(
-            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.ASSETS_LOADED),
-            on_event=_assets_loaded,
-            observer_name="SimulationManager._assets_loaded_callback",
-        )
+    @classmethod
+    def _setup_stage_open_callback(cls) -> None:
+        if cls._callbacks_enabled["stage_open"] and cls._stage_open_callback is None:
+            cls._stage_open_callback = cls._message_bus.observe_event(
+                event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+                on_event=cls._on_stage_opened,
+                observer_name="SimulationManager._stage_open_callback",
+            )
 
     def _track_physics_scenes() -> None:
         def add_physics_scenes(physics_scene_prim_path):
@@ -160,48 +133,6 @@ class SimulationManager:
 
         SimulationManager._simulation_manager_interface.register_physics_scene_addition_callback(add_physics_scenes)
         SimulationManager._simulation_manager_interface.register_deletion_callback(remove_physics_scenes)
-
-    def _warm_start(event) -> None:
-        if SimulationManager._carb_settings.get_as_bool("/app/player/playSimulations"):
-            SimulationManager.initialize_physics()
-
-    def _on_stop(event) -> None:
-        SimulationManager._warmup_needed = True
-        if SimulationManager._physics_sim_view:
-            SimulationManager._physics_sim_view.invalidate()
-            SimulationManager._physics_sim_view = None
-            SimulationManager._simulation_view_created = False
-        if SimulationManager._physics_sim_view__warp:
-            SimulationManager._physics_sim_view__warp.invalidate()
-            SimulationManager._physics_sim_view__warp = None
-
-    def _create_simulation_view(event) -> None:
-        if "cuda" in SimulationManager.get_physics_sim_device() and SimulationManager._backend == "numpy":
-            SimulationManager._backend = "torch"
-            carb.log_warn("changing backend from numpy to torch since numpy backend cannot be used with GPU piplines")
-        stage_id = stage_utils.get_stage_id(stage_utils.get_current_stage(backend="usd"))
-        # check for PyTorch
-        create_simulation_view = True
-        if SimulationManager.get_backend() == "torch":
-            try:
-                import torch
-            except ModuleNotFoundError:
-                create_simulation_view = False
-        # create simulation views
-        if create_simulation_view:
-            SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(
-                SimulationManager.get_backend(), stage_id=stage_id
-            )
-            SimulationManager._physics_sim_view.set_subspace_roots("/")
-        SimulationManager._physics_sim_view__warp = omni.physics.tensors.create_simulation_view(
-            "warp", stage_id=stage_id
-        )
-        SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
-        SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
-        SimulationManager._physics_sim_interface.fetch_results()
-        SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
-        SimulationManager._simulation_view_created = True
-        SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})
 
     @classmethod
     def _get_backend_utils(cls) -> str:
@@ -241,23 +172,120 @@ class SimulationManager:
                 return None
         return physics_scene_api
 
+    """
+    Internal callbacks.
+    """
+
+    def _on_stage_opened(event) -> None:
+        SimulationManager._simulation_manager_interface.reset()
+        SimulationManager._physics_scene_apis.clear()
+        SimulationManager._callbacks.clear()
+        SimulationManager._track_physics_scenes()
+        SimulationManager._assets_loaded = True
+        SimulationManager._assets_loading_callback = None
+        SimulationManager._assets_loaded_callback = None
+
+        def _assets_loading(event):
+            SimulationManager._assets_loaded = False
+
+        def _assets_loaded(event):
+            SimulationManager._assets_loaded = True
+
+        SimulationManager._assets_loading_callback = SimulationManager._message_bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.ASSETS_LOADING),
+            on_event=_assets_loading,
+            observer_name="SimulationManager._assets_loading_callback",
+        )
+
+        SimulationManager._assets_loaded_callback = SimulationManager._message_bus.observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.ASSETS_LOADED),
+            on_event=_assets_loaded,
+            observer_name="SimulationManager._assets_loaded_callback",
+        )
+
+    def _on_play(event) -> None:
+        if SimulationManager._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION):
+            if SimulationManager._warmup_needed:
+                SimulationManager.initialize_physics()
+                SimulationManager._message_bus.dispatch_event(SimulationEvent.SIMULATION_STARTED.value, payload={})
+            else:
+                SimulationManager._message_bus.dispatch_event(SimulationEvent.SIMULATION_RESUMED.value, payload={})
+
+    def _on_stop(event) -> None:
+        SimulationManager._warmup_needed = True
+        if SimulationManager._physics_sim_view:
+            SimulationManager._physics_sim_view.invalidate()
+            SimulationManager._physics_sim_view = None
+            SimulationManager._simulation_view_created = False
+        if SimulationManager._physics_sim_view__warp:
+            SimulationManager._physics_sim_view__warp.invalidate()
+            SimulationManager._physics_sim_view__warp = None
+
+    """
+    Public methods.
+    """
+
     @classmethod
     def set_backend(cls, val: str) -> None:
+        """Set the backend used by the simulation manager.
+
+        .. deprecated:: 1.7.0
+
+            |br| No replacement is provided, as the core experimental API relies solely on Warp.
+        """
         SimulationManager._backend = val
 
     @classmethod
     def get_backend(cls) -> str:
+        """Get the backend used by the simulation manager.
+
+        .. deprecated:: 1.7.0
+
+            |br| No replacement is provided, as the core experimental API relies solely on Warp.
+        """
         return SimulationManager._backend
 
     @classmethod
     def initialize_physics(cls) -> None:
-        if SimulationManager._warmup_needed:
-            SimulationManager._physics_stage_update_interface.force_load_physics_from_usd()
-            SimulationManager._physx_interface.start_simulation()
-            SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
-            SimulationManager._physics_sim_interface.fetch_results()
-            SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
-            SimulationManager._warmup_needed = False
+        if not SimulationManager._warmup_needed:
+            return
+        # initialize physics engine
+        SimulationManager._physics_stage_update_interface.force_load_physics_from_usd()
+        SimulationManager._physx_interface.start_simulation()
+        SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
+        SimulationManager._physics_sim_interface.fetch_results()
+        # create simulation view
+        stage_id = stage_utils.get_stage_id(stage_utils.get_current_stage(backend="usd"))
+        SimulationManager._physics_sim_view__warp = omni.physics.tensors.create_simulation_view(
+            "warp", stage_id=stage_id
+        )
+        SimulationManager._physics_sim_view__warp.set_subspace_roots("/")
+        # - deprecated simulation view
+        create_simulation_view = True
+        if "cuda" in SimulationManager.get_physics_sim_device() and SimulationManager._backend == "numpy":
+            SimulationManager._backend = "torch"
+            carb.log_warn("Changing backend from 'numpy' to 'torch' since NumPy cannot be used with GPU piplines")
+        if SimulationManager.get_backend() == "torch":
+            try:
+                import torch
+            except ModuleNotFoundError:
+                create_simulation_view = False
+        if create_simulation_view:
+            SimulationManager._physics_sim_view = omni.physics.tensors.create_simulation_view(
+                SimulationManager.get_backend(), stage_id=stage_id
+            )
+            SimulationManager._physics_sim_view.set_subspace_roots("/")
+        SimulationManager._physics_sim_interface.simulate(SimulationManager.get_physics_dt(), 0.0)
+        SimulationManager._physics_sim_interface.fetch_results()
+        # set internal states
+        SimulationManager._warmup_needed = False
+        SimulationManager._simulation_view_created = True
+        # dispatch events
+        SimulationManager._message_bus.dispatch_event(SimulationEvent.SIMULATION_SETUP.value, payload={})
+        # - deprecated events
+        SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_WARMUP.value, payload={})
+        SimulationManager._message_bus.dispatch_event(IsaacEvents.SIMULATION_VIEW_CREATED.value, payload={})
+        SimulationManager._message_bus.dispatch_event(IsaacEvents.PHYSICS_READY.value, payload={})
 
     @classmethod
     def get_simulation_time(cls):
@@ -307,15 +335,39 @@ class SimulationManager:
             return None
 
     @classmethod
-    def step(cls, render: bool = False):
-        if render:
-            raise Exception(
-                "Stepping the renderer is not supported at the moment through SimulationManager, use SimulationContext instead."
-            )
-        SimulationManager._physics_sim_interface.simulate(
-            SimulationManager.get_physics_dt(physics_scene=None), SimulationManager.get_simulation_time()
-        )
-        SimulationManager._physics_sim_interface.fetch_results()
+    def step(
+        cls, *, steps: int = 1, callback: Callable[[int, int], bool | None] | None = None, update_fabric: bool = False
+    ) -> None:
+        """Step the physics simulation.
+
+        Args:
+            steps: Number of steps to perform.
+            callback: Optional callback function to call after each step.
+                The function should take two arguments: the current step number and the total number of steps.
+                If no return value is provided, the internal loop will run for the specified number of steps.
+                However, if the function returns ``False``, no more steps will be performed.
+            update_fabric: Whether to update fabric with the latest physics results after each step.
+
+        Raises:
+            ValueError: If the fabric is not enabled and ``update_fabric`` is set to True.
+        """
+        dt = cls.get_physics_dt()
+        for step in range(steps):
+            simulation_time = cls.get_simulation_time()
+            # step physics simulation
+            cls._physics_sim_interface.simulate(dt, simulation_time)
+            cls._physics_sim_interface.fetch_results()
+            # update fabric
+            if update_fabric:
+                if not cls.is_fabric_enabled():
+                    raise ValueError("PhysX support for fabric is not enabled. Call '.enable_fabric()' first")
+                if cls._physx_fabric_interface is None:
+                    cls._physx_fabric_interface = omni.physxfabric.get_physx_fabric_interface()
+                cls._physx_fabric_interface.update(simulation_time, dt)
+            # call callback
+            if callback is not None:
+                if callback(step + 1, steps) is False:
+                    break
 
     @classmethod
     def set_physics_sim_device(cls, val) -> None:
@@ -616,28 +668,23 @@ class SimulationManager:
         Args:
             enable: Whether to enable or disable fabric.
         """
-        manager = omni.kit.app.get_app().get_extension_manager()
-        fabric_was_enabled = manager.is_extension_enabled("omni.physx.fabric")
-        if not fabric_was_enabled and enable:
-            manager.set_extension_enabled_immediate("omni.physx.fabric", True)
-        elif fabric_was_enabled and not enable:
-            manager.set_extension_enabled_immediate("omni.physx.fabric", False)
+        # enable/disable the omni.physx.fabric extension
+        app_utils.enable_extension("omni.physx.fabric", enabled=enable)
+        cls._physx_fabric_interface = omni.physxfabric.get_physx_fabric_interface() if enable else None
+        # enable/disable USD updates
         SimulationManager._carb_settings.set_bool("/physics/updateToUsd", not enable)
         SimulationManager._carb_settings.set_bool("/physics/updateParticlesToUsd", not enable)
         SimulationManager._carb_settings.set_bool("/physics/updateVelocitiesToUsd", not enable)
         SimulationManager._carb_settings.set_bool("/physics/updateForceSensorsToUsd", not enable)
 
     @classmethod
-    def is_fabric_enabled(cls, enable):
-        """Checks if fabric is enabled.
-
-        Args:
-            enable: Whether to check if fabric is enabled.
+    def is_fabric_enabled(cls):
+        """Check if fabric is enabled.
 
         Returns:
             bool: True if fabric is enabled, otherwise False.
         """
-        return omni.kit.app.get_app().get_extension_manager().is_extension_enabled("omni.physx.fabric")
+        return app_utils.is_extension_enabled("omni.physx.fabric")
 
     @classmethod
     def set_solver_type(cls, solver_type: str, physics_scene: str = None) -> None:
@@ -726,116 +773,99 @@ class SimulationManager:
         return physx_scene_api.GetEnableStabilizationAttr().Get()
 
     @classmethod
-    def register_callback(cls, callback: callable, event, order: int = 0, name: str = None):
-        """Registers a callback to be triggered when a specific event occurs.
+    def register_callback(
+        cls, callback: Callable, event: SimulationEvent | IsaacEvents, order: int = 0, **kwargs
+    ) -> int:
+        """Register/subscribe a callback to be triggered when a specific simulation event occurs.
+
+        .. warning::
+
+            The parameter ``name`` is not longer supported. A warning message will be logged if it is defined.
+            Future versions will completely remove it. At that time, defining it will result in an exception.
 
         Args:
             callback: The callback function to register.
-            event: The event to trigger the callback.
-            order: The order in which the callback should be triggered.
-            name: The name of the callback.
+            event: The simulation event to subscribe to.
+            order: The subscription order.
+                Callbacks registered within the same order will be triggered in the order they were registered.
 
         Returns:
-            int: The ID of the callback.
+            The unique identifier of the callback subscription.
+
+        Raises:
+            ValueError: If event is invalid.
         """
-        proxy_needed = False
+        if event not in SimulationEvent and event not in IsaacEvents:
+            raise ValueError(f"Invalid simulation event: {event}. Supported events are: {list(SimulationEvent)}")
+        # handle deprecations
+        if "name" in kwargs:
+            carb.log_warn(f"The parameter 'name' is not longer supported and will be removed in a future version")
+        # check for weak reference support (when the callback is a method of a class)
         if hasattr(callback, "__self__"):
-            proxy_needed = True
-            callback_name = callback.__name__
-        callback_id = SimulationManager._simulation_manager_interface.get_callback_iter()
+            on_event = lambda e, obj=weakref.proxy(callback.__self__): getattr(obj, callback.__name__)(e)
+        else:
+            on_event = callback
+        # get a unique id for the callback
+        uid = cls._simulation_manager_interface.get_callback_iter()
+        name = f"isaacsim.core.simulation_manager:callback.{event.value}.{uid}"
+        # register the callback
+        # - Physics-related events
         if event in [
             IsaacEvents.PHYSICS_WARMUP,
             IsaacEvents.PHYSICS_READY,
             IsaacEvents.POST_RESET,
             IsaacEvents.SIMULATION_VIEW_CREATED,
         ]:
-            if proxy_needed:
-                SimulationManager._callbacks[callback_id] = SimulationManager._message_bus.observe_event(
-                    event_name=event.value,
-                    order=order,
-                    on_event=lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event),
-                    observer_name=f"SimulationManager._callbacks.{event.value}",
+            cls._callbacks[uid] = cls._message_bus.observe_event(
+                observer_name=name,
+                event_name=event.value,
+                on_event=on_event,
+                order=order,
+            )
+        elif event in [
+            SimulationEvent.PHYSICS_PRE_STEP,
+            SimulationEvent.PHYSICS_POST_STEP,
+            IsaacEvents.PRE_PHYSICS_STEP,
+            IsaacEvents.POST_PHYSICS_STEP,
+        ]:
+            if hasattr(callback, "__self__"):
+                on_event = lambda step_dt, context, obj=weakref.proxy(callback.__self__): (
+                    getattr(obj, callback.__name__)(step_dt, context) if cls._simulation_view_created else None
                 )
             else:
-                SimulationManager._callbacks[callback_id] = SimulationManager._message_bus.observe_event(
-                    event_name=event.value,
-                    order=order,
-                    on_event=callback,
-                    observer_name=f"SimulationManager._callbacks.{event.value}",
-                )
-        elif event == IsaacEvents.PRIM_DELETION:
-            if proxy_needed:
-                SimulationManager._simulation_manager_interface.register_deletion_callback(
-                    lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event)
-                )
-            else:
-                SimulationManager._simulation_manager_interface.register_deletion_callback(callback)
-        elif event == IsaacEvents.POST_PHYSICS_STEP:
-            if proxy_needed:
-                SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
-                        on_update=lambda step_dt, context, obj=weakref.proxy(callback.__self__): (
-                            getattr(obj, callback_name)(step_dt, context)
-                            if SimulationManager._simulation_view_created
-                            else None
-                        ),
-                        pre_step=False,
-                        order=order,
-                    )
-                )
-            else:
-                SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
-                        on_update=lambda step_dt, context: (
-                            callback(step_dt, context) if SimulationManager._simulation_view_created else None
-                        ),
-                        pre_step=False,
-                        order=order,
-                    )
-                )
-        elif event == IsaacEvents.PRE_PHYSICS_STEP:
-            if proxy_needed:
-                SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
-                        on_update=lambda step_dt, context, obj=weakref.proxy(callback.__self__): (
-                            getattr(obj, callback_name)(step_dt, context)
-                            if SimulationManager._simulation_view_created
-                            else None
-                        ),
-                        pre_step=True,
-                        order=order,
-                    )
-                )
-            else:
-                SimulationManager._callbacks[callback_id] = (
-                    SimulationManager._physics_sim_interface.subscribe_physics_on_step_events(
-                        on_update=lambda step_dt, context: (
-                            callback(step_dt, context) if SimulationManager._simulation_view_created else None
-                        ),
-                        pre_step=True,
-                        order=order,
-                    )
-                )
-        elif event == IsaacEvents.TIMELINE_STOP:
-            if proxy_needed:
-                SimulationManager._callbacks[
-                    callback_id
-                ] = SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.STOP),
-                    lambda event, obj=weakref.proxy(callback.__self__): getattr(obj, callback_name)(event),
-                    order=order,
-                    name=name,
-                )
-            else:
-                SimulationManager._callbacks[
-                    callback_id
-                ] = SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.STOP), callback, order=order, name=name
-                )
+                on_event = lambda step_dt, context: callback(step_dt, context) if cls._simulation_view_created else None
+            cls._callbacks[uid] = cls._physics_sim_interface.subscribe_physics_on_step_events(
+                on_update=on_event,
+                pre_step=event in [SimulationEvent.PHYSICS_PRE_STEP, IsaacEvents.PRE_PHYSICS_STEP],
+                order=order,
+            )
+        # - Simulation lifecycle events
+        elif event in [
+            SimulationEvent.SIMULATION_SETUP,
+            SimulationEvent.SIMULATION_STARTED,
+            SimulationEvent.SIMULATION_RESUMED,
+        ]:
+            cls._callbacks[uid] = cls._message_bus.observe_event(
+                observer_name=name,
+                event_name=event.value,
+                on_event=on_event,
+                order=order,
+            )
+        elif event in [SimulationEvent.SIMULATION_PAUSED]:
+            cls._callbacks[uid] = cls._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+                event_type=int(omni.timeline.TimelineEventType.PAUSE), fn=on_event, order=order, name=name
+            )
+        elif event in [SimulationEvent.SIMULATION_STOPPED, IsaacEvents.TIMELINE_STOP]:
+            cls._callbacks[uid] = cls._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+                event_type=int(omni.timeline.TimelineEventType.STOP), fn=on_event, order=order, name=name
+            )
+        # - USD-related events
+        elif event in [SimulationEvent.PRIM_DELETED, IsaacEvents.PRIM_DELETION]:
+            cls._simulation_manager_interface.register_deletion_callback(on_event)
         else:
-            raise Exception("{} event doesn't exist for callback registering".format(event))
-        SimulationManager._simulation_manager_interface.set_callback_iter(callback_id + 1)
-        return callback_id
+            raise RuntimeError(f"Unable to register callback for event '{event}' with uid '{uid}'")
+        cls._simulation_manager_interface.set_callback_iter(uid + 1)
+        return uid
 
     @classmethod
     def deregister_callback(cls, callback_id):
@@ -926,15 +956,15 @@ class SimulationManager:
     def enable_post_warm_start_callback(cls, enable: bool = True) -> None:
         """Enable or disable the post warm start callback.
 
+        .. deprecated:: 1.7.0
+
+            |br| The :py:attr:`~isaacsim.core.simulation_manager.IsaacEvents.PHYSICS_WARMUP` event is deprecated.
+            Calling this method will have no effect.
+
         Args:
             enable: Whether to enable the callback.
         """
         cls._callbacks_enabled["post_warm_start"] = enable
-        if enable:
-            cls._setup_post_warm_start_callback()
-        else:
-            if cls._post_warm_start_callback is not None:
-                cls._post_warm_start_callback = None
 
     @classmethod
     def enable_stage_open_callback(cls, enable: bool = True) -> None:

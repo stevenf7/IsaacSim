@@ -617,13 +617,8 @@ class TestSimulationManagerSimulationLifecycle(omni.kit.test.AsyncTestCase):
         # Just verify the function doesn't raise
         SimulationManager.get_physics_sim_view()
 
-        # Test step with render raises exception
-        with self.assertRaises(Exception):
-            SimulationManager.step(render=True)
-
-        # Test step without render
         try:
-            SimulationManager.step(render=False)
+            SimulationManager.step()
         except Exception as e:
             print(f"test_simulation_operations step failed: {e}")
 
@@ -660,7 +655,7 @@ class TestSimulationManagerFabricAndNoticeHandlers(omni.kit.test.AsyncTestCase):
             print(f"test_fabric_and_notice_handlers enable_fabric failed: {e}")
 
         # Test is_fabric_enabled returns bool
-        result = SimulationManager.is_fabric_enabled(None)
+        result = SimulationManager.is_fabric_enabled()
         self.assertIsInstance(result, bool)
 
         # Test enable/disable USD notice handler
