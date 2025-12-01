@@ -1,4 +1,26 @@
 # Changelog
+
+## [4.0.0] - 2025-11-28
+### Removed
+- Removed deprecated `nucleus` module (use `isaacsim.storage.native` instead):
+  - `get_url_root`, `create_folder`, `delete_folder`, `_list_files`, `download_assets_async`
+  - `check_server`, `check_server_async`, `build_server_list`, `find_nucleus_server`
+  - `get_server_path`, `get_server_path_async`, `verify_asset_root_path`
+  - `get_full_asset_path`, `get_full_asset_path_async`
+  - `get_nvidia_asset_root_path`, `get_isaac_asset_root_path`
+  - `get_assets_root_path`, `get_assets_root_path_async`, `get_assets_server`
+  - `_collect_files`, `is_dir_async`, `is_file_async`, `is_file`
+  - `recursive_list_folder`, `list_folder`
+- Removed deprecated `create_hydra_texture` from `render_product` (use `omni.replicator.core.create.render_product` instead)
+- Removed deprecated semantics functions using old SemanticsAPI (use new LabelsAPI equivalents):
+  - `add_update_semantics` -> use `add_labels`
+  - `remove_all_semantics` -> use `remove_labels`
+  - `get_semantics` -> use `get_labels`
+  - `check_missing_semantics` -> use `check_missing_labels`
+  - `check_incorrect_semantics` -> use `check_incorrect_labels`
+  - `count_semantics_in_scene` -> use `count_labels_in_scene`
+
+
 ## [3.7.4] - 2025-11-27
 ### Changed
 - Add missing docstrings

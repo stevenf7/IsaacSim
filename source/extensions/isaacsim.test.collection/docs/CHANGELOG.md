@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.6] - 2025-11-28
+### Changed
+- Updated deprecated imports to isaacsim.storage.native
+
 ## [2.2.5] - 2025-10-31
 ### Changed
 - update deprecated python unittest methods
