@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2025-12-01
+### Fixed
+- Fix the `PhysxCollisionAPI` schema when checking for collision properties
+
 ## [0.8.0] - 2025-10-27
 ### Changed
 - Replace import statements with the deprecation function when importing PyTorch
