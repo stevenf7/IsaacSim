@@ -1,10 +1,17 @@
 # Changelog
 
-All notable changes to the UCX Core extension will be documented in this file.
+## [1.2.1] - 2025-11-28
+### Changes
+- Regenerate pip prebundle
+
+## [1.2.0] - 2025-11-25
+### Added
+- Added `UCXListener::tagSendWithRequest` for better monitoring of send requests. 
 
 ## [1.1.0] - 2025-11-24
 ### Added
 - Added `UcxUtils.h`.
+- Added UCX Python dependencies.
 ### Changed
 - Refactored UCXListener's tag messaging functions.
 

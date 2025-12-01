@@ -18,8 +18,6 @@ import struct
 import numpy as np
 import omni
 import omni.graph.core as og
-
-# UCX imports
 import ucxx._lib.libucxx as ucx_api
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.ucx.nodes.tests.common import UCXTestCase

@@ -1,5 +1,5 @@
 [package]
-version = "1.1.0"
+version = "1.2.1"
 category = "Simulation"
 title = "UCX Core"
 description = "The UCX Core extension provides high-performance communication capabilities using UCX (Unified Communication X) for distributed simulation scenarios with low-latency data transfer"
@@ -16,6 +16,9 @@ writeTarget.platform = true
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[[python.module]]
+path = "pip_prebundle"
 
 [[test]]
 timeout = 300

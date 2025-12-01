@@ -25,8 +25,7 @@ if os.target() == "linux" then
     add_files("ogn", ogn.nodes_path)
 
     -- Add OGN dependencies for the nodes
-    -- TODO: Uncomment this when the Python nodes are implemented
-    -- add_ogn_dependencies(ogn, { "python/nodes" })
+    add_ogn_dependencies(ogn, { "python/nodes" })
     add_ogn_dependencies(ogn, { "nodes" })
 
     includedirs {
@@ -110,8 +109,7 @@ if os.target() == "linux" then
     }
     add_files("bindings", "bindings/*.*")
     add_files("python", "python/*.py")
-    -- TODO: Uncomment this when the Python nodes are implemented
-    -- add_files("python/nodes", "python/nodes/*.py")
+    add_files("python/nodes", "python/nodes/*.py")
     add_files("python/tests", "python/tests/*.py")
 
     includedirs {
@@ -126,8 +124,7 @@ if os.target() == "linux" then
 
     repo_build.prebuild_link {
         { "python/tests", ogn.python_target_path .. "/tests" },
-        -- TODO: Uncomment this when the Python nodes are implemented
-        -- { "python/nodes", ogn.python_target_path .. "/nodes" },
+        { "python/nodes", ogn.python_target_path .. "/nodes" },
         { "include", ext.target_dir .. "/include" },
         { "docs", ext.target_dir .. "/docs" },
     }
