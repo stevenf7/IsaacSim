@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.4] - 2025-12-01
+### Changed
+- Update assets path to 6.0 staging
+
 ## [1.4.3] - 2025-11-21
 ### Fixed
 - Update unit tests for kit 109.0
