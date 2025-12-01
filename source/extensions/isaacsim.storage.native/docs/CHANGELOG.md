@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2025-12-01
+### Fixed
+- Update assets path to 6.0 staging
+
 ## [1.6.0] - 2025-11-26
 ### Added
 - Added `resolve_asset_path` function to synchronously resolve asset paths with the same logic as the async variant.

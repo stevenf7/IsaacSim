@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.13] - 2025-12-01
+### Changed
+- Update assets path to 6.0 staging
+
 ## [0.1.12] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12
