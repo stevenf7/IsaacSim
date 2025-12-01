@@ -175,6 +175,26 @@ public:
                           std::optional<uint32_t> timeout = std::nullopt);
 
     /**
+     * @brief Send data using tagged communication and return request handle for async completion tracking.
+     * @details
+     * Sends message data using UCX tagged send without waiting (async).
+     * Returns the request handle so caller can check completion before reusing buffer.
+     * Intended for large message sends where buffer lifetime management is critical.
+     *
+     * @param[in] buffer Memory address of the data buffer to send
+     * @param[in] length Size of the data buffer in bytes
+     * @param[in] tag UCX tag for message identification
+     * @param[out] errorMessage String for storing error messages
+     * @param[out] outRequest Reference to receive the request handle
+     * @return UcxSendResult indicating the outcome (eSuccess if initiated, error otherwise)
+     */
+    UcxSendResult tagSendWithRequest(const void* buffer,
+                                     size_t length,
+                                     uint64_t tag,
+                                     std::string& errorMessage,
+                                     std::shared_ptr<ucxx::Request>& outRequest);
+
+    /**
      * @brief Send multiple buffers using tagged communication with optional timeout.
      * @details
      * Sends multiple buffers using UCX tagged multi-send.

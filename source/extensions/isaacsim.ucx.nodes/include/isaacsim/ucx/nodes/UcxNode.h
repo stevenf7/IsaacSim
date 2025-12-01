@@ -197,13 +197,17 @@ protected:
      */
     bool waitForConnection()
     {
-        if (!m_listener->isConnected())
+        bool isConnected = m_listener->isConnected();
+
+        if (!isConnected)
         {
             if (!m_listener->waitForConnection(0))
             {
                 return false;
             }
+            isConnected = m_listener->isConnected();
         }
+
         return true;
     }
 

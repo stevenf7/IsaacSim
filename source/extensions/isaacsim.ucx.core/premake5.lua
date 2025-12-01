@@ -74,9 +74,10 @@ if os.target() == "linux" then
     filter {}
 
     repo_build.prebuild_link {
-    { "docs", ext.target_dir .. "/docs" },
-    { "data", ext.target_dir .. "/data" },
-    { "include", ext.target_dir .. "/include" },
+        { "docs", ext.target_dir .. "/docs" },
+        { "data", ext.target_dir .. "/data" },
+        { "include", ext.target_dir .. "/include" },
+        { "$root/_build/target-deps/pip_ucx_prebundle", ext.target_dir .. "/pip_prebundle" },
     }
 
     repo_build.prebuild_copy {

@@ -230,6 +230,55 @@ UcxSendResult UCXListener::tagSend(
     }
 }
 
+UcxSendResult UCXListener::tagSendWithRequest(const void* buffer,
+                                              size_t length,
+                                              uint64_t tag,
+                                              std::string& errorMessage,
+                                              std::shared_ptr<ucxx::Request>& outRequest)
+{
+    if (length == 0)
+    {
+        errorMessage = "Empty message buffer";
+        return UcxSendResult::eEmptyMessage;
+    }
+
+    try
+    {
+        std::shared_ptr<ucxx::Request> request;
+        {
+            if (m_shutdown.load())
+            {
+                errorMessage = "Listener is shutting down or shut down";
+                return UcxSendResult::eFailed;
+            }
+            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            if (!m_endpoint)
+            {
+                errorMessage = "No client connected";
+                return UcxSendResult::eFailed;
+            }
+            // Note: ucxx::Endpoint::tagSend expects non-const void* - data won't be modified
+            request = m_endpoint->tagSend(const_cast<void*>(buffer), length, ucxx::Tag{ tag });
+        }
+
+        if (!request)
+        {
+            errorMessage = "tagSend returned null request";
+            return UcxSendResult::eNullRequest;
+        }
+
+        // Return request handle for caller to track completion
+        outRequest = request;
+        errorMessage.clear();
+        return UcxSendResult::eSuccess;
+    }
+    catch (const std::exception& e)
+    {
+        errorMessage = e.what();
+        return UcxSendResult::eException;
+    }
+}
+
 UcxSendResult UCXListener::tagMultiSend(const std::vector<const void*>& buffer,
                                         const std::vector<size_t>& size,
                                         const std::vector<int>& isCuda,

@@ -18,6 +18,10 @@
 import carb
 import omni
 import omni.ext
+import omni.replicator.core as rep
+import omni.syntheticdata
+import omni.syntheticdata._syntheticdata as sd
+from isaacsim.core.nodes.scripts.utils import register_node_writer_with_telemetry
 
 # Bridge constants
 BRIDGE_NAME = "isaacsim.ucx.nodes"
@@ -57,8 +61,26 @@ class UCXBridgeExtension(omni.ext.IExt):
 
     def register_nodes(self):
         """Register the nodes for the UCX Bridge Extension."""
-        pass
+
+        # For Simulation and System time. Removed first S char in keys to account for both upper and lower cases.
+        TIME_TYPES = [("imulationTime", ""), ("ystemTime", "SystemTime")]
+
+        for time_type in TIME_TYPES:
+            # Publish Image
+            rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
+            register_node_writer_with_telemetry(
+                name=f"{rv}{BRIDGE_PREFIX}{time_type[1]}PublishImage",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishImage",
+                annotators=[
+                    f"{rv}IsaacConvertRGBAToRGB",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
 
     def unregister_nodes(self):
         """Unregister the nodes for the UCX Bridge Extension."""
-        pass
+        for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):
+            rep.writers.unregister_writer(writer)
