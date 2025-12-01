@@ -342,7 +342,7 @@ git_url = "https://oauth2:${env:GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omni
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #
-# branch_name = "release/5.1"
+# branch_name = "release/6.0"
 
 ########################################################################################################################
 # Generate changelog
@@ -580,7 +580,7 @@ platforms = [
 publish_root = "${root}/_build/$platform/$config"
 
 ext_folders = [
-  "${publish_root}/exts", 
+  "${publish_root}/exts",
   "${publish_root}/extsDeprecated",
   "${publish_root}/extsInternal",
 ]
