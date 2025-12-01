@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2025-12-01
+### Changed
+- Define the `reset_xform_op_properties` parameter to True by default for all objects
+
 ## [0.4.0] - 2025-10-08
 ### Added
 - Add `GroundPlane` object
