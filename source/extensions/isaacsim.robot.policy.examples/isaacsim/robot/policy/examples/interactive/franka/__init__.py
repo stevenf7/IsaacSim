@@ -15,5 +15,5 @@
 
 # NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
 
-from isaacsim.examples.interactive.franka.franka_example import FrankaExample
-from isaacsim.examples.interactive.franka.franka_example_extension import FrankaExampleExtension
+from .franka_example import FrankaExample
+from .franka_example_extension import FrankaExampleExtension

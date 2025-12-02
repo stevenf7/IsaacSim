@@ -1,5 +1,5 @@
 [package]
-version = "4.9.3"
+version = "4.10.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -24,7 +24,6 @@ writeTarget.kit = true
 "isaacsim.gui.components" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot.manipulators.examples" = {}
-"isaacsim.robot.policy.examples" = {}
 "isaacsim.robot.wheeled_robots" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}
@@ -69,9 +68,6 @@ name = "isaacsim.examples.interactive.replay_follow_target"
 name = "isaacsim.examples.interactive.surface_gripper"
 
 [[python.module]]
-name = "isaacsim.examples.interactive.quadruped"
-
-[[python.module]]
 name = "isaacsim.examples.interactive.user_examples"
 
 [[python.module]]
@@ -81,13 +77,7 @@ name = "isaacsim.examples.interactive.ur10_palletizing"
 name = "isaacsim.examples.interactive.franka_cortex"
 
 [[python.module]]
-name = "isaacsim.examples.interactive.humanoid"
-
-[[python.module]]
 name = "isaacsim.examples.interactive.getting_started"
-
-[[python.module]]
-name = "isaacsim.examples.interactive.franka"
 
 [[test]]
 timeout = 900

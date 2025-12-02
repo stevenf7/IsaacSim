@@ -3,6 +3,11 @@
 ### Changed
 - Add missing docstrings
 
+## [4.10.0] - 2025-12-01
+### Changed
+- Updated inference examples to use GPU physics and the new experimental APIs
+- Moved policy based examples to isaacsim.robot.policy.examples
+
 ## [4.9.2] - 2025-11-24
 ### Changed
 - Update imports from isaacsim.base_samples to isaacsim.examples.base

@@ -53,7 +53,7 @@ class BaseSample(object):
 
         set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
 
-        await self._simulation_context.reset_async()
+        # await self._simulation_context.reset_async()
         SimulationManager.initialize_physics()
 
         await self._simulation_context.pause_async()

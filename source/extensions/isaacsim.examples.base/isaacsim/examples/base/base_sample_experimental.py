@@ -19,7 +19,9 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.physics.core
 import omni.timeline
+import omni.usd
 from isaacsim.core.simulation_manager import SimulationManager
+from pxr import UsdPhysics
 
 # from isaacsim.core.utils.viewports import set_camera_view
 
@@ -50,13 +52,17 @@ class BaseSample(object):
 
         # set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
 
-        # Start timeline and initialize physics
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        SimulationManager.initialize_physics()
+        stage = omni.usd.get_context().get_stage()
+        self._physics_scene_path = "/World/PhysicsScene"
+        UsdPhysics.Scene.Define(stage, self._physics_scene_path)
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.pause()
+        SimulationManager.set_physics_dt(dt=self._world_settings["physics_dt"])
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
         await self.setup_post_load()
 
     async def reset_async(self):
@@ -69,10 +75,7 @@ class BaseSample(object):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        SimulationManager.initialize_physics()
-        await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.pause()
         await self.setup_post_reset()
 
     @abstractmethod
