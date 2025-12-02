@@ -724,16 +724,29 @@ class LidarRtx(BaseSensor):
     @staticmethod
     def get_object_ids(obj_ids: np.ndarray) -> List[int]:
         """Get Object IDs from the GenericModelOutput object ID buffer.
-        The buffer is an array of dtype uint8 that must be converted
-        to a list of dtype uint128 (stride 16). Each uint128 is a unique stable
-        ID for a prim in the scene, which can be used to look up the prim
-        path in the map provided by the StableIdMap annotator (see above).
+        The buffer is an array that must be converted to a list of dtype uint128
+        (stride 16 bytes). Each uint128 is a unique stable ID for a prim in the
+        scene, which can be used to look up the prim path in the map provided by
+        the StableIdMap annotator (see above).
 
         Args:
-            obj_ids (np.ndarray): The GenericModelOutput object ID buffer.
+            obj_ids (np.ndarray): The object ID buffer. Can be either:
+                - uint8 array with stride 16 (from GenericModelOutput)
+                - uint32 array with stride 4 (from IsaacCreateRTXLidarScanBuffer)
 
         Returns:
             List[int]: The object IDs as a list of uint128.
         """
-        obj_ids = np.ascontiguousarray(obj_ids).reshape(-1, 4)
+        obj_ids = np.ascontiguousarray(obj_ids)
+
+        # Determine the reshape size based on dtype to ensure 16-byte (128-bit) object IDs
+        if obj_ids.dtype == np.uint8:
+            # uint8: 16 elements = 16 bytes = 128 bits
+            obj_ids = obj_ids.reshape(-1, 16)
+        elif obj_ids.dtype == np.uint32:
+            # uint32: 4 elements = 16 bytes = 128 bits
+            obj_ids = obj_ids.reshape(-1, 4)
+        else:
+            raise ValueError(f"Unsupported dtype for object IDs: {obj_ids.dtype}. Expected uint8 or uint32.")
+
         return [int.from_bytes(group.tobytes(), byteorder="little") for group in obj_ids]

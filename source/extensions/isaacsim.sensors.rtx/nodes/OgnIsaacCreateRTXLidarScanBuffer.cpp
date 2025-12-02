@@ -270,8 +270,11 @@ public:
         // Get auxiliary data structure to set output flags
         CUDA_CHECK(cudaMemcpy(hostGMO, reinterpret_cast<void*>(db.inputs.dataPtr()),
                               sizeof(omni::sensors::GenericModelOutput), cudaMemcpyDeviceToHost));
-        auto auxType = hostGMO->auxType;
-        auto modality = hostGMO->modality;
+        const auto auxType = hostGMO->auxType;
+        const auto modality = hostGMO->modality;
+        const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
+        const pxr::UsdPrim sensorPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
+        const std::string sensorPrimPath = sensorPrim.GetPath().GetString();
         if (modality == omni::sensors::Modality::LIDAR)
         {
             if (auxType > omni::sensors::AuxType::NONE)
@@ -280,14 +283,12 @@ public:
                                       sizeof(omni::sensors::LidarAuxiliaryData), cudaMemcpyDeviceToHost));
             }
             // Retrieve lidar prim from render product path, then validate its attributes
-            const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
             if (renderProductPath.length() == 0)
             {
                 CARB_LOG_ERROR("IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.");
                 return false;
             }
-            pxr::UsdPrim lidarPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
-            if (lidarPrim.IsA<pxr::UsdGeomCamera>())
+            if (sensorPrim.IsA<pxr::UsdGeomCamera>())
             {
                 CARB_LOG_WARN(
                     "RTX sensors as camera prims are deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniLidar prim with the new OmniSensorGenericLidarCoreAPI schema.");
@@ -309,10 +310,10 @@ public:
                 uint32_t numChannels;
                 uint32_t patternFiringRateHz;
                 uint32_t scanRateBaseHz;
-                lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:maxReturns")).Get(&maxReturns);
-                lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:numberOfChannels")).Get(&numChannels);
-                lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:patternFiringRateHz")).Get(&patternFiringRateHz);
-                lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:scanRateBaseHz")).Get(&scanRateBaseHz);
+                sensorPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:maxReturns")).Get(&maxReturns);
+                sensorPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:numberOfChannels")).Get(&numChannels);
+                sensorPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:patternFiringRateHz")).Get(&patternFiringRateHz);
+                sensorPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:scanRateBaseHz")).Get(&scanRateBaseHz);
                 m_maxPoints = numChannels * maxReturns *
                               static_cast<size_t>(std::ceil(static_cast<float>(patternFiringRateHz) /
                                                             static_cast<float>(scanRateBaseHz)));
@@ -337,46 +338,96 @@ public:
         m_outputAzimuth = db.inputs.outputAzimuth();
         m_outputElevation = db.inputs.outputElevation();
         m_outputDistance = db.inputs.outputDistance();
-        m_outputIntensity = db.inputs.outputIntensity();
-        m_outputTimestamp = db.inputs.outputTimestamp();
-        m_outputEmitterId = db.inputs.outputEmitterId() && auxType >= omni::sensors::AuxType::BASIC &&
-                            (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::EMITTER_ID) ==
-                                omni::sensors::LidarAuxHas::EMITTER_ID &&
-                            modality == omni::sensors::Modality::LIDAR;
-        m_outputChannelId = db.inputs.outputChannelId() && auxType >= omni::sensors::AuxType::BASIC &&
-                            (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::CHANNEL_ID) ==
-                                omni::sensors::LidarAuxHas::CHANNEL_ID &&
-                            modality == omni::sensors::Modality::LIDAR;
-        m_outputMaterialId = db.inputs.outputMaterialId() && auxType >= omni::sensors::AuxType::EXTRA &&
-                             (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::MAT_ID) ==
-                                 omni::sensors::LidarAuxHas::MAT_ID &&
-                             modality == omni::sensors::Modality::LIDAR;
-        m_outputTickId = db.inputs.outputTickId() && auxType >= omni::sensors::AuxType::BASIC &&
-                         (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::TICK_ID) ==
-                             omni::sensors::LidarAuxHas::TICK_ID &&
-                         modality == omni::sensors::Modality::LIDAR;
-        m_outputHitNormal = db.inputs.outputHitNormal() && auxType >= omni::sensors::AuxType::FULL &&
-                            (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::HIT_NORMALS) ==
-                                omni::sensors::LidarAuxHas::HIT_NORMALS &&
-                            modality == omni::sensors::Modality::LIDAR;
-        m_outputVelocity = db.inputs.outputVelocity() && auxType >= omni::sensors::AuxType::FULL &&
-                           (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::VELOCITIES) ==
-                               omni::sensors::LidarAuxHas::VELOCITIES &&
-                           modality == omni::sensors::Modality::LIDAR;
-        m_outputObjectId = db.inputs.outputObjectId() && auxType >= omni::sensors::AuxType::EXTRA &&
-                           (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::OBJ_ID) ==
-                               omni::sensors::LidarAuxHas::OBJ_ID &&
-                           modality == omni::sensors::Modality::LIDAR;
-        m_outputEchoId = db.inputs.outputEchoId() && auxType >= omni::sensors::AuxType::BASIC &&
-                         (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::ECHO_ID) ==
-                             omni::sensors::LidarAuxHas::ECHO_ID &&
-                         modality == omni::sensors::Modality::LIDAR;
-        m_outputTickState = db.inputs.outputTickState() && auxType >= omni::sensors::AuxType::BASIC &&
-                            (hostLidarAuxPoints->filledAuxMembers & omni::sensors::LidarAuxHas::TICK_STATES) ==
-                                omni::sensors::LidarAuxHas::TICK_STATES &&
-                            modality == omni::sensors::Modality::LIDAR;
-        m_outputRadialVelocityMS = db.inputs.outputRadialVelocityMS() && auxType >= omni::sensors::AuxType::BASIC &&
-                                   modality == omni::sensors::Modality::RADAR;
+
+        // Lambda function to validate, set output flags, and allocate buffers with aux type and modality checks
+        auto validateAndAllocateOutput = [&](bool inputEnabled, omni::sensors::AuxType requiredAuxType,
+                                             omni::sensors::Modality requiredModality,
+                                             omni::sensors::LidarAuxHas auxMember, const char* outputName,
+                                             auto& deviceBufferArray, auto& validBuffer, size_t stride = 1) -> bool
+        {
+            if (!inputEnabled)
+            {
+                return false;
+            }
+
+            bool auxTypeValid = auxType >= requiredAuxType;
+            bool modalityValid = modality == requiredModality;
+            bool auxMemberFilled = (requiredModality == omni::sensors::Modality::LIDAR) ?
+                                       ((hostLidarAuxPoints->filledAuxMembers & auxMember) == auxMember) :
+                                       true;
+
+            if (!auxTypeValid)
+            {
+                CARB_LOG_WARN(
+                    "IsaacCreateRTXLidarScanBuffer: %s requested for sensor '%s' but auxType (%d) is insufficient (requires %d)",
+                    outputName, sensorPrimPath.c_str(), static_cast<int>(auxType), static_cast<int>(requiredAuxType));
+                return false;
+            }
+
+            if (!modalityValid)
+            {
+                CARB_LOG_WARN(
+                    "IsaacCreateRTXLidarScanBuffer: %s requested for sensor '%s' but modality (%d) is incorrect (requires %d)",
+                    outputName, sensorPrimPath.c_str(), static_cast<int>(modality), static_cast<int>(requiredModality));
+                return false;
+            }
+
+            if (requiredModality == omni::sensors::Modality::LIDAR && !auxMemberFilled)
+            {
+                return false;
+            }
+
+            // Allocate device buffers (double buffering)
+            for (size_t i = 0; i < 2; ++i)
+            {
+                deviceBufferArray[i].setDevice(cudaDeviceIndex);
+                deviceBufferArray[i].resize(m_maxPoints * stride);
+            }
+
+            // Allocate valid output buffer
+            validBuffer.setDevice(cudaDeviceIndex);
+            validBuffer.resize(m_maxPoints * stride);
+
+            return true;
+        };
+
+        m_outputIntensity = validateAndAllocateOutput(db.inputs.outputIntensity(), omni::sensors::AuxType::NONE,
+                                                      modality, omni::sensors::LidarAuxHas::NONE, "outputIntensity",
+                                                      intensityBuffers, intensityBufferValid);
+        m_outputTimestamp = validateAndAllocateOutput(db.inputs.outputTimestamp(), omni::sensors::AuxType::NONE,
+                                                      modality, omni::sensors::LidarAuxHas::NONE, "outputTimestamp",
+                                                      timestampBuffers, timestampBufferValid);
+        m_outputEmitterId = validateAndAllocateOutput(
+            db.inputs.outputEmitterId(), omni::sensors::AuxType::BASIC, omni::sensors::Modality::LIDAR,
+            omni::sensors::LidarAuxHas::EMITTER_ID, "outputEmitterId", emitterIdBuffers, emitterIdBufferValid);
+        m_outputChannelId = validateAndAllocateOutput(
+            db.inputs.outputChannelId(), omni::sensors::AuxType::BASIC, omni::sensors::Modality::LIDAR,
+            omni::sensors::LidarAuxHas::CHANNEL_ID, "outputChannelId", channelIdBuffers, channelIdBufferValid);
+        m_outputMaterialId = validateAndAllocateOutput(
+            db.inputs.outputMaterialId(), omni::sensors::AuxType::EXTRA, omni::sensors::Modality::LIDAR,
+            omni::sensors::LidarAuxHas::MAT_ID, "outputMaterialId", materialIdBuffers, materialIdBufferValid);
+        m_outputTickId = validateAndAllocateOutput(db.inputs.outputTickId(), omni::sensors::AuxType::BASIC,
+                                                   omni::sensors::Modality::LIDAR, omni::sensors::LidarAuxHas::TICK_ID,
+                                                   "outputTickId", tickIdBuffers, tickIdBufferValid);
+        m_outputHitNormal = validateAndAllocateOutput(
+            db.inputs.outputHitNormal(), omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
+            omni::sensors::LidarAuxHas::HIT_NORMALS, "outputHitNormal", normalBuffers, normalBufferValid);
+        m_outputVelocity = validateAndAllocateOutput(
+            db.inputs.outputVelocity(), omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
+            omni::sensors::LidarAuxHas::VELOCITIES, "outputVelocity", velocityBuffers, velocityBufferValid);
+        m_outputObjectId = validateAndAllocateOutput(db.inputs.outputObjectId(), omni::sensors::AuxType::EXTRA,
+                                                     omni::sensors::Modality::LIDAR, omni::sensors::LidarAuxHas::OBJ_ID,
+                                                     "outputObjectId", objectIdBuffers, objectIdBufferValid, 16);
+        m_outputEchoId = validateAndAllocateOutput(db.inputs.outputEchoId(), omni::sensors::AuxType::BASIC,
+                                                   omni::sensors::Modality::LIDAR, omni::sensors::LidarAuxHas::ECHO_ID,
+                                                   "outputEchoId", echoIdBuffers, echoIdBufferValid);
+        m_outputTickState = validateAndAllocateOutput(
+            db.inputs.outputTickState(), omni::sensors::AuxType::BASIC, omni::sensors::Modality::LIDAR,
+            omni::sensors::LidarAuxHas::TICK_STATES, "outputTickState", tickStateBuffers, tickStateBufferValid);
+        m_outputRadialVelocityMS =
+            validateAndAllocateOutput(db.inputs.outputRadialVelocityMS(), omni::sensors::AuxType::BASIC,
+                                      omni::sensors::Modality::RADAR, omni::sensors::LidarAuxHas::NONE,
+                                      "outputRadialVelocityMS", radialVelocityMSBuffers, radialVelocityMSBufferValid);
 
         // Initialize cached enable masks for output selection kernels
         m_requiredOutputsMask = 0;
@@ -416,7 +467,8 @@ public:
         // Allocate additional device memory for the number of valid points
         CUDA_CHECK(cudaMalloc(&numValidPointsDevice, sizeof(int)));
 
-        // Allocate device buffers necessary for the point cloud kernel, and any other output buffers that are requested
+        // Allocate device buffers necessary for the point cloud kernel (azimuth, elevation, distance, flags always
+        // needed)
         for (size_t i = 0; i < 2; ++i)
         {
             azimuthBuffers[i].setDevice(cudaDeviceIndex);
@@ -427,71 +479,9 @@ public:
             distanceBuffers[i].resize(m_maxPoints);
             flagsBuffers[i].setDevice(cudaDeviceIndex);
             flagsBuffers[i].resize(m_maxPoints);
-            if (m_outputIntensity)
-            {
-                intensityBuffers[i].setDevice(cudaDeviceIndex);
-                intensityBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputTimestamp)
-            {
-                timestampBuffers[i].setDevice(cudaDeviceIndex);
-                timestampBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputEmitterId)
-            {
-                emitterIdBuffers[i].setDevice(cudaDeviceIndex);
-                emitterIdBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputChannelId)
-            {
-                channelIdBuffers[i].setDevice(cudaDeviceIndex);
-                channelIdBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputMaterialId)
-            {
-                materialIdBuffers[i].setDevice(cudaDeviceIndex);
-                materialIdBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputTickId)
-            {
-                tickIdBuffers[i].setDevice(cudaDeviceIndex);
-                tickIdBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputHitNormal)
-            {
-                normalBuffers[i].setDevice(cudaDeviceIndex);
-                normalBuffers[i].resize(m_maxPoints); // normals are stride 3, but we're storing them as float3, so use
-                                                      // stride 1
-            }
-            if (m_outputVelocity)
-            {
-                velocityBuffers[i].setDevice(cudaDeviceIndex);
-                velocityBuffers[i].resize(m_maxPoints); // velocity is stride 3, but we're storing it as float3, so use
-                                                        // stride 1
-            }
-            if (m_outputObjectId)
-            {
-                objectIdBuffers[i].setDevice(cudaDeviceIndex);
-                objectIdBuffers[i].resize(m_maxPoints * 16); // object id is stride 16
-            }
-            if (m_outputEchoId)
-            {
-                echoIdBuffers[i].setDevice(cudaDeviceIndex);
-                echoIdBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputTickState)
-            {
-                tickStateBuffers[i].setDevice(cudaDeviceIndex);
-                tickStateBuffers[i].resize(m_maxPoints);
-            }
-            if (m_outputRadialVelocityMS)
-            {
-                radialVelocityMSBuffers[i].setDevice(cudaDeviceIndex);
-                radialVelocityMSBuffers[i].resize(m_maxPoints);
-            }
         }
 
-        // Allocate any necessary output buffers
+        // Allocate any necessary output buffers (point cloud buffer always needed, others handled by lambda)
         pcBufferValid.setDevice(cudaDeviceIndex);
         pcBufferValid.resize(m_maxPoints);
         if (m_outputAzimuth)
@@ -508,66 +498,6 @@ public:
         {
             distanceBufferValid.setDevice(cudaDeviceIndex);
             distanceBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputIntensity)
-        {
-            intensityBufferValid.setDevice(cudaDeviceIndex);
-            intensityBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputTimestamp)
-        {
-            timestampBufferValid.setDevice(cudaDeviceIndex);
-            timestampBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputEmitterId)
-        {
-            emitterIdBufferValid.setDevice(cudaDeviceIndex);
-            emitterIdBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputChannelId)
-        {
-            channelIdBufferValid.setDevice(cudaDeviceIndex);
-            channelIdBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputMaterialId)
-        {
-            materialIdBufferValid.setDevice(cudaDeviceIndex);
-            materialIdBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputTickId)
-        {
-            tickIdBufferValid.setDevice(cudaDeviceIndex);
-            tickIdBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputHitNormal)
-        {
-            normalBufferValid.setDevice(cudaDeviceIndex);
-            normalBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputVelocity)
-        {
-            velocityBufferValid.setDevice(cudaDeviceIndex);
-            velocityBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputObjectId)
-        {
-            objectIdBufferValid.setDevice(cudaDeviceIndex);
-            objectIdBufferValid.resize(m_maxPoints * 16); // stride 16
-        }
-        if (m_outputEchoId)
-        {
-            echoIdBufferValid.setDevice(cudaDeviceIndex);
-            echoIdBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputTickState)
-        {
-            tickStateBufferValid.setDevice(cudaDeviceIndex);
-            tickStateBufferValid.resize(m_maxPoints);
-        }
-        if (m_outputRadialVelocityMS)
-        {
-            radialVelocityMSBufferValid.setDevice(cudaDeviceIndex);
-            radialVelocityMSBufferValid.resize(m_maxPoints);
         }
 
         indicesBuffer.setDevice(cudaDeviceIndex);

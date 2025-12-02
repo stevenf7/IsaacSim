@@ -26,8 +26,10 @@ from isaacsim.core.nodes.scripts.utils import (
     register_annotator_from_node_with_telemetry,
     register_node_writer_with_telemetry,
 )
+from isaacsim.core.utils.carb import get_carb_setting
 from isaacsim.core.utils.render_product import get_camera_prim_path
 from isaacsim.ros2.core import collect_namespace
+from isaacsim.ros2.nodes import build_rtx_sensor_pointcloud_writer
 from pxr import Usd, UsdGeom
 
 
@@ -112,55 +114,30 @@ class OgnROS2RtxLidarHelper:
                         writer = rep.writers.get("RtxLidar" + f"ROS2{time_type}PublishLaserScan")
 
                     elif sensor_type == "point_cloud":
-                        # Dynamically name, build, and register a new Annotator based on the selected metadata if it doesn't exist yet
-                        annotator_name = "IsaacCreateRTXLidarScanBuffer"
-                        annotator_name += "PerFrame" if not db.inputs.fullScan else ""
-                        annotator_name += "_".join(db.inputs.selectedMetadata)
-                        if annotator_name not in rep.AnnotatorRegistry.get_registered_annotators():
-                            init_params = {"enablePerFrameOutput": not db.inputs.fullScan}
-                            for metadata in db.inputs.selectedMetadata:
-                                init_params[f"output{metadata[0].upper()}{metadata[1:]}"] = True
-                            register_annotator_from_node_with_telemetry(
-                                name=annotator_name,
-                                input_rendervars=[
-                                    "GenericModelOutputPtr",
-                                ],
-                                node_type_id="isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer",
-                                init_params=init_params,
-                                output_data_type=np.float32,
-                                output_channels=3,
-                            )
+                        # Dynamically name, build, and register a new Annotator and Writer based on the selected metadata, if they don't exist yet
+                        writer = build_rtx_sensor_pointcloud_writer(
+                            metadata=db.inputs.selectedMetadata,
+                            enable_full_scan=db.inputs.fullScan,
+                            use_system_time=db.inputs.useSystemTime,
+                        )
 
-                        # Dynamically name, build, and register a new Writer based on the selected metadata if it doesn't exist yet
-                        writer_name = "RtxLidar" + f"ROS2{time_type}PublishPointCloud"
-                        writer_name += "Buffer" if db.inputs.fullScan else ""
-                        writer_name += "_".join(db.inputs.selectedMetadata)
-                        if writer_name not in rep.WriterRegistry.get_writers():
-                            time_node_type = "system" if db.inputs.useSystemTime else "simulation"
-                            register_node_writer_with_telemetry(
-                                name=writer_name,
-                                node_type_id="isaacsim.ros2.bridge.ROS2PublishPointCloud",
-                                annotators=[
-                                    annotator_name,
-                                    "PostProcessDispatchIsaacSimulationGate",
-                                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                        f"IsaacRead{time_node_type.capitalize()}Time",
-                                        attributes_mapping={f"outputs:{time_node_type}Time": "inputs:timeStamp"},
-                                    ),
-                                ],
-                                category="isaacsim.ros2.bridge",
-                            )
-
-                        writer = rep.writers.get(writer_name)
-
-                        if "ObjectId" in db.inputs.selectedMetadata and db.inputs.enableObjectIdMap:
-                            object_id_map_writer = rep.writers.get(f"ROS2{time_type}PublishObjectIdMap")
-                            object_id_map_writer.initialize(
-                                nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
-                                queueSize=db.inputs.queueSize,
-                                topicName=db.inputs.objectIdMapTopicName,
-                            )
-                            db.per_instance_state.append_writer(object_id_map_writer)
+                        if db.inputs.enableObjectIdMap:
+                            if "ObjectId" not in db.inputs.selectedMetadata:
+                                carb.log_warn(
+                                    "enableObjectIdMap is True, but 'ObjectId' is not in the selected metadata. Disabling object ID map output."
+                                )
+                            elif not get_carb_setting(carb.settings.get_settings(), "/rtx-transient/stableIds/enabled"):
+                                carb.log_warn(
+                                    "enableObjectIdMap is True, but --/rtx-transient/stableIds/enabled is either unset or False. Disabling object ID map output."
+                                )
+                            else:
+                                object_id_map_writer = rep.writers.get(f"ROS2{time_type}PublishObjectIdMap")
+                                object_id_map_writer.initialize(
+                                    nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
+                                    queueSize=db.inputs.queueSize,
+                                    topicName=db.inputs.objectIdMapTopicName,
+                                )
+                                db.per_instance_state.append_writer(object_id_map_writer)
 
                     else:
                         carb.log_error("type is not supported")
