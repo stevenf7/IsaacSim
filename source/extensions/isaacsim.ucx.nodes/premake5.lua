@@ -127,6 +127,7 @@ if os.target() == "linux" then
         { "python/nodes", ogn.python_target_path .. "/nodes" },
         { "include", ext.target_dir .. "/include" },
         { "docs", ext.target_dir .. "/docs" },
+        { "data", ext.target_dir .. "/data" },
     }
 else
     print("SKIPPING BUILD - UCX nodes extension only supported on linux-x86_64")
