@@ -14,7 +14,6 @@
 -- limitations under the License.
 
 if os.target() == "linux" then
-
     local ext = get_current_extension_info()
 
     -- This is now a pure Python umbrella extension
@@ -32,6 +31,5 @@ if os.target() == "linux" then
         { "python/*.py", ext.target_dir .. "/isaacsim/ucx/bridge" },
     }
 else
-	print("SKIPPING BUILD - Only supported on linux-x86_64")
+    print("SKIPPING BUILD - Only supported on linux-x86_64")
 end
-

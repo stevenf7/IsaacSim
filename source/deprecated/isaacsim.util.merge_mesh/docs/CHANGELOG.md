@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.18] - 2025-11-28
+### Changed
+- Add missing docstrings
+
 ## [2.0.17] - 2025-11-14
 ### Deprecated
 - Extension deprecated. Functionality replaced with Scene Optimizer.
@@ -103,7 +108,7 @@
 
 ## [0.1.2] - 2023-02-08
 ### Fixed
-- add primvars normals when merging
+- Add primvars normals when merging
 
 ## [0.1.1] - 2023-01-06
 ### Fixed

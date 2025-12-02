@@ -49,7 +49,7 @@ libdirs {
     target_deps .. "/tinyxml2/lib",
     target_deps .. "/omni_client_library/%{cfg.buildcfg}",
     extsbuild_dir .. "/omni.usd.core/bin",
-    isaac_sim_extsbuild_dir .. "/omni.kit.asset_converter/asset_converter_native_bindings/libs",    
+    isaac_sim_extsbuild_dir .. "/omni.kit.asset_converter/asset_converter_native_bindings/libs",
 }
 
 links {

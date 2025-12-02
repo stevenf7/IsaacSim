@@ -106,7 +106,7 @@ local function get_simulation_app_tests()
         -- Additional simulation app tests
         {
             "tests-nativepython-testing-isaacsim.simulation_app.test_frame_delay_basic",
-            "standalone_examples/testing/isaacsim.simulation_app/test_frame_delay.py"
+            "standalone_examples/testing/isaacsim.simulation_app/test_frame_delay.py",
         },
         {
             "tests-nativepython-testing-isaacsim.simulation_app.test_fabric_frame_delay",
@@ -141,7 +141,7 @@ local function get_core_tests()
         -- Cloner
         {
             "tests-nativepython-isaacsim.core.cloner.clone_ants",
-            "standalone_examples/api/isaacsim.core.cloner/clone_ants.py"
+            "standalone_examples/api/isaacsim.core.cloner/clone_ants.py",
         },
         -- Core API
         { "tests-nativepython-isaacsim.core.api.add_cubes", "standalone_examples/api/isaacsim.core.api/add_cubes.py" },
@@ -212,40 +212,40 @@ local function get_sensor_tests()
         -- Camera
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_add_depth_sensor",
-            "standalone_examples/api/isaacsim.sensors.camera/camera_add_depth_sensor.py"
+            "standalone_examples/api/isaacsim.sensors.camera/camera_add_depth_sensor.py",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_opencv_fisheye",
-            "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py"
+            "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_opencv_pinhole",
-            "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_pinhole.py"
+            "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_pinhole.py",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_pre_isp_pipeline",
             "standalone_examples/api/isaacsim.sensors.camera/camera_pre_isp_pipeline.py",
-            "--draw-output"
+            "--draw-output",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_ros",
             "standalone_examples/api/isaacsim.sensors.camera/camera_ros.py",
-            "--test"
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_view",
             "standalone_examples/api/isaacsim.sensors.camera/camera_view.py",
-            "--test"
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera",
             "standalone_examples/api/isaacsim.sensors.camera/camera.py",
-            "--test --disable_output"
+            "--test --disable_output",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_stereoscopic_depth",
             "standalone_examples/api/isaacsim.sensors.camera/camera_stereoscopic_depth.py",
-            "--test"
+            "--test",
         },
         -- From Misc Camera
         {
@@ -256,32 +256,32 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_metadata",
             "standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_metadata.py",
-            "--test"
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.rtx.inspect_radar_metadata",
             "standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_metadata.py",
-            "--test"
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.rtx.resolve_object_ids_from_gmo",
-            "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py"
+            "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py",
         },
         {
             "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",
             "standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py",
-            "--test"
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.rtx.specify_non_visual_materials",
             "standalone_examples/api/isaacsim.sensors.rtx/specify_non_visual_materials.py",
-            "--test"
+            "--test",
         },
         -- Physics
         {
             "tests-nativepython-isaacsim.sensors.physx.rotating_lidar_physX",
             "standalone_examples/api/isaacsim.sensors.physx/rotating_lidar_physX.py",
-            "--test"
+            "--test",
         },
         -- From Misc Physics
         {
@@ -328,7 +328,7 @@ local function get_robot_tests()
         {
             "tests-nativepython-isaacsim.robot.wheeled_robots.examples.jetbot_differential_move",
             "standalone_examples/api/isaacsim.robot.wheeled_robots.examples/jetbot_differential_move.py",
-            "--test"
+            "--test",
         },
     }
 end
@@ -338,12 +338,12 @@ local function get_asset_tests()
         -- URDF
         {
             "tests-nativepython-isaacsim.asset.importer.urdf.urdf_import",
-            "standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py"
+            "standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py",
         },
         -- MJCF
         {
             "tests-nativepython-isaacsim.asset.importer.mjcf.mjcf_import",
-            "standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py"
+            "standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py",
         },
     }
 end
@@ -486,7 +486,7 @@ local function get_replicator_tests()
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_short",
             "/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py",
-            "--delta_times None 0.00416666666 --samples_per_pixel 32 --motion_blur_subsamples 4"
+            "--delta_times None 0.00416666666 --samples_per_pixel 32 --motion_blur_subsamples 4",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.subscribers_and_events",
@@ -559,7 +559,7 @@ local function get_ros_tests()
             "tests-nativepython-testing-isaacsim.ros2.bridge.test_publish_camera_data",
             "standalone_examples/testing/isaacsim.ros2.bridge/test_publish_camera_data.py",
             "--test-steps=5",
-        }
+        },
     }
 end
 
@@ -701,7 +701,7 @@ function create_tests()
 
     -- Python samples
     group("python_samples")
-    
+
     -- smoke tests for python.sh itself
     python_script_test("tests-nativepython-pip_list", "-m pip list --")
     python_script_test(
@@ -716,7 +716,7 @@ function create_tests()
     )
 
     register_python_sample_tests(get_simulation_app_tests())
-    
+
     if os.target() == "linux" then
         python_sample_test(
             "tests-nativepython-testing-isaacsim.simulation_app.test_ovd",

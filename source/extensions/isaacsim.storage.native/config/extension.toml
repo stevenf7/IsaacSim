@@ -1,5 +1,5 @@
 [package]
-version = "1.6.1"
+version = "1.6.2"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Isaac Sim Native Storage"
@@ -31,7 +31,8 @@ persistent.isaac.asset_root.timeout = 5.0
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.kit.test"
+    "omni.kit.test",
+    "isaacsim.test.docstring"
 ]
 args = [
     "--enable",

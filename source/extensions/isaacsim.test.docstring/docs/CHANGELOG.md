@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2025-11-28
+### Changed
+- Add API documentation
+- Add missing docstrings
+- Add more example usage to documentatiomn
+
 ## [1.1.0] - 2025-07-07
 ### Changed
 - Add ability to check docstrings for pybind11 modules

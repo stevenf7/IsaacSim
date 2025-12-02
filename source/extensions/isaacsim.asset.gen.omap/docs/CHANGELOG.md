@@ -4,7 +4,7 @@
 ### Changed
 - Update to use new debug draw plugin interface
 
-## [2.2.0] - 2025-11-05
+## [2.2.0] - 2025-11-08
 ### Changed
 - Improve docstrings and cleanup codebase
 
@@ -59,7 +59,7 @@
 
 ## [2.0.20] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [2.0.19] - 2025-04-09
 ### Changed
@@ -116,7 +116,7 @@
 
 ## [2.0.6] - 2024-11-06
 ### Changed
-- nucleus import update
+- Nucleus import update
 
 ## [2.0.5] - 2024-11-04
 ### Changed
@@ -205,7 +205,7 @@
 
 ## [0.2.4] - 2022-05-24
 ### Fixed
-- block world default to meters
+- Block world default to meters
 
 ## [0.2.3] - 2022-05-16
 ### Fixed

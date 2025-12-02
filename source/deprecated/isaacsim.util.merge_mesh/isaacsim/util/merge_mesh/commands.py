@@ -18,25 +18,29 @@ from .mesh_merger import MeshMerger
 
 
 class MergeMeshesCommand(omni.kit.commands.Command):
-    """Merges selected meshes and all children of given prims into a single mesh.
-    Options:
-    Clear Parent Transofrm - Sets the mesh origin at world origin, otherwise origin is the same as the first element
-    Deactivate source assets - Sets source prims to Inactive after performing the merge operation
-    Combine Materials - Redirects all assets materials to a given folder, and every geomsubset that shares a same
-    material name uses the same material, each geom subset uses the original material from the source assets
+    """Command to merge selected meshes and all children of given prims into a single mesh.
 
-    typical usage:
+    This command provides options to control the merge behavior:
+
+    - Clear Parent Transform: Sets the mesh origin at world origin, otherwise origin is
+      the same as the first element.
+    - Deactivate source assets: Sets source prims to Inactive after performing the merge operation.
+    - Combine Materials: Redirects all assets materials to a given folder, and every geomsubset
+      that shares a same material name uses the same material, each geom subset uses the original
+      material from the source assets.
+
+    Example:
+
     .. code-block:: python
 
-    result, prim = omni.kit.commands.execute(
-        "MergeMeshesCommand",
-        source=["/World/Cube","World/Cone", "World/ManyToruses"],
-        clear_transform=False,
-        deactivate_source=True,
-        combine_materials=True,
-        materials_destination="/World/Looks"
-    )
-
+        >>> result, prim = omni.kit.commands.execute(
+        ...     "MergeMeshesCommand",
+        ...     source=["/World/Cube", "/World/Cone", "/World/ManyToruses"],
+        ...     clear_transform=False,
+        ...     deactivate_source=True,
+        ...     combine_materials=True,
+        ...     materials_destination="/World/Looks",
+        ... )
     """
 
     def __init__(
@@ -47,6 +51,17 @@ class MergeMeshesCommand(omni.kit.commands.Command):
         combine_materials: bool = False,
         materials_destination: str = "/World/Looks",
     ):
+        """Initialize the MergeMeshesCommand.
+
+        Args:
+            source: List of prim paths to merge.
+            clear_transform: If True, sets the merged mesh origin at world origin.
+                Otherwise, the origin is the same as the first element.
+            deactivate_source: If True, deactivates source prims after merging.
+            combine_materials: If True, redirects all materials to a single folder
+                and shares materials with the same name.
+            materials_destination: The prim path where combined materials will be stored.
+        """
         self._stage = omni.usd.get_context().get_stage()
         self.mesh_merger = MeshMerger(self._stage)
         self.mesh_merger.clear_parent_xform = clear_transform
@@ -58,11 +73,21 @@ class MergeMeshesCommand(omni.kit.commands.Command):
         self.mesh_merger.output_mesh = "/Merged/" + str(self._stage.GetPrimAtPath(source[0]).GetName())
 
     def do(self):
+        """Execute the mesh merge operation.
+
+        Returns:
+            The prim path of the merged mesh.
+        """
         self.mesh_merger.merge_meshes()
 
         return self.mesh_merger.output_mesh
 
     def undo(self):
+        """Undo the mesh merge operation.
+
+        Reactivates source prims if they were deactivated, removes the merged mesh,
+        and removes any materials that were created during the merge.
+        """
         self.mesh_merger.reactivate_sources()
         self._stage.RemovePrim(self.mesh_merger.output_mesh)
         self.mesh_merger.remove_created_materials()

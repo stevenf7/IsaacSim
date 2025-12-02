@@ -11,13 +11,13 @@
 ## [3.0.6] - 2025-08-04
 ### Fixed
 - Natural Frequency and Damping Ratio computations
-- unresponsive UI when bulk editing min step value
+- Unresponsive UI when bulk editing min step value
 
 ## [3.0.5] - 2025-07-02
 ### Changed
-- fixed refresh when robot changes on stage
-- fixed batch editing when tuning gains
-- removed "strength" and use stiffness/damping
+- Fixed refresh when robot changes on stage
+- Fixed batch editing when tuning gains
+- Removed "strength" and use stiffness/damping
 - Pop up a warning asking for confirmation when save Gains to Physics Layer
 - Make frames and table resizable and add scroll bar
 
@@ -35,7 +35,7 @@
 
 ## [3.0.1] - 2025-05-12
 ### Changed
-- register action without version number
+- Register action without version number
 
 ## [3.0.0] - 2025-05-09
 ### Changed
@@ -51,7 +51,7 @@
 
 ## [2.0.7] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [2.0.6] - 2025-04-04
 ### Changed

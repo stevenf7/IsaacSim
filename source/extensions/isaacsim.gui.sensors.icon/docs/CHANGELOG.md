@@ -83,7 +83,7 @@
 - Reworked to usdrt implementation to eliminate performance impact
 
 ### Added
-- usdrt dependency
+- Usdrt dependency
 
 ## [0.1.3] - 2025-04-21
 ### Changed

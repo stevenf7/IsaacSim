@@ -11,7 +11,6 @@
 ### Added
 - Add flag to generateBuffer() to allocate CUDA pinned memory for image buffers
 
-
 ## [1.1.0] - 2025-11-24
 ### Changed
 - Moved handle interface from isaacsim.core.nodes extension to this extension.

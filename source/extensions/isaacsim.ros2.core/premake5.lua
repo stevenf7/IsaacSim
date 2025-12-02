@@ -154,7 +154,6 @@ add_files("iface", "include")
 add_cuda_dependencies()
 -- link_boost_for_windows({"boost_python310"})
 
-
 include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
@@ -263,40 +262,37 @@ if os.target() == "windows" then
     }
 end
 
-
-
 -- Build the C++ plugin that will be loaded by the tests
 project_ext_tests(ext, "isaacsim.ros2.core.backend_tests")
 cppdialect("C++17")
-    add_files("source", "library/tests")
-    -- Ensure factory symbol is compiled into the test library so tests can call createFactory()
-    includedirs {
-        "include",
-        "plugins/",
-        "%{target_deps}/doctest/include",
-        "%{root}/source/extensions/isaacsim.ros2.core/include",
-        "%{root}/_build/target-deps/nlohmann_json/include",
-        "%{root}/_build/target-deps/cuda/include",
-        "%{root}/source/extensions/isaacsim.core.includes/include",
-        "%{root}/_build/target-deps/python/include/python3.11",
-        "%{root}/_build/target-deps/python/include",
-        "%{kit_sdk_bin_dir}/dev/fabric/include/",
+add_files("source", "library/tests")
+-- Ensure factory symbol is compiled into the test library so tests can call createFactory()
+includedirs {
+    "include",
+    "plugins/",
+    "%{target_deps}/doctest/include",
+    "%{root}/source/extensions/isaacsim.ros2.core/include",
+    "%{root}/_build/target-deps/nlohmann_json/include",
+    "%{root}/_build/target-deps/cuda/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/_build/target-deps/python/include/python3.11",
+    "%{root}/_build/target-deps/python/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
+}
+-- link omni.kit.test (path or 'repo_precache_exts' config may need to be adjusted)
+libdirs {
+    extsbuild_dir .. "/omni.kit.test/bin",
+}
+add_usd()
+add_cuda_dependencies()
+filter { "system:linux" }
+disablewarnings { "error=narrowing", "error=unused-but-set-variable", "error=unused-variable" }
+links { "boost_system", "stdc++fs" }
+filter { "system:windows" }
+filter {}
 
-    }
-    -- link omni.kit.test (path or 'repo_precache_exts' config may need to be adjusted)
-    libdirs {
-        extsbuild_dir.."/omni.kit.test/bin",
-    }
-    add_usd()
-    add_cuda_dependencies()
-    filter { "system:linux" }
-    disablewarnings { "error=narrowing", "error=unused-but-set-variable", "error=unused-variable" }
-    links { "boost_system", "stdc++fs" }
-    filter { "system:windows" }
-    filter {}
-
-    filter { "configurations:debug" }
-        defines { "_DEBUG" }
-    filter { "configurations:release" }
-        defines { "NDEBUG" }
-    filter {}
+filter { "configurations:debug" }
+defines { "_DEBUG" }
+filter { "configurations:release" }
+defines { "NDEBUG" }
+filter {}

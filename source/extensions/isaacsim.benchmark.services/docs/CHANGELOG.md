@@ -156,11 +156,11 @@
 
 ## [1.10.1] - 2024-09-05
 ### Fixed
-- convert sim_elapsed_time to ms for calculating real-time factor
+- Convert sim_elapsed_time to ms for calculating real-time factor
 
 ## [1.10.0] - 2024-08-05
 ### Changed
-- use omni.physdx.get_physx_benchmarks_interface() to get physics simulation profiling data
+- Use omni.physdx.get_physx_benchmarks_interface() to get physics simulation profiling data
 
 ## [1.9.0] - 2024-07-17
 ### Changed
@@ -168,7 +168,7 @@
 - omni.kit.test is a required dependency, not just for running tests
 
 ### Removed
-- removed unused omni.kit.profiler.window dependency
+- Removed unused omni.kit.profiler.window dependency
 
 ## [1.8.3] - 2024-07-15
 ### Added
@@ -192,13 +192,13 @@
 
 ## [1.6.0] - 2024-05-01
 ### Added
-- ability to enable/disable frametime and runtime separately when starting a phase
+- Ability to enable/disable frametime and runtime separately when starting a phase
 
 ## [1.5.0] - 2024-04-29
 ### Changed
-- cleaned up imports
-- updated docstrings
-- removed unused functions
+- Cleaned up imports
+- Updated docstrings
+- Removed unused functions
 
 ## [1.4.2] - 2024-04-15
 ### Fixed

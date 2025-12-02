@@ -109,7 +109,7 @@
 
 ## [4.5.1] - 2025-04-27
 ### Fixed
-- rename ui unit tests and add ui related test settings
+- Rename ui unit tests and add ui related test settings
 
 ## [4.5.0] - 2025-04-13
 ### Added
@@ -139,7 +139,7 @@
 
 ## [4.4.10] - 2025-03-09
 ### Fixed
-- fix failing unit tests
+- Fix failing unit tests
 
 ## [4.4.9] - 2025-02-20
 ### Changed
@@ -163,7 +163,7 @@
 
 ## [4.4.4] - 2025-01-14
 ### Added
-- refactor LoadButtons UI
+- Refactor LoadButtons UI
 
 ## [4.4.3] - 2025-01-10
 ### Added
@@ -208,7 +208,7 @@
 
 ## [4.0.0] - 2024-09-30
 ### Changed
-- changed extension name to isaacsim.examples.interactive
+- Changed extension name to isaacsim.examples.interactive
 
 ## [3.0.3] - 2024-09-28
 ### Fixed
@@ -356,11 +356,11 @@
 
 ## [1.5.4] - 2023-02-08
 ### Fixed
-- fixed vibrating table in Nut and Bolts Demo
+- Fixed vibrating table in Nut and Bolts Demo
 
 ## [1.5.3] - 2023-01-19
 ### Fixed
-- missing button error when running tests
+- Missing button error when running tests
 
 ## [1.5.2] - 2023-01-06
 ### Fixed
@@ -396,8 +396,8 @@
 
 ## [0.3.0] - 2022-05-05
 ### Changed
-- stage setting changed from cm to m.
-- robofactory and roboparty uses hard coded position in meters (instead of cm)
+- Stage setting changed from cm to m.
+- Robofactory and roboparty uses hard coded position in meters (instead of cm)
 
 ## [0.2.0] - 2022-05-05
 ### Changed
@@ -455,7 +455,7 @@
 
 ## [0.1.12] - 2021-11-01
 ### Changed
-- renamed extension to omni.isaac.examples
+- Renamed extension to omni.isaac.examples
 
 ## [0.1.11] - 2021-11-01
 ### Changed
@@ -475,11 +475,11 @@
 
 ## [0.1.8] - 2021-07-12
 ### Added
-- add UI Utils to Import URDF
+- Add UI Utils to Import URDF
 
 ## [0.1.7] - 2021-07-08
 ### Added
-- add dofbot rmp sample
+- Add dofbot rmp sample
 
 ## [0.1.6] - 2021-05-24
 ### Added
@@ -492,8 +492,8 @@
 
 ## [0.1.4] - 2021-02-17
 ### Added
-- update to python 3.7
-- update to omni.kit.uiapp
+- Update to python 3.7
+- Update to omni.kit.uiapp
 - Update RMP sample to save data
 
 ## [0.1.3] - 2021-01-13

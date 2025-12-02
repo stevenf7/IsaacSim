@@ -9,10 +9,10 @@
 ## [1.5.0] - 2025-11-26
 ### Added
 - OgnROS2RtxLidarPointCloudConfig to simplify setting metadata to include in RTX Lidar PointCloud2
+
 ### Changed
 - OgnROS2RtxLidarHelper now takes selectedMetadata input to specify which metadata to include in RTX Lidar PointCloud2
-- OgnROS2PublishPointCloud updated with new CUDA kernel to add RTX Lidar and Radar metadata to PointCloud2 message
-  when data is on device
+- OgnROS2PublishPointCloud updated with new CUDA kernel to add RTX Lidar and Radar metadata to PointCloud2 message when data is on device
 
 ## [1.4.0] - 2025-11-26
 ### Changed

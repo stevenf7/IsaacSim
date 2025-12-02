@@ -14,7 +14,7 @@
 
 ## [4.0.3] - 2025-10-31
 ### Changed
-- update deprecated python unittest methods
+- Update deprecated python unittest methods
 
 ## [4.0.2] - 2025-10-27
 ### Changed
@@ -157,8 +157,8 @@
 - Modified input arguments for python bindings to take a tuple instead of a rational time object which could not be created by the user
 
 ### Removed
-- deprecated function and their python bindings getSimTimeAtSwhFrame, getSimTimeMonotonicAtSwhFrame, getSystemTimeAtSwhFrame, get_sim_time_at_swh_frame, get_sim_time_monotonic_at_swh_frame, get_system_time_at_swh_frame
-- removed IsaacReadTimes node
+- Deprecated function and their python bindings getSimTimeAtSwhFrame, getSimTimeMonotonicAtSwhFrame, getSystemTimeAtSwhFrame, get_sim_time_at_swh_frame, get_sim_time_monotonic_at_swh_frame, get_system_time_at_swh_frame
+- Removed IsaacReadTimes node
 
 ## [2.2.17] - 2025-05-09
 ### Added
@@ -178,7 +178,7 @@
 
 ## [2.2.13] - 2025-04-29
 ### Fixed
-- prim validation in OgnIsaacComputeOdometry node
+- Prim validation in OgnIsaacComputeOdometry node
 
 ## [2.2.12] - 2025-04-15
 ### Changed
@@ -218,7 +218,7 @@
 
 ## [2.2.4] - 2025-03-09
 ### Fixed
-- fix failing unit tests
+- Fix failing unit tests
 
 ## [2.2.3] - 2025-03-05
 ### Changed
@@ -436,7 +436,7 @@
 
 ## [1.4.3] - 2023-08-25
 ### Changed
-- added stdout fail pattern for the expected no prim found edge case for the ogn test
+- Added stdout fail pattern for the expected no prim found edge case for the ogn test
 
 ## [1.4.2] - 2023-08-24
 ### Fixed
@@ -470,7 +470,7 @@
 
 ## [1.1.0] - 2023-07-06
 ### Removed
-- unused writer and node template attachment systems
+- Unused writer and node template attachment systems
 
 ## [1.0.0] - 2023-06-13
 ### Added
@@ -488,9 +488,9 @@
 - getSimulationTimeMonotonicAtSwhFrame now getSimulationTimeMonotonicAtTime with rational time
 - getSystemTimeAtSwhFrame now getSystemTimeAtTime with rational time
 - [SENSOR NAME]IsaacSimulationGate nodes to [RENDERVAR]IsaacSimulationGate to match synthetic data standard
-- deprecated get_sim_time_at_swh_frame
-- deprecated get_sim_time_monotonic_at_swh_frame
-- deprecated get_system_time_at_swh_frame
+- Deprecated get_sim_time_at_swh_frame
+- Deprecated get_sim_time_monotonic_at_swh_frame
+- Deprecated get_system_time_at_swh_frame
 
 ### Removed
 - IsaacReadSystemTime node
@@ -521,26 +521,26 @@
 
 ## [0.22.1] - 2023-01-25
 ### Fixed
-- remove un-needed cpp ogn files from extension
+- Remove un-needed cpp ogn files from extension
 
 ## [0.22.0] - 2023-01-09
 ### Added
-- interface for caching and retreiving handles
+- Interface for caching and retreiving handles
 
 ## [0.21.0] - 2022-12-10
 ### Changed
 - IsaacSimulationGate step value can now be set to zero to stop execution
 
 ### Added
-- function to handle writer activation requests to avoid race conditions from camera helpers.
+- Function to handle writer activation requests to avoid race conditions from camera helpers.
 
 ## [0.20.0] - 2022-12-05
 ### Added
 - IsaacSetCameraOnRenderProduct Node
-- render product support for ReadCameraInfo
-- fisheye parameter support for ReadCameraInfo
-- utility function to cache writer attach calls until the next frame
-- ogn tests for IsaacCreateRenderProduct, IsaacReadCameraInfo
+- Render product support for ReadCameraInfo
+- Fisheye parameter support for ReadCameraInfo
+- Utility function to cache writer attach calls until the next frame
+- Ogn tests for IsaacCreateRenderProduct, IsaacReadCameraInfo
 
 ### Changed
 - Deprecate viewport support in ReadCameraInfo
@@ -576,11 +576,11 @@
 
 ## [0.15.0] - 2022-09-28
 ### Added
-- python bindings and tests for timing related APIs
+- Python bindings and tests for timing related APIs
 
 ## [0.14.3] - 2022-09-12
 ### Added
-- unit test for create viewport node
+- Unit test for create viewport node
 
 ### Fixed
 - CreateViewport node uses legacy viewport ID which used to be the viewport index, the index is now converted to ID
@@ -591,7 +591,7 @@
 
 ## [0.14.1] - 2022-09-02
 ### Fixed
-- bug with hiding /Render prim when it didn't exist
+- Bug with hiding /Render prim when it didn't exist
 
 ## [0.14.0] - 2022-08-31
 ### Changed
@@ -599,7 +599,7 @@
 
 ## [0.13.0] - 2022-08-09
 ### Added
-- utility function to cache node activations until the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
+- Utility function to cache node activations until the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
 
 ### Fixed
 - IsaacSetViewportResolution node forces window aperture to reset if the resolution is changed.
@@ -720,14 +720,14 @@
 - Cleanup UI node names
 
 ### Fixed
-- fixed issue with swh frame not working when simulation was stopped.
+- Fixed issue with swh frame not working when simulation was stopped.
 
 ## [0.3.0] - 2022-04-25
 ### Changed
-- renamed OgnIsaacRGBAToRGB to OgnIsaacConvertRGBAToRGB
-- renamed OgnIsaacTestGenerateRGBA to OgnIsaacGenerateRGBA
-- using a global clock for simulation time
-- added ability to get simulation time from swhFrameNumber
+- Renamed OgnIsaacRGBAToRGB to OgnIsaacConvertRGBAToRGB
+- Renamed OgnIsaacTestGenerateRGBA to OgnIsaacGenerateRGBA
+- Using a global clock for simulation time
+- Added ability to get simulation time from swhFrameNumber
 
 ## [0.2.1] - 2022-04-22
 ### Changed

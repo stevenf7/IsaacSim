@@ -90,6 +90,7 @@ EXCLUDED_DIRS = {
     "extscache",
     "extsDeprecated",
     "extsUser",
+    "tools",
 }
 
 # Files to exclude from checking
@@ -341,6 +342,36 @@ def _is_license_line(content: str) -> bool:
     return any(keyword in content for keyword in license_keywords)
 
 
+def _is_preprocessor_directive(line: str) -> bool:
+    """Check if a line is a C/C++ preprocessor directive.
+
+    Args:
+        line: Line to check (should be stripped).
+
+    Returns:
+        True if the line is a preprocessor directive like #include, #define, etc.
+    """
+    if not line.startswith("#"):
+        return False
+    # Check for common preprocessor directives
+    preprocessor_keywords = [
+        "#include",
+        "#define",
+        "#undef",
+        "#if",
+        "#ifdef",
+        "#ifndef",
+        "#else",
+        "#elif",
+        "#endif",
+        "#pragma",
+        "#error",
+        "#warning",
+        "#line",
+    ]
+    return any(line.startswith(kw) for kw in preprocessor_keywords)
+
+
 def find_all_license_headers(lines: List[str]) -> List[Tuple[int, int]]:
     """Find all license headers in a file.
 
@@ -374,7 +405,12 @@ def find_all_license_headers(lines: List[str]) -> List[Tuple[int, int]]:
             for j in range(i + 1, min(len(lines), i + 20)):  # Look ahead up to 20 lines
                 next_line = lines[j].strip()
                 next_content = _extract_comment_content(next_line, all_comment_symbols)
-                is_comment_line = any(next_line.startswith(cs) for cs in all_comment_symbols)
+
+                # Check if this is a comment line, but exclude preprocessor directives
+                # (e.g., #include, #define) which start with # but are not comments
+                is_comment_line = any(
+                    next_line.startswith(cs) for cs in all_comment_symbols
+                ) and not _is_preprocessor_directive(next_line)
 
                 # Check if this line is still part of the license
                 if is_comment_line or not next_line or _is_license_line(next_content):
@@ -423,12 +459,11 @@ def has_multiple_license_headers(file_path: Path) -> Tuple[bool, List[Tuple[int,
     return len(license_headers) > 1, license_headers
 
 
-def find_existing_license_header(lines: List[str], comment_symbol: str) -> Tuple[int, int]:
+def find_existing_license_header(lines: List[str]) -> Tuple[int, int]:
     """Find the start and end indices of the first existing license header.
 
     Args:
         lines: List of file lines to search.
-        comment_symbol: Comment symbol for the file type (unused, kept for compatibility).
 
     Returns:
         Tuple of (start_index, end_index) where end_index is exclusive.
@@ -440,17 +475,16 @@ def find_existing_license_header(lines: List[str], comment_symbol: str) -> Tuple
     return (-1, -1)
 
 
-def remove_existing_license_header(lines: List[str], comment_symbol: str) -> List[str]:
+def remove_existing_license_header(lines: List[str]) -> List[str]:
     """Remove existing license header from the file lines.
 
     Args:
         lines: List of file lines.
-        comment_symbol: Comment symbol for the file type (unused, kept for compatibility).
 
     Returns:
         List of lines with the license header removed.
     """
-    start_index, end_index = find_existing_license_header(lines, comment_symbol)
+    start_index, end_index = find_existing_license_header(lines)
 
     if start_index == -1:
         return lines  # No license header found
@@ -509,7 +543,7 @@ def check_file_header(file_path: Path) -> Tuple[bool, List[str]]:
             expected_copyright = REQUIRED_LINES[0].format(year=copyright_year)
             if content != expected_copyright:
                 issues.append(
-                    f"Line {i + 1}: Copyright format incorrect. " f"Expected: '{expected_copyright}', Got: '{content}'"
+                    f"Line {i + 1}: Copyright format incorrect. Expected: '{expected_copyright}', Got: '{content}'"
                 )
 
         # Check for license line
@@ -517,7 +551,7 @@ def check_file_header(file_path: Path) -> Tuple[bool, List[str]]:
             license_found = True
             if content != REQUIRED_LINES[1]:
                 issues.append(
-                    f"Line {i + 1}: License identifier incorrect. " f"Expected: '{REQUIRED_LINES[1]}', Got: '{content}'"
+                    f"Line {i + 1}: License identifier incorrect. Expected: '{REQUIRED_LINES[1]}', Got: '{content}'"
                 )
 
     if not copyright_found:
@@ -545,10 +579,9 @@ def _fix_notebook_header(file_path: Path, license_header: List[str]) -> bool:
         # Check if the first cell already has license header
         if "cells" in notebook and notebook["cells"]:
             first_cell_lines = get_notebook_header_lines(notebook)
-            comment_symbol = get_comment_symbol(file_path)
 
             # Check if first cell has existing license header
-            start_index, end_index = find_existing_license_header(first_cell_lines, comment_symbol)
+            start_index, end_index = find_existing_license_header(first_cell_lines)
             if start_index != -1:
                 # Replace the existing header in the first cell
                 first_cell = notebook["cells"][0]
@@ -558,7 +591,7 @@ def _fix_notebook_header(file_path: Path, license_header: List[str]) -> bool:
                     cell_lines = [line.rstrip("\n") for line in first_cell["source"]]
 
                 # Remove existing header and add new one
-                cleaned_lines = remove_existing_license_header(cell_lines, comment_symbol)
+                cleaned_lines = remove_existing_license_header(cell_lines)
                 new_content = "\n".join(license_header + [""] + cleaned_lines)
                 first_cell["source"] = [new_content + "\n"]
                 return write_notebook(file_path, notebook)
@@ -590,16 +623,14 @@ def _fix_text_file_header(file_path: Path, license_header: List[str]) -> bool:
         print(f"  Error reading file: {e}")
         return False
 
-    comment_symbol = get_comment_symbol(file_path)
-
     # Check for existing license header and remove it
-    cleaned_lines = remove_existing_license_header(original_lines, comment_symbol)
+    cleaned_lines = remove_existing_license_header(original_lines)
 
     # Determine where to insert the header
     insert_index = 0
 
     # If the file starts with a shebang, insert after it
-    if cleaned_lines and cleaned_lines[0].startswith("#!"):
+    if has_shebang(cleaned_lines):
         insert_index = 1
 
     # Create the new file content
@@ -682,7 +713,7 @@ def find_source_files(root_path: Path, extensions: Dict[str, str]) -> List[Path]
     return sorted(source_files)
 
 
-def main():
+def main() -> int:
     """Main function to check license headers in source files.
 
     Returns:

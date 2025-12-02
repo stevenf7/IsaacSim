@@ -11,7 +11,7 @@
 - Added AMR navigation example test
 - Switched to RealtimePathTracing in the motion blur example
 
-## [1.5.0] - 2025-10-21
+## [1.5.0] - 2025-10-28
 ### Changed
 - Updated replicator examples to use replicator functional api where applicable
 - Writers use explicit backends to write data to disk
@@ -59,7 +59,7 @@
 
 ## [1.2.2] - 2025-09-15
 ### Changed
-- switched to isaacsim.test.utils for folder contents validation and goldenimage comparison in tests
+- Switched to isaacsim.test.utils for folder contents validation and goldenimage comparison in tests
 
 ## [1.2.1] - 2025-09-01
 ### Fixed
@@ -114,11 +114,11 @@
 
 ## [1.1.22] - 2025-05-30
 ### Changed
-- increase rt_subframes in examples for more consistent results between updates
+- Increase rt_subframes in examples for more consistent results between updates
 
 ## [1.1.21] - 2025-05-23
 ### Changed
-- rename test utils.py to common.py
+- Rename test utils.py to common.py
 
 ## [1.1.20] - 2025-05-22
 ### Changed
@@ -134,11 +134,11 @@
 
 ## [1.1.17] - 2025-05-16
 ### Added
-- added test for starting capturing while the timeline is running
-- test utils.py for functions used in multiple tests
+- Added test for starting capturing while the timeline is running
+- Test utils.py for functions used in multiple tests
 
 ### Changed
-- more verbose terminal outputs for tests
+- More verbose terminal outputs for tests
 
 ## [1.1.16] - 2025-05-12
 ### Changed
@@ -150,7 +150,7 @@
 
 ## [1.1.14] - 2025-05-10
 ### Changed
-- fixed timeline tests by making sure the timeline is stopped and the looping is set to its original value
+- Fixed timeline tests by making sure the timeline is stopped and the looping is set to its original value
 
 ## [1.1.13] - 2025-05-09
 ### Added
@@ -167,7 +167,7 @@
 
 ## [1.1.10] - 2025-04-17
 ### Changed
-- changed add_update_semantics to add_labels
+- Changed add_update_semantics to add_labels
 
 ## [1.1.9] - 2025-04-09
 ### Changed
@@ -208,12 +208,12 @@
 
 ## [1.1.0] - 2024-12-17
 ### Added
-- added UR10 palletizing demo test
+- Added UR10 palletizing demo test
 
 ## [1.0.1] - 2024-12-15
 ### Fixed
-- added fixed timestepping for consistent results for custom fps capture test
+- Added fixed timestepping for consistent results for custom fps capture test
 
 ## [1.0.0] - 2024-12-09
 ### Added
-- created extension with example parts from omni.replicator.isaac
+- Created extension with example parts from omni.replicator.isaac

@@ -98,7 +98,7 @@
 
 ## [3.0.0] - 2024-09-30
 ### Changed
-- extension renamed to isaacsim.robot.manipulators (from omni.isaac.manipulators)
+- Extension renamed to isaacsim.robot.manipulators (from omni.isaac.manipulators)
 
 ## [2.1.0] - 2024-05-24
 ### Added
@@ -110,21 +110,21 @@
 
 ## [1.3.1] - 2024-03-21
 ### Changed
-- enabled "add to existing graph" for all the shortcuts
+- Enabled "add to existing graph" for all the shortcuts
 
 ## [1.3.0] - 2024-03-15
 ### Changed
-- moved all python code into a python folder. deleted omni/isaac/manipulators
+- Moved all python code into a python folder. deleted omni/isaac/manipulators
 
 ### Added
 - Gripper Controller Node
-- automatically populated omnigraph for gripper controller
-- pointer to open up the python script that generates the omnigraph for the menu shortcut graphs
+- Automatically populated omnigraph for gripper controller
+- Pointer to open up the python script that generates the omnigraph for the menu shortcut graphs
 
 ## [1.2.0] - 2024-02-07
 ### Added
-- a menu item for the extension to allow for populating common controller omnigraphs
-- automatically populated omnigraph for position and velocity controller of any articulation object
+- A menu item for the extension to allow for populating common controller omnigraphs
+- Automatically populated omnigraph for position and velocity controller of any articulation object
 
 ## [1.1.0] - 2022-11-24
 ### Added

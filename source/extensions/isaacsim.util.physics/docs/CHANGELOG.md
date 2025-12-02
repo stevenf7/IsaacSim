@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.6] - 2025-11-28
+### Changed
+- Add missing docstrings
+
 ## [1.1.5] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

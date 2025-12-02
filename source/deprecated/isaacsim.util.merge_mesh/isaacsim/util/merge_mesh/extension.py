@@ -35,9 +35,14 @@ EXTENSION_NAME = "Mesh Merge Tool"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
-        """Called to load the extension"""
+    """Mesh Merge Tool extension for combining multiple meshes into a single mesh."""
 
+    def on_startup(self, ext_id: str):
+        """Initialize the extension and create the UI window.
+
+        Args:
+            ext_id: The unique identifier for this extension instance.
+        """
         carb.log_warn(
             f"Extension {EXTENSION_NAME} is deprecated since ISaac Sim 6.0.0. Replaced with the Scene Optimizer"
         )
@@ -59,6 +64,7 @@ class Extension(omni.ext.IExt):
         self.mesh_merger = MeshMerger(self._stage)
 
     def build_ui(self):
+        """Build the user interface for the Mesh Merge Tool window."""
         with self._window.frame:
             with ui.HStack(spacing=5):
                 with ui.VStack(height=0, spacing=5):
@@ -132,17 +138,33 @@ class Extension(omni.ext.IExt):
                     btn_builder(label="Merge Selected Prim", text="Merge", on_clicked_fn=self._merge_mesh)
 
     def on_mat_changed(self, value):
+        """Handle material change events from the mesh merger.
+
+        Args:
+            value: The new material destination path value.
+        """
         if type(value) == str:
             self.override_looks_directory[1].set_value(value)
 
     def on_mat_dest_changed(self, value):
+        """Handle material destination path change events from the UI.
+
+        Args:
+            value: The new material destination path entered by the user.
+        """
         if self.mesh_merger.materials_destination != value:
             self.mesh_merger.materials_destination = value
 
     def _menu_callback(self):
+        """Toggle the visibility of the Mesh Merge Tool window."""
         self._window.visible = not self._window.visible
 
     def _on_window(self, visible):
+        """Handle window visibility change events.
+
+        Args:
+            visible: Whether the window is now visible.
+        """
         if self._window.visible:
             self._usd_context = omni.usd.get_context()
             if self._usd_context is not None:
@@ -156,7 +178,14 @@ class Extension(omni.ext.IExt):
         else:
             self._stage_event_sub = None
 
-    def _on_stage_event(self, event=None):  # Empty event is a forced update from UI
+    def _on_stage_event(self, event=None):
+        """Handle stage events such as selection changes.
+
+        Updates the UI to reflect the currently selected prims and their mesh properties.
+
+        Args:
+            event: The stage event that triggered this callback. If None, forces a UI update.
+        """
         if self._window.visible:
             self._stage = omni.usd.get_context().get_stage()
             if not event or event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
@@ -186,10 +215,11 @@ class Extension(omni.ext.IExt):
                     self.models["output_subset"].set_value(0)
 
     def _merge_mesh(self):
+        """Execute the mesh merge operation using the current settings."""
         self.mesh_merger.merge_meshes()
 
     def on_shutdown(self):
-        """Called when the extesion us unloaded"""
+        """Clean up resources when the extension is unloaded."""
         remove_menu_items(self._menu_items, "Tools")
         self._window = None
         gc.collect()

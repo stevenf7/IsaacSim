@@ -49,7 +49,7 @@
 
 ## [1.1.3] - 2025-05-11
 ### Changed
-- minor adjustment to the button decorator so it adapts to different button sizes centered.
+- Minor adjustment to the button decorator so it adapts to different button sizes centered.
 
 ## [1.1.2] - 2025-05-10
 ### Changed
@@ -57,11 +57,11 @@
 
 ## [1.1.1] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [1.1.0] - 2025-05-03
 ### Changed
-- add an optional set_on_end_edit_fn callback for float fields
+- Add an optional set_on_end_edit_fn callback for float fields
 
 ## [1.0.14] - 2025-04-09
 ### Changed
@@ -102,11 +102,11 @@
 
 ## [1.0.4] - 2025-01-13
 ### Changed
-- fixed button tooltips
+- Fixed button tooltips
 
 ## [1.0.3] - 2024-10-29
 ### Changed
-- added an info_collapsed argument for setup_ui_headers
+- Added an info_collapsed argument for setup_ui_headers
 
 ## [1.0.2] - 2024-10-28
 ### Changed
@@ -130,7 +130,7 @@
 
 ## [0.15.1] - 2024-04-13
 ### Added
-- optional tooltip entry for SelectPrimWidget and ParamWidget
+- Optional tooltip entry for SelectPrimWidget and ParamWidget
 
 ## [0.15.0] - 2024-03-14
 ### Added
@@ -243,14 +243,14 @@
 
 ## [0.5.2] - 2023-01-19
 ### Fixed
-- split calback tests to reduce errors
+- Split calback tests to reduce errors
 
 ### Changed
-- rename startup to test_ui
+- Rename startup to test_ui
 
 ## [0.5.1] - 2023-01-11
 ### Fixed
-- revert to old menu click function to fix hot reload errors
+- Revert to old menu click function to fix hot reload errors
 
 ## [0.5.0] - 2023-01-06
 ### Added
@@ -282,7 +282,7 @@
 
 ## [0.2.1] - 2022-06-02
 ### Changed
-- expose labels for file/folder picker
+- Expose labels for file/folder picker
 
 ## [0.2.0] - 2022-05-25
 ### Added
@@ -294,7 +294,7 @@
 
 ## [0.1.2] - 2021-12-14
 ### Changed
-- adjust tooltip for ui Buttons with changed background color
+- Adjust tooltip for ui Buttons with changed background color
 
 ## [0.1.1] - 2021-09-28
 ### Fixed

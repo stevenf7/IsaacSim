@@ -1,7 +1,7 @@
 # Changelog
 ## [2.3.2] - 2025-10-31
 ### Changed
-- fix invalid escape sequences
+- Fix invalid escape sequences
 
 ## [2.3.1] - 2025-10-27
 ### Changed
@@ -77,11 +77,11 @@
 
 ## [2.1.1] - 2024-11-25
 ### Fixed
-- lidar examples pointers and shutting down properly
+- Lidar examples pointers and shutting down properly
 
 ## [2.1.0] - 2024-10-29
 ### Changed
-- moved examples from menu to browser
+- Moved examples from menu to browser
 
 ## [2.0.1] - 2024-10-24
 ### Changed

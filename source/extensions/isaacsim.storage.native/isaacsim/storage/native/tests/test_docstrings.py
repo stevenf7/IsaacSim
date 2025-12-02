@@ -13,16 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import omni.ext
+import isaacsim.storage.native.nucleus as nucleus
+import isaacsim.test.docstring
 
-from .. import _debug_draw
+# import isaacsim.core.experimental.utils.impl.stage as stage_utils
 
 
-class Extension(omni.ext.IExt):
-    def on_startup(self):
-        """Initialize the debug draw extension and acquire the debug draw interface."""
-        self._draw = _debug_draw.acquire_debug_draw_interface()
+class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
+    async def setUp(self):
+        """Method called to prepare the test fixture"""
+        super().setUp()
+        # create new stage
 
-    def on_shutdown(self):
-        """Shutdown the debug draw extension and release the debug draw interface."""
-        _debug_draw.release_debug_draw_interface(self._draw)
+    async def tearDown(self):
+        """Method called immediately after the test method has been called"""
+        super().tearDown()
+
+    async def test_nucleus_docstrings(self):
+        await self.assertDocTests(nucleus)

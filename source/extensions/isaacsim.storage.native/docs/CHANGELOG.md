@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.2] - 2025-11-28
+### Changed
+- Add missing docstrings
+- Add docstring tests
+
 ## [1.6.1] - 2025-12-01
 ### Fixed
 - Update assets path to 6.0 staging

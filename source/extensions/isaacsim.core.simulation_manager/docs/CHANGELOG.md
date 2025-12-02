@@ -143,7 +143,7 @@
 
 ## [0.4.2] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [0.4.1] - 2025-04-30
 ### Changed

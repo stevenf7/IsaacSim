@@ -21,11 +21,11 @@
 
 ## [2.0.6] - 2024-12-09
 ### Fixed
-- startup test
+- Startup test
 
 ## [2.0.5] - 2024-12-07
 ### Fixed
-- moved from deprecated editor_menu.add_item to omni.kit.menu.utils
+- Moved from deprecated editor_menu.add_item to omni.kit.menu.utils
 
 ## [2.0.4] - 2024-11-19
 ### Fixed

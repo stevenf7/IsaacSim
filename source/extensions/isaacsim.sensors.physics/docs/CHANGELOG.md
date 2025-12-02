@@ -9,7 +9,7 @@
 
 ## [0.5.3] - 2025-10-31
 ### Changed
-- update deprecated python unittest methods
+- Update deprecated python unittest methods
 
 ## [0.5.2] - 2025-10-27
 ### Changed
@@ -81,7 +81,7 @@
 
 ## [0.3.17] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [0.3.16] - 2025-05-02
 ### Changed
@@ -151,7 +151,7 @@
 
 ## [0.3.0] - 2024-10-31
 ### Changed
-- moved examples from menu to browser
+- Moved examples from menu to browser
 
 ## [0.2.0] - 2024-10-30
 ### Changed

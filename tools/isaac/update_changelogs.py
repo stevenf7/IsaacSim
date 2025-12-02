@@ -22,16 +22,14 @@ import os
 import re
 import subprocess
 import sys
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 # Define parse_toml at the module level
 def parse_toml(toml_str):
-    """Very simple TOML parser for basic needs"""
+    """Very simple TOML parser for basic needs."""
     result = {}
     current_section = result
-    section_stack = []
 
     for line in toml_str.split("\n"):
         line = line.strip()
@@ -796,7 +794,7 @@ class ChangelogValidator:
             self.errors.append(f"Error reading {self.rel_extension_toml_path}: {e}")
 
     def format_changelog(self) -> List[str]:
-        """Format the changelog file correctly, removing extra empty lines."""
+        """Format the changelog file correctly, removing extra empty lines and capitalizing bullet points."""
         if not self.lines:
             return []
 
@@ -809,7 +807,7 @@ class ChangelogValidator:
         version_pattern = re.compile(r"## \[([^\]]+)\]")
         section_pattern = re.compile(r"### (\w+)")
 
-        for i, line in enumerate(self.lines):
+        for line in self.lines:
             line = line.rstrip()
 
             # Check if this is a version header
@@ -854,6 +852,10 @@ class ChangelogValidator:
             # Reset empty line counter for non-empty lines
             empty_line_count = 0
             last_line_was_version = False
+
+            # Capitalize first character of bullet points
+            line = self._capitalize_bullet_point(line)
+
             formatted_lines.append(line)
 
         # Ensure file ends with a newline
@@ -861,6 +863,78 @@ class ChangelogValidator:
             formatted_lines.append("")
 
         return formatted_lines
+
+    def _capitalize_bullet_point(self, line: str) -> str:
+        """Capitalize the first character of a bullet point entry.
+
+        Skips capitalization for code references (backticks), function names,
+        variable names, and other technical terms that should remain lowercase.
+
+        Args:
+            line: The line to process.
+
+        Returns:
+            The line with the first character of the bullet point content capitalized,
+            unless it appears to be code or a technical reference.
+        """
+        # Match bullet points (with optional leading whitespace for nested items)
+        # Pattern: optional whitespace, dash, space, then content
+        bullet_pattern = re.compile(r"^(\s*-\s+)(.*)$")
+        match = bullet_pattern.match(line)
+
+        if match:
+            prefix = match.group(1)  # "- " or "  - " etc.
+            content = match.group(2)
+
+            if content and self._should_capitalize(content):
+                return prefix + content[0].upper() + content[1:]
+
+        return line
+
+    def _should_capitalize(self, content: str) -> bool:
+        """Determine if content should have its first character capitalized.
+
+        Args:
+            content: The content to check.
+
+        Returns:
+            True if the content should be capitalized, False otherwise.
+        """
+        if not content:
+            return False
+
+        first_char = content[0]
+
+        # Skip if not a lowercase letter (already capitalized, digit, backtick, etc.)
+        if not first_char.islower():
+            return False
+
+        # Get the first word to check if it looks like code
+        # Include special characters to catch patterns like "semantics:add_labels" or "opencv-python==4.9.0"
+        first_word_match = re.match(r"^([a-zA-Z0-9_.\[\]():=<>!-]+)", content)
+        if first_word_match:
+            first_word = first_word_match.group(1)
+
+            # Skip if first word contains code-like patterns:
+            # - underscores (snake_case variables/functions)
+            # - parentheses (function calls)
+            # - dots (module.function or object.method)
+            # - square brackets (array access)
+            # - colons (namespace:function patterns)
+            # - equals/comparison operators (version specs like ==4.9.0, >=1.0)
+            # - hyphens in the middle (package names like opencv-python)
+            if re.search(r"[_().\[\]:=<>!]", first_word):
+                return False
+
+            # Skip if contains hyphen not at the start (package names like opencv-python-headless)
+            if "-" in first_word[1:]:
+                return False
+
+            # Skip camelCase words (lowercase start, has uppercase later)
+            if re.search(r"^[a-z]+[A-Z]", first_word):
+                return False
+
+        return True
 
     def format_and_save(self) -> bool:
         """Format the changelog file and save it."""
@@ -908,7 +982,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     tool_config = config.get("repo_update_changelogs", {})
 
     # Mode options
-    mode_group = parser.add_argument_group("Operation Mode")
     parser.add_argument(
         "--validate",
         action="store_true",
@@ -929,7 +1002,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     )
 
     # Update options
-    update_group = parser.add_argument_group("Update Options")
     parser.add_argument(
         "--message",
         "-m",
@@ -943,7 +1015,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     )
 
     # Validation options
-    validation_group = parser.add_argument_group("Validation Options")
     parser.add_argument(
         "--check-unreleased",
         action="store_true",
@@ -952,7 +1023,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     )
 
     # Output options
-    output_group = parser.add_argument_group("Output Options")
     parser.add_argument(
         "--verbose", "-v", action="store_true", default=tool_config.get("verbose", False), help="Enable verbose output"
     )
@@ -1052,11 +1122,9 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
             for error in errors:
                 print(f"  - {error}")
 
-    print(
-        "\nProcessed {0} extensions: {1} successful, {2} with issues".format(
-            len(all_results), success_count, len(all_results) - success_count
-        )
-    )
+    total_count = len(all_results)
+    failed_count = total_count - success_count
+    print(f"\nProcessed {total_count} extensions: {success_count} successful, {failed_count} with issues")
 
     if error_count > 0:
         print(f"Found {error_count} total issues")
@@ -1082,9 +1150,5 @@ if __name__ == "__main__":
     if not (args.validate or args.format or args.update):
         print("No mode specified, defaulting to update mode")
         args.update = True
-
-    # Debug output to help diagnose issues
-    print(f"Mode flags: validate={args.validate}, format={args.format}, update={args.update}")
-    print(f"Other flags: check_modified={args.check_modified}, message={args.message}")
 
     sys.exit(run_tool(args, {"root": os.getcwd()}))

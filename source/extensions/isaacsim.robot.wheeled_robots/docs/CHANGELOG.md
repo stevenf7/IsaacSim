@@ -9,16 +9,16 @@
 
 ## [5.0.0] - 2025-11-07
 ### Changed
-- delete deprecated AckermannControllerDeprecated node
-- delete deprecated ackermann_controller_deprecated.py file
+- Delete deprecated AckermannControllerDeprecated node
+- Delete deprecated ackermann_controller_deprecated.py file
 
 ## [4.0.28] - 2025-10-31
 ### Changed
-- fix invalid escape sequences
+- Fix invalid escape sequences
 
 ## [4.0.27] - 2025-10-31
 ### Changed
-- update deprecated python unittest methods
+- Update deprecated python unittest methods
 
 ## [4.0.26] - 2025-10-27
 ### Changed
@@ -138,7 +138,7 @@
 
 ## [3.0.0] - 2024-10-02
 ### Changed
-- extension renamed to isaacsim.robot.wheeled_robots
+- Extension renamed to isaacsim.robot.wheeled_robots
 
 ## [2.3.3] - 2024-07-17
 ### Fixed
@@ -151,7 +151,7 @@
 
 ## [2.3.1] - 2024-07-08
 ### Changed
-- use omni.isaac.debug_draw instead of omni.debugdraw
+- Use omni.isaac.debug_draw instead of omni.debugdraw
 
 ## [2.3.0] - 2024-07-03
 ### Added
@@ -169,7 +169,7 @@
 
 ## [2.1.2] - 2024-05-04
 ### Added
-- unit test for robot reset using jetbot
+- Unit test for robot reset using jetbot
 
 ## [2.1.1] - 2024-04-24
 ### Changed
@@ -185,8 +185,8 @@
 
 ## [1.1.5] - 2024-03-13
 ### Changed
-- added empty string to get_next_free_path's parent argument in Omnigraph shortcuts
-- added ability to open python script in the popup dialog for omnigraph shortcuts
+- Added empty string to get_next_free_path's parent argument in Omnigraph shortcuts
+- Added ability to open python script in the popup dialog for omnigraph shortcuts
 
 ## [1.1.4] - 2024-03-12
 ### Added
@@ -206,7 +206,7 @@
 ## [1.1.1] - 2024-02-17
 ### Changed
 - Replaced internalState with perInstanceState for python ogn nodes
-- small modifications in the Holonomic node definition
+- Small modifications in the Holonomic node definition
 - All custom_reset function in directly set the node using OG API
 
 ### Added
@@ -214,8 +214,8 @@
 
 ## [1.1.0] - 2024-02-13
 ### Added
-- a menu item for the extension to allow for populating common controller omnigraphs
-- automatically populated omnigraph for controlling a differential robot
+- A menu item for the extension to allow for populating common controller omnigraphs
+- Automatically populated omnigraph for controlling a differential robot
 
 ## [1.0.1] - 2024-02-05
 ### Changed
@@ -255,7 +255,7 @@
 
 ## [0.7.1] - 2023-10-06
 ### Changed
-- wheeled robot class can now accept a relative path from the default prim to the robot prim when the robot is not the default prim
+- Wheeled robot class can now accept a relative path from the default prim to the robot prim when the robot is not the default prim
 
 ### Fixed
 - Differential controller now resets on simulation Stop
@@ -271,7 +271,7 @@
 ## [0.6.4] - 2023-06-13
 ### Fixed
 - Kit 105.1 update
-- use omni.usd instead of omni.usd.utils for get_world_transform_matrix
+- Use omni.usd instead of omni.usd.utils for get_world_transform_matrix
 
 ## [0.6.3] - 2023-03-10
 ### Fixed
@@ -302,15 +302,15 @@
 
 ## [0.5.7] - 2022-07-22
 ### Changed
-- pulled out the internal state classes for both holonomic and differential controller
+- Pulled out the internal state classes for both holonomic and differential controller
 
 ## [0.5.6] - 2022-07-19
 ### Added
-- unit tests for nodes and controllers
+- Unit tests for nodes and controllers
 
 ## [0.5.5] - 2022-06-29
 ### Added
-- doc strings for python files and comments for omnigraph nodes.
+- Doc strings for python files and comments for omnigraph nodes.
 
 ## [0.5.4] - 2022-06-01
 ### Changed
@@ -357,7 +357,7 @@
 - OgnDifferentialController uses bundle inputs
 
 ### Fixed
-- omnigraph dependency
+- Omnigraph dependency
 
 ## [0.2.0] - 2022-04-27
 ### Added

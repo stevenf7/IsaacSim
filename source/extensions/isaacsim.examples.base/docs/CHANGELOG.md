@@ -16,4 +16,3 @@
 - Initial release of isaacsim.examples.base extension
 - BaseSampleExperimental class for creating sample applications
 - BaseSampleUITemplateExperimental class for experimental interactive UI templates
-

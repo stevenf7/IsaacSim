@@ -128,6 +128,6 @@ if os.target() == "linux" then
         { "include", ext.target_dir .. "/include" },
         { "docs", ext.target_dir .. "/docs" },
     }
-else 
+else
     print("SKIPPING BUILD - UCX nodes extension only supported on linux-x86_64")
 end

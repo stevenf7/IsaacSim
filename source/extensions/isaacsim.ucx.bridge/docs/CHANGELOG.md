@@ -1,7 +1,5 @@
 # Changelog
 
-All notable changes to the UCX Bridge extension are documented in this file.
-
 ## [1.1.0] - 2025-11-24
 ### Added
 - Added `isaacsim.ucx.nodes` as a dependency.

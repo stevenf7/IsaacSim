@@ -61,7 +61,7 @@
 
 ## [2.1.2] - 2025-01-02
 ### Changed
-- performing any UI logic only once window is built
+- Performing any UI logic only once window is built
 
 ## [2.1.1] - 2024-12-11
 ### Changed

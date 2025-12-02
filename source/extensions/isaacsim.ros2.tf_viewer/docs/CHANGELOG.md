@@ -89,7 +89,7 @@
 
 ## [2.1.2] - 2025-03-09
 ### Fixed
-- fix failing unit tests
+- Fix failing unit tests
 
 ## [2.1.1] - 2025-03-05
 ### Changed
