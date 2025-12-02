@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.14] - 2025-12-02
+### Changed
+- OMPE-72905: Fix the navigate issue caused by wrong protocol.
+
 ## [0.1.13] - 2025-12-01
 ### Changed
 - Update assets path to 6.0 staging
