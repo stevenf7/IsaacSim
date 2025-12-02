@@ -1,4 +1,8 @@
 # Changelog
+## [15.11.1] - 2025-12-01
+### Changed
+- OgnIsaacCreateRTXLidarScanBuffer uses lambda function to initialize and allocate buffers
+
 ## [15.11.0] - 2025-11-26
 ### Added
 - IsaacCreateRTXRadarPointCloud annotator to explicitly support RTX Radar
