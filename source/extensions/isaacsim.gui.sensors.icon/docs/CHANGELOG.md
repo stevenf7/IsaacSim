@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.5] - 2025-12-01
+### Changed
+- Update test module import
+
 ## [2.0.4] - 2025-11-03
 ### Removed
 - Remove the deprecated and unused isaacsim.core.utils dependency
