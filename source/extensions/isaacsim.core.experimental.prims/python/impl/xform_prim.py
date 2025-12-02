@@ -120,9 +120,6 @@ class XformPrim(Prim):
                     self.set_local_poses(translations, orientations)
                 if scales is not None:
                     self.set_local_scales(scales)
-        # setup physics-related configuration if simulation is running
-        if SimulationManager._physics_sim_view__warp is not None:
-            self._on_physics_ready(None)
 
     """
     Properties.

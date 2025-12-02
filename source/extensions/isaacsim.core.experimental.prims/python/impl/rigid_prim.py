@@ -42,6 +42,12 @@ class RigidPrim(XformPrim):
 
         If the prims do not already have the Rigid Body API applied to them, it will be applied.
 
+    .. warning::
+
+        Currently, creating a USD prim and wrapping it using this class during runtime (when the simulation is playing)
+        is only supported on CPU-based simulation. On GPU-based simulation, a PhysX error will be logged:
+        *Unresolved rigid dynamic index!*.
+
     Args:
         paths: Single path or list of paths to USD prims. Can include regular expressions for matching multiple prims.
         resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
@@ -116,6 +122,7 @@ class RigidPrim(XformPrim):
         )
         # apply rigid body API
         RigidPrim.ensure_api(self.prims, UsdPhysics.RigidBodyAPI)
+        RigidPrim.ensure_api(self.prims, PhysxSchema.PhysxRigidBodyAPI)
         # initialize instance from arguments
         if masses is not None:
             self.set_masses(masses)
