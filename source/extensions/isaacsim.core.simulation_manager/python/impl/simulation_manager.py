@@ -417,10 +417,12 @@ class SimulationManager:
             physics_scene (str, optional): physics scene prim path. Defaults to first physics scene found in the stage.
 
         Raises:
+            RuntimeError: If the simulation is running/playing and dt is being set.
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
-            ValueError: Physics dt must be a >= 0.
-            ValueError: Physics dt must be a <= 1.0.
+            ValueError: If the dt is not in the range [0.0, 1.0].
         """
+        if app_utils.is_playing():
+            raise RuntimeError("The physics dt cannot be set while the simulation is running/playing")
         if physics_scene is None:
             physics_scene_apis = SimulationManager._physics_scene_apis.values()
         else:
