@@ -1,8 +1,12 @@
 # Changelog
 
+## [0.9.5] - 2025-12-01
+### Fixed
+- Fix physics setup when a prim instance is created while the simulation is running
+
 ## [0.9.4] - 2025-11-26
 ### Changed
-- Update check condition on Dof to ensure it checks if it's a valid dof before checking limits
+- Update check condition on DOF to ensure it checks if it's a valid DOF before checking limits
 
 ## [0.9.3] - 2025-11-21
 ### Changed

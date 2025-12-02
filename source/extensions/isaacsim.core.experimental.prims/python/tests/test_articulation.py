@@ -76,6 +76,17 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
     # --------------------------------------------------------------------
 
     @parametrize(
+        backends=["tensor"],  # "tensor" backend plays the simulation
+        instances=["one"],
+        operations=["wrap"],
+        prim_class=lambda *args, **kwargs: None,
+        populate_stage_func=populate_stage,
+        max_num_prims=1,
+    )
+    async def test_runtime_instance_creation(self, prim, num_prims, device, backend):
+        Articulation("/World/A_0")
+
+    @parametrize(
         backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
     )
     async def test_len(self, prim, num_prims, device, backend):
