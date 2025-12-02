@@ -33,7 +33,7 @@
 
 ## [1.1.0] - 2024-10-29
 ### Changed
-- moved menu entry from "Isaac Examples" to "Window->Examples"
+- Moved menu entry from "Isaac Examples" to "Window->Examples"
 
 ## [1.0.1] - 2024-10-24
 ### Changed

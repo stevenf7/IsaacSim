@@ -28,7 +28,7 @@
 
 ## [0.1.9] - 2025-03-09
 ### Fixed
-- fix failing unit tests
+- Fix failing unit tests
 
 ## [0.1.8] - 2025-01-21
 ### Changed
@@ -36,12 +36,12 @@
 
 ## [0.1.7] - 2025-01-17
 ### Changed
-- tab to be "Robotics Examples" to match menu
+- Tab to be "Robotics Examples" to match menu
 
 ## [0.1.6] - 2025-01-08
 ### Changed
 - Switched from "error" to "warning" when adding examples with existing names
-- deleting empty categories
+- Deleting empty categories
 
 ## [0.1.5] - 2025-01-07
 ### Changed
@@ -61,7 +61,7 @@
 
 ## [0.1.1] - 2024-11-12
 ### Fixed
-- fix for browser option panel interference
+- Fix for browser option panel interference
 
 ## [0.1.0] - 2024-10-29
 ### Changed

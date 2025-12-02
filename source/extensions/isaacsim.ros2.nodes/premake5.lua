@@ -52,8 +52,6 @@ includedirs {
     "%{root}/source/extensions/isaacsim.ros2.nodes/include",
 }
 
-
-
 -- Add PhysX includes (needed for PxActor.h and other PhysX headers)
 include_physx()
 

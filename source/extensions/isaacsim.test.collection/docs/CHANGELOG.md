@@ -6,7 +6,7 @@
 
 ## [2.2.5] - 2025-10-31
 ### Changed
-- update deprecated python unittest methods
+- Update deprecated python unittest methods
 
 ## [2.2.4] - 2025-10-27
 ### Changed
@@ -82,7 +82,7 @@
 
 ## [2.0.12] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [2.0.11] - 2025-04-21
 ### Changed
@@ -90,7 +90,7 @@
 
 ## [2.0.10] - 2025-04-17
 ### Changed
-- changed add_update_semantics to add_labels
+- Changed add_update_semantics to add_labels
 
 ## [2.0.9] - 2025-04-09
 ### Changed
@@ -208,7 +208,7 @@
 
 ## [1.14.2] - 2023-11-27
 ### Fixed
-- updated tests to renamed nova carter asset
+- Updated tests to renamed nova carter asset
 
 ## [1.14.1] - 2023-11-21
 ### Added
@@ -282,11 +282,11 @@
 
 ## [1.5.0] - 2022-12-10
 ### Changed
-- use set_target_prims from core nodes
+- Use set_target_prims from core nodes
 
 ## [1.4.0] - 2022-11-18
 ### Added
-- cuopt example extension startup test
+- Cuopt example extension startup test
 
 ## [1.3.1] - 2022-10-27
 ### Fixed

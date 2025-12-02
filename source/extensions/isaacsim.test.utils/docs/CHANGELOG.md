@@ -34,7 +34,7 @@
 
 ## [0.3.0] - 2025-09-15
 ### Changed
-- added file_validation.py for utilities to validate folder contents and file lists
+- Added file_validation.py for utilities to validate folder contents and file lists
 
 ## [0.2.1] - 2025-09-08
 ### Added

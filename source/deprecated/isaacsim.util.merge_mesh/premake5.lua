@@ -14,7 +14,7 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
-ext.target_dir = deprecated_exts_path.."/"..ext.id
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
 
 project_ext(ext)
 

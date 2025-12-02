@@ -20,7 +20,18 @@ from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
 
 class MeshMerger(object):
+    """Utility class for merging multiple USD meshes into a single mesh.
+
+    This class handles the merging of mesh geometry, materials, geometry subsets,
+    and texture coordinates from multiple source meshes into a single output mesh.
+    """
+
     def __init__(self, stage):
+        """Initialize the MeshMerger.
+
+        Args:
+            stage: The USD stage containing the meshes to merge.
+        """
         self._clear_parent_xform = False
         self._combine_materials = False
         self._deactivate_source = False
@@ -39,54 +50,84 @@ class MeshMerger(object):
 
     @property
     def total_meshes(self):
+        """Get the total number of meshes to be merged."""
         return self._total_meshes
 
     @property
     def total_subsets(self):
+        """Get the total number of geometry subsets across all meshes."""
         return self._total_subsets
 
     @property
     def total_materials(self):
+        """Get the total number of unique materials across all meshes."""
         return self._total_materials
 
     @property
     def meshes_to_merge(self):
+        """Get the list of mesh prims to be merged."""
         return self._meshes_to_merge
 
     @property
     def clear_parent_xform(self):
+        """Get whether to clear the parent transform when merging."""
         return self._clear_parent_xform
 
     @clear_parent_xform.setter
     def clear_parent_xform(self, value):
+        """Set whether to clear the parent transform when merging.
+
+        Args:
+            value: If True, the merged mesh origin is at world origin.
+                Otherwise, it keeps the origin at the parent's origin.
+        """
         self._clear_parent_xform = value
 
     @property
     def deactivate_source(self):
+        """Get whether to deactivate source prims after merging."""
         return self._deactivate_source
 
     @deactivate_source.setter
     def deactivate_source(self, value):
+        """Set whether to deactivate source prims after merging.
+
+        Args:
+            value: If True, deactivates all source meshes after merge.
+        """
         self._deactivate_source = value
 
     @property
     def selected_objects(self):
+        """Get the list of selected prim paths."""
         return self._selected_objects
 
     @property
     def combine_materials(self):
+        """Get whether to combine materials into a single destination."""
         return self._combine_materials
 
     @combine_materials.setter
     def combine_materials(self, value):
+        """Set whether to combine materials into a single destination.
+
+        Args:
+            value: If True, materials are combined into the materials destination path.
+        """
         self._combine_materials = value
 
     @property
     def materials_destination(self):
+        """Get the destination path for combined materials."""
         return self._materials_destination
 
     @materials_destination.setter
     def materials_destination(self, value):
+        """Set the destination path for combined materials.
+
+        Args:
+            value: The prim path where combined materials will be stored.
+        """
         changed = value != self._materials_destination
         self._materials_destination = value
         if changed and self.on_materials_changed_fn:
@@ -94,14 +135,29 @@ class MeshMerger(object):
 
     @property
     def output_mesh(self):
+        """Get the output path for the merged mesh."""
         return self._output_mesh
 
     @output_mesh.setter
     def output_mesh(self, value):
+        """Set the output path for the merged mesh.
 
+        The path is automatically adjusted to avoid conflicts with existing prims.
+
+        Args:
+            value: The desired prim path for the merged mesh.
+        """
         self._output_mesh = omni.usd.get_stage_next_free_path(self._stage, value, False)
 
     def fix_material_sources(self, mat):
+        """Fix material output connections after copying a material to a new location.
+
+        When a material is copied, its shader connections need to be updated to point
+        to the new shader paths.
+
+        Args:
+            mat: The UsdShade.Material to fix connections for.
+        """
         shader_path = mat.GetPrim().GetChildren()[0].GetPath()
 
         material_outputs = mat.GetOutputs()
@@ -122,7 +178,15 @@ class MeshMerger(object):
                 output.ConnectToSource(path)
 
     def update_selection(self, selection, stage=None):
+        """Update the selection of prims to merge and compute mesh statistics.
 
+        Traverses the selected prims and their children to find all visible meshes,
+        counting total meshes, geometry subsets, and unique materials.
+
+        Args:
+            selection: List of prim paths to process for merging.
+            stage: Optional USD stage to use. If None, uses the current stage.
+        """
         self._selected_objects = selection
         if stage:
             self._stage = stage
@@ -185,6 +249,12 @@ class MeshMerger(object):
             self._total_materials = len(materials)
 
     def merge_meshes(self):
+        """Execute the mesh merge operation.
+
+        Combines all meshes in the selection into a single merged mesh. This includes
+        merging geometry (points, normals, texture coordinates), combining materials
+        and geometry subsets, and applying the appropriate transforms.
+        """
         meshes = []
         curr_prim = self._stage.GetPrimAtPath(self.selected_objects[0])
         prim_transform = omni.usd.get_world_transform_matrix(curr_prim, Usd.TimeCode.Default())
@@ -365,12 +435,20 @@ class MeshMerger(object):
                 prim.SetActive(False)
 
     def reactivate_sources(self):
+        """Reactivate source prims that were deactivated during merge.
+
+        This is used by the undo operation to restore the original state.
+        """
         if self.deactivate_source:
             for source in self.selected_objects:
                 prim = self._stage.GetPrimAtPath(source)
                 prim.SetActive(True)
 
     def remove_created_materials(self):
+        """Remove materials that were created during the merge operation.
+
+        This is used by the undo operation to clean up copied materials.
+        """
         for mat in self._created_materials:
             self._stage.RemovePrim(mat)
         self._created_materials = []

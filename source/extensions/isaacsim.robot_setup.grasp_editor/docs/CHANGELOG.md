@@ -46,7 +46,7 @@
 
 ## [2.0.11] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [2.0.10] - 2025-04-09
 ### Changed

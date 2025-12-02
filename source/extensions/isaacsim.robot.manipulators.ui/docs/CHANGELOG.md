@@ -112,21 +112,21 @@
 
 ## [1.2.2] - 2024-09-13
 ### Fixed
-- changed pxr.OmniGraphSchema import to OmniGraphSchema
+- Changed pxr.OmniGraphSchema import to OmniGraphSchema
 
 ## [1.2.1] - 2024-05-22
 ### Changed
-- docs link changed from internal to external
+- Docs link changed from internal to external
 
 ## [1.2.0] - 2024-05-09
 ### Changed
-- only ask for robot parent prim, automatically search for Articulation Root API under the hood
+- Only ask for robot parent prim, automatically search for Articulation Root API under the hood
 
 ## [1.1.0] - 2024-04-13
 ### Added
-- needed robot root input separately from articulation root for Articulation Position/Velocity controller graphs
-- documentation button for omnigraph shortcuts
+- Needed robot root input separately from articulation root for Articulation Position/Velocity controller graphs
+- Documentation button for omnigraph shortcuts
 
 ## [1.0.0] - 2024-03-20
 ### Added
-- created isaacsim.robot.manipulators.ui
+- Created isaacsim.robot.manipulators.ui

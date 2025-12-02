@@ -1,22 +1,22 @@
 # Changelog
 
 ## [1.2.1] - 2025-11-28
-### Changes
+### Changed
 - Regenerate pip prebundle
 
 ## [1.2.0] - 2025-11-25
 ### Added
-- Added `UCXListener::tagSendWithRequest` for better monitoring of send requests. 
+- Added `UCXListener::tagSendWithRequest` for better monitoring of send requests.
 
 ## [1.1.0] - 2025-11-24
 ### Added
 - Added `UcxUtils.h`.
 - Added UCX Python dependencies.
+
 ### Changed
 - Refactored UCXListener's tag messaging functions.
 
 ## [1.0.0] - 2025-10-15
-
 ### Added
 - **UCX Communication Wrappers**
   - **UCXConnection**: High-performance point-to-point communication

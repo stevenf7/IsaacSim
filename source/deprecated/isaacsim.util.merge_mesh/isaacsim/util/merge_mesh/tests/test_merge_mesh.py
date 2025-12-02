@@ -17,15 +17,20 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from pxr import Sdf, UsdGeom, UsdShade
+from pxr import UsdShade
 
 from ..mesh_merger import MeshMerger
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestMergeMesh(omni.kit.test.AsyncTestCase):
-    # Before running each test
+    """Test suite for the Mesh Merge Tool functionality."""
+
     async def setUp(self):
+        """Set up the test environment before each test.
+
+        Creates a new stage with three cube meshes, each with a bound OmniPBR material.
+        """
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         mtl_created_list = []
@@ -51,13 +56,13 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    # After running each test
     async def tearDown(self):
+        """Clean up after each test."""
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    # Run for 60 frames and make sure there were no errors loading
     async def test_startup(self):
+        """Test that the Mesh Merge Tool window loads without errors."""
         window = omni.ui.Workspace.get_window("Mesh Merge Tool")
         self.assertIsNotNone(window)
         window.visible = True
@@ -67,6 +72,7 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_basic_merge(self):
+        """Test basic mesh merge functionality without any additional options."""
         mesh_merger = MeshMerger(self._stage)
         mesh_merger.clear_parent_xform = False
         mesh_merger.deactivate_source = False
@@ -84,6 +90,7 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_material_combine_merge(self):
+        """Test mesh merge with material combining enabled."""
         mesh_merger = MeshMerger(self._stage)
         mesh_merger.clear_parent_xform = False
         mesh_merger.deactivate_source = False
@@ -104,6 +111,7 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_deactivate_source(self):
+        """Test that source prims are deactivated after merge when the option is enabled."""
         mesh_merger = MeshMerger(self._stage)
         mesh_merger.clear_parent_xform = False
         mesh_merger.deactivate_source = True
@@ -125,6 +133,7 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_clear_parent_xform(self):
+        """Test mesh merge with parent transform clearing enabled."""
         mesh_merger = MeshMerger(self._stage)
         mesh_merger.clear_parent_xform = True
         mesh_merger.deactivate_source = True
@@ -141,6 +150,7 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_merge_command(self):
+        """Test the MergeMeshesCommand with all options enabled."""
         result, prim = omni.kit.commands.execute(
             "MergeMeshesCommand",
             source=self.cubes_list,

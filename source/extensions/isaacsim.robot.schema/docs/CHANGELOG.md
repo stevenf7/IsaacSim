@@ -40,7 +40,7 @@
 
 ## [3.4.0] - 2025-05-09
 ### Changed
-- fixed minor errors on Applying surface gripper API types
+- Fixed minor errors on Applying surface gripper API types
 
 ### Added
 - Added Robot Parsing Utils to generate  Robot Kinematic tree based on the joints available on the schema and their parent-child relationships.
@@ -94,12 +94,12 @@
 
 ## [3.1.1] - 2024-11-12
 ### Changed
-- minor update to Robot Schema
+- Minor update to Robot Schema
 
 ## [3.1.0] - 2024-10-31
 ### Added
 - First Version of Robot schema as a codeless implementation
-- a few utilities in a c header and python utils fashion to deal with the codeless schema
+- A few utilities in a c header and python utils fashion to deal with the codeless schema
 
 ## [3.0.1] - 2024-10-24
 ### Changed
@@ -129,7 +129,7 @@
 
 ## [1.1.0] - 2023-01-21
 ### Added
-- named Override Attribute
+- Named Override Attribute
 
 ## [1.0.0] - 2022-09-29
 ### Removed

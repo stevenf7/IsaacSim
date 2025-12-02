@@ -7,8 +7,8 @@
 ## [4.0.0] - 2025-10-31
 ### Changed
 - Remove omni.pip.cloud from dependencies, users should explicitly enable if needed
-- remove unused tornado and pint packages
-- remove markupsafe from dependencies, its in omni.kit.pip_archive
+- Remove unused tornado and pint packages
+- Remove markupsafe from dependencies, its in omni.kit.pip_archive
 
 ## [3.0.0] - 2025-08-25
 ### Changed
@@ -55,8 +55,8 @@
 
 ## [2.5.0] - 2025-01-16
 ### Changed
-- updated matplotlib==3.10.0,
-- added contourpy==1.3.1, fonttools==4.55.3, python-dateutil==2.9.0.post0, six==1.17.0
+- Updated matplotlib==3.10.0,
+- Added contourpy==1.3.1, fonttools==4.55.3, python-dateutil==2.9.0.post0, six==1.17.0
 
 ## [2.4.0] - 2025-01-15
 ### Changed
@@ -88,24 +88,24 @@
 
 ## [2.2.0] - 2023-05-15
 ### Removed
-- boto3, s3transfer to omni.pip.compute
+- Removed boto3, s3transfer from omni.pip.compute
 
 ## [2.1.0] - 2023-05-08
 ### Removed
-- scipy, pyyaml to omni.pip.compute
-- botocore, urllib3, charset-normalizer as they are already in omni.kit.pip_archive
+- Removed scipy, pyyaml from omni.pip.compute
+- Removed botocore, urllib3, charset-normalizer as they are already in omni.kit.pip_archive
 
 ## [2.0.1] - 2022-12-13
 ### Changed
-- make extension os specific
+- Make extension os specific
 
 ## [2.0.0] - 2022-12-13
 ### Removed
-- certifi install at runtime
+- Removed certifi install at runtime
 
 ## [1.2.0] - 2022-07-20
 ### Added
-- boto3, s3transfer
+- Added boto3, s3transfer
 
 ## [1.1.0] - 2022-07-11
 ### Changed
@@ -117,7 +117,7 @@
 
 ## [0.3.0] - 2022-04-16
 ### Added
-- osqp, qdldl
+- Added osqp, qdldl
 
 ## [0.2.0] - 2022-01-13
 ### Added

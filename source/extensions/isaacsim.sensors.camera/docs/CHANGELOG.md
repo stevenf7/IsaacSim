@@ -142,7 +142,7 @@
 
 ## [1.0.1] - 2025-04-17
 ### Changed
-- changed add_update_semantics to add_labels
+- Changed add_update_semantics to add_labels
 
 ## [1.0.0] - 2025-04-09
 ### Changed
@@ -182,7 +182,7 @@
 - Camera get_pointcloud method uses the 'pointcloud' annotator if set, otherwise it falls back to a depth-based calculation
 
 ### Fixed
-- centered the pointcloud points by adding a half-pixel offset for the depth-based calculation
+- Centered the pointcloud points by adding a half-pixel offset for the depth-based calculation
 
 ### Added
 - Camera sensor pointcloud specific tests
@@ -202,8 +202,8 @@
 
 ## [0.2.6] - 2025-01-06
 ### Fixed
-- use indexed cuda:{idx} input for warp kernels in camera view class
-- use indexed cuda device to pre-allocate out buffers
+- Use indexed cuda:{idx} input for warp kernels in camera view class
+- Use indexed cuda device to pre-allocate out buffers
 
 ## [0.2.5] - 2024-12-31
 ### Fixed
@@ -214,8 +214,8 @@
 - Isaac Util menu to Tools->Robotics menu
 
 ### Fixed
-- camera view sensor test warp.types.int32 -> warp.types.uint32
-- decreased image comparison threshold with 0.95->0.94
+- Camera view sensor test warp.types.int32 -> warp.types.uint32
+- Decreased image comparison threshold with 0.95->0.94
 
 ## [0.2.3] - 2024-11-26
 ### Fixed

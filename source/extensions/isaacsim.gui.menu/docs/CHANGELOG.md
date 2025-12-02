@@ -110,7 +110,7 @@
 
 ## [2.2.3] - 2025-04-24
 ### Fixed
-- fixed _build_recent_menu bug
+- Fixed _build_recent_menu bug
 
 ## [2.2.2] - 2025-04-09
 ### Changed
@@ -158,7 +158,7 @@
 
 ## [2.0.10] - 2025-02-03
 ### Fixed
-- updated physics reference link to be based on version automatically and added test
+- Updated physics reference link to be based on version automatically and added test
 
 ## [2.0.9] - 2025-01-26
 ### Changed
@@ -169,11 +169,11 @@
 - Update extension description and add extension specific test settings
 
 ### Fixed
-- security fix to change os.umask(0) to os.umask(0o777)
+- Security fix to change os.umask(0) to os.umask(0o777)
 
 ## [2.0.7] - 2025-01-08
 ### Fixed
-- updated physics reference link
+- Updated physics reference link
 
 ## [2.0.6] - 2024-12-12
 ### Fixed
@@ -218,7 +218,7 @@
 
 ## [1.0.0] - 2024-09-30
 ### Changed
-- extension renamed to isaacsim.gui.menu
+- Extension renamed to isaacsim.gui.menu
 
 ## [0.7.3] - 2024-09-05
 ### Removed
@@ -229,7 +229,7 @@
 - Missing robots to the menu
 
 ### Fixed
-- some naming to match documentation
+- Some naming to match documentation
 
 ## [0.7.1] - 2024-08-26
 ### Added
@@ -266,7 +266,7 @@
 - Added leatherback
 
 ### Fixed
-- broken USD paths
+- Broken USD paths
 
 ## [0.3.1] - 2024-05-11
 ### Changed

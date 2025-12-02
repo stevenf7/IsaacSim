@@ -83,7 +83,7 @@
 
 ## [2.2.15] - 2025-05-07
 ### Changed
-- switch to omni.physics interface
+- Switch to omni.physics interface
 
 ## [2.2.14] - 2025-05-02
 ### Changed
@@ -144,7 +144,7 @@
 
 ## [2.2.0] - 2024-10-30
 ### Changed
-- moved examples from menu to browser
+- Moved examples from menu to browser
 
 ## [2.1.0] - 2024-10-30
 ### Changed

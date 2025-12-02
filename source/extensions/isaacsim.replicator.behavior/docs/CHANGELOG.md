@@ -14,7 +14,7 @@
 
 ## [1.1.15] - 2025-09-15
 ### Changed
-- switched to isaacsim.test.utils for golden image comparison in tests
+- Switched to isaacsim.test.utils for golden image comparison in tests
 
 ## [1.1.14] - 2025-07-17
 ### Changed
@@ -85,7 +85,7 @@
 
 ## [1.0.14] - 2025-04-17
 ### Changed
-- changed add_update_semantics to add_labels
+- Changed add_update_semantics to add_labels
 
 ## [1.0.13] - 2025-04-09
 ### Changed

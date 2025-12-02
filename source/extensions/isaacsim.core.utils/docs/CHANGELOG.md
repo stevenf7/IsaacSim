@@ -20,7 +20,6 @@
   - `check_incorrect_semantics` -> use `check_incorrect_labels`
   - `count_semantics_in_scene` -> use `count_labels_in_scene`
 
-
 ## [3.7.4] - 2025-11-27
 ### Changed
 - Add missing docstrings
@@ -31,11 +30,11 @@
 
 ## [3.7.2] - 2025-10-31
 ### Changed
-- fix invalid escape sequences
+- Fix invalid escape sequences
 
 ## [3.7.1] - 2025-10-31
 ### Changed
-- update deprecated python unittest methods
+- Update deprecated python unittest methods
 
 ## [3.7.0] - 2025-10-27
 ### Changed
@@ -160,7 +159,7 @@
 ### Changed
 - Added semantics util functions to use the new UsdSemantics.LabelsAPI
 - Added deprecation warnings for the old SemanticsAPI
-- changed add_update_semantics to add_labels in utils.prims
+- Changed add_update_semantics to add_labels in utils.prims
 
 ## [2.2.19] - 2025-04-15
 ### Changed
@@ -177,7 +176,7 @@
 
 ## [2.2.16] - 2025-04-07
 ### Changed
-- added prim validation check to some functions in prims.py
+- Added prim validation check to some functions in prims.py
 
 ## [2.2.15] - 2025-04-04
 ### Changed
@@ -225,7 +224,7 @@
 
 ## [2.2.4] - 2024-12-09
 ### Fixed
-- unit test
+- Unit test
 
 ## [2.2.3] - 2024-11-18
 ### Changed
@@ -325,7 +324,7 @@
 
 ## [0.5.0] - 2023-09-06
 ### Changed
-- updated Create > Isaac > Robots menu
+- Updated Create > Isaac > Robots menu
 
 ## [0.4.0] - 2023-08-17
 ### Added
@@ -357,7 +356,7 @@
 
 ## [0.2.0] - 2022-09-01
 ### Changed
-- removed legacy viewport calls
+- Removed legacy viewport calls
 
 ## [0.1.11] - 2022-03-16
 ### Changed
@@ -398,13 +397,13 @@
 
 ## [0.1.4] - 2021-05-24
 ### Added
-- add physics utils extension
-- add create menu
+- Add physics utils extension
+- Add create menu
 
 ## [0.1.3] - 2021-02-17
 ### Added
-- update to python 3.7
-- update to omni.kit.uiapp
+- Update to python 3.7
+- Update to omni.kit.uiapp
 
 ## [0.1.2] - 2021-01-04
 ### Added

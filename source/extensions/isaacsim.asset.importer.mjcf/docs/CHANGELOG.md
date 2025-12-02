@@ -168,7 +168,7 @@
 - Change the import options
 
 ### Removed
-- standalone window import
+- Standalone window import
 
 ## [2.0.0] - 2024-09-20
 ### Changed

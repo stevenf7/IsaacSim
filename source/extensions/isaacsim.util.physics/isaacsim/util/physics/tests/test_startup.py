@@ -21,18 +21,33 @@ import omni.kit.test
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestStartup(omni.kit.test.AsyncTestCase):
+    """Test case for verifying the Physics API Editor extension starts up correctly."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures before each test method.
+
+        Waits for the next application update to ensure the environment is ready.
+        """
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test method.
+
+        Waits for the next application update to allow cleanup to complete.
+        """
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # Run for 60 frames and make sure there were no errors loading
     async def test_startup(self):
+        """Verify the Physics API Editor window loads without errors.
+
+        Opens the Physics API Editor window, runs for 60 frames to ensure stability,
+        then closes the window. Asserts that the window was successfully created.
+        """
         window = omni.ui.Workspace.get_window("Physics API Editor")
         self.assertIsNotNone(window)
         window.visible = True

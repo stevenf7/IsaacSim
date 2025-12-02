@@ -100,7 +100,7 @@
 ## [4.0.0] - 2024-11-01
 ### Removed
 - Unitree quadruped optimized controller class
-- optimized controller based standalone and ROS examples
+- Optimized controller based standalone and ROS examples
 
 ### Added
 - Policy Controller and config loader helpers for Isaac Lab based env config
@@ -192,12 +192,12 @@
 
 ## [1.1.0] - 2022-05-05
 ### Added
-- added the ANYmal robot
+- Added the ANYmal robot
 
 ## [1.0.2] - 2022-04-21
 ### Changed
-- decoupled sensor testing from A1 and Go1 unit test
-- fixed contact sensor bug in example and standalone
+- Decoupled sensor testing from A1 and Go1 unit test
+- Fixed contact sensor bug in example and standalone
 
 ## [1.0.1] - 2022-04-20
 ### Changed
@@ -205,7 +205,7 @@
 
 ## [1.0.0] - 2022-04-13
 ### Added
-- quadruped class, unitree class (support both a1, go1), unitree vision class (unitree class with stereo cameras), and unitree direct class (unitree class that subscribe to external controllers)
-- quadruped controllers
-- documentations and unit tests
-- quadruped standalone with ros 1 and ros 2 vio examples
+- Quadruped class, unitree class (support both a1, go1), unitree vision class (unitree class with stereo cameras), and unitree direct class (unitree class that subscribe to external controllers)
+- Quadruped controllers
+- Documentations and unit tests
+- Quadruped standalone with ros 1 and ros 2 vio examples

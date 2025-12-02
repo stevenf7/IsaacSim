@@ -12,7 +12,7 @@
 
 ## [2.12.3] - 2025-10-23
 ### Added
-- fix create_new_stage not working correctly
+- Fix create_new_stage not working correctly
 
 ## [2.12.2] - 2025-09-20
 ### Fixed
@@ -163,18 +163,18 @@
 - hide_ui to Simulation App to force ui visibility
 
 ### Changed
-- when headless is set to true, the UI is hidden for performance, hide_ui can be set to false to re-enable the gui
+- When headless is set to true, the UI is hidden for performance, hide_ui can be set to false to re-enable the gui
 
 ## [1.8.1] - 2024-05-01
 ### Fixed
-- update for set_phase api change
+- Update for set_phase api change
 
 ## [1.8.0] - 2024-04-29
 ### Added
 - max_gpu_count config argument
 
 ### Fixed
-- benchmark services include
+- Benchmark services include
 
 ## [1.7.0] - 2024-04-22
 ### Changed
@@ -233,27 +233,27 @@
 ## [1.4.3] - 2023-08-22
 ### Fixed
 - Missing comma in sync load options
-- various linter issues
+- Various linter issues
 
 ### Added
 - Faulthandler enabled to print callstack on crash
 
 ## [1.4.2] - 2023-06-21
 ### Fixed
-- app framework not working in docker/root environments
-- simulation app startup warning
+- App framework not working in docker/root environments
+- Simulation app startup warning
 
 ## [1.4.1] - 2023-02-22
 ### Added
-- make sure replicator is stopped before calling wait_until_complete on closing application
+- Make sure replicator is stopped before calling wait_until_complete on closing application
 
 ## [1.4.0] - 2023-02-13
 ### Added
-- add minimal app framework class
+- Add minimal app framework class
 
 ## [1.3.0] - 2023-02-07
 ### Changed
-- call replicator wait_until_complete on closing application
+- Call replicator wait_until_complete on closing application
 
 ## [1.2.3] - 2023-01-20
 ### Fixed
@@ -273,10 +273,10 @@
 
 ## [1.1.0] - 2022-10-14
 ### Added
-- fast shutdown config option
+- Fast shutdown config option
 
 ### Fixed
-- issue where fast shutdown caused jupyter notebooks to crash
+- Issue where fast shutdown caused jupyter notebooks to crash
 
 ## [1.0.2] - 2022-10-03
 ### Fixed
@@ -297,15 +297,15 @@
 ## [0.2.0] - 2022-06-22
 ### Deprecated
 
-- deprecated memory report in favor of using statistics logging utility
+- Deprecated memory report in favor of using statistics logging utility
 
 ## [0.1.10] - 2022-06-13
 ### Added
-- added physics device parameter for setting CUDA device for GPU physics simulation
+- Added physics device parameter for setting CUDA device for GPU physics simulation
 
 ## [0.1.9] - 2022-04-27
 ### Changed
-- a .kit experience file can now reference other .kit files from the apps folder
+- A .kit experience file can now reference other .kit files from the apps folder
 
 ## [0.1.8] - 2022-04-13
 ### Fixed
@@ -329,7 +329,7 @@
 ## [0.1.4] - 2022-01-27
 ### Added
 - memory_report to launch config. The delta memory usage is printed when the app closes.
-- automatically add allow-root if running as root user
+- Automatically add allow-root if running as root user
 
 ## [0.1.3] - 2021-12-21
 ### Changed
@@ -338,7 +338,7 @@
 ## [0.1.2] - 2021-12-07
 ### Added
 - reset_render_settings API to reset render settings after loading a stage.
-- fix docstring for antialiasing
+- Fix docstring for antialiasing
 
 ## [0.1.1] - 2021-11-30
 ### Changed

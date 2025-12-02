@@ -9,7 +9,7 @@
 
 ## [8.1.1] - 2025-10-31
 ### Changed
-- fix invalid escape sequences
+- Fix invalid escape sequences
 
 ## [8.1.0] - 2025-10-27
 ### Changed
@@ -111,7 +111,7 @@
 
 ## [8.0.4] - 2025-01-14
 ### Fixed
-- carryover dependency
+- Carryover dependency
 
 ## [8.0.3] - 2024-12-16
 ### Fixed
@@ -127,7 +127,7 @@
 
 ## [8.0.0] - 2024-10-03
 ### Changed
-- extension name changed to isaacsim.robot_motion.motion_generation
+- Extension name changed to isaacsim.robot_motion.motion_generation
 
 ## [7.1.0] - 2024-07-10
 ### Removed
@@ -335,7 +335,7 @@
 ### Changed
 
 - Changed gripper_controller argument to gripper in the PickPlaceController.
-- moved PickPlaceController and StackingController to isaacsim.robot.manipulators
+- Moved PickPlaceController and StackingController to isaacsim.robot.manipulators
 
 ## [3.4.0] - 2022-07-20
 ### Added
@@ -444,18 +444,18 @@
 ## [1.0.2] - 2022-04-01
 ### Changed
 
-- modified default RmpFlow configs have fewer updates per frame (10 was unnecessary) and to not ignore robot state updates by default
-- updated golden values in tests as a direct result of config change
+- Modified default RmpFlow configs have fewer updates per frame (10 was unnecessary) and to not ignore robot state updates by default
+- Updated golden values in tests as a direct result of config change
 
 ## [1.0.1] - 2022-04-01
 ### Added
 
-- test case for motion_generation extension: test for proper behavior when add/enable/disable/remove objects to RmpFlow
+- Test case for motion_generation extension: test for proper behavior when add/enable/disable/remove objects to RmpFlow
 
 ### Fixed
 
-- ground plane handling: enable/disable/remove ground_plane didn't work
-- static obstacle handling: dictionary key error when enable/disable/remove static obstacles
+- Ground plane handling: enable/disable/remove ground_plane didn't work
+- Static obstacle handling: dictionary key error when enable/disable/remove static obstacles
 
 ## [1.0.0] - 2022-03-25
 ### Changed
@@ -487,7 +487,7 @@
 ## [0.1.4] - 2022-01-20
 ### Added
 
-- moved kinematics.py from isaacsim.core.api.utils to this extension
+- Moved kinematics.py from isaacsim.core.api.utils to this extension
 
 ## [0.1.3] - 2021-12-13
 ### Changed
