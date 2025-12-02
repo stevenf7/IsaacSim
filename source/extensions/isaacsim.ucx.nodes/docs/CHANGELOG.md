@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2025-12-02
+### Changed
+- Updated deprecated imports to isaacsim.storage.native
+
 ## [1.1.0] - 2025-11-25
 ### Added
 - Joint state publishing node

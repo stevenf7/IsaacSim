@@ -41,7 +41,6 @@ class TestUCXCamera(UCXTestCase):
         await super().setUp()
 
         # Get assets root path
-        from isaacsim.core.utils import nucleus
         from isaacsim.storage.native import get_assets_root_path
 
         self._assets_root_path = get_assets_root_path()

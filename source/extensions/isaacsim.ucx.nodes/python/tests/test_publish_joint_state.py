@@ -25,6 +25,7 @@ import usdrt.Sdf
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.storage.native import get_assets_root_path
 from ucxx._lib.arr import Array
 
 from .common import UCXTestCase
@@ -83,9 +84,7 @@ class TestUCXPublishJointState(UCXTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Load simple articulation asset
-        from isaacsim.core.utils import nucleus
-
-        assets_root_path = nucleus.get_assets_root_path()
+        assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             raise RuntimeError("Could not find Isaac Sim assets folder")
 
