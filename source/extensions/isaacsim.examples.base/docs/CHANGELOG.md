@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.1] - 2025-12-01
+### Changed
+- Creates physics scene if it does not exist on the stage to correctly set physics time steps
+
 ## [1.1.0] - 2025-11-24
 ### Changed
 - Moved module from isaacsim.base_samples to isaacsim.examples.base

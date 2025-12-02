@@ -15,5 +15,5 @@
 
 # NOTE: Import here your extension examples to be propagated to ISAAC SIM Extensions startup
 
-from isaacsim.examples.interactive.quadruped.quadruped_example import QuadrupedExample
-from isaacsim.examples.interactive.quadruped.quadruped_example_extension import QuadrupedExampleExtension
+from .humanoid_example import HumanoidExample
+from .humanoid_example_extension import HumanoidExampleExtension

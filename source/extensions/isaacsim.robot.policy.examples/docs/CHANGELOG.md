@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.0.0] - 2025-12-01
+### Changed
+- Changed the backend to experimental API using warp and torch
+- Enabled GPU physics to inference policies
+- Moved policy based interactive examples to the isaacsim.robot.policy.examples folder
+
 ## [4.3.0] - 2025-10-27
 ### Changed
 - Replace import statements with the deprecation function when importing PyTorch
