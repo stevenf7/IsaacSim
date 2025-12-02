@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2025-12-02
+### Changed
+- Raise a RuntimeError if the physics dt is being set while simulation is running/playing
+
 ## [1.7.0] - 2025-11-26
 ### Added
 - Add the `SimulationEvent` enum
