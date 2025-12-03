@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.2] - 2025-12-02
+### Fixed
+- ROS2PublishObjectIdMap correctly generates 128-bit unsigned integer strings from 4xuint32
+
 ## [1.5.1] - 2025-12-01
 ### Added
 - ros2_common.build_rtx_sensor_pointcloud_writer to build Writer for ROS2 PointCloud2

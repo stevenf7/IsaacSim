@@ -19,7 +19,7 @@
 #include <OgnROS2PublishObjectIdMapDatabase.h>
 #include <algorithm>
 #include <cstring>
-#include <sstream>
+#include <vector>
 
 using namespace isaacsim::ros2::core;
 
@@ -95,84 +95,38 @@ public:
             return false;
         }
 
-        nlohmann::json json;
         const size_t dataSize = db.inputs.bufferSize();
+
         if (dataSize > 0 && db.inputs.dataPtr() != 0)
         {
             // Decode the stableIdMap buffer into a mapping of object IDs to prim paths
             // Format: sequence of entries (6 uint32s each), followed by number of entries (1 uint32)
             const auto* data = reinterpret_cast<const uint8_t*>(db.inputs.dataPtr());
 
-            // Read the number of entries from the last 4 bytes
-            uint32_t numEntries = 0;
-            if (dataSize >= 4)
+            // Check if buffer has changed - if so, update cache and regenerate JSON
+            if (state.m_cachedBuffer.size() != dataSize || std::memcmp(state.m_cachedBuffer.data(), data, dataSize) != 0)
             {
-                std::memcpy(&numEntries, data + dataSize - 4, 4);
-
-                // Create object ID mapping
-                nlohmann::json idMapping;
-                const size_t entrySize = 6 * sizeof(uint32_t); // 6 uint32s per entry
-
-                for (uint32_t i = 0; i < numEntries; ++i)
-                {
-                    const size_t offset = i * entrySize;
-                    if (offset + entrySize > dataSize)
-                    {
-                        break;
-                    }
-
-                    // Read entry data (6 uint32s)
-                    uint32_t entry[6];
-                    std::memcpy(entry, data + offset, entrySize);
-
-                    // Extract stable ID from first 4 uint32s
-                    uint32_t stableId[4];
-                    std::memcpy(stableId, entry, 4 * sizeof(uint32_t));
-
-                    // Convert 128-bit stable ID to string (little endian)
-                    std::ostringstream idStream;
-                    uint64_t low = static_cast<uint64_t>(stableId[0]) | (static_cast<uint64_t>(stableId[1]) << 32);
-                    uint64_t high = static_cast<uint64_t>(stableId[2]) | (static_cast<uint64_t>(stableId[3]) << 32);
-
-                    // Use decimal representation for the ID
-                    idStream << std::to_string(low);
-                    if (high != 0)
-                    {
-                        idStream << std::to_string(high);
-                    }
-
-                    // Extract label using offset and length
-                    uint32_t labelLength = entry[4];
-                    uint32_t labelOffset = entry[5];
-
-                    if (labelOffset + labelLength <= dataSize)
-                    {
-                        std::string label(reinterpret_cast<const char*>(data + labelOffset), labelLength);
-                        // Remove trailing null characters
-                        label.erase(std::find(label.begin(), label.end(), '\0'), label.end());
-
-                        idMapping[idStream.str()] = label;
-                    }
-                }
-
-                json["id_to_labels"] = idMapping;
+                state.m_cachedBuffer.assign(data, data + dataSize);
+                state.m_cachedJson["id_to_labels"] = generateIdToLabels(data, dataSize);
             }
         }
-        json["time_stamp"] = {};
+
+        // Update timestamp (always, regardless of buffer change)
+        state.m_cachedJson["time_stamp"] = {};
         const auto result =
             std::div(static_cast<int64_t>(db.inputs.timeStamp() * 1e9), static_cast<int64_t>(1000000000L));
         if (result.rem >= 0)
         {
-            json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot);
-            json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(result.rem);
+            state.m_cachedJson["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot);
+            state.m_cachedJson["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(result.rem);
         }
         else
         {
-            json["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot - 1);
-            json["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(1000000000L + result.rem);
+            state.m_cachedJson["time_stamp"]["sec"] = static_cast<std::int32_t>(result.quot - 1);
+            state.m_cachedJson["time_stamp"]["nanosec"] = static_cast<std::uint32_t>(1000000000L + result.rem);
         }
 
-        state.m_message->writeData(json.dump());
+        state.m_message->writeData(state.m_cachedJson.dump());
         state.m_publisher.get()->publish(state.m_message->getPtr());
 
         return true;
@@ -188,12 +142,128 @@ public:
     virtual void reset()
     {
         m_publisher.reset(); // This should be reset before we reset the handle.
+        m_cachedBuffer.clear();
+        m_cachedJson = nlohmann::json();
         Ros2Node::reset();
     }
 
 private:
+    nlohmann::json generateIdToLabels(const uint8_t* data, size_t dataSize)
+    {
+        nlohmann::json idMapping;
+
+        // Read the number of entries from the last 4 bytes
+        uint32_t numEntries = 0;
+        if (dataSize < 4)
+        {
+            return idMapping;
+        }
+
+        std::memcpy(&numEntries, data + dataSize - 4, 4);
+        const size_t entrySize = 6 * sizeof(uint32_t); // 6 uint32s per entry
+
+        for (uint32_t i = 0; i < numEntries; ++i)
+        {
+            const size_t offset = i * entrySize;
+            if (offset + entrySize > dataSize)
+            {
+                break;
+            }
+
+            // Read entry data (6 uint32s)
+            uint32_t entry[6];
+            std::memcpy(entry, data + offset, entrySize);
+
+            // Extract stable ID from first 4 uint32s
+            uint32_t stableId[4];
+            std::memcpy(stableId, entry, 4 * sizeof(uint32_t));
+
+            // Convert 128-bit stable ID to decimal string (little endian)
+            // We need to interpret the 16 bytes as a single 128-bit integer in little-endian order
+            // Since C++ doesn't have native 128-bit integer support, we use manual multi-precision arithmetic
+
+            // Convert to array of bytes for multi-precision arithmetic
+            uint8_t bytes[16];
+            std::memcpy(bytes, stableId, 16);
+
+            // Convert 128-bit integer to decimal string using manual division
+            std::string result;
+            bool allZero = true;
+
+            // Check if all bytes are zero
+            for (int i = 0; i < 16; ++i)
+            {
+                if (bytes[i] != 0)
+                {
+                    allZero = false;
+                    break;
+                }
+            }
+
+            if (allZero)
+            {
+                result = "0";
+            }
+            else
+            {
+                // Divide by 10 repeatedly to get decimal digits
+                std::vector<uint8_t> num(bytes, bytes + 16);
+
+                while (true)
+                {
+                    // Check if number is zero
+                    bool isZero = true;
+                    for (size_t i = 0; i < num.size(); ++i)
+                    {
+                        if (num[i] != 0)
+                        {
+                            isZero = false;
+                            break;
+                        }
+                    }
+
+                    if (isZero)
+                    {
+                        break;
+                    }
+
+                    // Divide by 10 and get remainder
+                    uint32_t remainder = 0;
+                    for (int i = static_cast<int>(num.size()) - 1; i >= 0; --i)
+                    {
+                        uint32_t current = remainder * 256 + num[i];
+                        num[i] = current / 10;
+                        remainder = current % 10;
+                    }
+
+                    // Append digit to result
+                    result = static_cast<char>('0' + remainder) + result;
+                }
+            }
+
+            std::string idStream = result;
+
+            // Extract label using offset and length
+            uint32_t labelLength = entry[4];
+            uint32_t labelOffset = entry[5];
+
+            if (labelOffset + labelLength <= dataSize)
+            {
+                std::string label(reinterpret_cast<const char*>(data + labelOffset), labelLength);
+                // Remove trailing null characters
+                label.erase(std::find(label.begin(), label.end(), '\0'), label.end());
+
+                idMapping[idStream] = label;
+            }
+        }
+
+        return idMapping;
+    }
+
     std::shared_ptr<Ros2Publisher> m_publisher = nullptr;
     std::shared_ptr<Ros2SemanticLabelMessage> m_message = nullptr;
+    std::vector<uint8_t> m_cachedBuffer;
+    nlohmann::json m_cachedJson;
 };
 
 REGISTER_OGN_NODE()
