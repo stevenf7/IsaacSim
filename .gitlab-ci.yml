@@ -1467,6 +1467,8 @@ publish-container-x86_64:
     script:
       - 7z x -y -o_build/docs/isaac_sim/latest _build/packages/docs*.7z
       - 7z x -y -o_build/linux-x86_64/release _build/packages/isaac-sim-standalone*.7z
+      - rm -r .vscode
+      - mv _build/linux-x86_64/release/.vscode .
       - ./tools/docker/prep_docker_build.sh --x86_64
       - ./tools/docker/build_docker.sh --x86_64 --tag nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-x86_64 --push
       - PLATFORM_TAG=x86_64 ./tools/docker/tag_and_push_container.sh
@@ -1492,6 +1494,8 @@ publish-container-aarch64:
       - docker login nvcr.io
     script:
       - 7z x -y -o_build/linux-aarch64/release _build/packages/isaac-sim-standalone*.7z
+      - rm -r .vscode
+      - mv _build/linux-aarch64/release/.vscode .
       - ./tools/docker/prep_docker_build.sh --aarch64
       - ./tools/docker/build_docker.sh --aarch64 --tag nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64 --push
       - PLATFORM_TAG=aarch64 ./tools/docker/tag_and_push_container.sh
