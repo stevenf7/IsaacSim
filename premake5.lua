@@ -417,9 +417,9 @@ function setup_all(options)
     -- Isaac Sim Specific Setup
     include("premake5-isaacsim.lua") -- Shared build scripts from isaac sim
     include("premake5-tests.lua")
-    -- AUTOREMOVE: BEGIN
+-- AUTOREMOVE: BEGIN
     includedirs { "%{root}/source/internal_extensions" }
-    -- AUTOREMOVE: END
+-- AUTOREMOVE: END
     isaacsim_build_settings()
     isaacsim_kit_settings()
     generate_version_header()
