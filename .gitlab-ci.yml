@@ -84,6 +84,9 @@ workflow:
         on_new_commit: interruptible
         on_job_failure: none
     rules:
+      - if: $CI_PIPELINE_SOURCE == "pipeline"
+        auto_cancel:
+            on_new_commit: none
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         auto_cancel:
             on_new_commit: conservative
@@ -94,9 +97,6 @@ workflow:
         auto_cancel:
             on_new_commit: none
       - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_REF_PROTECTED
-        auto_cancel:
-            on_new_commit: none
-      - if: $CI_PIPELINE_SOURCE == "pipeline"
         auto_cancel:
             on_new_commit: none
 
