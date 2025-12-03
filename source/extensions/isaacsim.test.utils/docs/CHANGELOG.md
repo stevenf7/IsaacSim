@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.3] - 2025-12-02
+### Added
+- Specify --/app/settings/fabricDefaultStageFrameHistoryCount=3 for startup test
+### Removed
+- Remove omni.replicator.core as an explicit test dependency
+
 ## [0.6.2] - 2025-11-20
 ### Changed
 - Add omni.replicator.core as an explicit dependency for image capture utils

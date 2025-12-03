@@ -1,5 +1,5 @@
 [package]
-version = "0.6.2"
+version = "0.6.3"
 category = "Internal"
 title = "Isaac Sim Test Utils"
 description = "Test utilities for Isaac Sim"
@@ -24,9 +24,6 @@ name = "isaacsim.test.utils"
 name = "isaacsim.test.utils.tests"
 
 [[test]]
-dependencies = [
-   "omni.replicator.core",
-]
 
 args = [
     "--enable",
@@ -75,4 +72,10 @@ args = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+]
+
+[[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
