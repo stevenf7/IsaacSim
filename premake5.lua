@@ -57,22 +57,12 @@ end
 
 function isaacsim_kit_settings()
     -- Setup include paths. Add kit SDK include paths too.
-    -- TODO: cleanup once we confirm builds working on windows
     includedirs {
-        -- targetDepsDir,
-        -- targetDepsDir .. "/pybind11/include",
-        -- carbSDKInclude,
-        -- kit_sdk .. "/include",
-        -- kit_sdk .. "/_build/target-deps/",
-        -- kit_dev_dir .. "/include",
         "%{root}/_build/target-deps/gsl/include",
     }
 
     -- Carbonite carb lib
     libdirs {
-        -- carbSDKLibs,
-        -- carbSDKLibs .. "/scripting-python-3.10",
-        -- "%{kit_sdk}/plugins",
         "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     }
 end

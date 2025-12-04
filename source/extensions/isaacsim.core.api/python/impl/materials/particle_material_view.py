@@ -188,7 +188,6 @@ class ParticleMaterialView:
 
     def post_reset(self) -> None:
         """Resets the particles to their initial states."""
-        # TODO:
         return
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:

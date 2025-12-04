@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.12] - 2025-12-03
+### Changed
+- Remove TODOs.
+
 ## [2.0.11] - 2025-05-19
 ### Changed
 - Update copyright and license to apache v2.0

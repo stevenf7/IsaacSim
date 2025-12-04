@@ -1,4 +1,7 @@
 # Changelog
+## [3.3.2] - 2025-12-03
+### Changed
+- Remove TODOs.
 
 ## [3.3.1] - 2025-11-21
 ### Fixed

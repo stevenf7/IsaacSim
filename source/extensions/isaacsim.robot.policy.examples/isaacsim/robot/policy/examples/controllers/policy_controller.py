@@ -105,8 +105,6 @@ class PolicyController(ABC):
         """
         self.robot.set_dof_drive_types(effort_modes)
 
-        # TODO: Must flush when FSD is enabled.
-        # Otherwise the delayed FSD handling next frame will overwrite set_max_efforts below
         get_physics_simulation_interface().flush_changes()
 
         self.robot.switch_dof_control_mode(control_mode)
@@ -129,8 +127,6 @@ class PolicyController(ABC):
         if set_limits:
             self.robot.set_dof_max_efforts(max_effort)
 
-            # TODO: Must flush when FSD is enabled.
-            # Otherwise the delayed FSD handling next frame will overwrite set_max_efforts below
             get_physics_simulation_interface().flush_changes()
 
             self.robot.set_dof_max_velocities(max_vel)

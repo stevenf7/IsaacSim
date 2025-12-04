@@ -223,7 +223,6 @@ class ParticleSystem:
 
     def post_reset(self) -> None:
         """Resets the particles to their initial states."""
-        # TODO:
         return
 
     def apply_particle_materials(

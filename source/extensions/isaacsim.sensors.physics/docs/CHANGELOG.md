@@ -1,4 +1,8 @@
 # Changelog
+## [0.6.1] - 2025-12-03
+### Changed
+- Remove TODOs.
+
 ## [0.6.0] - 2025-11-25
 ### Added
 - Add dedicated GPU codepath for IMU to use separate stream and pinned memory buffer

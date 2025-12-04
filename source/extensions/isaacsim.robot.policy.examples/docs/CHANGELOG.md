@@ -1,4 +1,7 @@
 # Changelog
+## [5.0.1] - 2025-12-03
+### Changed
+- Remove TODOs.
 
 ## [5.0.0] - 2025-12-01
 ### Changed

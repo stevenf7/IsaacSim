@@ -1,4 +1,8 @@
 # Changelog
+## [4.11.3] - 2025-12-03
+### Changed
+- Remove TODOs.
+
 ## [4.11.2] - 2025-11-27
 ### Changed
 - Add missing docstrings

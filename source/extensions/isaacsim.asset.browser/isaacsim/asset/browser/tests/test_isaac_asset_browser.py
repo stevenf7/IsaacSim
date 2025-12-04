@@ -144,17 +144,15 @@ class TestAssetBrowser(OmniUiTest):
         cylinder = stage.GetPrimAtPath("/cylinder/Cylinder")
         self.assertTrue(cylinder.IsValid(), "Prim from file to be added is invalid")
 
-        # TODO: Investigate why it still crashes on Linux without empty string
-        if sys.platform != "linux":
-            ref_copy_link = await _find_menu_item("Copy URL Link")
-            old_clip = omni.kit.clipboard.paste()
-            # Empty string could be converted to nullptr by pybind, which would
-            # crash in Windowing::setClipboard on Linux
-            omni.kit.clipboard.copy("test")
-            await omni.kit.app.get_app().next_update_async()
-            await ui_test.emulate_mouse_move_and_click(ref_copy_link.center)
-            self.assertEqual(omni.kit.clipboard.paste(), item.url)
-            omni.kit.clipboard.copy(old_clip)
+        ref_copy_link = await _find_menu_item("Copy URL Link")
+        old_clip = omni.kit.clipboard.paste()
+        # Empty string could be converted to nullptr by pybind, which would
+        # crash in Windowing::setClipboard on Linux
+        omni.kit.clipboard.copy("test")
+        await omni.kit.app.get_app().next_update_async()
+        await ui_test.emulate_mouse_move_and_click(ref_copy_link.center)
+        self.assertEqual(omni.kit.clipboard.paste(), item.url)
+        omni.kit.clipboard.copy(old_clip)
 
         delegate.destroy()
 

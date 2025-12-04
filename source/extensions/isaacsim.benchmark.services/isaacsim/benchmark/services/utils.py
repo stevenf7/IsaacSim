@@ -74,7 +74,7 @@ async def stage_event() -> int:
     return event
 
 
-async def capture_next_frame(app, capture_file_path: str):
+async def capture_next_frame(app, capture_file_path: str, timeout_sec: float = 2.0):
     """
     capture that works with old (editor-based) capture and new Kit 2.0 approach also
     Not all Create's seem to have the new API available (e.g "omni.create.kit")
@@ -93,11 +93,14 @@ async def capture_next_frame(app, capture_file_path: str):
     _viewport_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
     viewport_ldr_rp = _viewport_interface.get_viewport_window(None).get_drawable_ldr_resource()
 
-    # TODO: Probably need to put a cap on this so doesnt hang forever
     # Wait until the viewport has valid resources
-    while viewport_ldr_rp == None:
+    start_time = time.time()
+    while viewport_ldr_rp == None and time.time() - start_time < timeout_sec:
         await app.next_update_async()
         viewport_ldr_rp = _viewport_interface.get_viewport_window(None).get_drawable_ldr_resource()
+
+    if viewport_ldr_rp == None:
+        raise RuntimeError(f"Timeout waiting for viewport to have valid resources after {timeout_sec} seconds.")
 
     _renderer.capture_next_frame_rp_resource(capture_file_path, viewport_ldr_rp)
     await app.next_update_async()

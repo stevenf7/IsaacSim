@@ -197,17 +197,8 @@ void LidarConfigHelper::init(const char* json)
 {
     m_doc = std::make_unique<rapidjson::Document>();
     m_doc->Parse(json);
-    // m_type = type;
-
-    // if (isValid() && m_doc->HasMember("name"))
-    // {
-    //     m_name = (*m_doc)["name"].GetString();
-    // }
-
-    // m_dataSizeProfile = omni::sensors::nv::lidar::dataSizeOfProfile(m_doc.get(), m_type);
 }
 
-// TODO
 omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* fileName)
 {
     std::string sensorProfileName{ fileName };
