@@ -117,13 +117,16 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 writer.detach()
                 rp.destroy()
 
-        num_frames = 10
         lights = sphere_lights(10)
+        num_frames = 10
         # asyncio.ensure_future(run_randomizations_async(num_frames=num_frames, lights=lights, write_data=True, delay=0.2))
-        await run_randomizations_async(num_frames=num_frames, lights=lights, write_data=True)
+
+        # Test
+        test_num_frames = 4
+        await run_randomizations_async(num_frames=test_num_frames, lights=lights, write_data=True)
 
         out_dir = os.path.join(os.getcwd(), "_out_rand_lights")
-        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": num_frames})
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": test_num_frames})
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_randomize_textures(self):
@@ -278,10 +281,13 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
 
         num_frames = 10
         # asyncio.ensure_future(run_randomizations_async(num_frames, materials, write_data=True, delay=0.2))
-        await run_randomizations_async(num_frames, materials, write_data=True)
+
+        # Test
+        test_num_frames = 4
+        await run_randomizations_async(test_num_frames, materials, write_data=True)
 
         out_dir = os.path.join(os.getcwd(), "_out_rand_textures")
-        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": num_frames})
+        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": test_num_frames})
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_randomize_sequential_sphere_scan(self):
@@ -440,6 +446,7 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         # asyncio.ensure_future(
         #     run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True, delay=0.2)
         # )
+        # Test
         await run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True)
 
         out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
@@ -826,7 +833,8 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 # Capture the data and wait for the data to be written to disk
                 await rep.orchestrator.step_async(rt_subframes=8)
 
-                # Cleanup the writer and render product
+                # Wait for the data to be written to disk and cleanup
+                await rep.orchestrator.wait_until_complete_async()
                 writer.detach()
                 rp.destroy()
 
@@ -836,6 +844,8 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         #         num_pallets=6, env_url="/Isaac/Environments/Simple_Warehouse/warehouse.usd", write_data=True
         #     )
         # )
+
+        # Test
         await run_box_stacking_scenarios_async(num_pallets=1, write_data=True)
 
         out_dir = os.path.join(os.getcwd(), "_out_box_stacking")

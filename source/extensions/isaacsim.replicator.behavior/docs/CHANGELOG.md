@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.0] - 2025-12-03
+### Changed
+- Added explicit seed to randomizers to make them deterministic
+- Updated sdg pipeline golden images
 
 ## [1.2.1] - 2025-10-27
 ### Changed

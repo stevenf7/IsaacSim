@@ -64,7 +64,7 @@ config = {
         "url": "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_04.usd",
         "class": "cardbox",
     },
-    "close_app_after_run": False,
+    "close_app_after_run": True,
 }
 
 import carb
@@ -227,7 +227,9 @@ driver_cam_bounds_min = camera_bounds["driver_cam"]["min"]
 driver_cam_bounds_max = camera_bounds["driver_cam"]["max"]
 
 # Setup scatter plane and cone placement
-scatter_plane = scene_based_sdg_utils.create_scatter_plane_for_prim(pallet_prim, pallet_tf, scale_factor=0.8)
+scatter_plane = scene_based_sdg_utils.create_scatter_plane_for_prim(
+    pallet_prim, pallet_tf, parent_path="/SDG", scale_factor=0.8
+)
 cone_placement_corners, forklift_rotation_deg = scene_based_sdg_utils.setup_cone_placement_corners(forklift_prim)
 
 # Register graph-based randomizers for lights and materials
