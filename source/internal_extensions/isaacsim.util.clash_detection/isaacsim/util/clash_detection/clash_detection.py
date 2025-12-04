@@ -431,8 +431,6 @@ class ClashDetector:
         num_steps = clash_detect.create_pipeline()
         for i in range(num_steps):
             step_data = clash_detect.get_pipeline_step_data(i)
-            if step_data.finished:
-                break
             clash_detect.run_pipeline_step(i)
             progress_update.update(step_data.progress)
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.13] - 2025-12-04
+### Fixed
+- Remove break in Clash Detection pipeline loop so clashes are stored
+
 ## [0.1.12] - 2025-11-20
 ### Changed
 - Update test arguments
