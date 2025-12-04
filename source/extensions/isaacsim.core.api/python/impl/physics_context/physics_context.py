@@ -188,7 +188,6 @@ class PhysicsContext(object):
                 self.set_friction_correlation_distance(sim_params["friction_correlation_distance"])
 
             # create default physics material
-            # TODO: double check this with kelly
             if "default_physics_material" in sim_params.keys():
                 default_material_path = self._prim_path + "/defaultMaterial"
                 default_material = UsdShade.Material.Define(get_current_stage(), default_material_path)

@@ -236,10 +236,6 @@ public:
      */
     void init(const char* json);
 
-    // TODO: maybe pass in init the profile name as a string and use the getProfile internally
-    // Then, we don't need an extra call to getProfileJsonAtPaths -- but we lose the flexibility to pass just a read
-    // json
-
     /**
      * @brief Gets JSON content from given filename
      * @details Searches for the JSON file in internal paths or at given paths

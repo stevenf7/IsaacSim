@@ -1,4 +1,8 @@
 # Changelog
+## [15.11.2] - 2025-12-03
+### Changed
+- Remove TODOs.
+
 ## [15.11.1] - 2025-12-01
 ### Changed
 - OgnIsaacCreateRTXLidarScanBuffer uses lambda function to initialize and allocate buffers
