@@ -1,4 +1,9 @@
 # Changelog
+## [1.6.2] - 2025-12-03
+### Changed
+- Added an app update after switching to pathtracing in the palletizing example test
+- Fixed scatter plane parent path in scene based SDG example test
+- Fixed SDG box stacking randomizer example test by waiting for the data to be written to disk
 
 ## [1.6.1] - 2025-11-27
 ### Changed

@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import unittest
-
 import carb.settings
 import omni.kit
 import omni.usd
@@ -202,7 +199,7 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
             }
 
         def create_scatter_plane_for_prim(
-            prim: Usd.Prim, prim_tf: Gf.Matrix4d, scale_factor: float = 0.8, visible: bool = False
+            prim: Usd.Prim, prim_tf: Gf.Matrix4d, parent_path: str, scale_factor: float = 0.8, visible: bool = False
         ) -> Usd.Prim:
             """Create scatter plane sized and aligned to prim surface."""
             bb_cache = create_bbox_cache()
@@ -223,7 +220,7 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
                 position=tuple(scatter_plane_pos),
                 rotation=tuple(prim_rotation_deg),
                 visible=visible,
-                parent="/World",
+                parent=parent_path,
             )
 
             return scatter_plane
@@ -413,7 +410,7 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
             driver_cam_bounds_max = camera_bounds["driver_cam"]["max"]
 
             # Setup scatter plane and cone placement
-            scatter_plane = create_scatter_plane_for_prim(pallet_prim, pallet_tf, scale_factor=0.8)
+            scatter_plane = create_scatter_plane_for_prim(pallet_prim, pallet_tf, parent_path="/SDG", scale_factor=0.8)
             cone_placement_corners, forklift_rotation_deg = setup_cone_placement_corners(forklift_prim)
 
             # Register graph-based randomizers for lights and materials

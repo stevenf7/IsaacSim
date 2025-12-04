@@ -223,6 +223,7 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 print(f"[PalletizingSDGDemo] Running bin flip scenario for bin {self._bin_counter}..")
 
                 self._switch_to_pathtracing(spp=16, total_spp=32)
+                await omni.kit.app.get_app().next_update_async()
                 self._create_bin_flip_graph()
 
                 rgb_annot = rep.annotators.get("rgb")

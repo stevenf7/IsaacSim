@@ -178,7 +178,7 @@ def setup_camera_bounds(
 
 
 def create_scatter_plane_for_prim(
-    prim: Usd.Prim, prim_tf: Gf.Matrix4d, scale_factor: float = 0.8, visible: bool = False
+    prim: Usd.Prim, prim_tf: Gf.Matrix4d, parent_path: str, scale_factor: float = 0.8, visible: bool = False
 ) -> Usd.Prim:
     """Create scatter plane sized and aligned to prim surface."""
     bb_cache = create_bbox_cache()
@@ -199,7 +199,7 @@ def create_scatter_plane_for_prim(
         position=tuple(scatter_plane_pos),
         rotation=tuple(prim_rotation_deg),
         visible=visible,
-        parent="/World",
+        parent=parent_path,
     )
 
     return scatter_plane
