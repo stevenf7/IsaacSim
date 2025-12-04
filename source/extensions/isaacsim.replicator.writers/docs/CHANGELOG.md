@@ -1,4 +1,9 @@
 # Changelog
+## [1.2.1] - 2025-12-01
+### Changed
+- Deprecate DOPEWriter and YCBVideoWriter writers
+- Deprecate OgnPose and OgnDope nodes
+
 ## [1.2.0] - 2025-11-07
 ### Changed
 - Updated pose writer to support explicit backends

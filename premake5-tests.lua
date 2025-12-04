@@ -385,30 +385,6 @@ local function get_replicator_tests()
             "--config standalone_examples/replicator/scene_based_sdg/config/config_coco_writer.yaml",
         },
         {
-            "tests-nativepython-replicator.pose_generation",
-            "standalone_examples/replicator/pose_generation/pose_generation.py",
-        },
-        {
-            "tests-nativepython-replicator.pose_generation_ycbvideo",
-            "standalone_examples/replicator/pose_generation/pose_generation.py",
-            "--num_mesh 3 --num_dome 3 --writer YCBVideo --output_folder _out_ycb",
-        },
-        {
-            "tests-nativepython-replicator.pose_generation_ycbvideo_output_check",
-            "standalone_examples/replicator/pose_generation/pose_generation.py",
-            "--test --writer YCBVideo --output_folder _out_ycb_test",
-        },
-        {
-            "tests-nativepython-replicator.pose_generation_dope",
-            "standalone_examples/replicator/pose_generation/pose_generation.py",
-            "--num_mesh 3 --num_dome 3 --writer DOPE --output_folder _out_dope",
-        },
-        {
-            "tests-nativepython-replicator.pose_generation_dope_output_check",
-            "standalone_examples/replicator/pose_generation/pose_generation.py",
-            "--test --writer DOPE --output_folder _out_dope_test",
-        },
-        {
             "tests-nativepython-replicator.object_based_sdg",
             "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
         },
@@ -779,7 +755,6 @@ function create_tests()
         -- docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.streaming.sh", "--allow-root --/app/quitAfter=10")
         -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/isaacsim.simulation_app/livestream.py --/app/quitAfter=500")
         -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
-        -- docker_test("tests-internaldocker-python-pose_generation", "./python.sh", "standalone_examples/replicator/pose_generation/pose_generation.py --writer dope --num_dome 5 --num_mesh 5 --no-window")
     end
 
     -- Disabled jupyter samples preserved for reference
