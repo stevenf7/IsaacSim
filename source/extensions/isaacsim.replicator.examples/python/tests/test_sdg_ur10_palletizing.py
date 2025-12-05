@@ -16,8 +16,10 @@
 import os
 import unittest
 
+import carb.eventdispatcher
 import carb.settings
 import omni.kit
+import omni.timeline
 import omni.usd
 from isaacsim.test.utils.file_validation import validate_folder_contents
 
@@ -135,23 +137,20 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 return True
 
             def _start(self):
-                self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED),
-                    self._on_timeline_event,
+                self._timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+                    on_event=self._on_timeline_event,
+                    observer_name="test_sdg_ur10_palletizing.PalletizingSDGDemo._on_timeline_event",
                 )
-                self._stage_event_sub = (
-                    omni.usd.get_context()
-                    .get_stage_event_stream()
-                    .create_subscription_to_pop_by_type(
-                        int(omni.usd.StageEventType.CLOSING), self._on_stage_closing_event
-                    )
+                self._stage_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.CLOSING),
+                    on_event=self._on_stage_closing_event,
+                    observer_name="test_sdg_ur10_palletizing.PalletizingSDGDemo._on_stage_closing_event",
                 )
                 self._in_running_state = True
                 print("[PalletizingSDGDemo] Starting the palletizing SDG demo..")
 
             def clear(self):
-                if self._timeline_sub:
-                    self._timeline_sub.unsubscribe()
                 self._timeline_sub = None
                 self._stage_event_sub = None
                 self._in_running_state = False
@@ -160,11 +159,11 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 if self._stage.GetPrimAtPath("/Replicator"):
                     omni.kit.commands.execute("DeletePrimsCommand", paths=["/Replicator"])
 
-            def _on_stage_closing_event(self, e: carb.events.IEvent):
+            def _on_stage_closing_event(self, e: carb.eventdispatcher.Event):
                 # Make sure the subscribers are unsubscribed for new stages
                 self.clear()
 
-            def _on_timeline_event(self, e: carb.events.IEvent):
+            def _on_timeline_event(self, e: carb.eventdispatcher.Event):
                 self._check_bin_overlaps()
 
             def _check_bin_overlaps(self):
@@ -194,7 +193,6 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 # Handle flip scenario (only once per bin)
                 if not self._bin_flip_scenario_done and hit.rigid_body.startswith(self.FLIP_HELPER_PATH):
                     self._timeline.pause()
-                    self._timeline_sub.unsubscribe()
                     self._timeline_sub = None
                     asyncio.ensure_future(self._run_bin_flip_scenario())
                     return False
@@ -204,7 +202,6 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 is_other_bin_hit = hit.rigid_body.startswith(f"{self.BINS_FOLDER_PATH}/bin_")
                 if is_pallet_hit or is_other_bin_hit:
                     self._timeline.pause()
-                    self._timeline_sub.unsubscribe()
                     self._timeline_sub = None
                     asyncio.ensure_future(self._run_pallet_scenario())
 
@@ -267,9 +264,10 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
 
                 # Set the flag to indicate that the bin flip scenario is done and the simulation can continue to the next bin
                 self._bin_flip_scenario_done = True
-                self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED),
-                    self._on_timeline_event,
+                self._timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+                    on_event=self._on_timeline_event,
+                    observer_name="test_sdg_ur10_palletizing.PalletizingSDGDemo._on_timeline_event",
                 )
                 self._timeline.play()
 
@@ -362,9 +360,10 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                     return
 
                 # Resume the simulation and continue with the next bin
-                self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED),
-                    self._on_timeline_event,
+                self._timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                    event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+                    on_event=self._on_timeline_event,
+                    observer_name="test_sdg_ur10_palletizing.PalletizingSDGDemo._on_timeline_event",
                 )
                 self._timeline.play()
 

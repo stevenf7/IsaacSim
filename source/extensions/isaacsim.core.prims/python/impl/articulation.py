@@ -19,11 +19,13 @@ from collections import OrderedDict
 from typing import List, Optional, Tuple, Union
 
 import carb
+import carb.eventdispatcher
 import isaacsim.core.utils.numpy as numpy_utils
 import numpy as np
 import omni.kit.app
 import omni.physics.tensors
 import omni.physx
+import omni.timeline
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
@@ -172,11 +174,10 @@ class Articulation(XFormPrim):
             for i in range(self.count):
                 self._articulation_residual_apis.append(self._apply_residual_reporting_api(self._prims[i]))
 
-        self._invalidation_callback = (
-            SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.STOP),
-                lambda event, obj=weakref.proxy(self): obj._invalidate_physics_handle_callback(event),
-            )
+        self._invalidation_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=lambda event, obj=weakref.proxy(self): obj._invalidate_physics_handle_callback(event),
+            observer_name="isaacsim.core.prims.Articulation.initialize._invalidate_physics_handle_callback",
         )
         if SimulationManager.get_physics_sim_view() is not None:
             SimulationManager._physics_sim_interface.flush_changes()

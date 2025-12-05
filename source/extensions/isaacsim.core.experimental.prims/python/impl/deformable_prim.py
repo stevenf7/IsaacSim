@@ -19,12 +19,14 @@ import weakref
 from typing import Literal
 
 import carb
+import carb.eventdispatcher
 import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.physics.tensors
+import omni.timeline
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
 from omni.physx import get_physx_cooking_interface
@@ -279,12 +281,19 @@ class DeformablePrim(XformPrim):
             scales=scales,
             reset_xform_op_properties=reset_xform_op_properties,
         )
+
         # setup subscriptions
-        self._subscription_to_timeline_stop_event = (
-            SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.STOP),
-                lambda event, obj=weakref.proxy(self): obj._on_timeline_stop(event),
-            )
+        def safe_timeline_stop_callback(event, obj=weakref.proxy(self)):
+            try:
+                obj._on_timeline_stop(event)
+            except ReferenceError:
+                # Object has been garbage collected, ignore the event
+                pass
+
+        self._subscription_to_timeline_stop_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=safe_timeline_stop_callback,
+            observer_name="isaacsim.core.experimental.prims.DeformablePrim._on_timeline_stop",
         )
         # setup physics-related configuration if simulation is running
         if SimulationManager._physics_sim_view__warp is not None:

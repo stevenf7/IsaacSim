@@ -22,6 +22,7 @@ from functools import partial
 from typing import OrderedDict
 
 import carb
+import carb.eventdispatcher
 import numpy as np
 import omni
 import omni.kit.commands
@@ -178,10 +179,31 @@ class Extension(omni.ext.IExt):
         if self._window.visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
-            events = self._usd_context.get_stage_event_stream()
-            self._stage_event_sub = events.create_subscription_to_pop(self._on_stage_event)
-            stream = self._timeline.get_timeline_event_stream()
-            self._timeline_event_sub = stream.create_subscription_to_pop(self._on_timeline_event)
+            self._stage_event_sub_selection = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.SELECTION_CHANGED),
+                on_event=self._on_stage_selection_changed,
+                observer_name="isaacsim.robot_setup.xrdf_editor.Extension._on_stage_selection_changed",
+            )
+            self._stage_event_sub_opened = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.OPENED),
+                on_event=self._on_stage_opened,
+                observer_name="isaacsim.robot_setup.xrdf_editor.Extension._on_stage_opened",
+            )
+            self._stage_event_sub_closed = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
+                on_event=self._on_stage_closed,
+                observer_name="isaacsim.robot_setup.xrdf_editor.Extension._on_stage_closed",
+            )
+            self._stage_event_sub_sim_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.SIMULATION_START_PLAY),
+                on_event=self._on_timeline_play,
+                observer_name="isaacsim.robot_setup.xrdf_editor.Extension._on_timeline_play",
+            )
+            self._stage_event_sub_sim_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.SIMULATION_STOP_PLAY),
+                on_event=self._on_timeline_stop,
+                observer_name="isaacsim.robot_setup.xrdf_editor.Extension._on_timeline_stop",
+            )
 
             self._build_ui()
             if not self._new_window and self.articulation:
@@ -189,8 +211,11 @@ class Extension(omni.ext.IExt):
             self._new_window = False
         else:
             self._usd_context = None
-            self._stage_event_sub = None
-            self._timeline_event_sub = None
+            self._stage_event_sub_selection = None
+            self._stage_event_sub_opened = None
+            self._stage_event_sub_closed = None
+            self._stage_event_sub_sim_play = None
+            self._stage_event_sub_sim_stop = None
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -534,33 +559,57 @@ class Extension(omni.ext.IExt):
     # Callbacks
     ##################################
 
-    def _on_stage_event(self, event):
-        """Callback for Stage Events
+    def _on_stage_selection_changed(self, event):
+        """Callback for Stage Selection Changed Event
 
         Args:
-            event (omni.usd.StageEventType): Event Type
+            event (carb.eventdispatcher.Event): Event
         """
-
         # On every stage event check if any articulations have been added/removed from the Stage
         self._refresh_selection_combobox()
+        self._collision_sphere_editor.copy_all_sphere_data()
+        self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
 
-        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
-            self._collision_sphere_editor.copy_all_sphere_data()
-            self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
-            pass
+    def _on_stage_opened(self, event):
+        """Callback for Stage Opened Event
 
-        elif event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
-            # stage was opened or closed, cleanup
-            self._physics_subscription = None
+        Args:
+            event (carb.eventdispatcher.Event): Event
+        """
+        # On every stage event check if any articulations have been added/removed from the Stage
+        self._refresh_selection_combobox()
+        # stage was opened, cleanup
+        self._physics_subscription = None
 
-        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
-            self._refresh_selection_combobox()
-            self._on_selection(self._get_selected_articulation())
+    def _on_stage_closed(self, event):
+        """Callback for Stage Closed Event
 
-        elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline stopped
-            if self._timeline.is_stopped():
-                self._reset_ui()
-                self._on_selection("None")
+        Args:
+            event (carb.eventdispatcher.Event): Event
+        """
+        # On every stage event check if any articulations have been added/removed from the Stage
+        self._refresh_selection_combobox()
+        # stage was closed, cleanup
+        self._physics_subscription = None
+
+    def _on_timeline_play(self, event):
+        """Callback for Timeline Played Event
+
+        Args:
+            event (carb.eventdispatcher.Event): Event
+        """
+        self._refresh_selection_combobox()
+        self._on_selection(self._get_selected_articulation())
+
+    def _on_timeline_stop(self, event):
+        """Callback for Timeline Stopped Event
+
+        Args:
+            event (carb.eventdispatcher.Event): Event
+        """
+        if self._timeline.is_stopped():
+            self._reset_ui()
+            self._on_selection("None")
 
     def _on_physics_step(self, step, context):
         """Callback for Physics Step.
@@ -578,15 +627,6 @@ class Extension(omni.ext.IExt):
             if self._set_joint_positions_on_step:
                 self._set_joint_positions(step)
         return
-
-    def _on_timeline_event(self, e):
-        """Callback for Timeline Events
-
-        Args:
-            event (omni.timeline.TimelineEventType): Event Type
-        """
-
-        pass
 
     def _set_joint_positions(self, step):
         if self.articulation is not None:

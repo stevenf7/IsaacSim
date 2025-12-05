@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.3] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [1.6.2] - 2025-12-03
 ### Changed
 - Added an app update after switching to pathtracing in the palletizing example test

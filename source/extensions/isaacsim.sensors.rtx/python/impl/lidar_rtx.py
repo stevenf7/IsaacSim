@@ -318,8 +318,20 @@ class LidarRtx(BaseSensor):
             observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._stage_open_callback",
         )
         timeline = omni.timeline.get_timeline_interface()
-        self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
+        self._timer_reset_callback_pause = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_PAUSE,
+            on_event=self._timeline_pause_callback_fn,
+            observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._timeline_pause_callback",
+        )
+        self._timer_reset_callback_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=self._timeline_stop_callback_fn,
+            observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._timeline_stop_callback",
+        )
+        self._timer_reset_callback_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_PLAY,
+            on_event=self._timeline_play_callback_fn,
+            observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._timeline_play_callback",
         )
         return
 
@@ -327,25 +339,40 @@ class LidarRtx(BaseSensor):
         """Handle stage open event by cleaning up callbacks.
 
         Args:
-            param event (carb.events.IEvent): The stage open event.
+            param event (carb.eventdispatcher.Event): The stage open event.
         """
         self._acquisition_callback = None
         self._stage_open_callback = None
-        self._timer_reset_callback = None
+        self._timer_reset_callback_pause = None
+        self._timer_reset_callback_stop = None
+        self._timer_reset_callback_play = None
         return
 
-    def _timeline_timer_callback_fn(self, event):
-        """Handle timeline timer events for pausing and resuming the sensor.
+    def _timeline_pause_callback_fn(self, event):
+        """Handle timeline pause event.
 
         Args:
-            param event (carb.events.IEvent): The timeline event.
+            param event (carb.eventdispatcher.Event): The timeline pause event.
         """
-        if event.type == int(omni.timeline.TimelineEventType.PAUSE) or event.type == int(
-            omni.timeline.TimelineEventType.STOP
-        ):
-            self.pause()
-        elif event.type == int(omni.timeline.TimelineEventType.PLAY):
-            self.resume()
+        self.pause()
+        return
+
+    def _timeline_stop_callback_fn(self, event):
+        """Handle timeline stop event.
+
+        Args:
+            param event (carb.eventdispatcher.Event): The timeline stop event.
+        """
+        self.pause()
+        return
+
+    def _timeline_play_callback_fn(self, event):
+        """Handle timeline play event.
+
+        Args:
+            param event (carb.eventdispatcher.Event): The timeline play event.
+        """
+        self.resume()
         return
 
     def post_reset(self) -> None:

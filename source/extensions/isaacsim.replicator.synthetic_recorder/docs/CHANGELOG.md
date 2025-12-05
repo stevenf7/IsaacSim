@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.1] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [2.3.0] - 2025-10-28
 ### Changed
 - Separated recorder and UI configuration

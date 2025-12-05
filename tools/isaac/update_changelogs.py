@@ -232,12 +232,14 @@ class ChangelogManager:
     def __init__(
         self,
         verbose: bool = True,
-        check_modified: bool = False,
+        check_modified_branch: Optional[str] = None,
         require_unreleased: bool = True,
+        force: bool = False,
     ):
         self.verbose = verbose
-        self.check_modified = check_modified
+        self.check_modified_branch = check_modified_branch
         self.require_unreleased = require_unreleased
+        self.force = force
 
         # Standard sections in a Keep a Changelog file - with proper capitalization
         self.valid_sections = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"]
@@ -354,41 +356,47 @@ class ChangelogManager:
 
     def _should_process_extension(self, dirpath: str, extension_name: str = None) -> tuple:
         """Check all conditional requirements for processing"""
-        if self.check_modified:
+        if self.check_modified_branch:
             git_status, git_message = self._has_git_changes(dirpath, extension_name)
             if not git_status:
-                if git_message and "behind origin/develop" in git_message:
+                if git_message and "behind" in git_message:
                     return False, git_message
-                return False, "No uncommitted changes vs develop branch"
+                return False, f"No uncommitted changes vs {self.check_modified_branch} branch"
         return True, None
 
     def _has_git_changes(self, dirpath: str, extension_name: str = None) -> tuple:
-        """Check if directory has changes against develop branch"""
+        """Check if directory has changes against the specified branch."""
+        branch = self.check_modified_branch
         try:
-            # First check if develop branch is behind remote
-            status_cmd = subprocess.run(["git", "fetch", "origin", "develop"], capture_output=True, text=True)
+            # Parse branch to determine if we need to fetch and check for remote updates
+            # Format can be "origin/develop", "develop", or any other branch reference
+            if "/" in branch:
+                remote, remote_branch = branch.split("/", 1)
+                # Fetch the remote branch
+                subprocess.run(["git", "fetch", remote, remote_branch], capture_output=True, text=True)
 
-            # Check if local develop is behind remote
-            status_cmd = subprocess.run(
-                ["git", "rev-list", "--count", "develop..origin/develop"], capture_output=True, text=True
-            )
+                # Check if we have a local tracking branch that's behind (skip if --force)
+                if not self.force:
+                    local_branch = remote_branch
+                    status_cmd = subprocess.run(
+                        ["git", "rev-list", "--count", f"{local_branch}..{branch}"], capture_output=True, text=True
+                    )
 
-            behind_count = status_cmd.stdout.strip()
-            if behind_count and int(behind_count) > 0:
-                error_msg = (
-                    f"Local develop branch is {behind_count} commits behind origin/develop. Please pull latest changes."
-                )
-                if self.verbose:
-                    print(f"  ❌ {error_msg}")
-                return False, error_msg
+                    behind_count = status_cmd.stdout.strip()
+                    if behind_count and behind_count.isdigit() and int(behind_count) > 0:
+                        error_msg = (
+                            f"Local {local_branch} branch is {behind_count} commits behind {branch}. "
+                            f"Please pull latest changes or use --force to skip this check."
+                        )
+                        if self.verbose:
+                            print(f"  ❌ {error_msg}")
+                        return False, error_msg
 
-            # Continue with original functionality to check for changes
-            result = subprocess.run(
-                ["git", "diff", "--quiet", "develop", "--", dirpath], capture_output=True, text=True
-            )
+            # Check for changes against the specified branch
+            result = subprocess.run(["git", "diff", "--quiet", branch, "--", dirpath], capture_output=True, text=True)
             if result.returncode == 0:
                 if self.verbose:
-                    print(f"  ⏭️  No uncommitted changes vs develop branch")
+                    print(f"  ⏭️  No uncommitted changes vs {branch} branch")
                 return False, None
             return True, None
         except Exception as e:
@@ -1009,9 +1017,18 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     )
     parser.add_argument(
         "--check-modified",
+        nargs="?",
+        const="origin/develop",
+        default=tool_config.get("check_modified", None),
+        metavar="BRANCH",
+        help="Only update extensions with changes vs specified branch (default: origin/develop)",
+    )
+    parser.add_argument(
+        "--force",
+        "-f",
         action="store_true",
-        default=tool_config.get("check_modified", False),
-        help="Only update extensions with changes vs develop branch",
+        default=tool_config.get("force", False),
+        help="Force update even if local branch is behind the specified branch",
     )
 
     # Validation options
@@ -1055,8 +1072,9 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     # Create changelog manager
     manager = ChangelogManager(
         verbose=args.verbose,
-        check_modified=args.check_modified,
+        check_modified_branch=args.check_modified,
         require_unreleased=args.check_unreleased,
+        force=args.force,
     )
 
     # Process each extensions directory

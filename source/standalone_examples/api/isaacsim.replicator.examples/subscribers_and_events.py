@@ -54,12 +54,11 @@ NUM_APP_UPDATES = 100
 VERBOSE = False
 
 
-def on_timeline_event(event: omni.timeline.TimelineEventType):
+def on_timeline_event(event: carb.eventdispatcher.Event):
     global timeline_events
-    if event.type == omni.timeline.TimelineEventType.CURRENT_TIME_TICKED.value:
-        timeline_events.append(event.payload)
-        if VERBOSE:
-            print(f"  [timeline][{len(timeline_events)}] {event.payload}")
+    timeline_events.append(event)
+    if VERBOSE:
+        print(f"  [timeline][{len(timeline_events)}] {event}")
 
 
 def on_physics_step(dt, context):
@@ -188,7 +187,11 @@ wall_start_time = time.time()
 # Subscribe to events
 print(f"Subscribing to events...")
 timeline_events = []
-timeline_sub = timeline.get_timeline_event_stream().create_subscription_to_pop(on_timeline_event)
+timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+    event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+    on_event=on_timeline_event,
+    observer_name="subscribers_and_events.on_timeline_event",
+)
 physics_events = []
 physics_sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
     pre_step=False, order=0, on_update=on_physics_step

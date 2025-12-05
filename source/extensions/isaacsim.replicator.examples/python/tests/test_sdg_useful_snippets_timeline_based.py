@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import carb.eventdispatcher
 import carb.settings
 import omni.kit
+import omni.timeline
 import omni.usd
 from isaacsim.test.utils.file_validation import validate_folder_contents
 
@@ -213,12 +215,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         VERBOSE = False
 
         async def run_subscribers_and_events_async():
-            def on_timeline_event(event: omni.timeline.TimelineEventType):
+            def on_timeline_event(event: carb.eventdispatcher.Event):
                 nonlocal timeline_events
-                if event.type == omni.timeline.TimelineEventType.CURRENT_TIME_TICKED.value:
-                    timeline_events.append(event.payload)
-                    if VERBOSE:
-                        print(f"  [timeline][{len(timeline_events)}] {event.payload}")
+                timeline_events.append(event)
+                if VERBOSE:
+                    print(f"  [timeline][{len(timeline_events)}] {event}")
 
             def on_physics_step(dt: float, context):
                 nonlocal physics_events
@@ -340,7 +341,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Subscribe to events
             print(f"Subscribing to events...")
             timeline_events = []
-            timeline_sub = timeline.get_timeline_event_stream().create_subscription_to_pop(on_timeline_event)
+            timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+                on_event=on_timeline_event,
+                observer_name="test_sdg_useful_snippets_timeline_based.on_timeline_event",
+            )
             physics_events = []
             physics_sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=on_physics_step
@@ -372,18 +377,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Stop timeline and unsubscribe from all events
             print(f"Stopping timeline and unsubscribing from all events...")
             timeline.stop()
-            if app_sub:
-                app_sub.reset()
-                app_sub = None
-            if stage_render_sub:
-                stage_render_sub.reset()
-                stage_render_sub = None
-            if physics_sub:
-                physics_sub.unsubscribe()
-                physics_sub = None
-            if timeline_sub:
-                timeline_sub.unsubscribe()
-                timeline_sub = None
+            app_sub = None
+            stage_render_sub = None
+            physics_sub = None
+            timeline_sub = None
 
             # Print summary statistics
             print("\nStats:")

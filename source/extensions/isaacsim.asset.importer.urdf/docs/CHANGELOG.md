@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.35] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [2.4.34] - 2025-11-27
 ### Changed
 - Add missing docstrings

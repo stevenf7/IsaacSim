@@ -17,10 +17,12 @@ import asyncio
 import weakref
 
 import carb
+import carb.eventdispatcher
 import omni
 import omni.kit.commands
 import omni.physics.core
 import omni.ui as ui
+import omni.usd
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
@@ -50,9 +52,9 @@ class Extension(omni.ext.IExt):
     def build_window(self):
         pass
 
-    def _on_stage_event(self, event):
-        if event.type == int(omni.usd.StageEventType.CLOSED):
-            self.on_closed()
+    def _on_stage_closed(self, event):
+        """Stage closed event callback."""
+        self.on_closed()
 
     def build_ui(self):
         with ui.VStack(spacing=5, height=0):
@@ -174,7 +176,9 @@ class Extension(omni.ext.IExt):
                 translation=self.sensor_offsets[i],
             )
 
-        self._events = omni.usd.get_context().get_stage_event_stream()
-        self._stage_event_subscription = self._events.create_subscription_to_pop(
-            self._on_stage_event, name="Contact Sensor Sample stage Watch"
+        self._usd_context = omni.usd.get_context()
+        self._stage_event_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
+            on_event=self._on_stage_closed,
+            observer_name="isaacsim.sensors.physics.examples.contact_sensor._on_stage_closed",
         )

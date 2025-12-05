@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.4] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [2.2.3] - 2025-10-18
 ### Changed
 - Remove extra carb settings from tests

@@ -19,14 +19,17 @@ import math
 from typing import Callable, List, Optional, Sequence, Tuple
 
 import carb
+import carb.eventdispatcher
 import isaacsim.core.utils.numpy as np_utils
 import isaacsim.core.utils.torch as torch_utils
 import isaacsim.core.utils.warp as warp_utils
 import numpy as np
 import omni
 import omni.graph.core as og
+import omni.kit.app
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as _syntheticdata
+import omni.timeline
 import warp as wp
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.deprecation_manager import import_module
@@ -395,24 +398,28 @@ class Camera(BaseSensor):
         # Must initialize here after an annotator has been attached so the graph exists
         self._sdg_graph_pipeline = self._og_controller.graph("/Render/PostProcess/SDGPipeline")
 
-        self._acquisition_callback = (
-            omni.usd.get_context()
-            .get_rendering_event_stream()
-            .create_subscription_to_pop_by_type(
-                int(omni.usd.StageRenderingEventType.NEW_FRAME),
-                self._data_acquisition_callback,
-                name="omni.isaac.camera.acquisition_callback",
-                order=1000,
-            )
+        self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_rendering_event_name(
+                omni.usd.StageRenderingEventType.NEW_FRAME, True
+            ),
+            on_event=self._data_acquisition_callback,
+            observer_name="isaacsim.sensors.camera.Camera.initialize._data_acquisition_callback",
         )
-        self._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+        self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+            on_event=self._stage_open_callback_fn,
+            observer_name="isaacsim.sensors.camera.Camera.initialize._stage_open_callback",
         )
         timeline = omni.timeline.get_timeline_interface()
-        self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
+        self._timer_reset_callback_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=self._timeline_stop_callback_fn,
+            observer_name="isaacsim.sensors.camera.Camera.initialize._timeline_stop_callback",
+        )
+        self._timer_reset_callback_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_PLAY,
+            on_event=self._timeline_play_callback_fn,
+            observer_name="isaacsim.sensors.camera.Camera.initialize._timeline_play_callback",
         )
         self._current_frame["rendering_frame"] = 0
         self._current_frame["rendering_time"] = 0
@@ -427,27 +434,26 @@ class Camera(BaseSensor):
     def _stage_open_callback_fn(self, event):
         self._acquisition_callback = None
         self._stage_open_callback = None
-        self._timer_reset_callback = None
+        self._timer_reset_callback_stop = None
+        self._timer_reset_callback_play = None
         return
 
-    def _timeline_timer_callback_fn(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self.pause()
-        elif event.type == int(omni.timeline.TimelineEventType.PLAY):
-            self.resume()
+    def _timeline_stop_callback_fn(self, event):
+        self.pause()
+        return
+
+    def _timeline_play_callback_fn(self, event):
+        self.resume()
         return
 
     def resume(self) -> None:
         """resumes data collection and updating the data frame"""
-        self._acquisition_callback = (
-            omni.usd.get_context()
-            .get_rendering_event_stream()
-            .create_subscription_to_pop_by_type(
-                int(omni.usd.StageRenderingEventType.NEW_FRAME),
-                self._data_acquisition_callback,
-                name="omni.isaac.camera.acquisition_callback",
-                order=0,
-            )
+        self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_rendering_event_name(
+                omni.usd.StageRenderingEventType.NEW_FRAME, True
+            ),
+            on_event=self._data_acquisition_callback,
+            observer_name="isaacsim.sensors.camera.Camera.resume._data_acquisition_callback",
         )
         return
 
@@ -463,9 +469,9 @@ class Camera(BaseSensor):
         """
         return self._acquisition_callback is None
 
-    def _data_acquisition_callback(self, event: carb.events.IEvent):
+    def _data_acquisition_callback(self, event: carb.eventdispatcher.Event):
         parsed_payload = self._sdg_interface.parse_rendered_simulation_event(
-            event.payload["product_path_handle"], event.payload["results"]
+            event["product_path_handle"], event["results"]
         )
         if parsed_payload[0] == self._render_product_path:
             self._og_controller.evaluate_sync(graph_id=self._sdg_graph_pipeline)

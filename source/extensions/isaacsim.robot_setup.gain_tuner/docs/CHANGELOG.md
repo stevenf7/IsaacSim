@@ -1,4 +1,7 @@
 # Changelog
+## [3.1.2] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
 
 ## [3.1.1] - 2025-10-27
 ### Removed

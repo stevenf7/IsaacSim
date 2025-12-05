@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.18] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [2.1.17] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 2.1.16)

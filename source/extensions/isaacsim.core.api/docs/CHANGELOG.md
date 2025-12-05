@@ -1,4 +1,8 @@
 # Changelog
+## [4.11.4] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [4.11.3] - 2025-12-03
 ### Changed
 - Remove TODOs.
