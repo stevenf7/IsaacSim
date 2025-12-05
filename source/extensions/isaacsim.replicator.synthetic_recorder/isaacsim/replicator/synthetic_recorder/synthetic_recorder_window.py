@@ -18,6 +18,7 @@ import json
 import os
 
 import carb
+import carb.eventdispatcher
 import omni.kit.app
 import omni.ui as ui
 import omni.usd
@@ -220,22 +221,19 @@ class SyntheticRecorderWindow(MenuHelperWindow):
             self._load_config(os.path.join(self._config_dir, "default_config.json"))
 
         # Listen to stage closing event to stop the recorder
-        self._sub_stage_event = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.CLOSING), self._on_stage_closing_event)
+        self._usd_context = omni.usd.get_context()
+        self._sub_stage_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSING),
+            on_event=self._on_stage_closing_event,
+            observer_name="isaacsim.replicator.synthetic_recorder._on_stage_closing_event",
         )
 
         # Listen to editor quit event to stop the recorder, and save the last config file
-        self._sub_shutdown = (
-            omni.kit.app.get_app()
-            .get_shutdown_event_stream()
-            .create_subscription_to_pop_by_type(
-                omni.kit.app.POST_QUIT_EVENT_TYPE,
-                self._on_editor_quit_event,
-                name="isaacsim.replicator.synthetic_recorder::shutdown_callback",
-                order=0,
-            )
+        self._sub_shutdown = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_POST_QUIT,
+            on_event=self._on_editor_quit_event,
+            observer_name="isaacsim.replicator.synthetic_recorder._on_editor_quit_event",
+            order=0,
         )
 
         # Build the window UI

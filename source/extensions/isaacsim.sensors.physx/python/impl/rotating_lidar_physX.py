@@ -15,10 +15,12 @@
 from typing import Optional, Tuple
 
 import carb
+import carb.eventdispatcher
 import numpy as np
 import omni
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.physics.core
+import omni.timeline
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from isaacsim.core.utils.stage import get_current_stage
@@ -86,14 +88,16 @@ class RotatingLidarPhysX(BaseSensor):
                 pre_step=False, order=0, on_update=self._data_acquisition_callback
             )
         )
-        self._stage_open_callback = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+        self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
+            on_event=self._stage_open_callback_fn,
+            observer_name="isaacsim.sensors.physx.RotatingLidarPhysX.initialize._stage_open_callback",
         )
         timeline = omni.timeline.get_timeline_interface()
-        self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
+        self._timer_reset_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=self._timeline_stop_callback_fn,
+            observer_name="isaacsim.sensors.physx.RotatingLidarPhysX.initialize._timeline_stop_callback",
         )
         return
 
@@ -103,10 +107,9 @@ class RotatingLidarPhysX(BaseSensor):
         self._stage_open_callback = None
         return
 
-    def _timeline_timer_callback_fn(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._current_time = 0
-            self._number_of_physics_steps = 0
+    def _timeline_stop_callback_fn(self, event):
+        self._current_time = 0
+        self._number_of_physics_steps = 0
         return
 
     def post_reset(self) -> None:

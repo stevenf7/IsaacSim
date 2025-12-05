@@ -1,4 +1,8 @@
 # Changelog
+## [4.11.1] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [4.11.0] - 2025-12-02
 ### Removed
 - base_sample_experimental.py

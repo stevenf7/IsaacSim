@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.1] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [1.5.0] - 2025-11-26
 ### Added
 - Unit test for get_view_matrix_ros

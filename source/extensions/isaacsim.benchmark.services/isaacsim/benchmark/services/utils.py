@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import List, Tuple, Union
 
 import carb
+import carb.eventdispatcher
 import omni.kit.app
 
 original_persistent_settings = {}
@@ -186,11 +187,15 @@ class LogErrorChecker:
         self._error_count = 0
 
         def on_log_event(e):
-            if e.payload["level"] >= carb.logging.LEVEL_ERROR:
+            if e["level"] >= carb.logging.LEVEL_ERROR:
                 self._error_count = self._error_count + 1
 
         self._log_stream = omni.kit.app.get_app().get_log_event_stream()
-        self._log_sub = self._log_stream.create_subscription_to_pop(on_log_event, name="test log event")
+        self._log_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_LOG,
+            on_event=on_log_event,
+            observer_name="isaacsim.benchmark.services.utils.on_log_event",
+        )
 
     def shutdown(self):
         self._log_stream = None

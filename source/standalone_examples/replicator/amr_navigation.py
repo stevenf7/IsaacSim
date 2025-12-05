@@ -25,6 +25,7 @@ import os
 import random
 from itertools import cycle
 
+import carb.eventdispatcher
 import carb.settings
 import omni.client
 import omni.kit.app
@@ -108,13 +109,15 @@ class NavSDGDemo:
         self._setup_sdg()
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.play()
-        self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-            int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED), self._on_timeline_event
+        self._timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+            on_event=self._on_timeline_event,
+            observer_name="amr_navigation.NavSDGDemo._on_timeline_event",
         )
-        self._stage_event_sub = (
-            omni.usd.get_context()
-            .get_stage_event_stream()
-            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.CLOSING), self._on_stage_closing_event)
+        self._stage_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.CLOSING),
+            on_event=self._on_stage_closing_event,
+            observer_name="amr_navigation.NavSDGDemo._on_stage_closing_event",
         )
         self._in_running_state = True
 
@@ -127,11 +130,7 @@ class NavSDGDemo:
         self._dolly_light = None
         self._timeline = None
         self._frame_counter = 0
-        if self._stage_event_sub:
-            self._stage_event_sub.unsubscribe()
         self._stage_event_sub = None
-        if self._timeline_sub:
-            self._timeline_sub.unsubscribe()
         self._timeline_sub = None
         self._clear_sdg_render_products()
         self._stage = None
@@ -145,7 +144,7 @@ class NavSDGDemo:
         """Return whether the script is running in the Isaac Sim script editor."""
         return builtins.ISAAC_LAUNCHED_FROM_TERMINAL is True
 
-    def _on_stage_closing_event(self, e: carb.events.IEvent) -> None:
+    def _on_stage_closing_event(self, e: carb.eventdispatcher.Event):
         """Handle stage closing event by clearing state."""
         self.clear()
 
@@ -375,11 +374,13 @@ class NavSDGDemo:
         # Set a new random distance from which to take capture the next frame
         self._trigger_distance = random.uniform(1.75, 2.5)
         self._timeline.play()
-        self._timeline_sub = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-            int(omni.timeline.TimelineEventType.CURRENT_TIME_TICKED), self._on_timeline_event
+        self._timeline_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_CURRENT_TIME_TICKED,
+            on_event=self._on_timeline_event,
+            observer_name="amr_navigation.NavSDGDemo._on_timeline_event",
         )
 
-    def _on_timeline_event(self, e: carb.events.IEvent) -> None:
+    def _on_timeline_event(self, e: carb.eventdispatcher.Event):
         """Check distance to dolly and trigger SDG capture when close enough."""
         carter_loc = self._carter_chassis.GetAttribute("xformOp:translate").Get()
         dolly_loc = self._dolly.GetAttribute("xformOp:translate").Get()
@@ -387,7 +388,6 @@ class NavSDGDemo:
         if dist < self._trigger_distance:
             print(f"[SDG] Starting SDG for frame no. {self._frame_counter}")
             self._timeline.pause()
-            self._timeline_sub.unsubscribe()
             if self._is_running_in_script_editor():
                 import asyncio
 

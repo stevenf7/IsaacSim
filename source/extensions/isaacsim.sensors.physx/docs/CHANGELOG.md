@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.4] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [2.4.3] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

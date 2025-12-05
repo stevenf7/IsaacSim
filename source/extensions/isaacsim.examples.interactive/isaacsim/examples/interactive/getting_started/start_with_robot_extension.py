@@ -15,6 +15,8 @@
 
 import os
 
+import carb.eventdispatcher
+import numpy as np
 import omni.ext
 import omni.timeline
 import omni.ui as ui
@@ -66,8 +68,15 @@ class GettingStartedRobotUI(BaseSampleUITemplate):
         self.arm_handle = None
         self.car_handle = None
         self._timeline = omni.timeline.get_timeline_interface()
-        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
-            self._timeline_timer_callback_fn
+        self._event_timer_callback_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_PLAY,
+            on_event=self._timeline_play_callback_fn,
+            observer_name="isaacsim.examples.interactive.getting_started.GettingStartedRobot._timeline_play_callback",
+        )
+        self._event_timer_callback_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=self._timeline_stop_callback_fn,
+            observer_name="isaacsim.examples.interactive.getting_started.GettingStartedRobot._timeline_stop_callback",
         )
         super().build_ui()
 
@@ -243,33 +252,35 @@ class GettingStartedRobotUI(BaseSampleUITemplate):
         else:
             self.task_ui_elements["Print Joint State"].text = "PRINT JOINT STATE"
 
-    def _timeline_timer_callback_fn(self, event):
-        if event.type == int(omni.timeline.TimelineEventType.STOP):  # reset buttons when pressed STOP
-            if self.car_handle is not None:
-                self.task_ui_elements["Move Vehicle"].enabled = False
-                self.task_ui_elements["Move Vehicle"].text = "PRESS PLAY"
-            if self.arm_handle is not None:
-                self.task_ui_elements["Move Arm"].enabled = False
-                self.task_ui_elements["Move Arm"].text = "PRESS PLAY"
-            self.sample.print_state = False
-            self.task_ui_elements["Print Joint State"].enabled = False
-            self.task_ui_elements["Print Joint State"].text = "PRESS PLAY"
+    def _timeline_stop_callback_fn(self, event):
+        """Timeline stop event callback - reset buttons when pressed STOP."""
+        if self.car_handle is not None:
+            self.task_ui_elements["Move Vehicle"].enabled = False
+            self.task_ui_elements["Move Vehicle"].text = "PRESS PLAY"
+        if self.arm_handle is not None:
+            self.task_ui_elements["Move Arm"].enabled = False
+            self.task_ui_elements["Move Arm"].text = "PRESS PLAY"
+        self.sample.print_state = False
+        self.task_ui_elements["Print Joint State"].enabled = False
+        self.task_ui_elements["Print Joint State"].text = "PRESS PLAY"
 
-        elif event.type == int(omni.timeline.TimelineEventType.PLAY):  # enable buttons when pressed PLAY
-            if self.car_handle is not None:
-                self.task_ui_elements["Move Vehicle"].enabled = True
-                self.task_ui_elements["Move Vehicle"].text = "MOVE VEHICLE"
-            if self.arm_handle is not None:
-                self.task_ui_elements["Move Arm"].enabled = True
-                self.task_ui_elements["Move Arm"].text = "MOVE ARM"
-            if self.car_handle or self.arm_handle:
-                self.task_ui_elements["Print Joint State"].enabled = True
-                if self.sample.print_state:
-                    self.task_ui_elements["Print Joint State"].text = "STOP PRINTING"
-                else:
-                    self.task_ui_elements["Print Joint State"].text = "PRINT JOINT STATE"
+    def _timeline_play_callback_fn(self, event):
+        """Timeline play event callback - enable buttons when pressed PLAY."""
+        if self.car_handle is not None:
+            self.task_ui_elements["Move Vehicle"].enabled = True
+            self.task_ui_elements["Move Vehicle"].text = "MOVE VEHICLE"
+        if self.arm_handle is not None:
+            self.task_ui_elements["Move Arm"].enabled = True
+            self.task_ui_elements["Move Arm"].text = "MOVE ARM"
+        if self.car_handle or self.arm_handle:
+            self.task_ui_elements["Print Joint State"].enabled = True
+            if self.sample.print_state:
+                self.task_ui_elements["Print Joint State"].text = "STOP PRINTING"
+            else:
+                self.task_ui_elements["Print Joint State"].text = "PRINT JOINT STATE"
 
     def on_shutdown(self):
         """Clean up on shutdown."""
-        self._event_timer_callback = None
+        self._event_timer_callback_play = None
+        self._event_timer_callback_stop = None
         super().on_shutdown()

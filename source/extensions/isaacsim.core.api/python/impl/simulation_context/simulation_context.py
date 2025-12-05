@@ -22,6 +22,7 @@ import gc
 from typing import Callable, Optional
 
 import carb
+import carb.eventdispatcher
 
 # isaac-core
 import isaacsim.core.utils.numpy as np_utils
@@ -1400,8 +1401,10 @@ class SimulationContext:
         self._physics_timer_callback = self._physics_context._physics_sim_interface.subscribe_physics_on_step_events(
             pre_step=False, order=0, on_update=self._physics_timer_callback_fn
         )
-        self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-            int(omni.timeline.TimelineEventType.STOP), self._timeline_timer_callback_fn
+        self._event_timer_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=self._timeline_timer_callback_fn,
+            observer_name="isaacsim.core.api.simulation_context.SimulationContext._timeline_timer_callback",
         )
         self._physics_callback_functions = dict()
         self._physics_functions = dict()
@@ -1424,7 +1427,7 @@ class SimulationContext:
         return
 
     def _timeline_timer_callback_fn(self, event):
-        # because we use create_subscription_to_pop_by_type for omni.timeline.TimelineEventType.STOP, there is no need to check the type here
+        """Timeline stop event callback - reset simulation state."""
         self._current_time = 0
         self._number_of_steps = 0
         for callback_name in list(self._physics_callback_functions.keys()):

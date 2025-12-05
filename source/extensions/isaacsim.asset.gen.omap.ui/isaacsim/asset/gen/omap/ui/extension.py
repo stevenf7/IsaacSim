@@ -275,10 +275,11 @@ class OccupancyMapWindow(MenuHelperWindow):
 
         if self.visible:
             self._models["cell_size"].set_value(self.units)
-            self._stage_open_callback = (
-                omni.usd.get_context()
-                .get_stage_event_stream()
-                .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
+            self._usd_context = omni.usd.get_context()
+            self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.OPENED),
+                on_event=self._stage_open_callback_fn,
+                observer_name="isaacsim.asset.gen.omap.ui._stage_open_callback_fn",
             )
 
     def _stage_open_callback_fn(self, event) -> None:

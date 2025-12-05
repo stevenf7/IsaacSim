@@ -1,4 +1,7 @@
 # Changelog
+## [2.4.1] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
 
 ## [2.4.0] - 2025-11-05
 ### Changed

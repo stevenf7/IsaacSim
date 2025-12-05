@@ -18,6 +18,7 @@ from __future__ import annotations
 import weakref
 
 import carb
+import carb.eventdispatcher
 import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -28,6 +29,7 @@ import omni.physics.tensors
 import omni.physx
 import omni.physx.bindings
 import omni.physx.bindings._physx
+import omni.timeline
 import usdrt
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
@@ -151,12 +153,19 @@ class Articulation(XformPrim):
         self._enable_residual_reports = enable_residual_reports
         if enable_residual_reports:
             Articulation.ensure_api(self.prims, PhysxSchema.PhysxResidualReportingAPI)
+
         # setup subscriptions
-        self._subscription_to_timeline_stop_event = (
-            SimulationManager._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                int(omni.timeline.TimelineEventType.STOP),
-                lambda event, obj=weakref.proxy(self): obj._on_timeline_stop(event),
-            )
+        def safe_timeline_stop_callback(event, obj=weakref.proxy(self)):
+            try:
+                obj._on_timeline_stop(event)
+            except ReferenceError:
+                # Object has been garbage collected, ignore the event
+                pass
+
+        self._subscription_to_timeline_stop_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.timeline.GLOBAL_EVENT_STOP,
+            on_event=safe_timeline_stop_callback,
+            observer_name="isaacsim.core.experimental.prims.Articulation._on_timeline_stop",
         )
         # setup physics-related configuration if simulation is running
         if SimulationManager._physics_sim_view__warp is not None:

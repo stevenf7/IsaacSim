@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.3] - 2025-12-05
+### Changed
+- Migrate to Events 2.0.
+
 ## [2.3.2] - 2025-10-31
 ### Changed
 - Fix invalid escape sequences
