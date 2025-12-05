@@ -57,6 +57,7 @@ class Anymal_runner(object):
             render_dt: Rendering timestep in seconds for visualization updates
         """
         # spawn physics scene
+        # TODO: physics scene should be created by simulation manager
         define_prim("/World/PhysicsScene", "PhysicsScene")
 
         # set rendering manager

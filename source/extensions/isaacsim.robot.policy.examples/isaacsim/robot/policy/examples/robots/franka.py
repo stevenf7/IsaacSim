@@ -71,7 +71,6 @@ class FrankaOpenDrawerPolicy(PolicyController):
 
         self.franka_hand_prim = XformPrim(self.robot.link_paths[0][8])
         self.drawer_handle_top_prim = XformPrim(self.cabinet.link_paths[0][6])
-        # print(self.cabinet.link_paths[0])
         print(self.franka_hand_prim.paths)
         print(self.drawer_handle_top_prim.paths)
 

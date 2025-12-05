@@ -68,6 +68,7 @@ asset_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.us
 prim.GetReferences().AddReference(asset_path)
 
 # spawn physics scene
+# TODO: physics scene should be created by simulation manager
 define_prim("/World/PhysicsScene", "PhysicsScene")
 
 # set rendering manager

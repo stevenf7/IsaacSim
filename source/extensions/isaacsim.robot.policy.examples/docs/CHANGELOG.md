@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.0.1] - 2025-12-02
+### Changed
+- Removed unecessary dependencies
+- Removed remaining experimental api references
+
 ## [5.0.0] - 2025-12-01
 ### Changed
 - Changed the backend to experimental API using warp and torch

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2025-12-02
+### Changed
+- Added a note for the physics scene bug in 1.1.1
+- Remove references to core api
+
 ## [1.1.1] - 2025-12-01
 ### Changed
 - Creates physics scene if it does not exist on the stage to correctly set physics time steps

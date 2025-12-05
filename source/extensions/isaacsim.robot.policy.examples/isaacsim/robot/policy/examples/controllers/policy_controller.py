@@ -15,10 +15,9 @@
 
 import io
 from abc import ABC
-from typing import Any, Literal
+from typing import Literal
 
 import carb
-import numpy as np
 import omni
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.experimental.prims import Articulation
@@ -154,8 +153,8 @@ class PolicyController(ABC):
             float("inf"),
         ]:
             self.robot.set_solver_iteration_counts(
-                position_counts=np.array([solver_position_iteration_count]),
-                velocity_counts=np.array([solver_velocity_iteration_count]),
+                position_counts=[solver_position_iteration_count],
+                velocity_counts=[solver_velocity_iteration_count],
             )
         if stabilization_threshold not in [None, float("inf")]:
             self.robot.set_stabilization_thresholds([stabilization_threshold])

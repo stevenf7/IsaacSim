@@ -15,7 +15,6 @@
 
 import asyncio
 
-import carb.tokens
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.experimental.utils.transform as transform_utils
@@ -26,9 +25,7 @@ import numpy as np
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.timeline
-from isaacsim.core.api import SimulationContext
 from isaacsim.core.deprecation_manager import import_module
-from isaacsim.core.experimental.utils.stage import create_new_stage_async, define_prim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
 from isaacsim.robot.policy.examples.robots.spot import SpotFlatTerrainPolicy
@@ -44,8 +41,7 @@ class TestSpotCPU(omni.kit.test.AsyncTestCase):
         return torch.device("cpu")
 
     async def setUp(self):
-        SimulationContext.clear_instance()
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 500
 
@@ -55,7 +51,7 @@ class TestSpotCPU(omni.kit.test.AsyncTestCase):
         print(f"Setting up test with device: {device_str}, backend: {backend}")
 
         self._physics_dt = 1 / self._physics_rate
-        define_prim("/World/PhysicsScene", "PhysicsScene")
+        stage_utils.define_prim("/World/PhysicsScene", "PhysicsScene")
 
         # spawn simulation manager
         SimulationManager.set_physics_sim_device(device_str)
@@ -81,8 +77,6 @@ class TestSpotCPU(omni.kit.test.AsyncTestCase):
 
     async def test_spot_add(self):
         await self.spawn_spot()
-        await omni.kit.app.get_app().next_update_async()
-
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._spot.robot.num_dofs, 12)
 
