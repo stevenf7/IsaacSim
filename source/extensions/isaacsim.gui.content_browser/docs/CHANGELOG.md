@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.15] - 2025-12-05
+### Changed
+- OMPE-72905: Revert the protocol for it works in current isaac version.
+
 ## [0.1.14] - 2025-12-02
 ### Changed
 - OMPE-72905: Fix the navigate issue caused by wrong protocol.

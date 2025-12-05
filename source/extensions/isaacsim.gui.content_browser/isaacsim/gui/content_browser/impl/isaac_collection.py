@@ -50,7 +50,7 @@ class IsaacCollection(CollectionItem):
         super().__init__(
             identifier="Isaac Sim",
             title="Isaac Sim",
-            protocol="omniverse",
+            protocol="https",
             icon=f"{ICON_PATH}/cloud.svg",
             access=omni.client.AccessFlags.READ,
             populated=False,
