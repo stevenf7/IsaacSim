@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import numpy as np
-import omni
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.core.simulation_manager import SimulationManager
@@ -48,8 +47,8 @@ class FrankaExample(BaseSample):
         cabinet_prim_path = "/World/cabinet"
         cabinet_usd_path = get_assets_root_path() + "/Isaac/Props/Sektion_Cabinet/sektion_cabinet_instanceable.usd"
 
-        cabinet_position = np.array([0.8, 0.0, 0.4])
-        cabinet_orientation = np.array([0.0, 0.0, 0.0, 1.0])
+        cabinet_position = [0.8, 0.0, 0.4]
+        cabinet_orientation = [0.0, 0.0, 0.0, 1.0]
 
         add_reference_to_stage(cabinet_usd_path, cabinet_prim_path)
 

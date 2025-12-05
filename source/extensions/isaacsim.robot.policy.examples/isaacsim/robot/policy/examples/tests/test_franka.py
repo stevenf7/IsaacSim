@@ -15,20 +15,16 @@
 
 import asyncio
 
-import carb.tokens
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.timeline
-from isaacsim.core.api import SimulationContext
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.experimental.prims import Articulation
-from isaacsim.core.experimental.utils.stage import create_new_stage_async, define_prim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
 from isaacsim.robot.policy.examples.robots.franka import FrankaOpenDrawerPolicy
@@ -44,8 +40,7 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
         return torch.device("cpu")
 
     async def setUp(self):
-        SimulationContext.clear_instance()
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 400
 
@@ -55,7 +50,7 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
         print(f"Setting up test with device: {device_str}, backend: {backend}")
 
         self._physics_dt = 1 / self._physics_rate
-        define_prim("/World/PhysicsScene", "PhysicsScene")
+        stage_utils.define_prim("/World/PhysicsScene", "PhysicsScene")
 
         # spawn simulation manager
         SimulationManager.set_physics_sim_device(device_str)
@@ -69,8 +64,8 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
         cabinet_prim_path = "/World/cabinet"
         cabinet_usd_path = get_assets_root_path() + "/Isaac/Props/Sektion_Cabinet/sektion_cabinet_instanceable.usd"
 
-        cabinet_position = np.array([0.8, 0.0, 0.4])
-        cabinet_orientation = np.array([0.0, 0.0, 0.0, 1.0])
+        cabinet_position = [0.8, 0.0, 0.4]
+        cabinet_orientation = [0.0, 0.0, 0.0, 1.0]
 
         stage_utils.add_reference_to_stage(cabinet_usd_path, cabinet_prim_path)
 

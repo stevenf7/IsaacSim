@@ -15,7 +15,6 @@
 
 import asyncio
 
-import carb.tokens
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.experimental.utils.transform as transform_utils
@@ -43,7 +42,7 @@ class TestH1ExampleExtension(omni.kit.test.AsyncTestCase):
         return torch.device("cpu")
 
     async def setUp(self):
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 200
 
@@ -53,7 +52,7 @@ class TestH1ExampleExtension(omni.kit.test.AsyncTestCase):
         print(f"Setting up test with device: {device_str}, backend: {backend}")
 
         self._physics_dt = 1 / self._physics_rate
-        define_prim("/World/PhysicsScene", "PhysicsScene")
+        stage_utils.define_prim("/World/PhysicsScene", "PhysicsScene")
 
         # spawn simulation manager
         SimulationManager.set_physics_sim_device(device_str)

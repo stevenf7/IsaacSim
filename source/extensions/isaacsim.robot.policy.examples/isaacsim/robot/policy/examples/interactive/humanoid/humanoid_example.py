@@ -14,11 +14,11 @@
 # limitations under the License.
 
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
 import omni.appwindow
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.policy.examples.robots.h1 import H1FlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
@@ -65,7 +65,7 @@ class HumanoidExample(BaseSample):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
         usd_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
-        add_reference_to_stage(usd_path=usd_path, prim_path="/World/defaultGroundPlane")
+        stage_utils.add_reference_to_stage(usd_path=usd_path, path="/World/defaultGroundPlane")
 
         # Create H1 robot (will now use GPU device)
         self.h1 = H1FlatTerrainPolicy(

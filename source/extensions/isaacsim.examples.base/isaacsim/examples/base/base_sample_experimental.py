@@ -19,11 +19,9 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.physics.core
 import omni.timeline
-import omni.usd
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from pxr import UsdPhysics
-
-# from isaacsim.core.utils.viewports import set_camera_view
 
 
 class BaseSample(object):
@@ -49,10 +47,10 @@ class BaseSample(object):
         stage_utils.set_stage_up_axis("Z")
         stage_utils.set_stage_units(meters_per_unit=self._world_settings["stage_units_in_meters"])
         self.setup_scene()
+        ViewportManager.set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera="/OmniverseKit_Persp")
 
-        # set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
-
-        stage = omni.usd.get_context().get_stage()
+        # TODO: physics scene should be created by simulation manager
+        stage = stage_utils.get_current_stage()
         self._physics_scene_path = "/World/PhysicsScene"
         UsdPhysics.Scene.Define(stage, self._physics_scene_path)
         await omni.kit.app.get_app().next_update_async()

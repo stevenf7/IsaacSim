@@ -15,15 +15,10 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.core.experimental.prims" = {}
-"isaacsim.core.nodes" = {}
 "isaacsim.examples.base" = {}
 "isaacsim.examples.browser" = {}
-"isaacsim.robot.manipulators" = {}
-"isaacsim.robot.manipulators.examples" = {}
-"isaacsim.sensors.physics" = {}
 "isaacsim.storage.native" = {}
 
 [[python.module]]
