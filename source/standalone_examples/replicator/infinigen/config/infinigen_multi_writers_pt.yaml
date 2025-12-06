@@ -32,9 +32,9 @@ capture:
   resolution: [640, 480]
   # Disable render products throughout the pipeline, enable them only when capturing the frames
   disable_render_products: true
-  # Number of subframes to render (RayTracedLighting) to avoid temporal rendering artifacts (e.g. ghosting)
+  # Number of subframes to render (RealTimePathTracing) to avoid temporal rendering artifacts (e.g. ghosting)
   rt_subframes: 8
-  # Use PathTracing renderer instead of RayTracedLighting when capturing the frames
+  # Use PathTracing renderer instead of RealTimePathTracing when capturing the frames
   path_tracing: true
   # Offset to avoid the images always being in the image center
   camera_look_at_target_offset: 0.1

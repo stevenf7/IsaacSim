@@ -28,7 +28,7 @@ from isaacsim import SimulationApp
 BACKGROUND_STAGE_PATH = "/background"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
 
-CONFIG = {"renderer": "RayTracedLighting", "headless": True}
+CONFIG = {"renderer": "RealTimePathTracing", "headless": True}
 
 # Example ROS2 bridge sample demonstrating the manual loading of stages and manual publishing of images
 simulation_app = SimulationApp(CONFIG)

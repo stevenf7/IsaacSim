@@ -44,7 +44,7 @@ class TestRTXContextMenu(OmniUiTest):
         self.assertTrue(result)
         await omni.kit.app.get_app().next_update_async()
         self.carb_settings = carb.settings.get_settings()
-        self.carb_settings.set("/rtx/rendermode", "RaytracedLighting")
+        self.carb_settings.set("/rtx/rendermode", "RealTimePathTracing")
         self.carb_settings.set("/rtx-transient/resourcemanager/enableTextureStreaming", False)
 
     async def tearDown(self):

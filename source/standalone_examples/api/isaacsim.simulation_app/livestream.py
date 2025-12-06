@@ -26,7 +26,7 @@ CONFIG = {
     "window_height": 1080,
     "headless": True,
     "hide_ui": False,  # Show the GUI
-    "renderer": "RaytracedLighting",
+    "renderer": "RealTimePathTracing",
     "display_options": 3286,  # Set display options to show default grid
 }
 
