@@ -1026,11 +1026,24 @@ class Camera(BaseSensor):
                 Defaults to None, which uses the device specified on annotator initialization (annotator_device)
 
         Returns:
-            rgba (np.ndarray): (N x 4) RGBa color data for each point.
-            wp.types.array: (N x 4) RGBa color data for each point.
+            rgba (np.ndarray): (height, width, 4) RGBA color data.
+            wp.types.array: (height, width, 4) RGBA color data.
+            Returns None if annotator is not attached or data is invalid.
+
+        Note:
+            A few render frames may be required after initialization before valid data becomes available.
         """
         if "rgb" in self._custom_annotators:
-            return self._custom_annotators["rgb"].get_data(device=device)
+            data = self._custom_annotators["rgb"].get_data(device=device)
+            if data is None or data.ndim != 3:
+                carb.log_warn(
+                    f"Annotator 'rgb' returned None or unexpected shape for {self._render_product_path}. "
+                    "A few render frames may be required before data is available."
+                )
+                return None
+            if data.shape[0] == 0:
+                return None
+            return data
         else:
             carb.log_warn(f"Annotator 'rgb' not attached to {self._render_product_path}")
             return None
@@ -1042,12 +1055,22 @@ class Camera(BaseSensor):
                 Defaults to None, which uses the device specified on annotator initialization (annotator_device)
 
         Returns:
-            rgb (np.ndarray): (N x 3) RGB color data for each point.
-            wp.types.array: (N x 3) RGB color data for each point.
+            rgb (np.ndarray): (height, width, 3) RGB color data.
+            wp.types.array: (height, width, 3) RGB color data.
+            Returns None if annotator is not attached or data is invalid.
+
+        Note:
+            A few render frames may be required after initialization before valid data becomes available.
         """
         if "rgb" in self._custom_annotators:
             data = self._custom_annotators["rgb"].get_data(device=device)
-            if data is None or data.shape[0] == 0:
+            if data is None or data.ndim != 3:
+                carb.log_warn(
+                    f"Annotator 'rgb' returned None or unexpected shape for {self._render_product_path}. "
+                    "A few render frames may be required before data is available."
+                )
+                return None
+            if data.shape[0] == 0:
                 return None
             return data[:, :, :3]
         else:
@@ -1061,11 +1084,24 @@ class Camera(BaseSensor):
             device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
                 Defaults to None, which uses the device specified on annotator initialization (annotator_device)
         Returns:
-            depth (np.ndarray): (n x m) depth data for each point.
-            wp.types.array: (n x m) depth data for each point.
+            depth (np.ndarray): (height, width) depth data.
+            wp.types.array: (height, width) depth data.
+            Returns None if annotator is not attached or data is invalid.
+
+        Note:
+            A few render frames may be required after initialization before valid data becomes available.
         """
         if "distance_to_image_plane" in self._custom_annotators:
-            return self._custom_annotators["distance_to_image_plane"].get_data(device=device)
+            data = self._custom_annotators["distance_to_image_plane"].get_data(device=device)
+            if data is None or data.ndim != 2:
+                carb.log_warn(
+                    f"Annotator 'distance_to_image_plane' returned None or unexpected shape for {self._render_product_path}. "
+                    "A few render frames may be required before data is available."
+                )
+                return None
+            if data.shape[0] == 0:
+                return None
+            return data
         else:
             carb.log_warn(f"Annotator 'distance_to_image_plane' not attached to {self._render_product_path}")
             return None
@@ -1083,9 +1119,11 @@ class Camera(BaseSensor):
             world_frame: If True, returns points in world frame. If False, returns points in camera frame.
 
         Returns:
-            np.ndarray | wp.array: A (N x 3) array of 3D points (X, Y, Z) in either world or camera frame,
-                   where N is the number of points.
+            np.ndarray | wp.array: A (N, 3) array of 3D points (X, Y, Z) in either world or camera frame,
+                   where N is the number of points. Returns empty array if data is not available.
+
         Note:
+            A few render frames may be required after initialization before valid data becomes available.
             The fallback method uses the depth (distance_to_image_plane) annotator and
             performs a perspective projection using the camera's intrinsic parameters to generate the pointcloud.
             Point ordering may differ between the pointcloud annotator and depth-based fallback methods,
@@ -1097,9 +1135,10 @@ class Camera(BaseSensor):
         # Try to get pointcloud from custom annotator first
         if annot := self._custom_annotators.get("pointcloud"):
             pointcloud_data = annot.get_data(device=device).get("data")
-            if pointcloud_data is None:
+            if pointcloud_data is None or (hasattr(pointcloud_data, "ndim") and pointcloud_data.ndim != 2):
                 carb.log_warn(
-                    f"[get_pointcloud][{self.prim_path}] WARNING: 'pointcloud' annotator returned None, Returning empty array"
+                    f"Annotator 'pointcloud' returned None or unexpected shape for {self._render_product_path}. "
+                    "A few render frames may be required before data is available."
                 )
                 return np.array([])
             if world_frame:
@@ -1136,20 +1175,11 @@ class Camera(BaseSensor):
 
         # Pointcloud annotator not available, try depth-based fallback
         carb.log_warn(
-            f"[get_pointcloud][{self.prim_path}] WARNING: 'pointcloud' annotator not available, falling back to depth-based calculation"
+            f"Annotator 'pointcloud' not attached to {self._render_product_path}, falling back to depth-based calculation"
         )
 
         depth = self.get_depth(device=device)
-        if depth is None:
-            carb.log_warn(
-                f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator not available to get depth data, Returning empty array"
-            )
-            return np.array([])
-
-        if depth.shape[0] == 0:
-            carb.log_warn(
-                f"[get_pointcloud][{self.prim_path}] WARNING: 'distance_to_image_plane' annotator returned empty depth data, Returning empty array"
-            )
+        if depth is None or depth.shape[0] == 0:
             return np.array([])
 
         # Determine backend based on device and depth type
