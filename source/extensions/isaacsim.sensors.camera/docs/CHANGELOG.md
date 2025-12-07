@@ -1,4 +1,9 @@
 # Changelog
+## [1.5.2] - 2025-12-06
+### Changed
+- Added validation checks and warmup warnings to camera sensor data methods to handle unavailable data
+- Added warmup tests for camera sensor checking for warnings and data availability
+
 ## [1.5.1] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.
