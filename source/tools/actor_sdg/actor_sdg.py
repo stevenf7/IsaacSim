@@ -1,12 +1,12 @@
 import argparse
-import asyncio
 import os
 import sys
+import traceback
 
 from isaacsim import SimulationApp
 
 BASE_EXP_PATH = os.path.join(os.environ["EXP_PATH"], "isaacsim.exp.action_and_event_data_generation.base.kit")
-APP_CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1920, "height": 1080}
+APP_CONFIG = {"headless": True, "width": 1920, "height": 1080}
 
 
 class ActorSDG:
@@ -41,7 +41,6 @@ class ActorSDG:
         rep.settings.carb_settings("/omni/replicator/backend/writeThreads", 16)
         self._settings = carb.settings.get_settings()
         self._settings.set("/app/scripting/ignoreWarningDialog", True)
-        self._settings.set("/persistent/exts/omni.anim.navigation.core/navMesh/viewNavMesh", False)
         self._settings.set("/app/omni.graph.scriptnode/enable_opt_in", False)  # To bypass action graph scriptnode check
         self._settings.set("/rtx/raytracing/fractionalCutoutOpacity", True)  # Needed for the DH characters
 
@@ -90,9 +89,6 @@ def main():
 
         exc = task.exception()
         if exc:
-            import sys
-            import traceback
-
             traceback.print_exception(exc, file=sys.stderr)
         elif not task.result():
             print("Failed to run SDG")

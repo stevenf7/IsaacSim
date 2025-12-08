@@ -1,8 +1,8 @@
 isaacsim.replicator.agent:
-  version: 1.0.0
+  version: 1.0.1
   simulation_duration: 60
   environment:
-    base_stage_asset_path: "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
+    base_stage_asset_path: "Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
   sensor:
     groups:
       ceiling_cameras:
@@ -15,7 +15,7 @@ isaacsim.replicator.agent:
   character:
     groups:
       warehouse_workers:
-        asset_path: "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/People/Characters/"
+        asset_path: "Isaac/People/Characters/"
         num: 10
         routines:
           - wander:
