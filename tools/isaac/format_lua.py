@@ -34,6 +34,39 @@ def find_lua_files(directory):
     return lua_files
 
 
+def unindent_autoremove_lines(file_path, check_only=False):
+    """Remove indentation from lines containing '-- AUTOREMOVE:' in a Lua file.
+
+    Args:
+        file_path: Path to the Lua file to process.
+        check_only: If True, only check for indented AUTOREMOVE lines without modifying.
+
+    Returns:
+        True if no indented AUTOREMOVE lines were found (or they were fixed), False otherwise.
+    """
+    with open(file_path, "r") as f:
+        lines = f.readlines()
+
+    modified = False
+    new_lines = []
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith("-- AUTOREMOVE:") and line != stripped:
+            new_lines.append(stripped)
+            modified = True
+        else:
+            new_lines.append(line)
+
+    if modified:
+        if check_only:
+            print(f"Indented AUTOREMOVE lines found in {file_path}")
+            return False
+        with open(file_path, "w") as f:
+            f.writelines(new_lines)
+
+    return True
+
+
 def format_lua_file(file_path, stylua_path, config_path=None, check_only=False, verbose=False):
     """Format a single Lua file using Stylua."""
     command = [stylua_path]
@@ -55,6 +88,9 @@ def format_lua_file(file_path, stylua_path, config_path=None, check_only=False, 
         if result.returncode != 0:
             print(f"The following changes would be made to {file_path}:")
             print(result.stdout)
+            return False
+        # Unindent AUTOREMOVE lines after formatting
+        if not unindent_autoremove_lines(file_path, check_only):
             return False
         return True
     except Exception as e:
@@ -116,8 +152,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict):
     )
     parser.add_argument(
         "--config",
-        default=config.get("repo_format_lua", {}).get("config_path", None),
-        help="Path to stylua config file",
+        default=config.get("repo_format_lua", {}).get(
+            "config_path", os.path.join(root_dir, "tools/isaac/.stylua.toml")
+        ),
+        help="Path to stylua config file (default: tools/isaac/.stylua.toml)",
     )
     parser.add_argument("--check", action="store_true", help="Check formatting without modifying files")
     parser.add_argument("--verbose", action="store_true", help="Print detailed information during execution")
