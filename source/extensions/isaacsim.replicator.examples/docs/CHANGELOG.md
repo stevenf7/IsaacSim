@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.4] - 2025-12-08
+### Changed
+- Added explicit `.reset()` to events 2.0 subscribers in sync with docs examples
+
 ## [1.6.3] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

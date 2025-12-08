@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb.eventdispatcher
 import carb.settings
 import omni.kit
 import omni.timeline
@@ -377,10 +376,18 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Stop timeline and unsubscribe from all events
             print(f"Stopping timeline and unsubscribing from all events...")
             timeline.stop()
-            app_sub = None
-            stage_render_sub = None
-            physics_sub = None
-            timeline_sub = None
+            if app_sub:
+                app_sub.reset()
+                app_sub = None
+            if stage_render_sub:
+                stage_render_sub.reset()
+                stage_render_sub = None
+            if physics_sub:
+                physics_sub.unsubscribe()
+                physics_sub = None
+            if timeline_sub:
+                timeline_sub.reset()
+                timeline_sub = None
 
             # Print summary statistics
             print("\nStats:")
@@ -397,6 +404,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                 realtime_factor = sim_time / elapsed_wall_time if elapsed_wall_time > 0 else 0
                 print(f"- Simulation time: {sim_time:.4f}s")
                 print(f"- Real-time factor: {realtime_factor:.2f}x")
+
+            # asyncio.ensure_future(run_subscribers_and_events_async())
 
             # TEST PART:
             # Cleanup the timeline
@@ -417,4 +426,3 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             self.assertTrue(app_sub is None, "App update subscriber should be reset")
 
         await run_subscribers_and_events_async()
-        # asyncio.ensure_future(run_subscribers_and_events_async())
