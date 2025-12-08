@@ -16,10 +16,8 @@
 import os
 import unittest
 
-import carb.eventdispatcher
 import carb.settings
 import omni.kit
-import omni.timeline
 import omni.usd
 from isaacsim.test.utils.file_validation import validate_folder_contents
 
@@ -151,8 +149,12 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 print("[PalletizingSDGDemo] Starting the palletizing SDG demo..")
 
             def clear(self):
-                self._timeline_sub = None
-                self._stage_event_sub = None
+                if self._timeline_sub:
+                    self._timeline_sub.reset()
+                    self._timeline_sub = None
+                if self._stage_event_sub:
+                    self._stage_event_sub.reset()
+                    self._stage_event_sub = None
                 self._in_running_state = False
                 self._bin_counter = 0
                 self._active_bin = None
@@ -193,7 +195,9 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 # Handle flip scenario (only once per bin)
                 if not self._bin_flip_scenario_done and hit.rigid_body.startswith(self.FLIP_HELPER_PATH):
                     self._timeline.pause()
-                    self._timeline_sub = None
+                    if self._timeline_sub:
+                        self._timeline_sub.reset()
+                        self._timeline_sub = None
                     asyncio.ensure_future(self._run_bin_flip_scenario())
                     return False
 
@@ -202,7 +206,9 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                 is_other_bin_hit = hit.rigid_body.startswith(f"{self.BINS_FOLDER_PATH}/bin_")
                 if is_pallet_hit or is_other_bin_hit:
                     self._timeline.pause()
-                    self._timeline_sub = None
+                    if self._timeline_sub:
+                        self._timeline_sub.reset()
+                        self._timeline_sub = None
                     asyncio.ensure_future(self._run_pallet_scenario())
 
                 return True  # No relevant hit, return True to continue the query

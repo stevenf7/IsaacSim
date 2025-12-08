@@ -230,7 +230,7 @@ if physics_sub:
     physics_sub.unsubscribe()
     physics_sub = None
 if timeline_sub:
-    timeline_sub.unsubscribe()
+    timeline_sub.reset()
     timeline_sub = None
 
 
