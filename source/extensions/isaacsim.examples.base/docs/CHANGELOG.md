@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2025-12-07
+### Changed
+- Added dependency on isaacsim.core.rendering_manager
+
 ## [1.1.2] - 2025-12-02
 ### Changed
 - Added a note for the physics scene bug in 1.1.1
