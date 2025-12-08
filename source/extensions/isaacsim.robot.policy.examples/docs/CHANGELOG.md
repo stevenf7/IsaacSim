@@ -1,5 +1,10 @@
 # Changelog
-## [5.0.1] - 2025-12-03
+
+## [5.0.3] - 2025-12-08
+### Changed
+- Removed rendering manager test time dependency (moved to base sample)
+
+## [5.0.2] - 2025-12-03
 ### Changed
 - Remove TODOs.
 
