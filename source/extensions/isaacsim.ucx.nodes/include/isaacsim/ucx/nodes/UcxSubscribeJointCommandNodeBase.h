@@ -30,9 +30,6 @@ namespace ucx
 namespace nodes
 {
 
-using omni::graph::core::GraphContextObj;
-using omni::graph::core::GraphInstanceID;
-using omni::graph::core::NodeObj;
 
 /**
  * @brief Base class template for UCX joint state subscriber nodes.
@@ -82,10 +79,10 @@ protected:
      * @param[in,out] db Database accessor for node inputs/outputs
      * @param[in] port Port number for UCX communication
      * @param[in] tag UCX tag for message identification
-     * @param[in] timeout_ms Timeout in milliseconds for receive request (0 = infinite)
+     * @param[in] timeoutMs Timeout in milliseconds for receive request (0 = infinite)
      * @return bool True if execution succeeded, false otherwise
      */
-    bool computeImpl(DatabaseT& db, uint16_t port, uint64_t tag, uint32_t timeout_ms)
+    bool computeImpl(DatabaseT& db, uint16_t port, uint64_t tag, uint32_t timeoutMs)
     {
         if (!this->ensureListenerReady(db, port))
         {
@@ -97,7 +94,7 @@ protected:
             return true;
         }
 
-        return receiveMessage(db, tag, timeout_ms);
+        return receiveMessage(db, tag, timeoutMs);
     }
 
     /**
@@ -110,10 +107,10 @@ protected:
      *
      * @param[in,out] db Database accessor for node inputs/outputs
      * @param[in] tag UCX tag for message identification
-     * @param[in] timeout_ms Timeout in milliseconds (0 = infinite)
+     * @param[in] timeoutMs Timeout in milliseconds (0 = infinite)
      * @return bool True if receive succeeded, false otherwise
      */
-    virtual bool receiveMessage(DatabaseT& db, uint64_t tag, uint32_t timeout_ms)
+    virtual bool receiveMessage(DatabaseT& db, uint64_t tag, uint32_t timeoutMs)
     {
         try
         {
@@ -122,11 +119,11 @@ protected:
 
             std::string errorMessage;
             auto result = this->m_listener->tagReceive(
-                m_receiveBuffer.data(), m_receiveBuffer.size(), tag, 0xFFFFFFFFFFFFFFFF, errorMessage, timeout_ms);
+                m_receiveBuffer.data(), m_receiveBuffer.size(), tag, 0xFFFFFFFFFFFFFFFF, errorMessage, timeoutMs);
 
             if (result == isaacsim::ucx::core::UcxReceiveResult::eTimedOut)
             {
-                db.logWarning("Receive request timed out after %u ms: %s", timeout_ms, errorMessage.c_str());
+                db.logWarning("Receive request timed out after %u ms: %s", timeoutMs, errorMessage.c_str());
                 return true;
             }
             else if (result == isaacsim::ucx::core::UcxReceiveResult::eFailed)
@@ -175,7 +172,6 @@ protected:
         }
     }
 
-protected:
     std::vector<uint8_t> m_receiveBuffer;
 };
 

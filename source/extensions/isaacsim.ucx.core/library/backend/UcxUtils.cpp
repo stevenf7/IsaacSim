@@ -22,7 +22,7 @@ namespace isaacsim::ucx::core
 {
 
 UcxRequestWaitResult waitForRequestWithTimeout(std::shared_ptr<ucxx::Request> request,
-                                               uint32_t timeout_ms,
+                                               uint32_t timeoutMs,
                                                std::string& errorMessage,
                                                uint32_t pollIntervalUs)
 {
@@ -33,12 +33,12 @@ UcxRequestWaitResult waitForRequestWithTimeout(std::shared_ptr<ucxx::Request> re
     }
 
     const auto startTime = std::chrono::steady_clock::now();
-    const bool hasTimeout = (timeout_ms != kUcxInfiniteTimeout);
+    const bool hasTimeout = (timeoutMs != g_kUcxInfiniteTimeout);
 
-    // Loop until timeout (if specified) or indefinitely if timeout is kUcxInfiniteTimeout
+    // Loop until timeout (if specified) or indefinitely if timeout is g_kUcxInfiniteTimeout
     while (!hasTimeout ||
            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - startTime).count() <
-               timeout_ms)
+               timeoutMs)
     {
         if (request->isCompleted())
         {

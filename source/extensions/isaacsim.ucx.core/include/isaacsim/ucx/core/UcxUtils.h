@@ -28,7 +28,7 @@ namespace isaacsim::ucx::core
 /**
  * @brief Special timeout value for infinite wait.
  */
-constexpr uint32_t kUcxInfiniteTimeout = UINT32_MAX;
+constexpr uint32_t g_kUcxInfiniteTimeout = UINT32_MAX;
 
 /**
  * @brief Result status of a UCX request wait operation.
@@ -69,14 +69,14 @@ enum class UcxReceiveResult
  * @brief Wait for a UCX request to complete with timeout.
  * @details
  * Polls the request status until it completes, fails, or the timeout expires.
- * If timeout_ms is kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
+ * If timeoutMs is g_kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
  *
  * The function uses a configurable polling interval which provides a balance
  * between responsiveness and CPU usage. The default interval (1ms) is suitable
  * for most real-time simulation scenarios.
  *
  * @param[in] request UCX request to wait for (must not be null)
- * @param[in] timeout_ms Timeout in milliseconds (kUcxInfiniteTimeout = infinite wait)
+ * @param[in] timeoutMs Timeout in milliseconds (g_kUcxInfiniteTimeout = infinite wait)
  * @param[out] errorMessage String for storing error messages from checkError()
  * @param[in] pollIntervalUs Polling interval in microseconds (default: 1000)
  * @return UcxRequestWaitResult indicating the outcome:
@@ -90,7 +90,7 @@ enum class UcxReceiveResult
  *          >= 1000μs (1ms) for non-critical operations.
  */
 UcxRequestWaitResult waitForRequestWithTimeout(std::shared_ptr<ucxx::Request> request,
-                                               uint32_t timeout_ms,
+                                               uint32_t timeoutMs,
                                                std::string& errorMessage,
                                                uint32_t pollIntervalUs = 1000);
 

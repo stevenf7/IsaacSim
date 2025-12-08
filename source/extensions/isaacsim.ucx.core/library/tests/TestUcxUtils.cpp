@@ -170,7 +170,7 @@ TEST_SUITE("UcxUtils")
         // Receive with infinite timeout - should wait until data arrives
         std::string errorMsg;
         auto result = listener->tagReceive(
-            recvData.data(), recvData.size(), 300, 0xFFFFFFFFFFFFFFFF, errorMsg, kUcxInfiniteTimeout);
+            recvData.data(), recvData.size(), 300, 0xFFFFFFFFFFFFFFFF, errorMsg, g_kUcxInfiniteTimeout);
         CHECK(result == UcxReceiveResult::eSuccess);
         CHECK(recvData == sendData);
 

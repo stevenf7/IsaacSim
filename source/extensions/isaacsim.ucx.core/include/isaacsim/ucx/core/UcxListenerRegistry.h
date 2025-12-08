@@ -88,10 +88,10 @@ public:
 
 private:
     /** @brief Map of port numbers to listener instances. */
-    static std::unordered_map<uint16_t, std::shared_ptr<UCXListener>> s_listeners;
+    static std::unordered_map<uint16_t, std::shared_ptr<UCXListener>> g_listeners;
 
     /** @brief Mutex for protecting access to the listeners map. */
-    static std::mutex s_registry_mutex;
+    static std::mutex g_registryMutex;
 
     /** @brief Deleted constructor to prevent instantiation. */
     UCXListenerRegistry() = delete;

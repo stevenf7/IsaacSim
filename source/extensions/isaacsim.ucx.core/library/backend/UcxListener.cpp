@@ -50,11 +50,11 @@ UCXListener::~UCXListener()
     }
 }
 
-bool UCXListener::waitForConnection(int timeout_ms)
+bool UCXListener::waitForConnection(int timeoutMs)
 {
-    if (timeout_ms < -1)
+    if (timeoutMs < -1)
     {
-        throw std::invalid_argument("UCXListener::waitForConnection: timeout_ms must be >= -1");
+        throw std::invalid_argument("UCXListener::waitForConnection: timeoutMs must be >= -1");
     }
 
     if (m_shutdown.load())
@@ -63,19 +63,19 @@ bool UCXListener::waitForConnection(int timeout_ms)
     }
 
     {
-        std::unique_lock<std::mutex> lock(m_endpoint_mutex);
+        std::unique_lock<std::mutex> lock(m_endpointMutex);
         if (m_endpoint)
         {
             return true;
         }
-        if (timeout_ms == -1)
+        if (timeoutMs == -1)
         {
-            m_connection_condition.wait(lock, [this]() { return m_endpoint != nullptr || m_shutdown.load(); });
+            m_connectionCondition.wait(lock, [this]() { return m_endpoint != nullptr || m_shutdown.load(); });
         }
         else
         {
-            m_connection_condition.wait_for(lock, std::chrono::milliseconds(timeout_ms),
-                                            [this]() { return m_endpoint != nullptr || m_shutdown.load(); });
+            m_connectionCondition.wait_for(lock, std::chrono::milliseconds(timeoutMs),
+                                           [this]() { return m_endpoint != nullptr || m_shutdown.load(); });
         }
     }
 
@@ -84,7 +84,7 @@ bool UCXListener::waitForConnection(int timeout_ms)
 
 bool UCXListener::isConnected() const
 {
-    std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+    std::lock_guard<std::mutex> lock(m_endpointMutex);
     return m_endpoint != nullptr;
 }
 
@@ -117,7 +117,7 @@ void UCXListener::shutdown()
     }
 
     // Wake up any threads waiting for connection
-    m_connection_condition.notify_all();
+    m_connectionCondition.notify_all();
 
     // Stop the progress thread FIRST, before destroying any resources
     // This prevents the thread from accessing resources during destruction
@@ -148,7 +148,7 @@ void UCXListener::shutdown()
 
     // Clean up resources in safe order
     {
-        std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+        std::lock_guard<std::mutex> lock(m_endpointMutex);
         if (m_endpoint)
         {
             m_endpoint.reset();
@@ -184,7 +184,7 @@ UcxSendResult UCXListener::tagSend(
                 errorMessage = "Listener is shutting down or shut down";
                 return UcxSendResult::eFailed;
             }
-            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            std::lock_guard<std::mutex> lock(m_endpointMutex);
             if (!m_endpoint)
             {
                 errorMessage = "No client connected";
@@ -251,7 +251,7 @@ UcxSendResult UCXListener::tagSendWithRequest(const void* buffer,
                 errorMessage = "Listener is shutting down or shut down";
                 return UcxSendResult::eFailed;
             }
-            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            std::lock_guard<std::mutex> lock(m_endpointMutex);
             if (!m_endpoint)
             {
                 errorMessage = "No client connected";
@@ -301,20 +301,20 @@ UcxSendResult UCXListener::tagMultiSend(const std::vector<const void*>& buffer,
                 errorMessage = "Listener is shutting down or shut down";
                 return UcxSendResult::eFailed;
             }
-            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            std::lock_guard<std::mutex> lock(m_endpointMutex);
             if (!m_endpoint)
             {
                 errorMessage = "No client connected";
                 return UcxSendResult::eFailed;
             }
             // Convert const void* to void* for ucxx API
-            std::vector<void*> non_const_buffer;
-            non_const_buffer.reserve(buffer.size());
+            std::vector<void*> nonConstBuffer;
+            nonConstBuffer.reserve(buffer.size());
             for (const void* ptr : buffer)
             {
-                non_const_buffer.push_back(const_cast<void*>(ptr));
+                nonConstBuffer.push_back(const_cast<void*>(ptr));
             }
-            request = m_endpoint->tagMultiSend(non_const_buffer, size, isCuda, ucxx::Tag{ tag }, false);
+            request = m_endpoint->tagMultiSend(nonConstBuffer, size, isCuda, ucxx::Tag{ tag }, false);
         }
 
         if (!request)
@@ -365,7 +365,7 @@ UcxReceiveResult UCXListener::tagReceive(
                 errorMessage = "Listener is shutting down or shut down";
                 return UcxReceiveResult::eFailed;
             }
-            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            std::lock_guard<std::mutex> lock(m_endpointMutex);
             if (!m_endpoint)
             {
                 errorMessage = "No client connected";
@@ -417,7 +417,7 @@ UcxReceiveResult UCXListener::tagMultiReceive(const uint64_t tag,
                 errorMessage = "Listener is shutting down or shut down";
                 return UcxReceiveResult::eFailed;
             }
-            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            std::lock_guard<std::mutex> lock(m_endpointMutex);
             if (!m_endpoint)
             {
                 errorMessage = "No client connected";
@@ -455,25 +455,25 @@ UcxReceiveResult UCXListener::tagMultiReceive(const uint64_t tag,
     }
 }
 
-void UCXListener::onConnectionRequest(ucp_conn_request_h conn_request, void* arg)
+void UCXListener::onConnectionRequest(ucp_conn_request_h connRequest, void* arg)
 {
-    if (!conn_request || !arg)
+    if (!connRequest || !arg)
     {
         CARB_LOG_ERROR("UCXListener::onConnectionRequest: invalid parameters");
         return;
     }
 
-    char ip_str[INET6_ADDRSTRLEN];
-    char port_str[INET6_ADDRSTRLEN];
+    char ipStr[INET6_ADDRSTRLEN];
+    char portStr[INET6_ADDRSTRLEN];
     ucp_conn_request_attr_t attr{};
 
     UCXListener* listener = static_cast<UCXListener*>(arg);
     assert(listener != nullptr);
     attr.field_mask = UCP_CONN_REQUEST_ATTR_FIELD_CLIENT_ADDR;
-    ucxx::utils::ucsErrorThrow(ucp_conn_request_query(conn_request, &attr));
-    ucxx::utils::sockaddr_get_ip_port_str(&attr.client_address, ip_str, port_str, INET6_ADDRSTRLEN);
-    CARB_LOG_INFO("Server received a connection request from client at address %s:%s", ip_str, port_str);
-    listener->createConnection(conn_request);
+    ucxx::utils::ucsErrorThrow(ucp_conn_request_query(connRequest, &attr));
+    ucxx::utils::sockaddr_get_ip_port_str(&attr.client_address, ipStr, portStr, INET6_ADDRSTRLEN);
+    CARB_LOG_INFO("Server received a connection request from client at address %s:%s", ipStr, portStr);
+    listener->createConnection(connRequest);
 }
 
 void UCXListener::initialize()
@@ -513,7 +513,7 @@ void UCXListener::initialize()
     startProgressThread();
 }
 
-void UCXListener::createConnection(ucp_conn_request_h conn_request)
+void UCXListener::createConnection(ucp_conn_request_h connRequest)
 {
     if (m_shutdown.load())
     {
@@ -524,7 +524,7 @@ void UCXListener::createConnection(ucp_conn_request_h conn_request)
     try
     {
         // Create endpoint with error handling to match client configuration
-        std::shared_ptr<ucxx::Endpoint> endpoint = m_listener->createEndpointFromConnRequest(conn_request, true);
+        std::shared_ptr<ucxx::Endpoint> endpoint = m_listener->createEndpointFromConnRequest(connRequest, true);
         if (!endpoint)
         {
             CARB_LOG_ERROR("Failed to create endpoint from connection request");
@@ -534,9 +534,9 @@ void UCXListener::createConnection(ucp_conn_request_h conn_request)
         endpoint->setCloseCallback(
             [this](ucs_status_t status, std::shared_ptr<void>) { onEndpointClosed(status); }, nullptr);
         {
-            std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+            std::lock_guard<std::mutex> lock(m_endpointMutex);
             m_endpoint = endpoint;
-            m_connection_condition.notify_all();
+            m_connectionCondition.notify_all();
         }
     }
     catch (const std::exception& e)
@@ -551,7 +551,7 @@ void UCXListener::onEndpointClosed(ucs_status_t status)
     // Only clear endpoint if not shutting down to avoid deadlock
     if (!m_shutdown.load())
     {
-        std::lock_guard<std::mutex> lock(m_endpoint_mutex);
+        std::lock_guard<std::mutex> lock(m_endpointMutex);
         m_endpoint.reset();
     }
 }
