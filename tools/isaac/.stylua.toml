@@ -19,8 +19,8 @@ quote_style = "AutoPreferDouble"
 # Call parentheses (options: Always, NoSingleString, NoSingleTable, None)
 call_parentheses = "NoSingleTable"
 
-# Collapse simple statement (default: true)
-collapse_simple_statement = "Always"
+# Collapse simple statement (options: Never, FunctionOnly, ConditionalOnly, Always)
+collapse_simple_statement = "Never"
 
 # Sort requires (default: false)
 [sort_requires]
