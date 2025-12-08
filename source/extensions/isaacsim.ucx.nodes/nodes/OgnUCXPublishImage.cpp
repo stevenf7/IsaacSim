@@ -201,7 +201,7 @@ protected:
             if (bufferSize == 0)
             {
                 // Data in GPU texture
-                cudaArray_t levelArray = 0;
+                cudaArray_t levelArray = nullptr;
                 CUDA_CHECK(cudaGetMipmappedArrayLevel(
                     &levelArray, reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0));
 

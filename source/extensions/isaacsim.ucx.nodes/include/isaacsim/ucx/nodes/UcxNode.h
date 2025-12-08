@@ -217,14 +217,14 @@ protected:
      * Wrapper for UCXListener::tagSend() that adds logging for OmniGraph nodes.
      * Sends message data using UCX tagged send.
      * - If timeout is not specified (std::nullopt), returns immediately without waiting (async).
-     * - If timeout is kUcxInfiniteTimeout, waits indefinitely until completion or failure.
+     * - If timeout is g_kUcxInfiniteTimeout, waits indefinitely until completion or failure.
      * - Otherwise, waits up to the specified timeout in milliseconds.
      *
      * @tparam DatabaseT The database type for logging
      * @param[in] db Database accessor for logging
      * @param[in] messageData Serialized message data to send
      * @param[in] tag UCX tag for message identification
-     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, kUcxInfiniteTimeout = infinite wait)
+     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, g_kUcxInfiniteTimeout = infinite wait)
      * @return bool True if send completed successfully, false on error or timeout
      */
     template <typename DatabaseT>

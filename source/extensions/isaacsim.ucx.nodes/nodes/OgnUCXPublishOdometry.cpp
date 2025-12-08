@@ -24,7 +24,7 @@
 
 #include <OgnUCXPublishOdometryDatabase.h>
 
-using isaacsim::core::includes::math::operator*;
+using isaacsim::core::includes::math::operator*; // NOLINT(misc-unused-using-decls)
 
 /**
  * @class OgnUCXPublishOdometry
@@ -66,11 +66,11 @@ public:
     {
         const uint16_t port = static_cast<uint16_t>(db.inputs.port());
         const uint64_t tag = db.inputs.tag();
-        const uint32_t timeout_ms = db.inputs.timeoutMs();
+        const uint32_t timeoutMs = db.inputs.timeoutMs();
 
         // Get the per-instance state and call the instance method
         auto& state = db.template perInstanceState<OgnUCXPublishOdometry>();
-        return state.computeImpl(db, port, tag, timeout_ms);
+        return state.computeImpl(db, port, tag, timeoutMs);
     }
 
 protected:

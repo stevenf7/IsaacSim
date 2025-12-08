@@ -73,11 +73,11 @@ public:
      * Blocks until a connection is established or the timeout expires. When a connection is established,
      * a new UCXConnection object is created and stored internally.
      *
-     * @param[in] timeout_ms Timeout in milliseconds (-1 for infinite timeout)
+     * @param[in] timeoutMs Timeout in milliseconds (-1 for infinite timeout)
      *
      * @return true if a connection was established within the timeout, false if timeout expired
      */
-    bool waitForConnection(int timeout_ms = -1);
+    bool waitForConnection(int timeoutMs = -1);
 
     /**
      * @brief Check if the listener currently has an active client connection.
@@ -157,14 +157,14 @@ public:
      * @details
      * Sends message data using UCX tagged send.
      * - If timeout is not specified (std::nullopt), returns immediately without waiting (async).
-     * - If timeout is kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
+     * - If timeout is g_kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
      * - Otherwise, waits up to the specified timeout in milliseconds.
      *
      * @param[in] buffer Memory address of the data buffer to send
      * @param[in] length Size of the data buffer in bytes
      * @param[in] tag UCX tag for message identification
      * @param[out] errorMessage String for storing error messages
-     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, kUcxInfiniteTimeout = infinite wait)
+     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, g_kUcxInfiniteTimeout = infinite wait)
      * @return UcxSendResult indicating the outcome (eSuccess, eEmptyMessage, eNullRequest, eTimedOut, eFailed, or
      * eException)
      */
@@ -199,7 +199,7 @@ public:
      * @details
      * Sends multiple buffers using UCX tagged multi-send.
      * - If timeout is not specified (std::nullopt), returns immediately without waiting (async).
-     * - If timeout is kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
+     * - If timeout is g_kUcxInfiniteTimeout (UINT32_MAX), waits indefinitely until completion or failure.
      * - Otherwise, waits up to the specified timeout in milliseconds.
      *
      * @param[in] buffer List of memory addresses pointing to data buffers
@@ -207,7 +207,7 @@ public:
      * @param[in] isCuda List indicating if each buffer is CUDA memory
      * @param[in] tag UCX tag for message identification
      * @param[out] errorMessage String for storing error messages
-     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, kUcxInfiniteTimeout = infinite wait)
+     * @param[in] timeout Optional timeout in milliseconds (nullopt = async, g_kUcxInfiniteTimeout = infinite wait)
      * @return UcxSendResult indicating the outcome
      */
     UcxSendResult tagMultiSend(const std::vector<const void*>& buffer,
@@ -228,7 +228,7 @@ public:
      * @param[in] tag UCX tag for message identification
      * @param[in] mask Tag mask for selective message matching
      * @param[out] errorMessage String for storing error messages
-     * @param[in] timeout Timeout in milliseconds (kUcxInfiniteTimeout = infinite wait)
+     * @param[in] timeout Timeout in milliseconds (g_kUcxInfiniteTimeout = infinite wait)
      * @return UcxReceiveResult indicating the outcome
      */
     UcxReceiveResult tagReceive(void* buffer,
@@ -236,7 +236,7 @@ public:
                                 uint64_t tag,
                                 uint64_t mask,
                                 std::string& errorMessage,
-                                uint32_t timeout = kUcxInfiniteTimeout);
+                                uint32_t timeout = g_kUcxInfiniteTimeout);
 
     /**
      * @brief Receive multiple buffers using tagged communication with optional timeout.
@@ -247,13 +247,13 @@ public:
      * @param[in] tag UCX tag for message identification
      * @param[in] tagMask Tag mask for selective message matching
      * @param[out] errorMessage String for storing error messages
-     * @param[in] timeout Timeout in milliseconds (kUcxInfiniteTimeout = infinite wait)
+     * @param[in] timeout Timeout in milliseconds (g_kUcxInfiniteTimeout = infinite wait)
      * @return UcxReceiveResult indicating the outcome
      */
     UcxReceiveResult tagMultiReceive(const uint64_t tag,
                                      const uint64_t tagMask,
                                      std::string& errorMessage,
-                                     uint32_t timeout = kUcxInfiniteTimeout);
+                                     uint32_t timeout = g_kUcxInfiniteTimeout);
 
     // TODO(rhua): handle disconnects and reconnects
 
@@ -265,7 +265,7 @@ private:
     uint16_t m_port;
 
     /** @brief Mutex for protecting access to the endpoint object. */
-    mutable std::mutex m_endpoint_mutex;
+    mutable std::mutex m_endpointMutex;
 
     /** @brief Current client endpoint, if any. */
     std::shared_ptr<ucxx::Endpoint> m_endpoint;
@@ -277,7 +277,7 @@ private:
     std::shared_ptr<ucxx::Listener> m_listener;
 
     /** @brief Condition variable for waiting for a connection. */
-    std::condition_variable m_connection_condition;
+    std::condition_variable m_connectionCondition;
 
     /** @brief Flag indicating if the listener has been shut down. */
     std::atomic<bool> m_shutdown;
@@ -288,10 +288,10 @@ private:
      * This callback is invoked by UCX when a client attempts to connect.
      * It handles the connection acceptance process.
      *
-     * @param[in] conn_request UCX connection request handle
+     * @param[in] connRequest UCX connection request handle
      * @param[in] arg User-defined argument (pointer to UCXListener instance)
      */
-    static void onConnectionRequest(ucp_conn_request_h conn_request, void* arg);
+    static void onConnectionRequest(ucp_conn_request_h connRequest, void* arg);
 
     /**
      * @brief Initialize the listener and worker.
@@ -305,9 +305,9 @@ private:
      * @details
      * Accepts a connection request and creates a UCXConnection object.
      *
-     * @param[in] conn_request UCX connection request handle to accept
+     * @param[in] connRequest UCX connection request handle to accept
      */
-    void createConnection(ucp_conn_request_h conn_request);
+    void createConnection(ucp_conn_request_h connRequest);
 
     /**
      * @brief Handle endpoint closure events.

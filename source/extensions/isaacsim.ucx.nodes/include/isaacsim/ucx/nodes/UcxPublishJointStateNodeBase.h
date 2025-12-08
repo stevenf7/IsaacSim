@@ -97,10 +97,10 @@ protected:
      * @param[in] context Graph context for accessing stage
      * @param[in] port Port number for UCX listener
      * @param[in] tag UCX tag for message identification
-     * @param[in] timeout_ms Timeout in milliseconds for send request (0 = infinite)
+     * @param[in] timeoutMs Timeout in milliseconds for send request (0 = infinite)
      * @return bool True if execution succeeded, false otherwise
      */
-    bool computeImpl(DatabaseT& db, const GraphContextObj& context, uint16_t port, uint64_t tag, uint32_t timeout_ms)
+    bool computeImpl(DatabaseT& db, const GraphContextObj& context, uint16_t port, uint64_t tag, uint32_t timeoutMs)
     {
         if (!this->ensureListenerReady(db, port))
         {
@@ -120,7 +120,7 @@ protected:
             }
         }
 
-        return publishMessage(db, tag, timeout_ms);
+        return publishMessage(db, tag, timeoutMs);
     }
 
     /**
@@ -261,10 +261,10 @@ protected:
      *
      * @param[in] db Database accessor for logging and inputs
      * @param[in] tag UCX tag for message identification
-     * @param[in] timeout_ms Timeout in milliseconds (0 = infinite)
+     * @param[in] timeoutMs Timeout in milliseconds (0 = infinite)
      * @return bool True if publish succeeded, false otherwise
      */
-    bool publishMessage(DatabaseT& db, uint64_t tag, uint32_t timeout_ms)
+    bool publishMessage(DatabaseT& db, uint64_t tag, uint32_t timeoutMs)
     {
         std::vector<uint8_t> messageData = generateMessage(db);
 
@@ -274,10 +274,9 @@ protected:
             return false;
         }
 
-        return this->sendMessage(db, messageData, tag, timeout_ms);
+        return this->sendMessage(db, messageData, tag, timeoutMs);
     }
 
-protected:
     pxr::UsdStageWeakPtr m_stage = nullptr;
     omni::physics::tensors::TensorApi* m_tensorInterface = nullptr;
     omni::physics::tensors::ISimulationView* m_simView = nullptr;

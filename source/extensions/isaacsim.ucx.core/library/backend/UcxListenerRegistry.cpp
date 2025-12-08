@@ -23,12 +23,12 @@
 
 namespace isaacsim::ucx::core
 {
-std::unordered_map<uint16_t, std::shared_ptr<UCXListener>> UCXListenerRegistry::s_listeners;
-std::mutex UCXListenerRegistry::s_registry_mutex;
+std::unordered_map<uint16_t, std::shared_ptr<UCXListener>> UCXListenerRegistry::g_listeners;
+std::mutex UCXListenerRegistry::g_registryMutex;
 
 std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
 {
-    std::lock_guard<std::mutex> lock(s_registry_mutex);
+    std::lock_guard<std::mutex> lock(g_registryMutex);
 
     // When port is 0, always create a new listener on an ephemeral port
     if (port == 0)
@@ -44,10 +44,10 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
 
             // Always create on ephemeral port (0)
             auto listener = std::make_shared<UCXListener>(context, 0);
-            uint16_t actual_port = listener->getPort();
-            s_listeners[actual_port] = listener;
+            uint16_t actualPort = listener->getPort();
+            g_listeners[actualPort] = listener;
 
-            CARB_LOG_INFO("UCXListenerRegistry::addListener: listener created on port %u", actual_port);
+            CARB_LOG_INFO("UCXListenerRegistry::addListener: listener created on port %u", actualPort);
             return listener;
         }
         catch (const std::exception& e)
@@ -63,7 +63,7 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
         CARB_LOG_WARN("Using privileged port %u (ports 1-1023 require elevated privileges)", port);
     }
 
-    if (s_listeners.find(port) == s_listeners.end())
+    if (g_listeners.find(port) == g_listeners.end())
     {
         CARB_LOG_INFO("UCXListenerRegistry::addListener: port %u", port);
         try
@@ -75,7 +75,7 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
             }
 
             auto listener = std::make_shared<UCXListener>(context, port);
-            s_listeners[port] = listener;
+            g_listeners[port] = listener;
             CARB_LOG_INFO("UCXListenerRegistry::addListener: listener created on port %u", port);
         }
         catch (const std::exception& e)
@@ -83,22 +83,22 @@ std::shared_ptr<UCXListener> UCXListenerRegistry::addListener(uint16_t port)
             throw std::runtime_error(std::string("UCXListenerRegistry: failed to create listener - ") + e.what());
         }
     }
-    return s_listeners[port];
+    return g_listeners[port];
 }
 
 void UCXListenerRegistry::removeListener(uint16_t port)
 {
     std::shared_ptr<UCXListener> listener;
     {
-        std::lock_guard<std::mutex> lock(s_registry_mutex);
-        auto it = s_listeners.find(port);
-        if (it == s_listeners.end())
+        std::lock_guard<std::mutex> lock(g_registryMutex);
+        auto it = g_listeners.find(port);
+        if (it == g_listeners.end())
         {
             return;
         }
 
         listener = std::move(it->second);
-        s_listeners.erase(it);
+        g_listeners.erase(it);
     }
 
     try
@@ -115,14 +115,14 @@ void UCXListenerRegistry::removeListener(uint16_t port)
 
 bool UCXListenerRegistry::isListenerRegistered(uint16_t port)
 {
-    std::lock_guard<std::mutex> lock(s_registry_mutex);
-    return s_listeners.find(port) != s_listeners.end();
+    std::lock_guard<std::mutex> lock(g_registryMutex);
+    return g_listeners.find(port) != g_listeners.end();
 }
 
 void UCXListenerRegistry::shutdown()
 {
-    std::lock_guard<std::mutex> lock(s_registry_mutex);
-    for (auto& [port, listener] : s_listeners)
+    std::lock_guard<std::mutex> lock(g_registryMutex);
+    for (auto& [port, listener] : g_listeners)
     {
         try
         {
@@ -137,7 +137,7 @@ void UCXListenerRegistry::shutdown()
             CARB_LOG_ERROR("Error shutting down listener on port %u: %s", port, e.what());
         }
     }
-    s_listeners.clear();
+    g_listeners.clear();
 }
 
 } // namespace isaacsim::ucx::core
