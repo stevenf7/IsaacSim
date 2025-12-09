@@ -396,6 +396,12 @@ script = "${root}/tools/ci/generate_etm_list.py"
 [repo_ci.jobs.build_isaac_from_kit]
 script = "${root}/tools/ci/upstream_kit_build/build_isaac_from_kit.py"
 
+[repo_ci.jobs.check_app_version_locks]
+script = "${root}/tools/ci/check_app_version_locks/check_app_version_locks.py"
+
+[repo_ci.jobs.check_extension_support_levels]
+script = "${root}/tools/ci/check_extension_support_levels/check_extension_support_levels.py"
+
 
 ########################################################################################################################
 # Python packages generation
@@ -539,9 +545,14 @@ ignored_extensions = [
 ########################################################################################################################
 
 [repo_deploy_exts.pipeline_repo.branch.prod]
+enabled = true
 fail_if_exts_are_missing = false
+create_mr = true
 
-
+[repo_deploy_exts]
+run_if_app_version_regex = '.*'
+pipeline_repo.user_name = "Hammad Mazhar"
+pipeline_repo.user_email = "hmazhar@nvidia.com"
 
 ########################################################################################################################
 # Lua formatting

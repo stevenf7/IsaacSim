@@ -707,6 +707,23 @@ timeout = 5000
 include = ["tests-external-ar*${shell_ext}"]
 name = "ar"
 
+
+[repo_test.suites.check_app_version_locks]
+kind = "pytest"
+
+# Where our tests live
+discover_path = "${root}/tools/ci/check_app_version_locks/tests"
+# Where our source lives
+python_source_path = "tools/ci/check_app_version_locks/*"
+
+log_file = "_build/test/results.xml"
+
+# to prevent pytest capturing stdout add "-s"
+extra_pytest_args = [
+    "-s",
+]
+
+
 # [repo_test.suites.jupytertests]
 # kind = "glob_and_exec"
 # path = "${test_root}"
