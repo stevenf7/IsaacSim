@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.36] - 2025-12-07
+### Changed
+- Update description
+
 ## [2.4.35] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

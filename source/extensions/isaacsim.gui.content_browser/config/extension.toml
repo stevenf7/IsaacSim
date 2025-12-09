@@ -2,7 +2,7 @@
 version = "0.1.15"
 category = "other"
 title = "Content Browser"
-description = "Isaac Sim Content Browser"
+description = "Extends the Omniverse content browser with an Isaac Sim collection providing quick access to curated robot models, environments, materials, and sensor assets."
 authors = ["qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.gui.content_browser"
 keywords = ["browser","assets","content"]

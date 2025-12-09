@@ -1,8 +1,8 @@
 [package]
-version = "1.2.3"
+version = "1.2.4"
 category = "example"
 title = "Manipulators Examples"
-description = "examples of manipulators and grippers"
+description = "Provides example implementations for Franka and Universal Robots manipulators demonstrating pick-and-place, follow target, and motion planning tasks."
 authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "shivangv@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators.examples"
 keywords = ["manipulators","grippers"]

@@ -176,7 +176,9 @@ private:
     {
         std::stringstream stringStream;
         for (size_t i = 0; i < length; i++)
+        {
             stringStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(array[i]);
+        }
         return stringStream.str();
     }
 

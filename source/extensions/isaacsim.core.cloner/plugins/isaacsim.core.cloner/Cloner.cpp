@@ -49,8 +49,8 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
     for (size_t i = 0; i < numPaths; i++)
     {
         const omni::fabric::Path path(rbPaths[i]);
-        usdrt::UsdPrim usdrt_prim = usdrtStage->GetPrimAtPath(usdrt::SdfPath(path));
-        if (!usdrt_prim)
+        usdrt::UsdPrim usdrtPrim = usdrtStage->GetPrimAtPath(usdrt::SdfPath(path));
+        if (!usdrtPrim)
         {
             rbInitData[i].validPath = false;
             continue;
@@ -58,7 +58,7 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
         else
         {
             bool kinematic = false;
-            usdrt_prim.GetAttribute(kinematicEnabledToken).Get(&kinematic);
+            usdrtPrim.GetAttribute(kinematicEnabledToken).Get(&kinematic);
             rbInitData[i].path = omni::fabric::Path(rbPaths[i]);
             rbInitData[i].dynamicBody = !kinematic;
             rbInitData[i].validPath = true;
@@ -94,7 +94,9 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
     for (const RigidBodyInitData& initData : rbInitData)
     {
         if (!initData.validPath)
+        {
             continue;
+        }
 
         if (initData.dynamicBody)
         {
@@ -128,8 +130,8 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
  * target locations within the same stage.
  *
  * @param[in] stageId The unique identifier of the USD stage where cloning will occur
- * @param[in] source_prim_path The path to the source prim that will be cloned, this prim should be a valid USD prim
- * @param[in] prim_paths Vector of target paths where clones will be created, these prims will be created in Fabric
+ * @param[in] sourcePrimPath The path to the source prim that will be cloned, this prim should be a valid USD prim
+ * @param[in] primPaths Vector of target paths where clones will be created, these prims will be created in Fabric
  * stage not in USD stage
  *
  * @return true if cloning was successful, false otherwise
@@ -137,8 +139,8 @@ void initializeRigidBodyBatched(const std::vector<usdrt::SdfPath>& rbPaths,
  * @warning The source prim must exist at the specified path
  */
 bool isaacsim::core::cloner::fabricClone(long int stageId,
-                                         const std::string& source_prim_path,
-                                         const std::vector<std::string>& prim_paths)
+                                         const std::string& sourcePrimPath,
+                                         const std::vector<std::string>& primPaths)
 {
 
     omni::fabric::IStageReaderWriter* iStageReaderWriter = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
@@ -246,28 +248,27 @@ bool isaacsim::core::cloner::fabricClone(long int stageId,
             return false;
         }
 
-        omni::fabric::Path world_envs_env_0(fabricId, source_prim_path.c_str());
+        omni::fabric::Path worldEnvsEnv0(fabricId, sourcePrimPath.c_str());
 
-        // convert prim_paths to fabric paths, this is quite unfortunate and will slow down the cloning process
-        std::vector<omni::fabric::Path> list_of_clones;
+        // convert primPaths to fabric paths, this is quite unfortunate and will slow down the cloning process
+        std::vector<omni::fabric::Path> listOfClones;
         {
-            CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - prim_paths to fabric paths");
-            for (const auto& prim_path : prim_paths)
+            CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - primPaths to fabric paths");
+            for (const auto& primPath : primPaths)
             {
                 // compare if its not the same as the source prim path
-                if (prim_path != source_prim_path)
+                if (primPath != sourcePrimPath)
                 {
-                    list_of_clones.push_back(omni::fabric::Path(fabricId, prim_path.c_str()));
+                    listOfClones.push_back(omni::fabric::Path(fabricId, primPath.c_str()));
                 }
             }
         }
 
-        if (!list_of_clones.empty())
+        if (!listOfClones.empty())
         {
             CARB_PROFILE_ZONE(0, "[IsaacSim] fabricClone - fabric batch clone");
-            isrwLegacy->batchClone(
-                iStageReaderWriter->getFabricId(stageInProgress), world_envs_env_0,
-                { static_cast<const omni::fabric::Path*>(list_of_clones.data()), list_of_clones.size() });
+            isrwLegacy->batchClone(iStageReaderWriter->getFabricId(stageInProgress), worldEnvsEnv0,
+                                   { static_cast<const omni::fabric::Path*>(listOfClones.data()), listOfClones.size() });
         }
         else
         {

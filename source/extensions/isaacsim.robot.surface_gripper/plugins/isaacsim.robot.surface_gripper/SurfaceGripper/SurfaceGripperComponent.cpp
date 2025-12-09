@@ -142,7 +142,9 @@ void SurfaceGripperComponent::preTick()
 void SurfaceGripperComponent::tick()
 {
     if (!m_isInitialized || !m_isEnabled)
+    {
         return;
+    }
 
     // Update the visualization or any non-physics aspects
     // For example, we could update visual indicators of gripper state
@@ -264,7 +266,9 @@ void SurfaceGripperComponent::updateAttachmentPoints()
     pxr::UsdRelationship attachmentPointsRel = prim.GetRelationship(
         isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::ATTACHMENT_POINTS));
     if (!attachmentPointsRel)
+    {
         return;
+    }
 
     pxr::UsdRelationship rel = prim.GetRelationship(
         isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::GRIPPED_OBJECTS));
@@ -318,16 +322,16 @@ void SurfaceGripperComponent::updateAttachmentPoints()
             {
                 excludeFromArticulationPaths.push_back(path.GetString());
             }
-            physx::PxJoint* px_joint =
+            physx::PxJoint* pxJoint =
                 static_cast<physx::PxJoint*>(g_physx->getPhysXPtr((path), omni::physx::PhysXType::ePTJoint));
-            if (!px_joint)
+            if (!pxJoint)
             {
                 CARB_LOG_WARN("   Gripper %s has no joint at attachment point %s", m_primPath.GetText(), path.GetText());
                 continue;
             }
-            px_joint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, m_status == GripperStatus::Open);
+            pxJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, m_status == GripperStatus::Open);
             m_attachmentPaths.push_back(path.GetString());
-            m_attachmentJoints.push_back(px_joint);
+            m_attachmentJoints.push_back(pxJoint);
             m_jointSettlingCounters[index] = 0;
 
             // Cache per-joint forward axis
@@ -402,23 +406,23 @@ void SurfaceGripperComponent::updateGrippedObjectsList()
         // Iterate through active attachment points to find gripped objects
         for (const auto& attachmentIndex : m_activeAttachmentIndices)
         {
-            physx::PxJoint* px_joint = _getCachedJoint(attachmentIndex);
+            physx::PxJoint* pxJoint = _getCachedJoint(attachmentIndex);
 
             // Skip invalid or broken joints
-            if (!px_joint || (px_joint->getConstraintFlags() &
-                              (physx::PxConstraintFlag::eBROKEN | physx::PxConstraintFlag::eDISABLE_CONSTRAINT)))
+            if (!pxJoint || (pxJoint->getConstraintFlags() &
+                             (physx::PxConstraintFlag::eBROKEN | physx::PxConstraintFlag::eDISABLE_CONSTRAINT)))
             {
                 continue;
             }
 
             // Get actors attached to the joint
-            physx::PxRigidActor *px_actor0, *px_actor1;
-            px_joint->getActors(px_actor0, px_actor1);
+            physx::PxRigidActor *pxActor0, *pxActor1;
+            pxJoint->getActors(pxActor0, pxActor1);
 
             // Add the second actor to gripped objects if it exists and has a name
-            if (px_actor1 && px_actor1->getName())
+            if (pxActor1 && pxActor1->getName())
             {
-                m_grippedObjectsBuffer.insert(px_actor1->getName());
+                m_grippedObjectsBuffer.insert(pxActor1->getName());
             }
         }
 
@@ -511,7 +515,9 @@ void SurfaceGripperComponent::checkForceLimits()
     const bool checkForces = m_status != GripperStatus::Open && (checkShearForce || checkCoaxialForce);
     // Skip force checking if no limits are set
     if (!checkForces)
+    {
         return;
+    }
 
 
     for (auto it = m_activeAttachmentIndices.begin(); it != m_activeAttachmentIndices.end(); it++)
@@ -522,16 +528,16 @@ void SurfaceGripperComponent::checkForceLimits()
         size_t& settlingCounter = m_jointSettlingCounters[attachmentIndex];
         if (settlingCounter == 0)
         {
-            physx::PxJoint* px_joint = _getCachedJoint(attachmentIndex);
+            physx::PxJoint* pxJoint = _getCachedJoint(attachmentIndex);
 
 
             physx::PxVec3 force, torque;
-            physx::PxRigidActor *px_actor0 = nullptr, *px_actor1 = nullptr;
-            px_joint->getActors(px_actor0, px_actor1);
-            px_joint->getConstraint()->getForce(force, torque);
+            physx::PxRigidActor *pxActor0 = nullptr, *pxActor1 = nullptr;
+            pxJoint->getActors(pxActor0, pxActor1);
+            pxJoint->getConstraint()->getForce(force, torque);
 
             Axis axis = _getJointForwardAxis(attachmentIndex);
-            physx::PxTransform worldTransform = _computeJointWorldTransform(px_joint, px_actor0);
+            physx::PxTransform worldTransform = _computeJointWorldTransform(pxJoint, pxActor0);
             physx::PxVec3 direction = _directionFromAxisAndWorld(axis, worldTransform);
 
             // Lazy-evaluate shearForce only if needed for performance
@@ -553,7 +559,7 @@ void SurfaceGripperComponent::checkForceLimits()
             if (shouldRelease)
             {
                 m_apIndicesToDetach.push_back(attachmentIndex);
-                _queueDetachJoint(px_joint);
+                _queueDetachJoint(pxJoint);
             }
         }
         else
@@ -611,7 +617,9 @@ void SurfaceGripperComponent::_processAttachmentForGrip(size_t attachmentIndex,
 {
     auto physxQuery = carb::getCachedInterface<omni::physx::IPhysxSceneQuery>();
     if (!physxQuery)
+    {
         return;
+    }
 
     if (m_jointSettlingCounters[attachmentIndex] > 0)
     {
@@ -620,15 +628,17 @@ void SurfaceGripperComponent::_processAttachmentForGrip(size_t attachmentIndex,
     }
 
     const std::string& attachmentPath = m_attachmentPaths[attachmentIndex];
-    physx::PxJoint* px_joint = _getCachedJoint(attachmentIndex);
+    physx::PxJoint* pxJoint = _getCachedJoint(attachmentIndex);
 
 
-    physx::PxRigidActor *local_actor0 = nullptr, *local_actor1 = nullptr;
-    px_joint->getActors(local_actor0, local_actor1);
-    if (!local_actor0)
+    physx::PxRigidActor *localActor0 = nullptr, *localActor1 = nullptr;
+    pxJoint->getActors(localActor0, localActor1);
+    if (!localActor0)
+    {
         return;
+    }
 
-    physx::PxTransform worldTransform = _computeJointWorldTransform(px_joint, local_actor0);
+    physx::PxTransform worldTransform = _computeJointWorldTransform(pxJoint, localActor0);
 
     Axis axis = _getJointForwardAxis(attachmentIndex);
     physx::PxVec3 dirPx = _directionFromAxisAndWorld(axis, worldTransform);
@@ -659,7 +669,7 @@ void SurfaceGripperComponent::_processAttachmentForGrip(size_t attachmentIndex,
         if (hit)
         {
             std::string hitPath = intToPath(result.rigidBody).GetString();
-            if (hitPath == local_actor0->getName())
+            if (hitPath == localActor0->getName())
             {
                 selfCollision = true;
                 clearanceOffset += 0.001f;
@@ -670,17 +680,23 @@ void SurfaceGripperComponent::_processAttachmentForGrip(size_t attachmentIndex,
             {
                 float originalOffset = 0.0f;
                 if (attachmentIndex < m_jointClearanceOffset.size())
+                {
                     originalOffset = m_jointClearanceOffset[attachmentIndex];
+                }
                 if (originalOffset != clearanceOffset)
                 {
                     clearanceChanged = true;
                     if (attachmentIndex < m_jointClearanceOffset.size())
+                    {
                         m_jointClearanceOffset[attachmentIndex] = clearanceOffset;
+                    }
                 }
             }
             physx::PxRigidActor* hitActor = _getOrCacheActor(hitPath);
             if (!hitActor)
+            {
                 return;
+            }
             physx::PxTransform hitWorldTransform = hitActor->getGlobalPose();
 
             physx::PxVec3 offsetTranslation =
@@ -689,7 +705,7 @@ void SurfaceGripperComponent::_processAttachmentForGrip(size_t attachmentIndex,
             physx::PxTransform adjustedWorldTransform = offsetTransform * worldTransform;
             physx::PxTransform hitLocalTransform = hitWorldTransform.transformInv(adjustedWorldTransform);
 
-            _queueAttachJoint(px_joint, local_actor0, hitActor, hitLocalTransform);
+            _queueAttachJoint(pxJoint, localActor0, hitActor, hitLocalTransform);
 
             apToRemove.push_back(attachmentIndex);
         }

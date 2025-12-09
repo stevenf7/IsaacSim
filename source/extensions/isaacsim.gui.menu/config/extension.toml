@@ -1,8 +1,8 @@
 [package]
-version = "2.4.6"
+version = "2.4.7"
 category = "Simulation"
 title = "Isaac Sim Menus"
-description = "Menus specific to Isaac Sim"
+description = "Provides Isaac Sim-specific menu bar functionality including File, Edit, Create, Window, Tools, Utilities, Layouts, and Help menus with robotics-focused operations."
 authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.gui.menu"
 keywords = ["isaac", "menu"]

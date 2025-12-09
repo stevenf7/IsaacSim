@@ -100,10 +100,10 @@ public:
         m_usdNoticeListenerKey =
             pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener.get()), &UsdNoticeListener::handle);
         auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
-        const static carb::RStringKey name("IsaacSimStageOpenedUsdNoticeListener");
+        static const carb::RStringKey s_kEventName("IsaacSimStageOpenedUsdNoticeListener");
         auto usdContext = omni::usd::UsdContext::getContext();
         m_stageEventSubscription = ed->observeEvent(
-            name, 1000, usdContext->stageEventName(omni::usd::StageEventType::eOpened),
+            s_kEventName, 1000, usdContext->stageEventName(omni::usd::StageEventType::eOpened),
             [this, usdContext](const auto&)
             {
                 auto stage = usdContext->getStage();
@@ -712,7 +712,7 @@ public:
 
         g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>()->getStageUpdate();
 
-        omni::kit::StageUpdateNodeDesc desc = { 0 };
+        omni::kit::StageUpdateNodeDesc desc = { nullptr };
         desc.displayName = "Isaac Simulation Manager";
         desc.onStop = onStop;
         desc.onAttach = onAttach;

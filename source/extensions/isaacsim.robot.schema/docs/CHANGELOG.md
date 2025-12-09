@@ -1,4 +1,8 @@
 # Changelog
+## [4.0.2] - 2025-12-07
+### Changed
+- Add missing docstrings
+
 ## [4.0.1] - 2025-11-26
 ### Changed
 - Fixed parsing of robot tree to ignore bodies in joints that are not rigid bodies

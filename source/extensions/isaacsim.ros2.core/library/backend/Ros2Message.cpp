@@ -41,7 +41,7 @@ namespace core
 #define ISAACSIM_DEFINE_ENSURE_SEQ_SIZE(SeqType, InitFn, FiniFn)                                                       \
     inline bool ensureSeqSize(SeqType& sequence, size_t requiredSize)                                                  \
     {                                                                                                                  \
-        if (sequence.data == NULL)                                                                                     \
+        if (sequence.data == nullptr)                                                                                  \
         {                                                                                                              \
             return InitFn(&sequence, requiredSize);                                                                    \
         }                                                                                                              \
@@ -82,7 +82,7 @@ template <typename LibraryLike, typename SequenceT>
 inline bool ensureSeqSizeDynamic(
     LibraryLike& library, const char* initSymbol, const char* finiSymbol, SequenceT& sequence, size_t requiredSize)
 {
-    if (sequence.data == NULL)
+    if (sequence.data == nullptr)
     {
         return library.template callSymbolWithArg<bool>(initSymbol, &sequence, requiredSize);
     }
@@ -111,7 +111,7 @@ inline bool ensureSeqSizeDynamicWithInnerFini(LibraryLike& library,
                                               GetInnerSequenceFn getInnerSequence,
                                               const char* innerFiniSymbol)
 {
-    if (parentSequence.data == NULL)
+    if (parentSequence.data == nullptr)
     {
         return library.template callSymbolWithArg<bool>(parentInitSymbol, &parentSequence, requiredSize);
     }
@@ -1321,29 +1321,29 @@ void Ros2PointCloudMessageImpl::generateBuffer(const double& timeStamp,
         fields.data[backIdx].datatype = datatype;
         fields.data[backIdx].count = count;
         m_orderedFields.push_back(std::make_tuple(ptr, typeSize * count, offset));
-        offset += Ros2PointCloudMessageImpl::pointFieldTypeSizes[datatype] * count;
+        offset += Ros2PointCloudMessageImpl::s_kPointFieldTypeSizes[datatype] * count;
         backIdx++;
     };
 
     // Lambda function to add a Cartesian field to the point cloud message
-    auto addCartesianField = [&](const char* name_x, const char* name_y, const char* name_z, uint8_t datatype,
+    auto addCartesianField = [&](const char* nameX, const char* nameY, const char* nameZ, uint8_t datatype,
                                  uint32_t count, void* ptr, size_t typeSize)
     {
         if (!ptr)
         {
             return;
         }
-        std::array<const char*, 3> fieldNames = { name_x, name_y, name_z };
+        std::array<const char*, 3> fieldNames = { nameX, nameY, nameZ };
         for (size_t i = 0; i < fieldNames.size(); i++, backIdx++)
         {
             Ros2MessageInterfaceImpl::writeRosString(fieldNames[i], fields.data[backIdx].name);
             fields.data[backIdx].offset =
-                static_cast<uint32_t>(offset + i * Ros2PointCloudMessageImpl::pointFieldTypeSizes[datatype]);
+                static_cast<uint32_t>(offset + i * Ros2PointCloudMessageImpl::s_kPointFieldTypeSizes[datatype]);
             fields.data[backIdx].datatype = datatype;
             fields.data[backIdx].count = count;
         }
         m_orderedFields.push_back(std::make_tuple(ptr, typeSize * fieldNames.size(), offset));
-        offset += Ros2PointCloudMessageImpl::pointFieldTypeSizes[datatype] * fieldNames.size();
+        offset += Ros2PointCloudMessageImpl::s_kPointFieldTypeSizes[datatype] * fieldNames.size();
     };
 
     addField("intensity", sensor_msgs__msg__PointField__FLOAT32, 1, intensityPtr, sizeof(float));

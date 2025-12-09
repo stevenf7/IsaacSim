@@ -641,15 +641,15 @@ public:
      * @brief PointField type sizes. Maps from anonymous enums in sensor_msgs/msg/PointField to the actual size of the
      * type.
      */
-    static constexpr std::array<size_t, 9> pointFieldTypeSizes = { 0,
-                                                                   sizeof(int8_t),
-                                                                   sizeof(uint8_t),
-                                                                   sizeof(int16_t),
-                                                                   sizeof(uint16_t),
-                                                                   sizeof(int32_t),
-                                                                   sizeof(uint32_t),
-                                                                   sizeof(float),
-                                                                   sizeof(double) };
+    static constexpr std::array<size_t, 9> s_kPointFieldTypeSizes = { 0,
+                                                                      sizeof(int8_t),
+                                                                      sizeof(uint8_t),
+                                                                      sizeof(int16_t),
+                                                                      sizeof(uint16_t),
+                                                                      sizeof(int32_t),
+                                                                      sizeof(uint32_t),
+                                                                      sizeof(float),
+                                                                      sizeof(double) };
 
     /**
      * @brief Allocates and initializes the point cloud message buffer

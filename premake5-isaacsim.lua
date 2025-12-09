@@ -114,7 +114,9 @@ function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, 
     -- end
     if os.target() == "windows" then
         ext = ".obj"
-        if isPtx then ext = ".ptx" end
+        if isPtx then
+            ext = ".ptx"
+        end
         local compilerBindir = " --compiler-bindir " .. nvccHostCompilerVS
         local buildString = '"'
             .. nvccPath
@@ -135,7 +137,9 @@ function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, 
     end
     if os.target() == "linux" then
         ext = ".o"
-        if isPtx then ext = ".ptx" end
+        if isPtx then
+            ext = ".ptx"
+        end
         local buildString = '"'
             .. nvccPath
             .. '" -std=c++17 '
@@ -256,7 +260,9 @@ function define_test_experience(name, args)
     -- Write bat and sh files as another way to run them:
     for _, config in ipairs(ALL_CONFIGS) do
         local kit_sdk_config = get_value_or_default(args, "kit_sdk_config", kit_sdk_config)
-        if kit_sdk_config == "%{config}" then kit_sdk_config = config end
+        if kit_sdk_config == "%{config}" then
+            kit_sdk_config = config
+        end
         create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
     end
 end

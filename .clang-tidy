@@ -69,6 +69,10 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.GlobalConstantPrefix
     value: g_k
+  - key: readability-identifier-naming.ClassConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassConstantPrefix
+    value: s_k
   - key: readability-identifier-naming.GlobalVariableCase
     value: camelBack
   - key: readability-identifier-naming.GlobalVariablePrefix

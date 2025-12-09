@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.3] - 2025-12-07
+### Changed
+- Fix clang tidy issues in cpp code
+
 ## [1.2.2] - 2025-11-26
 ### Changed
 - PointCloud2 message backend now optionally supports host-pinned buffer

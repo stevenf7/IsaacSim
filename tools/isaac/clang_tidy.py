@@ -48,10 +48,15 @@ def run_clang_tidy(
     output_file: Optional[str] = None,
     fix: bool = False,
     verbose: bool = False,
+    header_filter: Optional[str] = None,
 ) -> bool:
     """Run clang-tidy on a single file."""
     command = ["clang-tidy", "-p", compile_commands]
     command.extend(["--config-file", config_file])
+
+    # Add header filter to only show warnings from matching files
+    if header_filter:
+        command.extend(["--header-filter", header_filter])
 
     # Don't add color output if writing to a file
     if "--use-color" not in extra_args and not output_file:
@@ -102,6 +107,7 @@ def run_clang_tidy_on_files(
     output_file: Optional[str] = None,
     fix: bool = False,
     verbose: bool = False,
+    header_filter: Optional[str] = None,
 ) -> int:
     """Run clang-tidy on all specified files using multiple processes."""
     print(f"Running clang-tidy on {len(files)} files...")
@@ -115,7 +121,9 @@ def run_clang_tidy_on_files(
     num_processes = multiprocessing.cpu_count()
 
     for file_path in files:
-        if run_clang_tidy(file_path, compile_commands, config_file, extra_args, output_file, fix, verbose):
+        if run_clang_tidy(
+            file_path, compile_commands, config_file, extra_args, output_file, fix, verbose, header_filter
+        ):
             success_count += 1
             if verbose:
                 print(f"Successfully analyzed: {file_path}")
@@ -147,6 +155,11 @@ def main():
     parser.add_argument("--fix", action="store_true", help="Apply fixes for fixable issues")
     parser.add_argument("--verbose", action="store_true", help="Print detailed information during execution")
     parser.add_argument("--output-file", help="Write clang-tidy output to a file (without color formatting)")
+    parser.add_argument(
+        "--header-filter",
+        default=".*/source/.*",
+        help="Regex to filter headers for warnings (default: '.*/source/.*' to only show source file warnings)",
+    )
     args = parser.parse_args()
 
     if not os.path.isdir(args.source_dir):
@@ -172,7 +185,14 @@ def main():
 
     # Run clang-tidy on found files
     exit_code = run_clang_tidy_on_files(
-        cpp_files, args.compile_commands, args.config_file, args.extra_args, args.output_file, args.fix, args.verbose
+        cpp_files,
+        args.compile_commands,
+        args.config_file,
+        args.extra_args,
+        args.output_file,
+        args.fix,
+        args.verbose,
+        args.header_filter,
     )
     sys.exit(exit_code)
 
@@ -195,6 +215,11 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> callable:
     parser.add_argument("--fix", action="store_true", help="Apply fixes for fixable issues")
     parser.add_argument("--verbose", action="store_true", help="Print detailed information during execution")
     parser.add_argument("--output-file", help="Write clang-tidy output to a file (without color formatting)")
+    parser.add_argument(
+        "--header-filter",
+        default=None,
+        help="Regex to filter headers for warnings (default from config or '.*/source/.*')",
+    )
 
     def run_tool(args, config=config):
         """Run the clang-tidy tool with the given arguments."""
@@ -224,6 +249,9 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> callable:
             "extra_args", ["--extra-arg=-std=c++17", "--extra-arg=-Wno-error", "--quiet", "--warnings-as-errors=-*"]
         )
 
+        # Get header filter (CLI arg takes precedence over config)
+        header_filter = args.header_filter or clang_tidy_config.get("header_filter", ".*/source/.*")
+
         # Print configuration information
         print(f"Running clang-tidy with the following configuration:")
         print(f"  Source directory: {args.source_dir}")
@@ -231,6 +259,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> callable:
         print(f"  Compile commands: {compile_commands}")
         print(f"  Excluded paths: {exclude_paths}")
         print(f"  Extra arguments: {extra_args}")
+        print(f"  Header filter: {header_filter}")
         print(f"  Apply fixes: {args.fix}")
         if args.output_file:
             print(f"  Output file: {args.output_file}")
@@ -259,7 +288,14 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> callable:
 
         # Run clang-tidy on found files
         return run_clang_tidy_on_files(
-            cpp_files, compile_commands, config_file, extra_args, args.output_file, args.fix, args.verbose
+            cpp_files,
+            compile_commands,
+            config_file,
+            extra_args,
+            args.output_file,
+            args.fix,
+            args.verbose,
+            header_filter,
         )
 
     return run_tool

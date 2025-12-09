@@ -1,8 +1,8 @@
 [package]
-version = "4.11.1"
+version = "4.11.2"
 category = "Simulation"
 title = "Isaac Sim Samples"
-description = "Sample extensions for Isaac Sim"
+description = "Provides interactive sample extensions demonstrating Isaac Sim features including robot manipulation, path planning, gamepad control, bin filling, and Cortex behavior framework usage."
 authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.examples.interactive"
 keywords = ["isaac", "samples", "manipulation"]

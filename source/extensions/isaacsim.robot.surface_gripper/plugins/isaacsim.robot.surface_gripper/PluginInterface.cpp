@@ -488,7 +488,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     g_surfaceGripperManager = std::make_unique<isaacsim::robot::surface_gripper::SurfaceGripperManager>(g_physx);
     // CARB_LOG_WARN("Surface Gripper Manager created");
-    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    omni::kit::StageUpdateNodeDesc desc = { nullptr };
     desc.displayName = "Surface Gripper Interface";
     desc.onAttach = onAttach;
     desc.onDetach = onDetach;

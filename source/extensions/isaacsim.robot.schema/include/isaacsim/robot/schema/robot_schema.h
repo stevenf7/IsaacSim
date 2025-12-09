@@ -45,8 +45,13 @@ namespace robot
 namespace schema
 {
 
-
-// Enum for classes
+/**
+ * @enum Classes
+ * @brief Enumeration of Isaac robot schema API class types.
+ * @details
+ * Defines the available schema API classes that can be applied to USD prims
+ * for robot definition and configuration.
+ */
 enum class Classes
 {
     ROBOT_API,
@@ -58,7 +63,13 @@ enum class Classes
     ATTACHMENT_POINT_API
 };
 
-// Enum for attributes
+/**
+ * @enum Attributes
+ * @brief Enumeration of Isaac robot schema attribute types.
+ * @details
+ * Defines the available attribute types that can be set on prims with
+ * robot schema APIs applied.
+ */
 enum class Attributes
 {
     DESCRIPTION,
@@ -82,7 +93,13 @@ enum class Attributes
     CLEARANCE_OFFSET,
 };
 
-// Enum for relations
+/**
+ * @enum Relations
+ * @brief Enumeration of Isaac robot schema relationship types.
+ * @details
+ * Defines the available relationship types that connect prims in the
+ * robot schema hierarchy.
+ */
 enum class Relations
 {
     ROBOT_LINKS,
@@ -91,6 +108,13 @@ enum class Relations
     GRIPPED_OBJECTS
 };
 
+/**
+ * @enum DofOffsetOpOrder
+ * @brief Enumeration of degree-of-freedom offset operation order types.
+ * @details
+ * Specifies the order of translation and rotation operations for
+ * multi-axis joint DOF offsets.
+ */
 enum class DofOffsetOpOrder
 {
     TransX,
@@ -101,13 +125,19 @@ enum class DofOffsetOpOrder
     RotZ
 };
 
-// Common prefix token
+/** @brief Common prefix token for Isaac schema attributes. */
 const std::string _attrPrefix("isaac");
 
-// Map of class names
+/** @brief Array of schema class name strings indexed by Classes enum. */
 const std::string classNames[] = { "IsaacRobotAPI", "IsaacLinkAPI",        "IsaacReferencePointAPI", "IsaacSiteAPI",
                                    "IsaacJointAPI", "IsaacSurfaceGripper", "IsaacAttachmentPointAPI" };
 
+/**
+ * @brief Get the TfToken for a schema class.
+ *
+ * @param[in] name The Classes enum value to convert.
+ * @return pxr::TfToken Token representing the class name.
+ */
 inline const pxr::TfToken className(Classes name)
 {
     return pxr::TfToken(classNames[static_cast<int>(name)]);
@@ -143,7 +173,12 @@ struct hash
 };
 }
 
-// Map of attribute names and types
+/**
+ * @brief Map of attribute enum values to their token names and value types.
+ * @details
+ * Associates each Attributes enum value with its corresponding USD attribute
+ * token name and SDF value type.
+ */
 const std::unordered_map<Attributes, std::pair<pxr::TfToken, pxr::SdfValueTypeName>> attributeNames = {
     { Attributes::DESCRIPTION, { pxr::TfToken("description"), pxr::SdfValueTypeNames->String } },
     { Attributes::NAMESPACE, { pxr::TfToken("namespace"), pxr::SdfValueTypeNames->String } },
@@ -165,7 +200,13 @@ const std::unordered_map<Attributes, std::pair<pxr::TfToken, pxr::SdfValueTypeNa
     { Attributes::MAX_GRIP_DISTANCE, { pxr::TfToken("maxGripDistance"), pxr::SdfValueTypeNames->Float } },
     { Attributes::CLEARANCE_OFFSET, { pxr::TfToken("clearanceOffset"), pxr::SdfValueTypeNames->Float } }
 };
-// Map of relation names
+
+/**
+ * @brief Map of relationship enum values to their token names.
+ * @details
+ * Associates each Relations enum value with its corresponding USD
+ * relationship token name.
+ */
 const std::unordered_map<Relations, pxr::TfToken> relationNames = {
     { Relations::ROBOT_LINKS, pxr::TfToken(_attrPrefix + ":physics:robotLinks") },
     { Relations::ROBOT_JOINTS, pxr::TfToken(_attrPrefix + ":physics:robotJoints") },
@@ -173,13 +214,31 @@ const std::unordered_map<Relations, pxr::TfToken> relationNames = {
     { Relations::GRIPPED_OBJECTS, pxr::TfToken(_attrPrefix + ":grippedObjects") }
 };
 
+/**
+ * @brief Get the full attribute name token for an attribute type.
+ *
+ * @param[in] attr The Attributes enum value.
+ * @return pxr::TfToken Full attribute name token with prefix.
+ */
 inline pxr::TfToken getAttributeName(Attributes attr);
 
 namespace details
 {
+/** @brief Token for PhysicsD6Joint type name. */
 inline const pxr::TfToken kPhysicsD6JointType("PhysicsD6Joint");
+
+/** @brief Token for PhysicsSphericalJoint type name. */
 inline const pxr::TfToken kPhysicsSphericalJointType("PhysicsSphericalJoint");
 
+/**
+ * @brief Check if a joint prim is a multi-axis joint.
+ * @details
+ * Returns true if the joint is a D6 joint or a spherical joint,
+ * which support multiple degrees of freedom.
+ *
+ * @param[in] jointPrim The joint prim to check.
+ * @return bool True if the joint is multi-axis.
+ */
 inline bool isMultiAxisJoint(const pxr::UsdPrim& jointPrim)
 {
     if (!jointPrim)
@@ -191,10 +250,18 @@ inline bool isMultiAxisJoint(const pxr::UsdPrim& jointPrim)
     return typeName == kPhysicsD6JointType || typeName == kPhysicsSphericalJointType;
 }
 
+/**
+ * @brief Descriptor for deprecated DOF (Degree of Freedom) attributes.
+ * @details This struct holds information about deprecated joint DOF offset attributes
+ * that were used in previous versions of the Isaac physics system.
+ */
 struct DeprecatedDofAttributeDescriptor
 {
+    /** @brief The USD attribute name token for the deprecated DOF offset. */
     pxr::TfToken attributeName;
+    /** @brief Human-readable name for the DOF axis (e.g., "TransX", "RotY"). */
     std::string tokenName;
+    /** @brief The USD physics token representing the axis type. */
     pxr::TfToken axisToken;
 };
 
@@ -220,6 +287,16 @@ inline const std::unordered_map<std::string, size_t> kTokenFallbackOrder = []()
     return order;
 }();
 
+/**
+ * @brief Check if a joint axis has valid limit values.
+ * @details
+ * Verifies that the specified axis has authored low and high limit
+ * attributes with the low value less than the high value.
+ *
+ * @param[in] jointPrim The joint prim to check.
+ * @param[in] axisToken The axis token to check limits for.
+ * @return bool True if the axis has valid limits.
+ */
 inline bool axisHasValidLimits(const pxr::UsdPrim& jointPrim, const pxr::TfToken& axisToken)
 {
     pxr::UsdPhysicsLimitAPI limitApi = pxr::UsdPhysicsLimitAPI::Get(jointPrim, axisToken);
@@ -245,6 +322,16 @@ inline bool axisHasValidLimits(const pxr::UsdPrim& jointPrim, const pxr::TfToken
     return lower < upper;
 }
 
+/**
+ * @brief Compute the fallback order index for a DOF token.
+ * @details
+ * Looks up the token name in the fallback order map. If not found,
+ * returns the provided order index clamped to zero.
+ *
+ * @param[in] tokenName The DOF token name string.
+ * @param[in] orderIndex The order index to use as fallback.
+ * @return size_t The computed fallback order.
+ */
 inline size_t computeFallbackOrder(const std::string& tokenName, int orderIndex)
 {
     const auto iterator = kTokenFallbackOrder.find(tokenName);
@@ -255,6 +342,15 @@ inline size_t computeFallbackOrder(const std::string& tokenName, int orderIndex)
     return static_cast<size_t>(std::max(orderIndex, 0));
 }
 
+/**
+ * @brief Collect deprecated DOF entries from a joint prim.
+ * @details
+ * Scans the joint prim for deprecated DOF offset attributes and returns
+ * them sorted by their offset values and fallback order.
+ *
+ * @param[in] jointPrim The joint prim to collect entries from.
+ * @return std::vector<std::string> Ordered list of DOF token names.
+ */
 inline std::vector<std::string> collectDeprecatedDofEntries(const pxr::UsdPrim& jointPrim)
 {
     std::vector<std::pair<int, std::string>> entries;
@@ -309,6 +405,15 @@ inline std::vector<std::string> collectDeprecatedDofEntries(const pxr::UsdPrim& 
     return orderedTokens;
 }
 
+/**
+ * @brief Update deprecated joint DOF order attributes.
+ * @details
+ * Migrates deprecated DOF offset attributes to the new DOF offset op order
+ * attribute format for multi-axis joints.
+ *
+ * @param[in,out] jointPrim The joint prim to update.
+ * @return bool True if the joint was updated.
+ */
 inline bool UpdateDeprecatedJointDofOrder(pxr::UsdPrim& jointPrim)
 {
     if (!jointPrim)
@@ -369,7 +474,6 @@ inline bool UpdateDeprecatedJointDofOrder(pxr::UsdPrim& jointPrim)
 }
 }
 
-// Function to get attribute name
 inline pxr::TfToken getAttributeName(Attributes attr)
 {
     return pxr::TfToken(_attrPrefix + ":" + attributeNames.at(attr).first.GetString());
@@ -379,6 +483,14 @@ inline pxr::SdfPath GetJointBodyRelationship(const pxr::UsdPrim& jointPrim, int 
 inline std::pair<pxr::UsdPrim, pxr::UsdPrim> PopulateRobotSchemaFromArticulation(
     const pxr::UsdStagePtr& stage, pxr::UsdPrim& robotPrim, pxr::UsdPrim articulationPrim = pxr::UsdPrim());
 
+/**
+ * @brief Apply the IsaacRobotAPI schema to a prim.
+ * @details
+ * Adds the robot API applied schema and populates the robot schema
+ * relationships from any articulation found under the prim.
+ *
+ * @param[in,out] prim The prim to apply the API to.
+ */
 inline void ApplyRobotAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::ROBOT_API)]));
@@ -400,7 +512,11 @@ inline void ApplyRobotAPI(pxr::UsdPrim& prim)
     }
 }
 
-// Function to apply LinkAPI
+/**
+ * @brief Apply the IsaacLinkAPI schema to a prim.
+ *
+ * @param[in,out] prim The prim to apply the API to.
+ */
 inline void ApplyLinkAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::LINK_API)]));
@@ -410,7 +526,11 @@ inline void ApplyLinkAPI(pxr::UsdPrim& prim)
     // }
 }
 
-// Function to apply SiteAPI
+/**
+ * @brief Apply the IsaacSiteAPI schema to a prim.
+ *
+ * @param[in,out] prim The prim to apply the API to.
+ */
 inline void ApplySiteAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::SITE_API)]));
@@ -420,14 +540,23 @@ inline void ApplySiteAPI(pxr::UsdPrim& prim)
     // }
 }
 
-// Function to apply ReferencePointAPI
+/**
+ * @brief Apply the IsaacReferencePointAPI schema to a prim.
+ * @deprecated Use ApplySiteAPI instead.
+ *
+ * @param[in,out] prim The prim to apply the API to.
+ */
 inline void ApplyReferencePointAPI(pxr::UsdPrim& prim)
 {
     CARB_LOG_WARN("ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.");
     ApplySiteAPI(prim);
 }
 
-// Function to apply JointAPI
+/**
+ * @brief Apply the IsaacJointAPI schema to a prim.
+ *
+ * @param[in,out] prim The prim to apply the API to.
+ */
 inline void ApplyJointAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::JOINT_API)]));
@@ -438,13 +567,16 @@ inline void ApplyJointAPI(pxr::UsdPrim& prim)
     // }
 }
 
-// /**
-//  * @brief Creates a Surface Gripper prim with all its attributes and relationships
-//  *
-//  * @param stage The USD stage to create the prim in
-//  * @param primPath The path where to create the prim
-//  * @return pxr::UsdPrim The created Surface Gripper prim
-//  */
+/**
+ * @brief Create a Surface Gripper prim.
+ * @details
+ * Creates a new prim with the IsaacSurfaceGripper type at the
+ * specified path on the stage.
+ *
+ * @param[in] stage The USD stage to create the prim in.
+ * @param[in] primPath The path where to create the prim.
+ * @return pxr::UsdPrim The created Surface Gripper prim.
+ */
 inline pxr::UsdPrim CreateSurfaceGripper(pxr::UsdStagePtr stage, const std::string& primPath)
 {
     // Create the prim
@@ -467,7 +599,11 @@ inline pxr::UsdPrim CreateSurfaceGripper(pxr::UsdStagePtr stage, const std::stri
     return prim;
 }
 
-// Function to apply AttachmentPointAPI
+/**
+ * @brief Apply the IsaacAttachmentPointAPI schema to a prim.
+ *
+ * @param[in,out] prim The prim to apply the API to.
+ */
 inline void ApplyAttachmentPointAPI(pxr::UsdPrim& prim)
 {
     prim.AddAppliedSchema(pxr::TfToken(classNames[static_cast<int>(Classes::ATTACHMENT_POINT_API)]));
@@ -532,6 +668,16 @@ inline pxr::SdfPath GetJointBodyRelationship(const pxr::UsdPrim& jointPrim, int 
     return targets.front();
 }
 
+/**
+ * @brief Update deprecated schemas on a robot prim hierarchy.
+ * @details
+ * Traverses the robot prim and its descendants to migrate deprecated
+ * schema APIs to their current equivalents. This includes replacing
+ * IsaacReferencePointAPI with IsaacSiteAPI and updating deprecated
+ * joint DOF order attributes.
+ *
+ * @param[in,out] robotPrim The robot prim to update.
+ */
 inline void UpdateDeprecatedSchemas(pxr::UsdPrim& robotPrim)
 {
     if (!robotPrim)

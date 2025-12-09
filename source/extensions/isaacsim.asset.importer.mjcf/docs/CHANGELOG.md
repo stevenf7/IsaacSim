@@ -1,4 +1,8 @@
 # Changelog
+## [2.5.15] - 2025-12-07
+### Changed
+- Update description
+
 ## [2.5.14] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

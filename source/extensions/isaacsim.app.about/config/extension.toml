@@ -1,8 +1,8 @@
 [package]
-version = "2.0.12"
+version = "2.0.13"
 category = "Internal"
 title = "Isaac Sim About Window"
-description="Show application/build information."
+description = "Displays an About dialog window showing the application name, version, Kit SDK version, client library version, and a list of all loaded plugins."
 authors = ["hmazhar@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.app.about"
 keywords = ["isaac", "about"]

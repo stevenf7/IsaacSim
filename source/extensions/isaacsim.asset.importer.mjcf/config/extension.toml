@@ -1,8 +1,8 @@
 [package]
-version = "2.5.14"
+version = "2.5.15"
 category = "Simulation"
 title = "Omniverse MJCF Importer"
-description = "MJCF Importer"
+description = "Imports MuJoCo's MJCF (MuJoCo XML Format) robot description files into Omniverse USD scenes, converting meshes, joints, and physics properties for robotics simulation."
 authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
 repository="https://gitlab-master.nvidia.com/isaac/mjcf-importer-extension"
 keywords = ["mjcf", "mujoco", "importer", "isaac"]
