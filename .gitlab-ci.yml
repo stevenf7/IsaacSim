@@ -292,6 +292,19 @@ osec:sonarqube:
           - VERSION.md
           - VERSION
 
+.rules-version-changed-manual:
+    rules:
+      - if: $CI_COMMIT_TITLE !~ /^Bumped version/
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "pipeline"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        changes:
+          - VERSION.md
+          - VERSION
+        when: manual
+
+
 # ==============================================================================================================
 # Job that ensures that the MR has a JIRA ticket reference in the title
 check-jira-ticket:
@@ -2065,3 +2078,85 @@ test-linux-x86_64-isaaclab-integration-nightly:
   extends:
     - .test-nightly
     - .test-linux-x86_64-isaaclab-integration-base
+
+check-app-version-locks:
+  stage: test
+  extends:
+    - .ipp_lnx_x86_64_cpu_large
+  needs:
+    - job: build-linux-x86_64-release
+  script:
+    # Test the script that we'll run.
+    - ./repo.sh test -s check_app_version_locks
+    # Run the script to list missing extensions
+    - ./repo.sh ci check_app_version_locks
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+    # Reports for release engineers.
+    - "*.kit"
+    - "*.txt"
+    # For development/debug.
+    - source/apps/
+    - source/extensions/
+  allow_failure: true
+  rules:
+  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+
+check-extension-support-levels:
+  stage: test
+  extends:
+      - .ipp_lnx_x86_64_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
+  needs:
+    - job: build-linux-x86_64-release
+  script:
+    # Run the script to list the conflicting support levels
+    - ./repo.sh ci check_extension_support_levels
+  artifacts:
+    when: always
+    expire_in: 2 Weeks
+    paths:
+    - "*.json"
+    - "*.kit"
+    # For development/debug.
+    - source/apps/
+  allow_failure: true
+  rules:
+  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed, rules]
+  - !reference [.rules-push-manual, rules]
+
+
+generate-public-extension-mr:
+  stage: test
+  extends:
+    - .ipp_lnx_x86_64_cpu_large
+  needs:
+    - job: check-app-version-locks
+  script:
+    - mkdir -p _build/linux-x86_64/release/apps
+    - cp source/apps/isaacsim.exp.extscache.kit _build/linux-x86_64/release/apps/
+    - ./repo.sh deploy_exts
+  rules:
+  - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
+    when: never
+  - if: $RUN_BUMP_VERSION == "true"
+    when: never
+  - if: '$CI_COMMIT_BRANCH != "develop"'
+    when: never
+  - !reference [.rules-version-changed-manual, rules]
+  - !reference [.rules-push-manual, rules]

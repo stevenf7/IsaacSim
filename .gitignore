@@ -193,3 +193,10 @@ source/apps/isaacsim.etm.list.isaacsim_app_template.*
 .coveragemergerc
 coverage.xml
 cpp_coverage.xml
+
+# Check app version locks temp file
+./isaacsim.exp.extscache.kit
+./details.txt
+
+# Extension support conflicts temp file
+ext_conflicts.json
