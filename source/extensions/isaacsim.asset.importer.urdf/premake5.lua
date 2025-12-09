@@ -24,8 +24,8 @@ staticruntime("Off")
 
 cppdialect("C++17")
 
-flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "NoIncrementalLink" }
-removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
+flags { "MultiProcessorCompile", "NoPCH", "NoIncrementalLink" }
+removeflags { "UndefinedIdentifiers" }
 
 add_files("impl", "plugins")
 

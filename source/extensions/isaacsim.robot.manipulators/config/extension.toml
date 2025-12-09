@@ -1,8 +1,8 @@
 [package]
-version = "3.3.8"
+version = "3.3.9"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
-description = "Manipulators"
+description = "Provides Python classes for controlling robotic manipulators including single-arm robots, parallel grippers, and surface grippers with pick-and-place and stacking controllers."
 authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators"
 keywords = ["isaac", "manipulators"]

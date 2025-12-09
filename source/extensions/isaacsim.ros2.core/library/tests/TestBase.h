@@ -94,8 +94,8 @@ public:
         }
 
         // Get the createFactory function from the library
-        typedef isaacsim::ros2::core::Ros2Factory* (*createFactory_binding)(void);
-        createFactory_binding createFactory = factoryLoader->getSymbol<createFactory_binding>("createFactoryC");
+        using CreateFactoryBinding = isaacsim::ros2::core::Ros2Factory* (*)(void);
+        CreateFactoryBinding createFactory = factoryLoader->getSymbol<CreateFactoryBinding>("createFactoryC");
 
         if (!createFactory)
         {
@@ -161,11 +161,15 @@ public:
     bool createContext()
     {
         if (!m_factory)
+        {
             return false;
+        }
 
         m_context = m_factory->createContextHandle();
         if (!m_context)
+        {
             return false;
+        }
 
         m_context->init(0, nullptr);
         return m_context->isValid();
@@ -180,7 +184,9 @@ public:
     bool createNode(const std::string& nodeName, const std::string& nodeNamespace = "test")
     {
         if (!m_factory || !m_context)
+        {
             return false;
+        }
 
         m_node = m_factory->createNodeHandle(nodeName.c_str(), nodeNamespace.c_str(), m_context.get());
         return m_node != nullptr;

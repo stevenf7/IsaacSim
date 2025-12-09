@@ -1,4 +1,8 @@
 # Changelog
+## [0.6.3] - 2025-12-07
+### Changed
+- Fix clang tidy issues in cpp code
+
 ## [0.6.2] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

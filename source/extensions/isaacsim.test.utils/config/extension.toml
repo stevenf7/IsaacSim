@@ -1,8 +1,8 @@
 [package]
-version = "0.6.3"
+version = "0.6.4"
 category = "Internal"
 title = "Isaac Sim Test Utils"
-description = "Test utilities for Isaac Sim"
+description = "Provides testing utilities including image capture, comparison, and validation functions along with file validation helpers for automated test workflows."
 authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com", "aserranomuno@nvidia.com", ]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.test.utils"
 keywords = ["isaac", "test", "utils"]

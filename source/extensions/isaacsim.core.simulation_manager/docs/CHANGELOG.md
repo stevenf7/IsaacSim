@@ -1,4 +1,7 @@
 # Changelog
+## [1.7.2] - 2025-12-07
+### Changed
+- Run clang tidy
 
 ## [1.7.1] - 2025-12-02
 ### Changed

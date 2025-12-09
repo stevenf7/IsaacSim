@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.14] - 2025-12-07
+### Changed
+- Update description
 
 ## [1.1.13] - 2025-10-27
 ### Changed

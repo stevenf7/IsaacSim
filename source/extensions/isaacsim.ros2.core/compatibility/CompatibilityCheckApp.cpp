@@ -86,7 +86,7 @@ int main(int argc, const char* argv[])
         {
             printf("%s\n", rcutils->callSymbolWithArg<rcutils_error_string_t>("rcutils_get_error_string").str);
             rcutils->callSymbolWithArg<rcutils_error_string_t>("rcutils_reset_error");
-        } while (0);
+        } while (false);
         printf("RMW was not loaded\n");
         exit(EXIT_FAILURE);
     }

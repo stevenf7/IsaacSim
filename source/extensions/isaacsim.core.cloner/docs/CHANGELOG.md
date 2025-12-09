@@ -1,4 +1,7 @@
 # Changelog
+## [1.6.3] - 2025-12-07
+### Changed
+- Fix clang tidy issues in cpp code
 
 ## [1.6.2] - 2025-11-28
 ### Changed

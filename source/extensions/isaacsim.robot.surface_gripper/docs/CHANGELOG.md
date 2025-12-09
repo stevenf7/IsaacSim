@@ -1,4 +1,8 @@
 # Changelog
+## [3.3.6] - 2025-12-07
+### Changed
+- Fix clang tidy issues in cpp code
+
 ## [3.3.5] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

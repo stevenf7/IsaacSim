@@ -47,6 +47,7 @@ function isaacsim_build_settings()
         "_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR",
     }
     disablewarnings { "4996" }
+    buildoptions { "/WX-" }  -- Disable warnings as errors (equivalent to Linux's -Wno-error)
     -- Linux platform settings
     filter { "system:linux" }
     disablewarnings { "error=unused-function" }

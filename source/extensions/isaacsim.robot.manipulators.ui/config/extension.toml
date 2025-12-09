@@ -1,8 +1,8 @@
 [package]
-version = "2.1.24"
+version = "2.1.25"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
-description = "Manipulators"
+description = "Provides UI menus for creating OmniGraph-based robot controllers including joint position, joint velocity, and gripper control interfaces."
 authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators.ui"
 keywords = ["isaac", "manipulators", "ui"]

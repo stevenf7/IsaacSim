@@ -16,8 +16,6 @@
 local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "isaacsim/robot/wheeled_robots")
 
--- ext.group = "omnigraph"
-
 project_ext(ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.robot.wheeled_robots.plugin")

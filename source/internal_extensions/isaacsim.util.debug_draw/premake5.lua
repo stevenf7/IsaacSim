@@ -65,7 +65,7 @@ filter {}
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.util.debug_draw.plugin")
 dependson { "isaacsim.util.debug_draw.primitive_drawing", "omni.physx.plugin" }
-removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
+removeflags { "UndefinedIdentifiers" }
 
 add_files("impl", "plugins")
 add_files("ogn", ogn.nodes_path)

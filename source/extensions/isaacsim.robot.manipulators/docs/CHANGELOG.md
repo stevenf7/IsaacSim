@@ -1,4 +1,8 @@
 # Changelog
+## [3.3.9] - 2025-12-07
+### Changed
+- Update description
+
 ## [3.3.8] - 2025-11-27
 ### Changed
 - Add missing docstrings

@@ -1,8 +1,8 @@
 [package]
-version = "1.1.13"
+version = "1.1.14"
 category = "Simulation"
 title = "Benchmark"
-description = "This extension provides benchmarking utilities"
+description = "Provides sample benchmarking scenarios for testing physics, rendering, and sensor performance including camera and lidar sensor throughput measurements."
 authors = ["hmazhar@nvidia.com", "ssulkunte@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.benchmark.examples"
 keywords = ["isaac", "benchmark", "analyze"]

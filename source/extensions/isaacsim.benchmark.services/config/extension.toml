@@ -1,8 +1,8 @@
 [package]
-version = "3.3.3"
+version = "3.3.4"
 category = "Simulation"
 title = "Benchmark Services"
-description = "This extension provides benchmarking utilities"
+description = "Provides a comprehensive framework for performance benchmarking including data collection, metrics recording, and report generation for CPU, GPU, memory, and frame time analysis."
 authors = ["hmazhar@nvidia.com", "ssulkunte@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.benchmark.services"
 keywords = ["isaac", "benchmark", "analyze"]

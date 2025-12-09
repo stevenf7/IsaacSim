@@ -44,9 +44,11 @@ for _, ros_distro in ipairs(ros_distributions) do
         "rcutils",
     }
 
-    if ros_distro == "humble" then links {
-        "console_bridge",
-    } end
+    if ros_distro == "humble" then
+        links {
+            "console_bridge",
+        }
+    end
 
     filter { "system:linux" }
     disablewarnings { "error=pragmas" }

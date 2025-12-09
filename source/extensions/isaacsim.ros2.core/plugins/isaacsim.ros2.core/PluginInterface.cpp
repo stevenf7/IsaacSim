@@ -249,8 +249,8 @@ CARB_EXPORT void carbOnPluginStartup()
 
     if (g_factoryLoader)
     {
-        typedef isaacsim::ros2::core::Ros2Factory* (*createFactory_binding)(void);
-        createFactory_binding createFactory = (g_factoryLoader->getSymbol<createFactory_binding>("createFactoryC"));
+        using CreateFactoryBinding = isaacsim::ros2::core::Ros2Factory* (*)(void);
+        CreateFactoryBinding createFactory = (g_factoryLoader->getSymbol<CreateFactoryBinding>("createFactoryC"));
 
         if (createFactory)
         {
