@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.5] - 2025-12-09
+### Changed
+- Fixed sequential sphere scan randomizer example to work in script editor in sync with docs
+
 ## [1.6.4] - 2025-12-08
 ### Changed
 - Added explicit `.reset()` to events 2.0 subscribers in sync with docs examples

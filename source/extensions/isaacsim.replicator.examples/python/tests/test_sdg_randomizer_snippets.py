@@ -312,46 +312,46 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             x = np.sin(phi) * r
             return [(x * radius) + origin[0], (y * radius) + origin[1], (z * radius) + origin[2]]
 
-        assets_root_path = await get_assets_root_path_async()
-        FORKLIFT_PATH = assets_root_path + "/Isaac/Props/Forklift/forklift.usd"
-        PALLET_PATH = assets_root_path + "/Isaac/Props/Pallet/pallet.usd"
-        BIN_PATH = assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT_visual.usd"
-
-        omni.usd.get_context().new_stage()
-        stage = omni.usd.get_context().get_stage()
-
-        dome_light = UsdLux.DomeLight.Define(stage, "/World/Lights/DomeLight")
-        dome_light.GetIntensityAttr().Set(1000)
-
-        forklift_prim = stage.DefinePrim("/World/Forklift", "Xform")
-        forklift_prim.GetReferences().AddReference(FORKLIFT_PATH)
-        if not forklift_prim.GetAttribute("xformOp:translate"):
-            UsdGeom.Xformable(forklift_prim).AddTranslateOp()
-        forklift_prim.GetAttribute("xformOp:translate").Set((-4.5, -4.5, 0))
-
-        pallet_prim = stage.DefinePrim("/World/Pallet", "Xform")
-        pallet_prim.GetReferences().AddReference(PALLET_PATH)
-        if not pallet_prim.GetAttribute("xformOp:translate"):
-            UsdGeom.Xformable(pallet_prim).AddTranslateOp()
-        if not pallet_prim.GetAttribute("xformOp:rotateXYZ"):
-            UsdGeom.Xformable(pallet_prim).AddRotateXYZOp()
-
-        bin_prim = stage.DefinePrim("/World/Bin", "Xform")
-        bin_prim.GetReferences().AddReference(BIN_PATH)
-        if not bin_prim.GetAttribute("xformOp:translate"):
-            UsdGeom.Xformable(bin_prim).AddTranslateOp()
-        if not bin_prim.GetAttribute("xformOp:rotateXYZ"):
-            UsdGeom.Xformable(bin_prim).AddRotateXYZOp()
-
-        view_cam = stage.DefinePrim("/World/Camera", "Camera")
-        if not view_cam.GetAttribute("xformOp:translate"):
-            UsdGeom.Xformable(view_cam).AddTranslateOp()
-        if not view_cam.GetAttribute("xformOp:orient"):
-            UsdGeom.Xformable(view_cam).AddOrientOp()
-
         async def run_randomizations_async(
-            num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data, delay=None
+            num_frames, forklift_path, pallet_path, bin_path, dome_textures, write_data, delay=None
         ):
+            assets_root_path = await get_assets_root_path_async()
+
+            await omni.usd.get_context().new_stage_async()
+            stage = omni.usd.get_context().get_stage()
+
+            dome_light = UsdLux.DomeLight.Define(stage, "/World/Lights/DomeLight")
+            dome_light.GetIntensityAttr().Set(1000)
+
+            forklift_prim = stage.DefinePrim("/World/Forklift", "Xform")
+            forklift_prim.GetReferences().AddReference(assets_root_path + forklift_path)
+            if not forklift_prim.GetAttribute("xformOp:translate"):
+                UsdGeom.Xformable(forklift_prim).AddTranslateOp()
+            forklift_prim.GetAttribute("xformOp:translate").Set((-4.5, -4.5, 0))
+
+            pallet_prim = stage.DefinePrim("/World/Pallet", "Xform")
+            pallet_prim.GetReferences().AddReference(assets_root_path + pallet_path)
+            if not pallet_prim.GetAttribute("xformOp:translate"):
+                UsdGeom.Xformable(pallet_prim).AddTranslateOp()
+            if not pallet_prim.GetAttribute("xformOp:rotateXYZ"):
+                UsdGeom.Xformable(pallet_prim).AddRotateXYZOp()
+
+            bin_prim = stage.DefinePrim("/World/Bin", "Xform")
+            bin_prim.GetReferences().AddReference(assets_root_path + bin_path)
+            if not bin_prim.GetAttribute("xformOp:translate"):
+                UsdGeom.Xformable(bin_prim).AddTranslateOp()
+            if not bin_prim.GetAttribute("xformOp:rotateXYZ"):
+                UsdGeom.Xformable(bin_prim).AddRotateXYZOp()
+
+            view_cam = stage.DefinePrim("/World/Camera", "Camera")
+            if not view_cam.GetAttribute("xformOp:translate"):
+                UsdGeom.Xformable(view_cam).AddTranslateOp()
+            if not view_cam.GetAttribute("xformOp:orient"):
+                UsdGeom.Xformable(view_cam).AddOrientOp()
+
+            dome_textures_full = [assets_root_path + tex for tex in dome_textures]
+            textures_cycle = itertools.cycle(dome_textures_full)
+
             if write_data:
                 out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
                 print(f"Writing data to {out_dir}..")
@@ -363,8 +363,6 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 rp_persp = rep.create.render_product(persp_cam, (512, 512), name="PerspView")
                 rp_view = rep.create.render_product(view_cam, (512, 512), name="SphereView")
                 writer.attach([rp_view, rp_persp])
-
-            textures_cycle = itertools.cycle(dome_textures)
 
             bb_cache = UsdGeom.BBoxCache(time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
             pallet_size = bb_cache.ComputeWorldBound(pallet_prim).GetRange().GetSize()
@@ -436,22 +434,31 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
                 rp_persp.destroy()
                 rp_view.destroy()
 
-        num_frames = 10  # 90
-        dome_textures = [
-            assets_root_path + "/NVIDIA/Assets/Skies/Cloudy/champagne_castle_1_4k.hdr",
-            assets_root_path + "/NVIDIA/Assets/Skies/Clear/evening_road_01_4k.hdr",
-            assets_root_path + "/NVIDIA/Assets/Skies/Clear/mealie_road_4k.hdr",
-            assets_root_path + "/NVIDIA/Assets/Skies/Clear/qwantani_4k.hdr",
+        NUM_FRAMES = 90
+        FORKLIFT_PATH = "/Isaac/Props/Forklift/forklift.usd"
+        PALLET_PATH = "/Isaac/Props/Pallet/pallet.usd"
+        BIN_PATH = "/Isaac/Props/KLT_Bin/small_KLT_visual.usd"
+        DOME_TEXTURES = [
+            "/NVIDIA/Assets/Skies/Cloudy/champagne_castle_1_4k.hdr",
+            "/NVIDIA/Assets/Skies/Clear/evening_road_01_4k.hdr",
+            "/NVIDIA/Assets/Skies/Clear/mealie_road_4k.hdr",
+            "/NVIDIA/Assets/Skies/Clear/qwantani_4k.hdr",
         ]
         # asyncio.ensure_future(
-        #     run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True, delay=0.2)
+        #     run_randomizations_async(
+        #         NUM_FRAMES, FORKLIFT_PATH, PALLET_PATH, BIN_PATH, DOME_TEXTURES, write_data=True, delay=0.2
+        #     )
         # )
+
         # Test
-        await run_randomizations_async(num_frames, dome_light, dome_textures, pallet_prim, bin_prim, write_data=True)
+        test_num_frames = 4
+        await run_randomizations_async(
+            test_num_frames, FORKLIFT_PATH, PALLET_PATH, BIN_PATH, DOME_TEXTURES, write_data=True
+        )
 
         out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
         folder_contents_success = validate_folder_contents(
-            path=out_dir, expected_counts={"png": num_frames * 2}, recursive=True
+            path=out_dir, expected_counts={"png": test_num_frames * 2}, recursive=True
         )
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
