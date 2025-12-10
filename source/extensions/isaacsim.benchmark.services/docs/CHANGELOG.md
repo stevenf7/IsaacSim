@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.0] - 2025-12-09
+### Changed
+- Converted log statements to use logger for independent visibility control
+
 ## [3.3.5] - 2025-12-09
 ### Added
 - Add error handling if set_phase() is called without a matching store_measurements()

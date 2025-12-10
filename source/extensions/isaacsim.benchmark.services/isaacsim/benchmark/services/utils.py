@@ -16,6 +16,7 @@ import asyncio
 import dataclasses
 import functools
 import inspect
+import logging
 import os
 import platform
 import stat
@@ -33,6 +34,24 @@ import omni.kit.app
 
 original_persistent_settings = {}
 settings_interface = None
+
+logger = logging.getLogger(__name__)
+
+
+def set_up_logging(name) -> logging.Logger:
+    """Set up logger."""
+    fmt = "{asctime} [{relativeCreated:,.0f}ms] [{levelname}] [{name}] {message}"
+    datfmt = "%Y-%m-%d %H:%M:%S"
+    style = "{"
+    formatter = logging.Formatter(fmt, datfmt, style)
+    formatter.converter = time.gmtime
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.handlers = [stdout_handler]
+    logger.propagate = False
+    logger.setLevel(logging.INFO)
+    return logger
 
 
 def set_persistent_setting(name, value, type):
@@ -71,7 +90,7 @@ async def stage_event() -> int:
     result = await omni.usd.get_context().next_stage_event_async()
     event, _ = result
     event = int(event)
-    carb.log_info(f"*** omni.kit.tests.basic_validation: stage_event() -> ({generate_event_map()[event]}, {_})")
+    logger.info(f"*** omni.kit.tests.basic_validation: stage_event() -> ({generate_event_map()[event]}, {_})")
     return event
 
 
@@ -88,7 +107,7 @@ async def capture_next_frame(app, capture_file_path: str, timeout_sec: float = 2
         import omni.kit.viewport_legacy
         import omni.renderer_capture
     except ImportError as ie:
-        carb.log_error(f"*** screenshot: capture_next_frame: can't load {ie}")
+        logger.error(f"*** screenshot: capture_next_frame: can't load {ie}")
 
     _renderer = omni.renderer_capture.acquire_renderer_capture_interface()
     _viewport_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
@@ -123,7 +142,7 @@ async def load_stage(stage_path: str, syncloads: bool, num_assets_loaded: int = 
 
     start = time.time()
     success, explanation = await omni.usd.get_context().open_stage_async(stage_path)
-    carb.log_info(f"*** omni.kit.tests.basic_validation: Initial stage load success: {success}")
+    logger.info(f"*** omni.kit.tests.basic_validation: Initial stage load success: {success}")
     if not success:
         raise RuntimeError(explanation)
 
@@ -136,20 +155,20 @@ async def load_stage(stage_path: str, syncloads: bool, num_assets_loaded: int = 
 
     if required_assets_loaded == 0:
         load_time = time.time() - start
-        carb.log_info("*** omni.kit.tests.basic_validation: Not waiting for ASSETS LOADED at all, stage load complete.")
+        logger.info("*** omni.kit.tests.basic_validation: Not waiting for ASSETS LOADED at all, stage load complete.")
         return load_time
 
-    carb.log_info(f"*** omni.kit.tests.basic_validation: Waiting for {required_assets_loaded} ASSETS LOADED event(s)")
+    logger.info(f"*** omni.kit.tests.basic_validation: Waiting for {required_assets_loaded} ASSETS LOADED event(s)")
     while True:
         event = await stage_event()
         # TODO: compare to actual enum value when Kit fixes its return types
         if event == int(omni.usd.StageEventType.ASSETS_LOADED):
             assets_loaded_count += 1
-            carb.log_info(f"*** omni.kit.tests.basic_validation: Received ASSETS_LOADED #{assets_loaded_count}")
+            logger.info(f"*** omni.kit.tests.basic_validation: Received ASSETS_LOADED #{assets_loaded_count}")
             # The user can specify how many assets_loaded to wait for in async mode
             if assets_loaded_count < required_assets_loaded:
                 continue
-            carb.log_info(
+            logger.info(
                 f"*** omni.kit.tests.basic_validation: Met threshold of {required_assets_loaded}, all assets loaded"
             )
             break
@@ -245,7 +264,7 @@ def get_calling_test_id() -> str:
 def ensure_dir(file_path: Union[str, Path]) -> None:
     """Creates directory if it doesn't exist."""
     if not os.path.exists(file_path):
-        carb.log_info(f"Creating dir {file_path}")
+        logger.info(f"Creating dir {file_path}")
         os.makedirs(file_path)
 
 
@@ -271,9 +290,9 @@ async def wait_until_stage_is_fully_loaded_async(max_frames=10, frametime_thresh
         start_time = time.time()
         await omni.kit.app.get_app().next_update_async()
         elapsed_time = time.time() - start_time
-        carb.log_info(f"Frame {i} frametime: {elapsed_time}")
+        logger.info(f"Frame {i} frametime: {elapsed_time}")
         if elapsed_time < frametime_threshold or elapsed_time * time_ratio_treshold < prev_frametime:
-            carb.log_info(f"Stage fully loaded at frame {i}, last frametime: {elapsed_time}")
+            logger.info(f"Stage fully loaded at frame {i}, last frametime: {elapsed_time}")
             break
         prev_frametime = elapsed_time
 
@@ -288,8 +307,8 @@ def wait_until_stage_is_fully_loaded(max_frames=10, frametime_threshold=0.1, tim
         start_time = time.time()
         omni.kit.app.get_app().update()
         elapsed_time = time.time() - start_time
-        carb.log_info(f"Frame {i} frametime: {elapsed_time}")
+        logger.info(f"Frame {i} frametime: {elapsed_time}")
         if elapsed_time < frametime_threshold or elapsed_time * time_ratio_treshold < prev_frametime:
-            carb.log_info(f"Stage fully loaded at frame {i}, last frametime: {elapsed_time}")
+            logger.info(f"Stage fully loaded at frame {i}, last frametime: {elapsed_time}")
             break
         prev_frametime = elapsed_time

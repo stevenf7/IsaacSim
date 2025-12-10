@@ -20,6 +20,9 @@ from typing import List, Optional, Tuple
 import carb
 import omni.kit.test
 import omni.physics
+from isaacsim.benchmark.services import utils
+
+logger = utils.set_up_logging(__name__)
 
 
 def get_last_gpu_time_ms(
@@ -67,14 +70,14 @@ class IsaacUpdateFrametimeCollector:
 
                 self.hydra_engine_stats = HydraEngineStats(usd_context_name, hydra_engine)
             except Exception as e:
-                carb.log_warn(f"Failed to initialize HydraEngineStats, GPU frametimes will not be measured: {e}")
+                logger.warning(f"Failed to initialize HydraEngineStats, GPU frametimes will not be measured: {e}")
                 self.hydra_engine_stats = None
 
         try:
             self.__physics_benchmarks_iface = omni.physics.core.get_physics_benchmarks_interface()
         except:
             self.__physics_benchmarks_iface = None
-            carb.log_warn("IPhysicsBenchmarks interface not loaded, physics frametimes will not be measured")
+            logger.warning("IPhysicsBenchmarks interface not loaded, physics frametimes will not be measured")
 
         self.app_frametimes_ms: List[float] = []
         self.gpu_frametimes_ms: List[float] = []
