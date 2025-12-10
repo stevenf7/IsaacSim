@@ -497,6 +497,7 @@ inventory.includes.all = [
     "exts/isaacsim.robot_motion.lula",
     "exts/isaacsim.robot_motion.lula_test_widget",
     "exts/isaacsim.robot_motion.motion_generation",
+    "exts/isaacsim.robot_motion.motion_generation.tutorials",
 ]
 
 [isaacsim-robot-setup]
