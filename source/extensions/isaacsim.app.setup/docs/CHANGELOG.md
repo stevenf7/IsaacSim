@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2025-12-10
+### Changed
+- Add wait for viewport to be ready before printing app ready status
+
 ## [1.7.0] - 2025-12-08
 ### Changed
 - Change startup behavior so that app ready status is delayed until after the app has started
