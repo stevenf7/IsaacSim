@@ -146,6 +146,9 @@ class JSONFileMetrics(MetricsBackendInterface):
             self._execution_environment.add_metrics(test_name, exec_metrics)
 
     def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False) -> None:
+        if not self.data:
+            carb.log_warn("No test data to write. Skipping metrics file generation.")
+            return
 
         # Append test name to measurement name as OVAT needs to uniquely identify
         for test_phase in self.data:
@@ -270,6 +273,10 @@ class OmniPerfKPIFile(MetricsBackendInterface):
             metrics_output_folder (str): Output folder in which metrics file will be stored.
             randomize_filename_prefix (bool, optional): True to randomize filename prefix. Defaults to False.
         """
+        if not self._test_phases:
+            carb.log_warn("No test phases to write. Skipping metrics file generation.")
+            return
+
         workflow_data = {}
         app_version = get_version()
         workflow_data["App Info"] = [app_version[0], app_version[1], app_version[-1]]
@@ -277,6 +284,7 @@ class OmniPerfKPIFile(MetricsBackendInterface):
 
         workflow_data["Kit"] = utils.get_kit_version_branch()[2]  # get kit version
 
+        test_name = None
         for test_phase in self._test_phases:
             # Retrieve useful metadata from test_phase
             test_name = test_phase.get_metadata_field("workflow_name")
