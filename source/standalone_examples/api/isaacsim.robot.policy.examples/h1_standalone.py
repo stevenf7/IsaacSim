@@ -41,7 +41,7 @@ parser.add_argument(
 )
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 print(f"Number of robots: {args.num_robots}")
 print(f"Using device: {args.device}")
 

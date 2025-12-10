@@ -35,7 +35,7 @@ torch = import_module("torch")
 parser = argparse.ArgumentParser(description="Select simulation device.")
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 print(f"Using device: {args.device}")
 
 
