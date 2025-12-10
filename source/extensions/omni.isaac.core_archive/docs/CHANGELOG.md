@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.0] - 2025-12-09
+### Changed
+- Update to kiwisolver-1.4.5
+
 ## [5.0.0] - 2025-11-14
 ### Changed
 - Removed numba and gunicorn from dependencies
