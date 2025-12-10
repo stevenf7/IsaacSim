@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.14.0] - 2025-12-08
+### Changed
+- Change startup behavior so that app ready status is delayed until after the app has started
+
 ## [2.13.1] - 2025-11-27
 ### Changed
 - Add missing docstrings

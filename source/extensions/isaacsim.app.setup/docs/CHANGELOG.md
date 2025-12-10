@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.0] - 2025-12-08
+### Changed
+- Change startup behavior so that app ready status is delayed until after the app has started
+- Remove unused imports
+
 ## [1.6.2] - 2025-10-31
 ### Changed
 - Remove unused omni.pip.cloud from test dependencies

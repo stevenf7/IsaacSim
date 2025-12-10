@@ -289,8 +289,7 @@ class SimulationApp:
         self.reset_render_settings()
 
         self._app.print_and_log("Simulation App Starting")
-
-        self._app.update()
+        self._update_without_ready()
 
         self.open_usd = self.config.get("open_usd")
         if self.open_usd is not None:
@@ -304,7 +303,7 @@ class SimulationApp:
             carb.log_info("SimulationApp.__init__: Creating new stage")
             create_new_stage()
         # Update the app
-        self._app.update()
+        self._update_without_ready()
         self._prepare_ui()
 
         # Increase hang detection timeout
@@ -356,6 +355,7 @@ class SimulationApp:
             benchmark.store_measurements()
             benchmark.stop()
 
+        self.update()  # This app update triggers app ready status.
         builtins.ISAACSIM_APP_LAUNCHED = True
 
     def __del__(self):
@@ -610,7 +610,7 @@ class SimulationApp:
         try:
             import omni.ui
 
-            self._app.update()
+            self._update_without_ready()
             content = omni.ui.Workspace.get_window("Content")
             console = omni.ui.Workspace.get_window("Console")
             samples = omni.ui.Workspace.get_window("Samples")
@@ -625,8 +625,18 @@ class SimulationApp:
         except:
             pass
 
-        self._app.update()
+        self._update_without_ready()
         carb.log_info("SimulationApp._prepare_ui: UI setup completed")
+
+    def _update_without_ready(self) -> None:
+        """Update the application without waiting for the app to be ready.
+
+        This is a convenience function that updates the application without waiting for the app to be ready.
+        """
+        app = omni.kit.app.get_app()
+        if not app.is_app_ready():
+            app.delay_app_ready("IsaacSim")
+        self._app.update()
 
     def _wait_for_viewport(self) -> None:
         MAX_FRAMES = 60
@@ -645,7 +655,7 @@ class SimulationApp:
 
             while viewport_api.frame_info.get("viewport_handle", None) is None and frame_count < MAX_FRAMES:
                 carb.log_info(f"SimulationApp._wait_for_viewport: Waiting for viewport... frame {frame_count}")
-                self._app.update()
+                self._update_without_ready()
                 # Sleep to reduce the overall number of frames it takes for the renderer to render its first frame
                 time.sleep(0.02)
                 frame_count += 1
@@ -659,7 +669,7 @@ class SimulationApp:
         if frame_count < DOCKING_FRAMES:
             carb.log_info("SimulationApp._wait_for_viewport: Running final update frames for docking")
             for _ in range(DOCKING_FRAMES):
-                self._app.update()
+                self._update_without_ready()
         carb.log_info("SimulationApp._wait_for_viewport: Viewport wait completed")
 
     ### Public methods
