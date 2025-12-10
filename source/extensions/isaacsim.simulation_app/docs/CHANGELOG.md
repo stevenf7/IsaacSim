@@ -4,6 +4,10 @@
 ### Changed
 - Change startup behavior so that app ready status is delayed until after the app has started
 
+## [2.13.2] - 2025-12-09
+### Changed
+- Increased MAX_FRAMES in _wait_for_viewport for Windows so NEW_FRAME event fires when expected
+
 ## [2.13.1] - 2025-11-27
 ### Changed
 - Add missing docstrings

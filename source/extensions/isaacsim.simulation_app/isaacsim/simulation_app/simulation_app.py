@@ -639,7 +639,7 @@ class SimulationApp:
         self._app.update()
 
     def _wait_for_viewport(self) -> None:
-        MAX_FRAMES = 60
+        MAX_FRAMES = 120 if os.name == "nt" else 60
         DOCKING_FRAMES = 10
         frame_count = 0
         carb.log_info("SimulationApp._wait_for_viewport: Starting viewport wait")
