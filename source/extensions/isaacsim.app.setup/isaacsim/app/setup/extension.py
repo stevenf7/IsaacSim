@@ -20,13 +20,10 @@ from pathlib import Path
 
 import carb.settings
 import carb.tokens
-import omni.appwindow
 import omni.client
 import omni.ext
 import omni.kit.app
-import omni.kit.commands
 import omni.kit.stage_templates as stage_templates
-import omni.kit.ui
 import omni.ui as ui
 from isaacsim.core.version import get_version
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, build_submenu_dict
@@ -80,15 +77,10 @@ class CreateSetupExtension(omni.ext.IExt):
         omni.client.set_hang_detection_time_ms(10000)
 
     async def __new_stage(self):
-
-        from omni.kit.viewport.utility import get_active_viewport, next_viewport_frame_async
-
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
         if omni.usd.get_context().can_open_stage():
             stage_templates.new_stage(template=None)
-        await omni.kit.app.get_app().next_update_async()
-        await next_viewport_frame_async(get_active_viewport())
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
 
         # Let users know when app is ready for use and live-streaming
         omni.kit.app.get_app().print_and_log(f"{self.app_title} App is loaded.")
@@ -110,13 +102,12 @@ class CreateSetupExtension(omni.ext.IExt):
             benchmark.store_measurements()
             benchmark.stop()
 
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
 
     def _start_app(self, app_id, console=True, custom_args=None):
         """start another Kit app with the same settings"""
         import platform
         import subprocess
-        import sys
 
         kit_exe_path = os.path.join(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${kit}")), "kit")
         if sys.platform == "win32":
@@ -150,7 +141,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self._start_app("isaacsim.exp.uidoc.kit")
 
     async def __dock_windows(self):
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
 
         assets = ui.Workspace.get_window("Isaac Sim Assets")
         content = ui.Workspace.get_window("Content")
@@ -158,14 +149,14 @@ class CreateSetupExtension(omni.ext.IExt):
         layer = ui.Workspace.get_window("Layer")
         console = ui.Workspace.get_window("Console")
 
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
         if layer:
             layer.dock_order = 1
         if stage:
             stage.dock_order = 0
             stage.focus()
 
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
         if console:
             console.dock_order = 2
         if content:
@@ -175,7 +166,7 @@ class CreateSetupExtension(omni.ext.IExt):
             assets.focus()
 
     async def __property_window(self):
-        await omni.kit.app.get_app().next_update_async()
+        await self.__update_without_ready()
         import omni.kit.window.property as property_window_ext
 
         property_window = property_window_ext.get_window()
@@ -254,9 +245,9 @@ StartupWMClass=IsaacSim"""
         try:
             ros_bridge_name = self._settings.get("isaac/startup/ros_bridge_extension")
             if ros_bridge_name is not None and len(ros_bridge_name):
-                await omni.kit.app.get_app().next_update_async()
+                await self.__update_without_ready()
                 self._ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
-                await omni.kit.app.get_app().next_update_async()
+                await self.__update_without_ready()
         except Exception as e:
             carb.log_warn(f"isaacsim.app.setup shutdown before ros bridge enabled")
 
@@ -265,8 +256,14 @@ StartupWMClass=IsaacSim"""
         try:
             ros_sim_control_enabled = self._settings.get("isaac/startup/ros_sim_control_extension")
             if ros_sim_control_enabled:
-                await omni.kit.app.get_app().next_update_async()
+                await self.__update_without_ready()
                 self._ext_manager.set_extension_enabled_immediate("isaacsim.ros2.sim_control", True)
-                await omni.kit.app.get_app().next_update_async()
+                await self.__update_without_ready()
         except Exception as e:
             carb.log_warn(f"isaacsim.app.setup shutdown before sim control enabled")
+
+    async def __update_without_ready(self):
+        app = omni.kit.app.get_app()
+        if not app.is_app_ready():
+            app.delay_app_ready("IsaacSim")
+        await app.next_update_async()
