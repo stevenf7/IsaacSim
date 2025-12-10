@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.3] - 2025-12-10
+### Fixed
+- Fixed Events 2.0 assets loaded and timeline play / stop events
+
 ## [2.1.2] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

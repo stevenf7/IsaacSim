@@ -113,6 +113,16 @@ class Extension(omni.ext.IExt):
                 on_event=self._on_stage_closed,
                 observer_name="isaacsim.robot_setup.grasp_editor.Extension._on_stage_closed",
             )
+            self._stage_event_sub_assets_loaded = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.ASSETS_LOADED),
+                on_event=self._on_assets_loaded,
+                observer_name="isaacsim.robot_setup.grasp_editor.Extension._on_assets_loaded",
+            )
+            self._stage_event_sub_sim_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.SIMULATION_STOP_PLAY),
+                on_event=self._on_simulation_stop_play,
+                observer_name="isaacsim.robot_setup.grasp_editor.Extension._on_simulation_stop_play",
+            )
             self._timeline_event_sub_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
                 event_name=omni.timeline.GLOBAL_EVENT_PLAY,
                 on_event=self._on_timeline_play,
@@ -129,6 +139,8 @@ class Extension(omni.ext.IExt):
             self._usd_context = None
             self._stage_event_sub_opened = None
             self._stage_event_sub_closed = None
+            self._stage_event_sub_assets_loaded = None
+            self._stage_event_sub_sim_stop = None
             self._timeline_event_sub_play = None
             self._timeline_event_sub_stop = None
             self.ui_builder.cleanup()
@@ -179,13 +191,17 @@ class Extension(omni.ext.IExt):
         # stage was opened, cleanup
         self._physics_subscription = None
         self.ui_builder.cleanup()
-        self.ui_builder.on_stage_event(event)
 
     def _on_stage_closed(self, event):
         # stage was closed, cleanup
         self._physics_subscription = None
         self.ui_builder.cleanup()
-        self.ui_builder.on_stage_event(event)
+
+    def _on_assets_loaded(self, event):
+        self.ui_builder.on_assets_loaded()
+
+    def _on_simulation_stop_play(self, event):
+        self.ui_builder.on_simulation_stop_play()
 
     def _build_extension_ui(self):
         # Call user function for building UI
