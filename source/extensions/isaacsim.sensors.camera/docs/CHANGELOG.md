@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.3] - 2025-12-10
+### Fixed
+- Removed `do_array_copy=True` workaround in tiled sensor (fixed upstream in replicator.core 1.12.32 by changing strides type from int32 to int64 to avoid warp array arithemtic when getting annotator data)
+
 ## [1.5.2] - 2025-12-06
 ### Changed
 - Added validation checks and warmup warnings to camera sensor data methods to handle unavailable data

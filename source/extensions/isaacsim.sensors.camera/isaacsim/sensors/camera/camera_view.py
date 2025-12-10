@@ -244,14 +244,16 @@ class CameraView(XFormPrim):
                 )
             # get annotator
             if annotator_type == "rgba" or annotator_type == "rgb":
-                self._annotators["rgba"] = rep.AnnotatorRegistry.get_annotator("rgb", device="cuda", do_array_copy=True)
+                self._annotators["rgba"] = rep.AnnotatorRegistry.get_annotator(
+                    "rgb", device="cuda", do_array_copy=False
+                )
             elif annotator_type == "depth" or annotator_type == "distance_to_image_plane":
                 self._annotators["distance_to_image_plane"] = rep.AnnotatorRegistry.get_annotator(
-                    "distance_to_image_plane", device="cuda", do_array_copy=True
+                    "distance_to_image_plane", device="cuda", do_array_copy=False
                 )
             else:
                 self._annotators[annotator_type] = rep.AnnotatorRegistry.get_annotator(
-                    annotator_type, device="cuda", do_array_copy=True
+                    annotator_type, device="cuda", do_array_copy=False
                 )
         # attach the annotator to the render product
         for annotator in self._annotators.values():
