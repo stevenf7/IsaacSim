@@ -19,6 +19,7 @@ import re
 from itertools import chain
 
 import numpy as np
+import omni.client
 import omni.kit.app
 import omni.kit.commands
 import omni.physics.core
@@ -47,6 +48,19 @@ def add_colliders(root_prim: Usd.Prim, approximation_type: str = "convexHull") -
             else:
                 mesh_collision_api = UsdPhysics.MeshCollisionAPI(desc_prim)
             mesh_collision_api.CreateApproximationAttr().Set(approximation_type)
+
+
+def add_rigid_body(prim: Usd.Prim, disable_gravity: bool = False, ensure_mass: bool = False) -> None:
+    """Apply rigid body physics, optionally ensuring a valid mass property exists (defaults to 1.0 kg)."""
+    rep.functional.physics.apply_rigid_body(prim, disableGravity=disable_gravity)
+    if not ensure_mass:
+        return
+    if not prim.HasAPI(UsdPhysics.MassAPI):
+        UsdPhysics.MassAPI.Apply(prim)
+    mass_api = UsdPhysics.MassAPI(prim)
+    mass_attr = mass_api.GetMassAttr()
+    if not mass_attr or mass_attr.Get() is None or mass_attr.Get() <= 0:
+        mass_api.CreateMassAttr(1.0)
 
 
 def get_random_pose_on_sphere(
@@ -125,17 +139,13 @@ def get_usd_paths_from_folder(
         usd_paths = []
     skip_keywords = skip_keywords or []
 
-    # Make sure the omni.client extension is enabled
-    import omni.kit.app
-
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     if not ext_manager.is_extension_enabled("omni.client"):
         ext_manager.set_extension_enabled_immediate("omni.client", True)
-    import omni.client
 
     result, entries = omni.client.list(folder_path)
     if result != omni.client.Result.OK:
-        print(f"[SDG-Infinigen] Could not list assets in path: {folder_path}")
+        print(f"[SDG] Error: Could not list assets in path: {folder_path}")
         return usd_paths
 
     for entry in entries:
@@ -156,6 +166,21 @@ def get_usd_paths(
     files: list[str] = None, folders: list[str] = None, skip_folder_keywords: list[str] = None
 ) -> list[str]:
     """Retrieve USD paths from specified files and folders, optionally filtering out specific folder keywords."""
+
+    def resolve_path(path: str, assets_root: str, is_folder: bool = False) -> str:
+        """Resolve path to full URL: remote URLs and existing local paths used as-is, otherwise prefixed with assets_root."""
+        # Remote URLs - use as-is
+        if path.startswith(("omniverse://", "http://", "https://", "file://")):
+            return path
+        # Windows absolute path (e.g., C:\path or C:/path) - use as-is
+        if len(path) > 2 and path[1] == ":" and path[2] in ("/", "\\"):
+            return path
+        # Local absolute path that exists - use as-is
+        if path.startswith("/") and (os.path.isfile(path) or (is_folder and os.path.isdir(path))):
+            return path
+        # Nucleus relative path - prepend assets root
+        return assets_root + path
+
     files = files or []
     folders = folders or []
     skip_folder_keywords = skip_folder_keywords or []
@@ -164,20 +189,11 @@ def get_usd_paths(
     env_paths = []
 
     for file_path in files:
-        file_path = (
-            file_path
-            if file_path.startswith(("omniverse://", "http://", "https://", "file://"))
-            else assets_root_path + file_path
-        )
-        env_paths.append(file_path)
+        env_paths.append(resolve_path(file_path, assets_root_path, is_folder=False))
 
     for folder_path in folders:
-        folder_path = (
-            folder_path
-            if folder_path.startswith(("omniverse://", "http://", "https://", "file://"))
-            else assets_root_path + folder_path
-        )
-        env_paths.extend(get_usd_paths_from_folder(folder_path, recursive=True, skip_keywords=skip_folder_keywords))
+        resolved_folder = resolve_path(folder_path, assets_root_path, is_folder=True)
+        env_paths.extend(get_usd_paths_from_folder(resolved_folder, recursive=True, skip_keywords=skip_folder_keywords))
 
     return env_paths
 
@@ -257,7 +273,7 @@ def setup_env(root_path: str | None = None, approximation_type: str = "none", hi
     if table_prim is not None:
         add_colliders(table_prim, approximation_type="boundingCube")
     else:
-        print("[SDG-Infinigen] Could not find dining table prim in the environment.")
+        print("[SDG] Warning: Could not find dining table prim in the environment")
 
 
 def create_shape_distractors(
@@ -280,7 +296,7 @@ def create_shape_distractors(
         prim_path = omni.usd.get_stage_next_free_path(stage, f"{root_path}/{name_prefix}{rand_shape}", False)
         prim = stage.DefinePrim(prim_path, rand_shape.capitalize())
         add_colliders(prim)
-        rep.functional.physics.apply_rigid_body(prim, disableGravity=disable_gravity)
+        add_rigid_body(prim, disable_gravity=disable_gravity, ensure_mass=True)
         (floating_shapes if disable_gravity else falling_shapes).append(prim)
     return floating_shapes, falling_shapes
 
@@ -317,10 +333,10 @@ def create_mesh_distractors(
         try:
             prim = add_reference_to_stage(usd_path=rand_mesh_url, prim_path=prim_path)
         except Exception as e:
-            print(f"[SDG-Infinigen] Failed to load mesh distractor reference {rand_mesh_url} with exception: {e}")
+            print(f"[SDG] Error: Failed to load mesh distractor '{rand_mesh_url}': {e}")
             continue
         add_colliders(prim)
-        rep.functional.physics.apply_rigid_body(prim, disableGravity=disable_gravity)
+        add_rigid_body(prim, disable_gravity=disable_gravity, ensure_mass=True)
         (floating_meshes if disable_gravity else falling_meshes).append(prim)
     return floating_meshes, falling_meshes
 
@@ -370,10 +386,10 @@ def create_auto_labeled_assets(
         try:
             prim = add_reference_to_stage(usd_path=asset_url, prim_path=prim_path)
         except Exception as e:
-            print(f"[SDG-Infinigen] Failed to load mesh distractor reference {asset_url} with exception: {e}")
+            print(f"[SDG] Error: Failed to load asset '{asset_url}': {e}")
             continue
         add_colliders(prim)
-        rep.functional.physics.apply_rigid_body(prim, disableGravity=disable_gravity)
+        add_rigid_body(prim, disable_gravity=disable_gravity, ensure_mass=True)
         remove_labels(prim, include_descendants=True)
         add_labels(prim, labels=[label], instance_name="class")
         (floating_assets if disable_gravity else falling_assets).append(prim)
@@ -431,7 +447,7 @@ def create_labeled_assets(
 
         prim = add_reference_to_stage(usd_path=asset_url, prim_path=prim_path)
         add_colliders(prim)
-        rep.functional.physics.apply_rigid_body(prim, disableGravity=disable_gravity)
+        add_rigid_body(prim, disable_gravity=disable_gravity, ensure_mass=True)
         remove_labels(prim, include_descendants=True)
         add_labels(prim, labels=[label], instance_name="class")
         (floating_assets if disable_gravity else falling_assets).append(prim)
@@ -480,14 +496,14 @@ def get_matching_prim_location(match_string, root_path=None):
         match_strings=[match_string], root_path=root_path, prim_type="Xform", first_match_only=True
     )
     if prim is None:
-        print(f"[SDG-Infinigen] Could not find matching prim, returning (0, 0, 0)")
+        print("[SDG] Warning: Could not find matching prim, returning (0, 0, 0)")
         return (0, 0, 0)
     if prim.HasAttribute("xformOp:translate"):
         return prim.GetAttribute("xformOp:translate").Get()
     elif prim.HasAttribute("xformOp:transform"):
         return prim.GetAttribute("xformOp:transform").Get().ExtractTranslation()
     else:
-        print(f"[SDG-Infinigen] Could not find location attribute for '{prim.GetPath()}', returning (0, 0, 0)")
+        print(f"[SDG] Warning: Could not find location attribute for '{prim.GetPath()}', returning (0, 0, 0)")
         return (0, 0, 0)
 
 
@@ -633,13 +649,13 @@ def setup_writer(config: dict) -> None:
     """Setup a writer based on configuration settings, initializing with specified arguments."""
     writer_type = config.get("type", None)
     if writer_type is None:
-        print("[Infinigen-SDG] No writer type specified. No writer will be used.")
+        print("[SDG] Warning: No writer type specified, skipping writer setup")
         return None
 
     try:
         writer = rep.writers.get(writer_type)
     except Exception as e:
-        print(f"[Infinigen-SDG] Writer type '{writer_type}' not found. No writer will be used. Error: {e}")
+        print(f"[SDG] Error: Writer type '{writer_type}' not found: {e}")
         return None
 
     writer_kwargs = config.get("kwargs", {})
