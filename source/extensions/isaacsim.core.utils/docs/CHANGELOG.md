@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.1] - 2025-12-09
+### Changed
+- set_camera_prim_path now also applies the OmniRtxCameraExposureAPI_1 schema to the camera prim
+- set_camera_prim_path now also sets the exposure:time attribute to 0.02
+
 ## [4.0.0] - 2025-11-28
 ### Removed
 - Removed deprecated `nucleus` module (use `isaacsim.storage.native` instead):
