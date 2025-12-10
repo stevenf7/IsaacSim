@@ -1,4 +1,10 @@
 # Changelog
+## [3.3.5] - 2025-12-09
+### Added
+- Add error handling if set_phase() is called without a matching store_measurements()
+### Removed
+- Removed stop_recording_runtime arg to benchmark.store_measurements()
+
 ## [3.3.4] - 2025-12-07
 ### Changed
 - Update description

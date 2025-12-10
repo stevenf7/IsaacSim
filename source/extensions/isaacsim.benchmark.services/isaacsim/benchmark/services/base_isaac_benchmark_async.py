@@ -115,6 +115,13 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
+        if not self._test_phases:
+            carb.log_warn(
+                "No test phases collected. After set_phase(), store_measurements() should be called. "
+                "No metrics will be written."
+            )
+            return
+
         carb.log_info("Writing metrics data.")
         carb.log_info(f"Metrics type = {type(self._metrics).__name__}")
         # Finalize by adding all test phases to the backend metrics
@@ -157,16 +164,12 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         if start_recording_runtime:
             self.runtime_recorder.start_time()
 
-    async def store_measurements(self, stop_recording_time: bool = True) -> None:
+    async def store_measurements(self) -> None:
         """Stores measurements, metadata, and artifacts collected by all recorders during the previous phase.
-        Optionally, ends frametime and runtime collection.
-
-        Args:
-            stop_recording_time (bool): False to not stop recording runtime and frametime at end of phase. Default True.
+        Ends frametime and runtime collection.
         """
-        if stop_recording_time:
-            self.frametime_recorder.stop_collecting()
-            self.runtime_recorder.stop_time()
+        self.frametime_recorder.stop_collecting()
+        self.runtime_recorder.stop_time()
 
         if not self._metadata:
             self._metadata = [measurements.StringMetadata(name="workflow_name", data=self.benchmark_name)]

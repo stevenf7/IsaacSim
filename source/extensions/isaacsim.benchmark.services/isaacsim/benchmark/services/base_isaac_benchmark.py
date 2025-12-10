@@ -156,6 +156,14 @@ class BaseIsaacBenchmark:
             "/exts/isaacsim.benchmark.services/metrics/randomize_filename_prefix"
         )
         carb.log_info("Stopping")
+
+        if not self._test_phases:
+            carb.log_warn(
+                "No test phases collected. After set_phase(), store_measurements() should be called. "
+                "No metrics will be written."
+            )
+            return
+
         carb.log_info("Writing metrics data.")
         carb.log_info(f"Metrics type = {type(self._metrics).__name__}")
         # Finalize by adding all test phases to the backend metrics
@@ -183,7 +191,7 @@ class BaseIsaacBenchmark:
     def set_phase(
         self, phase: str, start_recording_frametime: bool = True, start_recording_runtime: bool = True
     ) -> None:
-        """Sets benchmarking phase. Turns on frametime and runtime collection.
+        """Sets benchmarking phase. Turns on frametime and runtime collection. Should be followed by a call to store_measurements() before the next phase is set or benchmark is stopped.
 
         Args:
             phase (str): Name of phase, used in output.
@@ -197,16 +205,12 @@ class BaseIsaacBenchmark:
         if start_recording_runtime:
             self.runtime_recorder.start_time()
 
-    def store_measurements(self, stop_recording_time: bool = True) -> None:
+    def store_measurements(self) -> None:
         """Stores measurements, metadata, and artifacts collected by all recorders during the previous phase.
-        Optionally, ends frametime and runtime collection.
-
-        Args:
-            stop_recording_time (bool): False to not stop recording runtime and frametime at end of phase. Default True.
+        Ends frametime and runtime collection.
         """
-        if stop_recording_time:
-            self.frametime_recorder.stop_collecting()
-            self.runtime_recorder.stop_time()
+        self.frametime_recorder.stop_collecting()
+        self.runtime_recorder.stop_time()
 
         # Retrieve metrics, metadata, and artifacts from the recorders
         run_measurements = []
