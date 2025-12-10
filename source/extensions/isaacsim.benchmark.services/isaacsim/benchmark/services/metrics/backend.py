@@ -32,6 +32,8 @@ from .. import utils
 from ..execution import TestExecutionEnvironmentInterface
 from . import measurements
 
+logger = utils.set_up_logging(__name__)
+
 
 class MetricsBackendInterface:
     def add_metrics(self, test_phase: measurements.TestPhase) -> None:
@@ -57,7 +59,7 @@ class KitGenericTelemetry(MetricsBackendInterface):
         self._temp_dir = tempfile.mkdtemp(prefix="kit_telemetry_")
         privacy_toml_path: str = str(Path(self._temp_dir) / "privacy.toml")
 
-        carb.log_info(f"Creating privacy.toml in temporary directory: {privacy_toml_path}")
+        logger.info(f"Creating privacy.toml in temporary directory: {privacy_toml_path}")
         data = {
             "privacy": {
                 "performance": True,
@@ -78,7 +80,7 @@ class KitGenericTelemetry(MetricsBackendInterface):
         settings = carb.settings.get_settings()
         if settings:
             settings.set("/structuredLog/privacySettingsFile", privacy_toml_path)
-            carb.log_info(f"Set /structuredLog/privacySettingsFile to {privacy_toml_path}")
+            logger.info(f"Set /structuredLog/privacySettingsFile to {privacy_toml_path}")
 
         # Force reload from specified location
         struct_log_settings = omni.structuredlog.IStructuredLogSettings()
@@ -90,9 +92,9 @@ class KitGenericTelemetry(MetricsBackendInterface):
         if hasattr(self, "_temp_dir") and os.path.exists(self._temp_dir):
             try:
                 shutil.rmtree(self._temp_dir)
-                carb.log_info(f"Removed temporary telemetry directory: {self._temp_dir}")
+                logger.info(f"Removed temporary telemetry directory: {self._temp_dir}")
             except Exception as e:
-                carb.log_warn(f"Failed to remove temporary telemetry directory: {e}")
+                logger.warning(f"Failed to remove temporary telemetry directory: {e}")
 
     def add_metrics(self, test_phase: measurements.TestPhase):
         event_type = ("omni.kit.tests.benchmark@run_benchmark-dev",)
@@ -108,11 +110,11 @@ class KitGenericTelemetry(MetricsBackendInterface):
 
 class LocalLogMetrics(MetricsBackendInterface):
     """
-    Just carb.log_info to console
+    Just logger.info to console
     """
 
     def add_metrics(self, test_phase: measurements.TestPhase):
-        carb.log_info(f"LocalLogMetricsEvent::add_metrics {test_phase}")
+        logger.info(f"LocalLogMetricsEvent::add_metrics {test_phase}")
 
 
 class JSONFileMetrics(MetricsBackendInterface):
@@ -147,7 +149,7 @@ class JSONFileMetrics(MetricsBackendInterface):
 
     def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False) -> None:
         if not self.data:
-            carb.log_warn("No test data to write. Skipping metrics file generation.")
+            logger.warning("No test data to write. Skipping metrics file generation.")
             return
 
         # Append test name to measurement name as OVAT needs to uniquely identify
@@ -156,11 +158,11 @@ class JSONFileMetrics(MetricsBackendInterface):
             # Store the test name
             if test_name != self.test_name:
                 if self.test_name:
-                    carb.log_warn(
+                    logger.warning(
                         f"Nonempty test name {self.test_name} different from name {test_name} provided by test phase."
                     )
                 self.test_name = test_name
-                carb.log_info(f"Setting test name to {self.test_name}")
+                logger.info(f"Setting test name to {self.test_name}")
 
             phase_name = test_phase.get_metadata_field("phase")
             for m in test_phase.measurements:
@@ -180,7 +182,7 @@ class JSONFileMetrics(MetricsBackendInterface):
             metrics_filename_out = Path(metrics_output_folder) / f"metrics_{self.test_name}.json"
 
         with open(metrics_filename_out, "w") as f:
-            carb.log_info(f"Writing metrics to {metrics_filename_out}")
+            logger.info(f"Writing metrics to {metrics_filename_out}")
             f.write(json_data)
 
         self.data.clear()
@@ -231,7 +233,7 @@ class OsmoKPIFile(MetricsBackendInterface):
                     osmo_kpis[measurement.name] = measurement.value
                     log_statements.append(f"{measurement.name}: {measurement.value} {measurement.unit}")
             # Log all KPIs to console
-            carb.log_info("\n" + "\n".join(log_statements))
+            logger.info("\n" + "\n".join(log_statements))
             # Generate the output filename
             if randomize_filename_prefix:
                 _, metrics_filename_out = tempfile.mkstemp(
@@ -242,7 +244,7 @@ class OsmoKPIFile(MetricsBackendInterface):
             # Dump key-value pairs (fields) to the JSON document
             json_data = json.dumps(osmo_kpis, indent=4)
             with open(metrics_filename_out, "w") as f:
-                carb.log_info(f"Writing KPIs to {metrics_filename_out}")
+                logger.info(f"Writing KPIs to {metrics_filename_out}")
                 f.write(json_data)
 
 
@@ -274,7 +276,7 @@ class OmniPerfKPIFile(MetricsBackendInterface):
             randomize_filename_prefix (bool, optional): True to randomize filename prefix. Defaults to False.
         """
         if not self._test_phases:
-            carb.log_warn("No test phases to write. Skipping metrics file generation.")
+            logger.warning("No test phases to write. Skipping metrics file generation.")
             return
 
         workflow_data = {}
@@ -302,7 +304,7 @@ class OmniPerfKPIFile(MetricsBackendInterface):
                     log_statements.append(f"{measurement.name}: {measurement.value} {measurement.unit}")
                     phase_data[measurement.name] = measurement.value
             # Log all metrics to console
-            carb.log_info("\n" + "\n".join(log_statements))
+            logger.info("\n" + "\n".join(log_statements))
 
             workflow_data[phase_name] = phase_data
 
@@ -316,7 +318,7 @@ class OmniPerfKPIFile(MetricsBackendInterface):
         # Dump key-value pairs (fields) to the JSON document
         json_data = json.dumps(workflow_data, indent=4)
         with open(metrics_filename_out, "w") as f:
-            carb.log_info(f"Writing metrics to {metrics_filename_out}")
+            logger.info(f"Writing metrics to {metrics_filename_out}")
             f.write(json_data)
 
 
