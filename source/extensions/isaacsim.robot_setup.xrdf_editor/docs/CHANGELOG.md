@@ -1,4 +1,9 @@
 # Changelog
+## [3.2.5] - 2025-12-08
+### Changed
+- Considers visual mesh scaling when generating collision spheres.
+- No longer deletes portions of the robot prim when generating collision spheres.
+
 ## [3.2.4] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

@@ -35,6 +35,7 @@ from isaacsim.core.prims import Articulation, SingleArticulation, SingleXFormPri
 from isaacsim.core.utils.articulations import find_all_articulation_base_paths
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
+from isaacsim.core.utils.rotations import gf_quat_to_np_array
 
 # New way of making UI being integrated in through feature updates
 from isaacsim.gui.components.element_wrappers import (
@@ -63,7 +64,8 @@ from isaacsim.gui.components.ui_utils import (
 from isaacsim.gui.components.widgets import DynamicComboBoxModel
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_WIDTH
-from pxr import Usd, UsdGeom, UsdPhysics
+from omni.usd import get_world_transform_matrix
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 from .collision_sphere_editor import CollisionSphereEditor
 
@@ -1409,23 +1411,36 @@ class Extension(omni.ext.IExt):
 
         link_path = self._articulation_base_path + link
         mesh_path = link_path + mesh
-        geom_mesh = UsdGeom.Mesh(get_prim_at_path(mesh_path))
-        points = np.array(geom_mesh.GetPointsAttr().Get())
+        geom_prim = get_prim_at_path(mesh_path)
+        geom_mesh = UsdGeom.Mesh(geom_prim)
+
+        # along with raw points in the mesh file, we also need to retrieve
+        # the scale that the user applied to them.
+        # need to get the full scale which could be applied through all parent prims.
+        geom_transform = Gf.Transform(get_world_transform_matrix(geom_prim))
+        scale = np.array(geom_transform.GetScale())
+        unscaled_points = np.array(geom_mesh.GetPointsAttr().Get())  # shape is [N,3]
+        points = np.diag(scale) @ unscaled_points.T  # shape is now [3,N], and points are scaled.
+
         face_inds = np.array(geom_mesh.GetFaceVertexIndicesAttr().Get())
         vert_cts = np.array(geom_mesh.GetFaceVertexCountsAttr().Get())
 
         # Transform coordinates of points into Link frame
-        mesh_xform = SingleXFormPrim(mesh_path)
-        link_xform = SingleXFormPrim(link_path)
+        mesh_xform = Gf.Transform(get_world_transform_matrix(get_prim_at_path(mesh_path)))
+        link_xform = Gf.Transform(get_world_transform_matrix(get_prim_at_path(link_path)))
 
-        mesh_trans, mesh_rot = mesh_xform.get_world_pose()
-        link_trans, link_rot = link_xform.get_world_pose()
+        mesh_trans = np.array(mesh_xform.GetTranslation())
+        link_trans = np.array(link_xform.GetTranslation())
+
+        mesh_rot = gf_quat_to_np_array(mesh_xform.GetRotation().GetQuaternion())
+        link_rot = gf_quat_to_np_array(link_xform.GetRotation().GetQuaternion())
+
         link_rot, mesh_rot = quats_to_rot_matrices(np.array([link_rot, mesh_rot]))
 
         inv_rot = link_rot.T @ mesh_rot
         inv_trans = (link_rot.T @ (mesh_trans - link_trans)).reshape((3, 1))
 
-        link_frame_points = (inv_rot @ points.T + inv_trans).T
+        link_frame_points = (inv_rot @ points + inv_trans).T
 
         self._collision_sphere_editor.generate_spheres(
             link_path, link_frame_points, face_inds, vert_cts, num_spheres, radius_offset, preview
