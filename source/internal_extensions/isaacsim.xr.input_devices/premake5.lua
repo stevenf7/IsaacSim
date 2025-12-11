@@ -16,6 +16,7 @@
 if platform_target == "linux-x86_64" then
     local ext = get_current_extension_info()
     ext.target_dir = isaac_sim_extra_extsbuild_dir .. "/" .. ext.id
+    ext.bin_dir = ext.target_dir .. "/bin"
 
     project_ext(ext)
 

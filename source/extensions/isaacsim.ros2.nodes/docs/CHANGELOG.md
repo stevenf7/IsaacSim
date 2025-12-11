@@ -5,8 +5,8 @@
 
 ## [1.5.1] - 2025-12-01
 ### Added
-- ros2_common.build_rtx_sensor_pointcloud_writer to build Writer for ROS2 PointCloud2
-  for user-selected metadata
+- ros2_common.build_rtx_sensor_pointcloud_writer to build Writer for ROS2 PointCloud2 for user-selected metadata
+
 ### Changed
 - ROS2RtxLidarHelper uses ros2_common.build_rtx_sensor_pointcloud_writer
 

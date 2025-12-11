@@ -15,7 +15,6 @@ writeTarget.kit = true
 [deprecation]
 warning = "Extension deprecated since ISaac Sim 6.0.0. Replaced with the Scene Optimizer"
 
-
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.gui.components" = {}

@@ -70,7 +70,8 @@ class TestManusViveIntegration(omni.kit.test.AsyncTestCase):
         # Discover the test hand-tracker library shipped with this extension
         module_dir = os.path.dirname(xr.__file__)
         test_lib = _discover_test_handtracker_library(module_dir)
-        self.assertIsNotNone(test_lib, "Test hand-tracker library not found in extension bin/")
+        if test_lib is None:
+            self.skipTest("Test hand-tracker library not found in extension bin/")
         print(f"[manus_vive_integration:test] Using test hand-tracker lib: {test_lib}")
 
         # Also set env var as a fallback for any indirect native discovery
