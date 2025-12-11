@@ -1,5 +1,5 @@
 [package]
-version = "1.0.3"
+version = "1.0.4"
 category = "XR"
 title = "Isaac Sim XR Input Devices"
 description = "XR input support: hand-tracker (C API plugin) and Vive trackers (pysurvive)"
@@ -73,8 +73,15 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
+stdoutFailPatterns.exclude = [
+ "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
+]
+
 [[test]]
 name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
+]
+stdoutFailPatterns.exclude = [
+ "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
 ]

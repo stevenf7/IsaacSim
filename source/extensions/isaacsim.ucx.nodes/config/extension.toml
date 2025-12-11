@@ -28,6 +28,10 @@ name = "isaacsim.ucx.nodes"
 name = "isaacsim.ucx.nodes.tests"
 public = false
 
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
 [fswatcher.patterns]
 include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
@@ -35,16 +39,12 @@ exclude = ["Ogn*Database.py"]
 [fswatcher.paths]
 exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
 
-[[native.plugin]]
-path = "bin/*.plugin"
-recursive = false
-
 [[test]]
 timeout = 300
 dependencies = [
-    "isaacsim.test.utils",
     "isaacsim.core.experimental.objects",
-    "omni.isaac.ml_archive",
+    "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 
 args = [

@@ -3,7 +3,7 @@
 ### Changed
 - Update description
 
-## [1.6.2] - 2025-11-28
+## [1.6.2] - 2025-12-06
 ### Changed
 - Add missing docstrings
 - Add docstring tests

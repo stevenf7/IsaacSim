@@ -82,4 +82,3 @@ name = "startup"
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
-

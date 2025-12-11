@@ -13,12 +13,12 @@ icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
 
+[[python.module]]
+path = "pip_prebundle"
+
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
-
-[[python.module]]
-path = "pip_prebundle"
 
 [[test]]
 timeout = 300
