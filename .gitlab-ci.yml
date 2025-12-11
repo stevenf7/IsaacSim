@@ -2106,8 +2106,9 @@ check-app-version-locks:
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     when: never
+  - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
 
@@ -2135,8 +2136,9 @@ check-extension-support-levels:
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     when: never
+  - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
   - !reference [.rules-version-changed, rules]
   - !reference [.rules-push-manual, rules]
 
@@ -2156,7 +2158,8 @@ generate-public-extension-mr:
     when: never
   - if: $RUN_BUMP_VERSION == "true"
     when: never
-  - if: '$CI_COMMIT_BRANCH != "develop"'
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     when: never
+  - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
   - !reference [.rules-version-changed-manual, rules]
   - !reference [.rules-push-manual, rules]
