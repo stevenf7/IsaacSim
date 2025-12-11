@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.6] - 2025-12-11
+### Changed
+- Improved simready assets SDG example output results
+
 ## [1.6.5] - 2025-12-09
 ### Changed
 - Fixed sequential sphere scan randomizer example to work in script editor in sync with docs
