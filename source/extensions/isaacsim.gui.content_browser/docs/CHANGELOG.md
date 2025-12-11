@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.1.17] - 2025-12-10
+### Changed
+- OMPE-73961: Fix missing icon error in isaac content browser.
+
 ## [0.1.16] - 2025-12-07
 ### Changed
 - Update description
