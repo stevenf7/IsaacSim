@@ -1,5 +1,5 @@
 [package]
-version = "0.5.0"
+version = "0.5.1"
 category = "Simulation"
 title = "Isaac Sim Core (Materials)"
 description = "The Core Materials extension provides a set of APIs to create and/or wrap one or more USD materials in the stage..."
@@ -76,8 +76,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    ### Extension specific args
-    '--/persistent/physics/enableDeformableBeta=true',
 ]
 pythonTests.include = ["isaacsim.core.experimental.materials.tests.*"]
 

@@ -156,12 +156,6 @@ class DeformablePrim(XformPrim):
 
     .. warning::
 
-        The deformable prims require the Deformable feature (beta) to be enabled.
-        Deformable feature (beta) can be enabled in *apps/.kit* experience files by setting
-        ``physics.enableDeformableBeta = true`` under the ``[settings.persistent]`` section.
-
-    .. warning::
-
         The current ``omni.physics.tensors`` implementation does not support ``list[str]``
         as input for deformable body paths. This limitation will be fixed in the future releases.
         An error message will be logged if a list of paths is provided.
@@ -191,7 +185,6 @@ class DeformablePrim(XformPrim):
             If not defined, the type will be inferred from the prims.
 
     Raises:
-        RuntimeError: If the Deformable feature (beta) is disabled.
         ValueError: If no prims are found matching the specified path(s).
         AssertionError: If both positions and translations are specified.
 
@@ -228,16 +221,7 @@ class DeformablePrim(XformPrim):
         # DeformablePrim
         deformable_type: Literal["surface", "volume"] | None = None,
     ) -> None:
-        # check for deformable feature (beta)
-        setting_name = physx_bindings.SETTING_ENABLE_DEFORMABLE_BETA
-        enabled = carb.settings.get_settings().get(setting_name)
-        if not enabled:
-            setting_name = (setting_name[1:] if setting_name.startswith("/") else setting_name).replace("/", ".")
-            raise RuntimeError(
-                "Deformable bodies require Deformable feature (beta) to be enabled. "
-                f"Enable it in .kit experience settings ('{setting_name} = true') to use them."
-            )
-        # get  prims
+        # get prims
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = self.resolve_paths(paths)
         assert (

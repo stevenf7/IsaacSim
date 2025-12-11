@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.1] - 2025-12-11
+### Removed
+- Remove checking for the deformable beta feature, as it is now active by default
+
 ## [0.5.0] - 2025-11-24
 ### Changed
 - Define ranges for visual material inputs and clip them accordingly

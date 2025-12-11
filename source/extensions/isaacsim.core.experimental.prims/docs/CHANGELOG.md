@@ -1,7 +1,12 @@
 # Changelog
+
+## [0.9.7] - 2025-12-11
+### Removed
+- Remove checking for the deformable beta feature, as it is now active by default
+
 ## [0.9.6] - 2025-12-05
 ### Changed
-- Migrate to Events 2.0.
+- Migrate to Events 2.0
 
 ## [0.9.5] - 2025-12-01
 ### Fixed
