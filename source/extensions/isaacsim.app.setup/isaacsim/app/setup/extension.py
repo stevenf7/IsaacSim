@@ -72,7 +72,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self.create_new_stage = self._settings.get("/isaac/startup/create_new_stage")
         if self.create_new_stage:
             self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
-
+        self.__await_viewport_ready = asyncio.ensure_future(self.__await_viewport())
         # Increase hang detection timeout
         omni.client.set_hang_detection_time_ms(10000)
 
@@ -81,6 +81,33 @@ class CreateSetupExtension(omni.ext.IExt):
         if omni.usd.get_context().can_open_stage():
             stage_templates.new_stage(template=None)
         await self.__update_without_ready()
+
+    async def __await_viewport(self):
+        import carb.eventdispatcher
+        from omni.kit.viewport.utility import get_active_viewport
+        from omni.usd import StageRenderingEventType
+
+        viewport_api = get_active_viewport()
+
+        # If viewport_handle is already available, skip waiting
+        if viewport_api.frame_info.get("viewport_handle", None) is None:
+            future = asyncio.Future()
+
+            def on_frame_event(e: carb.eventdispatcher.Event):
+                vp_handle = viewport_api.frame_info.get("viewport_handle", None)
+                if vp_handle is not None and not future.done():
+                    future.set_result(None)
+
+            usd_context = omni.usd.get_context()
+            event_name = usd_context.stage_rendering_event_name(StageRenderingEventType.NEW_FRAME, True)
+            sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=event_name,
+                on_event=on_frame_event,
+                observer_name="isaacsim.app.setup.wait_for_viewport",
+            )
+            while not future.done():
+                await self.__update_without_ready()
+            sub = None
 
         # Let users know when app is ready for use and live-streaming
         omni.kit.app.get_app().print_and_log(f"{self.app_title} App is loaded.")
