@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.14.1] - 2025-12-11
+### Changed
+- Increased MAX_FRAMES in _wait_for_viewport for Windows so NEW_FRAME event fires when expected (again)
+
 ## [2.14.0] - 2025-12-08
 ### Changed
 - Change startup behavior so that app ready status is delayed until after the app has started
