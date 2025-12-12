@@ -1,4 +1,11 @@
 # Changelog
+
+## [1.5.3] - 2025-12-11
+### Changed
+- Update ros2 test case to wait for viewport to be ready
+- Increase wait time for test_camera_info.py to 1.25 seconds
+- Set resetSimulationTimeOnStop to True for ROS2CameraHelper, ROS2CameraInfoHelper, ROS2RtxLidarHelper
+
 ## [1.5.2] - 2025-12-02
 ### Fixed
 - ROS2PublishObjectIdMap correctly generates 128-bit unsigned integer strings from 4xuint32

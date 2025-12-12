@@ -182,7 +182,7 @@ class TestRos2CameraInfo(ROS2TestCase):
             await omni.kit.app.get_app().next_update_async()
             for _ in range(10):
                 if self._camera_info is None:
-                    await simulate_async(1, callback=spin)
+                    await simulate_async(1.25, callback=spin)
 
             self.assertIsNotNone(self._camera_info)
 
