@@ -773,7 +773,10 @@ class LidarRtx(BaseSensor):
         elif obj_ids.dtype == np.uint32:
             # uint32: 4 elements = 16 bytes = 128 bits
             obj_ids = obj_ids.reshape(-1, 4)
+        elif obj_ids.dtype == np.uint64:
+            # uint64: 2 elements = 64 bytes = 128 bits
+            obj_ids = obj_ids.reshape(-1, 2)
         else:
-            raise ValueError(f"Unsupported dtype for object IDs: {obj_ids.dtype}. Expected uint8 or uint32.")
+            raise ValueError(f"Unsupported dtype for object IDs: {obj_ids.dtype}. Expected uint8, uint32, or uint64.")
 
         return [int.from_bytes(group.tobytes(), byteorder="little") for group in obj_ids]

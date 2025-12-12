@@ -50,7 +50,7 @@ my_lidar = LidarRtx(
 )
 my_lidar.initialize()
 my_lidar.attach_annotator("StableIdMap")
-my_lidar.attach_annotator("IsaacCreateRTXLidarScanBuffer", outputObjectId=True)
+my_lidar.attach_annotator("GenericModelOutput")
 
 i = 0
 timeline = omni.timeline.get_timeline_interface()
@@ -67,9 +67,9 @@ simulation_app.update()
 stable_id_map_buffer = my_lidar.get_current_frame()["StableIdMap"]
 stable_id_map = LidarRtx.decode_stable_id_mapping(stable_id_map_buffer.tobytes())
 
-# Get the object IDs from the IsaacCreateRTXLidarScanBuffer buffer
-scan_buffer = my_lidar.get_current_frame()["IsaacCreateRTXLidarScanBuffer"]
-object_ids = LidarRtx.get_object_ids(scan_buffer["objectId"])
+# Get the object IDs from the GenericModelOutput buffer
+gmo = get_gmo_data(my_lidar.get_current_frame()["GenericModelOutput"])
+object_ids = LidarRtx.get_object_ids(gmo.objId)
 for obj_id in set(object_ids):
     if obj_id in stable_id_map:
         carb.log_warn(f"Object ID {obj_id} found in stable ID map: {stable_id_map[obj_id]}")

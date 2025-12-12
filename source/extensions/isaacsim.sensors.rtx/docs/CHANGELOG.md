@@ -1,4 +1,8 @@
 # Changelog
+## [15.11.4] - 2025-12-12
+### Changed
+- RtxLidar.get_object_ids correctly handles GenericModelOutput.objId
+
 ## [15.11.3] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.
