@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.18] - 2025-12-12
+### Fixed
+- Fix getting carb settings api for protocol designation
+
 ## [0.1.17] - 2025-12-10
 ### Changed
 - OMPE-73961: Fix missing icon error in isaac content browser.

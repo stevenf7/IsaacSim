@@ -48,10 +48,11 @@ class IsaacConnectionItem(NucleusItem):
 
 class IsaacCollection(CollectionItem):
     def __init__(self):
-        protocol = "https"
-        if carb.settings.get_settings().get("/persistent/isaac/asset_root/default", "").startswith("omniverse://"):
+        protocol = ""
+        default_asset_root = carb.settings.get_settings().get_as_string("/persistent/isaac/asset_root/default")
+        if default_asset_root.startswith("omniverse://"):
             protocol = "omniverse"
-        elif carb.settings.get_settings().get("/persistent/isaac/asset_root/default", "").startswith("https://"):
+        elif default_asset_root.startswith("https://"):
             protocol = "https"
         super().__init__(
             identifier="Isaac Sim",
