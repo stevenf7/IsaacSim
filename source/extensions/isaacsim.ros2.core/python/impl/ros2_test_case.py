@@ -15,7 +15,9 @@
 
 import asyncio
 
+import carb
 import omni
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.simulation_manager import SimulationManager
 
 try:
@@ -52,6 +54,14 @@ class ROS2TestCase(TimedAsyncTestCase):
         SimulationManager.set_physics_sim_device("cpu")
         SimulationManager.enable_fabric(enable=False)
         await omni.kit.app.get_app().next_update_async()
+        await stage_utils.create_new_stage_async()
+        try:
+            from isaacsim.core.rendering_manager import ViewportManager
+
+            status, frames = await ViewportManager.wait_for_viewport_async()
+            self.assertTrue(status, f"Viewport not ready after {frames} frames")
+        except:
+            pass
 
     def create_node(self, node_name):
         """Create a ROS2 node and track it for automatic cleanup.

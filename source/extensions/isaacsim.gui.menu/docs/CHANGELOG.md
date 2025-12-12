@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.8] - 2025-12-11
+### Changed
+- Update golden image for environment test
+
 ## [2.4.7] - 2025-12-07
 ### Changed
 - Update description
