@@ -29,7 +29,7 @@ from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.ucx.nodes.tests.common import UCXTestCase, unpack_image_message
+from isaacsim.ucx.nodes.tests.common import UCXTestCase, find_available_port, unpack_image_message
 from pxr import Sdf
 from ucxx._lib.arr import Array
 
@@ -56,26 +56,16 @@ class TestUCXCamera(UCXTestCase):
         viewport_api.set_texture_resolution((1280, 720))
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        await super().tearDown()
-
-    async def setup_ucx_client_with_listener(self, port=13337):
+    async def setup_ucx_client_with_listener(self, port):
         """Setup UCX client.
 
         Args:
             port: Port number to connect to.
         """
-        for _ in range(5):
+        for _ in range(20):
             await omni.kit.app.get_app().next_update_async()
 
         self.create_ucx_client(port)
-
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
 
     async def receive_image_message(self, tag=10, timeout_frames=1000, retry_count=15):
         """Receive and unpack an image message.
@@ -150,7 +140,7 @@ class TestUCXCamera(UCXTestCase):
                         ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/OmniverseKit_Persp")]),
                         ("CreateRenderProduct.inputs:height", 600),
                         ("CreateRenderProduct.inputs:width", 800),
-                        ("RGBPublish.inputs:port", 13337),
+                        ("RGBPublish.inputs:port", self.port),
                         ("RGBPublish.inputs:tag", 10),
                         ("RGBPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
@@ -165,28 +155,12 @@ class TestUCXCamera(UCXTestCase):
             print(e)
             raise
 
-        await omni.kit.app.get_app().next_update_async()
-
-        # Set camera aperture
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6.0, prev=0
-        )
-
         # Start timeline FIRST so the UCX node executes and creates its listener
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait for node to execute and create listener
-        # Give replicator extra time to fully initialize pipeline
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
         # Now setup UCX client to connect to the listener
-        await self.setup_ucx_client_with_listener()
-
-        # Wait significantly longer for replicator pipeline to stabilize and generate frames
-        # The replicator pipeline can be slow on first frame generation
-        await simulate_async(4.0)
+        await self.setup_ucx_client_with_listener(self.port)
 
         # Receive RGB image
         timestamp, width, height, encoding, step, image_data = await self.receive_image_message(tag=10)
@@ -204,9 +178,6 @@ class TestUCXCamera(UCXTestCase):
 
         # Verify timestamp is reasonable (simulation time)
         self.assertGreater(timestamp, 0.0)
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
 
     async def test_camera_system_time(self):
         """Test camera publishing with system time."""
@@ -229,7 +200,7 @@ class TestUCXCamera(UCXTestCase):
                         ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/OmniverseKit_Persp")]),
                         ("CreateRenderProduct.inputs:height", 600),
                         ("CreateRenderProduct.inputs:width", 800),
-                        ("RGBPublish.inputs:port", 13337),
+                        ("RGBPublish.inputs:port", self.port),
                         ("RGBPublish.inputs:tag", 10),
                         ("RGBPublish.inputs:useSystemTime", True),
                         ("RGBPublish.inputs:resetSimulationTimeOnStop", True),
@@ -251,12 +222,8 @@ class TestUCXCamera(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait for node to execute and create listener
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
         # Now setup UCX client to connect to the listener
-        await self.setup_ucx_client_with_listener()
+        await self.setup_ucx_client_with_listener(self.port)
 
         # Capture system time AFTER connection is established
         system_time = time.time()
@@ -281,9 +248,6 @@ class TestUCXCamera(UCXTestCase):
             time_diff, 5.0, f"Timestamp {timestamp} too far from system time {system_time} (diff: {time_diff}s)"
         )
 
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
     async def test_camera_frame_skip(self):
         """Test camera publishing with frame skip."""
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
@@ -304,7 +268,7 @@ class TestUCXCamera(UCXTestCase):
                         ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/OmniverseKit_Persp")]),
                         ("CreateRenderProduct.inputs:height", 480),
                         ("CreateRenderProduct.inputs:width", 640),
-                        ("RGBPublish.inputs:port", 13337),
+                        ("RGBPublish.inputs:port", self.port),
                         ("RGBPublish.inputs:tag", 10),
                         ("RGBPublish.inputs:frameSkipCount", 5),  # Skip 5 frames, publish every 6th
                         ("RGBPublish.inputs:resetSimulationTimeOnStop", True),
@@ -320,23 +284,12 @@ class TestUCXCamera(UCXTestCase):
             print(e)
             raise
 
-        await omni.kit.app.get_app().next_update_async()
-
         # Start timeline FIRST so the UCX node executes and creates its listener
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait for node to execute and create listener
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
         # Now setup UCX client to connect to the listener
-        await self.setup_ucx_client_with_listener()
-
-        # Wait even longer for frame skip mode
-        # Frame skip of 5 means we publish every 6th frame (frames 5, 11, 17, ...)
-        # Need significantly more time to ensure we catch at least one publish event
-        await simulate_async(5.0)
+        await self.setup_ucx_client_with_listener(self.port)
 
         # Receive RGB image (with longer timeout since publish is less frequent)
         timestamp, width, height, encoding, step, image_data = await self.receive_image_message(
@@ -348,9 +301,6 @@ class TestUCXCamera(UCXTestCase):
         self.assertEqual(width, 640)
         self.assertEqual(height, 480)
         self.assertEqual(encoding, "rgb8")
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
 
     async def test_camera_multiple_resolutions(self):
         """Test camera publishing with different resolutions."""
@@ -364,7 +314,7 @@ class TestUCXCamera(UCXTestCase):
         resolutions = [(320, 240), (640, 480), (1280, 720)]
 
         for idx, (width, height) in enumerate(resolutions):
-            port = 13337 + idx
+            port = find_available_port()
             tag = 10 + idx
 
             try:
@@ -395,21 +345,12 @@ class TestUCXCamera(UCXTestCase):
                 print(e)
                 raise
 
-            await omni.kit.app.get_app().next_update_async()
-
             # Start timeline FIRST so the UCX node executes and creates its listener
             timeline = omni.timeline.get_timeline_interface()
             timeline.play()
 
-            # Wait for node to execute and create listener
-            for _ in range(5):
-                await omni.kit.app.get_app().next_update_async()
-
             # Setup client for this resolution
             await self.setup_ucx_client_with_listener(port=port)
-
-            # Wait significantly longer for replicator pipeline to stabilize for this resolution
-            await simulate_async(3.0)
 
             # Receive RGB image
             timestamp, recv_width, recv_height, encoding, step, image_data = await self.receive_image_message(tag=tag)
@@ -440,6 +381,3 @@ class TestUCXCamera(UCXTestCase):
             # Important: Clean up the graph to avoid interference with next resolution
             graph_path = f"/ActionGraph_{idx}"
             omni.kit.commands.execute("DeletePrims", paths=[graph_path])
-
-            # Wait for cleanup to complete
-            await simulate_async(0.5)

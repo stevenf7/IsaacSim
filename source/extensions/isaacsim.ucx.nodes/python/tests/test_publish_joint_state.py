@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import struct
+import time
 
 import numpy as np
 import omni.graph.core as og
@@ -106,8 +107,9 @@ class TestUCXPublishJointState(UCXTestCase):
                     ],
                     og.Controller.Keys.SET_VALUES: [
                         ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path("/Articulation")]),
-                        ("PublishJointState.inputs:port", 13337),
+                        ("PublishJointState.inputs:port", self.port),
                         ("PublishJointState.inputs:tag", 1),
+                        ("PublishJointState.inputs:timeoutMs", 1000),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
@@ -123,41 +125,9 @@ class TestUCXPublishJointState(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait a few frames for the node to execute and create its listener
-        for _ in range(5):
+        for _ in range(3):
             await omni.kit.app.get_app().next_update_async()
-
-        # Now retrieve the listener and create client
-        await self.setup_ucx_client_with_listener()
-
-        # Stop timeline until test is ready to use it
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
-    async def tearDown(self):
-        # Stop timeline if it's running
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        await super().tearDown()
-
-    async def setup_ucx_client_with_listener(self, port=13337):
-        """Setup UCX client to connect to the OmniGraph node's listener.
-
-        The OmniGraph nodes create their own internal listeners automatically.
-        We create a client endpoint to connect and receive messages from them.
-        """
-        # Give Isaac Sim a moment to start the node's listener
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
-        # Create client connection using the base class helper
-        self.create_ucx_client(port)
-
-        # Give a few more frames for the connection to establish
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
+        self.create_ucx_client(self.port)
 
     async def receive_joint_state_message(self, tag=1, timeout_frames=1000):
         """Receive and unpack a joint state message from the client endpoint"""
@@ -168,7 +138,6 @@ class TestUCXPublishJointState(UCXTestCase):
         request = self.client_endpoint.tag_recv(Array(buffer), tag=ucx_api.UCXXTag(tag))
 
         # Progress until complete
-        import time
 
         for _ in range(timeout_frames):
             if request.completed:
@@ -184,15 +153,6 @@ class TestUCXPublishJointState(UCXTestCase):
 
     async def test_joint_state_publisher(self):
         """Test that joint state messages are published via UCX"""
-
-        # Start timeline
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
-
-        # Simulate for a few frames
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
         # Receive joint state message
         timestamp, num_joints, positions, velocities, efforts = await self.receive_joint_state_message()
 
@@ -209,16 +169,8 @@ class TestUCXPublishJointState(UCXTestCase):
         self.assertEqual(len(efforts), num_joints)
         self.assertGreater(timestamp, 0.0, "Timestamp should be positive")
 
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
     async def test_joint_state_values(self):
         """Test that joint state values match simulation"""
-
-        # Start timeline first to initialize physics
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
-
         # Simulate to initialize physics
         await simulate_async(0.5)
 
@@ -242,6 +194,3 @@ class TestUCXPublishJointState(UCXTestCase):
         for i in range(num_joints):
             self.assertAlmostEqual(ucx_positions[i], sim_positions[i], places=3, msg=f"Joint {i} position mismatch")
             self.assertAlmostEqual(ucx_velocities[i], sim_velocities[i], places=3, msg=f"Joint {i} velocity mismatch")
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()

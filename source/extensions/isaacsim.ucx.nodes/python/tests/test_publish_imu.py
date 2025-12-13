@@ -14,12 +14,12 @@
 # limitations under the License.
 
 import struct
+import time
 
 import numpy as np
 import omni
 import omni.graph.core as og
 import ucxx._lib.libucxx as ucx_api
-from isaacsim.core.utils.physics import simulate_async
 from isaacsim.ucx.nodes.tests.common import UCXTestCase
 from ucxx._lib.arr import Array
 
@@ -90,29 +90,12 @@ class TestUCXPublishImu(UCXTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        await super().tearDown()
-
-    async def setup_ucx_client_with_listener(self, port=13337):
-        """Setup UCX client"""
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-        self.create_ucx_client(port)
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-
     async def receive_imu_message(self, tag=2, timeout_frames=1000):
         """Receive and unpack an IMU message"""
         max_buffer_size = 512
         buffer = np.empty(max_buffer_size, dtype=np.uint8)
 
         request = self.client_endpoint.tag_recv(Array(buffer), tag=ucx_api.UCXXTag(tag))
-
-        import time
 
         for _ in range(timeout_frames):
             if request.completed:
@@ -138,12 +121,13 @@ class TestUCXPublishImu(UCXTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishImu.inputs:port", 13337),
+                        ("PublishImu.inputs:port", self.port),
                         ("PublishImu.inputs:tag", 2),
                         ("PublishImu.inputs:frameId", "test_imu"),
                         ("PublishImu.inputs:orientation", [0.0, 0.0, 0.0, 1.0]),
                         ("PublishImu.inputs:angularVelocity", [0.1, 0.2, 0.3]),
                         ("PublishImu.inputs:linearAcceleration", [0.0, 0.0, 9.81]),
+                        ("PublishImu.inputs:timeoutMs", 1000),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishImu.inputs:execIn"),
@@ -158,9 +142,9 @@ class TestUCXPublishImu(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        await self.setup_ucx_client_with_listener()
-        await simulate_async(0.5)
-
+        for _ in range(3):
+            await omni.kit.app.get_app().next_update_async()
+        self.create_ucx_client(self.port)
         timestamp, frame_id, orientation, angular_vel, linear_accel = await self.receive_imu_message()
 
         print(f"Received IMU data:")
@@ -173,6 +157,3 @@ class TestUCXPublishImu(UCXTestCase):
         self.assertGreater(timestamp, 0.0)
         self.assertEqual(frame_id, "test_imu")
         self.assertAlmostEqual(linear_accel[2], 9.81, places=1)
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()

@@ -70,7 +70,12 @@ public:
      */
     virtual void reset() override
     {
-        m_listener.reset();
+        if (m_listener)
+        {
+            const uint16_t port = m_listener->getPort();
+            m_listener.reset();
+            isaacsim::ucx::core::UCXListenerRegistry::tryRemoveListener(port);
+        }
     }
 
 protected:

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.0] - 2025-12-12
+### Added
+- Add UCXListenerRegistry::tryRemoveListener for reference-counted listener cleanup
+
 ## [1.2.2] - 2025-12-07
 ### Changed
 - Fix issues found by clang tidy

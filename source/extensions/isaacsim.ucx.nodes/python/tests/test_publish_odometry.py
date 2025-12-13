@@ -23,7 +23,6 @@ import omni.kit.test
 import omni.kit.usd
 import ucxx._lib.libucxx as ucx_api
 import usdrt.Sdf
-from isaacsim.core.utils.physics import simulate_async
 from ucxx._lib.arr import Array
 
 from .common import UCXTestCase
@@ -122,30 +121,18 @@ class TestUCXPublishOdometry(UCXTestCase):
 
         self.CUBE_SCALE = 0.5
 
-    async def tearDown(self):
-        # Stop timeline if it's running
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        await super().tearDown()
-
-    async def setup_ucx_client_with_listener(self, port=13337):
+    async def setup_ucx_client_with_listener(self):
         """Setup UCX client to connect to the OmniGraph node's listener.
 
         The OmniGraph nodes create their own internal listeners automatically.
         We create a client endpoint to connect and receive messages from them.
         """
         # Give Isaac Sim a moment to start the node's listener
-        for _ in range(5):
+        for _ in range(3):
             await omni.kit.app.get_app().next_update_async()
 
         # Create client connection using the base class helper
-        self.create_ucx_client(port)
-
-        # Give a few more frames for the connection to establish
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
+        self.create_ucx_client(self.port)
 
     async def receive_odometry_message(self, tag=7, timeout_frames=1000):
         """Receive and unpack an odometry message from the client endpoint"""
@@ -184,13 +171,14 @@ class TestUCXPublishOdometry(UCXTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishOdometry.inputs:port", 13337),
+                        ("PublishOdometry.inputs:port", self.port),
                         ("PublishOdometry.inputs:tag", 7),
                         # Set some test values for inputs
                         ("PublishOdometry.inputs:position", [1.0, 2.0, 3.0]),
                         ("PublishOdometry.inputs:orientation", [0.0, 0.0, 0.0, 1.0]),  # IJKR
                         ("PublishOdometry.inputs:linearVelocity", [0.1, 0.2, 0.3]),
                         ("PublishOdometry.inputs:angularVelocity", [0.01, 0.02, 0.03]),
+                        ("PublishOdometry.inputs:timeoutMs", 1000),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishOdometry.inputs:execIn"),
@@ -206,16 +194,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait a few frames for the node to execute and create its listener
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
-        # Now retrieve the listener and create client
         await self.setup_ucx_client_with_listener()
-
-        # Simulate for a few frames
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
 
         # Receive odometry message
         timestamp, position, orientation, lin_vel, ang_vel, lin_accel, ang_accel = await self.receive_odometry_message()
@@ -236,9 +215,6 @@ class TestUCXPublishOdometry(UCXTestCase):
         self.assertAlmostEqual(position[0], 0.0, places=2)
         self.assertAlmostEqual(position[1], 0.0, places=2)
         self.assertAlmostEqual(position[2], 0.0, places=2)
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
 
     async def test_odometry_with_cube(self):
         """Test odometry publishing with a dynamic cube (input mode)"""
@@ -267,8 +243,9 @@ class TestUCXPublishOdometry(UCXTestCase):
                         ("ReadTransform", "isaacsim.core.nodes.IsaacReadWorldPose"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishOdometry.inputs:port", 13337),
+                        ("PublishOdometry.inputs:port", self.port),
                         ("PublishOdometry.inputs:tag", 7),
+                        ("PublishOdometry.inputs:timeoutMs", 1000),
                         ("ReadTransform.inputs:prim", [usdrt.Sdf.Path("/World/Cube")]),
                     ],
                     og.Controller.Keys.CONNECT: [
@@ -287,15 +264,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait a few frames for the node to execute and create its listener
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
-        # Now retrieve the listener and create client
         await self.setup_ucx_client_with_listener()
-
-        # Simulate to let physics initialize and cube fall
-        await simulate_async(2.0)
 
         # Receive odometry message
         timestamp, position, orientation, lin_vel, ang_vel, lin_accel, ang_accel = await self.receive_odometry_message()
@@ -315,9 +284,6 @@ class TestUCXPublishOdometry(UCXTestCase):
         self.assertIsNotNone(position)
         self.assertEqual(len(position), 3, "Position should be a 3D vector")
 
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
     async def test_odometry_multiple_messages(self):
         """Test receiving multiple odometry messages over time"""
 
@@ -332,10 +298,11 @@ class TestUCXPublishOdometry(UCXTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishOdometry.inputs:port", 13337),
+                        ("PublishOdometry.inputs:port", self.port),
                         ("PublishOdometry.inputs:tag", 7),
                         ("PublishOdometry.inputs:position", [0.0, 0.0, 0.0]),
                         ("PublishOdometry.inputs:orientation", [0.0, 0.0, 0.0, 1.0]),
+                        ("PublishOdometry.inputs:timeoutMs", 1000),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishOdometry.inputs:execIn"),
@@ -351,11 +318,6 @@ class TestUCXPublishOdometry(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        # Wait a few frames for the node to execute and create its listener
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-
-        # Now retrieve the listener and create client
         await self.setup_ucx_client_with_listener()
 
         timestamps = []
@@ -376,6 +338,3 @@ class TestUCXPublishOdometry(UCXTestCase):
                 timestamps[i - 1],
                 f"Timestamp should increase (msg {i}: {timestamps[i]} <= msg {i-1}: {timestamps[i-1]})",
             )
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()

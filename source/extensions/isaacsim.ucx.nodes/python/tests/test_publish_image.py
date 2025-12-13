@@ -17,7 +17,6 @@ import numpy as np
 import omni
 import omni.graph.core as og
 import ucxx._lib.libucxx as ucx_api
-from isaacsim.core.utils.physics import simulate_async
 from isaacsim.ucx.nodes.tests.common import UCXTestCase, unpack_image_message
 from ucxx._lib.arr import Array
 
@@ -30,18 +29,11 @@ class TestUCXPublishImage(UCXTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        await super().tearDown()
-
-    async def setup_ucx_client_with_listener(self, port=13337):
+    async def setup_ucx_client_with_listener(self):
         """Setup UCX client"""
         for _ in range(5):
             await omni.kit.app.get_app().next_update_async()
-        self.create_ucx_client(port)
+        self.create_ucx_client(self.port)
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
 
@@ -90,7 +82,7 @@ class TestUCXPublishImage(UCXTestCase):
                     ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
-                    ("PublishImage.inputs:port", 13337),
+                    ("PublishImage.inputs:port", self.port),
                     ("PublishImage.inputs:tag", 10),
                     ("PublishImage.inputs:data", test_data),
                     ("PublishImage.inputs:width", test_width),
@@ -104,13 +96,12 @@ class TestUCXPublishImage(UCXTestCase):
             },
         )
 
-        await self.setup_ucx_client_with_listener()
-
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        await simulate_async(0.5)
+        await omni.kit.app.get_app().next_update_async()
 
+        await self.setup_ucx_client_with_listener()
         timestamp, width, height, encoding, step, image_data = await self.receive_image_message()
 
         # Verify metadata
@@ -123,6 +114,3 @@ class TestUCXPublishImage(UCXTestCase):
         # Verify data size
         expected_size = test_height * step
         self.assertEqual(len(image_data), expected_size)
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()

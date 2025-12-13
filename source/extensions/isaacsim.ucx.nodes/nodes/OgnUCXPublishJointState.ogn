@@ -39,7 +39,7 @@
                 "type": "uint",
                 "description": "Timeout in milliseconds for UCX send requests. If 0, waits indefinitely.",
                 "uiName": "Timeout (ms)",
-                "default": 100
+                "default": 1
             }
         },
         "outputs": {
