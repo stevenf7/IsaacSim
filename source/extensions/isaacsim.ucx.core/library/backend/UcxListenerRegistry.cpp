@@ -140,4 +140,36 @@ void UCXListenerRegistry::shutdown()
     g_listeners.clear();
 }
 
+bool UCXListenerRegistry::tryRemoveListener(uint16_t port)
+{
+    std::shared_ptr<UCXListener> listener;
+    {
+        std::lock_guard<std::mutex> lock(g_registryMutex);
+        auto it = g_listeners.find(port);
+        if (it == g_listeners.end())
+        {
+            return false;
+        }
+        if (it->second.use_count() > 1)
+        {
+            // Other nodes still hold references
+            return false;
+        }
+        CARB_LOG_INFO("UCXListenerRegistry::tryRemoveListener: removing listener on port %u", port);
+        listener = std::move(it->second);
+        g_listeners.erase(it);
+    }
+
+    // Shutdown outside the lock
+    try
+    {
+        listener->shutdown();
+    }
+    catch (const std::exception& e)
+    {
+        CARB_LOG_ERROR("Error shutting down listener on port %u: %s", port, e.what());
+    }
+    return true;
+}
+
 } // namespace isaacsim::ucx::core

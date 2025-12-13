@@ -53,10 +53,11 @@ public:
     {
         const uint16_t port = static_cast<uint16_t>(db.inputs.port());
         const uint64_t tag = db.inputs.tag();
+        const uint32_t timeoutMs = db.inputs.timeoutMs();
 
         // Get the per-instance state and call the instance method
         auto& state = db.template perInstanceState<OgnUCXPublishClock>();
-        return state.computeImpl(db, port, tag);
+        return state.computeImpl(db, port, tag, timeoutMs);
     }
 
 protected:

@@ -28,7 +28,7 @@ from pxr import Usd
 class OgnUCXCameraHelperInternalState(BaseWriterNode):
     def __init__(self):
         self.rv = ""
-        self.resetSimulationTimeOnStop = False
+        self.resetSimulationTimeOnStop = True
         self.publishStepSize = 1
 
         super().__init__(initialize=False)

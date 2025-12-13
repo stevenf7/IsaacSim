@@ -494,4 +494,97 @@ TEST_SUITE("isaacsim.ucx.core.listener_registry_tests")
         // Final cleanup
         UCXListenerRegistry::shutdown();
     }
+
+    TEST_CASE("UCXListenerRegistry: tryRemoveListener conditional removal")
+    {
+        // Clean up any existing listeners before starting
+        UCXListenerRegistry::shutdown();
+
+        SUBCASE("returns false for non-existent listener")
+        {
+            bool result = UCXListenerRegistry::tryRemoveListener(12345);
+            CHECK_FALSE(result);
+        }
+
+        SUBCASE("returns false when other references exist")
+        {
+            // Create a listener and hold a reference
+            auto listener = UCXListenerRegistry::addListener();
+            REQUIRE(listener.get() != nullptr);
+
+            uint16_t port = listener->getPort();
+            CHECK(UCXListenerRegistry::isListenerRegistered(port));
+
+            // Try to remove while we still hold a reference - should fail
+            bool result = UCXListenerRegistry::tryRemoveListener(port);
+            CHECK_FALSE(result);
+
+            // Listener should still be registered
+            CHECK(UCXListenerRegistry::isListenerRegistered(port));
+
+            // Clean up
+            UCXListenerRegistry::shutdown();
+        }
+
+        SUBCASE("returns true and removes when only registry holds reference")
+        {
+            uint16_t port = 0;
+            {
+                // Create a listener
+                auto listener = UCXListenerRegistry::addListener();
+                REQUIRE(listener.get() != nullptr);
+                port = listener->getPort();
+
+                CHECK(UCXListenerRegistry::isListenerRegistered(port));
+
+                // Release our reference (listener goes out of scope here)
+            }
+
+            // Now only the registry holds a reference
+            // tryRemoveListener should succeed
+            bool result = UCXListenerRegistry::tryRemoveListener(port);
+            CHECK(result);
+
+            // Listener should no longer be registered
+            CHECK_FALSE(UCXListenerRegistry::isListenerRegistered(port));
+        }
+
+        SUBCASE("returns false with multiple node references, true after all released")
+        {
+            // Simulate multiple nodes sharing the same listener
+            auto listener1 = UCXListenerRegistry::addListener();
+            REQUIRE(listener1.get() != nullptr);
+
+            uint16_t port = listener1->getPort();
+
+            // Second node gets the same listener
+            auto listener2 = UCXListenerRegistry::addListener(port);
+            REQUIRE(listener2.get() == listener1.get());
+
+            // Third node gets the same listener
+            auto listener3 = UCXListenerRegistry::addListener(port);
+            REQUIRE(listener3.get() == listener1.get());
+
+            // First node resets and tries to remove - should fail (2 others still hold refs)
+            listener1.reset();
+            bool result1 = UCXListenerRegistry::tryRemoveListener(port);
+            CHECK_FALSE(result1);
+            CHECK(UCXListenerRegistry::isListenerRegistered(port));
+
+            // Second node resets and tries to remove - should fail (1 other still holds ref)
+            listener2.reset();
+            bool result2 = UCXListenerRegistry::tryRemoveListener(port);
+            CHECK_FALSE(result2);
+            CHECK(UCXListenerRegistry::isListenerRegistered(port));
+
+            // Third node resets and tries to remove - should succeed (no other refs)
+            listener3.reset();
+            bool result3 = UCXListenerRegistry::tryRemoveListener(port);
+            CHECK(result3);
+            CHECK_FALSE(UCXListenerRegistry::isListenerRegistered(port));
+        }
+
+        // Final cleanup
+        UCXListenerRegistry::shutdown();
+    }
 }

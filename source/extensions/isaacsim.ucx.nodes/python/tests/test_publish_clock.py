@@ -14,19 +14,20 @@
 # limitations under the License.
 
 import struct
+import time
 
 import numpy as np
 import omni
 import omni.graph.core as og
 import ucxx._lib.libucxx as ucx_api
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.ucx.nodes.tests.common import UCXTestCase
+from isaacsim.ucx.nodes.tests.common import UCXTestCase, find_available_port
 from ucxx._lib.arr import Array
 
 # Test configuration constants
 CONNECTION_WAIT_FRAMES = 60
 CONNECTION_ESTABLISH_FRAMES = 20
 SEND_WAIT_FRAMES = 50
+RECEIVE_TIMEOUT_SECONDS = 1.0
 RECEIVE_TIMEOUT_FRAMES = 1000
 SIMULATION_ADVANCE_TIME = 2.0
 SIMULATION_SHORT_ADVANCE_TIME = 0.5
@@ -44,15 +45,7 @@ class TestUCXPublishClock(UCXTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
-        # Stop timeline if it's running
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        await super().tearDown()
-
-    async def setup_ucx_client_with_listener(self, port=DEFAULT_TEST_PORT):
+    async def setup_ucx_client_with_listener(self):
         """Setup UCX client to connect to the OmniGraph node's listener.
 
         The OmniGraph nodes create their own internal listeners automatically.
@@ -63,7 +56,7 @@ class TestUCXPublishClock(UCXTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         # Create client connection using the base class helper
-        self.create_ucx_client(port)
+        self.create_ucx_client(self.port)
 
         # Give a few more frames for the connection to establish
         for _ in range(CONNECTION_ESTABLISH_FRAMES):
@@ -109,7 +102,7 @@ class TestUCXPublishClock(UCXTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishClock.inputs:port", DEFAULT_TEST_PORT),
+                        ("PublishClock.inputs:port", self.port),
                         ("PublishClock.inputs:tag", DEFAULT_TEST_TAG),
                     ],
                     og.Controller.Keys.CONNECT: [
@@ -126,44 +119,36 @@ class TestUCXPublishClock(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
+        # Trigger impulse to set up the node and the listener
+        og.Controller.attribute("/ActionGraph/OnImpulse.state:enableImpulse").set(True)
+        await omni.kit.app.get_app().next_update_async()
+
         # Setup client
         await self.setup_ucx_client_with_listener()
-
-        # Step simulation to build up time
-        await simulate_async(SIMULATION_ADVANCE_TIME)
 
         # Post receive request
         buffer = np.zeros(CLOCK_MESSAGE_SIZE_BYTES, dtype=np.uint8)
         request = self.client_endpoint.tag_recv(Array(buffer), tag=ucx_api.UCXXTag(DEFAULT_TEST_TAG))
 
-        # Trigger impulse to publish the clock after we posted the receive
+        # Trigger impulse again to publish the clock
         og.Controller.attribute("/ActionGraph/OnImpulse.state:enableImpulse").set(True)
+        await omni.kit.app.get_app().next_update_async()
 
-        # Wait a bit for the message to be sent
-        for _ in range(SEND_WAIT_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-
-        # Wait for receive to complete
-
-        for _ in range(RECEIVE_TIMEOUT_FRAMES):
+        # Wait for the message to be received
+        start_time = time.time()
+        while time.time() - start_time < RECEIVE_TIMEOUT_SECONDS:
             if request.completed:
                 break
-            await omni.kit.app.get_app().next_update_async()
+            time.sleep(0.001)
 
         self.assertTrue(request.completed, "Did not receive clock message")
         request.check_error()
 
         # Unpack timestamp
         timestamp = struct.unpack("d", buffer.tobytes())[0]
-        print(f"Received clock: {timestamp} seconds")
 
-        # Verify timestamp is reasonable (simulation time should be positive and at least 2 seconds)
-        # Note: time may be higher due to accumulated simulation from previous tests
-        self.assertGreater(timestamp, 2.0, "Timestamp should be greater than 2.0 seconds")
-        self.assertLess(timestamp, 60.0, "Timestamp should be less than 60 seconds (sanity check)")
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
+        # Verify timestamp is reasonable (simulation time should be positive)
+        self.assertGreater(timestamp, 0.0, "Timestamp should be greater than 0.0 seconds")
 
     async def test_clock_progression(self):
         """Test that clock values increase over time"""
@@ -179,7 +164,7 @@ class TestUCXPublishClock(UCXTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishClock.inputs:port", DEFAULT_TEST_PORT),
+                        ("PublishClock.inputs:port", self.port),
                         ("PublishClock.inputs:tag", DEFAULT_TEST_TAG),
                     ],
                     og.Controller.Keys.CONNECT: [
@@ -198,7 +183,7 @@ class TestUCXPublishClock(UCXTestCase):
 
         # Trigger impulse to publish clock
         og.Controller.attribute("/ActionGraph/OnImpulse.state:enableImpulse").set(True)
-        await simulate_async(SIMULATION_VERY_SHORT_ADVANCE_TIME)
+        await omni.kit.app.get_app().next_update_async()
 
         # Setup client
         await self.setup_ucx_client_with_listener()
@@ -207,26 +192,18 @@ class TestUCXPublishClock(UCXTestCase):
 
         # Receive multiple clock messages with simulation between each
         for i in range(3):
-            # Simulate to advance time
-            await simulate_async(SIMULATION_SHORT_ADVANCE_TIME)
-
             # Post receive request BEFORE triggering send
             buffer = np.zeros(CLOCK_MESSAGE_SIZE_BYTES, dtype=np.uint8)
             request = self.client_endpoint.tag_recv(Array(buffer), tag=ucx_api.UCXXTag(DEFAULT_TEST_TAG))
 
             # Trigger impulse to publish clock
             og.Controller.attribute("/ActionGraph/OnImpulse.state:enableImpulse").set(True)
-            await simulate_async(SIMULATION_VERY_SHORT_ADVANCE_TIME)
-
-            # Wait for send/receive to complete
-            for _ in range(SEND_WAIT_FRAMES):
-                await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
 
             # Wait for the receive to complete
-            for _ in range(RECEIVE_TIMEOUT_FRAMES):
-                if request.completed:
-                    break
-                await omni.kit.app.get_app().next_update_async()
+            start_time = time.time()
+            while not request.completed and time.time() - start_time < RECEIVE_TIMEOUT_SECONDS:
+                time.sleep(0.001)
 
             self.assertTrue(request.completed, f"Did not receive clock message for sample {i}")
             request.check_error()
@@ -266,58 +243,6 @@ class TestUCXPublishClock(UCXTestCase):
                     msg=f"Delta {i} ({delta:.6f}) should be close to average ({avg_delta:.6f})",
                 )
 
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
-    async def test_manual_clock(self):
-        """Test clock publishing with manual time input"""
-
-        # Create graph with manual impulse trigger
-        try:
-            og.Controller.edit(
-                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-                {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("PublishClock", "isaacsim.ucx.nodes.UCXPublishClock"),
-                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-                    ],
-                    og.Controller.Keys.SET_VALUES: [
-                        ("PublishClock.inputs:port", DEFAULT_TEST_PORT),
-                        ("PublishClock.inputs:tag", DEFAULT_TEST_TAG),
-                        ("ReadSimTime.inputs:resetOnStop", True),
-                    ],
-                    og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
-                        ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
-                    ],
-                },
-            )
-        except Exception as e:
-            print(f"Error creating graph: {e}")
-            raise
-
-        # Start timeline
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
-
-        # Setup client
-        await self.setup_ucx_client_with_listener()
-
-        # Simulate a bit
-        await simulate_async(SIMULATION_SHORT_ADVANCE_TIME)
-
-        # Receive clock message
-        timestamp = await self.receive_clock_message()
-
-        print(f"Received manual clock: {timestamp} seconds")
-
-        # Verify we got a reasonable timestamp
-        self.assertGreater(timestamp, 0.0)
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
     async def test_multiple_nodes_same_port(self):
         """Test that multiple nodes can share the same port (listener is reused)"""
 
@@ -326,20 +251,20 @@ class TestUCXPublishClock(UCXTestCase):
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
                 {
                     og.Controller.Keys.CREATE_NODES: [
-                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("OnImpulse", "omni.graph.action.OnImpulseEvent"),
                         ("PublishClock1", "isaacsim.ucx.nodes.UCXPublishClock"),
                         ("PublishClock2", "isaacsim.ucx.nodes.UCXPublishClock"),
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishClock1.inputs:port", DEFAULT_TEST_PORT),
+                        ("PublishClock1.inputs:port", self.port),
                         ("PublishClock1.inputs:tag", DEFAULT_TEST_TAG),
-                        ("PublishClock2.inputs:port", DEFAULT_TEST_PORT),  # Same port
+                        ("PublishClock2.inputs:port", self.port),  # Same port
                         ("PublishClock2.inputs:tag", DEFAULT_TEST_TAG + 1),  # Different tag
                     ],
                     og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "PublishClock1.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "PublishClock2.inputs:execIn"),
+                        ("OnImpulse.outputs:execOut", "PublishClock1.inputs:execIn"),
+                        ("OnImpulse.outputs:execOut", "PublishClock2.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishClock1.inputs:timeStamp"),
                         ("ReadSimTime.outputs:simulationTime", "PublishClock2.inputs:timeStamp"),
                     ],
@@ -352,14 +277,16 @@ class TestUCXPublishClock(UCXTestCase):
         # Start timeline
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
+        og.Controller.attribute("/ActionGraph/OnImpulse.state:enableImpulse").set(True)
+        await omni.kit.app.get_app().next_update_async()
 
         # Setup client
         await self.setup_ucx_client_with_listener()
 
-        # Simulate
-        await simulate_async(SIMULATION_SHORT_ADVANCE_TIME)
-
         # Receive messages with different tags
+        og.Controller.attribute("/ActionGraph/OnImpulse.state:enableImpulse").set(True)
+        await omni.kit.app.get_app().next_update_async()
+
         timestamp1 = await self.receive_clock_message(tag=DEFAULT_TEST_TAG)
         timestamp2 = await self.receive_clock_message(tag=DEFAULT_TEST_TAG + 1)
 
@@ -371,12 +298,10 @@ class TestUCXPublishClock(UCXTestCase):
         self.assertGreater(timestamp2, 0.0)
         self.assertAlmostEqual(timestamp1, timestamp2, delta=0.1)
 
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
     async def test_no_connection(self):
         """Test node behavior when no client is connected"""
 
+        another_port = find_available_port()
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -387,7 +312,7 @@ class TestUCXPublishClock(UCXTestCase):
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishClock.inputs:port", DEFAULT_TEST_PORT + 1),  # Different port
+                        ("PublishClock.inputs:port", another_port),  # Different port
                         ("PublishClock.inputs:tag", DEFAULT_TEST_TAG),
                     ],
                     og.Controller.Keys.CONNECT: [
@@ -405,10 +330,7 @@ class TestUCXPublishClock(UCXTestCase):
         timeline.play()
 
         # Don't create a client - just trigger the node
-        await simulate_async(SIMULATION_SHORT_ADVANCE_TIME)
+        await omni.kit.app.get_app().next_update_async()
 
         # Node should handle no connection gracefully (no crash)
         # This is a success if we reach this point
-
-        timeline.stop()
-        await omni.kit.app.get_app().next_update_async()

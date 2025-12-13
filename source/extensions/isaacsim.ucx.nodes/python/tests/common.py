@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import socket
 import struct
 
 try:
@@ -24,7 +25,33 @@ except ImportError:
     )
 
 # UCX imports
+import omni
+import omni.timeline
 import ucxx._lib.libucxx as ucx_api
+
+
+def find_available_port() -> int:
+    """Find an available port for a UCX listener.
+
+    Creates a temporary socket bound to port 0, allowing the OS to assign
+    an available ephemeral port, then closes the socket and returns the port.
+
+    Returns:
+        An available port number.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.ucx.nodes.tests.common import find_available_port
+        >>>
+        >>> port = find_available_port()
+        >>> isinstance(port, int) and 1024 <= port <= 65535
+        True
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("", 0))
+        return sock.getsockname()[1]
 
 
 class UCXTestCase(TimedAsyncTestCase):
@@ -37,12 +64,20 @@ class UCXTestCase(TimedAsyncTestCase):
         os.environ["UCX_TLS"] = "tcp,self"
         os.environ["UCX_NET_DEVICES"] = "all"
 
+        self.port = find_available_port()
+
         # Initialize UCX client tracking
         self.client_context = None
         self.client_worker = None
         self.client_endpoint = None
 
     async def tearDown(self):
+
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.stop()
+
+        await omni.kit.app.get_app().next_update_async()
+
         # Clean up UCX client resources
         if self.client_worker:
             try:

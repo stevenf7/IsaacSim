@@ -57,15 +57,16 @@ protected:
     /**
      * @brief Common compute logic for clock publishing nodes.
      * @details
-     * Handles listener initialization, connection checking, and message publishing.
+     * Handles listener initialization, connection checking, and message publishing with timeout.
      * Delegates to publishMessage() for actual message generation and sending.
      *
      * @param[in] db Database accessor for node inputs/outputs
      * @param[in] port Port number for UCX listener
      * @param[in] tag UCX tag for message identification
+     * @param[in] timeoutMs Timeout in milliseconds for send request (0 = infinite)
      * @return bool True if execution succeeded, false otherwise
      */
-    bool computeImpl(DatabaseT& db, uint16_t port, uint64_t tag)
+    bool computeImpl(DatabaseT& db, uint16_t port, uint64_t tag, uint32_t timeoutMs)
     {
         if (!this->ensureListenerReady(db, port))
         {
@@ -77,20 +78,21 @@ protected:
             return true;
         }
 
-        return publishMessage(db, tag);
+        return publishMessage(db, tag, timeoutMs);
     }
 
     /**
-     * @brief Publishes a message over UCX.
+     * @brief Publishes a message over UCX with timeout.
      * @details
      * Generates the message by calling the derived class's virtual generateMessage(),
-     * then sends it using UCX tagged send asynchronously.
+     * then sends it using UCX tagged send and waits for completion with timeout.
      *
      * @param[in] db Database accessor for logging and inputs
      * @param[in] tag UCX tag for message identification
+     * @param[in] timeoutMs Timeout in milliseconds for send request (0 = infinite)
      * @return bool True if publish succeeded, false otherwise
      */
-    bool publishMessage(DatabaseT& db, uint64_t tag)
+    bool publishMessage(DatabaseT& db, uint64_t tag, uint32_t timeoutMs)
     {
         std::vector<uint8_t> messageData = generateMessage(db);
 
@@ -100,7 +102,7 @@ protected:
             return false;
         }
 
-        return this->sendMessage(db, messageData, tag);
+        return this->sendMessage(db, messageData, tag, timeoutMs);
     }
 
     /**

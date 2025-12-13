@@ -1,4 +1,11 @@
 # Changelog
+
+## [1.1.3] - 2025-12-11
+### Changed
+- Try removing listener from registry after node resets
+- Fix issues with unit tests
+- Reset simulation time on stop by default for UCXCameraHelper
+
 ## [1.1.2] - 2025-12-07
 ### Changed
 - Fix issues found by clang tidy

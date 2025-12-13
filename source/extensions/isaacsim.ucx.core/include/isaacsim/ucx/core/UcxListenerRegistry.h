@@ -86,6 +86,25 @@ public:
      */
     static void shutdown();
 
+    /**
+     * @brief Remove listener only if no other references exist.
+     * @details
+     * Removes and shuts down the listener if the registry holds the only reference
+     * (use_count == 1). If other shared_ptr holders exist, the listener remains active.
+     *
+     * This should be called after releasing your own shared_ptr:
+     * @code
+     * uint16_t port = m_listener->getPort();
+     * m_listener.reset();  // Release our reference first
+     * UCXListenerRegistry::tryRemoveListener(port);  // Remove if we were the last
+     * @endcode
+     *
+     * @param[in] port Port number of listener to potentially remove
+     *
+     * @return true if listener was removed, false if still in use or not found
+     */
+    static bool tryRemoveListener(uint16_t port);
+
 private:
     /** @brief Map of port numbers to listener instances. */
     static std::unordered_map<uint16_t, std::shared_ptr<UCXListener>> g_listeners;
