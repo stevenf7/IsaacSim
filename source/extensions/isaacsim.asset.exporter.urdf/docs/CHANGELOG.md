@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2025-12-14
+### Changed
+- Update lxml==6.0.2
+
 ## [1.4.0] - 2025-10-30
 ### Changed
 - Migrate extension implementation to core experimental API
