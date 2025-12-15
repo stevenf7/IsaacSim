@@ -49,7 +49,7 @@ version_selector_enabled = false
 
 logo_target_url = "index.html"
 copybutton_enabled = true
-announcement = ""
+announcement = "<span style='color: orange; font-size: 1.2em;'>&#9888;</span><strong>Work in Progress:</strong> We are actively updating our documentation for the Isaac Sim 6.0 Early Developer Release. Content may change frequently.<br>Binaries and other artifacts will be released when the General Availability (GA) version becomes available.<br>For the latest updates and source code, visit our <a href='https://github.com/isaac-sim/IsaacSim' target='_blank'>GitHub repository</a>."
 
 extra_content_head = [
     "${env:TRACKING_SCRIPT}"
