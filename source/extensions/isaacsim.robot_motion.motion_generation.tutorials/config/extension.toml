@@ -4,7 +4,8 @@
 #
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
+category = "Simulation"
 title = "Motion Generation Tutorials"
 description = "Tutorials for using the Lula planning library under motion generation."
 authors = ["hmazhar@nvidia.com", "jhough@nvidia.com", "arudich@nvidia.com"]
