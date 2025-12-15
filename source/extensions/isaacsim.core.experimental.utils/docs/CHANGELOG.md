@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2025-12-15
+### Changed
+- Update app module docstrings example and add module summaries for docs purposes
+
 ## [0.8.0] - 2025-11-26
 ### Added
 - Add timeline-related functions to app utils
