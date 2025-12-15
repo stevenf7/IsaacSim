@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.4] - 2025-12-14
+### Changed
+- Update opencv-python-headless==4.12.0.88
+
 ## [1.6.3] - 2025-08-26
 ### Changed
 - Fix yamlimport used in test
