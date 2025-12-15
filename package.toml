@@ -52,8 +52,8 @@ files_exclude = [
     ["tests/tests-docker*"],
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.importer.onshape*"],
-    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
-    ["**/.git/**"], # ISIM-1020
+    ["kit/exts/omni.kit.extpath.git/**"],
+    ["**/.git/**"],
 ]
 
 [isaac-sim-standalone]
@@ -77,11 +77,11 @@ files_exclude = [
     ["tests/tests-docker*"],
     ["dockertests/**"],
     ["tests-external/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
+    ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"],
     ["tests/tests-startup.extscache*"],
     ["tests/tests-omni.importer.onshape*"],
-    ["kit/exts/omni.kit.extpath.git/**"], # ISIM-1020
-    ["**/.git/**"], # ISIM-1020
+    ["kit/exts/omni.kit.extpath.git/**"],
+    ["**/.git/**"],
     ["dev/**"],
     ["omni.isaac.sim*"],
     ["pull_kit_sdk*"],
@@ -118,6 +118,7 @@ files_exclude = [
     ["exts/isaacsim.asset.exporter.urdf/pip_prebundle/bin/**"], # ISIM-2584 remove because of malware
 ]
 
+# AUTOREMOVE: BEGIN
 
 ########################################################################################################################
 # coverage package
@@ -200,3 +201,5 @@ files = [
     ["_assets-5_temp/**",""],
     ["tools/internal-licenses/isaac-sim-assets-LICENSE.txt","PACKAGE-LICENSES/isaac-sim-assets-LICENSE.txt"],
 ]
+
+# AUTOREMOVE: END

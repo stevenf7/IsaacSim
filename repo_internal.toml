@@ -663,7 +663,6 @@ exclude = [
     "docs/media",
     "index.rst",
     "PACKAGE-INFO.yaml",
-    "package.toml",
     "python_packages.toml",
     "README_INTERNAL.md",
     "repo_internal.toml",
@@ -693,7 +692,8 @@ exclude = [
 files = [
     "repo.toml",
     "repo_tools.toml",
-    "tools/docker/prep_docker_build.sh"
+    "tools/docker/prep_docker_build.sh",
+    "package.toml",
 ]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
