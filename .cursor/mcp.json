@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+        "usd-code-mcp": {
+            "type": "usd-code-mcp",
+            "url": "http://usd-code-mcp.nvidia.com/mcp"
+        },
+        "isaac-sim-mcp": {
+            "type": "isaac-sim-mcp",
+            "url": "http://isaac-sim-mcp.nvidia.com/mcp"
+        },
+        "kit-dev-mcp": {
+            "type": "kit-dev-mcp",
+            "url": "http://kit-dev-mcp.nvidia.com/mcp"
+        },
+        "omni-ui-mcp": {
+            "type": "omni-ui-mcp",
+            "url": "http://omni-ui-mcp.nvidia.com/mcp"
+        }
+    }
+}
