@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Functions for interacting with the application and its available extensions.
+"""
+
 from __future__ import annotations
 
 from typing import Callable
@@ -300,7 +304,7 @@ def get_extension_path(name: str) -> str:
         >>>
         >>> # get the path of the 'isaacsim.core.version' extension
         >>> app_utils.enable_extension("isaacsim.core.version")  # doctest: +NO_CHECK
-        >>> app_utils.get_extension_path("isaacsim.core.version")
+        >>> app_utils.get_extension_path("isaacsim.core.version")  # doctest: +NO_CHECK
         '.../exts/isaacsim.core.version'
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
