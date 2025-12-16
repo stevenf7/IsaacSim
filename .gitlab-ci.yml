@@ -2161,5 +2161,6 @@ generate-public-extension-mr:
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     when: never
   - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
+    when: manual
   - !reference [.rules-version-changed-manual, rules]
   - !reference [.rules-push-manual, rules]
