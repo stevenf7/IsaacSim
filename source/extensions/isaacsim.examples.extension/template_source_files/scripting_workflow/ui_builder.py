@@ -15,6 +15,7 @@
 
 import omni.timeline
 import omni.ui as ui
+import omni.usd
 from isaacsim.core.api.world import World
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.stage import create_new_stage, get_current_stage
@@ -56,7 +57,7 @@ class UIBuilder:
         Args:
             event (omni.timeline.TimelineEventType): Event Type
         """
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
+        if event.event_name == omni.timeline.GLOBAL_EVENT_STOP:
             # When the user hits the stop button through the UI, they will inevitably discover edge cases where things break
             # For complete robustness, the user should resolve those edge cases here
             # In general, for extensions based off this template, there is no value to having the user click the play/stop
@@ -79,7 +80,7 @@ class UIBuilder:
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-        if event.type == int(StageEventType.OPENED):
+        if event.event_name == omni.usd.get_context().stage_event_name(StageEventType.OPENED):
             # If the user opens a new stage, the extension should completely reset
             self._reset_extension()
 
