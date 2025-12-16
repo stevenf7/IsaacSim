@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.3] - 2025-12-15
+### Fixed
+- Fixed consumption of events downstream on UI builder
+
 ## [3.1.2] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.
