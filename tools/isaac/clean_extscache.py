@@ -377,7 +377,7 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
         template_url = f"https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/{commit_hash}/templates/omni.all.template.extensions.kit"
         log(f"Using commit hash {commit_hash} for template URL")
     else:
-        template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/feature/109.0/templates/omni.all.template.extensions.kit?ref_type=heads"
+        template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/production/109.0/templates/omni.all.template.extensions.kit?ref_type=heads"
         log("Using default production branch for template URL")
 
     log(f"Template URL: {template_url}")
