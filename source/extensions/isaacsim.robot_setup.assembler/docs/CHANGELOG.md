@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.4] - 2025-12-15
+### Changed
+- Fix event name usage.
+
 ## [3.1.3] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.
