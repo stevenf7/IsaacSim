@@ -261,8 +261,6 @@ class UIBuilder:
         self._charts_frame = CollapsableFrame("Charts", collapsed=True, enabled=True, build_fn=self._build_charts_frame)
 
         items = self._populate_robot_menu()
-        if self._articulation_menu_model:
-            self._articulation_menu_model.refresh_list(items)
 
     def _build_gains_tuning_frame(self):
         with self._gains_tuning_frame:

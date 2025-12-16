@@ -121,6 +121,11 @@ class Extension(omni.ext.IExt):
                 on_event=self._on_stage_closed,
                 observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_stage_closed",
             )
+            self._stage_event_sub_assets_loaded = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.ASSETS_LOADED),
+                on_event=self._on_assets_loaded,
+                observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_assets_loaded",
+            )
             self._timeline_event_sub_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
                 event_name=omni.timeline.GLOBAL_EVENT_PLAY,
                 on_event=self._on_timeline_play,
@@ -207,6 +212,9 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self._render_subscription = None
         self.ui_builder.reset()
+        self.ui_builder.on_stage_event(event)
+
+    def _on_assets_loaded(self, event):
         self.ui_builder.on_stage_event(event)
 
     def _on_stage_closed(self, event):

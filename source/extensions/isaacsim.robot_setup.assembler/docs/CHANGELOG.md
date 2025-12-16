@@ -1,4 +1,8 @@
 # Changelog
+## [3.1.5] - 2025-12-16
+### Changed
+- Consume Asset Changed events for UI update
+
 ## [3.1.4] - 2025-12-15
 ### Changed
 - Fix event name usage.

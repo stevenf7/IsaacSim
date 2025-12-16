@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.1.4] - 2025-12-16
+### Changed
+- Consume Asset Changed events
+
 ## [3.1.3] - 2025-12-15
 ### Fixed
 - Fixed consumption of events downstream on UI builder
