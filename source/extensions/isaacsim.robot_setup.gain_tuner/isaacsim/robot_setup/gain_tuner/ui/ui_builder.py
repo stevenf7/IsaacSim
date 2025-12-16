@@ -88,6 +88,7 @@ class UIBuilder:
         self.force_query_mass = True
         self._save_stage_prompt = None
         self._initial_table_height = 150
+        self._articulation_menu_model = None
 
     ###################################################################################
     #           The Functions Below Are Called Automatically By extension.py
@@ -114,12 +115,12 @@ class UIBuilder:
         """
         if not self._articulation_menu_model or not self._articulation_menu_model.has_item():
             return
-        if event.type == int(omni.timeline.TimelineEventType.PLAY):
+        if event.event_name == omni.timeline.GLOBAL_EVENT_PLAY:
             self._gains_tuning_frame.collapsed = True
             self._test_gains_frame.collapsed = False
             if self._test_button:
                 self._test_button.enabled = True
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
+        if event.event_name == omni.timeline.GLOBAL_EVENT_STOP:
             self._gains_tuning_frame.collapsed = False
             self._test_gains_frame.collapsed = True
             if self._test_button:
@@ -162,13 +163,19 @@ class UIBuilder:
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-        if event.type == int(omni.usd.StageEventType.ASSETS_LOADED):  # Any asset added or removed
+        if event.event_name == omni.usd.get_context().stage_event_name(
+            omni.usd.StageEventType.ASSETS_LOADED
+        ):  # Any asset added or removed
             items = self._populate_robot_menu()
             if self._articulation_menu_model:
                 self._articulation_menu_model.refresh_list(items)
-        elif event.type == int(omni.usd.StageEventType.SIMULATION_START_PLAY):  # Timeline played
+        elif event.event_name == omni.usd.get_context().stage_event_name(
+            omni.usd.StageEventType.SIMULATION_START_PLAY
+        ):  # Timeline played
             pass
-        elif event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):  # Timeline stopped
+        elif event.event_name == omni.usd.get_context().stage_event_name(
+            omni.usd.StageEventType.SIMULATION_STOP_PLAY
+        ):  # Timeline stopped
             self._reset_ui_next_frame = True
 
     def reset(self):
@@ -252,6 +259,10 @@ class UIBuilder:
         )
 
         self._charts_frame = CollapsableFrame("Charts", collapsed=True, enabled=True, build_fn=self._build_charts_frame)
+
+        items = self._populate_robot_menu()
+        if self._articulation_menu_model:
+            self._articulation_menu_model.refresh_list(items)
 
     def _build_gains_tuning_frame(self):
         with self._gains_tuning_frame:
