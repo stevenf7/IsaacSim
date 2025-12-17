@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.2] - 2025-12-17
+### Fixed
+- Fixed output directory not being updated when read from the UI field
+
 ## [2.3.1] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.
