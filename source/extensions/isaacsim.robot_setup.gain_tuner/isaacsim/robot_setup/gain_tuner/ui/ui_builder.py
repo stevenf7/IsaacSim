@@ -305,7 +305,8 @@ class UIBuilder:
                         with ui.VStack():
                             joint_entries = self._gains_tuner.get_joint_entries()
                             self._gains_table_widget = JointWidget(
-                                joint_entries, self._gains_tuner._joint_acumulated_inertia
+                                joint_entries,
+                                lambda joint: self._gains_tuner._joint_acumulated_inertia.get(joint, 0.0),
                             )
 
                         self._gains_splitter = ui.Placer(

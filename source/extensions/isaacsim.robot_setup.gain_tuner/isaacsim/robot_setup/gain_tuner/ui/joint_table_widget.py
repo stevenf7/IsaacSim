@@ -26,6 +26,8 @@ from .resetable_widget import ResetableLabelField
 from .style import get_style
 
 ITEM_HEIGHT = 28
+DEG_TO_RAD = np.pi / 180.0
+RAD_TO_DEG = 180.0 / np.pi
 
 
 class WidgetColumns(IntEnum):
@@ -315,13 +317,13 @@ class JointItem(ui.AbstractItem):
     target_type_with_mimic = ["Mimic"]
     joint_drive_type_with_mimic = [""]
 
-    def __init__(self, joint_entry, inertia, value_changed_fn=None):
+    def __init__(self, joint_entry, inertia_provider, value_changed_fn=None):
         super().__init__()
 
         self.entry = joint_entry
         self.joint = joint_entry.joint
         self.drive_axis = joint_entry.drive_axis
-        self.inertia = inertia
+        self._inertia_provider = inertia_provider
         self._value_changed_fn = value_changed_fn
         target_type = JointItem.target_type
         joint_drive_type = JointItem.joint_drive_type
@@ -407,6 +409,18 @@ class JointItem(ui.AbstractItem):
         self.value_field = {}
         self.mode = JointSettingMode.STIFFNESS
 
+    def _get_inertia(self):
+        try:
+            if callable(self._inertia_provider):
+                value = self._inertia_provider(self.joint)
+            elif isinstance(self._inertia_provider, dict):
+                value = self._inertia_provider.get(self.joint, 0.0)
+            else:
+                value = 0.0
+        except Exception:
+            value = 0.0
+        return value if value is not None else 0.0
+
     def on_update_drive_type(self, model, *args):
         drive_type = model.get_value_as_int()
         self.drive_type = JointDriveType(drive_type)
@@ -449,7 +463,7 @@ class JointItem(ui.AbstractItem):
                     attr.Set(model.get_value_as_float())
         m_eq = 1
         if self.drive_type == JointDriveType.FORCE:
-            m_eq = self.inertia
+            m_eq = self._get_inertia()
         if self.mode == JointSettingMode.NATURAL_FREQUENCY:
             self.updating_damping_ratio = True
             self.damping = self.damping_ratio * (2 * np.sqrt(m_eq * self.stiffness))
@@ -464,7 +478,7 @@ class JointItem(ui.AbstractItem):
                 return 0
         m_eq = 1
         if self.drive_type == JointDriveType.FORCE:
-            m_eq = self.inertia
+            m_eq = self._get_inertia()
         if self.natural_frequency > 0:
             if m_eq == 0:
                 m_eq = 1
@@ -564,23 +578,25 @@ class JointItem(ui.AbstractItem):
         else:
             m_eq = 1
             if self.drive_type == JointDriveType.FORCE:
-                m_eq = self.inertia
+                m_eq = self._get_inertia()
                 if m_eq == 0:
                     m_eq = 1
-            return (np.sqrt(self.stiffness / (m_eq))) / (2 * np.pi)
+            stiffness_rad = self.stiffness / DEG_TO_RAD
+            return (np.sqrt(stiffness_rad / m_eq)) / (2 * np.pi)
 
     def compute_drive_stiffness(self):
         m_eq = 1
         if self.drive_type == JointDriveType.FORCE:
-            m_eq = self.inertia
-        stiffness = m_eq * (((2 * np.pi * self.natural_frequency)) ** 2)
-        value_changed = self.stiffness != stiffness
+            m_eq = self._get_inertia()
+        stiffness_rad = m_eq * ((2 * np.pi * self.natural_frequency) ** 2)
+        stiffness_deg = stiffness_rad / RAD_TO_DEG
+        value_changed = self.stiffness != stiffness_deg
         if value_changed and self.mode == JointSettingMode.NATURAL_FREQUENCY:
-            self.stiffness = stiffness
+            self.stiffness = stiffness_deg
             # print(self.joint.drive.target_type)
             if self.drive_mode == JointDriveMode.POSITION:
                 self.updating_damping_ratio = True
-                self.damping = self.damping_ratio * ((2 * np.sqrt(m_eq * self.stiffness)))
+                self.damping = self.damping_ratio * (2 * np.sqrt(m_eq * stiffness_rad))
                 self.updating_damping_ratio = False
                 # damping_attr = get_damping_attr(self.joint)
                 # if damping_attr:
@@ -887,11 +903,10 @@ class JointItemDelegate(ui.AbstractItemDelegate):
 
 
 class JointListModel(ui.AbstractItemModel):
-    def __init__(self, joints_list, inertias, value_changed_fn, **kwargs):
+    def __init__(self, joints_list, inertia_provider, value_changed_fn, **kwargs):
         super().__init__()
-        self._children = [
-            JointItem(entry, inertias.get(entry.joint, 0.0), self._on_joint_changed) for entry in joints_list
-        ]
+        self._inertia_provider = inertia_provider or (lambda *_: 0.0)
+        self._children = [JointItem(entry, self._inertia_provider, self._on_joint_changed) for entry in joints_list]
         self._joint_changed_fn = value_changed_fn
         self._items_sort_func = None
         self._items_sort_reversed = False
@@ -951,6 +966,10 @@ class JointListModel(ui.AbstractItemModel):
 
     def set_mode(self, mode):
         if self._mode != mode:
+            for item in self.get_item_children():
+                # Always derive natural frequency/damping ratio from current stiffness/damping.
+                item.natural_frequency = item.compute_natural_frequency()
+                item.damping_ratio = item.compute_damping_ratio()
             self._mode = mode
             for item in self.get_item_children():
                 item.mode = mode
@@ -966,10 +985,10 @@ class JointListModel(ui.AbstractItemModel):
 
 
 class JointWidget(TableWidget):
-    def __init__(self, joint_entries, inertias, value_changed_fn=None):
+    def __init__(self, joint_entries, inertia_provider, value_changed_fn=None):
         self.joints = joint_entries or []
-        self.inertias = inertias or {}
-        self.model = JointListModel(self.joints, self.inertias, self._on_value_changed)
+        self.inertia_provider = inertia_provider or (lambda *_: 0.0)
+        self.model = JointListModel(self.joints, self.inertia_provider, self._on_value_changed)
         self.delegate = JointItemDelegate(self.model)
         self._enable_bulk_edit = True
         self._value_changed_fn = value_changed_fn

@@ -376,7 +376,7 @@ def GetLinksFromJoint(root: RobotLinkNode, joint_prim: pxr.Usd.Prim) -> tuple[li
 
     def collect_backward_links(node: RobotLinkNode) -> list[pxr.Usd.Prim]:
         """Collects all links in the backward direction (parents) from a node."""
-        links = []
+        links = [node.prim]
         current = node.parent
         old_current = node
         while current:
