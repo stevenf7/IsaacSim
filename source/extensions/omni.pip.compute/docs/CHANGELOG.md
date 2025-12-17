@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.5] - 2025-12-17
+### Changed
+- Revert to opencv-python-headless==4.11.0.86
+
 ## [1.6.4] - 2025-12-14
 ### Changed
 - Update opencv-python-headless==4.12.0.88
