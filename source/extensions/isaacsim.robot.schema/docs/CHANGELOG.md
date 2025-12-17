@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.0.3] - 2025-12-16
+### Changed
+- Add source link in compute backwards bodies from joint
+
 ## [4.0.2] - 2025-12-07
 ### Changed
 - Add missing docstrings
