@@ -54,15 +54,6 @@ def main(args: argparse.Namespace):
     #         warning_only=True,
     #     )
 
-    if build_config == "release":
-        # Extensions verification for publishing (if publishing enabled)
-        if omni.repo.ci.get_repo_config().get("repo_publish_exts", {}).get("enabled", True):
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "publish_exts", "--verify"])
-
-        # Tool to promote extensions to the public registry pipeline, if enabled (for apps)
-        if omni.repo.ci.get_repo_config().get("repo_deploy_exts", {}).get("enabled", False):
-            omni.repo.ci.launch(["${root}/repo${shell_ext}", "deploy_exts"])
-
     # Use repo_docs.enabled as indicator for whether to build docs
     repo_docs_enabled = omni.repo.ci.get_repo_config().get("repo_docs", {}).get("enabled", True)
     # repo_docs_enabled = repo_docs_enabled and omni.repo.ci.is_windows()
