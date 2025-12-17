@@ -1881,7 +1881,7 @@ check-python-packages-dependencies-linux-x86_64:
     - .ipp_lnx_x86_64_cpu_small
   stage: check-externals
   needs: []
-  allow_failure: true
+  allow_failure: false
   script:
     - ./repo.sh check_python_package_definitions --gitlab
     # check for dependency conflicts
@@ -1904,7 +1904,7 @@ check-python-packages-dependencies-linux-aarch64:
     - .runner-build-linux-aarch64
   stage: check-externals
   needs: []
-  allow_failure: true
+  allow_failure: false
   script:
     - ./repo.sh check_python_package_definitions --gitlab
     # check for dependency conflicts
@@ -1927,7 +1927,7 @@ check-python-packages-dependencies-windows-x86_64:
     - .runner-utility-windows-x86_64
   stage: check-externals
   needs: []
-  allow_failure: true
+  allow_failure: false
   script:
     - ./repo.bat check_python_package_definitions --gitlab
     # check for dependency conflicts
