@@ -276,25 +276,38 @@ class SyntheticRecorderWindow(MenuHelperWindow):
 
     def _configure_disk_backend(self):
         """Configure DiskBackend parameters from UI fields."""
-        if "output_dir" not in self._recorder.backend_params or not self._recorder.backend_params["output_dir"]:
-            if self._out_working_dir:
-                self._recorder.backend_params["output_dir"] = os.path.join(self._out_working_dir, self._out_dir)
-            else:
-                self._recorder.backend_params["output_dir"] = self._out_dir
+        if self._out_working_dir:
+            self._recorder.backend_params["output_dir"] = os.path.join(self._out_working_dir, self._out_dir)
+        else:
+            self._recorder.backend_params["output_dir"] = self._out_dir
 
-    def _configure_s3_backend(self, config):
-        """Configure S3Backend parameters from UI fields and config."""
-        if self._out_dir and "key_prefix" not in self._recorder.backend_params:
-            self._recorder.backend_params["key_prefix"] = self._out_dir
-        s3_params = config.get("s3_params")
-        if isinstance(s3_params, dict):
-            self._s3_params = s3_params
-            if "bucket" not in self._recorder.backend_params and s3_params.get("s3_bucket"):
-                self._recorder.backend_params["bucket"] = s3_params["s3_bucket"]
-            if "region" not in self._recorder.backend_params and s3_params.get("s3_region"):
-                self._recorder.backend_params["region"] = s3_params["s3_region"]
-            if "endpoint_url" not in self._recorder.backend_params and s3_params.get("s3_endpoint"):
-                self._recorder.backend_params["endpoint_url"] = s3_params["s3_endpoint"]
+    def _configure_s3_backend(self):
+        """Configure S3Backend parameters from UI fields."""
+        backend_params = self._recorder.backend_params
+
+        key_prefix = self._out_dir or None
+        if key_prefix:
+            backend_params["key_prefix"] = key_prefix
+        else:
+            backend_params.pop("key_prefix", None)
+
+        bucket = self._s3_params.get("s3_bucket") or None
+        if bucket:
+            backend_params["bucket"] = bucket
+        else:
+            backend_params.pop("bucket", None)
+
+        region = self._s3_params.get("s3_region") or None
+        if region:
+            backend_params["region"] = region
+        else:
+            backend_params.pop("region", None)
+
+        endpoint = self._s3_params.get("s3_endpoint") or None
+        if endpoint:
+            backend_params["endpoint_url"] = endpoint
+        else:
+            backend_params.pop("endpoint_url", None)
 
     def _load_config(self, path):
         """Load the json config file and set the recorder parameters."""
@@ -329,6 +342,9 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         self._out_working_dir = config.get("out_working_dir", self._out_working_dir)
         self._out_dir = config.get("out_dir", self._out_dir)
         self._use_s3 = config.get("use_s3", False)
+        s3_params = config.get("s3_params")
+        if isinstance(s3_params, dict):
+            self._s3_params = s3_params
 
         # Load backend configuration
         self._recorder.backend_type = config.get("backend_type", self._recorder.backend_type)
@@ -342,7 +358,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         if self._recorder.backend_type == "DiskBackend":
             self._configure_disk_backend()
         elif self._recorder.backend_type == "S3Backend":
-            self._configure_s3_backend(config)
+            self._configure_s3_backend()
 
         # Load writer params (UI-only fields)
         basic_writer_params = config.get("basic_writer_params")
@@ -490,6 +506,12 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         else:
             # If custom writer, load parameters from the given json config file
             self._recorder.writer_params = self._get_custom_params(self._custom_params_path)
+
+        # Configure backend params from UI fields before recording
+        if self._recorder.backend_type == "DiskBackend":
+            self._configure_disk_backend()
+        elif self._recorder.backend_type == "S3Backend":
+            self._configure_s3_backend()
 
         asyncio.ensure_future(self._recorder.start_stop_async())
 
