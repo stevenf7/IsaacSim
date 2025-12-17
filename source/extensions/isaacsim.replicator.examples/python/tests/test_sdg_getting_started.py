@@ -198,6 +198,7 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         import os
         import random
 
+        import carb.settings
         import omni.replicator.core as rep
         import omni.usd
 

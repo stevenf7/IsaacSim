@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.7] - 2025-12-17
+### Changed
+- Added missing import for SDG getting started to be in sync with docs
+
 ## [1.6.6] - 2025-12-11
 ### Changed
 - Improved simready assets SDG example output results
