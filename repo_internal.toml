@@ -544,10 +544,12 @@ ignored_extensions = [
 # Tool to promote extensions to the public registry pipeline
 ########################################################################################################################
 
-[repo_deploy_exts.pipeline_repo.branch.prod]
+[repo_deploy_exts.pipeline_repo.branch.prod-109]
 enabled = true
+skip_if_build_is_mr = true
 fail_if_exts_are_missing = false
 create_mr = true
+auto_merge_mr = false
 
 [repo_deploy_exts]
 run_if_app_version_regex = '.*'
