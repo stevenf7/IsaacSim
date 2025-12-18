@@ -1,4 +1,8 @@
 # Changelog
+## [15.11.5] - 2025-12-18
+### Fixed
+- IsaacSensorCreateRTXSensor commands resolve prim paths as expected when using Replicator APIs as a fallback
+
 ## [15.11.4] - 2025-12-12
 ### Changed
 - RtxLidar.get_object_ids correctly handles GenericModelOutput.objId
