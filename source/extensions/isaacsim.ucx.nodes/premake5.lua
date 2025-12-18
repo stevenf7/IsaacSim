@@ -38,7 +38,6 @@ if os.target() == "linux" then
         "%{root}/_build/target-deps/pip_ucx_prebundle/libucxx/include",
         "%{root}/_build/target-deps/pip_ucx_prebundle/rapids_logger/include",
         "%{kit_sdk_bin_dir}/dev/fabric/include/",
-        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
