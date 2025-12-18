@@ -1430,6 +1430,28 @@ bump-version:
       - !reference [.rules-bump-version, rules]
 
 # ==============================================================================================================
+rebase-develop-kit-tot:
+    extends:
+      - .ipp_lnx_x86_64_cpu_small
+    variables:
+        GIT_DEPTH: 0
+        GIT_STRATEGY: clone
+        GITLAB_REPO_URL: "https://oauth2:$GITLAB_PUSH_TOKEN@gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
+    script:
+      - git config user.email "gitlab@nvidia.com"
+      - git config user.name "gitlab"
+      - git remote set-url --push origin $GITLAB_REPO_URL
+      - git fetch origin develop-kit-tot
+      - git checkout develop-kit-tot
+      - git rebase origin/develop
+      - git push --force-with-lease origin develop-kit-tot
+    needs: []
+    rules:
+      - if: $CI_COMMIT_BRANCH != "develop"
+        when: never
+      - !reference [.rules-version-changed, rules]
+
+# ==============================================================================================================
 sign-windows-x86_64-release:
     timeout: 3 hour
     extends:
