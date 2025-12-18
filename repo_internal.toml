@@ -603,7 +603,6 @@ exts.exclude = []
 exts.include = [
   "omni.isaac.core_archive",
   "omni.isaac.ml_archive",
-  "omni.exporter.urdf",
   "isaacsim.*",
   "omni.kit.loop-isaac",
   "omni.pip.cloud",
