@@ -62,7 +62,6 @@ for _, ros_distro in ipairs(ros_distributions) do
     add_cuda_dependencies()
     includedirs {
         "%{root}/source/extensions/isaacsim.core.includes/include",
-        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/omni_physics/%{config}/include",
         "%{root}/_build/target-deps/nv_ros2_" .. ros_distro .. "/include",
         "%{root}/_build/target-deps/nlohmann_json/include",

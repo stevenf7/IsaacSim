@@ -140,7 +140,6 @@ includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/source/internal_extensions/isaacsim.util.debug_draw/include",
-    "%{root}/_build/target-deps/cuda/include",
 }
 
 libdirs {
