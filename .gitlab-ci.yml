@@ -1813,6 +1813,9 @@ publish-to-packman:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
+      # Allow execution when triggered by nightly upstream pipeline
+      - if: $UPSTREAM_PIPELINE_SOURCE == "nightly"
+        when: on_success
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
