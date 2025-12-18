@@ -1991,6 +1991,8 @@ stage-to-github:
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
+      # Custom Cleanup - remove pycaches
+      - find -type d -iname '__pycache__' -exec rm -rf "{}" \;
       - git config user.email "7774242+sheikh-nv@users.noreply.github.com"
       - git config user.name "sheikh-nv"
       - echo "Isaac Sim Update"
@@ -2031,6 +2033,8 @@ stage-to-gitlab:
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
+      # Custom Cleanup - remove pycaches
+      - find -type d -iname '__pycache__' -exec rm -rf "{}" \;
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
       - echo "Isaac Sim Update"
