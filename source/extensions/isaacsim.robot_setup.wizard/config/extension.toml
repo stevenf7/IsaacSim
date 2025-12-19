@@ -1,5 +1,5 @@
 [package]
-version = "0.0.8"
+version = "0.1.0"
 category = "other"
 title = "Isaac Sim Robot Wizard [Beta]"
 description = "Wizard to guide through robot import and configuration"
@@ -13,7 +13,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.utils" = {}
+"isaacsim.core.experimental.objects" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
 

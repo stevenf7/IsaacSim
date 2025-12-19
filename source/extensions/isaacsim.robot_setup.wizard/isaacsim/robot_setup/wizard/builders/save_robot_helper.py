@@ -22,10 +22,11 @@ Backend of "Save Robot"
 
 import os
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.usd
 import usd.schema.isaac.robot_schema as rs
-from isaacsim.core.utils.articulations import add_articulation_root, remove_articulation_root
-from pxr import Sdf, Usd, UsdGeom
+from isaacsim.core.experimental.objects import DistantLight, GroundPlane
+from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 from ..utils.utils import apply_standard_stage_settings
 from .robot_templates import RobotRegistry
@@ -35,22 +36,16 @@ def create_variant_usd(add_ground=False, add_lights=False, add_physics_scene=Fal
 
     def _add_ground(stage):
         print("Adding ground plane")
-        from isaacsim.core.api.objects.ground_plane import GroundPlane
-
-        GroundPlane(prim_path="/Environment/groundPlane", z_position=0)
+        GroundPlane("/Environment/groundPlane")
 
     def _add_light(stage):
         print("Adding light")
-        from pxr import UsdLux
-
-        light = UsdLux.DistantLight.Define(stage, "/Environment/defaultLight")
-        light.CreateIntensityAttr().Set(1000.0)
+        light = DistantLight("/Environment/defaultLight")
+        light.set_intensities(1000.0)
 
     def _add_physics_scene(stage):
         print("Adding physics scene")
-        from pxr import UsdPhysics
-
-        UsdPhysics.Scene.Define(stage, "/Environment/physicsScene")
+        stage_utils.define_prim("/Environment/physicsScene", type_name="PhysicsScene")
 
     robot = RobotRegistry().get()
     # start a new stage for the variant usd
@@ -119,13 +114,17 @@ def apply_articulation_apis(robot_path, articulation_root_path):
     # make sure there isn't already an articulation root on stage, if there is, delete it if it's not on the prim desired
 
     def remove_articulation_root_recursive(prim):
-        remove_articulation_root(prim)
+        if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+            prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
+        if prim.HasAPI(PhysxSchema.PhysxArticulationAPI):
+            prim.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
         for child in prim.GetChildren():
             remove_articulation_root_recursive(child)
 
     # delete any previous articulation root prim that might be on the robot
     remove_articulation_root_recursive(robot_prim)
-    add_articulation_root(articulation_prim)
+    articulation_prim.ApplyAPI(UsdPhysics.ArticulationRootAPI)
+    articulation_prim.ApplyAPI(PhysxSchema.PhysxArticulationAPI)
 
 
 def apply_robot_schema(robot_path):
