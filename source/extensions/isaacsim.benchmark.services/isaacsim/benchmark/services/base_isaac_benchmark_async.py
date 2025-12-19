@@ -21,11 +21,11 @@ import time
 from pathlib import Path
 
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 from isaacsim.benchmark.services import execution, settings, utils
 from isaacsim.benchmark.services.datarecorders import interface
 from isaacsim.benchmark.services.metrics import backend, measurements
-from isaacsim.core.utils.stage import is_stage_loading, open_stage
 from isaacsim.storage.native import get_assets_root_path_async
 
 from .recorders import *
@@ -112,7 +112,7 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         )
 
         logger.info("Stopping")
-        while is_stage_loading():
+        while stage_utils.is_stage_loading():
             print("asset still loading, waiting to finish")
             await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
@@ -200,7 +200,7 @@ class BaseIsaacBenchmarkAsync(omni.kit.test.AsyncTestCase):
         Args:
             usd_path (str): Path to USD stage.
         """
-        open_stage(usd_path)
+        stage_utils.open_stage(usd_path)
         await wait_until_stage_is_fully_loaded_async()
 
     async def store_custom_measurement(self, phase_name: str, custom_measurement: measurements) -> None:

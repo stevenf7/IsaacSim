@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.5.0] - 2025-12-17
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [3.4.0] - 2025-12-09
 ### Changed
 - Converted log statements to use logger for independent visibility control

@@ -19,10 +19,10 @@ import tempfile
 import time
 
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 from isaacsim.benchmark.services import utils
 from isaacsim.benchmark.services.datarecorders import interface
 from isaacsim.benchmark.services.metrics import backend, measurements, report
-from isaacsim.core.utils.stage import open_stage
 from isaacsim.storage.native import get_assets_root_path
 
 from .recorders import *
@@ -238,7 +238,7 @@ class BaseIsaacBenchmark:
         Args:
             usd_path (str): Path to USD stage.
         """
-        open_stage(usd_path)
+        stage_utils.open_stage(usd_path)
         wait_until_stage_is_fully_loaded()
 
     def store_custom_measurement(self, phase_name: str, custom_measurement: measurements) -> None:

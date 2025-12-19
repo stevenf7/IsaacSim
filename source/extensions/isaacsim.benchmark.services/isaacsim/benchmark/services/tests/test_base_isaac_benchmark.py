@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import isaacsim.core.experimental.utils.app as app_utils
 import omni
 from isaacsim.benchmark.services import BaseIsaacBenchmarkAsync
 from isaacsim.benchmark.services.metrics.measurements import (
@@ -20,7 +21,6 @@ from isaacsim.benchmark.services.metrics.measurements import (
     ListMeasurement,
     SingleMeasurement,
 )
-from isaacsim.core.api import SimulationContext
 
 
 class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
@@ -40,10 +40,8 @@ class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
         self.set_phase("loading", False, True)
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        simulation_context = SimulationContext()
-        await simulation_context.initialize_simulation_context_async()
         await self.store_measurements()
-        simulation_context.play()
+        app_utils.play()
 
         self.set_phase("benchmark")
         for frame in range(10):
@@ -55,10 +53,8 @@ class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
         self.set_phase("loading", False, True)
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        simulation_context = SimulationContext()
-        await simulation_context.initialize_simulation_context_async()
         await self.store_measurements()
-        simulation_context.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         # Store different types of measurements
