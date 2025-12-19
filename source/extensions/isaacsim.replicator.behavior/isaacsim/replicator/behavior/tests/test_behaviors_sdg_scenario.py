@@ -44,12 +44,12 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         import inspect
         import os
 
+        import isaacsim.core.experimental.utils.semantics as semantics_utils
         import numpy as np
         import omni.kit.app
         import omni.replicator.core as rep
         import omni.timeline
         import omni.usd
-        from isaacsim.core.utils.semantics import add_labels, remove_labels
         from isaacsim.replicator.behavior.behaviors import (
             LightRandomizer,
             LocationRandomizer,
@@ -246,8 +246,8 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
             if not target_prim.HasAttribute("xformOp:translate"):
                 UsdGeom.Xformable(target_prim).AddTranslateOp()
             target_prim.GetAttribute("xformOp:translate").Set(TARGET_ASSET_LOCATION)
-            remove_labels(target_prim, include_descendants=True)
-            add_labels(target_prim, labels=[TARGET_ASSET_LABEL], instance_name="class")
+            semantics_utils.remove_all_labels(target_prim, include_descendants=True)
+            semantics_utils.add_labels(target_prim, labels=[TARGET_ASSET_LABEL], taxonomy="class")
 
             # Setup and run the stacking simulation before capturing the data
             # Note: Physics simulation is non-deterministic, final positions may vary

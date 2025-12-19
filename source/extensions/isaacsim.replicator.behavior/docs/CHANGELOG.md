@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.1] - 2025-12-16
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [1.3.0] - 2025-12-03
 ### Changed
 - Added explicit seed to randomizers to make them deterministic
