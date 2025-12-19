@@ -554,6 +554,8 @@ build-windows-x86_64-debug:
     needs:
       - job: check-code-format
         optional: true
+      - job: build-linux-x86_64-c++-coverage
+        artifacts: true
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS != "true"
         when: never
@@ -826,11 +828,11 @@ test-linux-x86_64-external-ar:
     before_script:
       - set -eu
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.7z --dst _build/linux-x86_64/release
       - curl -o ./archive.zip  https://gitlab-master.nvidia.com/api/v4/projects/139162/repository/archive.zip
       - unzip archive.zip -d _git
-      - mkdir -p source/standalone_examples/testing/external_workflow_tests/ar
-      - cp -r _git/*/ar/* source/standalone_examples/testing/external_workflow_tests/ar
-      - ./build.sh -r --no-docker
+      - mkdir -p _build/linux-x86_64/release/standalone_examples/testing/external_workflow_tests/ar
+      - cp -r _git/*/ar/* _build/linux-x86_64/release/standalone_examples/testing/external_workflow_tests/ar
     script:
       - cd _build/linux-x86_64/release
       - ./python.sh standalone_examples/testing/external_workflow_tests/ar/ar_sdg_test.py --scene standalone_examples/testing/external_workflow_tests/ar/data/physics_GPU.usda --num_datasets 3 --num_frames 3 --test --output _testoutput
