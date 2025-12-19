@@ -2,10 +2,26 @@
 
 : "${PLATFORM_TAG:=x86_64}"
 # Starting container
-BASE_CONTAINER="nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
-# Destination tags
-CONTAINER_TAGS="gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG},nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
 
+# Constants to make things a bit more readable, hopefully
+GITLAB_BASE="gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim"
+NGC_BASE="nvcr.io/nvidian/isaac-sim"
+
+BASE_CONTAINER="${GITLAB_BASE}-cicd:pipeline-${CI_PIPELINE_ID}-${PLATFORM_TAG}"
+
+# Destination tags
+if [ "$CI_PIPELINE_SOURCE" == "merge_request_event" ]; then
+    # For an MR just tag it with isaac-sim-mr:latest-branch-platform and isaac-sim-mr:branch-hash-platform
+    CONTAINER_TAGS="${GITLAB_BASE}-mr:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
+    CONTAINER_TAGS="${CONTAINER_TAGS},${GITLAB_BASE}-mr:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
+else
+    # For non-MRs tag it with isaac-sim:latest-branch-platform and isaac-sim:branch-hash-platform
+    CONTAINER_TAGS="${GITLAB_BASE}:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
+    CONTAINER_TAGS="${CONTAINER_TAGS},${GITLAB_BASE}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
+    # Additionally non-MRs get pushed to NGC as isaac-sim:latest-branch-platform and latest-branch-hash-platform
+    CONTAINER_TAGS="${CONTAINER_TAGS},${NGC_BASE}:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
+    CONTAINER_TAGS="${CONTAINER_TAGS},${NGC_BASE}:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
+fi
 
 echo "Base container: $BASE_CONTAINER"
 echo "Container tags to process: $CONTAINER_TAGS"
