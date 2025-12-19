@@ -18,13 +18,13 @@ import os
 from typing import List
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
 import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
 import pxr
-from isaacsim.core.utils.stage import update_stage_async
 from isaacsim.gui.components.element_wrappers import (
     CollapsableFrame,
     DropDown,
@@ -564,8 +564,7 @@ class UIBuilder:
     def _wait_and_reselect_articulations(self):
         # Certain physics things will occasionally take two frames to start working.
         async def wait_and_reselect():
-            await update_stage_async()
-            await update_stage_async()
+            await app_utils.update_app_async(steps=2)
             for dropdown in self._robot_dropdowns:
                 dropdown.trigger_on_selection_fn_with_current_selection()
 

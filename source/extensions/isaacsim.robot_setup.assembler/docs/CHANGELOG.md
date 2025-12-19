@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.2.0] - 2025-12-16
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [3.1.5] - 2025-12-16
 ### Changed
 - Consume Asset Changed events for UI update
