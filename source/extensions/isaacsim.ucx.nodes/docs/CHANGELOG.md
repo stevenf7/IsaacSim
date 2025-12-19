@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2025-12-12
+### Changed
+- Consolidate common functionality (publishMessage) into UcxNode base class.
+- Introduce per-sensor data structs (ClockData, ImuData, OdometryData, JointStateData, JointCommandData, ImageMetadata) to separate data extraction from serialization.
+
 ## [1.1.3] - 2025-12-11
 ### Changed
 - Try removing listener from registry after node resets
