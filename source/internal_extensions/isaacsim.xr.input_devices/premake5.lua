@@ -34,7 +34,6 @@ if platform_target == "linux-x86_64" then
     defines { "ISAACSIM_XR_INPUT_DEVICES_EXPORT" }
 
     includedirs {
-        "%{root}/source/extensions/isaacsim.core.includes/include",
         "%{root}/source/internal_extensions/isaacsim.xr.input_devices/include",
         "%{root}/source/internal_extensions/isaacsim.xr.input_devices/plugins",
     }
