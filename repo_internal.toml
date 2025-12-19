@@ -682,6 +682,7 @@ exclude = [
     "tools/package.*",
     "tools/publish*",
     "tools/python_packages",
+    "tools/repoman/__pycache__",
     "tools/test_*",
     "tools/test*",
     "tools/thumbnail_generator",
