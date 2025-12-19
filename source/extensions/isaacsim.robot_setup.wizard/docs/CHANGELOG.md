@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.0] - 2025-12-16
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [0.0.8] - 2025-08-21
 ### Changed
 - Prim name checks
