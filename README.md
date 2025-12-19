@@ -3,10 +3,11 @@
 ---
 # Isaac Sim
 
-[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://docs.python.org/3/whatsnew/3.11.html)
+[![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://docs.python.org/3/whatsnew/3.12.html)
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
+[![Linux aarch64 platform](https://img.shields.io/badge/platform-linux--aarch64-orange.svg)](https://docs.nvidia.com/dgx/dgx-os-7-user-guide/introduction.html)
 [![Windows platform](https://img.shields.io/badge/platform-windows--64-orange.svg)](https://www.microsoft.com/en-us/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-yellow.svg)](https://opensource.org/license/apache-2-0)
+[![License](https://img.shields.io/badge/license-Apache--2.0-yellow.svg)](LICENSE)
 
 > **⚠️ PRE-RELEASE SOFTWARE NOTICE**
 > This is pre-release, currently in development. You may encounter bugs, incomplete features, and other issues that will be addressed in future releases. Please [report](#support) any issues you encounter. This will be finalized into a stable release in the future.
@@ -72,9 +73,15 @@ Ensure your system is set up with the following before building Isaac Sim:
 
 - [**Git LFS**](https://git-lfs.com/): For managing large files within the repository
 
-- **(Windows - C++ Only) Microsoft Visual Studio (2019 or 2022)**: You can install the latest version from [Visual Studio Downloads](https://visualstudio.microsoft.com/downloads/). Ensure that the **Desktop development with C++** workload is selected.  [Additional information on Windows development configuration](docs/readme/windows_developer_configuration.md)
+- **(Windows - C++ Only) Microsoft Visual Studio 2022**: 
 
-- **(Windows - C++ Only) Windows SDK**: Install this alongside MSVC. You can find it as part of the Visual Studio Installer. [Additional information on Windows development configuration](docs/readme/windows_developer_configuration.md)
+- Install Visual Studio 2022, Windows SDK, MSVC using Winget by running the following command in PowerShell:
+
+  ```powershell
+  winget install --id=Microsoft.VisualStudio.2022.Community -e --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
+  ```
+  [Additional information on Windows development configuration](docs/readme/windows_developer_configuration.md)
+
 
 - **(Linux) build-essentials**: A package that includes `make` and other essential tools for building applications.  For Ubuntu, install with:
 
