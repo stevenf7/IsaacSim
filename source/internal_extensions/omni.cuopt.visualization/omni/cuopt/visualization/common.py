@@ -10,7 +10,7 @@
 import json
 import math
 
-from isaacsim.core.utils.bounds import create_bbox_cache
+import omni.kit.commands
 from pxr import Gf, Usd, UsdGeom
 
 
@@ -109,7 +109,9 @@ def get_prim_translation(prim):
 
 # Check if given edge is within Volume. Return the overlap percentage
 def edge_in_volume(edge_prim, vol_prim):
-    bbox_cache = create_bbox_cache()
+    bbox_cache = UsdGeom.BBoxCache(
+        time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=True
+    )
     total_bounds = Gf.BBox3d(bbox_cache.ComputeWorldBound(vol_prim).ComputeAlignedRange())
 
     prim_tf = UsdGeom.Xformable(edge_prim).ComputeLocalToWorldTransform(Usd.TimeCode())
