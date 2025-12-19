@@ -17,20 +17,12 @@ from enum import IntEnum
 from typing import List, Tuple
 
 import carb
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.commands
 import omni.timeline
 import usd.schema.isaac.robot_schema as robot_schema
-from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.utils.prims import (
-    get_articulation_root_api_prim_path,
-    get_prim_at_path,
-    get_prim_object_type,
-    is_prim_path_valid,
-)
-from isaacsim.core.utils.stage import get_current_stage
-from isaacsim.core.utils.string import find_unique_string_name
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
 from .session_layer_util import start_assembly_session_sublayer, stop_assembly_session_sublayer
@@ -240,8 +232,8 @@ class AssembledBodies:
         # Refreshing payloads manually is a way to get the Articulation to update immediately while the timeline is
         # still playing.  Usd Physics should be doing this automatically, but there is currently a bug.  This function
         # will eventually become unnecessary.
-        stage = get_current_stage()
-        prim = get_prim_at_path(prim_path)
+        stage = stage_utils.get_current_stage()
+        prim = prim_utils.get_prim_at_path(prim_path)
 
         composed_payloads = omni.usd.get_composed_payloads_from_prim(prim)
         if len(composed_payloads) != 0:
@@ -372,13 +364,26 @@ class RobotAssembler:
             or len(UsdPhysics.Joint(prim).GetBody1Rel().GetTargets()) == 0
         )
 
+    def get_articulation_root_api_path(self, prim_path: str) -> str:
+        """Get the prim path that has the Articulation Root API applied.
+
+        Args:
+            prim_path (str): Path to a prim
+
+        Returns:
+            str: Path to the prim that has the Articulation Root API applied
+        """
+        predicate = lambda prim, path: prim.HasAPI(UsdPhysics.ArticulationRootAPI)
+        prim = prim_utils.get_first_matching_child_prim(prim_path, predicate=predicate, include_self=True)
+        return prim_utils.get_prim_path(prim) if prim is not None else ""
+
     def _set_joint_states_to_zero(self, prim_path: str):
         """Set all joint state values to zero for a prim and its children.
 
         Args:
             prim_path (str): Path to prim whose joint states should be zeroed
         """
-        p = get_prim_at_path(prim_path)
+        p = prim_utils.get_prim_at_path(prim_path)
         for prim in Usd.PrimRange(p):
             if not UsdPhysics.Joint(prim):
                 continue
@@ -397,7 +402,7 @@ class RobotAssembler:
         Returns:
             Usd.Relationship: A relationship filtering collisions between prim_path_a and prim_path_b
         """
-        filteringPairsAPI = UsdPhysics.FilteredPairsAPI.Apply(get_prim_at_path(prim_path_a))
+        filteringPairsAPI = UsdPhysics.FilteredPairsAPI.Apply(prim_utils.get_prim_at_path(prim_path_a))
         rel = filteringPairsAPI.CreateFilteredPairsRel()
         rel.AddTarget(Sdf.Path(prim_path_b))
         return rel
@@ -595,19 +600,19 @@ class RobotAssembler:
         # Make mount_frames if they are not specified
         if base_mount_frame == "":
             base_mount_path = base_path + "/assembler_mount_frame"
-            base_mount_path = find_unique_string_name(base_mount_path, lambda x: not is_prim_path_valid(x))
+            base_mount_path = stage_utils.generate_next_free_path(base_mount_path)
             # SingleXFormPrim(base_mount_path, translation=np.array([0, 0, 0]))
         else:
             base_mount_path = base_mount_frame
 
         if attach_mount_frame == "":
             attach_mount_path = attach_path + "/assembler_mount_frame"
-            attach_mount_path = find_unique_string_name(attach_mount_path, lambda x: not is_prim_path_valid(x))
+            attach_mount_path = stage_utils.generate_next_free_path(attach_mount_path)
             # SingleXFormPrim(attach_mount_path, translation=np.array([0, 0, 0]))
         else:
             attach_mount_path = attach_mount_frame
 
-        articulation_root = get_prim_at_path(get_articulation_root_api_prim_path(attach_path))
+        articulation_root = prim_utils.get_prim_at_path(self.get_articulation_root_api_path(attach_path))
         if self.is_root_joint(articulation_root):
             articulation_root.SetActive(False)
         else:
@@ -619,7 +624,7 @@ class RobotAssembler:
         for root_joint in root_joints:
             root_joint.SetActive(False)
 
-        attach_prim = get_prim_at_path(attach_path)
+        attach_prim = prim_utils.get_prim_at_path(attach_path)
 
         # Find and Disable Fixed Joints that Tie Object B to the Stage
         root_joints = [p for p in Usd.PrimRange(attach_prim) if self.is_root_joint(p)]
@@ -638,7 +643,7 @@ class RobotAssembler:
 
         collision_mask = None
         if mask_all_collisions:
-            base_path_art_root = get_articulation_root_api_prim_path(base_path)
+            base_path_art_root = self.get_articulation_root_api_path(base_path)
             collision_mask = self.mask_collisions(base_path_art_root, attach_path)
 
         # Strange values can be written into the JointStateAPIs when nesting robots through the UI
@@ -670,10 +675,10 @@ class RobotAssembler:
             UsdPhysics.FixedJoint: A USD fixed joint
         """
 
-        stage = get_current_stage()
+        stage = stage_utils.get_current_stage()
 
         fixed_joint_path = prim_path + "/AssemblerFixedJoint"
-        fixed_joint_path = find_unique_string_name(fixed_joint_path, lambda x: not is_prim_path_valid(x))
+        fixed_joint_path = stage_utils.generate_next_free_path(fixed_joint_path)
         fixed_joint = UsdPhysics.FixedJoint.Define(stage, fixed_joint_path)
 
         fixed_joint_prim = fixed_joint.GetPrim()
@@ -692,8 +697,8 @@ class RobotAssembler:
         # Refreshing payloads manually is a way to get the Articulation to update immediately while the timeline is
         # still playing.  Usd Physics should be doing this automatically, but there is currently a bug.  This function
         # will eventually become unnecessary.
-        stage = get_current_stage()
-        prim = get_prim_at_path(prim_path)
+        stage = stage_utils.get_current_stage()
+        prim = prim_utils.get_prim_at_path(prim_path)
 
         composed_payloads = omni.usd.get_composed_payloads_from_prim(prim)
         if len(composed_payloads) != 0:
