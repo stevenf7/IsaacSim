@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2025-12-17
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [0.1.13] - 2025-12-04
 ### Fixed
 - Remove break in Clash Detection pipeline loop so clashes are stored

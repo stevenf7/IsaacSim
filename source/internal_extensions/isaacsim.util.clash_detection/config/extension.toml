@@ -1,5 +1,5 @@
 [package]
-version = "0.1.13"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Clash Detection"
 description = "Mesh Collision Detection Utility"
@@ -13,10 +13,8 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
-"isaacsim.core.prims" = {}
-"isaacsim.core.utils" = {}
 "isaacsim.storage.native" = {}
+"omni.isaac.core_archive" = {}
 "omni.physx" = {}
 "omni.physx.clashdetection.core" = {}
 
@@ -28,14 +26,11 @@ name = "isaacsim.util.clash_detection.tests"
 
 [[test]]
 pyCoverageEnabled = false
-
 dependencies=[
-"omni.isaac.ml_archive",
-"omni.kit.property.bundle",
-"omni.kit.test",
-
+    "isaacsim.core.experimental.objects",
+    "omni.kit.property.bundle",
+    "omni.kit.test",
 ]
-
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -83,6 +78,3 @@ args = [
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]

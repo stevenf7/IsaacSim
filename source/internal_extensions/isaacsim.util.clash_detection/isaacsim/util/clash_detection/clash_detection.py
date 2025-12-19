@@ -290,7 +290,7 @@ class ClashDetector:
                 self._object_b_path = default_prim
         searchset_path = self._object_b_path
 
-        if prim_view.is_valid:
+        if prim_view.valid:
             self._prim_view_counter += 1
             self._prim_view_query_name = prim_view_query_name
             for prim in prim_view.prims:
