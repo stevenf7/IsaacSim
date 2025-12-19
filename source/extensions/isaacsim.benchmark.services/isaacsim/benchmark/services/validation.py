@@ -98,8 +98,7 @@ class Validator:
         """Populate *self.render_product_map* by scanning *stage*.
 
         Every camera render product under *root_prim_path* is considered and validated via
-        ``isaacsim.core.utils.render_product.get_camera_prim_path``.  Prims that
-        fail the check are silently ignored.
+        ``ViewportManager.get_camera``.  Prims that fail the check are silently ignored.
 
         Args:
             param stage: USD stage to inspect.
@@ -108,7 +107,8 @@ class Validator:
         Returns:
             Mapping from render-product USD path → human-readable folder name.
         """
-        from isaacsim.core.utils.render_product import get_camera_prim_path
+        import isaacsim.core.experimental.utils.prim as prim_utils
+        from isaacsim.core.rendering_manager import ViewportManager
         from pxr import Usd
 
         root_prim = stage.GetPrimAtPath(root_prim_path)
@@ -118,12 +118,10 @@ class Validator:
         self.render_product_map.clear()
 
         for prim in list(Usd.PrimRange(root_prim))[1:]:  # skip root itself
-            try:
-                nice_name = str(get_camera_prim_path(str(prim.GetPath()))).lstrip("/")
-            except RuntimeError:
-                continue  # not a render-product – ignore
-
-            rp_path = str(prim.GetPath())
+            camera = ViewportManager.get_camera(prim)
+            if camera is None:  # not a render-product – ignore
+                continue
+            nice_name = prim_utils.get_prim_path(camera).lstrip("/")
             if nice_name in self.render_product_map.values():
                 base = nice_name
                 idx = 1
@@ -131,7 +129,7 @@ class Validator:
                     idx += 1
                 nice_name = f"{base}_{idx}"
 
-            self.render_product_map[rp_path] = nice_name
+            self.render_product_map[prim_utils.get_prim_path(prim)] = nice_name
 
         return self.render_product_map
 

@@ -1,5 +1,5 @@
 [package]
-version = "3.4.0"
+version = "3.5.0"
 category = "Simulation"
 title = "Benchmark Services"
 description = "Provides a comprehensive framework for performance benchmarking including data collection, metrics recording, and report generation for CPU, GPU, memory, and frame time analysis."
@@ -13,7 +13,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
+"isaacsim.core.rendering_manager" = {}
 "isaacsim.storage.native" = {}
 "omni.kit.test" = {} # we derrive from the base test class and need this dependency
 "omni.physics" = {}
@@ -37,7 +37,6 @@ exts."isaacsim.benchmark.services".metrics.randomize_filename_prefix = false
 
 [[test]]
 dependencies = [
-    "omni.isaac.ml_archive",
     "omni.physx.ui",
 ]
 args = [
@@ -87,9 +86,6 @@ args = [
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
