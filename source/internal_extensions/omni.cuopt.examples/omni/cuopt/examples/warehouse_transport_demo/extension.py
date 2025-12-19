@@ -12,7 +12,7 @@ import weakref
 
 import omni.ext
 import omni.ui as ui
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, str_builder
 from isaacsim.storage.native import get_assets_root_path
 from omni.cuopt.service.common import show_vehicle_routes, test_connection_managed_service, test_connection_microservice
@@ -500,11 +500,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         )
         self._warehouse_ui_data.text = f"Warehouse loaded"
 
-        set_camera_view(
-            eye=[2.0, 7.0, 8.0],
-            target=[26.0, 60.0, 0.0],
-            camera_prim_path="/OmniverseKit_Persp",
-        )
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[2.0, 7.0, 8.0], target=[26.0, 60.0, 0.0])
 
     def _load_waypoint_graph(self):
         print("loading waypoint graph")
