@@ -372,7 +372,26 @@ check-python-packages:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_BUILDS != "true"
         when: never
       - !reference [.rules-workflow, rules]
-
+# ==============================================================================================================
+.aarch64-build-common:
+    extends:
+      - .build-common
+    image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04
+    variables:
+      OMNI_REPO_BUILD_NO_DOCKER: "1"
+    before_script:
+      - set -eu
+      - apt-get update
+      - apt-get install -y --no-install-recommends curl unzip g++-11 gcc-11 git
+      # Create alternatives for gcc-11 and g++-11 and set as default
+      - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110
+      - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 110
+      - update-alternatives --set gcc /usr/bin/gcc-11
+      - update-alternatives --set g++ /usr/bin/g++-11
+      - !reference [.gitlab-info-external-urls-linux, script]
+      - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+    after_script:
+      - !reference [.gitlab-info-external-urls-linux, script]
 # ==============================================================================================================
 build-linux-x86_64-release:
     extends:
@@ -417,20 +436,11 @@ build-linux-x86_64-debug:
 # ==============================================================================================================
 build-linux-aarch64-release:
   extends:
-    - .build-common
+    - .aarch64-build-common
     - .runner-build-linux-aarch64
     - .osec:vault:v3:prod_token_job
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.11-1cf1ab9a
-  variables:
-    OMNI_REPO_BUILD_NO_DOCKER: "1"
-  before_script:
-    - set -eu
-    - !reference [.gitlab-info-external-urls-linux, script]
-    - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
   script:
     - ./repo.sh ci build -c release
-  after_script:
-    - !reference [.gitlab-info-external-urls-linux, script]
   rules:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
@@ -441,20 +451,11 @@ build-linux-aarch64-release:
 # ==============================================================================================================
 build-linux-aarch64-debug:
   extends:
-    - .build-common
+    - .aarch64-build-common
     - .runner-build-linux-aarch64
     - .osec:vault:v3:prod_token_job
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.11-1cf1ab9a
-  variables:
-    OMNI_REPO_BUILD_NO_DOCKER: "1"
-  before_script:
-    - set -eu
-    - !reference [.gitlab-info-external-urls-linux, script]
-    - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
   script:
     - ./repo.sh ci build -c debug
-  after_script:
-    - !reference [.gitlab-info-external-urls-linux, script]
   rules:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
