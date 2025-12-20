@@ -1,5 +1,5 @@
 [package]
-version = "1.0.12"
+version = "1.0.13"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Isaac Cortex is a framework within NVIDIA's Isaac Sim that integrates various robotics tools into a unified system, facilitating the development of collaborative robotic applications. It emphasizes reactivity and adaptability, enabling robots to operate safely alongside humans without the need for physical barriers."
@@ -23,6 +23,9 @@ writeTarget.kit = true
 name = "isaacsim.cortex.framework"
 
 [[test]]
+dependencies = [
+    "omni.isaac.ml_archive",
+]
 stdoutFailPatterns.exclude = [
     "*WARNING: cannot load logging configuration file*", # exclude warning as failure
 ]
@@ -69,4 +72,16 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+]
+
+
+[[test]]
+name = "startup"
+
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
