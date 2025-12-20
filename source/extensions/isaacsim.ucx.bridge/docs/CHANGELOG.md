@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2025-12-15
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [1.1.0] - 2025-11-24
 ### Added
 - Added `isaacsim.ucx.nodes` as a dependency.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2025-12-15
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [1.2.0] - 2025-12-12
 ### Changed
 - Consolidate common functionality (publishMessage) into UcxNode base class.

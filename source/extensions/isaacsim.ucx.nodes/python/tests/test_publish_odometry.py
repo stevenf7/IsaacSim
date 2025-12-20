@@ -15,6 +15,7 @@
 
 import struct
 
+import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
 import omni.graph.core as og
 import omni.kit.app
