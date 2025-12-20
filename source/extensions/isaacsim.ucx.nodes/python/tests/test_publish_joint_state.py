@@ -16,6 +16,8 @@
 import struct
 import time
 
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -23,9 +25,7 @@ import omni.kit.test
 import omni.kit.usd
 import ucxx._lib.libucxx as ucx_api
 import usdrt.Sdf
-from isaacsim.core.prims import SingleArticulation
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.experimental.prims import Articulation
 from isaacsim.storage.native import get_assets_root_path
 from ucxx._lib.arr import Array
 
@@ -90,10 +90,9 @@ class TestUCXPublishJointState(UCXTestCase):
             raise RuntimeError("Could not find Isaac Sim assets folder")
 
         self.usd_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        self._stage = await stage_utils.open_stage_async(self.usd_path)
+        self.assertIsNotNone(self._stage)
         await omni.kit.app.get_app().next_update_async()
-        self.assertTrue(result)
-        self._stage = omni.usd.get_context().get_stage()
 
         # Create UCX publish joint state node
         try:
@@ -172,18 +171,17 @@ class TestUCXPublishJointState(UCXTestCase):
     async def test_joint_state_values(self):
         """Test that joint state values match simulation"""
         # Simulate to initialize physics
-        await simulate_async(0.5)
+        await app_utils.update_app_async(steps=30)
 
         # Get articulation and initialize it
-        articulation = SingleArticulation(prim_path="/Articulation")
-        articulation.initialize()
+        articulation = Articulation("/Articulation")
 
         # Simulate for a few frames to let physics settle
-        await simulate_async(0.5)
+        await app_utils.update_app_async(steps=30)
 
         # Get joint states from simulation
-        sim_positions = articulation.get_joint_positions()
-        sim_velocities = articulation.get_joint_velocities()
+        sim_positions = articulation.get_dof_positions().numpy()[0]
+        sim_velocities = articulation.get_dof_velocities().numpy()[0]
 
         # Receive joint state message from UCX
         timestamp, num_joints, ucx_positions, ucx_velocities, ucx_efforts = await self.receive_joint_state_message()

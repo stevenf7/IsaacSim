@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.0] - 2025-12-15
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [5.1.3] - 2025-12-06
 ### Changed
 - Migrate OgnOnPhysicsStep to Events 2.0.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.4] - 2025-12-19
+### Removed
+- Remove rendering manager as a test dependency since the extension already depends on it indirectly
+
 ## [1.5.3] - 2025-12-11
 ### Changed
 - Update ros2 test case to wait for viewport to be ready

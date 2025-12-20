@@ -1,5 +1,5 @@
 [package]
-version = "1.1.0"
+version = "1.2.0"
 category = "Simulation"
 title = "UCX Bridge"
 description = "The UCX bridge extension provides high-performance communication capabilities using UCX (Unified Communication X) for distributed simulation scenarios with low-latency data transfer."
@@ -24,9 +24,6 @@ name = "isaacsim.ucx.bridge"
 # All UCX Bridge settings are centrally defined in the ucx.core extension
 
 [[test]]
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -78,9 +75,6 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
