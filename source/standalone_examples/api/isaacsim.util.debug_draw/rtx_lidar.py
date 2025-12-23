@@ -18,6 +18,7 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, default="Example_Rotary", help="Name of lidar config.")
+parser.add_argument("--test", action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
 
 from isaacsim import SimulationApp
@@ -78,8 +79,10 @@ simulation_app.update()
 
 simulation_context.play()
 
-while simulation_app.is_running():
+i = 0
+while simulation_app.is_running() and (not args.test or i < 5):
     simulation_app.update()
+    i += 1
 
 # cleanup and shutdown
 simulation_context.stop()
