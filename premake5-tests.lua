@@ -288,6 +288,17 @@ local function get_sensor_tests()
             "tests-nativepython-testing-isaacsim.sensors.physics.contact_sensor",
             "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py",
         },
+        -- Debug Draw
+        {
+            "tests-nativepython-isaacsim.util.debug_draw.rtx_lidar",
+            "standalone_examples/api/isaacsim.util.debug_draw/rtx_lidar.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.util.debug_draw.rtx_radar",
+            "standalone_examples/api/isaacsim.util.debug_draw/rtx_radar.py",
+            "--test",
+        },
     }
 end
 

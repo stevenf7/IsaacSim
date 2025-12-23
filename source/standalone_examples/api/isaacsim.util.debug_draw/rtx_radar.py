@@ -18,12 +18,13 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, default="Example", help="Name of radar config.")
+parser.add_argument("--test", action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
 
 from isaacsim import SimulationApp
 
 # Example for creating a RTX lidar sensor and publishing PCL data
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp({"headless": False, "enable_motion_bvh": True})
 import carb
 import omni
 import omni.kit.viewport.utility
@@ -79,8 +80,10 @@ simulation_app.update()
 
 simulation_context.play()
 
-while simulation_app.is_running():
+i = 0
+while simulation_app.is_running() and (not args.test or i < 5):
     simulation_app.update()
+    i += 1
 
 # cleanup and shutdown
 simulation_context.stop()
