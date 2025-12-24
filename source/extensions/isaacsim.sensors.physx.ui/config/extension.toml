@@ -1,5 +1,5 @@
 [package]
-version = "2.3.1"
+version = "2.4.0"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor UI components"
 description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
@@ -13,21 +13,19 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
-"isaacsim.core.deprecation_manager" = {}
 "isaacsim.gui.components" = {}
-"isaacsim.robot.schema" = {}
 "isaacsim.sensors.physx" = {}
 "omni.kit.context_menu" = {}
-"omni.kit.menu.utils" = {}
-"omni.kit.uiapp" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.physx.ui"
 
 [[test]]
+timeout = 900
 dependencies = [
+    "isaacsim.test.utils",
     "omni.isaac.ml_archive",
+    "omni.kit.window.stage",
 ]
 args = [
     "--enable",
@@ -72,6 +70,9 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
 ]
 
 [[test]]

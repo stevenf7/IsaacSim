@@ -20,94 +20,70 @@ import carb
 import omni.kit.commands
 from isaacsim.core.utils.prims import create_prim
 from isaacsim.core.utils.stage import get_next_free_path
-from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.menu import create_submenu
 from isaacsim.storage.native import get_assets_root_path
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from pxr import Gf
 
 
 class RangeSensorMenu:
     def __init__(self, ext_id: str):
-        menu_items = [
-            MenuItemDescription(
-                name="PhysX Lidar",
-                sub_menu=[
-                    make_menu_item_description(ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_lidar()),
-                    make_menu_item_description(
-                        ext_id, "Generic", lambda a=weakref.proxy(self): a._add_generic(), "PhysX Generic"
-                    ),
-                ],
-            ),
-            MenuItemDescription(
-                name="LightBeam Sensor",
-                sub_menu=[
-                    make_menu_item_description(
-                        ext_id, "Generic", lambda a=weakref.proxy(self): a._add_lightbeam_sensor(), "LightBeam Generic"
-                    ),
-                    make_menu_item_description(
-                        ext_id,
-                        "Tashan TS-F-A",
-                        lambda *_: create_prim(
-                            prim_path=get_next_free_path("/TS_F_A", None),
-                            prim_type="Xform",
-                            usd_path=get_assets_root_path() + "/Isaac/Sensors/Tashan/TS-F-A/TS-F-A.usd",
-                        ),
-                    ),
-                ],
-            ),
-        ]
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
 
-        self._menu_items = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=menu_items)]
+        # Build menu dictionary structure
+        sensors_menu_dict = {
+            "name": {
+                "Sensors": [
+                    {
+                        "name": {
+                            "PhysX Lidar": [
+                                {
+                                    "name": "Rotating",
+                                    "onclick_fn": lambda *_, a=weakref.proxy(self): a._add_lidar(),
+                                },
+                                {
+                                    "name": "Generic",
+                                    "onclick_fn": lambda *_, a=weakref.proxy(self): a._add_generic(),
+                                },
+                            ]
+                        }
+                    },
+                    {
+                        "name": {
+                            "LightBeam Sensor": [
+                                {
+                                    "name": "Generic",
+                                    "onclick_fn": lambda *_, a=weakref.proxy(self): a._add_lightbeam_sensor(),
+                                },
+                                {
+                                    "name": "Tashan TS-F-A",
+                                    "onclick_fn": lambda *_: create_prim(
+                                        prim_path=get_next_free_path("/TS_F_A", None),
+                                        prim_type="Xform",
+                                        usd_path=get_assets_root_path() + "/Isaac/Sensors/Tashan/TS-F-A/TS-F-A.usd",
+                                    ),
+                                },
+                            ]
+                        }
+                    },
+                ]
+            },
+            "glyph": sensor_icon_path,
+        }
+
+        # Convert the dictionary to a menu and add it
+        self._menu_items = create_submenu(sensors_menu_dict)
         add_menu_items(self._menu_items, "Create")
 
-        # add sensor to context menu
+        # Add sensor to context menu
         context_menu_dict = {
             "name": {
                 "Isaac": [
-                    {
-                        "name": {
-                            "Sensors": [
-                                {
-                                    "name": {
-                                        "PhysX Lidar": [
-                                            {
-                                                "name": "Rotating",
-                                                "onclick_fn": lambda *_: self._add_lidar(),
-                                            },
-                                            {
-                                                "name": "Generic",
-                                                "onclick_fn": lambda *_: self._add_generic(),
-                                            },
-                                        ],
-                                    },
-                                },
-                                {
-                                    "name": {
-                                        "LightBeam Sensor": [
-                                            {
-                                                "name": "Generic",
-                                                "onclick_fn": lambda *_: self._add_lightbeam_sensor(),
-                                            },
-                                            {
-                                                "name": "Tashan TS-F-A",
-                                                "onclick_fn": lambda *_: create_prim(
-                                                    prim_path=get_next_free_path("/TS_F_A", None),
-                                                    prim_type="Xform",
-                                                    usd_path=get_assets_root_path()
-                                                    + "/Isaac/Sensors/Tashan/TS-F-A/TS-F-A.usd",
-                                                ),
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                        "glyph": sensor_icon_path,
-                    },
+                    sensors_menu_dict,
                 ],
             },
+            "glyph": sensor_icon_path,
         }
 
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")

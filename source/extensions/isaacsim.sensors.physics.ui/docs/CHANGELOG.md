@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2025-12-22
+### Added
+- Add unit tests.
+
 ## [0.1.13] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

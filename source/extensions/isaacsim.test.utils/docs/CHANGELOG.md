@@ -1,4 +1,8 @@
 # Changelog
+## [0.7.0] - 2025-12-22
+### Added
+- Add new utility functions (`get_all_menu_paths`, `count_menu_items`) and `MenuUITestCase` base class for menu UI tests.
+
 ## [0.6.4] - 2025-12-07
 ### Changed
 - Update description

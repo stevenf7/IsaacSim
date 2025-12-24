@@ -1,5 +1,5 @@
 [package]
-version = "2.4.8"
+version = "2.5.0"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Provides Isaac Sim-specific menu bar functionality including File, Edit, Create, Window, Tools, Utilities, Layouts, and Help menus with robotics-focused operations."
@@ -31,9 +31,6 @@ name = "isaacsim.gui.menu.tests"
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.sensors.camera.ui",
-    "isaacsim.sensors.physics.ui",
-    "isaacsim.sensors.physx.ui",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive",
 ]
@@ -82,20 +79,9 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 stdoutFailPatterns.exclude = [
-    '*[Error] [isaacsim.sensors.physics.plugin] *** error, No valid parent*',
-    '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
-    '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
-    '*[isaacsim.sensors.physics.plugin] Failed to create contact sensor, parent prim is not found or invalid*',
-    '*[Error] [isaacsim.sensors.physx.plugin] Lidar Sensor does not exist*',
-    '*[Error] [isaacsim.sensors.physx.plugin] Generic Sensor does not exist*',
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',
     '*[Error] [asyncio] Task exception was never retrieved*',
-    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
-    '*[Error] [isaacsim.sensors.physics.plugin] *** error: /Cube/Contact_Sensor parent prim is missing contact report API, automatically adding contact report API, stop and play the simulation for this change to take effect*',
-    '*[Error] [isaacsim.sensors.physx.plugin] isLightBeamSensor: Light Beam Sensor does not exist*',
     '*[Error] [omni.hydra] Unsupported data type 0 on primvar *doNotCastShadows*',
-    '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match:*',
-    '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources*'
 ]
 
 [[test]]

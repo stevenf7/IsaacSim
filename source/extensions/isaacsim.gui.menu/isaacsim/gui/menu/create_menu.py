@@ -21,7 +21,7 @@ import carb
 import omni.kit.menu.utils
 import usd.schema.isaac.robot_schema
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.menu import create_submenu, make_menu_item_description
 from isaacsim.storage.native.nucleus import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items, remove_menu_items
 
@@ -140,39 +140,6 @@ class CreateMenuExtension:
         ]
 
         omni.kit.menu.utils.add_layout(self.__menu_layout)
-
-        # turn dictionary into menu items
-        def create_submenu(menu_dict):
-            # Handle non-nested menu items
-            if "name" in menu_dict and isinstance(menu_dict["name"], str):
-                return [
-                    MenuItemDescription(
-                        name=menu_dict["name"],
-                        onclick_fn=menu_dict.get("onclick_fn"),
-                        onclick_action=menu_dict.get("onclick_action"),
-                        glyph=menu_dict.get("glyph"),
-                    )
-                ]
-
-            # Handle nested submenus recursively
-            submenu_name = next(iter(menu_dict["name"]))
-            items = menu_dict["name"][submenu_name]
-            sub_menu_items = []
-            for item in items:
-                if isinstance(item.get("name"), dict):
-                    # Recursively handle nested submenu
-                    sub_menu_items.append(create_submenu(item))
-                else:
-                    # Handle leaf menu item
-                    sub_menu_items.append(
-                        MenuItemDescription(
-                            name=item["name"],
-                            onclick_fn=item.get("onclick_fn"),
-                            onclick_action=item.get("onclick_action"),
-                        )
-                    )
-
-            return [MenuItemDescription(name=submenu_name, sub_menu=sub_menu_items, glyph=menu_dict.get("glyph"))]
 
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         robot_icon_path = str(Path(icon_dir).joinpath("data/robot.svg"))

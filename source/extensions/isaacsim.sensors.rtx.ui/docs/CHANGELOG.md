@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.0] - 2025-12-22
+### Changed
+- Refactor unit tests to use isaacsim.test.utils.
+
 ## [1.1.9] - 2025-12-05
 ### Changed
 - Change test to use RealTimePathTracing render mode

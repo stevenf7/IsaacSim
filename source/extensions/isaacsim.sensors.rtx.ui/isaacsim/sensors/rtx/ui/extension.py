@@ -19,6 +19,7 @@ from pathlib import Path
 import omni.ext
 import omni.kit.commands
 from isaacsim.core.utils.stage import add_reference_to_stage, get_next_free_path
+from isaacsim.gui.components.menu import create_submenu
 from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
 from isaacsim.storage.native import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
@@ -74,35 +75,9 @@ class Extension(omni.ext.IExt):
             "glyph": sensor_icon_path,
         }
 
-        # Define a helper to recursively create submenus.
-        def create_submenu(menu_dict):
-            # If the dict is a leaf (i.e. "name" is a string), create a MenuItemDescription.
-            if "name" in menu_dict and isinstance(menu_dict["name"], str):
-                return MenuItemDescription(
-                    name=menu_dict["name"],
-                    onclick_fn=menu_dict.get("onclick_fn"),
-                    onclick_action=menu_dict.get("onclick_action"),
-                )
-            # Otherwise, for nested dictionaries the key is the submenu name.
-            submenu_name = next(iter(menu_dict["name"]))
-            items = menu_dict["name"][submenu_name]
-            sub_menu_items = []
-            for item in items:
-                if isinstance(item.get("name"), dict):
-                    sub_menu_items.append(create_submenu(item))
-                else:
-                    sub_menu_items.append(
-                        MenuItemDescription(
-                            name=item["name"],
-                            onclick_fn=item.get("onclick_fn"),
-                            onclick_action=item.get("onclick_action"),
-                        )
-                    )
-            return MenuItemDescription(name=submenu_name, sub_menu=sub_menu_items, glyph=menu_dict.get("glyph"))
-
         # Convert the dictionary to a menu and add it.
         self._menu_items = create_submenu(sensors_menu_dict)
-        add_menu_items([self._menu_items], "Create")
+        add_menu_items(self._menu_items, "Create")
 
         # Add a menu item to the Isaac Sim in context menus.
         context_menu_dict = {

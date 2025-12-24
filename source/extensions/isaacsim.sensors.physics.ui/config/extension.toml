@@ -1,5 +1,5 @@
 [package]
-version = "0.1.13"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation UI Components"
 description = "Isaac Sim Physics Sensor Simulation UI Components extension provides UI components for Isaac Sim physics-based sensor simulation, eg. menu options."
@@ -20,8 +20,11 @@ writeTarget.kit = true
 name = "isaacsim.sensors.physics.ui"
 
 [[test]]
+timeout = 900
 dependencies = [
+    "isaacsim.test.utils",
     "omni.isaac.ml_archive",
+    "omni.kit.window.stage",
 ]
 args = [
     "--enable",
@@ -66,6 +69,9 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
 ]
 
 [[test]]

@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.0] - 2025-12-22
+### Changed
+- Refactor test_menu to use isaacsim.test.utils.MenuUITestCase and isaacim.gui.components.create_submenu
+### Removed
+- Move sensor menu UI tests to their own extensions
+
 ## [2.4.8] - 2025-12-11
 ### Changed
 - Update golden image for environment test
