@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2025-12-22
+### Changed
+- Refactor unit tests to use isaacsim.test.utils.
+
 ## [0.3.0] - 2025-11-06
 ### Added
 - New Realsense category, with D455, D457, and D55 models.

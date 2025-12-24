@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.0] - 2025-12-22
+### Added
+- Add menu.create_submenu to recursively build MenuItemDescription lists from dicts describing submenus
+
 ## [1.4.1] - 2025-11-27
 ### Changed
 - Add missing docstrings

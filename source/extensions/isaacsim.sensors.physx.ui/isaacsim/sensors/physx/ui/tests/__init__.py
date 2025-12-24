@@ -13,10 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .file_validation import *
-from .image_capture import *
-from .image_comparison import *
-from .image_io import *
-from .menu_ui_test import *
-from .menu_utils import *
-from .timed_async_test import *
+scan_for_test_modules = True

@@ -13,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import gc
-import weakref
 from pathlib import Path
 
 import omni.ext
 import omni.kit.commands
 from isaacsim.core.utils.prims import create_prim
 from isaacsim.core.utils.stage import get_next_free_path
-from isaacsim.gui.components.menu import make_menu_item_description
+from isaacsim.gui.components.menu import create_submenu
 from isaacsim.sensors.camera import SingleViewDepthSensorAsset
 from isaacsim.storage.native import get_assets_root_path
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
 
 class Extension(omni.ext.IExt):
@@ -170,38 +169,8 @@ class Extension(omni.ext.IExt):
             "glyph": str(Path(icon_dir).joinpath("data/sensor.svg")),
         }
 
-        def create_submenu(menu_dict):
-            # Handle non-nested menu items
-            if "name" in menu_dict and isinstance(menu_dict["name"], str):
-                return MenuItemDescription(
-                    name=menu_dict["name"],
-                    onclick_fn=menu_dict.get("onclick_fn"),
-                    onclick_action=menu_dict.get("onclick_action"),
-                    glyph=menu_dict.get("glyph"),
-                )
-
-            # Handle nested submenus recursively
-            submenu_name = next(iter(menu_dict["name"]))
-            items = menu_dict["name"][submenu_name]
-            sub_menu_items = []
-            for item in items:
-                if isinstance(item.get("name"), dict):
-                    # Recursively handle nested submenu
-                    sub_menu_items.append(create_submenu(item))
-                else:
-                    # Handle leaf menu item
-                    sub_menu_items.append(
-                        MenuItemDescription(
-                            name=item["name"],
-                            onclick_fn=item.get("onclick_fn"),
-                            onclick_action=item.get("onclick_action"),
-                        )
-                    )
-
-            return MenuItemDescription(name=submenu_name, sub_menu=sub_menu_items, glyph=menu_dict.get("glyph"))
-
         self._menu_items = create_submenu(sensors_menu_dict)
-        add_menu_items([self._menu_items], "Create")
+        add_menu_items(self._menu_items, "Create")
 
         # add sensor to context menu
         context_menu_dict = {
