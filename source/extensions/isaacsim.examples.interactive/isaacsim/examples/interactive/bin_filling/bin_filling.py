@@ -25,7 +25,7 @@ class BinFilling(BaseSample):
         super().__init__()
         self._controller = None
         self._articulation_controller = None
-        self._added_screws = False
+        self._added_cubes = False
 
     def setup_scene(self):
         world = self.get_world()
@@ -51,10 +51,10 @@ class BinFilling(BaseSample):
             end_effector_offset=np.array([0, -0.098, 0.03]),
             end_effector_orientation=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
         )
-        if not self._added_screws and self._controller.get_current_event() == 6 and not self._controller.is_paused():
+        if not self._added_cubes and self._controller.get_current_event() == 6 and not self._controller.is_paused():
             self._controller.pause()
-            self._ur10_task.add_screws(screws_number=20)
-            self._added_screws = True
+            self._ur10_task.add_cubes(cubes_number=20)
+            self._added_cubes = True
         if self._controller.is_done():
             self._world.pause()
         self._articulation_controller.apply_action(actions)
@@ -71,10 +71,10 @@ class BinFilling(BaseSample):
         if world.physics_callback_exists("sim_step"):
             world.remove_physics_callback("sim_step")
         self._controller.reset()
-        self._added_screws = False
+        self._added_cubes = False
         return
 
     def world_cleanup(self):
         self._controller = None
-        self._added_screws = False
+        self._added_cubes = False
         return

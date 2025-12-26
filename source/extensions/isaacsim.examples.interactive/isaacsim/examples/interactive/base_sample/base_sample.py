@@ -124,11 +124,18 @@ class BaseSample(object):
 
     async def clear_async(self):
         """Function called when clicking clear buttton"""
-        await create_new_stage_async()
         if self._world is not None:
+            # Ensure the simulation is fully stopped and the app processes at least one update
+            # before we start tearing down callbacks and/or closing the stage.
+            await self._world.stop_async()
+            await update_stage_async()
             self._world_cleanup()
             self._world.clear_instance()
             self._world = None
             gc.collect()
+        # Create a fresh stage after cleaning up the existing World/callbacks.
+        # Creating a new stage first can invalidate the World/SimulationContext while callbacks
+        # are still live, which risks use-after-free during stage teardown.
+        await create_new_stage_async()
         await self.setup_post_clear()
         return

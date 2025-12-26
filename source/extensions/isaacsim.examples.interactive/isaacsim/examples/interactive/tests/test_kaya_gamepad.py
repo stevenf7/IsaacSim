@@ -22,7 +22,6 @@ import omni.kit
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.prims import RigidPrim
-from isaacsim.core.experimental.utils.stage import create_new_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.examples.interactive.kaya_gamepad import KayaGamepad
@@ -33,7 +32,6 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):
-        await create_new_stage_async()
         self._provider = carb.input.acquire_input_provider()
         self._gamepad = self._provider.create_gamepad("test", "0")
         await get_app().next_update_async()
