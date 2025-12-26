@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.12.0] - 2025-12-22
+### Changed 
+- Simplified bin filling example to improve stability, replaced dropped parts with dropped cubes
+
 ## [4.11.2] - 2025-12-07
 ### Changed
 - Update description

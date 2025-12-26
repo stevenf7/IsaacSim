@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.0] - 2025-12-22
+### Changed 
+- Simplify bin filling example and improve stability, example cubes instead of various parts
+
 ## [1.2.4] - 2025-12-07
 ### Changed
 - Updated description
