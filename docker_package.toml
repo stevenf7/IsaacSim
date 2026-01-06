@@ -92,3 +92,7 @@ files = [
 files = [
     ["_build/linux-aarch64/release/**", "."]
 ]
+
+files_strip_exclude = [
+    ["**/*.so"],
+]

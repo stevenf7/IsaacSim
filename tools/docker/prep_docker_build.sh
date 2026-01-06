@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Import section marker functions if we are in CI
+if [[ "${CI}" == "true" && -f ./tools/ci/gitlab/section_marker.sh ]]; then
+    source ./tools/ci/gitlab/section_marker.sh
+else
+    section_start() { :; }
+    section_end()   { :; }
+fi
+
 
 # Parse command line arguments
 SKIP_DEDUPE=false
@@ -99,25 +107,33 @@ fi
 
 # AUTOREMOVE: BEGIN
 if [[ "${CI}" == "true" ]]; then
+    section_start "installing_dependencies" "Installing dependencies"
     apt-get update
     apt-get install -y rsync
+    section_end "installing_dependencies"
 fi
 # AUTOREMOVE: END
 
 # Goes a bit faster if you have used PM_PATH_TO_SANDBOX="_"
+section_start "installing_python_requirements" "Installing Python requirements"
 if ! tools/packman/python.sh -m pip install -r tools/docker/requirements.txt; then
     echo "Failed to install Python requirements" >&2
     exit 1
 fi
+section_end "installing_python_requirements"
 
 
+section_start "generating_rsync_script" "Generating rsync script"
 if ! tools/packman/python.sh tools/docker/generate_rsync_script.py --platform ${CONTAINER_PLATFORM} --target isaac-sim-docker --output-folder _container_temp; then
     echo "Failed to generate rsync script" >&2
     exit 1
 fi
+section_end "generating_rsync_script"
 
 
+section_start "running_rsync_script" "Running rsync script"
 ./generated_rsync_package.sh
+section_end "running_rsync_script"
 
 
 
@@ -188,7 +204,9 @@ dedupe_folder(){
 # Run deduplication unless --skip-dedupe was specified
 if [[ "$SKIP_DEDUPE" != "true" ]]; then
     echo "Running deduplication (use --skip-dedupe to skip this step)"
+    section_start "deduplicating_files" "Deduplicating files"
     dedupe_folder _container_temp
+    section_end "deduplicating_files"
 else
     echo "Skipping deduplication as requested"
 fi

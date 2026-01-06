@@ -1508,13 +1508,22 @@ publish-container-x86_64:
       - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
       - docker login nvcr.io
     script:
+      - source ./tools/ci/gitlab/section_marker.sh
+      - section_start "unzipping_packages" "Unzipping packages"
       - 7z x -y -o_build/docs/isaac_sim/latest _build/packages/docs*.7z
       - 7z x -y -o_build/linux-x86_64/release _build/packages/isaac-sim-standalone*.7z
+      - section_end "unzipping_packages"
       - rm -r .vscode
       - mv _build/linux-x86_64/release/.vscode .
+      - section_start "prep_docker_build" "Preparing Docker build"
       - ./tools/docker/prep_docker_build.sh --x86_64
+      - section_end "prep_docker_build"
+      - section_start "build_docker" "Building Docker image"
       - ./tools/docker/build_docker.sh --x86_64 --tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim-cicd:pipeline-${CI_PIPELINE_ID}-x86_64 --push
+      - section_end "build_docker"
+      - section_start "tag_and_push_container" "Tagging and pushing container"
       - PLATFORM_TAG=x86_64 ./tools/docker/tag_and_push_container.sh
+      - section_end "tag_and_push_container"
     needs:
       - job: build-linux-x86_64-release
         artifacts: true
@@ -1588,7 +1597,7 @@ test-container:
     - .test-common
     - .ipp_lnx_x86_64_gpu
     - .kit-runner-test-linux-x86_64-1x-gpu
-  image: gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-x86_64
+  image: gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim${MR_SUFFIX}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-x86_64
   # variables:
   #   GIT_STRATEGY: none
   parallel:
@@ -1618,6 +1627,9 @@ test-container:
     - job: publish-container-x86_64
       artifacts: false
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+         MR_SUFFIX: "-mr"
     - !reference [.container-rules, rules]
   artifacts:
     paths:
