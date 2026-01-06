@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 : "${PLATFORM_TAG:=x86_64}"
 # Starting container
