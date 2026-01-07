@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.8] - 2026-01-05
+### Changed
+- Augmentation examples use basic empty stage (dome light + ground plane) by default, with optional env_url for custom stages
+
 ## [1.6.7] - 2025-12-17
 ### Changed
 - Added missing import for SDG getting started to be in sync with docs
