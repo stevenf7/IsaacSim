@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.1] - 2026-01-07
+### Added
+- Added "Num App Updates" metric to report the number of app update events per phase
+
 ## [3.5.0] - 2025-12-17
 ### Changed
 - Migrate extension implementation to core experimental API
