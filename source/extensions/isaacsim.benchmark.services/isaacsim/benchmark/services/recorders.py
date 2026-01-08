@@ -264,6 +264,14 @@ class IsaacFrameTimeRecorder(interface.MeasurementDataRecorder):
                 unit="",
             )
         )
+
+        measurements_out.append(
+            measurements.SingleMeasurement(
+                name="Num App Updates",
+                value=len(self.frametime_collector.app_frametimes_ms),
+                unit="",
+            )
+        )
         return interface.MeasurementData(measurements=measurements_out)
 
 
