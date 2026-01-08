@@ -11,17 +11,27 @@ import argparse
 import os
 import sys
 from typing import Callable, Dict
-
+from tools.ci.upstream_kit_build.pull_kit import find_latest_nightly_pipeline_id
 import omni.repo.ci
 
 
 def main(args: argparse.Namespace):
 
 
-    if os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline":
+    downstream_pipeline =  os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline"
+    develop_kit_tot_pipeline = (
+        os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "") == "develop-kit-tot" or 
+        os.getenv("CI_COMMIT_REF_NAME", "") == "develop-kit-tot"
+    )
+
+    if develop_kit_tot_pipeline:
+        nightly_pipeline_id = find_latest_nightly_pipeline_id()
+        if nightly_pipeline_id is None:
+            raise ValueError("Unable to find latest nightly pipeline")
+        os.environ["UPSTREAM_PIPELINE_ID"] = str(nightly_pipeline_id)
+
+    if downstream_pipeline or develop_kit_tot_pipeline:
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "ci", "build_isaac_from_kit"])
-
-
 
     build_config = args.build_config
 
