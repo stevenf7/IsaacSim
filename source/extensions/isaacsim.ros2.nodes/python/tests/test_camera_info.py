@@ -170,7 +170,7 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         import time
 
@@ -179,10 +179,12 @@ class TestRos2CameraInfo(ROS2TestCase):
         for num in range(3):
             print(f"Play #{num+1}")
             self._timeline.play()
-            await omni.kit.app.get_app().next_update_async()
-            for _ in range(10):
-                if self._camera_info is None:
-                    await simulate_async(1.25, callback=spin)
+
+            await self.simulate_until_condition(
+                lambda: self._camera_info is not None and self._camera_info.header.stamp.sec >= 1.0,
+                max_frames=120,
+                per_frame_callback=spin,
+            )
 
             self.assertIsNotNone(self._camera_info)
 
@@ -435,10 +437,10 @@ class TestRos2CameraInfo(ROS2TestCase):
 
         # Start spinning the nodes
         def spin_left():
-            rclpy.spin_once(node_left, timeout_sec=0.1)
+            rclpy.spin_once(node_left, timeout_sec=0.01)
 
         def spin_right():
-            rclpy.spin_once(node_right, timeout_sec=0.1)
+            rclpy.spin_once(node_right, timeout_sec=0.01)
 
         # Wait for camera info and images to be received
         self._timeline.play()
@@ -613,17 +615,14 @@ class TestRos2CameraInfo(ROS2TestCase):
         )
 
         def spin_system_time():
-            rclpy.spin_once(node_system, timeout_sec=0.1)
+            rclpy.spin_once(node_system, timeout_sec=0.01)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5, callback=spin_system_time)
 
-        for _ in range(10):
-            if self._camera_info_system_time is None:
-                await simulate_async(0.5, callback=spin_system_time)
-            else:
-                break
+        await self.simulate_until_condition(
+            lambda: self._camera_info_system_time is not None, max_frames=300, per_frame_callback=spin_system_time
+        )
 
         self.assertIsNotNone(self._camera_info_system_time)
         system_timestamp = (
@@ -657,17 +656,14 @@ class TestRos2CameraInfo(ROS2TestCase):
         )
 
         def spin_sim_time():
-            rclpy.spin_once(node_sim, timeout_sec=0.1)
+            rclpy.spin_once(node_sim, timeout_sec=0.01)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5, callback=spin_sim_time)
 
-        for _ in range(10):
-            if self._camera_info_sim_time is None:
-                await simulate_async(0.5, callback=spin_sim_time)
-            else:
-                break
+        await self.simulate_until_condition(
+            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+        )
 
         self.assertIsNotNone(self._camera_info_sim_time)
         sim_timestamp = (
@@ -684,13 +680,10 @@ class TestRos2CameraInfo(ROS2TestCase):
         # Check if sim time reset to Zero
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5, callback=spin_sim_time)
 
-        for _ in range(10):
-            if self._camera_info_sim_time is None:
-                await simulate_async(0.5, callback=spin_sim_time)
-            else:
-                break
+        await self.simulate_until_condition(
+            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+        )
 
         self.assertIsNotNone(self._camera_info_sim_time)
         sim_timestamp = (
@@ -727,17 +720,14 @@ class TestRos2CameraInfo(ROS2TestCase):
         )
 
         def spin_sim_time():
-            rclpy.spin_once(node_sim, timeout_sec=0.1)
+            rclpy.spin_once(node_sim, timeout_sec=0.01)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5, callback=spin_sim_time)
 
-        for _ in range(10):
-            if self._camera_info_sim_time is None:
-                await simulate_async(0.5, callback=spin_sim_time)
-            else:
-                break
+        await self.simulate_until_condition(
+            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+        )
 
         self.assertIsNotNone(self._camera_info_sim_time)
         sim_timestamp = (
@@ -753,13 +743,10 @@ class TestRos2CameraInfo(ROS2TestCase):
         # Check if current sim time is larger than prev sim time
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5, callback=spin_sim_time)
 
-        for _ in range(10):
-            if self._camera_info_sim_time is None:
-                await simulate_async(0.5, callback=spin_sim_time)
-            else:
-                break
+        await self.simulate_until_condition(
+            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+        )
 
         self.assertIsNotNone(self._camera_info_sim_time)
         sim_timestamp = (
@@ -1056,13 +1043,17 @@ class TestRos2CameraInfo(ROS2TestCase):
         import rclpy
 
         # Spin ROS2 node to receive messages
-        for _ in range(timeout_iterations):
-            rclpy.spin_once(node, timeout_sec=0.1)
-            if all([depth_image_msg[0], pointcloud_msg[0], camera_info_msg[0]]):
-                break
-            await omni.kit.app.get_app().next_update_async()
+        def spin_and_check():
+            rclpy.spin_once(node, timeout_sec=0.01)
+
+        condition_met = await self.simulate_until_condition(
+            lambda: all([depth_image_msg[0], pointcloud_msg[0], camera_info_msg[0]]),
+            max_frames=timeout_iterations,
+            per_frame_callback=spin_and_check,
+        )
 
         # Verify we received all messages
+        self.assertTrue(condition_met, "Failed to receive all messages within timeout")
         self.assertIsNotNone(depth_image_msg[0], "Failed to receive depth image message")
         self.assertIsNotNone(pointcloud_msg[0], "Failed to receive pointcloud message")
         self.assertIsNotNone(camera_info_msg[0], "Failed to receive camera info message")

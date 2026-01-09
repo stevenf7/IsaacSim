@@ -102,7 +102,9 @@ class TestRos2PointCloud(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._point_cloud_data is not None, max_frames=60, per_frame_callback=spin
+        )
 
         # If 3D point cloud (highLOD enabled)
         self.assertIsNotNone(self._point_cloud_data)
@@ -179,7 +181,9 @@ class TestRos2PointCloud(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._point_cloud_data is not None, max_frames=60, per_frame_callback=spin
+        )
 
         # If flat point cloud (highLOD disabled)
         self.assertIsNotNone(self._point_cloud_data)
@@ -331,12 +335,20 @@ class TestRos2PointCloud(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2.0, 60, spin)
+
+        # Wait for point cloud data
+        condition_met = await self.simulate_until_condition(
+            lambda: self._point_cloud_data is not None, max_frames=120, per_frame_callback=spin  # 2.0s at 60fps
+        )
+        self.assertTrue(condition_met, "Failed to receive point cloud data within timeout")
 
         standard_checks()
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
+
+        # Reset for next test
+        self._point_cloud_data = None
 
         # 21.0 Hz Lidar rotation
         omni.kit.commands.execute(
@@ -347,7 +359,12 @@ class TestRos2PointCloud(ROS2TestCase):
         )
 
         self._timeline.play()
-        await simulate_async(2.0, 60, spin)
+
+        # Wait for point cloud data
+        condition_met = await self.simulate_until_condition(
+            lambda: self._point_cloud_data is not None, max_frames=120, per_frame_callback=spin  # 2.0s at 60fps
+        )
+        self.assertTrue(condition_met, "Failed to receive point cloud data within timeout")
 
         standard_checks()
         self._timeline.stop()

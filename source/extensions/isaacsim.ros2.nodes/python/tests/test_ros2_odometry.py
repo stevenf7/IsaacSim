@@ -448,12 +448,12 @@ class TestRos2Odometry(ROS2TestCase):
 
         # Wait for simulation to stabilize and odometry data to start flowing
         print("\nWaiting for simulation to stabilize and odometry data to begin flowing...")
-        for _ in range(20):
-            await simulate_async(0.1, callback=spin)
-            if self._leatherback_odom is not None:
-                break
+        condition_met = await self.simulate_until_condition(
+            lambda: self._leatherback_odom is not None, max_frames=120, per_frame_callback=spin  # 20 * 0.1s at 60fps
+        )
 
         # Verify we're receiving odometry data
+        self.assertTrue(condition_met, "No odometry data received from Leatherback within timeout")
         self.assertIsNotNone(self._leatherback_odom, "No odometry data received from Leatherback")
 
         # Give the robot a little extra time to settle
@@ -673,12 +673,12 @@ class TestRos2Odometry(ROS2TestCase):
 
         # Wait for simulation to stabilize and odometry data to start flowing
         print("\nWaiting for simulation to stabilize and odometry data to begin flowing...")
-        for _ in range(20):
-            await simulate_async(0.1, callback=spin)
-            if self._leatherback_odom is not None:
-                break
+        condition_met = await self.simulate_until_condition(
+            lambda: self._leatherback_odom is not None, max_frames=120, per_frame_callback=spin  # 20 * 0.1s at 60fps
+        )
 
         # Verify we're receiving odometry data
+        self.assertTrue(condition_met, "No odometry data received from Leatherback within timeout")
         self.assertIsNotNone(self._leatherback_odom, "No odometry data received from Leatherback")
 
         # Record initial position

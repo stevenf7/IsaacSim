@@ -122,7 +122,7 @@ class TestRos2SemanticLabels(ROS2TestCase):
         )
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         def find_class(label_dict, class_value):
             for label_id, label_info in label_dict.items():
@@ -153,7 +153,11 @@ class TestRos2SemanticLabels(ROS2TestCase):
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
-        await simulate_async(1, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._label_data is not None and self._clock_data is not None,
+            max_frames=60,
+            per_frame_callback=spin,
+        )
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         spin()
@@ -180,11 +184,16 @@ class TestRos2SemanticLabels(ROS2TestCase):
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
-        await simulate_async(1, 60, spin)
+        def check_labels_condition():
+            if self._label_data is None or self._clock_data is None:
+                return False
+            try:
+                labels_dict = json.loads(self._label_data)
+                return find_class(labels_dict, "cube1") and not find_class(labels_dict, "cube0")
+            except (json.JSONDecodeError, KeyError):
+                return False
 
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        spin()
+        await self.simulate_until_condition(check_labels_condition, max_frames=120, per_frame_callback=spin)
 
         self.assertIsNotNone(self._label_data)
         self.assertIsNotNone(self._clock_data)
