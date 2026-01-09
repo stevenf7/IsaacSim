@@ -1,4 +1,10 @@
 # Changelog
+
+## [0.8.5] - 2026-01-08
+### Fixed
+- Fixed incorrect method call `set_wind` to `set_winds` in `ParticleSystem` constructor.
+- Fixed incorrect attribute name `solverPositionIteration` to `solverPositionIterationCount` in `ParticleSystem.get_solver_position_iteration_counts`.
+
 ## [0.8.4] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.
