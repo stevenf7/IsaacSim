@@ -14,3 +14,4 @@
 # limitations under the License.
 
 from .extension import CreateSetupExtension
+from .layout import LAYOUTS_PATH, load_layout

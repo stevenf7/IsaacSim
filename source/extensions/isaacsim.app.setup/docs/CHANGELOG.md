@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.0] - 2026-01-08
+### Changed
+- Restructured extension into modular components
+
 ## [1.7.1] - 2025-12-10
 ### Changed
 - Add wait for viewport to be ready before printing app ready status
