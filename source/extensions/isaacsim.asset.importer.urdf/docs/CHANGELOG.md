@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.37] - 2026-01-05
+### Fixed
+- Updated configuring of mimic joints to be processed after all joints are created to avoid issues with lexicographical order of siblings
+
 ## [2.4.36] - 2025-12-07
 ### Changed
 - Update description

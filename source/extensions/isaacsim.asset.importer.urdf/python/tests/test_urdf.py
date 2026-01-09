@@ -471,42 +471,65 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertTrue(path, "/carter")
         # TODO add checks here
 
-    @unittest.skipIf(os.getenv("ETM_ACTIVE"), "Skipped in ETM: containing invalid characters")
     async def test_urdf_parse_mimic(self):
-
-        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/cobotta_pro_900/cobotta_pro_900.urdf")
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mimic.urdf")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.parse_mimic = True
         status, path = omni.kit.commands.execute(
             "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
         )
-        self.assertTrue(path, "/cobotta_pro_900")
+        self.assertTrue(path, "/test_mimic")
 
         stage = omni.usd.get_context().get_stage()
-        joint = stage.GetPrimAtPath("/cobotta_pro_900/joints/left_inner_knuckle_joint")
-        self.assertTrue(joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
-        mimic_api = PhysxSchema.PhysxMimicJointAPI(joint, UsdPhysics.Tokens.rotX)
-        self.assertEqual(mimic_api.GetGearingAttr().Get(), 1.0)
-        self.assertEqual(mimic_api.GetOffsetAttr().Get(), 0.0)
+        # Verify source joint exists and has no mimic API
+        source_joint = stage.GetPrimAtPath("/test_mimic/joints/source_joint")
+        self.assertNotEqual(source_joint.GetPath(), Sdf.Path.emptyPath)
+        self.assertFalse(source_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
-        # self.assertIsNotNone( PhysxSchema.PhysxTendonAxisRootAPI(joint, "fixedTendon"))
+        # Verify a_mimic_joint (lexicographically BEFORE source_joint) has mimic API configured
+        # This tests that mimic joints are configured after all joints are created
+        a_mimic_joint = stage.GetPrimAtPath("/test_mimic/joints/a_mimic_joint")
+        self.assertNotEqual(a_mimic_joint.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(a_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
-    @unittest.skipIf(os.getenv("ETM_ACTIVE"), "Skipped in ETM: containing invalid characters")
+        a_mimic_api = PhysxSchema.PhysxMimicJointAPI(a_mimic_joint, UsdPhysics.Tokens.rotZ)
+        self.assertAlmostEqual(a_mimic_api.GetGearingAttr().Get(), -1.5)  # negated multiplier
+        self.assertAlmostEqual(a_mimic_api.GetOffsetAttr().Get(), 0.1)
+        # Verify reference joint relationship points to source_joint
+        ref_joint_targets = a_mimic_api.GetReferenceJointRel().GetTargets()
+        self.assertEqual(len(ref_joint_targets), 1)
+        self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
+
+        # Verify z_mimic_joint (lexicographically AFTER source_joint) has mimic API configured
+        z_mimic_joint = stage.GetPrimAtPath("/test_mimic/joints/z_mimic_joint")
+        self.assertNotEqual(z_mimic_joint.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(z_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
+
+        z_mimic_api = PhysxSchema.PhysxMimicJointAPI(z_mimic_joint, UsdPhysics.Tokens.rotZ)
+        self.assertAlmostEqual(z_mimic_api.GetGearingAttr().Get(), 1.0)  # negated multiplier
+        self.assertAlmostEqual(z_mimic_api.GetOffsetAttr().Get(), 0.0)
+        # Verify reference joint relationship points to source_joint
+        ref_joint_targets = z_mimic_api.GetReferenceJointRel().GetTargets()
+        self.assertEqual(len(ref_joint_targets), 1)
+        self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
+
     async def test_urdf_ignore_parse_mimic(self):
-
-        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/robots/cobotta_pro_900/cobotta_pro_900.urdf")
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mimic.urdf")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         import_config.parse_mimic = False
         status, prim_path = omni.kit.commands.execute(
             "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config
         )
-        self.assertTrue(prim_path, "/cobotta_pro_900")
+        self.assertTrue(prim_path, "/test_mimic")
         await self.standard_checks(prim_path)
 
-        joint = self._stage.GetPrimAtPath("/cobotta_pro_900/joints/left_inner_knuckle_joint")
+        # Verify mimic joints do not have PhysxMimicJointAPI when parse_mimic is False
+        a_mimic_joint = self._stage.GetPrimAtPath("/test_mimic/joints/a_mimic_joint")
+        self.assertFalse(a_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
-        self.assertFalse(joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
+        z_mimic_joint = self._stage.GetPrimAtPath("/test_mimic/joints/z_mimic_joint")
+        self.assertFalse(z_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
     async def test_urdf_franka(self):
 
