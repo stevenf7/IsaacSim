@@ -134,7 +134,7 @@ class ParticleSystem:
         if max_depenetration_velocities is not None:
             self.set_max_depenetration_velocities(max_depenetration_velocities)
         if winds is not None:
-            self.set_wind(winds)
+            self.set_winds(winds)
         if max_neighborhoods is not None:
             self.set_max_neighborhoods(max_neighborhoods)
         if max_velocities is not None:
@@ -873,7 +873,7 @@ class ParticleSystem:
         results = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="int32", device=self._device)
         write_idx = 0
         for i in indices:
-            results[write_idx] = self._prims[i.tolist()].GetAttribute("solverPositionIteration").Get()
+            results[write_idx] = self._prims[i.tolist()].GetAttribute("solverPositionIterationCount").Get()
             write_idx += 1
         return results
 

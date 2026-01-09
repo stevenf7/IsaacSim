@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.7.3] - 2026-01-08
+### Changed
+- Change log level of no adjacent samples found for interpolation warning to INFO
+
 ## [1.7.2] - 2025-12-07
 ### Changed
 - Run clang tidy
