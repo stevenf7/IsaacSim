@@ -139,9 +139,7 @@ class SensorIcon:
         return SensorIcon._instance
 
     def destroy(self):
-        if self.timeline_event_sub:
-            self.timeline_event_sub = None
-
+        self.timeline_event_sub = None
         self.clear()
         self.model = None
         SensorIcon._instance = None

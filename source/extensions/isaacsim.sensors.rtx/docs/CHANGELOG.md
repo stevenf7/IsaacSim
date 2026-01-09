@@ -1,4 +1,8 @@
 # Changelog
+## [15.11.6] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
+
 ## [15.11.5] - 2025-12-18
 ### Fixed
 - IsaacSensorCreateRTXSensor commands resolve prim paths as expected when using Replicator APIs as a fallback

@@ -157,6 +157,11 @@ class LidarRtx(BaseSensor):
         self.detach_all_annotators()
         if self._render_product:
             self._render_product.destroy()
+        self._acquisition_callback = None
+        self._stage_open_callback = None
+        self._timer_reset_callback_pause = None
+        self._timer_reset_callback_stop = None
+        self._timer_reset_callback_play = None
 
     def get_render_product_path(self) -> str:
         """Get the path to the render product used by the Lidar.
@@ -317,7 +322,6 @@ class LidarRtx(BaseSensor):
             on_event=self._stage_open_callback_fn,
             observer_name="isaacsim.sensors.rtx.LidarRtx.initialize._stage_open_callback",
         )
-        timeline = omni.timeline.get_timeline_interface()
         self._timer_reset_callback_pause = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.timeline.GLOBAL_EVENT_PAUSE,
             on_event=self._timeline_pause_callback_fn,

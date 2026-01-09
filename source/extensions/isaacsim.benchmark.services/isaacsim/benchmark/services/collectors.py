@@ -155,6 +155,7 @@ class IsaacUpdateFrametimeCollector:
     def stop_collecting(self) -> Tuple[List[float], List[float], List[float]]:
         self.__subscription = None
         self.__physics_subscription = None
+        self.__pre_render_thread_subscription = None
 
         # drop the first frame since the interval approach doesn't work for
         # the render frame

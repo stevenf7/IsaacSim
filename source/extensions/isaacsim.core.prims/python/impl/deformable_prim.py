@@ -120,6 +120,13 @@ class DeformablePrim(XFormPrim):
             "Please note that support for deformable prims in the current form is now deprecated. Some features including stress/strain APIs may be removed in the future."
         )
 
+    def __del__(self):
+        XFormPrim.__del__(self)
+        if hasattr(self, "_physics_view"):
+            del self._physics_view
+        self._invalidate_physics_handle_event = None
+        return
+
     """
     Properties.
     """

@@ -16,8 +16,11 @@
 import asyncio
 from abc import abstractmethod
 
+import carb.eventdispatcher
 import omni.kit.app
+import omni.timeline
 import omni.ui as ui
+import omni.usd
 from isaacsim.core.api import World
 from isaacsim.examples.interactive.base_sample import BaseSample
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
@@ -34,6 +37,8 @@ class BaseSampleUITemplate:
 
         self._buttons = dict()
         self.extra_stacks = None
+        self._stage_event_sub = None
+        self._timeline_event_sub = None
 
     @property
     def sample(self):
@@ -114,11 +119,25 @@ class BaseSampleUITemplate:
         async def _on_load_world_async():
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
-            self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
+
+            # Subscribe to stage closed events using Events 2.0
+            usd_context = omni.usd.get_context()
+            self._stage_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
+                on_event=self.on_stage_event,
+                observer_name="base_sample_extension.on_stage_event",
+            )
+
+            # Subscribe to timeline stop events using Events 2.0
+            self._timeline_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.timeline.GLOBAL_EVENT_STOP,
+                on_event=self._reset_on_stop_event,
+                observer_name="base_sample_extension._reset_on_stop_event",
+            )
+
             self._enable_all_buttons(True)
             self._buttons["Load World"].enabled = False
             self.post_load_button_event()
-            self._sample._world.add_timeline_callback("stop_reset_event", self._reset_on_stop_event)
 
         asyncio.ensure_future(_on_load_world_async())
         return
@@ -151,31 +170,38 @@ class BaseSampleUITemplate:
         return
 
     def on_shutdown(self):
-
+        self._stage_event_sub = None
+        self._timeline_event_sub = None
         self.extra_stacks = None
         self._buttons = {}
         self._sample = None
         return
 
     def on_stage_event(self, event):
-        if event.type == int(omni.usd.StageEventType.CLOSED):
-            if World.instance() is not None:
-                self._sample._world_cleanup()
-                self._sample._world.clear_instance()
-                if hasattr(self, "_buttons"):
-                    if self._buttons is not None:
-                        self._enable_all_buttons(False)
-                        self._buttons["Load World"].enabled = True
+        """Stage closed event callback.
+
+        Note: With Events 2.0, this is called only for CLOSED events.
+        """
+        if World.instance() is not None:
+            self._sample._world_cleanup()
+            self._sample._world.clear_instance()
+            if hasattr(self, "_buttons"):
+                if self._buttons is not None:
+                    self._enable_all_buttons(False)
+                    self._buttons["Load World"].enabled = True
         return
 
-    def _reset_on_stop_event(self, e):
-        if e.type == int(omni.timeline.TimelineEventType.STOP):
-            world = World.instance()
-            if world is not None:
-                world.clear_physics_callbacks()
+    def _reset_on_stop_event(self, event):
+        """Timeline stop event callback.
 
-            self._buttons["Load World"].enabled = False
-            self._buttons["Reset"].enabled = True
-            self.post_clear_button_event()
+        Note: With Events 2.0, this is called only for STOP events.
+        """
+        world = World.instance()
+        if world is not None:
+            world.clear_physics_callbacks()
+
+        self._buttons["Load World"].enabled = False
+        self._buttons["Reset"].enabled = True
+        self.post_clear_button_event()
 
         return

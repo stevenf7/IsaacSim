@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.4] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
+
 ## [0.8.3] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

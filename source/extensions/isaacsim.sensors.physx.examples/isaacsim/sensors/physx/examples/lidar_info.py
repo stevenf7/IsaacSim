@@ -108,9 +108,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         # Perform cleanup once the sample closes
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
-
         self._editor_event_subscription = None
-        # self._li.release_lidar_sensor_interface()
 
     async def _spawn_lidar_function(self, task):
         # Wait for stage clear to complete before creating LIDAR
@@ -187,9 +185,6 @@ class Extension(omni.ext.IExt):
             on_event=self._on_editor_step,
             observer_name="isaacsim.sensors.physx.examples.lidar_info.Extension._on_editor_step",
         )
-        # self._editor_event_subscription = (
-        #     omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
-        # )
 
     def _on_editor_step(self, step):
         if self._info_cb.get_value_as_bool():

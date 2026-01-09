@@ -1045,17 +1045,20 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     )
 
     # Directory options
-    extensions_dirs = tool_config.get("extensions_dir", ["source/extensions"])
+    extensions_dirs_default = tool_config.get("extensions_dir", ["source/extensions"])
     # If extensions_dir is a string, convert it to a list
-    if isinstance(extensions_dirs, str):
-        extensions_dirs = [extensions_dirs]
+    if isinstance(extensions_dirs_default, str):
+        extensions_dirs_default = [extensions_dirs_default]
 
     parser.add_argument(
         "--extensions-dir",
         action="append",
-        default=extensions_dirs,
-        help="Directory containing extensions (can be specified multiple times)",
+        default=None,
+        help=f"Directory containing extensions (can be specified multiple times, default: {extensions_dirs_default})",
     )
+
+    # Store default for later use in run_repo_tool
+    parser.set_defaults(extensions_dir_default=extensions_dirs_default)
 
     # Return function to run
     return run_repo_tool
@@ -1068,6 +1071,10 @@ def run_repo_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
     if not (args.validate or args.format or args.update):
         print("No mode specified, defaulting to update mode")
         args.update = True
+
+    # Apply default extensions_dir if none specified (avoids argparse append-to-default bug)
+    if args.extensions_dir is None:
+        args.extensions_dir = getattr(args, "extensions_dir_default", ["source/extensions"])
 
     # Create changelog manager
     manager = ChangelogManager(

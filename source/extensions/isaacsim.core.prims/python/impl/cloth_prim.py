@@ -157,6 +157,13 @@ class ClothPrim(XFormPrim):
             observer_name="isaacsim.core.prims.ClothPrim.initialize._invalidate_physics_handle_callback",
         )
 
+    def __del__(self):
+        XFormPrim.__del__(self)
+        if hasattr(self, "_physics_view"):
+            del self._physics_view
+        self._invalidate_physics_handle_event = None
+        return
+
     """
     Properties.
     """

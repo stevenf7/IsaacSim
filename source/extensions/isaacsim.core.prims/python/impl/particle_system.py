@@ -149,6 +149,12 @@ class ParticleSystem:
             observer_name="isaacsim.core.prims.ParticleSystem.initialize._invalidate_physics_handle_callback",
         )
 
+    def __del__(self):
+        if hasattr(self, "_physics_view"):
+            del self._physics_view
+        self._invalidate_physics_handle_event = None
+        return
+
     def _apply_material_binding_api(self, index):
         if self._binding_apis[index] is None:
             if self._prims[index].HasAPI(UsdShade.MaterialBindingAPI):

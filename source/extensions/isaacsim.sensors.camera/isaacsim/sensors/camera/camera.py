@@ -290,7 +290,7 @@ class Camera(BaseSensor):
         self.destroy()
 
     def destroy(self) -> None:
-        """Destroy the camera by detaching all annotators and destroying the internal render product."""
+        """Destroy the camera by detaching all annotators and destroying the internal render product, then explicitly clearing all event subscriptions."""
         custom_annotators = list(self._custom_annotators.keys())
         for annotator_name in custom_annotators:
             self.detach_annotator(annotator_name)
@@ -298,6 +298,11 @@ class Camera(BaseSensor):
         if self._render_product is not None:
             self._render_product.destroy()
             self._render_product = None
+
+        self._acquisition_callback = None
+        self._stage_open_callback = None
+        self._timer_reset_callback_stop = None
+        self._timer_reset_callback_play = None
 
     @property
     def supported_annotators(self) -> List[str]:
@@ -403,14 +408,13 @@ class Camera(BaseSensor):
                 omni.usd.StageRenderingEventType.NEW_FRAME, True
             ),
             on_event=self._data_acquisition_callback,
-            observer_name="isaacsim.sensors.camera.Camera.initialize._data_acquisition_callback",
+            observer_name="isaacsim.sensors.camera.Camera.resume._data_acquisition_callback",
         )
         self._stage_open_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.usd.get_context().stage_event_name(omni.usd.StageEventType.OPENED),
             on_event=self._stage_open_callback_fn,
             observer_name="isaacsim.sensors.camera.Camera.initialize._stage_open_callback",
         )
-        timeline = omni.timeline.get_timeline_interface()
         self._timer_reset_callback_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.timeline.GLOBAL_EVENT_STOP,
             on_event=self._timeline_stop_callback_fn,

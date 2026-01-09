@@ -11,9 +11,11 @@ import gc
 import random
 import weakref
 
+import carb.eventdispatcher
 import isaacsim.util.debug_draw as debug_draw
 import omni.ext
 import omni.ui as ui
+import omni.usd
 from isaacsim.gui.components.ui_utils import (
     btn_builder,
     float_builder,
@@ -82,20 +84,20 @@ class cuOptSampleExtension(omni.ext.IExt):
 
     def _on_window(self, visible):
         if self._window.visible:
-            self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
-                self._on_stage_event
+            self._sub_stage_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
+                on_event=self._on_stage_event,
+                observer_name="cuopt_costmat._on_stage_event",
             )
         else:
             self._sub_stage_event = None
 
     def _on_stage_event(self, event):
-        """
-        Function for monitoring stage events
-        """
-        if event.type == 2:
-            self.prim_data = {}
+        """Stage closed event callback.
 
-        # print(f"stage event type int: {event.type}{event.payload}")
+        Note: With Events 2.0, this is called only for CLOSED events.
+        """
+        self.prim_data = {}
 
     def _build_ui(self):
         if not self._window:

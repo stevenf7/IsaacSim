@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.4] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
+
 ## [1.5.3] - 2025-12-10
 ### Fixed
 - Removed `do_array_copy=True` workaround in tiled sensor (fixed upstream in replicator.core 1.12.32 by changing strides type from int32 to int64 to avoid warp array arithemtic when getting annotator data)

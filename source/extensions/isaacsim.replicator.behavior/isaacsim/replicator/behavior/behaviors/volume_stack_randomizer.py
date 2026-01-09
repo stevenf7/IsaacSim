@@ -188,7 +188,6 @@ class VolumeStackRandomizer(BehaviorScript):
     def on_destroy(self):
         """Called when the script is unassigned from a prim."""
         # Unsubscribe from the event stream
-        self._event_sub.reset()
         self._event_sub = None
 
         asyncio.ensure_future(self._reset_async())

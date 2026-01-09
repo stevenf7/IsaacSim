@@ -1,7 +1,10 @@
 # Changelog
+## [4.12.1] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
 
 ## [4.12.0] - 2025-12-22
-### Changed 
+### Changed
 - Simplified bin filling example to improve stability, replaced dropped parts with dropped cubes
 
 ## [4.11.2] - 2025-12-07

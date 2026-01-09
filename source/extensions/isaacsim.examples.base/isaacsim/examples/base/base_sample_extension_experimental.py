@@ -16,6 +16,7 @@
 import asyncio
 from abc import abstractmethod
 
+import carb.eventdispatcher
 import omni.kit.app
 import omni.timeline
 import omni.ui as ui
@@ -102,17 +103,19 @@ class BaseSampleUITemplate:
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
 
-            # Subscribe to stage events
+            # Subscribe to stage closed events using Events 2.0
             usd_context = omni.usd.get_context()
-            self._stage_event_subscription = usd_context.get_stage_event_stream().create_subscription_to_pop(
-                self.on_stage_event, name="stage_event_subscription"
+            self._stage_event_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
+                on_event=self.on_stage_event,
+                observer_name="base_sample_extension.on_stage_closed",
             )
 
-            # Subscribe to timeline stop events
-            self._timeline_event_subscription = (
-                self._timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
-                    int(omni.timeline.TimelineEventType.STOP), self._reset_on_stop_event, name="timeline_stop_event"
-                )
+            # Subscribe to timeline stop events using Events 2.0
+            self._timeline_event_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+                event_name=omni.timeline.GLOBAL_EVENT_STOP,
+                on_event=self._reset_on_stop_event,
+                observer_name="base_sample_extension._reset_on_stop_event",
             )
 
             self._enable_all_buttons(True)
@@ -148,25 +151,29 @@ class BaseSampleUITemplate:
 
     def on_shutdown(self):
         # Clean up subscriptions
-        if self._stage_event_subscription is not None:
-            self._stage_event_subscription = None
-        if self._timeline_event_subscription is not None:
-            self._timeline_event_subscription = None
+        self._stage_event_subscription = None
+        self._timeline_event_subscription = None
 
         self._extra_stacks = None
         self._buttons = {}
         self._sample = None
 
     def on_stage_event(self, event):
-        if event.type == int(omni.usd.StageEventType.CLOSED):
-            self._sample._physics_cleanup()
-            if hasattr(self, "_buttons"):
-                if self._buttons is not None:
-                    self._enable_all_buttons(False)
-                    self._buttons["Load World"].enabled = True
+        """Stage closed event callback.
 
-    def _reset_on_stop_event(self, e):
-        if e.type == int(omni.timeline.TimelineEventType.STOP):
-            self._buttons["Load World"].enabled = False
-            self._buttons["Reset"].enabled = True
-            self.post_clear_button_event()
+        Note: With Events 2.0, this is called only for CLOSED events.
+        """
+        self._sample._physics_cleanup()
+        if hasattr(self, "_buttons"):
+            if self._buttons is not None:
+                self._enable_all_buttons(False)
+                self._buttons["Load World"].enabled = True
+
+    def _reset_on_stop_event(self, event):
+        """Timeline stop event callback.
+
+        Note: With Events 2.0, this is called only for STOP events.
+        """
+        self._buttons["Load World"].enabled = False
+        self._buttons["Reset"].enabled = True
+        self.post_clear_button_event()
