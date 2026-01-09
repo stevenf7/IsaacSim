@@ -1,4 +1,7 @@
 # Changelog
+## [3.5.1] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
 
 ## [3.5.1] - 2026-01-07
 ### Added
@@ -15,6 +18,7 @@
 ## [3.3.5] - 2025-12-09
 ### Added
 - Add error handling if set_phase() is called without a matching store_measurements()
+
 ### Removed
 - Removed stop_recording_runtime arg to benchmark.store_measurements()
 

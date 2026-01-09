@@ -154,6 +154,7 @@ class FileMenuExtension:
         self._recent_menu_list = None
         self._file_menu_list = None
         self._event_sub = None
+        self._stage_event_subscription = None
 
     def _on_stage_event(self, event):
         self._build_file_menu()

@@ -89,6 +89,7 @@ class Extension(omni.ext.IExt):
         remove_menu_items(self._menu_items, "Tools")
         if self._window:
             self._window = None
+        self._camera_state_subscriber = None
         gc.collect()
 
     def _on_window(self, visible):

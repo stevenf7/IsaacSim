@@ -1,5 +1,5 @@
 [package]
-version = "2.0.7"
+version = "2.0.8"
 category = "other"
 title = "Sensor Icon"
 description = "Renders sensor icons in the viewport and stage hierarchy for visual identification of camera, lidar, IMU, and other sensor prims."

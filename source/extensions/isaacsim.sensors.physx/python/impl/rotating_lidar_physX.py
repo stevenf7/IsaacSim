@@ -93,7 +93,6 @@ class RotatingLidarPhysX(BaseSensor):
             on_event=self._stage_open_callback_fn,
             observer_name="isaacsim.sensors.physx.RotatingLidarPhysX.initialize._stage_open_callback",
         )
-        timeline = omni.timeline.get_timeline_interface()
         self._timer_reset_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.timeline.GLOBAL_EVENT_STOP,
             on_event=self._timeline_stop_callback_fn,

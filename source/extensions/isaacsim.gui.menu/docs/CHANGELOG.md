@@ -1,8 +1,12 @@
 # Changelog
+## [2.5.1] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
 
 ## [2.5.0] - 2025-12-22
 ### Changed
 - Refactor test_menu to use isaacsim.test.utils.MenuUITestCase and isaacim.gui.components.create_submenu
+
 ### Removed
 - Move sensor menu UI tests to their own extensions
 

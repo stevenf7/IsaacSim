@@ -48,8 +48,7 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
-        # self._sensor.release_generic_sensor_interface()
-        # self._generic = False
+        self._editor_event_subscription = None
 
     def build_window(self):
         pass

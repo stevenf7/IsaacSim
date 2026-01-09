@@ -17,7 +17,6 @@ from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
 from isaacsim.gui.components.style import get_style
-from omni.usd import StageEventType
 from pxr import Sdf, UsdLux
 
 from .scenario import FrankaRrtExample
@@ -47,18 +46,19 @@ class UIBuilder:
         pass
 
     def on_timeline_event(self, event):
-        """Callback for Timeline events (Play, Pause, Stop)
+        """Callback for Timeline events (Play, Pause, Stop).
+
+        Note: With Events 2.0, this is called only for STOP events from the extension.
 
         Args:
-            event (omni.timeline.TimelineEventType): Event Type
+            event: Timeline event.
         """
-        if event.type == int(omni.timeline.TimelineEventType.STOP):
-            # When the user hits the stop button through the UI, they will inevitably discover edge cases where things break
-            # For complete robustness, the user should resolve those edge cases here
-            # In general, for extensions based off this template, there is no value to having the user click the play/stop
-            # button instead of using the Load/Reset/Run buttons provided.
-            self._scenario_state_btn.reset()
-            self._scenario_state_btn.enabled = False
+        # When the user hits the stop button through the UI, they will inevitably discover edge cases where things break
+        # For complete robustness, the user should resolve those edge cases here
+        # In general, for extensions based off this template, there is no value to having the user click the play/stop
+        # button instead of using the Load/Reset/Run buttons provided.
+        self._scenario_state_btn.reset()
+        self._scenario_state_btn.enabled = False
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
@@ -70,14 +70,15 @@ class UIBuilder:
         pass
 
     def on_stage_event(self, event):
-        """Callback for Stage Events
+        """Callback for Stage Events.
+
+        Note: With Events 2.0, this is called only for OPENED events from the extension.
 
         Args:
-            event (omni.usd.StageEventType): Event Type
+            event: Stage event.
         """
-        if event.type == int(StageEventType.OPENED):
-            # If the user opens a new stage, the extension should completely reset
-            self._reset_extension()
+        # If the user opens a new stage, the extension should completely reset
+        self._reset_extension()
 
     def cleanup(self):
         """

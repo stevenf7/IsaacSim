@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.1] - 2026-01-06
+### Changed
+- Migrate more events to Events 2.0.
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [1.4.0] - 2025-12-17
@@ -20,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [1.2.0] - 2024-12-12
 ### Fixed
 - Asset paths
+
 ### Added
 - Create Network Example
 - Loading networks from usd files
@@ -36,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.1.2] - 2022-12-13
 ### Fixed
 - Clear semantics on new scene
+
 ### Added
 - Code formatting and comments for clarity
 - Required NVIDIA info
