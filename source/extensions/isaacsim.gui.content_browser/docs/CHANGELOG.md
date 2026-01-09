@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.19] - 2026-01-09
+### Changed
+- Update assets path to development
+
 ## [0.1.18] - 2025-12-12
 ### Fixed
 - Fix getting carb settings api for protocol designation

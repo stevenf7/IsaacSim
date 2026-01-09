@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.6] - 2026-01-09
+### Changed
+- Update assets path to development
+
 ## [1.4.5] - 2025-12-03
 ### Changed
 - Remove TODOs.
