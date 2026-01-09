@@ -973,7 +973,7 @@ void AddSingleJoint(const UrdfJoint& joint,
             CARB_LOG_WARN("Joint %s has a velocity limit defined but is set to mimic joint %s. Velocity limit ignored.",
                           joint.name.c_str(), joint.mimic.joint.c_str());
         }
-        configureMimicAPI(joint, jointPrim, stages["stage"]);
+        // Mimic API will be configured in configureMimicJoints after all joints are created
     }
     else
     {
@@ -1243,7 +1243,62 @@ void UrdfImporter::addLinksAndJoints(std::unordered_map<std::string, pxr::UsdSta
     setAuthoringLayer(stages["stage"], stages["stage"]->GetRootLayer()->GetIdentifier());
 }
 
+void UrdfImporter::configureMimicJoints(std::unordered_map<std::string, pxr::UsdStageRefPtr> stages,
+                                        pxr::UsdGeomXform robotPrim,
+                                        const UrdfRobot& robot)
+{
+    if (!config.parseMimic)
+    {
+        return;
+    }
 
+    setAuthoringLayer(stages["stage"], stages["physics_stage"]->GetRootLayer()->GetIdentifier());
+
+    for (const auto& jointPair : robot.joints)
+    {
+        const UrdfJoint& joint = jointPair.second;
+        if (joint.mimic.joint.empty())
+        {
+            continue;
+        }
+
+        // Skip fixed joints as they don't have mimic support
+        if (joint.type == UrdfJointType::FIXED)
+        {
+            continue;
+        }
+
+        // Construct the joint path using the same logic as addJoint
+        std::string jointPath = robotPrim.GetPath().GetString() + "/joints/" + pxr::TfMakeValidIdentifier(joint.name);
+
+        if (!pxr::SdfPath::IsValidPathString(jointPath))
+        {
+            jointPath = robotPrim.GetPath().GetString() + "/joints/" + "joint_" + joint.name;
+        }
+
+        pxr::UsdPrim jointPrim = stages["stage"]->GetPrimAtPath(pxr::SdfPath(jointPath));
+
+        if (!jointPrim)
+        {
+            CARB_LOG_WARN(
+                "Could not find joint prim for mimic joint %s at path %s", joint.name.c_str(), jointPath.c_str());
+            continue;
+        }
+
+        if (joint.type == UrdfJointType::PRISMATIC)
+        {
+            pxr::UsdPhysicsPrismaticJoint prismaticJoint(jointPrim);
+            configureMimicAPI(joint, prismaticJoint, stages["stage"]);
+        }
+        else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
+        {
+            pxr::UsdPhysicsRevoluteJoint revoluteJoint(jointPrim);
+            configureMimicAPI(joint, revoluteJoint, stages["stage"]);
+        }
+    }
+
+    setAuthoringLayer(stages["stage"], stages["stage"]->GetRootLayer()->GetIdentifier());
+}
 void UrdfImporter::addLoopJoints(std::unordered_map<std::string, pxr::UsdStageRefPtr> stages,
                                  pxr::UsdGeomXform robotPrim,
                                  const UrdfRobot& robot,
@@ -1488,6 +1543,8 @@ std::string UrdfImporter::addToStage(std::unordered_map<std::string, pxr::UsdSta
     addLinksAndJoints(stages, Transform(), chain.baseNode.get(), urdfRobot, robotPrim);
 
     addLoopJoints(stages, robotPrim, urdfRobot, config);
+
+    configureMimicJoints(stages, robotPrim, urdfRobot);
 
     setAuthoringLayer(stages["stage"], stages["base_stage"]->GetRootLayer()->GetIdentifier());
     pxr::UsdGeomImageable(stages["stage"]->GetPrimAtPath(pxr::SdfPath("/visuals")))

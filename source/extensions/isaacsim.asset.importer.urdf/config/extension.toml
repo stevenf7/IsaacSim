@@ -9,7 +9,7 @@
 # its affiliates is strictly prohibited.
 
 [package]
-version = "2.4.36"
+version = "2.4.37"
 category = "Simulation"
 title = "Urdf Importer Extension"
 description = "Imports URDF (Unified Robot Description Format) files into Omniverse USD scenes, converting robot models with their visual meshes, collision geometries, joints, and physics properties."

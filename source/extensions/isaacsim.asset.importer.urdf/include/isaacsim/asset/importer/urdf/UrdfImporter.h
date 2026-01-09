@@ -161,6 +161,24 @@ private:
                        const UrdfRobot& robot,
                        const ImportConfig& config);
     /**
+     * @brief Configures mimic joint relationships after all joints are created.
+     * @details
+     * Iterates through all joints in the robot and applies the PhysX mimic joint API
+     * to joints that have a valid mimic configuration. This must be called after all
+     * joints are created to ensure source joints exist when configuring the mimic
+     * relationship.
+     *
+     * @param[in,out] stages Map of stage names to USD stage references
+     * @param[in] robotPrim USD prim representing the robot root
+     * @param[in] robot Complete robot definition containing joint mimic specifications
+     *
+     * @pre All joints must be created in the USD stage before calling this function
+     * @pre config.parseMimic must be true for mimic joints to be configured
+     */
+    void configureMimicJoints(std::unordered_map<std::string, pxr::UsdStageRefPtr> stages,
+                              pxr::UsdGeomXform robotPrim,
+                              const UrdfRobot& robot);
+    /**
      * @brief Recursively adds links and joints to the USD stage following kinematic tree.
      * @param[in,out] stageMap Map of stage names to USD stage references
      * @param[in] poseParentToWorld Transform from parent frame to world frame
