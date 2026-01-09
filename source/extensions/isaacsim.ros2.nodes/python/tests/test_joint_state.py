@@ -98,7 +98,7 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         js_sub = self.create_subscription(node, JointState, "joint_states", js_callback, get_qos_profile())
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         default_position = [-80 * PI / 180.0, 0.4, 30 * PI / 180.0]
 
@@ -135,7 +135,7 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         js_sub = self.create_subscription(node, JointState, "joint_states", js_callback, get_qos_profile())
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         joint_paths = [
             "/Articulation/Arm/CenterRevoluteJoint",

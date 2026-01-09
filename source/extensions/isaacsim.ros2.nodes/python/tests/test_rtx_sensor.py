@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import json
+import math
+import time
 from typing import List
 from uuid import uuid4
 
@@ -239,15 +241,65 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
         timestamp_output = "systemTime" if use_system_time else "simulationTime"
 
         def spin():
-            rclpy.spin_once(self._ros_node, timeout_sec=0.1)
-            rclpy.spin_once(self._ros_object_id_map_node, timeout_sec=0.1)
-            # Get the latest point cloud annotator data, and map it to the message data using the timestamp annotator
-            annotator_ros_msg_data = self._annotator_rtx.get_data()
-            timestamp = self._annotator_timestamp.get_data()[timestamp_output]
-            self._mapped_annotator_data[timestamp] = annotator_ros_msg_data
+            # Keep ROS communications responsive while the timeline is running.
+            rclpy.spin_once(self._ros_node, timeout_sec=0.01)
+            rclpy.spin_once(self._ros_object_id_map_node, timeout_sec=0.01)
 
-        # Run simulation for the test duration
-        await simulate_async(test_duration_s, callback=spin)
+            # Get the latest annotator data and map it to the message timestamp.
+            # This is best-effort because annotators may not be ready immediately.
+            try:
+                annotator_ros_msg_data = self._annotator_rtx.get_data()
+                timestamp_data = self._annotator_timestamp.get_data()
+                timestamp = timestamp_data.get(timestamp_output) if timestamp_data is not None else None
+                if timestamp is not None:
+                    self._mapped_annotator_data[timestamp] = annotator_ros_msg_data
+            except Exception:
+                pass
+
+        system_time_start = time.time() if use_system_time else None
+
+        def message_ready():
+            if self._ros_msg_data is None:
+                return False
+
+            stamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
+            if stamp < 1.0:
+                return False
+            if system_time_start is not None and stamp < system_time_start:
+                return False
+
+            # For LaserScan we must also wait past warm-up frames where some fields may be unset (e.g. inf).
+            # Otherwise assertions in TestROS2LaserScanRTX can run on an invalid scan.
+            if isinstance(self._ros_msg_data, LaserScan):
+                if not math.isfinite(self._ros_msg_data.scan_time) or self._ros_msg_data.scan_time <= 0.0:
+                    return False
+                if not math.isfinite(self._ros_msg_data.time_increment) or self._ros_msg_data.time_increment <= 0.0:
+                    return False
+                if self._ros_msg_data.ranges is None or len(self._ros_msg_data.ranges) == 0:
+                    return False
+                # At least one range sample should be finite.
+                if not any(math.isfinite(r) for r in self._ros_msg_data.ranges):
+                    return False
+
+            # Ensure annotator data is available for lookup in _get_closest_timestamp().
+            if not self._mapped_annotator_data:
+                return False
+
+            # If object-id map publishing is enabled, wait until we receive it too.
+            if self._sensor_type == "lidar" and "objectId" in metadata and self._ros_object_id_map_data is None:
+                return False
+
+            return True
+
+        condition_met = await self.simulate_until_condition(
+            message_ready,
+            max_frames=600,
+            per_frame_callback=spin,
+        )
+        self.assertTrue(
+            condition_met,
+            f"No valid message received for {self._sensor_type} after {test_duration_s} simulated seconds.",
+        )
 
         # self.assertEqual(
         #     self._ros_msg_count,

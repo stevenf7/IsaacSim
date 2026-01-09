@@ -229,10 +229,18 @@ class TestRos2Camera(ROS2TestCase):
         system_time = time.time()
 
         self._timeline.play()
-        await simulate_async(1.5, callback=spin)
-        for _ in range(10):
-            if self._rgb is None:
-                await simulate_async(1, callback=spin)
+        await self.simulate_until_condition(
+            lambda: (
+                self._rgb is not None
+                and self._instance_segmentation is not None
+                and self._semantic_segmentation is not None
+                and self._bbox_2d_tight is not None
+                and self._bbox_2d_loose is not None
+                and self._bbox_3d is not None
+            ),
+            max_frames=600,
+            per_frame_callback=spin,
+        )
 
         self.assertIsNotNone(self._rgb)
         self.assertIsNotNone(self._instance_segmentation)
@@ -393,16 +401,26 @@ class TestRos2Camera(ROS2TestCase):
         )
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         await omni.kit.app.get_app().next_update_async()
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
-        for _ in range(10):
-            if self._bbox_3d is None:
-                await simulate_async(1, 60, spin)
+        await self.simulate_until_condition(
+            lambda: (
+                self._bbox_2d_tight is not None
+                and self._bbox_2d_loose is not None
+                and self._bbox_3d is not None
+                and self._semantic_data_instance is not None
+                and self._semantic_data_semantic is not None
+                and self._semantic_data_3d is not None
+                and self._semantic_data_tight is not None
+                and self._semantic_data_loose is not None
+            ),
+            max_frames=600,
+            per_frame_callback=spin,
+        )
 
         self.assertIsNotNone(self._bbox_2d_tight)
         self.assertIsNotNone(self._bbox_2d_loose)
@@ -596,16 +614,15 @@ class TestRos2Camera(ROS2TestCase):
         )
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         await asyncio.sleep(2.0)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
-        for _ in range(10):
-            if self._semantic_data is None:
-                await simulate_async(1, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._semantic_data is not None, max_frames=600, per_frame_callback=spin
+        )
 
         self.assertIsNotNone(self._semantic_data)
 

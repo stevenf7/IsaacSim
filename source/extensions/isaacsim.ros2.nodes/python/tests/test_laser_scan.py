@@ -145,7 +145,7 @@ class TestRos2LaserScan(ROS2TestCase):
         )
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         # 0.0 Hz Lidar rotation
         self._timeline.play()

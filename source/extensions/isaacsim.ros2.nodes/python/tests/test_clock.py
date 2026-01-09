@@ -79,7 +79,7 @@ class TestRos2NodeCommands(ROS2TestCase):
         clock_sub = self.create_subscription(node, Clock, "clock", clock_callback, get_qos_profile())
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         self._timeline.play()
 
@@ -119,7 +119,7 @@ class TestRos2NodeCommands(ROS2TestCase):
         clock_sub = self.create_subscription(node, Clock, "clock", clock_callback, get_qos_profile())
 
         def spin():
-            rclpy.spin_once(node, timeout_sec=0.1)
+            rclpy.spin_once(node, timeout_sec=0.01)
 
         await simulate_async(0.1, callback=spin)
         self._timeline.play()

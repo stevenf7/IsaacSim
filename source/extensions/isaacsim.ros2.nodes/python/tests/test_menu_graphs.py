@@ -303,15 +303,14 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
 
         # Define helper function to procress messages
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
-        for _ in range(10):
-            await simulate_async(0.5, callback=spin_ros)
-
-            # Check if we have received messages
-            if self.rgb_image_data and self.depth_image_data and self.point_cloud_data:
-                break
+        await self.simulate_until_condition(
+            lambda: self.rgb_image_data and self.depth_image_data and self.point_cloud_data,
+            max_frames=300,
+            per_frame_callback=spin_ros,
+        )
 
         # Stop simulation
         self._timeline.stop()
@@ -542,15 +541,12 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         # Define helper function to process messages
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
-        for _ in range(10):
-            await simulate_async(0.5, callback=spin_ros)
-
-            # check for message
-            if self.point_cloud_data is not None:
-                break
+        await self.simulate_until_condition(
+            lambda: self.point_cloud_data is not None, max_frames=300, per_frame_callback=spin_ros
+        )
 
         # Stop simulation
         self._timeline.stop()
@@ -692,9 +688,9 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 
         await update_stage_async()
 
-        # Run a brief simulation to initialize physics
+        # Brief physics initialization (reduced from 0.5s as actual data wait happens later)
         self._timeline.play()
-        await simulate_async(0.5)
+        await simulate_async(0.1)
         self._timeline.stop()
         await update_stage_async()
 
@@ -757,23 +753,18 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         graph = og.get_graph_by_path(graph_path)
         self.assertIsNotNone(graph, "ROS Joint States graph not found")
 
-        # Give the graph time to initialize
-        await simulate_async(1.0)
-
         # Run simulation and collect data
+        # Note: Graph initialization happens during simulation, no need for pre-initialization wait
         self._timeline.play()
 
         # Define helper function to process messages
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
-        for _ in range(10):
-            await simulate_async(0.5, callback=spin_ros)
-
-            # Check if we have received the messages we need
-            if self.joint_state_data is not None:
-                break
+        await self.simulate_until_condition(
+            lambda: self.joint_state_data is not None, max_frames=300, per_frame_callback=spin_ros
+        )
 
         # Stop simulation
         self._timeline.stop()
@@ -1012,20 +1003,19 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
-        for _ in range(10):
-            await simulate_async(0.5, callback=spin_ros)
-
-            if self.tf_data is not None:
-                break
+        condition_met = await self.simulate_until_condition(
+            lambda: self.tf_data is not None, max_frames=300, per_frame_callback=spin_ros  # 10 * 0.5s at 60fps
+        )
 
         # Stop simulation
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
         # Validate data
+        self.assertTrue(condition_met, "No TF message received within timeout")
         self.assertIsNotNone(self.tf_data, "No TF message received")
         if self.tf_data:
             # Validate TF data content
@@ -1273,27 +1263,24 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
         frame_ids = set()
         child_frame_ids = set()
-        MAX_ITERATIONS = 20
-        for i in range(MAX_ITERATIONS):
-            await simulate_async(0.5, callback=spin_ros)
 
-            # Check if we have received both types of messages
+        def check_base_link_received():
             if self.tf_data and self.odom_data:
                 frame_ids.update(transform.header.frame_id for transform in self.tf_data.transforms)
                 child_frame_ids.update(transform.child_frame_id for transform in self.tf_data.transforms)
+                return "base_link" in frame_ids or "base_link" in child_frame_ids
+            return False
 
-                if "base_link" in frame_ids or "base_link" in child_frame_ids:
-                    break
-            if i == MAX_ITERATIONS - 1:
-                self.fail("No base_link frame found")
+        await self.simulate_until_condition(check_base_link_received, max_frames=600, per_frame_callback=spin_ros)
 
         # Validate TF data
         self.assertIsNotNone(self.tf_data, "No TF messages received")
+        self.assertTrue("base_link" in frame_ids or "base_link" in child_frame_ids, "No base_link frame found")
         if self.tf_data:
             # Validate TF data content
             self.assertGreater(len(self.tf_data.transforms), 0, "TF message should contain transforms")
@@ -1477,7 +1464,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation with more iterations and longer total time
         simulation_duration = 1.0
@@ -1633,18 +1620,15 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
 
         # Define helper function to process messages
         def spin_ros():
-            rclpy.spin_once(self.node, timeout_sec=0.1)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
 
         print("Starting RTF Float32 Publisher data collection...")
 
-        for _ in range(10):
-            await simulate_async(0.5, callback=spin_ros)
-
-            # check for message
-            if self.float_data is not None:
-                break
+        await self.simulate_until_condition(
+            lambda: self.float_data is not None, max_frames=300, per_frame_callback=spin_ros
+        )
 
         # Stop simulation
         self._timeline.stop()

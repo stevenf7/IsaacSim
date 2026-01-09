@@ -32,6 +32,7 @@ Run ETM (Extension Test Mode) tests for a single built Isaac Sim extension.
 
 Usage:
   run_etm_test.sh [--help] [--build-dir <dir>] [--config <cfg>] <extension_id>
+  run_etm_test.sh [--help] [--build-dir <dir>] [--config <cfg>] --all
 
 Args:
   <extension_id>          Extension ID (e.g. isaacsim.ros2.bridge)
@@ -42,6 +43,8 @@ Options:
                           Default: _build/linux-x86_64/release
   -c, --config <cfg>      repo.sh build config passed to `repo.sh test -c`
                           Default: release
+  --all                   Run ETM for all extensions under:
+                          <repo_root>/<build_dir>/exts/*
 
 Environment:
   KIT_DIR                 Path to a Kit checkout/bundle used to find repo.sh.
@@ -55,6 +58,7 @@ Exit codes:
   3 KIT_DIR not found
   4 no usable repo.sh found
   5 repo.sh has no 'etm' suite
+  6 one or more extensions failed (when using --all)
 EOF
 }
 
@@ -71,6 +75,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 BUILD_DIR="${BUILD_DIR_DEFAULT}"
 TEST_CONFIG="${TEST_CONFIG_DEFAULT}"
 EXTENSION_NAME=""
+RUN_ALL=0
 
 # Parse args (keep it simple and dependency-free; supports GNU-style long opts).
 while [ $# -gt 0 ]; do
@@ -88,6 +93,10 @@ while [ $# -gt 0 ]; do
             [ $# -ge 2 ] || die "Missing value for $1" 1
             TEST_CONFIG="$2"
             shift 2
+            ;;
+        --all)
+            RUN_ALL=1
+            shift
             ;;
         --)
             shift
@@ -109,12 +118,16 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ "${EXTENSION_NAME}" = "" ]; then
+if [ "${RUN_ALL}" -eq 1 ] && [ "${EXTENSION_NAME}" != "" ]; then
+    die "Do not pass <extension_id> together with --all (use --help)" 1
+fi
+
+if [ "${RUN_ALL}" -eq 0 ] && [ "${EXTENSION_NAME}" = "" ]; then
     usage >&2
     exit 1
 fi
 
-EXTENSION_PATH="${REPO_ROOT}/${BUILD_DIR}/exts/${EXTENSION_NAME}"
+EXTS_ROOT="${REPO_ROOT}/${BUILD_DIR}/exts"
 
 # Track whether the user explicitly provided KIT_DIR (so we can prioritize Kit's repo.sh).
 USER_PROVIDED_KIT_DIR=0
@@ -124,15 +137,14 @@ fi
 
 KIT_DIR="${KIT_DIR:-${REPO_ROOT}/${BUILD_DIR}/kit}"
 
-log "Running ETM for extension: ${EXTENSION_NAME}"
 log "Repo root: ${REPO_ROOT}"
 log "Build dir: ${BUILD_DIR}"
-log "Extension path: ${EXTENSION_PATH}"
+log "Extensions root: ${EXTS_ROOT}"
 log "KIT_DIR: ${KIT_DIR}"
 
-if [ ! -d "$EXTENSION_PATH" ]; then
-    die "Extension path not found: ${EXTENSION_PATH}
-Did you build Isaac Sim (so ${BUILD_DIR}/exts exists) and pass the right extension id?" 2
+if [ ! -d "${EXTS_ROOT}" ]; then
+    die "Extensions root not found: ${EXTS_ROOT}
+Did you build Isaac Sim (so ${BUILD_DIR}/exts exists) and pass the right --build-dir?" 2
 fi
 
 if [ ! -d "$KIT_DIR" ]; then
@@ -215,11 +227,78 @@ for p in "${EXT_FOLDERS[@]}"; do
     fi
 done
 
-# Pass settings arrays with explicit quoting so paths/names are always valid.
-log "Starting ETM (this may take a while)..."
-"${REPO_SH}" test -c "${TEST_CONFIG}" -s etm -- \
-  "${EXT_FOLDER_ARGS[@]}" \
-  --/app/exts/devPaths="[\"${EXTENSION_PATH}\"]" \
-  --/exts/omni.kit.etm.runner/include="[\"${EXTENSION_NAME}\"]"
+is_extension_dir() {
+    # Heuristic: built extensions typically contain an extension.toml (root or config/).
+    local d="$1"
+    [ -f "${d}/extension.toml" ] || [ -f "${d}/config/extension.toml" ]
+}
 
-log "ETM test completed successfully."
+run_one_extension() {
+    local extension_id="$1"
+    local extension_path="${EXTS_ROOT}/${extension_id}"
+
+    if [ ! -d "${extension_path}" ]; then
+        die "Extension path not found: ${extension_path}" 2
+    fi
+
+    log "Running ETM for extension: ${extension_id}"
+    log "Extension path: ${extension_path}"
+
+    # Pass settings arrays with explicit quoting so paths/names are always valid.
+    log "Starting ETM (this may take a while)..."
+    "${REPO_SH}" test -c "${TEST_CONFIG}" -s etm -- \
+      "${EXT_FOLDER_ARGS[@]}" \
+      --/app/exts/devPaths="[\"${extension_path}\"]" \
+      --/exts/omni.kit.etm.runner/include="[\"${extension_id}\"]"
+
+    log "ETM test completed successfully."
+}
+
+if [ "${RUN_ALL}" -eq 0 ]; then
+    run_one_extension "${EXTENSION_NAME}"
+    exit 0
+fi
+
+# --all mode: iterate extensions under <build>/exts and run them sequentially.
+log "Running ETM for all built extensions under: ${EXTS_ROOT}"
+
+LC_ALL=C
+EXT_DIRS=( "${EXTS_ROOT}"/* )
+
+TOTAL=0
+SKIPPED=0
+FAILED=0
+FAILED_EXTS=()
+
+for d in "${EXT_DIRS[@]}"; do
+    [ -d "$d" ] || continue
+    if ! is_extension_dir "$d"; then
+        SKIPPED=$((SKIPPED + 1))
+        continue
+    fi
+
+    extension_id="$(basename "$d")"
+    TOTAL=$((TOTAL + 1))
+    log "=== [${TOTAL}] ${extension_id} ==="
+
+    # Continue running even if one extension fails; summarize at the end.
+    set +e
+    run_one_extension "${extension_id}"
+    rc=$?
+    set -e
+
+    if [ "${rc}" -ne 0 ]; then
+        FAILED=$((FAILED + 1))
+        FAILED_EXTS+=("${extension_id}")
+        log "ETM failed for ${extension_id} (exit code ${rc}); continuing..."
+    fi
+done
+
+log "ETM --all summary: ran=${TOTAL}, skipped=${SKIPPED}, failed=${FAILED}"
+if [ "${FAILED}" -ne 0 ]; then
+    log "Failed extensions:"
+    for e in "${FAILED_EXTS[@]}"; do
+        log "  - ${e}"
+    done
+    exit 6
+fi

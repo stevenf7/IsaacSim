@@ -141,6 +141,33 @@ class ROS2TestCase(TimedAsyncTestCase):
         except Exception as e:
             print(f"Warning: Failed to destroy publisher: {e}")
 
+    async def simulate_until_condition(
+        self, condition_func, max_frames=180, frames_per_step=1, per_frame_callback=None
+    ):
+        """Simulate until condition is met or maximum frames reached.
+
+        This method runs simulation in steps until a specified condition function
+        returns True or the maximum frame limit is exceeded.
+
+        Args:
+            condition_func: Function that returns True when condition is met.
+            max_frames: Maximum number of simulation frames to run.
+            frames_per_step: Number of frames to simulate in each step.
+            per_frame_callback: Optional callback to execute each frame (e.g., for spinning ROS nodes).
+
+        Returns:
+            True if condition was met, False if max frames reached.
+        """
+        frames_run = 0
+        while frames_run < max_frames:
+            await omni.kit.app.get_app().next_update_async()
+            if per_frame_callback is not None:
+                per_frame_callback()
+            frames_run += frames_per_step
+            if condition_func():
+                return True
+        return False
+
     async def tearDown(self):
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
