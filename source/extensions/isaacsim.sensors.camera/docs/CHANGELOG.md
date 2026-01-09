@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.5] - 2026-01-09
+### Fixed
+- Fixed camera_view.get_data() resolution order issue (height, width) -> (width, height)
+
 ## [1.5.4] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.
