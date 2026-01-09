@@ -1,5 +1,5 @@
 [package]
-version = "0.1.19"
+version = "0.1.18"
 category = "other"
 title = "Content Browser"
 description = "Extends the Omniverse content browser with an Isaac Sim collection providing quick access to curated robot models, environments, materials, and sensor assets."
@@ -31,14 +31,14 @@ exts."isaacsim.gui.content_browser".timeout = 5
 
 # define the folders to be shown in the content browser
 exts."isaacsim.gui.content_browser".folders = [
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/IsaacLab",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Materials",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/People",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Props",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Samples",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Sensors",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Environments",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Materials",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/People",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Props",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Sensors",
 ]
 
 [[test]]

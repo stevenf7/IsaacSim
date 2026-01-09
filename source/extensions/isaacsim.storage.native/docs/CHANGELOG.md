@@ -1,8 +1,4 @@
 # Changelog
-## [1.6.4] - 2026-01-09
-### Changed
-- Update assets path to development
-
 ## [1.6.3] - 2025-12-07
 ### Changed
 - Update description

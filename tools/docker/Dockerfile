@@ -53,7 +53,7 @@ EXPOSE 47998/udp \
 
 ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 
-ENV OMNI_SERVER=omniverse://isaac-dev.ov.nvidia.com
+ENV OMNI_SERVER=https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0
 
 ENV MIN_DRIVER_VERSION=570.169
 
