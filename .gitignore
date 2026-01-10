@@ -200,3 +200,6 @@ cpp_coverage.xml
 
 # Extension support conflicts temp file
 ext_conflicts.json
+
+# Temp folders created by doc snippets tests
+xarm_antipodal
