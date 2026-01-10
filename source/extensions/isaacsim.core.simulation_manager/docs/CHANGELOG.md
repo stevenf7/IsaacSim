@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.0] - 2026-01-07
+### Added
+- Add `PhysicsScene` and `PhysxScene` Python class wrappers for high-level physics scene manipulation
+- Add `PhysicsScene` C++ class and header for USD Physics Scene prim operations
+- Add `get_physics_scene_paths()` function to get all physics scene paths in a stage
+
 ## [1.7.3] - 2026-01-08
 ### Changed
 - Change log level of no adjacent samples found for interpolation warning to INFO

@@ -487,6 +487,39 @@ def has_api(
         raise ValueError(f"Invalid test operation: '{test}'")
 
 
+def ensure_api(prim: str | Usd.Prim, api: type, *args, **kwargs) -> type["UsdAPISchemaBase"]:
+    """Ensure that a prim has the specified API schema applied.
+
+    Backends: :guilabel:`usd`.
+
+    If a prim doesn't have the API schema, it will be applied.
+    If it already has it, the existing API schema will be returned.
+
+    Args:
+        prim: Prim path or prim instance.
+        api: The API schema type to ensure.
+        *args: Additional positional arguments passed to API schema when applying it.
+        **kwargs: Additional keyword arguments passed to API schema when applying it.
+
+    Returns:
+        API schema object.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.prim as prim_utils
+        >>> import isaacsim.core.experimental.utils.stage as stage_utils
+        >>> from pxr import UsdLux
+        >>>
+        >>> prim = stage_utils.define_prim("/World/Light", "Xform")
+        >>> prim_utils.ensure_api(prim, UsdLux.LightAPI)
+        UsdLux.LightAPI(Usd.Prim(</World/Light>))
+    """
+    prim = stage_utils.get_current_stage().GetPrimAtPath(prim) if isinstance(prim, str) else prim
+    return api(prim, *args, **kwargs) if prim.HasAPI(api) else api.Apply(prim, *args, **kwargs)
+
+
 def create_prim_attribute(
     prim: str | Usd.Prim | usdrt.Usd.Prim,
     *,
