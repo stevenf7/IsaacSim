@@ -45,7 +45,7 @@ libdirs {
 }
 links { "physxSchema", "omni.usd", "carb" }
 
-extra_usd_libs = { "usdUtils", "usdPhysics" }
+extra_usd_libs = { "usdGeom", "usdUtils", "usdPhysics" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)

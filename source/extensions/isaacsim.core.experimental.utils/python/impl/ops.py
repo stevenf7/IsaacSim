@@ -14,11 +14,12 @@
 # limitations under the License.
 
 """
-Functions for manipulating and performing operations on Warp arrays.
+Functions for manipulating and performing operations on Warp arrays and other types.
 """
 
 from __future__ import annotations
 
+import carb
 import numpy as np
 import warp as wp
 from warp.types import np_dtype_to_warp_type
@@ -49,6 +50,51 @@ def _astype(src: wp.array, dtype: type) -> wp.array:
         device=src.device,
     )
     return dst
+
+
+def parse_device(device: str | wp.context.Device | None, *, raise_on_invalid: bool = False) -> wp.context.Device:
+    """Parse the input device and return a Warp :py:class:`~warp.context.Device` instance.
+
+    Args:
+        device: Device specification. If the specified device is ``None`` or it cannot be resolved,
+            the default available device will be returned instead.
+        raise_on_invalid: Whether to raise an exception if the device is invalid.
+            If ``False``, a warning is logged and the default available device is returned instead.
+
+    Returns:
+        Warp Device.
+
+    Raises:
+        ValueError: If the input device is invalid and ``raise_on_invalid`` is ``True``.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.ops as ops_utils
+        >>>
+        >>> device = ops_utils.parse_device("cpu")
+        >>> print(type(device), device)
+        <class 'warp._src.context.Device'> cpu
+        >>> device = ops_utils.parse_device("cuda")
+        >>> print(type(device), device)
+        <class 'warp._src.context.Device'> cuda:0
+        >>> device = ops_utils.parse_device("cuda:0")
+        >>> print(type(device), device)
+        <class 'warp._src.context.Device'> cuda:0
+    """
+    if isinstance(device, wp.context.Device):
+        return device
+    elif isinstance(device, str):
+        try:
+            return wp.get_device(device)
+        except ValueError as e:
+            if raise_on_invalid:
+                raise ValueError(f"Invalid device specification ({device}): {e}")
+            _default_device = wp.get_device()
+            carb.log_warn(f"Invalid device specification ({device}): {e}. Using default device ({_default_device})")
+            return _default_device
+    return wp.get_device()
 
 
 def place(

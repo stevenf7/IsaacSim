@@ -117,7 +117,7 @@ class TestSimulationManagerDefaultCallbacks(omni.kit.test.AsyncTestCase):
         self.assertTrue(all(status.values()))
 
         # Test get_default_callback_status returns correct keys
-        expected_keys = {"warm_start", "on_stop", "post_warm_start", "stage_open"}
+        expected_keys = {"warm_start", "on_stop", "post_warm_start", "stage_open", "stage_close"}
         self.assertEqual(set(status.keys()), expected_keys)
 
         # Test invalid callback name returns False
@@ -293,7 +293,7 @@ class TestSimulationManagerPhysicsSceneSettings(omni.kit.test.AsyncTestCase):
                 print(f"test_physics_scene_settings_no_scene solver failed for {solver}: {e}")
 
         # Test invalid solver type raises exception
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             SimulationManager.set_solver_type("INVALID")
 
         # Test CCD
@@ -485,13 +485,11 @@ class TestSimulationManagerCallbacks(omni.kit.test.AsyncTestCase):
 
         # Test deregistering callback
         callback_id = SimulationManager.register_callback(lambda x: None, event=IsaacEvents.PHYSICS_READY)
-        SimulationManager.deregister_callback(callback_id)
-        with self.assertRaises(Exception):
-            SimulationManager.deregister_callback(callback_id)
+        self.assertTrue(SimulationManager.deregister_callback(callback_id))
+        self.assertFalse(SimulationManager.deregister_callback(callback_id))
 
-        # Test deregistering invalid callback raises exception
-        with self.assertRaises(Exception):
-            SimulationManager.deregister_callback(999999)
+        # Test deregistering invalid callback (log a warning and do nothing)
+        self.assertFalse(SimulationManager.deregister_callback(999999))
 
     async def test_event_dispatch(self):
         """Test that all events are dispatched correctly."""
@@ -649,8 +647,8 @@ class TestSimulationManagerFabricAndNoticeHandlers(omni.kit.test.AsyncTestCase):
         """Test all fabric and USD notice handler functionality."""
         # Test enable/disable fabric
         try:
-            SimulationManager.enable_fabric(True)
             SimulationManager.enable_fabric(False)
+            SimulationManager.enable_fabric(True)
         except Exception as e:
             print(f"test_fabric_and_notice_handlers enable_fabric failed: {e}")
 
@@ -659,9 +657,10 @@ class TestSimulationManagerFabricAndNoticeHandlers(omni.kit.test.AsyncTestCase):
         self.assertIsInstance(result, bool)
 
         # Test enable/disable USD notice handler
+
         try:
-            SimulationManager.enable_usd_notice_handler(True)
             SimulationManager.enable_usd_notice_handler(False)
+            SimulationManager.enable_usd_notice_handler(True)
         except Exception as e:
             print(f"test_fabric_and_notice_handlers usd_notice_handler failed: {e}")
 
@@ -670,8 +669,8 @@ class TestSimulationManagerFabricAndNoticeHandlers(omni.kit.test.AsyncTestCase):
             stage = stage_utils.get_current_stage()
             stage_id = stage_utils.get_stage_id(stage)
 
-            SimulationManager.enable_fabric_usd_notice_handler(stage_id, True)
             SimulationManager.enable_fabric_usd_notice_handler(stage_id, False)
+            SimulationManager.enable_fabric_usd_notice_handler(stage_id, True)
 
             result = SimulationManager.is_fabric_usd_notice_handler_enabled(stage_id)
             self.assertIsInstance(result, bool)

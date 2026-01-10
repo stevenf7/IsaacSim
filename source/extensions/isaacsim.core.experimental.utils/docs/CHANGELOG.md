@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.0] - 2026-01-07
+### Added
+- Add `parse_device()` function to ops utils for parsing Warp device specifications
+- Add `ensure_api()` function to prim utils for ensuring API schemas are applied to prims
+
 ## [0.8.1] - 2025-12-15
 ### Changed
 - Update app module docstrings example and add module summaries for docs purposes

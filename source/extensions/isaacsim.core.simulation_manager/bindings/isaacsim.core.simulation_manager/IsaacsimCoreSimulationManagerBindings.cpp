@@ -12,19 +12,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// clang-format off
 #include <pch/UsdPCH.h>
 // clang-format on
 
 #include <carb/BindingsPythonUtils.h>
 
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
+#include <isaacsim/core/simulation_manager/PhysicsScene.h>
 #include <pybind11/functional.h>
-
 
 CARB_BINDINGS("isaacsim.core.simulation_manager.python")
 
 namespace
 {
+
+namespace py = pybind11;
 
 PYBIND11_MODULE(_simulation_manager, m)
 {
@@ -74,6 +78,38 @@ It also manages USD notice handling to track stage changes.)pbdoc";
                  return "<TimeSampleEntry time=" + std::to_string(entry.time.numerator) + "/" +
                         std::to_string(entry.time.denominator) + " valid=" + (entry.valid ? "True" : "False") + ">";
              });
+
+    // Bind PhysicsScene
+    py::class_<PhysicsScene>(m, "PhysicsScene")
+        .def(py::init(
+                 [](py::object prim)
+                 {
+                     if (py::isinstance<pxr::UsdPrim>(prim))
+                     {
+                         return new PhysicsScene(prim.cast<pxr::UsdPrim>());
+                     }
+                     else if (py::isinstance<pxr::SdfPath>(prim))
+                     {
+                         return new PhysicsScene(prim.cast<pxr::SdfPath>());
+                     }
+                     else if (py::isinstance<py::str>(prim))
+                     {
+                         return new PhysicsScene(prim.cast<py::str>().cast<std::string>());
+                     }
+                     throw py::value_error("Invalid prim type. Must be a UsdPrim, SdfPath, or std::string.");
+                 }),
+             "Constructor")
+        .def_property_readonly("path", &PhysicsScene::getPath, "Path to the USD Physics Scene prim");
+
+    m.def("get_physics_scene_paths",
+          [](std::optional<uint64_t> stageId)
+          {
+              if (stageId.has_value())
+              {
+                  return getPhysicsScenePaths(stageId.value());
+              }
+              return getPhysicsScenePaths();
+          });
 
     // carb interface
     carb::defineInterfaceClass<ISimulationManager>(
@@ -333,4 +369,4 @@ It also manages USD notice handling to track stage changes.)pbdoc";
              )pbdoc");
 }
 
-}
+} // namespace

@@ -1,5 +1,5 @@
 [package]
-version = "1.7.3"
+version = "1.8.0"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -33,6 +33,7 @@ recursive = false
 enabled = true
 dependencies = [
     "isaacsim.core.utils",
+    "isaacsim.test.docstring",
     "omni.hydra.scene_delegate", # required for fabric time to update,
     "omni.isaac.ml_archive",
     "omni.kit.test",
@@ -83,3 +84,4 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
+pythonTests.include = ["isaacsim.core.simulation_manager.tests.*"]

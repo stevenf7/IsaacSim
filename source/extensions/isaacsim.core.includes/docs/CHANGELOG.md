@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.0] - 2026-01-07
+### Added
+- Add `Defines.h` header with `ISAACSIM_EXPORT` and `ISAACSIM_IMPORT` macros for DLL visibility
+
 ## [2.5.4] - 2025-12-06
 ### Changed
 - Run clang tidy
