@@ -1,4 +1,8 @@
 # Changelog
+## [15.11.7] - 2026-01-09
+### Changed
+- Cleanup unused imports
+
 ## [15.11.6] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.

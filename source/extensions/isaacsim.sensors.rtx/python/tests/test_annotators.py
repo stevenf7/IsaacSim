@@ -34,7 +34,6 @@ from isaacsim.sensors.rtx import (
     get_gmo_data,
     get_material_id,
 )
-from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, UsdGeom
 
 DEBUG_DRAW_PRINT = False
@@ -523,10 +522,6 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
 
 class TestRTXSensorAnnotator(omni.kit.test.AsyncTestCase):
     """Test class for RTX sensor annotators"""
-
-    # This class is not meant to be run as a test, but rather to be used as a base class for other tests
-    _assets_root_path = get_assets_root_path()
-    _accumulate_returns = False
 
     async def setUp(self):
         """Setup test environment with a cube and lidar"""

@@ -138,6 +138,10 @@ local function get_simulation_app_tests()
             "standalone_examples/testing/isaacsim.simulation_app/test_external.py",
             "--enable omni.kit.scripting",
         },
+        {
+            "tests-nativepython-testing-isaacsim.simulation_app.test_test_runner",
+            "standalone_examples/testing/isaacsim.simulation_app/test_test_runner.py",
+        },
     }
 end
 
