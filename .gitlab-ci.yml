@@ -405,7 +405,7 @@ build-linux-x86_64-release:
       # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
-      - ./repo.sh ci build -c release 
+      - ./repo.sh ci build -c release
 # ==============================================================================================================
 build-linux-x86_64-c++-coverage:
     extends:
@@ -647,6 +647,7 @@ test-linux-x86_64:
           - utils_gui
           - robot
           - other
+      - SUITE: doc_snippets
       - SUITE: warmuptests
       - SUITE: postinstalltests
       - SUITE: nativepythontests
@@ -707,7 +708,7 @@ test-windows-x86_64:
       matrix:
         - SUITE: startuptests
         - SUITE: pythontests
-          BUCKET: 
+          BUCKET:
             - deprecated
             - asset
             - core
@@ -798,7 +799,7 @@ gather-coverage:
       # Find all .pycov files and combine them in one command
       - |
         PYCOV_FILES=$(find _build/packages -name "*.pycov" 2>/dev/null || true)
-        
+
         if [ -n "$PYCOV_FILES" ]; then
           PYCOV_COUNT=$(echo "$PYCOV_FILES" | wc -l)
           echo "Found $PYCOV_COUNT .pycov files to combine"
@@ -813,7 +814,7 @@ gather-coverage:
 
 # We do coverage in all test jobs, need to disable the automatic one
 test-linux-x86_64-c++-coverage:
-   rules: 
+   rules:
      - if: $CI_COMMIT_BRANCH == $CI_COMMIT_BRANCH
        when: never
 
