@@ -1,5 +1,5 @@
 # Changelog
-## [3.5.1] - 2026-01-06
+## [3.5.2] - 2026-01-08
 ### Changed
 - Migrate more events to Events 2.0.
 

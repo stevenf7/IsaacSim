@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.8.0] - 2026-01-07
+## [1.8.0] - 2026-01-09
 ### Added
 - Add `PhysicsScene` and `PhysxScene` Python class wrappers for high-level physics scene manipulation
 - Add `PhysicsScene` C++ class and header for USD Physics Scene prim operations
