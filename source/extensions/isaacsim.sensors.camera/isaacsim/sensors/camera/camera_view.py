@@ -560,7 +560,7 @@ class CameraView(XFormPrim):
             # define internal variables
             channels = spec["channels"]
             output_channels = 3 if annotator_type == "rgb" else channels
-            height, width = self.camera_resolution
+            width, height = self.camera_resolution
             # check if the data should be copied to the pre-allocated memory
             if out is None:
                 shape = (len(self.prims), height, width, output_channels)
