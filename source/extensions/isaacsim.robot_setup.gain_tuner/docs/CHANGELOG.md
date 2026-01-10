@@ -5,7 +5,7 @@
 - Fixed Natural Frequency calculation:
     - Convert computed unit from Radians to Degree when storing the Stiffness
     - Properly handle Fixed robot chains
-    - Properly use only the proper axis inertia when Revolute Joint, or directly use mass when prismatic. 
+    - Properly use only the proper axis inertia when Revolute Joint, or directly use mass when prismatic.
 
 ## [3.1.4] - 2025-12-16
 ### Changed
