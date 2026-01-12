@@ -152,10 +152,10 @@ After a reboot you will need to:
     * Prefer to clone the fork to the shortest file path possible (such as cloning directly to C:\\) as long file paths can lead to errors when building.
 - Execute `./setup.sh` (Linux) which will install Docker. Logging out and back
   in is required to update your account's group membership to include "docker".
-- Download Visual Studio Community 2022. Choose "Desktop development with C++". Use the default checklist.
+- Download Visual Studio Community 2026. Choose "Desktop development with C++". Use the default checklist.
     * Note that the Windows 11 SDK may take a while to fully install.
     * You may need to restart Visual Studio Code (or whatever IDE is in use) for Visual Studio and the SDK to process in terminal.
-    * If build errors persist, please download Visual Studio Professional 2022 instead. Choose "Desktop development with C++" and use the default checklist.
+    * If build errors persist, please download Visual Studio Professional 2026 instead. Choose "Desktop development with C++" and use the default checklist.
 
 ## Building Isaac Sim
 

@@ -4,7 +4,7 @@
 
 This document guides you through setting up this repository for C++ development on Windows using Microsoft Visual Studio and the Windows SDK.
 
-**For New Users:** If you are new to Windows C++ development, this guide provides a step-by-step installation of Visual Studio 2022 Community and the Windows SDK, ensuring you have all the components required for standard development tasks.
+**For New Users:** If you are new to Windows C++ development, this guide provides a step-by-step installation of Visual Studio 2026 Community and the Windows SDK, ensuring you have all the components required for standard development tasks.
 
 **For Advanced Configurations:** If you already have Visual Studio and the Windows SDK installed but wish to specify exact versions, this guide will help you configure your environment using the `[repo_build.msbuild]` configuration within `repo.toml` at the project root.
 
@@ -31,9 +31,9 @@ To enable the Windows C++ build process:
 ## Compiler Version Checking
 
 The Windows build process will check a handful of versions before starting.  It expects to find the following versions (defined in `repo.toml`):
- * VS 2022
- * MSVC v143
- * MSBuild 17.*
+ * VS 2026
+ * MSVC v145
+ * MSBuild 18.*
  * WinSDK 10.0.26100.0
 
 If you do not have these versions you can still start a build, run `build.bat --skip-compiler-version-check`
@@ -42,7 +42,20 @@ If you do not have these versions you can still start a build, run `build.bat --
 
 ### Basic Installation
 
-#### Installing Visual Studio 2022 Community
+#### Installing Visual Studio 2026 Community (Recommended)
+
+Install using Winget by running the following command in PowerShell:
+
+  ```powershell
+   winget install --id=Microsoft.VisualStudio.Community -e --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
+   ```
+
+   Ensure that the following versions are installed:
+
+     - MSVC v145
+     - WinSDK 10.0.26100.7175
+
+#### Installing Visual Studio 2022 Community (Also Supported)
 
 Install using Winget by running the following command in PowerShell:
 
@@ -52,7 +65,7 @@ Install using Winget by running the following command in PowerShell:
 
    Ensure that the following versions are installed:
 
-     - MSVC v143
+     - MSVC v145
      - WinSDK 10.0.26100.7175
 
 #### Installing Windows SDK (as needed)
@@ -83,7 +96,7 @@ If Visual Studio and the Windows SDK are installed in default locations, the bui
 
 - Default Windows SDK: `C:\Program Files (x86)\Windows Kits`
 - Default Visual Studio 2019: `C:\Program Files (x86)\Microsoft Visual Studio`
-- Default Visual Studio 2022: `C:\Program Files\Microsoft Visual Studio`
+- Default Visual Studio 2026: `C:\Program Files\Microsoft Visual Studio`
 
 #### Non-Default Installation Paths
 
@@ -107,10 +120,11 @@ For multiple Visual Studio or Windows SDK installations, the latest version is u
 
 ```toml
 [repo_build.msbuild]
-vs_version = "vs2022"
+vs_version = "18"
 vs_edition = "Community"
-vs_path = "D:\\AnotherPath\\Visual Studio\\2022\\Enterprise\\"
+vs_path = "D:\\AnotherPath\\Visual Studio\\2026\\Enterprise\\"
 ```
+
 
 ##### Windows SDK
 
