@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.22] - 2025-01-09
+### Changed
+- Make isaacsim.asset.importer.urdf.ui a dependency since this extension heavily depends on and modifies the default urdf importer ui
+
 ## [1.1.21] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

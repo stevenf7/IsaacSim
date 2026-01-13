@@ -24,8 +24,9 @@ from isaacsim.asset.importer.urdf._urdf import (
     UrdfJointType,
     acquire_urdf_interface,
 )
-from isaacsim.asset.importer.urdf.impl.ui.resetable_widget import ResetableLabelField
-from isaacsim.asset.importer.urdf.impl.ui.style import get_style
+
+from .resetable_widget import ResetableLabelField
+from .style import get_style
 
 ITEM_HEIGHT = 26
 
