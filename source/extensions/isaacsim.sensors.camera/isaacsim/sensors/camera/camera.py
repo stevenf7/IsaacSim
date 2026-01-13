@@ -259,6 +259,7 @@ class Camera(BaseSensor):
             "instance_segmentation",
             "pointcloud",
         ]
+
         self._custom_annotators = dict()
         BaseSensor.__init__(
             self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
@@ -723,19 +724,23 @@ class Camera(BaseSensor):
     def attach_annotator(self, annotator_name: str, **kwargs) -> None:
         """Attach an annotator to the camera.
 
+        The annotator data will be available in get_current_frame() using a normalized key
+        (e.g., "bounding_box_2d_tight" for both "bounding_box_2d_tight" and "bounding_box_2d_tight_fast").
+
         Args:
-            annotator_name (str): Name of the annotator to attach.
+            annotator_name: Name of the annotator to attach (as registered in replicator).
             **kwargs: Additional arguments to pass to the annotator.
 
         Raises:
             rep.annotators.AnnotatorRegistryError: If the annotator is not found.
         """
+        # Normalize key by removing variant suffixes for consistent frame data access
+        frame_key = annotator_name.replace("_fast", "")
 
-        if annotator_name in self._custom_annotators:
-            carb.log_warn(f"Annotator {annotator_name} already attached to {self._render_product_path}")
+        if frame_key in self._custom_annotators:
+            carb.log_warn(f"Annotator {frame_key} already attached to {self._render_product_path}")
             return
 
-        # Retrieve the annotator from the registry
         try:
             annotator = rep.AnnotatorRegistry.get_annotator(
                 annotator_name, device=self._annotator_device, init_params=kwargs
@@ -743,27 +748,28 @@ class Camera(BaseSensor):
         except rep.annotators.AnnotatorRegistryError as e:
             raise e
 
-        # Attach the annotator to the render product
         annotator.attach([self._render_product_path])
-        # Populate annotator and current frame data dictionaries
-        self._custom_annotators[annotator_name] = annotator
-        self._current_frame[annotator_name] = None
-
-        return
+        self._custom_annotators[frame_key] = annotator
+        self._current_frame[frame_key] = None
 
     def detach_annotator(self, annotator_name: str) -> None:
         """Detach an annotator from the camera.
 
+        The annotator is looked up using a normalized key (e.g., "bounding_box_2d_tight" matches
+        both "bounding_box_2d_tight" and "bounding_box_2d_tight_fast").
+
         Args:
-            annotator_name (str): Name of the annotator to detach.
+            annotator_name: Name of the annotator to detach.
         """
-        if annotator_name in self._custom_annotators:
-            annotator = self._custom_annotators.pop(annotator_name)
+        # Normalize key by removing variant suffixes for consistent frame data access
+        frame_key = annotator_name.replace("_fast", "")
+
+        if frame_key in self._custom_annotators:
+            annotator = self._custom_annotators.pop(frame_key)
             annotator.detach()
-            self._current_frame.pop(annotator_name)
+            self._current_frame.pop(frame_key)
         else:
-            carb.log_warn(f"Annotator {annotator_name} not attached to {self._render_product_path}")
-        return
+            carb.log_warn(f"Annotator {frame_key} not attached to {self._render_product_path}")
 
     def add_rgb_to_frame(self, init_params: dict = {}) -> None:
         """Attach the rgb annotator to this camera.
@@ -894,11 +900,11 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-2d-tight
         """
-        self.attach_annotator(annotator_name="bounding_box_2d_tight", **init_params)
+        self.attach_annotator(annotator_name="bounding_box_2d_tight_fast", **init_params)
 
     def remove_bounding_box_2d_tight_from_frame(self) -> None:
         """Detach the bounding_box_2d_tight annotator from the camera."""
-        self.detach_annotator(annotator_name="bounding_box_2d_tight")
+        self.detach_annotator(annotator_name="bounding_box_2d_tight_fast")
 
     def add_bounding_box_2d_loose_to_frame(self, init_params: dict = {}) -> None:
         """Attach the bounding_box_2d_loose annotator to this camera.
@@ -922,12 +928,11 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#bounding-box-2d-loose
         """
-        self.attach_annotator(annotator_name="bounding_box_2d_loose", **init_params)
-        return
+        self.attach_annotator(annotator_name="bounding_box_2d_loose_fast", **init_params)
 
     def remove_bounding_box_2d_loose_from_frame(self) -> None:
         """Detach the bounding_box_2d_loose annotator from the camera."""
-        self.detach_annotator(annotator_name="bounding_box_2d_loose")
+        self.detach_annotator(annotator_name="bounding_box_2d_loose_fast")
 
     def add_bounding_box_3d_to_frame(self, init_params: dict = {}) -> None:
         """Attach the bounding_box_3d annotator to this camera.
@@ -974,12 +979,11 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-id-segmentation
         """
-        self.attach_annotator(annotator_name="instance_id_segmentation", **init_params)
-        return
+        self.attach_annotator(annotator_name="instance_id_segmentation_fast", **init_params)
 
     def remove_instance_id_segmentation_from_frame(self) -> None:
         """Detach the instance_id_segmentation annotator from the camera."""
-        self.detach_annotator(annotator_name="instance_id_segmentation")
+        self.detach_annotator(annotator_name="instance_id_segmentation_fast")
 
     def add_instance_segmentation_to_frame(self, init_params: dict = {}) -> None:
         """Attach the instance_segmentation annotator to this camera.
@@ -994,12 +998,11 @@ class Camera(BaseSensor):
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#instance-segmentation
         """
-        self.attach_annotator(annotator_name="instance_segmentation", **init_params)
-        return
+        self.attach_annotator(annotator_name="instance_segmentation_fast", **init_params)
 
     def remove_instance_segmentation_from_frame(self) -> None:
         """Detach the instance_segmentation annotator from the camera."""
-        self.detach_annotator(annotator_name="instance_segmentation")
+        self.detach_annotator(annotator_name="instance_segmentation_fast")
 
     def add_pointcloud_to_frame(self, include_unlabelled: bool = True, init_params: dict = {}) -> None:
         """Attach the pointcloud annotator to this camera.

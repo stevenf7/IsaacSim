@@ -1,4 +1,14 @@
 # Changelog
+## [1.5.6] - 2026-01-13
+### Changed
+- Camera sensor: switched to use "_fast" version of the annotators where available ("bounding_box_2d_tight_fast", "bounding_box_2d_loose_fast", "instance_segmentation_fast", "instance_id_segmentation_fast")
+- Tests: removed `World` from tests, using `timeline.play()` and `timeline.stop()` to provide sensors with data
+- Tests: changed to use `SimulationManager` for backend tests
+- Tests: changed to use `isaacsim.test.utils.image_comparison` for golden image comparison
+- Tests: changed the default environment from loading a USD to creating a simple plane and dome light for tests
+- Tests: updated and re-organized golden image data
+- Tests: kept debug pointcloud images for future reference
+
 ## [1.5.5] - 2026-01-09
 ### Fixed
 - Fixed camera_view.get_data() resolution order issue (height, width) -> (width, height)

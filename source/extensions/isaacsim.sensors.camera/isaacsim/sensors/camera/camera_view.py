@@ -19,8 +19,7 @@ import omni.replicator.core as rep
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import XFormPrim
-from isaacsim.core.utils.carb import get_carb_setting
-from pxr import Usd, Vt
+from pxr import Vt
 
 torch = import_module("torch")
 
