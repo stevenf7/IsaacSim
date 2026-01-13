@@ -1,5 +1,5 @@
 [package]
-version = "4.12.1"
+version = "4.13.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Provides interactive sample extensions demonstrating Isaac Sim features including robot manipulation, path planning, gamepad control, bin filling, and Cortex behavior framework usage."
@@ -53,6 +53,9 @@ name = "isaacsim.examples.interactive.path_planning"
 name = "isaacsim.examples.interactive.bin_filling"
 
 [[python.module]]
+name = "isaacsim.examples.interactive.franka_cortex"
+
+[[python.module]]
 name = "isaacsim.examples.interactive.robo_factory"
 
 [[python.module]]
@@ -68,13 +71,10 @@ name = "isaacsim.examples.interactive.replay_follow_target"
 name = "isaacsim.examples.interactive.surface_gripper"
 
 [[python.module]]
-name = "isaacsim.examples.interactive.user_examples"
-
-[[python.module]]
 name = "isaacsim.examples.interactive.ur10_palletizing"
 
 [[python.module]]
-name = "isaacsim.examples.interactive.franka_cortex"
+name = "isaacsim.examples.interactive.user_examples"
 
 [[python.module]]
 name = "isaacsim.examples.interactive.getting_started"

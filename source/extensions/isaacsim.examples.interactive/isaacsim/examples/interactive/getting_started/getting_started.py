@@ -13,17 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import omni.kit.app
-import omni.usd
-from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.examples.interactive.base_sample import BaseSample
+from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.examples.base.base_sample_experimental import BaseSample
 
 
 class GettingStarted(BaseSample):
     def __init__(self) -> None:
         super().__init__()
-
-        return
 
     @property
     def name(self):
@@ -33,16 +29,16 @@ class GettingStarted(BaseSample):
         pass
 
     async def setup_post_load(self):
-        set_camera_view(eye=[5.0, 2.0, 2.5], target=[0.00, 0.00, 0.00], camera_prim_path="/OmniverseKit_Persp")
-
-        return
+        ViewportManager.set_camera_view(eye=[5.0, 2.0, 2.5], target=[0.00, 0.00, 0.00], camera="/OmniverseKit_Persp")
 
     async def setup_pre_reset(self):
-        return
+        pass
 
     async def setup_post_reset(self):
-        return
+        pass
 
-    def world_cleanup(self):
+    async def setup_post_clear(self):
+        pass
 
-        return
+    def physics_cleanup(self):
+        pass

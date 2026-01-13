@@ -13,68 +13,207 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.utils.types import ArticulationAction
-from isaacsim.examples.interactive.base_sample import BaseSample
-from isaacsim.robot.manipulators.examples.franka.tasks import FollowTarget as FollowTargetTask
+import omni.kit.app
+from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
+from isaacsim.core.experimental.objects import Cube, DistantLight
+from isaacsim.core.experimental.prims import GeomPrim
+from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
+from isaacsim.examples.base.base_sample_experimental import BaseSample
+from isaacsim.robot.manipulators.examples.franka.franka_experimental import FrankaExperimental
+from isaacsim.storage.native import get_assets_root_path
 
 
 class ReplayFollowTarget(BaseSample):
     def __init__(self) -> None:
         super().__init__()
-        self._articulation_controller = None
+        self._robot = None
+        self._target_cube = None
+        self._robot_path = "/World/robot"
+        self._target_path = "/World/TargetCube"
+        self._data_logger = None
+        self._current_time_step_index = 0
+        self._physics_callback_id = None
 
     def setup_scene(self):
-        world = self.get_world()
-        world.add_task(FollowTargetTask())
-        return
+        """Set up the scene with Franka robot and target cube."""
+        # Add ground plane environment for physics simulation
+        stage = stage_utils.get_current_stage()
+        ground_plane = stage_utils.add_reference_to_stage(
+            usd_path=get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd",
+            path="/World/ground",
+        )
 
-    async def setup_pre_reset(self):
-        world = self.get_world()
-        if world.physics_callback_exists("replay_trajectory"):
-            world.remove_physics_callback("replay_trajectory")
-        if world.physics_callback_exists("replay_scene"):
-            world.remove_physics_callback("replay_scene")
-        return
+        # Add distant light (only if it doesn't exist)
+        if not stage.GetPrimAtPath("/World/DistantLight"):
+            light = DistantLight("/World/DistantLight")
+            light.set_intensities([300])
+
+        # Create Franka robot (one line as requested)
+        self._robot = FrankaExperimental(robot_path=self._robot_path, create_robot=True)
+
+        # Create target cube
+        target_position = [0.5, 0.0, 0.3]
+        visual_material = PreviewSurfaceMaterial("/Visual_materials/target_red")
+        visual_material.set_input_values("diffuseColor", [1.0, 0.0, 0.0])
+
+        cube_shape = Cube(
+            paths=self._target_path,
+            positions=[target_position],
+            sizes=[1.0],
+            scales=[0.03, 0.03, 0.03],
+            reset_xform_op_properties=True,
+        )
+        cube_shape.apply_visual_materials(visual_material)
+        self._target_cube = GeomPrim(paths=cube_shape.paths)
+
+        # Initialize data logger (using old API for now since replay depends on it)
+        from isaacsim.core.api.loggers import DataLogger
+
+        self._data_logger = DataLogger()
 
     async def setup_post_load(self):
-        self._franka_task = list(self._world.get_current_tasks().values())[0]
-        self._task_params = self._franka_task.get_params()
-        my_franka = self._world.scene.get_object(self._task_params["robot_name"]["value"])
-        self._articulation_controller = my_franka.get_articulation_controller()
-        self._data_logger = self._world.get_data_logger()
-        return
+        """Called after the scene is loaded."""
+        # Set camera view
+        ViewportManager.set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera="/OmniverseKit_Persp")
+
+        # Reset time step index
+        self._current_time_step_index = 0
+
+    async def setup_pre_reset(self):
+        """Called before world reset."""
+        # Deregister physics callbacks
+        if self._physics_callback_id is not None:
+            try:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            except Exception:
+                pass
+            self._physics_callback_id = None
+
+        # Reset time step index
+        self._current_time_step_index = 0
+
+    async def setup_post_reset(self):
+        """Called after world reset."""
+        # Reset robot to default pose
+        if self._robot:
+            self._robot.reset_to_default_pose()
+
+        # Reset time step index
+        self._current_time_step_index = 0
+
+    async def setup_post_clear(self):
+        """Called after clearing the scene."""
+        # Deregister physics callbacks
+        if self._physics_callback_id is not None:
+            try:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            except Exception:
+                pass
+            self._physics_callback_id = None
+
+        self._robot = None
+        self._target_cube = None
+        self._data_logger = None
+        self._current_time_step_index = 0
+
+    def physics_cleanup(self):
+        """Clean up physics resources."""
+        if self._physics_callback_id is not None:
+            try:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            except Exception:
+                pass
+            self._physics_callback_id = None
 
     async def _on_replay_trajectory_event_async(self, data_file):
+        """Load and replay trajectory data."""
         self._data_logger.load(log_path=data_file)
-        world = self.get_world()
-        await world.play_async()
-        world.add_physics_callback("replay_trajectory", self._on_replay_trajectory_step)
-        return
+        self._current_time_step_index = 0
+
+        # Start timeline playback
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Register physics callback
+        self._physics_callback_id = SimulationManager.register_callback(
+            self._on_replay_trajectory_step, IsaacEvents.POST_PHYSICS_STEP
+        )
 
     async def _on_replay_scene_event_async(self, data_file):
+        """Load and replay scene data (robot + target)."""
         self._data_logger.load(log_path=data_file)
-        world = self.get_world()
-        await world.play_async()
-        world.add_physics_callback("replay_scene", self._on_replay_scene_step)
-        return
+        self._current_time_step_index = 0
 
-    def _on_replay_trajectory_step(self, step_size):
-        if self._world.current_time_step_index < self._data_logger.get_num_of_data_frames():
-            data_frame = self._data_logger.get_data_frame(data_frame_index=self._world.current_time_step_index)
-            self._articulation_controller.apply_action(
-                ArticulationAction(joint_positions=data_frame.data["applied_joint_positions"])
-            )
-        return
+        # Start timeline playback
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
 
-    def _on_replay_scene_step(self, step_size):
-        if self._world.current_time_step_index < self._data_logger.get_num_of_data_frames():
-            target_name = self._task_params["target_name"]["value"]
-            data_frame = self._data_logger.get_data_frame(data_frame_index=self._world.current_time_step_index)
-            self._articulation_controller.apply_action(
-                ArticulationAction(joint_positions=data_frame.data["applied_joint_positions"])
-            )
-            self._world.scene.get_object(target_name).set_world_pose(
-                position=np.array(data_frame.data["target_position"])
-            )
-        return
+        # Register physics callback
+        self._physics_callback_id = SimulationManager.register_callback(
+            self._on_replay_scene_step, IsaacEvents.POST_PHYSICS_STEP
+        )
+
+    def _on_replay_trajectory_step(self, dt, context):
+        """Physics callback for replaying trajectory (robot only)."""
+        if self._data_logger is None or self._robot is None:
+            return
+
+        if self._current_time_step_index < self._data_logger.get_num_of_data_frames():
+            data_frame = self._data_logger.get_data_frame(data_frame_index=self._current_time_step_index)
+
+            # Apply joint positions to robot using experimental API
+            joint_positions = np.array(data_frame.data["applied_joint_positions"])
+            if joint_positions.ndim == 1:
+                joint_positions = joint_positions.reshape(1, -1)
+
+            # Use set_dof_position_targets (experimental API)
+            self._robot.set_dof_position_targets(joint_positions)
+
+            self._current_time_step_index += 1
+        else:
+            # Replay complete, deregister callback
+            if self._physics_callback_id is not None:
+                try:
+                    SimulationManager.deregister_callback(self._physics_callback_id)
+                except Exception:
+                    pass
+                self._physics_callback_id = None
+
+    def _on_replay_scene_step(self, dt, context):
+        """Physics callback for replaying scene (robot + target)."""
+        if self._data_logger is None or self._robot is None or self._target_cube is None:
+            return
+
+        if self._current_time_step_index < self._data_logger.get_num_of_data_frames():
+            data_frame = self._data_logger.get_data_frame(data_frame_index=self._current_time_step_index)
+
+            # Apply joint positions to robot using experimental API
+            joint_positions = np.array(data_frame.data["applied_joint_positions"])
+            if joint_positions.ndim == 1:
+                joint_positions = joint_positions.reshape(1, -1)
+
+            # Use set_dof_position_targets (experimental API)
+            self._robot.set_dof_position_targets(joint_positions)
+
+            # Move target cube to recorded position
+            target_position = np.array(data_frame.data["target_position"])
+            if target_position.ndim == 1:
+                target_position = target_position.reshape(1, -1)
+
+            # Get current orientation (keep it unchanged)
+            _, current_orientation = self._target_cube.get_world_poses()
+            self._target_cube.set_world_poses(positions=target_position, orientations=current_orientation)
+
+            self._current_time_step_index += 1
+        else:
+            # Replay complete, deregister callback
+            if self._physics_callback_id is not None:
+                try:
+                    SimulationManager.deregister_callback(self._physics_callback_id)
+                except Exception:
+                    pass
+                self._physics_callback_id = None

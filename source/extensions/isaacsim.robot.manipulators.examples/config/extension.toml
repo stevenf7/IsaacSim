@@ -30,10 +30,10 @@ writeTarget.kit = true
 name = "isaacsim.robot.manipulators.examples"
 
 [[python.module]]
-name = "isaacsim.robot.manipulators.examples.franka.interactive.pick_place"
+name = "isaacsim.robot.manipulators.examples.interactive.pick_place"
 
 [[python.module]]
-name = "isaacsim.robot.manipulators.examples.universal_robots.interactive.follow_target"
+name = "isaacsim.robot.manipulators.examples.interactive.follow_target"
 
 [[test]]
 dependencies = [

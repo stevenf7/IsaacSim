@@ -27,7 +27,7 @@ from isaacsim.gui.components.ui_utils import (
     setup_ui_headers,
     state_btn_builder,
 )
-from isaacsim.robot.manipulators.examples.universal_robots.interactive.follow_target.follow_target_experimental import (
+from isaacsim.robot.manipulators.examples.interactive.follow_target.follow_target_experimental import (
     UR10FollowTargetInteractive,
 )
 

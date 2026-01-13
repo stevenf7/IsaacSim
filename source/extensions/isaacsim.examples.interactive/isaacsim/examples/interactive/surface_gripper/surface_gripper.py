@@ -31,8 +31,7 @@ import omni.physics.core
 import omni.physics.tensors as physics
 import omni.ui as ui
 import usd.schema.isaac.robot_schema as robot_schema
-from isaacsim.core.prims import SingleRigidPrim
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
@@ -223,8 +222,8 @@ class Extension(omni.ext.IExt):
             selection.set_selected_prim_paths([self.gripper_prim_path], False)
 
             self.gripper_start_pose = physics.Transform([0, 0, 1.301], [0, 0, 0, 1])
-            set_camera_view(
-                eye=[2.00, 2.00, 2.00], target=self.gripper_start_pose.p, camera_prim_path="/OmniverseKit_Persp"
+            ViewportManager.set_camera_view(
+                eye=[2.00, 2.00, 2.00], target=list(self.gripper_start_pose.p), camera="/OmniverseKit_Persp"
             )
 
             self._physics_subscription = (

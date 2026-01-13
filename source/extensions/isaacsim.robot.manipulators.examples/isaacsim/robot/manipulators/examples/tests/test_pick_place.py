@@ -21,10 +21,10 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.core.experimental.utils.stage import create_new_stage_async
-from isaacsim.robot.manipulators.examples.franka.interactive.pick_place.pick_place_example import (
+from isaacsim.robot.manipulators.examples.interactive.pick_place.pick_place_example import (
     FrankaPickPlaceInteractive,
 )
-from isaacsim.robot.manipulators.examples.franka.interactive.pick_place.pick_place_example_extension import (
+from isaacsim.robot.manipulators.examples.interactive.pick_place.pick_place_example_extension import (
     FrankaPickPlaceUI,
 )
 from omni.kit.app import get_app

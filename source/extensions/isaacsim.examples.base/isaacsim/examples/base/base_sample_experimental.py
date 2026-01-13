@@ -19,7 +19,7 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.physics.core
 import omni.timeline
-from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from pxr import UsdPhysics
 
@@ -56,6 +56,7 @@ class BaseSample(object):
         await omni.kit.app.get_app().next_update_async()
 
         SimulationManager.set_physics_dt(dt=self._world_settings["physics_dt"])
+        RenderingManager.set_dt(dt=self._world_settings["rendering_dt"])
         await omni.kit.app.get_app().next_update_async()
 
         self._timeline.play()
