@@ -526,6 +526,11 @@ local function get_replicator_tests()
             "standalone_examples/api/isaacsim.replicator.grasping/grasping_workflow_sdg.py",
         },
         {
+            "tests-nativepython-isaacsim.replicator.experimental.domain_randomization",
+            "standalone_examples/api/isaacsim.replicator.experimental.domain_randomization/randomization_demo.py",
+            "--env-url none --num-envs 2 --reset-interval 20 --max-frames 50",
+        },
+        {
             "tests-nativepython-testing-omni.replicator.agent.test_scripting",
             "standalone_examples/testing/omni.replicator.agent/test_scripting.py",
         },

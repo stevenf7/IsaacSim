@@ -18,12 +18,15 @@ import omni.graph.core as og
 
 
 class OgnIntervalFiltering:
+    """OmniGraph node that filters execution based on frame intervals."""
+
     @staticmethod
     def compute(db) -> bool:
         interval = db.inputs.interval
         frame_num = np.array(db.inputs.frameCounts)
         indices = np.array(db.inputs.indices)
         ignore_interval = db.inputs.ignoreInterval
+
         if (not ignore_interval and (interval is None or len(frame_num) == 0)) or (
             ignore_interval and len(indices) == 0
         ):
