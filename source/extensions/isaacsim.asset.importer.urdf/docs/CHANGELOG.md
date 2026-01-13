@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.5.0] - 2026-01-10
+### Removed
+- Removed UI elements from the URDF importer, moved to isaacsim.asset.importer.urdf.ui extension
+
 ## [2.4.37] - 2026-01-05
 ### Fixed
 - Updated configuring of mimic joints to be processed after all joints are created to avoid issues with lexicographical order of siblings

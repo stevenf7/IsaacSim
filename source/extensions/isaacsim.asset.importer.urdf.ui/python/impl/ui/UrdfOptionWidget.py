@@ -14,11 +14,10 @@
 # limitations under the License.
 
 import omni.ui as ui
-from isaacsim.asset.importer.urdf.impl.ui.UrdfJointWidgetWithID import JointSettingMode
 
 from .style import get_option_style
 from .ui_utils import add_folder_picker_icon, checkbox_builder, float_field_builder, format_tt, string_filed_builder
-from .UrdfJointWidgetWithID import UrdfJointWidget
+from .UrdfJointWidgetWithID import JointSettingMode, UrdfJointWidget
 
 
 def option_header(collapsed, title):

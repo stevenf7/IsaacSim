@@ -36,7 +36,7 @@ COLOR_W = 0xFFAA5555
 
 def get_style():
     extension_manager = omni.kit.app.get_app().get_extension_manager()
-    ext_id = extension_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf")
+    ext_id = extension_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf.ui")
 
     ext_root = extension_manager.get_extension_path(ext_id) if ext_id else None
 
