@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.5] - 2026-01-10
+### Changed
+- Add functionality to allow setting rendering_dt.
+
 ## [1.1.4] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.

@@ -24,7 +24,6 @@ import omni.kit.commands
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from isaacsim.core.utils.physics import simulate_async
 from isaacsim.robot.surface_gripper import GripperView
 from isaacsim.robot.surface_gripper._surface_gripper import GripperStatus
 from omni.physx.scripts.physicsUtils import add_ground_plane
@@ -146,8 +145,8 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         await self.setup_physics()
         await self.setup_gripper(2)
         self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(8):
+            await omni.kit.app.get_app().next_update_async()
         pass
 
     async def test_get_surface_gripper_status(self):
@@ -155,16 +154,16 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         await self.setup_physics()
         await self.setup_gripper(2)
         self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(8):
+            await omni.kit.app.get_app().next_update_async()
 
         # set status of the grippers and make sure we can retrieve it after a step
         status_exp = [GripperStatus.Open, GripperStatus.Open]
         status_values = [-0.5, -0.5]
         self.gripper_view.apply_gripper_action(status_values)
 
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(8):
+            await omni.kit.app.get_app().next_update_async()
 
         status = self.gripper_view.get_surface_gripper_status()
         for i in range(gripper_count):
@@ -196,8 +195,8 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         await self.setup_physics()
         await self.setup_gripper(gripper_count)
         self._timeline.play()
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(8):
+            await omni.kit.app.get_app().next_update_async()
 
         # set all properties of the grippers and make sure we can retrieve them after a step
         max_grip_distance_exp = [1.0, 1.0]
@@ -208,8 +207,8 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
             max_grip_distance_exp, coaxial_force_limit_exp, shear_force_limit_exp, retry_interval_exp
         )
 
-        await simulate_async(0.125)
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(8):
+            await omni.kit.app.get_app().next_update_async()
 
         max_grip_distance, coaxial_force_limit, shear_force_limit, retry_interval = (
             self.gripper_view.get_surface_gripper_properties()
@@ -286,7 +285,8 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         await self.setup_physics()
         await self.setup_gripper(gripper_count, num_joints)
         self._timeline.play()
-        await simulate_async(0.125)
+        for _ in range(8):
+            await omni.kit.app.get_app().next_update_async()
         start_time = time.time()
         self.gripper_view.apply_gripper_action([0.5] * gripper_count)
         elapsed_time = time.time()

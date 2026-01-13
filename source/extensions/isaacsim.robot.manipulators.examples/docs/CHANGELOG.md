@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2026-01-10
+### Changed
+- Updated the folder structure of the extension
+
+### Added
+- A simplified stacking class based on core_experimental (NVIDIA Warp APIs)
+
 ## [1.3.0] - 2025-12-22
 ### Changed
 - Simplify bin filling example and improve stability, example cubes instead of various parts

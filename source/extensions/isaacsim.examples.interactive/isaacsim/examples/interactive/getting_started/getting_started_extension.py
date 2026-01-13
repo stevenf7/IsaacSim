@@ -13,16 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import os
-import weakref
 
-import numpy as np
 import omni.ext
 import omni.ui as ui
-import omni.usd
+from isaacsim.examples.base.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.examples.browser import get_instance as get_browser_instance
-from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.getting_started.getting_started import GettingStarted
 from isaacsim.gui.components.ui_utils import btn_builder
 
@@ -62,7 +58,18 @@ class GettingStartedExtension(omni.ext.IExt):
 class GettingStartedUI(BaseSampleUITemplate):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        return
+
+    def build_window(self):
+        pass
+
+    def post_reset_button_event(self):
+        pass
+
+    def post_load_button_event(self):
+        pass
+
+    def post_clear_button_event(self):
+        pass
 
     def build_extra_frames(self):
         extra_stacks = self.get_extra_frames_handle()
@@ -140,69 +147,65 @@ class GettingStartedUI(BaseSampleUITemplate):
             self.task_ui_elements["Add Collision Properties"].enabled = False
 
     def _add_visual_cube(self):
-        from isaacsim.core.api.objects import VisualCuboid
+        from isaacsim.core.experimental.objects import Cube
+        from pxr import Gf
 
-        VisualCuboid(
-            prim_path="/visual_cube",
-            name="visual_cube",
-            position=np.array([0, 0.5, 1.0]),
-            size=0.3,
-            color=np.array([255, 255, 0]),
-        )
+        # Create visual cube (no physics properties)
+        cube = Cube("/visual_cube", sizes=0.3, positions=[[0, 0.5, 1.0]])
+        # Set display color (yellow)
+        cube.geoms[0].GetDisplayColorAttr().Set([Gf.Vec3f(1.0, 1.0, 0.0)])
 
-        VisualCuboid(
-            prim_path="/visual_cube_static",
-            name="visual_cube_static",
-            position=np.array([0.5, 0, 0.5]),
-            size=0.3,
-            color=np.array([0, 255, 0]),
-        )
+        # Create static visual cube
+        cube_static = Cube("/visual_cube_static", sizes=0.3, positions=[[0.5, 0, 0.5]])
+        # Set display color (green)
+        cube_static.geoms[0].GetDisplayColorAttr().Set([Gf.Vec3f(0.0, 1.0, 0.0)])
 
         self.task_ui_elements["Add Visual Cube"].enabled = False
         # enable the add physics properties button
         self.task_ui_elements["Add Physics Properties"].enabled = True
 
     def _add_physics_cube(self):
-        from isaacsim.core.api.objects import DynamicCuboid
+        from isaacsim.core.experimental.objects import Cube
+        from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+        from pxr import Gf
 
-        DynamicCuboid(
-            prim_path="/dynamic_cube",
-            name="dynamic_cube",
-            position=np.array([0, -0.5, 1.5]),
-            size=0.3,
-            color=np.array([0, 255, 255]),
-        )
+        # Create cube with physics and collision properties
+        cube = Cube("/dynamic_cube", sizes=0.3, positions=[[0, -0.5, 1.5]])
+        # Set display color (cyan)
+        cube.geoms[0].GetDisplayColorAttr().Set([Gf.Vec3f(0.0, 1.0, 1.0)])
+
+        # Apply rigid body physics
+        RigidPrim("/dynamic_cube")
+
+        # Apply collision APIs
+        GeomPrim("/dynamic_cube", apply_collision_apis=True)
 
         self.task_ui_elements["Add Physics Cube"].enabled = False
 
     def _add_ground_plane(self):
-        from isaacsim.core.api.objects.ground_plane import GroundPlane
+        from isaacsim.core.experimental.objects import GroundPlane
 
-        GroundPlane(prim_path="/World/GroundPlane", z_position=0)
+        GroundPlane("/World/GroundPlane", positions=[[0, 0, 0]])
         self.task_ui_elements["Add Ground Plane"].enabled = False
 
     def _add_light_source(self):
+        from isaacsim.core.experimental.objects import DistantLight
 
-        import omni.usd
-        from pxr import Sdf, UsdLux
-
-        stage = omni.usd.get_context().get_stage()
-        distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
-        distantLight.CreateIntensityAttr(300)
+        light = DistantLight("/DistantLight")
+        light.set_intensities([300])
         self.task_ui_elements["Add Light Source"].enabled = False
 
     def _add_physics_properties(self):
-        # add physics properties to existing object
-        from isaacsim.core.prims import RigidPrim
+        from isaacsim.core.experimental.prims import RigidPrim
 
+        # Add physics properties to existing object
         RigidPrim("/visual_cube")
         self.task_ui_elements["Add Collision Properties"].enabled = True
         self.task_ui_elements["Add Physics Properties"].enabled = False
 
     def _add_collision_properties(self):
-        from isaacsim.core.prims import GeometryPrim
+        from isaacsim.core.experimental.prims import GeomPrim
 
-        prim = GeometryPrim("/visual_cube")
-        prim.apply_collision_apis()
+        GeomPrim("/visual_cube", apply_collision_apis=True)
 
         self.task_ui_elements["Add Collision Properties"].enabled = False

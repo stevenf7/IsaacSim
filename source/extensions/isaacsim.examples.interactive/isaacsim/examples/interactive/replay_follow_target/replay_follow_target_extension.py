@@ -18,8 +18,8 @@ import os
 
 import omni.ext
 import omni.ui as ui
+from isaacsim.examples.base.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.examples.browser import get_instance as get_browser_instance
-from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.replay_follow_target import ReplayFollowTarget
 from isaacsim.gui.components.ui_utils import btn_builder, str_builder
 
@@ -43,7 +43,6 @@ class ReplayFollowTargetExtension(omni.ext.IExt):
 
         get_browser_instance().register_example(
             name=self.example_name,
-            execute_entrypoint=ui_handle.build_window,
             ui_hook=ui_handle.build_ui,
             category=self.category,
         )
