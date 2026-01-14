@@ -1494,7 +1494,10 @@ sign-windows-x86_64-release:
       when: never
     - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
       when: never
-    - !reference [.rules-mr, rules]
+    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[x\] Generate containers in MR pipelines/"
+      # Extra bit of hackery to get the MR suffix into the container tags
+      variables:
+         MR_SUFFIX: "-mr"
     - !reference [.rules-version-changed, rules]
     - !reference [.rules-push-manual, rules]
 
@@ -1628,9 +1631,6 @@ test-container:
     - job: publish-container-x86_64
       artifacts: false
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      variables:
-         MR_SUFFIX: "-mr"
     - !reference [.container-rules, rules]
   artifacts:
     paths:
