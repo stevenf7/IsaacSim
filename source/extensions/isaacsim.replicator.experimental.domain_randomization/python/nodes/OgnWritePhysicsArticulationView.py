@@ -15,7 +15,7 @@
 
 import numpy as np
 import omni.graph.core as og
-from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
+from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.replicator.experimental.domain_randomization import ARTICULATION_ATTRIBUTES, TENDON_ATTRIBUTES
 from isaacsim.replicator.experimental.domain_randomization import physics_view as physics
 
@@ -148,7 +148,8 @@ class OgnWritePhysicsArticulationView:
             view.set_world_poses(positions=positions, indices=indices)
         elif attribute_name == "orientation":
             rpys = apply_randomization_operation(view_name, operation, attribute_name, samples, indices, on_reset)
-            orientations = euler_angles_to_quats(euler_angles=rpys, degrees=False)
+            # Convert euler angles to quaternions using experimental utils (returns wp.array, convert to numpy)
+            orientations = euler_angles_to_quaternion(rpys, degrees=False, extrinsic=True).numpy()
             view.set_world_poses(orientations=orientations, indices=indices)
         elif attribute_name == "linear_velocity":
             linear_velocities = apply_randomization_operation(

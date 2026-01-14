@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.0] - 2026-01-13
+### Added
+- Add `quaternion_to_euler_angles()` function to transform utils for converting quaternions to euler angles
+
 ## [0.9.0] - 2026-01-07
 ### Added
 - Add `parse_device()` function to ops utils for parsing Warp device specifications

@@ -430,6 +430,86 @@ def quaternion_to_rotation_matrix(
         return output.reshape((*batch_shape, 3, 3))
 
 
+def quaternion_to_euler_angles(
+    quaternion: list | np.ndarray | wp.array,
+    *,
+    degrees: bool = False,
+    extrinsic: bool = True,
+    dtype: type | None = None,
+    device: str | wp.context.Device | None = None,
+) -> wp.array:
+    """Convert quaternion to Euler angles.
+
+    Converts quaternions in [w, x, y, z] format to Euler angles. The output order matches
+    the input convention of :func:`euler_angles_to_quaternion` for round-trip consistency.
+
+    Args:
+        quaternion: Quaternion or batch of quaternions with shape (..., 4) in [w, x, y, z] format.
+        degrees: Whether to return angles in degrees. Defaults to False (radians).
+        extrinsic: True if the euler angles follows the extrinsic angles
+            convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+            the intrinsic angles conventions (equivalent to XYZ ordering). Defaults to True.
+        dtype: Data type of the output array. If ``None``, the data type of the input is used.
+        device: Device to place the output array on. If ``None``, the default device is used,
+            unless the input is a Warp array (in which case the input device is used).
+
+    Returns:
+        Euler angles with shape (..., 3). For extrinsic convention, order is [Z, Y, X] (yaw, pitch, roll).
+        For intrinsic convention, order is [X, Y, Z] (roll, pitch, yaw).
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.transform as transform_utils
+        >>> import numpy as np
+        >>>
+        >>> # Identity quaternion to euler angles
+        >>> identity = np.array([1.0, 0.0, 0.0, 0.0])
+        >>> euler = transform_utils.quaternion_to_euler_angles(identity)  # doctest: +NO_CHECK
+        >>> euler.numpy()
+        array([0., 0., 0.])
+    """
+    quaternion = ops_utils.place(quaternion, dtype=dtype, device=device)
+
+    # Ensure floating point dtype
+    if quaternion.dtype not in [wp.float32, wp.float64]:
+        quaternion = wp.array(quaternion.numpy(), dtype=wp.float32, device=quaternion.device)
+
+    # Ensure we have proper 4-element quaternions
+    if quaternion.shape[-1] != 4:
+        raise ValueError(f"Expected 4-element quaternions, got shape {quaternion.shape}")
+
+    # Handle single quaternion case by adding batch dimension
+    if quaternion.ndim == 1:
+        quaternion = quaternion.reshape((1, 4))
+        squeeze_output = True
+    else:
+        squeeze_output = False
+
+    batch_shape = quaternion.shape[:-1]
+    batch_size = 1
+    for dim in batch_shape:
+        batch_size *= dim
+
+    # Flatten batch dimensions
+    quaternion_flat = quaternion.reshape((batch_size, 4))
+    output = wp.empty(shape=(batch_size, 3), dtype=quaternion.dtype, device=quaternion.device)
+
+    wp.launch(
+        _wk_quaternion_to_euler_angles,
+        dim=batch_size,
+        inputs=[quaternion_flat, output, degrees, extrinsic],
+        device=quaternion.device,
+    )
+
+    # Reshape to original batch shape
+    if squeeze_output:
+        return output.reshape((3,))
+    else:
+        return output.reshape((*batch_shape, 3))
+
+
 """
 Custom Warp kernels for transform operations.
 """
@@ -646,3 +726,115 @@ def _wk_quaternion_to_rotation_matrix(quaternion: wp.array(ndim=2), output: wp.a
     output[i, 2, 0] = two * s * (x * z - y * w)
     output[i, 2, 1] = two * s * (y * z + x * w)
     output[i, 2, 2] = one - two * s * (sqx + sqy)
+
+
+@wp.kernel(enable_backward=False)
+def _wk_quaternion_to_euler_angles(
+    quaternion: wp.array(ndim=2),
+    output: wp.array(ndim=2),
+    degrees: bool,
+    extrinsic: bool,
+):
+    """Convert quaternion to Euler angles using Warp kernel.
+
+    For extrinsic convention, output order is [Z, Y, X] = [yaw, pitch, roll] to match
+    the euler_angles_to_quaternion input convention.
+    For intrinsic convention, output order is [X, Y, Z] = [roll, pitch, yaw].
+    """
+    i = wp.tid()
+
+    # Extract quaternion components [w, x, y, z]
+    w = quaternion[i, 0]
+    x = quaternion[i, 1]
+    y = quaternion[i, 2]
+    z = quaternion[i, 3]
+
+    # Type-safe constants
+    zero = w - w  # Type-safe zero
+    one = zero + output.dtype(1.0)  # Type-safe one
+    two = one + one  # Type-safe two
+
+    # Compute rotation matrix elements needed for euler angle extraction
+    # Using the standard quaternion to rotation matrix formula
+    sqx = x * x
+    sqy = y * y
+    sqz = z * z
+    sqw = w * w
+
+    # Normalization (for non-unit quaternions)
+    inv_norm = one / (sqx + sqy + sqz + sqw)
+
+    # Rotation matrix elements
+    m00 = one - two * inv_norm * (sqy + sqz)
+    m01 = two * inv_norm * (x * y - z * w)
+    m02 = two * inv_norm * (x * z + y * w)
+    m10 = two * inv_norm * (x * y + z * w)
+    m11 = one - two * inv_norm * (sqx + sqz)
+    m12 = two * inv_norm * (y * z - x * w)
+    m20 = two * inv_norm * (x * z - y * w)
+    m21 = two * inv_norm * (y * z + x * w)
+    m22 = one - two * inv_norm * (sqx + sqy)
+
+    # Extract euler angles
+    if extrinsic:
+        # For extrinsic ZYX convention: R = Rz(yaw) * Ry(pitch) * Rx(roll)
+        # Output order is [Z, Y, X] = [yaw, pitch, roll] to match euler_angles_to_quaternion
+
+        # pitch = -asin(m20)
+        m20_clamped = wp.clamp(m20, -one, one)
+        pitch = -wp.asin(m20_clamped)
+
+        # Check for gimbal lock (pitch near +/- 90 degrees)
+        cos_pitch = wp.cos(pitch)
+        threshold = zero + output.dtype(1e-6)
+
+        if wp.abs(cos_pitch) > threshold:
+            # Normal case: no gimbal lock
+            roll = wp.atan2(m21, m22)
+            yaw = wp.atan2(m10, m00)
+        else:
+            # Gimbal lock: set roll to 0 and compute yaw
+            roll = zero
+            yaw = wp.atan2(-m01, m11)
+
+        # Output in [Z, Y, X] order for extrinsic convention
+        angle1 = yaw  # Z rotation (first element)
+        angle2 = pitch  # Y rotation (second element)
+        angle3 = roll  # X rotation (third element)
+    else:
+        # For intrinsic XYZ convention: R = Rx(roll) * Ry(pitch) * Rz(yaw)
+        # Output order is [X, Y, Z] = [roll, pitch, yaw]
+
+        # pitch = asin(m02)
+        m02_clamped = wp.clamp(m02, -one, one)
+        pitch = wp.asin(m02_clamped)
+
+        cos_pitch = wp.cos(pitch)
+        threshold = zero + output.dtype(1e-6)
+
+        if wp.abs(cos_pitch) > threshold:
+            roll = wp.atan2(-m12, m22)
+            # For intrinsic XYZ, yaw uses m00 in the denominator (not m11)
+            yaw = wp.atan2(-m01, m00)
+        else:
+            roll = zero
+            # In gimbal lock (pitch ≈ ±90°), use m11 to avoid instability when m00 ≈ 0
+            yaw = wp.atan2(m10, m11)
+
+        # Output in [X, Y, Z] order for intrinsic convention
+        angle1 = roll  # X rotation (first element)
+        angle2 = pitch  # Y rotation (second element)
+        angle3 = yaw  # Z rotation (third element)
+
+    # Convert to degrees if requested
+    if degrees:
+        pi = zero + output.dtype(3.141592653589793)
+        one_eighty = zero + output.dtype(180.0)
+        rad_to_deg = one_eighty / pi
+        angle1 = angle1 * rad_to_deg
+        angle2 = angle2 * rad_to_deg
+        angle3 = angle3 * rad_to_deg
+
+    output[i, 0] = angle1
+    output[i, 1] = angle2
+    output[i, 2] = angle3

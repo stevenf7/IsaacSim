@@ -24,8 +24,8 @@ from typing import Optional, Type, Union
 
 import numpy as np
 from isaacsim.core.experimental.prims import Articulation, RigidPrim
+from isaacsim.core.experimental.utils.transform import quaternion_to_euler_angles
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.numpy.rotations import quats_to_euler_angles
 from isaacsim.replicator.experimental.domain_randomization.scripts import context
 from omni.replicator.core import distribution
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, utils
@@ -108,7 +108,8 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str) -> None:
 
     pos, quats = rigid_prim_view.get_world_poses()
     initial_values["position"] = np.asarray(pos)
-    initial_values["orientation"] = quats_to_euler_angles(np.asarray(quats))
+    # Convert quaternions (w, x, y, z) to euler angles
+    initial_values["orientation"] = quaternion_to_euler_angles(np.asarray(quats), extrinsic=True).numpy()
 
     lin_vel, ang_vel = rigid_prim_view.get_velocities()
     initial_values["linear_velocity"] = np.asarray(lin_vel)
@@ -151,7 +152,8 @@ def register_articulation_view(articulation_view: Articulation, name: str) -> No
 
     pos, quats = articulation_view.get_world_poses()
     initial_values["position"] = np.asarray(pos)
-    initial_values["orientation"] = quats_to_euler_angles(np.asarray(quats))
+    # Convert quaternions (w, x, y, z) to euler angles
+    initial_values["orientation"] = quaternion_to_euler_angles(np.asarray(quats), extrinsic=True).numpy()
 
     lin_vel, ang_vel = articulation_view.get_velocities()
     initial_values["linear_velocity"] = np.asarray(lin_vel)

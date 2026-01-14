@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Domain Randomization"
 description = "Domain Randomization extension for reinforcement learning and sim-to-real applications. Provides OmniGraph nodes for randomizing simulation environments."
@@ -14,8 +14,8 @@ writeTarget.kit = true
 writeTarget.platform = true
 
 [dependencies]
-"isaacsim.core.api" = {}
 "isaacsim.core.experimental.prims" = {}
+"isaacsim.core.simulation_manager" = {}
 "omni.graph" = {}
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
@@ -75,4 +75,11 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+]
+
+
+[[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
