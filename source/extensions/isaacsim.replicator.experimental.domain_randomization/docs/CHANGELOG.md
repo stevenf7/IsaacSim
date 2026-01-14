@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.1] - 2026-01-13
+### Changed
+- Update dependencies to use the latest experimental core utils API
+
 ## [1.0.0] - 2026-01-12
 ### Added
 - Initial release of experimental domain randomization extension

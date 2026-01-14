@@ -50,14 +50,12 @@ import sys
 
 import carb
 import isaacsim.replicator.experimental.domain_randomization as dr
-import numpy as np
 import omni.replicator.core as rep
-from isaacsim.core.api.objects import DynamicSphere
 from isaacsim.core.cloner import GridCloner
-from isaacsim.core.experimental.prims import Articulation, RigidPrim
+from isaacsim.core.experimental.objects import DomeLight, GroundPlane, Sphere
+from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim
+from isaacsim.core.experimental.utils.stage import add_reference_to_stage, define_prim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.prims import define_prim
-from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path
 
 # Print configuration
@@ -79,11 +77,11 @@ if assets_root_path is None:
 
 # Set up environment
 if env_url:
-    add_reference_to_stage(usd_path=assets_root_path + env_url, prim_path="/World/defaultGroundPlane")
+    add_reference_to_stage(usd_path=assets_root_path + env_url, path="/World/defaultGroundPlane")
 else:
-    rep.functional.create.dome_light(intensity=1000, rotation=(270, 0, 0))
-    ground_plane = rep.functional.create.plane(scale=(10, 10, 1), position=(0, 0, 0))
-    rep.functional.physics.apply_collider(ground_plane)
+    dome_light = DomeLight("/World/DomeLight")
+    dome_light.set_intensities(1000)
+    GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
 # Set up grid cloner for multiple environments
 cloner = GridCloner(spacing=1.5)
@@ -91,10 +89,12 @@ cloner.define_base_env("/World/envs")
 define_prim("/World/envs/env_0")
 
 # Set up the first environment with sphere and robot
-DynamicSphere(prim_path="/World/envs/env_0/object", radius=0.1, position=np.array([0.75, 0.0, 0.2]))
+Sphere("/World/envs/env_0/object", radii=0.1, positions=[0.75, 0.0, 0.2])
+GeomPrim("/World/envs/env_0/object", apply_collision_apis=True)
+RigidPrim("/World/envs/env_0/object", masses=0.02)
 add_reference_to_stage(
     usd_path=assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
-    prim_path="/World/envs/env_0/franka",
+    path="/World/envs/env_0/franka",
 )
 
 # Clone environments
@@ -151,7 +151,7 @@ run_indefinitely = max_frames == 0
 while simulation_app.is_running() and (run_indefinitely or frame_idx < max_frames):
     reset_inds = list()
     if frame_idx > 0 and frame_idx % reset_interval == 0:
-        reset_inds = np.arange(num_envs)
+        reset_inds = list(range(num_envs))
         print(f"Reset #{frame_idx // reset_interval} at frame {frame_idx}")
     dr.physics_view.step_randomization(reset_inds)
     SimulationManager.step()
@@ -159,4 +159,5 @@ while simulation_app.is_running() and (run_indefinitely or frame_idx < max_frame
     frame_idx += 1
 
 print(f"Simulation complete after {frame_idx} frames")
+
 simulation_app.close()
