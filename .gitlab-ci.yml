@@ -50,6 +50,12 @@ include:
   - project: "omniverse/devplat/gitlab/templates/common/compliance"
     file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
     ref: v1_latest
+  - local: tools/ci/test_matrixes/kit_mr_tests.yml
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE != "nightly"
+  - local: tools/ci/test_matrixes/all.yml
+    rules:
+      - if: $CI_PIPELINE_SOURCE != "pipeline" || ($CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "nightly")
 # ==============================================================================================================
 stages:
   - check
@@ -373,6 +379,11 @@ check-python-packages:
         when: never
       - !reference [.rules-workflow, rules]
 # ==============================================================================================================
+.disable_on_downstream_of_mr:
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE != "nightly"
+        when: never
+# ==============================================================================================================
 .aarch64-build-common:
     extends:
       - .build-common
@@ -404,6 +415,9 @@ build-linux-x86_64-release:
       - apt-get install -y libarchive-tools
       # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.build-common, rules]
     script:
       - ./repo.sh ci build -c release
 # ==============================================================================================================
@@ -430,6 +444,9 @@ build-linux-x86_64-debug:
       - apt-get install -y libarchive-tools
       # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.build-common, rules]
     script:
       - ./repo.sh ci build -c debug
 
@@ -444,6 +461,7 @@ build-linux-aarch64-release:
   rules:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
+    - !reference [.disable_on_downstream_of_mr, rules]
     - !reference [.rules-platform-linux-aarch64, rules]
     - !reference [.rules-workflow, rules]
     - !reference [.rules-version-changed, rules]
@@ -459,6 +477,7 @@ build-linux-aarch64-debug:
   rules:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
+    - !reference [.disable_on_downstream_of_mr, rules]
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never  # Manual to avoid overloading ARM ci runners during MRs
     - !reference [.rules-platform-linux-aarch64, rules]
@@ -485,6 +504,9 @@ build-windows-x86_64-debug:
       - .osec:vault:v3:prod_token_job
     before_script:
       - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.build-common, rules]
     script:
       - ./repo.bat ci build -c debug
 
@@ -560,6 +582,7 @@ build-windows-x86_64-debug:
     rules:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS != "true"
         when: never
+      - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.rules-workflow, rules]
 
 .test-linux-common:
@@ -632,30 +655,7 @@ test-linux-x86_64:
       - .install-linux-test-packages
       - .ipp_lnx_x86_64_gpu
       - .kit-runner-test-linux-x86_64-1x-gpu
-  parallel:
-    matrix:
-      - SUITE: startuptests
-      - SUITE: pythontests
-        BUCKET:
-          - deprecated
-          - asset
-          - core
-          - examples_tests
-          - replicator
-          - ros
-          - sensors
-          - utils_gui
-          - robot
-          - other
-      - SUITE: doc_snippets
-      - SUITE: warmuptests
-      - SUITE: postinstalltests
-      - SUITE: nativepythontests
-        BUCKET:
-          - api
-          - replicator
-          - testing
-        REPORT_TIMING: ["inline"]
+      - .test-linux-matrix
   script:
     - if [ "$REPORT_TIMING" == "inline" ]; then
     -   GEN_REPORT_CMD="--generate-report"
@@ -674,6 +674,9 @@ test-linux-x86_64:
 
 
 test-linux-x86_64-benchmarks-1-gpu:
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.test-common, rules]
     extends:
       - .test-common
       - .test-linux-common
@@ -687,6 +690,9 @@ test-linux-x86_64-benchmarks-1-gpu:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
 
 test-linux-x86_64-benchmarks-2-gpu:
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.test-common, rules]
     extends:
       - .test-common
       - .test-linux-common
@@ -704,23 +710,7 @@ test-windows-x86_64:
       - .test-common
       - .test-windows-common
       - .kit-runner-test-windows-x86_64-1x-gpu
-    parallel:
-      matrix:
-        - SUITE: startuptests
-        - SUITE: pythontests
-          BUCKET:
-            - deprecated
-            - asset
-            - core
-            - examples_tests
-            - replicator
-            - ros
-            - sensors
-            - utils_gui
-            - robot
-            - other
-        - SUITE: warmuptests
-        - SUITE: postinstalltests
+      - .test-windows-matrix
     script:
       - if ($BUCKET) { $BUCKET_CMD = @("-b", $BUCKET)} else { $BUCKET_CMD = @() }
       - ./repo.bat ci test -- -s $SUITE @BUCKET_CMD
@@ -775,6 +765,9 @@ test-windows-x86_64-nativepythontests:
 
 gather-coverage:
     image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.test-common, rules]
     extends:
       - .test-common
       - .ipp_lnx_x86_64_cpu_small
@@ -2118,6 +2111,9 @@ verify-stage-to-gitlab:
         - '**/tests/full_report.xml'
 
 test-linux-x86_64-isaaclab-integration:
+  rules:
+    - !reference [.disable_on_downstream_of_mr, rules]
+    - !reference [.test-common, rules]
   extends:
     - .test-common
     - .test-linux-x86_64-isaaclab-integration-base
