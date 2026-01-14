@@ -60,7 +60,6 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Benchmark)
 
-   isaacsim.benchmark.examples <source/extensions/isaacsim.benchmark.examples/docs/index>
    isaacsim.benchmark.services <source/extensions/isaacsim.benchmark.services/docs/index>
 
 .. toctree::
