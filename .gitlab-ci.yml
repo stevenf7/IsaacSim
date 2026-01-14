@@ -103,6 +103,7 @@ workflow:
 # ==============================================================================================================
 # More variables can be found in common.yml - here we put the ones controlling the jobs workflow
 variables:
+    IPP_RUNNER_POST_SCRIPT_PREEMPTIVE_TERMINATION_TIMEOUT_SECONDS: "1800"
     OSEC_NSPECT_ID: "NSPECT-8CX1-LP1G"
     OSEC_CHECKMARX_ENABLED: "false"
     OSEC_SONARQUBE_ENABLED: "true"
