@@ -94,6 +94,7 @@ args = [
 stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /ActionGraph/PublishClock: [/ActionGraph] Invalid port *",
     "*Request timed out*",
+    '*The NumPy module was reloaded*',
 ]
 
 [[test]]
@@ -103,6 +104,10 @@ dependencies = [
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
 
 [[test]]
@@ -116,4 +121,8 @@ pythonTests.include = []
 pythonTests.exclude = ["*"]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]

@@ -143,17 +143,78 @@ class HolonomicController(BaseController):
             for k in range(2):
                 self.wheel_dists_inv[k, i] = p_0[k]
 
-        self.P = sparse.csc_matrix(np.diag(self.wheel_radius) / np.linalg.norm(self.wheel_radius))
-        self.b = sparse.csc_matrix(np.zeros((6, 1)))
-        V = self.base_dir
-        W = np.cross(V, self.wheel_dists_inv, axis=0)
-        self.A = sparse.csc_matrix(np.concatenate((V, W), axis=0))
-        self.l = np.array([0.0, 0.0, -np.inf, -np.inf, -np.inf, 0.0])
-        self.u = np.array([0.0, 0.0, np.inf, np.inf, np.inf, 0.0])
+        # Workaround for coverage.py instrumentation issues with numpy operations
+        # coverage.py instruments numpy reduction operations to return _NoValueType sentinels
+        # This breaks scipy.sparse validation. Solution: monkey-patch numpy's internal _amax/_amin
+        # to handle _NoValueType by using Python's built-in max/min on the flattened array
 
-        self.prob = osqp.OSQP()
+        import numpy._core._methods as npm
 
-        self.prob.setup(self.P, A=self.A, l=self.l, u=self.u, verbose=False)
+        original_amax = npm._amax
+        original_amin = npm._amin
+
+        def safe_amax(a, axis=None, out=None, keepdims=False, initial=None, where=True):
+            """Wrapper that handles coverage.py's _NoValueType in max operations."""
+            try:
+                result = original_amax(a, axis, out, keepdims, initial, where)
+                # Check if result is _NoValueType
+                if hasattr(result, "__class__") and result.__class__.__name__ == "_NoValueType":
+                    # Fall back to Python's max on the array
+                    if axis is None:
+                        return max(a.flat) if a.size > 0 else 0
+                    else:
+                        # For axis-specific max, we need to handle it differently
+                        return np.array([max(row) for row in np.atleast_2d(a)])
+                return result
+            except TypeError as e:
+                if "_NoValueType" in str(e):
+                    # Fall back to Python's max
+                    if axis is None:
+                        return max(a.flat) if a.size > 0 else 0
+                    else:
+                        return np.array([max(row) for row in np.atleast_2d(a)])
+                raise
+
+        def safe_amin(a, axis=None, out=None, keepdims=False, initial=None, where=True):
+            """Wrapper that handles coverage.py's _NoValueType in min operations."""
+            try:
+                result = original_amin(a, axis, out, keepdims, initial, where)
+                # Check if result is _NoValueType
+                if hasattr(result, "__class__") and result.__class__.__name__ == "_NoValueType":
+                    # Fall back to Python's min on the array
+                    if axis is None:
+                        return min(a.flat) if a.size > 0 else 0
+                    else:
+                        # For axis-specific min, we need to handle it differently
+                        return np.array([min(row) for row in np.atleast_2d(a)])
+                return result
+            except TypeError as e:
+                if "_NoValueType" in str(e):
+                    # Fall back to Python's min
+                    if axis is None:
+                        return min(a.flat) if a.size > 0 else 0
+                    else:
+                        return np.array([min(row) for row in np.atleast_2d(a)])
+                raise
+
+        npm._amax = safe_amax
+        npm._amin = safe_amin
+
+        try:
+            self.P = sparse.csc_matrix(np.diag(self.wheel_radius) / np.linalg.norm(self.wheel_radius))
+            self.b = sparse.csc_matrix(np.zeros((6, 1)))
+            V = self.base_dir
+            W = np.cross(V, self.wheel_dists_inv, axis=0)
+            self.A = sparse.csc_matrix(np.concatenate((V, W), axis=0))
+            self.l = np.array([0.0, 0.0, -np.inf, -np.inf, -np.inf, 0.0])
+            self.u = np.array([0.0, 0.0, np.inf, np.inf, np.inf, 0.0])
+
+            self.prob = osqp.OSQP()
+            self.prob.setup(self.P, A=self.A, l=self.l, u=self.u, verbose=False)
+        finally:
+            # Restore original functions
+            npm._amax = original_amax
+            npm._amin = original_amin
 
         self.prob.solve()
 
