@@ -1,0 +1,45 @@
+.test-linux-matrix:
+  parallel:
+    matrix:
+      - SUITE: startuptests
+      - SUITE: pythontests
+        BUCKET:
+          - deprecated
+          - asset
+          - core
+          - examples_tests
+          - replicator
+          - ros
+          - sensors
+          - utils_gui
+          - robot
+          - other
+      - SUITE: doc_snippets
+      - SUITE: warmuptests
+      - SUITE: postinstalltests
+      - SUITE: nativepythontests
+        BUCKET:
+          - api
+          - replicator
+          - testing
+        REPORT_TIMING: ["inline"]
+
+
+.test-windows-matrix:
+    parallel:
+      matrix:
+        - SUITE: startuptests
+        - SUITE: pythontests
+          BUCKET:
+            - deprecated
+            - asset
+            - core
+            - examples_tests
+            - replicator
+            - ros
+            - sensors
+            - utils_gui
+            - robot
+            - other
+        - SUITE: warmuptests
+        - SUITE: postinstalltests

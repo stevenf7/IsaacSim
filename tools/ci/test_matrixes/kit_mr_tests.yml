@@ -1,0 +1,14 @@
+.test-linux-matrix:
+  parallel:
+    matrix:
+      - SUITE: pythontests
+        BUCKET:
+          - sensors
+
+
+.test-windows-matrix:
+    parallel:
+      matrix:
+        - SUITE: pythontests
+          BUCKET:
+            - sensors
