@@ -231,7 +231,6 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/isaacsim.benchmark.examples",
     "exts/isaacsim.benchmark.services",
 ]
 
