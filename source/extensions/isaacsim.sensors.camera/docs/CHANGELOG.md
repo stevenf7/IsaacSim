@@ -1,5 +1,10 @@
 # Changelog
-## [1.5.6] - 2026-01-13
+
+## [1.6.1] - 2026-01-14
+### Fixed
+- Cleanup annotators and state properly when the camera is destroyed
+
+## [1.6.0] - 2026-01-13
 ### Changed
 - Camera sensor: switched to use "_fast" version of the annotators where available ("bounding_box_2d_tight_fast", "bounding_box_2d_loose_fast", "instance_segmentation_fast", "instance_id_segmentation_fast")
 - Tests: removed `World` from tests, using `timeline.play()` and `timeline.stop()` to provide sensors with data
