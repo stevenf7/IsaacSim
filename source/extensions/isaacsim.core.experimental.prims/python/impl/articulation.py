@@ -4626,13 +4626,26 @@ class Articulation(XformPrim):
         # query articulation metadata for each prim
         stage = stage_utils.get_current_stage(backend="usd")
         stage_id = stage_utils.get_stage_id(stage)
-        for path in self.paths:
-            omni.physx.get_physx_property_query_interface().query_prim(
-                stage_id=stage_id,
-                query_mode=omni.physx.bindings._physx.PhysxPropertyQueryMode.QUERY_ARTICULATION,
-                prim_id=PhysicsSchemaTools.sdfPathToInt(path),
-                articulation_fn=query_report,
+
+        # Get the appropriate property query interface based on active backend
+        active_engine = SimulationManager.get_active_physics_engine()
+
+        if active_engine == "physx":
+            # Use PhysX's property query interface
+            for path in self.paths:
+                omni.physx.get_physx_property_query_interface().query_prim(
+                    stage_id=stage_id,
+                    query_mode=omni.physx.bindings._physx.PhysxPropertyQueryMode.QUERY_ARTICULATION,
+                    prim_id=PhysicsSchemaTools.sdfPathToInt(path),
+                    articulation_fn=query_report,
+                )
+        else:
+            # For other backends, skip property query (let backend handle initialization)
+            carb.log_warn(
+                f"Property query not implemented for engine '{active_engine}', skipping articulation metadata query"
             )
+            return
+
         # update amounts and indices
         self._num_links = len(self._link_names)
         self._link_index_dict = {name: i for i, name in enumerate(self._link_names)}

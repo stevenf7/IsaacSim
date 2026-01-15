@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.0] - 2026-01-14
+### Added
+- Add supporting APIs for changing physics engines through the omniphysics interfaces
+
 ## [1.8.0] - 2026-01-09
 ### Added
 - Add `PhysicsScene` and `PhysxScene` Python class wrappers for high-level physics scene manipulation

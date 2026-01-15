@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.8] - 2026-01-14
+### Changed
+- Slight modification to show how a new physics engine can be added in the future
+
 ## [0.9.7] - 2025-12-11
 ### Removed
 - Remove checking for the deformable beta feature, as it is now active by default

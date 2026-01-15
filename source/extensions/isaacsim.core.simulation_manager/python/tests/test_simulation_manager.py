@@ -18,6 +18,7 @@ import omni.kit.app
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
+from pxr import PhysxSchema, UsdPhysics
 
 
 class TestSimulationManagerBackend(omni.kit.test.AsyncTestCase):
@@ -629,6 +630,87 @@ class TestSimulationManagerSimulationLifecycle(omni.kit.test.AsyncTestCase):
         # Test assets_loading returns bool
         result = SimulationManager.assets_loading()
         self.assertIsInstance(result, bool)
+
+
+class TestSimulationManagerPhysicsEngines(omni.kit.test.AsyncTestCase):
+    """Tests for SimulationManager physics engine switching and management."""
+
+    async def setUp(self):
+        """Method called to prepare the test fixture."""
+        super().setUp()
+        await stage_utils.create_new_stage_async()
+        # Create a physics scene with proper PhysX schema
+        stage = stage_utils.get_current_stage()
+        scene_prim = stage_utils.define_prim("/World/PhysicsScene")
+        UsdPhysics.Scene.Define(stage, scene_prim.GetPath())
+        PhysxSchema.PhysxSceneAPI.Apply(scene_prim)
+        await omni.kit.app.get_app().next_update_async()
+        # Register the physics scene with SimulationManager
+        SimulationManager.set_default_physics_scene("/World/PhysicsScene")
+        self._original_engine = SimulationManager.get_active_physics_engine()
+
+    async def tearDown(self):
+        """Method called immediately after the test method has been called."""
+        if self._original_engine:
+            try:
+                SimulationManager.switch_physics_engine(self._original_engine, verbose=False)
+            except Exception:
+                pass
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        super().tearDown()
+
+    async def test_engine_query_and_switching(self):
+        """Test engine query methods and switching to PhysX."""
+        # Test get_active_physics_engine returns PhysX by default
+        engine = SimulationManager.get_active_physics_engine()
+        self.assertEqual(engine, "physx")
+
+        # Test get_available_physics_engines returns list with PhysX
+        engines = SimulationManager.get_available_physics_engines(verbose=False)
+        self.assertGreater(len(engines), 0)
+        engine_names = [e[0] for e in engines]
+        self.assertIn("physx", engine_names)
+
+        # Test switching to same engine
+        result = SimulationManager.switch_physics_engine("physx", verbose=False)
+        self.assertTrue(result)
+        self.assertEqual(SimulationManager.get_active_physics_engine(), "physx")
+
+    async def test_invalid_switch_preserves_state(self):
+        """Test that invalid engine switches preserve all state and PhysX continues working."""
+        # Capture state before invalid switches
+        engine_before = SimulationManager.get_active_physics_engine()
+        dt_before = SimulationManager.get_physics_dt()
+        broadphase_before = SimulationManager.get_broadphase_type()
+        solver_before = SimulationManager.get_solver_type()
+        ccd_before = SimulationManager.is_ccd_enabled()
+        gpu_before = SimulationManager.is_gpu_dynamics_enabled()
+        stab_before = SimulationManager.is_stablization_enabled()
+
+        # Attempt invalid switch
+        self.assertFalse(SimulationManager.switch_physics_engine("invalid_engine", verbose=False))
+
+        # Verify all state is preserved
+        self.assertEqual(SimulationManager.get_active_physics_engine(), engine_before)
+        self.assertEqual(SimulationManager.get_physics_dt(), dt_before)
+        self.assertEqual(SimulationManager.get_broadphase_type(), broadphase_before)
+        self.assertEqual(SimulationManager.get_solver_type(), solver_before)
+        self.assertEqual(SimulationManager.is_ccd_enabled(), ccd_before)
+        self.assertEqual(SimulationManager.is_gpu_dynamics_enabled(), gpu_before)
+        self.assertEqual(SimulationManager.is_stablization_enabled(), stab_before)
+
+        # Verify PhysX methods still work correctly
+        SimulationManager.set_broadphase_type("GPU")
+        self.assertEqual(SimulationManager.get_broadphase_type(), "GPU")
+
+        SimulationManager.set_solver_type("PGS")
+        self.assertEqual(SimulationManager.get_solver_type(), "PGS")
+
+        # Restore original values
+        SimulationManager.set_broadphase_type(broadphase_before)
+        SimulationManager.set_solver_type(solver_before)
 
 
 class TestSimulationManagerFabricAndNoticeHandlers(omni.kit.test.AsyncTestCase):
