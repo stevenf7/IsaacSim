@@ -1,0 +1,34 @@
+# Extension configuration file.
+# Visit the "Extension configuration file (extension.toml)" section for more details:
+# https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/extensions_advanced.html
+#
+
+[package]
+version = "0.1.0"
+category = "simulation"
+title = "motion_generation"
+description = "Contains APIs for interfacing external motion generation code to isaacsim."
+authors = ["jhough@nvidia.com", "hmazhar@nvidia.com"]
+keywords = ["motion","generation","api","planning","kinematics","trajectory"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"isaacsim.core.experimental.utils" = {}
+
+# define the Python module that the extension provides
+[[python.module]]
+name = "isaacsim.robot_motion.experimental.motion_generation"
+
+# define the Python module for tests
+[[python.module]]
+name = "isaacsim.robot_motion.experimental.motion_generation.tests"
+
+# test dependencies
+[[test]]
+enabled = true
+dependencies = [
+    "omni.kit.test",
+]
