@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import weakref
-from typing import Callable
+from typing import Callable, Literal
 
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
@@ -24,10 +24,10 @@ import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.physics.core
-import omni.physx
 import omni.timeline
 import omni.usd
 import warp as wp
+from omni.physics.core import SimulationRegistryEventType
 from pxr import PhysxSchema
 
 from .isaac_events import IsaacEvents
@@ -51,8 +51,8 @@ class SimulationManager:
     _message_bus = carb.eventdispatcher.get_eventdispatcher()
     _physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
     _physics_stage_update_interface = omni.physics.core.get_physics_stage_update_interface()
-    _physx_sim_interface = omni.physx.get_physx_simulation_interface()
-    _physx_interface = omni.physx.get_physx_interface()
+    _physics_interface = omni.physics.core.get_physics_interface()
+    _physx_interface = None
     _physx_fabric_interface = None
     _physics_sim_view = None
     _physics_sim_view__warp = None
@@ -65,6 +65,10 @@ class SimulationManager:
     _assets_loaded_callback = None
 
     _physics_scenes: dict[str, PhysicsScene] = {}
+
+    # physics engine
+    _engine = "physx"
+    _simulation_registry_sub = None
 
     # default callbacks
     _default_callback_on_stop = None
@@ -88,6 +92,207 @@ class SimulationManager:
     """
 
     @classmethod
+    def get_active_physics_engine(cls) -> Literal["physx"]:
+        """Get the currently active physics engine.
+
+        Returns:
+            Currently active engine name.
+        """
+        return cls._engine
+
+    @classmethod
+    def get_default_engine(cls) -> str:
+        """Get the default physics engine from settings.
+
+        Returns:
+            Default engine name from settings, or empty string if not set.
+        """
+        return cls._carb_settings.get_as_string("/exts/isaacsim.core.simulation_manager/default_engine") or ""
+
+    @classmethod
+    def get_available_physics_engines(cls, verbose: bool = False) -> list[tuple[str, bool]]:
+        """Get list of all available physics engines.
+
+        Args:
+            verbose: If True, print available engines. Defaults to False.
+
+        Returns:
+            List of tuples (engine_name, is_active) for all registered engines.
+        """
+        if not cls._physics_interface:
+            return []
+
+        engines = []
+        simulation_ids = cls._physics_interface.get_simulation_ids()
+        for sim_id in simulation_ids:
+            sim_name = cls._physics_interface.get_simulation_name(sim_id)
+            is_active = cls._physics_interface.is_simulation_active(sim_id)
+            # Normalize engine name to lowercase for consistency
+            engines.append((sim_name.lower(), is_active))
+
+        if verbose:
+            print("Available physics engines:")
+            for engine in engines:
+                print(f"  {engine[0]}: {'active' if engine[1] else 'inactive'}")
+            print("-" * 60)
+        return engines
+
+    @classmethod
+    def switch_physics_engine(cls, engine_name: Literal["physx"], verbose: bool = False) -> bool:
+        """Switch to a specific physics engine.
+
+        Args:
+            engine_name: Name of the engine to switch to.
+            verbose: If True, log switch details. Defaults to False.
+
+        Returns:
+            True if switch was successful, False otherwise.
+        """
+        if not cls._physics_interface:
+            carb.log_error(f"Cannot switch to {engine_name}: physics interface not available")
+            return False
+
+        # Store old engine name for logging
+        old_engine = cls._engine
+        # cls.get_available_physics_engines()
+        simulation_ids = cls._physics_interface.get_simulation_ids()
+        target_id = None
+
+        # Find target engine (case-insensitive lookup)
+        for sim_id in simulation_ids:
+            sim_name = cls._physics_interface.get_simulation_name(sim_id)
+            if sim_name.lower() == engine_name.lower():
+                target_id = sim_id
+                break
+
+        if target_id is None:
+            available = [cls._physics_interface.get_simulation_name(sid) for sid in simulation_ids]
+            carb.log_error(f"Engine '{engine_name}' not found. Available: {', '.join(available)}")
+            return False
+
+        # Deactivate all other engines for mutual exclusivity
+        deactivated_any = False
+        for sim_id in simulation_ids:
+            if sim_id != target_id:
+                if cls._physics_interface.is_simulation_active(sim_id):
+                    # Call on_detach before deactivating
+                    simulation = cls._physics_interface.get_simulation(sim_id)
+                    if simulation and simulation.stage_update_fns and simulation.stage_update_fns.on_detach:
+                        try:
+                            simulation.stage_update_fns.on_detach()
+                        except Exception as e:
+                            carb.log_warn(
+                                f"on_detach failed for {cls._physics_interface.get_simulation_name(sim_id)}: {e}"
+                            )
+
+                    cls._physics_interface.deactivate_simulation(sim_id)
+                    deactivated_engine = cls._physics_interface.get_simulation_name(sim_id)
+                    if verbose:
+                        carb.log_info(f"Deactivated {deactivated_engine} engine")
+                    deactivated_any = True
+
+        # Activate target engine
+        was_already_active = cls._physics_interface.is_simulation_active(target_id)
+        if not was_already_active:
+            cls._physics_interface.activate_simulation(target_id)
+
+            # Call on_attach after activating
+            simulation = cls._physics_interface.get_simulation(target_id)
+            if simulation and simulation.stage_update_fns and simulation.stage_update_fns.on_attach:
+                try:
+                    stage_id = omni.usd.get_context().get_stage_id()
+                    simulation.stage_update_fns.on_attach(stage_id)
+                except Exception as e:
+                    carb.log_warn(f"on_attach failed for {engine_name}: {e}")
+
+        # Update internal state after engine switch is complete
+        cls._on_engine_switched(engine_name.lower())
+
+        if verbose:
+            if was_already_active and not deactivated_any:
+                carb.log_warn(f"Physics engine is already set to {engine_name}")
+            else:
+                carb.log_warn(f"Simulation engine switched from {old_engine} to {engine_name}")
+
+        return True
+
+    @classmethod
+    def _on_engine_switched(cls, engine_name: str) -> None:
+        """Handle internal state updates when the physics engine changes.
+
+        Args:
+            engine_name: The name of the newly active engine (lowercase).
+        """
+        cls._engine = engine_name
+        if cls._physics_sim_view:
+            cls._physics_sim_view.invalidate()
+            cls._physics_sim_view = None
+        if cls._physics_sim_view__warp:
+            cls._physics_sim_view__warp.invalidate()
+            cls._physics_sim_view__warp = None
+        cls._simulation_view_created = False
+        if cls._engine == "physx":
+            cls._physics_stage_update_interface.force_load_physics_from_usd()
+        cls._warmup_needed = True
+
+    @classmethod
+    def _sync_engine_state(cls) -> None:
+        """Sync the _engine variable with the actual active physics engine.
+
+        This should be called at initialization to ensure the cached engine name
+        matches the actual active engine in the unified physics interface.
+        """
+        if not cls._physics_interface:
+            return
+
+        simulation_ids = cls._physics_interface.get_simulation_ids()
+
+        # First check if an engine is already active
+        for sim_id in simulation_ids:
+            if cls._physics_interface.is_simulation_active(sim_id):
+                cls._engine = cls._physics_interface.get_simulation_name(sim_id).lower()
+                carb.log_info(f"Initialized physics engine: {cls._engine}")
+                return
+
+        # Check if a specific engine is requested via settings
+        default_engine = cls.get_default_engine()
+        if default_engine:
+            # Verify the requested engine is available
+            available_engines = {cls._physics_interface.get_simulation_name(sid).lower() for sid in simulation_ids}
+            default_engine_lower = default_engine.lower()
+            if default_engine_lower in available_engines:
+                cls._engine = default_engine_lower
+                carb.log_info(f"Using physics engine from settings: {cls._engine}")
+                return
+            else:
+                carb.log_warn(
+                    f"Requested engine '{default_engine}' not available. "
+                    f"Available: {', '.join(available_engines)}. Using first available engine."
+                )
+
+        # Use first available engine
+        if simulation_ids:
+            cls._engine = cls._physics_interface.get_simulation_name(simulation_ids[0]).lower()
+            carb.log_info(f"Using physics engine: {cls._engine}")
+        else:
+            cls._engine = "physx"
+            carb.log_warn("No physics engines found, defaulting to PhysX")
+
+    def _on_simulation_registry_event(event_type: SimulationRegistryEventType, simulation_id: int, name: str) -> None:
+        """Handle simulation registry events to keep _engine in sync."""
+        engine_name = name.lower()
+        if event_type == SimulationRegistryEventType.SIMULATION_ACTIVATED:
+            if SimulationManager._engine != engine_name:
+                SimulationManager._on_engine_switched(engine_name)
+        elif event_type == SimulationRegistryEventType.SIMULATION_DEACTIVATED:
+            if engine_name == SimulationManager._engine:
+                for sim_id in SimulationManager._physics_interface.get_simulation_ids():
+                    if SimulationManager._physics_interface.is_simulation_active(sim_id):
+                        new_engine = SimulationManager._physics_interface.get_simulation_name(sim_id).lower()
+                        SimulationManager._on_engine_switched(new_engine)
+                        return
+
+    @classmethod
     def _startup(cls) -> None:
         cls.enable_all_default_callbacks(True)
         cls._reset(
@@ -98,8 +303,19 @@ class SimulationManager:
             track_physics_scenes=True,
         )
 
+        # Sync engine variable with actual active engine
+        cls._sync_engine_state()
+
+        # Subscribe to simulation registry events to stay in sync with UI and other systems
+        cls._simulation_registry_sub = cls._physics_interface.subscribe_simulation_registry_events(
+            cls._on_simulation_registry_event
+        )
+
     @classmethod
     def _shutdown(cls) -> None:
+        # Unsubscribe from simulation registry events
+        cls._simulation_registry_sub = None
+
         cls.enable_all_default_callbacks(False)
         cls._reset(
             reset_assets=True,
@@ -179,7 +395,7 @@ class SimulationManager:
         def add_physics_scene(path):
             prim = prim_utils.get_prim_at_path(path)
             if prim.GetTypeName() == "PhysicsScene":
-                cls._physics_scenes[path] = PhysxScene(path)
+                cls._physics_scenes[path] = cls._create_physics_scene(path)
 
         def remove_physics_scene(path):
             # TODO: search for child prims that are also physics scenes???
@@ -190,8 +406,20 @@ class SimulationManager:
         cls._simulation_manager_interface.register_deletion_callback(remove_physics_scene)
 
     @classmethod
-    def _create_physics_scene(cls, path: str = "/PhysicsScene") -> PhysxScene:
-        return PhysxScene(path)
+    def _create_physics_scene(cls, path: str = "/PhysicsScene") -> PhysicsScene:
+        """Create a physics scene based on the current engine.
+
+        Args:
+            path: The path for the physics scene prim.
+
+        Returns:
+            A physics scene instance appropriate for the current engine.
+        """
+        if cls._engine == "physx":
+            return PhysxScene(path)
+        else:
+            carb.log_warn(f"Unknown engine '{cls._engine}', defaulting to PhysX")
+            return PhysxScene(path)
 
     """
     Internal callbacks.
@@ -267,13 +495,18 @@ class SimulationManager:
             cls._create_physics_scene()
         # initialize physics engine
         cls._physics_stage_update_interface.force_load_physics_from_usd()
-        cls._physx_interface.start_simulation()
+        # Start simulation using backend-specific interface
+        if cls._engine == "physx":
+            if cls._physx_interface is None:
+                import omni.physx
+
+                cls._physx_interface = omni.physx.get_physx_interface()
+            cls._physx_interface.start_simulation()
+
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
         cls._physics_sim_interface.fetch_results()
         # create simulation view
         stage_id = stage_utils.get_stage_id(stage_utils.get_current_stage(backend="usd"))
-        cls._physics_sim_view__warp = omni.physics.tensors.create_simulation_view("warp", stage_id=stage_id)
-        cls._physics_sim_view__warp.set_subspace_roots("/")
         # - deprecated simulation view
         create_simulation_view = True
         if "cuda" in cls.get_physics_sim_device() and cls._backend == "numpy":
@@ -284,9 +517,18 @@ class SimulationManager:
                 import torch
             except ModuleNotFoundError:
                 create_simulation_view = False
-        if create_simulation_view:
-            cls._physics_sim_view = omni.physics.tensors.create_simulation_view(cls.get_backend(), stage_id=stage_id)
-            cls._physics_sim_view.set_subspace_roots("/")
+        # Create backend-specific simulation views
+        if cls._engine == "physx":
+            import omni.physics.tensors
+
+            cls._physics_sim_view__warp = omni.physics.tensors.create_simulation_view("warp", stage_id=stage_id)
+            cls._physics_sim_view__warp.set_subspace_roots("/")
+            # Create physx simulation views (deprecated)
+            if create_simulation_view:
+                cls._physics_sim_view = omni.physics.tensors.create_simulation_view(
+                    cls.get_backend(), stage_id=stage_id
+                )
+                cls._physics_sim_view.set_subspace_roots("/")
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
         cls._physics_sim_interface.fetch_results()
         # set internal states
@@ -1140,7 +1382,7 @@ class SimulationManager:
         elif prim_utils.get_prim_at_path(physics_scene_prim_path).IsValid():
             prim = prim_utils.get_prim_at_path(physics_scene_prim_path)
             if prim.GetTypeName() == "PhysicsScene":
-                cls._physics_scenes[physics_scene_prim_path] = PhysxScene(physics_scene_prim_path)
+                cls._physics_scenes[physics_scene_prim_path] = cls._create_physics_scene(physics_scene_prim_path)
                 cls._default_physics_scene_path = physics_scene_prim_path
         else:
             raise Exception(f"Physics scene at path '{physics_scene_prim_path}' doesn't exist")
