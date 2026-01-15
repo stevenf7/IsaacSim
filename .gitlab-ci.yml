@@ -71,6 +71,7 @@ stages:
   - github-staging
   - verify-github-staging
   - pages
+  - slack-notifications
 
 # ==============================================================================================================
 # Default values applied to all jobs
@@ -190,6 +191,31 @@ variables:
     # KUBERNETES_EPHEMERAL_STORAGE_LIMIT:
     #     value: "200Gi"
     #     description: "Fix publish extensions"
+
+# ==============================================================================================================
+# Slack notifications
+.post_job_status_to_slack:
+  after_script:
+    - ./tools/packman/python.sh -m pip install slack_sdk
+    - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --job-report
+
+post_to_slack:
+  dependencies: []
+  variables:
+    SLACK_CHANNEL: "#isaac-sim-ci"
+  stage: slack-notifications
+  extends:
+    - .ipp_lnx_x86_64_cpu_small
+  script:
+    - ./tools/packman/python.sh -m pip install slack_sdk requests
+    - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "develop-kit-tot"
+    - !reference [.rules-nightly-tests, rules]
+    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[x\] Post pipeline reports to slack/"
+      variables:
+        SLACK_CHANNEL: "#isaac-sim-ci-mr"
+
 
 # ==============================================================================================================
 # overrides for compliance/osec job
@@ -1443,6 +1469,8 @@ rebase-develop-kit-tot:
       - git checkout develop-kit-tot
       - git rebase origin/develop
       - git push --force-with-lease origin develop-kit-tot
+    after_script:
+      - !reference [.post_job_status_to_slack, after_script]
     needs: []
     rules:
       - if: $CI_COMMIT_BRANCH != "develop"
