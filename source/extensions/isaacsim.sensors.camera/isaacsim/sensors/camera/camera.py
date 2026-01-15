@@ -280,6 +280,7 @@ class Camera(BaseSensor):
         self._previous_time = None
         self._og_controller = og.Controller()
         self._sdg_graph_pipeline = self._og_controller.graph("/Render/PostProcess/SDGPipeline")
+        self._fabric_time_annotator = None
 
         # Make sure the camera aperture is set to use square pixels even if initialize() is not called
         self._maintain_square_pixel_aperture(mode="horizontal")
@@ -295,10 +296,13 @@ class Camera(BaseSensor):
         custom_annotators = list(self._custom_annotators.keys())
         for annotator_name in custom_annotators:
             self.detach_annotator(annotator_name)
-
+        if self._fabric_time_annotator is not None:
+            self._fabric_time_annotator.detach([self._render_product_path])
+            self._fabric_time_annotator = None
         if self._render_product is not None:
             self._render_product.destroy()
             self._render_product = None
+        self._render_product_path = None
 
         self._acquisition_callback = None
         self._stage_open_callback = None
@@ -1349,9 +1353,9 @@ class Camera(BaseSensor):
             far_distance (Optional[float], optional): Value to be used for far clipping (in stage units). Defaults to None.
         """
         near, far = self.prim.GetAttribute("clippingRange").Get()
-        if near_distance:
+        if near_distance is not None:
             near = near_distance
-        if far_distance:
+        if far_distance is not None:
             far = far_distance
         self.prim.GetAttribute("clippingRange").Set((near, far))
         return
