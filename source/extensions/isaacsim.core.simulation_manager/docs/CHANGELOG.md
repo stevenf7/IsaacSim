@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.9.1] - 2026-01-16
+### Added
+- Add `cleanupInvalidPhysicsScenes()` method to C++ `ISimulationManager` interface to remove tracked physics scenes with invalid prims
+- Add `isValid()` method to C++ `PhysicsScene` class to check if the underlying prim is still valid
+- Add Python binding for `cleanup_invalid_physics_scenes()` method
+
+### Fixed
+- Fix `RuntimeError: Accessed invalid expired 'PhysicsScene' prim` error when physics scene prims become invalid without triggering USD notices (e.g., layer removal operations, session sublayer changes)
+- Add stage and root layer validation in `_on_play()` to prevent physics initialization on expired/invalid stages
+- Add error handling in `_create_physics_scene()` to gracefully handle physics scene creation failures
+
 ## [1.9.0] - 2026-01-14
 ### Added
 - Add supporting APIs for changing physics engines through the omniphysics interfaces

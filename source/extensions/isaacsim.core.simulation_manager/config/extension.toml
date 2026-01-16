@@ -1,5 +1,5 @@
 [package]
-version = "1.9.0"
+version = "1.9.1"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -88,4 +88,6 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
-pythonTests.include = ["isaacsim.core.simulation_manager.tests.*"]
+stdoutFailPatterns.exclude = [
+    "*[Error] [isaacsim.core.simulation_manager.impl.simulation_manager] Engine 'invalid_engine' not found. Available: PhysX*",
+]
