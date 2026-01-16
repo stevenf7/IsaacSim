@@ -1,4 +1,7 @@
 # Changelog
+## [2.14.2] - 2026-01-15
+### Changed
+- simulation app close() method now waits for replicator workflows to complete even when using replicator step()
 
 ## [2.14.1] - 2025-12-11
 ### Changed

@@ -813,17 +813,17 @@ class SimulationApp:
             _logging.set_log_enabled(False)
             self._app.shutdown_and_release_framework()
         try:
-            # make sure that any replicator workflows finish rendering/writing
+            # Ensure replicator workflows complete any queued writes.
             import omni.replicator.core as rep
 
-            need_to_wait_for_replicator = False
-            if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
-                need_to_wait_for_replicator = True
+            # Stop the workflow if it is still running.
+            if rep.orchestrator.get_status() not in {rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING}:
                 rep.orchestrator.stop()
-            # only wait if status was not stopped or stopping
-            if wait_for_replicator and need_to_wait_for_replicator:
+
+            # Always wait when requested; queued writes can remain after stop/step.
+            if wait_for_replicator:
                 rep.orchestrator.wait_until_complete()
-                time.sleep(1.0)
+                time.sleep(0.05)
 
             # Disable capture on play to avoid replicator engaging on any new timeline events
             rep.orchestrator.set_capture_on_play(False)
