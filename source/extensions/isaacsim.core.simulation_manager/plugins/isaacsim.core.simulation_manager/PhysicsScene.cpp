@@ -52,6 +52,11 @@ pxr::GfVec3d PhysicsScene::getGravity()
     return pxr::GfVec3d(direction) * static_cast<double>(magnitude) / metersPerUnit;
 }
 
+bool PhysicsScene::isValid() const
+{
+    return m_prim.IsValid() && m_prim.IsActive();
+}
+
 std::vector<std::string> getPhysicsScenePaths()
 {
     return getPhysicsScenePaths(omni::usd::UsdContext::getContext()->getStage());

@@ -758,3 +758,220 @@ class TestSimulationManagerFabricAndNoticeHandlers(omni.kit.test.AsyncTestCase):
             self.assertIsInstance(result, bool)
         except Exception as e:
             print(f"test_fabric_and_notice_handlers fabric_usd_notice_handler failed: {e}")
+
+
+class TestSimulationManagerStageTransitions(omni.kit.test.AsyncTestCase):
+    """Tests for SimulationManager behavior during stage transitions and prim invalidation."""
+
+    async def setUp(self):
+        """Method called to prepare the test fixture."""
+        super().setUp()
+        await stage_utils.create_new_stage_async()
+        self._physics_scene_path = "/PhysicsScene"
+
+    async def tearDown(self):
+        """Method called immediately after the test method has been called."""
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        super().tearDown()
+
+    async def test_stale_physics_scene_prim_reference(self):
+        """Test that SimulationManager handles stale prim references gracefully.
+
+        This test directly simulates the bug condition where the _physics_scenes
+        dictionary contains a PhysxScene with an invalid/expired prim reference.
+
+        This reproduces the exact issue that caused failures in robot_setup.assembler tests,
+        where certain USD operations invalidate physics scene prims without triggering
+        the deletion callback.
+
+        The sequence:
+        1. Create physics scene and start simulation (caches PhysxScene with prim reference)
+        2. Stop simulation
+        3. Simulate prim invalidation by clearing root layer and recreating scene
+        4. The cached PhysxScene now has a stale prim reference
+        5. Try to play - without fix, this raises RuntimeError for expired prim
+        """
+        from pxr import Sdf
+
+        # Create physics scene and start simulation
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation started and physics scene is cached
+        self.assertTrue(SimulationManager.is_simulating())
+        physics_scenes_before = SimulationManager.get_physics_scenes()
+        self.assertGreater(len(physics_scenes_before), 0, "Physics scene should be cached")
+
+        # Store reference to cached prim for verification later
+        cached_prim = physics_scenes_before[0].prim
+        self.assertTrue(cached_prim.IsValid(), "Cached prim should be valid initially")
+
+        # Stop simulation
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Simulate the bug condition: Clear the root layer's content which invalidates
+        # the cached prim reference, but does NOT trigger the deletion callback
+        # that would remove the entry from _physics_scenes
+        stage = stage_utils.get_current_stage()
+        root_layer = stage.GetRootLayer()
+
+        # Clear the layer content - this invalidates existing prim references
+        root_layer.Clear()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify the cached prim is now invalid (the bug condition)
+        self.assertFalse(cached_prim.IsValid(), "Cached prim should be invalid after layer clear")
+
+        # Verify _physics_scenes still has the stale entry (this is the bug)
+        physics_scenes_after_clear = SimulationManager.get_physics_scenes()
+        # Note: The stale entry may or may not still be present depending on
+        # whether the fix is enabled
+
+        # Create a new physics scene at the same path
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+        # Try to play again - without the fix, this raises:
+        # RuntimeError: Accessed invalid expired 'PhysicsScene' prim </PhysicsScene>
+        timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation is running
+        self.assertTrue(SimulationManager.is_simulating())
+
+        # Verify we can access physics scene properties without error
+        dt = SimulationManager.get_physics_dt()
+        self.assertIsNotNone(dt)
+        self.assertGreater(dt, 0)
+
+    async def test_physics_scene_prim_invalidation_on_stage_change(self):
+        """Test that SimulationManager handles expired physics scene prims gracefully.
+
+        This test verifies that when a stage is changed (e.g., new stage opened),
+        the SimulationManager properly handles the case where cached physics scene
+        prim references become invalid/expired.
+
+        The sequence that can cause issues:
+        1. Create physics scene and start simulation (caches PhysxScene with prim reference)
+        2. Stop simulation
+        3. Open new stage (invalidates the cached prim reference)
+        4. Play again - should not raise RuntimeError for expired prim
+        """
+        # Create physics scene and start simulation
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation started successfully
+        self.assertTrue(SimulationManager.is_simulating())
+
+        # Stop simulation
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Open a new stage - this invalidates any cached prim references
+        await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Create a new physics scene on the new stage
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+        # Play again - this should NOT raise RuntimeError for expired prim
+        # The SimulationManager should properly handle the stage transition
+        timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation is running on the new stage
+        self.assertTrue(SimulationManager.is_simulating())
+
+        # Verify we can access physics scene properties without error
+        dt = SimulationManager.get_physics_dt()
+        self.assertIsNotNone(dt)
+        self.assertGreater(dt, 0)
+
+    async def test_physics_scene_deletion_during_simulation(self):
+        """Test SimulationManager behavior when physics scene is deleted.
+
+        This test verifies that deleting a physics scene prim while simulation
+        is stopped doesn't cause errors when trying to play again.
+        """
+        # Create physics scene and start simulation
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation started
+        self.assertTrue(SimulationManager.is_simulating())
+
+        # Stop simulation
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Delete the physics scene prim
+        stage = stage_utils.get_current_stage()
+        stage.RemovePrim(self._physics_scene_path)
+        await omni.kit.app.get_app().next_update_async()
+
+        # Create a new physics scene
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+        # Play again - should handle the prim recreation gracefully
+        timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation is running
+        self.assertTrue(SimulationManager.is_simulating())
+
+    async def test_multiple_stage_transitions(self):
+        """Test SimulationManager across multiple stage open/close cycles.
+
+        This test verifies that repeated stage transitions don't accumulate
+        stale physics scene references.
+        """
+        timeline = omni.timeline.get_timeline_interface()
+
+        for i in range(3):
+            # Create new stage
+            await stage_utils.create_new_stage_async()
+            await omni.kit.app.get_app().next_update_async()
+
+            # Create physics scene
+            stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+            await omni.kit.app.get_app().next_update_async()
+
+            # Play simulation
+            timeline.play()
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+
+            # Verify simulation started
+            self.assertTrue(SimulationManager.is_simulating(), f"Simulation failed to start on iteration {i}")
+
+            # Verify physics dt is accessible
+            dt = SimulationManager.get_physics_dt()
+            self.assertIsNotNone(dt, f"Physics dt was None on iteration {i}")
+
+            # Stop simulation
+            timeline.stop()
+            await omni.kit.app.get_app().next_update_async()

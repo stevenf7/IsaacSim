@@ -406,20 +406,44 @@ class SimulationManager:
         cls._simulation_manager_interface.register_deletion_callback(remove_physics_scene)
 
     @classmethod
-    def _create_physics_scene(cls, path: str = "/PhysicsScene") -> PhysicsScene:
-        """Create a physics scene based on the current engine.
+    def _create_physics_scene(cls, path: str = "/PhysicsScene") -> PhysicsScene | None:
+        try:
+            if cls._engine == "physx":
+                return PhysxScene(path)
+            else:
+                carb.log_warn(f"Unknown engine '{cls._engine}', defaulting to PhysX")
+                return PhysxScene(path)
+        except RuntimeError as e:
+            carb.log_warn(f"Failed to create physics scene at '{path}': {e}")
+            return None
 
-        Args:
-            path: The path for the physics scene prim.
+    @classmethod
+    def _cleanup_stale_physics_scenes(cls) -> bool:
+        """Remove stale physics scene references with invalid/expired prims.
+
+        This handles cases where physics scene prims become invalid without triggering
+        the deletion callback (e.g., layer clear/reload operations, certain USD changes).
 
         Returns:
-            A physics scene instance appropriate for the current engine.
+            True if any stale entries were removed, False otherwise.
         """
-        if cls._engine == "physx":
-            return PhysxScene(path)
-        else:
-            carb.log_warn(f"Unknown engine '{cls._engine}', defaulting to PhysX")
-            return PhysxScene(path)
+        # First, cleanup in C++ layer (also triggers deletion callbacks)
+        cpp_removed = cls._simulation_manager_interface.cleanup_invalid_physics_scenes()
+
+        # Then cleanup Python-side cache
+        stale_paths = []
+        for path, scene in cls._physics_scenes.items():
+            try:
+                if not scene.prim or not scene.prim.IsValid():
+                    stale_paths.append(path)
+            except Exception:
+                stale_paths.append(path)
+
+        for path in stale_paths:
+            carb.log_warn(f"Removing stale physics scene reference at '{path}' (prim is no longer valid)")
+            del cls._physics_scenes[path]
+
+        return len(stale_paths) > 0 or len(cpp_removed) > 0
 
     """
     Internal callbacks.
@@ -461,6 +485,26 @@ class SimulationManager:
 
     def _on_play(event) -> None:
         if SimulationManager._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION):
+            # Verify the stage is valid before attempting any physics operations
+            # This handles cases where play is triggered on an expired/invalid stage
+            try:
+                stage = omni.usd.get_context().get_stage()
+                if stage is None:
+                    carb.log_warn("Cannot initialize physics: no stage available")
+                    return
+                root_layer = stage.GetRootLayer()
+                if root_layer is None or root_layer.expired:
+                    carb.log_warn("Cannot initialize physics: stage root layer is expired or invalid")
+                    return
+            except Exception as e:
+                carb.log_warn(f"Cannot initialize physics: failed to verify stage validity: {e}")
+                return
+
+            # Cleanup any stale physics scene references before simulation starts
+            # This handles cases where prims become invalid without triggering deletion callbacks
+            # (e.g., layer clear/reload operations, certain USD reference changes)
+            SimulationManager._cleanup_stale_physics_scenes()
+
             if SimulationManager._warmup_needed:
                 SimulationManager.initialize_physics()
                 SimulationManager._message_bus.dispatch_event(SimulationEvent.SIMULATION_STARTED.value, payload={})
@@ -492,7 +536,10 @@ class SimulationManager:
             return
         # create physics scene (if not exists)
         if not cls._physics_scenes:
-            cls._create_physics_scene()
+            physics_scene = cls._create_physics_scene()
+            if physics_scene is None:
+                carb.log_warn("Cannot initialize physics: failed to create physics scene")
+                return
         # initialize physics engine
         cls._physics_stage_update_interface.force_load_physics_from_usd()
         # Start simulation using backend-specific interface
@@ -608,7 +655,7 @@ class SimulationManager:
             >>> from isaacsim.core.simulation_manager import SimulationManager, PhysicsScene
             >>>
             >>> SimulationManager.get_physics_scenes()
-            [<isaacsim.core.simulation_manager.impl.physics_scene.PhysicsScene object at 0x...>]
+            [<isaacsim.core.simulation_manager.impl.physx_scene.PhysxScene object at 0x...>]
         """
         return list(cls._physics_scenes.values())
 
@@ -1237,7 +1284,7 @@ class SimulationManager:
                 return prim_utils.ensure_api(cls._physics_scenes[physics_scene].prim, PhysxSchema.PhysxSceneAPI)
             carb.log_warn(f"The physics scene at path '{physics_scene}' doesn't exist")
             return None
-        # no physics scene specified, use the default physics scene or the first physics scene found in stage
+
         if cls._physics_scenes:
             _physics_scene = next(iter(cls._physics_scenes.values()))
             if cls._default_physics_scene_path:

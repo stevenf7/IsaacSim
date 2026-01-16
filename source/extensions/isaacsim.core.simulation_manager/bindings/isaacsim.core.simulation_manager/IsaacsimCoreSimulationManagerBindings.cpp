@@ -152,6 +152,19 @@ It also manages USD notice handling to track stage changes.)pbdoc";
                 clears all registered callbacks, clears the physics scenes list,
                 and resets the callback iterator to 0.
              )pbdoc")
+        .def("cleanup_invalid_physics_scenes", &ISimulationManager::cleanupInvalidPhysicsScenes,
+             R"pbdoc(
+                Remove any tracked physics scenes with invalid prims.
+
+                Iterates through the internally tracked physics scenes and removes any
+                whose underlying USD prim is no longer valid. This handles cases where
+                physics scene prims become invalid without triggering USD notices
+                (e.g., layer removal operations). Also triggers deletion callbacks for
+                any removed physics scenes.
+
+                Returns:
+                    list[str]: The paths of physics scenes that were removed.
+             )pbdoc")
         .def("set_callback_iter", &ISimulationManager::setCallbackIter,
              R"pbdoc(
                 Set the callback iteration counter.

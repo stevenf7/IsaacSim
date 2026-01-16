@@ -123,6 +123,17 @@ public:
      */
     pxr::GfVec3d getGravity();
 
+    /**
+     * @brief Checks if the physics scene prim is still valid.
+     * @details
+     * Returns true if the underlying USD prim is valid and active.
+     * This can return false if the prim was deleted, the layer containing
+     * it was removed, or the stage was closed.
+     *
+     * @return True if the prim is valid and active, false otherwise.
+     */
+    bool isValid() const;
+
 private:
     /** @brief Path to the USD Physics Scene prim. */
     std::string m_path;

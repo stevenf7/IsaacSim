@@ -416,6 +416,50 @@ public:
         callbackIter = 0;
     }
 
+    /**
+     * @brief Removes any tracked physics scenes with invalid prims.
+     * @details
+     * Iterates through the internally tracked physics scenes and removes any
+     * whose underlying USD prim is no longer valid. This handles cases where
+     * physics scene prims become invalid without triggering USD notices
+     * (e.g., layer removal operations). Also triggers deletion callbacks for
+     * any removed physics scenes.
+     *
+     * @return The paths of physics scenes that were removed.
+     */
+    std::vector<std::string> cleanupInvalidPhysicsScenes() override
+    {
+        std::vector<std::string> removedPaths;
+        auto& physicsScenes = m_usdNoticeListener->getPhysicsScenes();
+        pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
+
+        // Collect paths of invalid physics scenes
+        std::vector<pxr::SdfPath> invalidPaths;
+        for (const auto& [path, sceneApi] : physicsScenes)
+        {
+            pxr::UsdPrim prim = stage ? stage->GetPrimAtPath(path) : pxr::UsdPrim();
+            if (!prim.IsValid() || !prim.IsActive())
+            {
+                invalidPaths.push_back(path);
+                removedPaths.push_back(path.GetString());
+            }
+        }
+
+        // Remove invalid entries and trigger deletion callbacks
+        for (const auto& path : invalidPaths)
+        {
+            physicsScenes.erase(path);
+            // Trigger deletion callbacks for the removed physics scene
+            for (const auto& [key, callback] : m_usdNoticeListener->getDeletionCallbacks())
+            {
+                callback(path.GetString());
+            }
+            CARB_LOG_WARN("Removed stale physics scene at '%s' (prim is no longer valid)", path.GetString().c_str());
+        }
+
+        return removedPaths;
+    }
+
 
     double getSimulationTimeAtTime(const omni::fabric::RationalTime& rtime) override
     {
