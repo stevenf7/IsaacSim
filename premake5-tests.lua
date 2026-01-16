@@ -785,6 +785,11 @@ local function get_doc_snippets_tests()
             "standalone_examples/testing/doc_snippets/snippets/utilities/debugging/tutorial_advanced_python_debugging/add_the_following_lines_to_hello_worldpy_and_place.py",
             "--test",
         },
+        -- async snippets
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.test_snippets_async",
+            "standalone_examples/testing/doc_snippets/test_snippets_async.py",
+        },
     }
 end
 

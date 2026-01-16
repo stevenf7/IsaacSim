@@ -720,8 +720,21 @@ kind = "glob_and_exec"
 path = "${test_root}/tests/doc_snippets"
 stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 tc_report_enabled = false
-timeout = 300
+
+[[repo_test.suites.doc_snippets.group]]
 include = ["tests-nativepython*${shell_ext}"]
+exclude = ["*test_snippets_async*"]
+timeout = 300
+
+[repo_test.suites.doc_snippets_async]
+kind = "glob_and_exec"
+path = "${test_root}/tests/doc_snippets"
+stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
+tc_report_enabled = false
+
+[[repo_test.suites.doc_snippets_async.group]]
+include = ["*test_snippets_async*"]
+timeout = 1800
 
 [repo_test.suites.external]
 kind = "glob_and_exec"
