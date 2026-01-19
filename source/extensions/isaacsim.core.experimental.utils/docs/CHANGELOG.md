@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2026-01-16
+### Added
+- Add `get_prim_attribute_names()` to prim utils for listing authored attribute names
+- Add `get_prim_attribute_value()` to prim utils for getting attribute values
+
 ## [0.10.0] - 2026-01-13
 ### Added
 - Add `quaternion_to_euler_angles()` function to transform utils for converting quaternions to euler angles

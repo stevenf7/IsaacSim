@@ -17,7 +17,7 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp()
 
-from isaacsim.core.utils.extensions import disable_extension, enable_extension
+from isaacsim.core.experimental.utils.app import enable_extension
 
 simulation_app.update()
 
@@ -28,9 +28,9 @@ extensions_to_test = [
 ]
 
 for extension_name in extensions_to_test:
-    enable_extension(extension_name)
+    enable_extension(extension_name, enabled=True)
     simulation_app.update()
-    disable_extension(extension_name)
+    enable_extension(extension_name, enabled=False)
     simulation_app.update()
 
 # Cleanup application
