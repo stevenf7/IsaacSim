@@ -26,6 +26,7 @@
 #include <carb/settings/SettingsUtils.h>
 #include <carb/tasking/TaskingUtils.h>
 #include <carb/thread/Mutex.h>
+#include <carb/thread/SetName.h>
 
 #include <omni/ext/IExt.h>
 #include <omni/extras/DictHelpers.h>
@@ -656,11 +657,11 @@ public:
     {
         std::unique_lock lock(m_mutex);
 
-        if (!m_usingEventAdapter)
+        if (!m_usingEventAdapter.has_value())
         {
             m_usingEventAdapter = carb::cpp::string_view("RunLoop.update") != loop->update->getName();
         }
-        if (!m_usingMessageBusEventAdapter)
+        if (!m_usingMessageBusEventAdapter.has_value())
         {
             m_usingMessageBusEventAdapter = carb::cpp::string_view("RunLoop.messageBus") != loop->messageBus->getName();
         }

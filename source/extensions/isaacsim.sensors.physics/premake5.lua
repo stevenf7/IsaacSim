@@ -59,7 +59,7 @@ links {
     --   "physicsSchemaTools", "omni.usd",
 }
 
-extra_usd_libs = { "usdGeom", "usdPhysics", "usdUtils" }
+extra_usd_libs = { "usdGeom", "usdPhysics", "usdUtils", "ts" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)

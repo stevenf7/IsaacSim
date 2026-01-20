@@ -15,9 +15,10 @@
 
 #include <carb/logging/Log.h>
 
-#include <boost/algorithm/string.hpp>
 #include <isaacsim/asset/importer/urdf/ImportHelpers.h>
 #include <isaacsim/core/includes/utils/Path.h>
+
+#include <sstream>
 
 
 namespace isaacsim
@@ -314,7 +315,12 @@ std::string resolveXrefPath(const std::string& assetRoot, const std::string& urd
         {
 
             std::vector<std::string> results;
-            boost::split(results, rosPackagePath, [](char c) { return c == ':'; });
+            std::stringstream ss(rosPackagePath);
+            std::string token;
+            while (std::getline(ss, token, ':'))
+            {
+                results.push_back(token);
+            }
             for (size_t i = 0; i < results.size(); i++)
             {
                 std::string path = results[i];

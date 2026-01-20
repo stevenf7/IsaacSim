@@ -45,7 +45,7 @@ libdirs {
 }
 links { "physxSchema", "omni.usd", "carb" }
 
-extra_usd_libs = { "usdGeom", "usdUtils", "usdPhysics" }
+extra_usd_libs = { "usdGeom", "usdUtils", "usdPhysics", "ts" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
@@ -88,14 +88,16 @@ libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
 }
 
-extra_usd_libs = { "usdGeom", "usdUtils", "usdPhysics" }
+extra_usd_libs = { "usdGeom", "usdUtils", "usdPhysics", "ts" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
 -- End OpenUSD
 
-filter { "system:linux", "platforms:x86_64" }
+filter { "system:linux", "platforms:x86_64", "configurations:release" }
 links { "tbb" }
+filter { "system:linux", "platforms:x86_64", "configurations:debug" }
+links { "tbb_debug" }
 filter {}
 
 filter { "system:windows", "platforms:x86_64" }

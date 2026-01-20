@@ -63,7 +63,7 @@ links {
     "omniverse_asset_converter",
 }
 
-extra_usd_libs = { "usdGeom", "usdUtils", "usdShade", "usdImaging", "usdPhysics" }
+extra_usd_libs = { "usdGeom", "usdUtils", "usdShade", "usdImaging", "usdPhysics", "ts" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
