@@ -132,7 +132,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
 
         # After initialization, getters should return default values
         self.assertAlmostEqual(camera.get_baseline_mm(), 55.0)
-        self.assertAlmostEqual(camera.get_confidence_threshold(), 0.95)
+        self.assertAlmostEqual(camera.get_confidence_threshold(), 0.70)
         self.assertTrue(camera.get_enabled())
         self.assertAlmostEqual(camera.get_focal_length_pixel(), 897.0)
         self.assertAlmostEqual(camera.get_max_disparity_pixel(), 110.0)
