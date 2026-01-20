@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.2] - 2026-01-20
+### Fixed
+- TestSingleViewDepthSensor.test_getter_setter_methods uses correct initial value for confidenceThreshold.
+
 ## [1.6.1] - 2026-01-14
 ### Fixed
 - Cleanup annotators and state properly when the camera is destroyed

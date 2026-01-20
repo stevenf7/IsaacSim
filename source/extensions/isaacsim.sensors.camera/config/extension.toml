@@ -1,5 +1,5 @@
 [package]
-version = "1.6.1"
+version = "1.6.2"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation"
 description = "Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering."
@@ -37,7 +37,7 @@ public = false
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.test.utils",    
+    "isaacsim.test.utils",
     "isaacsim.util.debug_draw",
     "omni.isaac.ml_archive",
 ]
