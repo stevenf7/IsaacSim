@@ -393,25 +393,6 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def test_lula_task_space_traj_gen_festo_cobot(self):
-        assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Festo/FestoCobot/festo_cobot.usd"
-        robot_name = "FestoCobot"
-        robot_prim_path = "/bettina"
-        ee_frame = "flange"
-
-        path, pos_targets, orient_targets = await self._build_rect_path()
-
-        await self._test_lula_task_space_trajectory_generator(
-            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
-        )
-
-        path, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
-
-        await self._test_lula_task_space_trajectory_generator(
-            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
-        )
-
     async def test_lula_task_space_traj_gen_fr3(self):
         assets_root_path = await get_assets_root_path_async()
         usd_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaFR3/fr3.usd"

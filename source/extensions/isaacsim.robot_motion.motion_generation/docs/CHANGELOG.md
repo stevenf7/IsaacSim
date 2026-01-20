@@ -1,4 +1,8 @@
 # Changelog
+## [8.1.4] - 2026-01-20
+### Removed
+- Removed tests which made use of a deprecated asset.
+
 ## [8.1.3] - 2025-11-12
 ### Changed
 - Increased tolerances on flaky tests in `tests/test_trajectory_generator.py`.
