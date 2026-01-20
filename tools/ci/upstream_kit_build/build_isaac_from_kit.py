@@ -21,7 +21,7 @@ from tools.ci.upstream_kit_build.pull_kit import download_kit_artifacts
 job_name = os.getenv("CI_JOB_NAME", "")
 
 # Parse build configuration: release or debug
-build_config = "release" if "-release" in job_name else "debug"
+build_config = "debug" if "-debug" in job_name else "release"
 
 # Parse platform and determine the corresponding packman platform target
 if "linux-aarch64" in job_name:
@@ -91,3 +91,5 @@ content = content.replace("${platform}", platform)
 with open(resolve_tokens("${root}/deps/kit-sdk.packman.xml.user"), "w") as f:
     f.write(content)
 
+# Do a bit of cleanup at the end here
+shutil.rmtree("kit")

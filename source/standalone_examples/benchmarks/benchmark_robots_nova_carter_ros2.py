@@ -41,6 +41,12 @@ parser.add_argument(
     choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
+parser.add_argument(
+    "--async-render-handshake", action="store_true", help="Run with async rendering and handshake enabled"
+)
+parser.add_argument(
+    "--async-render-warmup-frames", type=int, default=15, help="Number of frames to warmup the render thread"
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -53,12 +59,27 @@ n_frames = args.num_frames
 gpu_frametime = args.gpu_frametime
 headless = args.non_headless
 viewport_updates = args.viewport_updates
+async_render_handshake = args.async_render_handshake
+async_render_warmup_frames = args.async_render_warmup_frames
+
+async_render_handshake_args = []
+if async_render_handshake:
+    async_render_handshake_args = [
+        "--/app/asyncRendering=true",
+        "--/app/omni.usd/asyncHandshake=true",
+        "--/omni/replicator/asyncRendering=true",
+    ]
 
 import numpy as np
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(
-    {"headless": headless, "max_gpu_count": n_gpu, "disable_viewport_updates": viewport_updates}
+    {
+        "headless": headless,
+        "max_gpu_count": n_gpu,
+        "disable_viewport_updates": viewport_updates,
+        "extra_args": async_render_handshake_args,
+    }
 )
 
 import carb
@@ -196,6 +217,13 @@ for robot in robots:
 
 omni.kit.app.get_app().update()
 omni.kit.app.get_app().update()
+
+# If we are doing async render testing, it looks like we need to warmup the render thread.
+# Otherwise, the first few frames are very long and will throw off the benchmark.
+if async_render_handshake:
+    print(f"Warming up render thread for {async_render_warmup_frames} frames...")
+    for _ in range(1, async_render_warmup_frames):
+        omni.kit.app.get_app().update()
 
 benchmark.store_measurements()
 # perform benchmark

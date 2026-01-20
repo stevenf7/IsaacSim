@@ -105,6 +105,7 @@ links { "isaacsim.util.debug_draw.primitive_drawing", "omni.usd" }
 extra_usd_libs = {
     "usdUtils",
     "usdGeom",
+    "ts",
 }
 
 -- Begin OpenUSD
@@ -151,14 +152,17 @@ links { "isaacsim.util.debug_draw.primitive_drawing" }
 extra_usd_libs = {
     "usdUtils",
     "usdGeom",
+    "ts",
 }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
 -- End OpenUSD
 
-filter { "system:linux", "platforms:x86_64" }
+filter { "system:linux", "platforms:x86_64", "configurations:release" }
 links { "tbb" }
+filter { "system:linux", "platforms:x86_64", "configurations:debug" }
+links { "tbb_debug" }
 filter {}
 
 filter { "system:windows", "platforms:x86_64" }

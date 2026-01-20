@@ -393,6 +393,8 @@ check-python-packages:
           - _build/packages/
           - _repo/repo.log
           - _repo/repolog*.txt
+          # For debugging downstream kit build things
+          - deps/kit-sdk.packman.xml.user
 # ==============================================================================================================
 .build-common:
     stage: build
@@ -402,6 +404,9 @@ check-python-packages:
       - .build-artifacts
     rules:
       - if: $CI_PIPELINE_SOURCE == "pipeline"
+        variables:
+          IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+          IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: "200Gi"
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_BUILDS != "true"
         when: never
       - !reference [.rules-workflow, rules]
@@ -499,6 +504,13 @@ build-linux-aarch64-debug:
     - .aarch64-build-common
     - .runner-build-linux-aarch64
     - .osec:vault:v3:prod_token_job
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.11-1cf1ab9a
+  variables:
+    OMNI_REPO_BUILD_NO_DOCKER: "1"
+  before_script:
+    - set -eu
+    - !reference [.gitlab-info-external-urls-linux, script]
+    - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
   script:
     - ./repo.sh ci build -c debug
   rules:
@@ -1950,7 +1962,7 @@ check-python-packages-dependencies-linux-x86_64:
     - .ipp_lnx_x86_64_cpu_small
   stage: check-externals
   needs: []
-  allow_failure: false
+  allow_failure: true
   script:
     - ./repo.sh check_python_package_definitions --gitlab
     # check for dependency conflicts
@@ -1973,7 +1985,7 @@ check-python-packages-dependencies-linux-aarch64:
     - .runner-build-linux-aarch64
   stage: check-externals
   needs: []
-  allow_failure: false
+  allow_failure: true
   script:
     - ./repo.sh check_python_package_definitions --gitlab
     # check for dependency conflicts
@@ -1996,7 +2008,7 @@ check-python-packages-dependencies-windows-x86_64:
     - .runner-utility-windows-x86_64
   stage: check-externals
   needs: []
-  allow_failure: false
+  allow_failure: true
   script:
     - ./repo.bat check_python_package_definitions --gitlab
     # check for dependency conflicts

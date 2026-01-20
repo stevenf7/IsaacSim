@@ -21,8 +21,6 @@
 #include <carb/InterfaceUtils.h>
 #include <carb/profiler/Profile.h>
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/includes/Conversions.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>

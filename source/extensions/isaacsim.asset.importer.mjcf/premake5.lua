@@ -52,6 +52,7 @@ libdirs {
     isaac_sim_extsbuild_dir .. "/omni.kit.asset_converter/asset_converter_native_bindings/libs",
 }
 
+filter { "configurations:release" }
 links {
     "physicsSchemaTools",
     "physxSchema",
@@ -61,8 +62,19 @@ links {
     "tbb",
     "omniverse_asset_converter",
 }
+filter { "configurations:debug" }
+links {
+    "physicsSchemaTools",
+    "physxSchema",
+    "omni.usd",
+    "tinyxml2",
+    "omniclient",
+    "tbb_debug",
+    "omniverse_asset_converter",
+}
+filter {}
 
-extra_usd_libs = { "usdGeom", "usdUtils", "usdShade", "usdImaging", "usdPhysics" }
+extra_usd_libs = { "usdGeom", "usdUtils", "usdShade", "usdImaging", "usdPhysics", "ts" }
 
 -- Begin OpenUSD
 add_usd(extra_usd_libs)
