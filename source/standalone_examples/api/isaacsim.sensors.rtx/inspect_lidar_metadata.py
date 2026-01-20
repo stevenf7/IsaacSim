@@ -47,7 +47,7 @@ while is_stage_loading():
 
 # Place a basic lidar in the scene, overriding attributes as necessary
 custom_attributes = {"omni:sensor:Core:auxOutputType": args.aux_data_level}
-lidar = LidarRtx(prim_path="/World/lidar", name="lidar", **custom_attributes)
+lidar = LidarRtx(prim_path="/lidar", name="lidar", **custom_attributes)
 
 # Initialize the lidar and attach an annotator
 ANNOTATOR_NAME = "GenericModelOutput"
