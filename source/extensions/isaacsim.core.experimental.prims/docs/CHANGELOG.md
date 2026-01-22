@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.0] - 2026-01-16
+### Added
+- Add contact tracking functionality to RigidPrim: `set_enabled_contact_tracking()`, `get_enabled_contact_tracking()`, `get_net_contact_forces()`, `get_contact_force_matrix()`, `get_contact_force_data()`, `get_friction_data()`
+
 ## [0.9.8] - 2026-01-14
 ### Changed
 - Slight modification to show how a new physics engine can be added in the future
