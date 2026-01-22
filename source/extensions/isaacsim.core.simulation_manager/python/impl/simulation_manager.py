@@ -52,7 +52,6 @@ class SimulationManager:
     _physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
     _physics_stage_update_interface = omni.physics.core.get_physics_stage_update_interface()
     _physics_interface = omni.physics.core.get_physics_interface()
-    _physx_interface = None
     _physx_fabric_interface = None
     _physics_sim_view = None
     _physics_sim_view__warp = None
@@ -542,13 +541,7 @@ class SimulationManager:
                 return
         # initialize physics engine
         cls._physics_stage_update_interface.force_load_physics_from_usd()
-        # Start simulation using backend-specific interface
-        if cls._engine == "physx":
-            if cls._physx_interface is None:
-                import omni.physx
-
-                cls._physx_interface = omni.physx.get_physx_interface()
-            cls._physx_interface.start_simulation()
+        cls._physics_stage_update_interface.start_simulation()
 
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
         cls._physics_sim_interface.fetch_results()
