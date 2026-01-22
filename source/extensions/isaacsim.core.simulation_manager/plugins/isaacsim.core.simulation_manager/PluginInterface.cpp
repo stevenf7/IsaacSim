@@ -28,7 +28,7 @@
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physics/simulation/IPhysicsSimulation.h>
-#include <omni/physx/IPhysx.h>
+#include <omni/physics/simulation/IPhysicsStageUpdate.h>
 #include <omni/usd/UsdContext.h>
 
 #if defined(_WIN32)
@@ -54,7 +54,7 @@ const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.simulation_ma
 
 namespace
 {
-omni::physx::IPhysx* g_physXInterface = nullptr;
+omni::physics::IPhysicsStageUpdate* g_physicsStageUpdateInterface = nullptr;
 omni::physics::IPhysicsSimulation* g_physicsSimulationInterface = nullptr;
 omni::physics::SubscriptionId g_physicsOnStepSubscription;
 carb::events::ISubscriptionPtr g_physicsEventSubscription;
@@ -723,7 +723,7 @@ public:
     void onStartup(const char* extId) override
     {
         // TODO: in case there is more than one physics scene which one is returned?
-        g_physXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
+        g_physicsStageUpdateInterface = carb::getCachedInterface<omni::physics::IPhysicsStageUpdate>();
         g_physicsSimulationInterface = carb::getCachedInterface<omni::physics::IPhysicsSimulation>();
         g_physicsOnStepSubscription = g_physicsSimulationInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep);
         g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -732,19 +732,19 @@ public:
         g_numPhysicsSteps = 0;
 
         g_physicsEventSubscription = carb::events::createSubscriptionToPop(
-            g_physXInterface->getSimulationEventStreamV2().get(),
+            g_physicsStageUpdateInterface->getSimulationEventStream().get(),
             [](carb::events::IEvent* e)
             {
                 switch (e->type)
                 {
-                case omni::physx::SimulationEvent::eStopped:
+                case omni::physics::SimulationEvent::eStopped:
                     g_simulating = false;
                     g_paused = false;
                     break;
-                case omni::physx::SimulationEvent::ePaused:
+                case omni::physics::SimulationEvent::ePaused:
                     g_paused = true;
                     break;
-                case omni::physx::SimulationEvent::eResumed:
+                case omni::physics::SimulationEvent::eResumed:
                     g_simulating = true;
                     g_paused = false;
                     break;

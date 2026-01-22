@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.2] - 2026-01-22
+### Changed
+- Replaced omni.physx start_simulation with omni.physics start_simulation
+- Replaced omni.physx simulation event stream with omni.physics simulation event stream
+
 ## [1.9.1] - 2026-01-16
 ### Added
 - Add `cleanupInvalidPhysicsScenes()` method to C++ `ISimulationManager` interface to remove tracked physics scenes with invalid prims
