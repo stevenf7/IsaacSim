@@ -186,11 +186,11 @@ command = "format_lua"
 entry_point = "${config_root}/tools/isaac/format_lua.py:setup_repo_tool"
 
 ########################################################################################################################
-# Run mypy per extension
+# Run Python linting tools per extension (mypy, pydocstyle, darglint, interrogate)
 ########################################################################################################################
 
-[run_mypy]
-command = "run_mypy"
-entry_point = "${config_root}/tools/isaac/run_mypy.py:setup_repo_tool"
+[run_python_linting]
+command = "run_python_linting"
+entry_point = "${config_root}/tools/isaac/run_python_linting.py:setup_repo_tool"
 
 # AUTOREMOVE: END

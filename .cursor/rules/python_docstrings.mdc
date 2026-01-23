@@ -6,61 +6,230 @@ You are an expert at writing and maintaining Python docstrings to document funct
 
 ## General guidelines
 
-- Dosctrings must be written using the reStructuredText (RST) syntax.
-- Doctring's paragraphs and sentences end with periods.
-- Place doctrings only for functions and class properties and methods.
-  Never place doctrings as the first declaration of a module or file.
+- Docstrings use Google-style format (Args, Returns, Raises sections).
+- Docstring paragraphs and sentences end with periods.
+- Place docstrings for modules, classes, functions, and class methods.
+- Skip `__init__.py` files - they typically only contain imports and re-exports, not code that needs documentation.
 - Never add, modify, refactor or delete code when adding or updating documentation.
 - Document all functions and class properties and methods in order and without skipping any. Be consistent.
 
 ## Docstring style
 
-- Brief summary line just after openning triple quotes.
+- Brief summary line just after opening triple quotes.
 - Long description, separated by an empty line.
   The long description should only appear as long as it is worthwhile to add relevant
   information to clarify complex logic, help explain calling conventions, or edge cases.
-- List of all parameters defined under the 'Args' section. Never include parameter annotation types.
-- Return description defined under the 'Returns' section. Never include return annotation types.
+- List of all parameters defined under the 'Args' section with types.
+- Return description defined under the 'Returns' section with type.
 - List of all raised exception types defined under the 'Raises' section.
 - Usage example, for public functions and class properties and methods, under the 'Example:' section using the `.. code-block:: python` directive.
   Code must be separated by an empty line from the 'Example:' header.
-  The example must look like interactive Python sessions to check code and run regression tests using the Python doctest module.
 
-The following is an example of the different components of the docstring:
+## Class docstrings
+
+For classes, put constructor parameters (Args) and Raises in the **class docstring**, NOT in the `__init__` method.
+This is required for Sphinx autodoc to properly render constructor parameters.
 
 ```python
-def function_name(parameter_1, parameter_2) -> ReturnType:
-    """Brief summary of the function.
+class LidarRtx(BaseSensor):
+    """RTX-based Lidar sensor implementation.
 
-    Long description of the function (as long as it is worth adding relevant information).
+    Long description of the class functionality.
 
     Args:
-        param parameter_1: Description of parameter 1.
-            If the parameter description is too long, it should be continued on the next indented line.
-        param parameter_2: Description of parameter 2.
-
-    Returns:
-        Description of the return value.
-        If the return description is too long, it should be continued on the next line.
+        prim_path (str): Path to the USD prim for the sensor.
+        name (str): Name of the sensor. Defaults to "lidar_rtx".
+        position (Optional[np.ndarray]): Global position as [x, y, z].
+            Defaults to None.
+        **kwargs: Additional keyword arguments.
 
     Raises:
-        ExceptionType: Description of the exception raised.
-            If the exception description is too long, it should be continued on the next indented line.
+        Exception: If the prim is invalid.
+    """
 
-    Example:
+    def __init__(
+        self,
+        prim_path: str,
+        name: str = "lidar_rtx",
+        position: Optional[np.ndarray] = None,
+        **kwargs,
+    ) -> None:
+        # No docstring needed here - Args are in the class docstring
+        pass
+```
 
-    .. code-block:: python
+## Method and function docstrings
 
-        # example comment
-        >>> import module
-        >>>
-        >>> output = module.function_name(
-        ...     value_1,
-        ...     value_2,
-        ... )
-        ...
-        >>> output
-        output string representation
+For methods and standalone functions, include types in both Args and Returns sections:
+
+```python
+def attach_annotator(self, annotator_name: str, **kwargs) -> None:
+    """Attach an annotator to the sensor.
+
+    Args:
+        annotator_name (str): Name of the annotator to attach.
+        **kwargs: Additional arguments to pass to the annotator.
+
+    Raises:
+        ValueError: If annotator_name is invalid.
     """
     pass
+
+def get_current_frame(self) -> dict:
+    """Get the current frame data from the sensor.
+
+    Returns:
+        dict: Dictionary containing the current frame data including
+            rendering time and frame number.
+    """
+    pass
+
+def get_depth_range(self) -> Tuple[float, float]:
+    """Get the depth range of the sensor.
+
+    Returns:
+        Tuple[float, float]: Tuple of (min_depth, max_depth).
+    """
+    pass
+```
+
+## Optional return types
+
+When a function can return `None`, use `Optional[T]` in both the type annotation and docstring.
+The docstring description should explain when `None` is returned.
+
+```python
+def get_horizontal_fov(self) -> Optional[float]:
+    """Get the horizontal field of view of the sensor.
+
+    Returns:
+        Optional[float]: The horizontal FOV value if available, None otherwise.
+    """
+    if self._is_initialized:
+        return self._fov
+    return None
+
+def get_render_product_path(self) -> Optional[str]:
+    """Get the path to the render product.
+
+    Returns:
+        Optional[str]: Path to the render product, or None if not initialized.
+    """
+    return self._render_product_path
+
+def get_depth_range(self) -> Optional[Tuple[float, float]]:
+    """Get the depth range of the sensor.
+
+    Returns:
+        Optional[Tuple[float, float]]: Tuple of (min_depth, max_depth) if available,
+            None otherwise.
+    """
+    pass
+```
+
+**Key rules for Optional returns:**
+1. Use `Optional[T]` when the function can return `None` as a valid result
+2. Match the type annotation exactly in the docstring Returns section
+3. Always explain the condition when `None` is returned (e.g., "if not initialized", "if unavailable")
+4. Do NOT use `Optional` when `None` indicates an error - raise an exception instead
+
+## Methods that do NOT need Example sections
+
+The following categories of methods do NOT need Example sections since they are called by frameworks,
+not directly by users:
+
+### Extension lifecycle methods
+`on_startup`, `on_shutdown` - called by the extension framework.
+
+### Private methods
+Any method starting with `_` (e.g., `_build_ui`, `_on_click`, `_callback_fn`) - internal use only.
+
+### Command pattern methods
+`do()` and `undo()` methods in classes inheriting from `omni.kit.commands.Command` - called by Kit command system.
+
+### OmniGraph node methods
+`compute(db)` and `internal_state()` methods in OGN nodes - called by OmniGraph framework.
+
+### Simulation lifecycle methods
+`initialize`, `post_reset`, `pre_reset` - called by the simulation framework (World, SimulationContext).
+
+### Callback functions
+Methods registered as event handlers (often named `*_callback`, `*_callback_fn`) - called by event dispatchers.
+
+### Test methods and test files
+`setUp`, `tearDown`, `test_*` methods - called by test frameworks.
+Test helper functions in test files (e.g., `_create_test_*`, factory functions) have relaxed requirements.
+
+```python
+class MyExtension(omni.ext.IExt):
+    """Extension that provides functionality X."""
+
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the extension when it is loaded.
+
+        Args:
+            ext_id (str): Extension identifier provided by the extension manager.
+        """
+        pass
+
+    def on_shutdown(self) -> None:
+        """Clean up resources when the extension is unloaded."""
+        pass
+
+    def _build_ui(self) -> None:
+        """Build the extension's user interface."""
+        pass
+
+
+class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
+    """Command to create a contact sensor."""
+
+    def do(self) -> Usd.Prim:
+        """Execute the command to create the sensor.
+
+        Returns:
+            Usd.Prim: The created sensor prim.
+        """
+        pass
+
+    def undo(self) -> None:
+        """Undo the command by removing the sensor."""
+        pass
+```
+
+## Key rules (Google Style)
+
+1. **Args format**: `param_name (type): Description.` - always include types
+2. **Returns format**: `type: Description.` - always include type
+3. **Raises format**: `ExceptionType: Description.`
+4. **Never use `param` prefix**: Write `param_name (type):` not `param param_name:`
+5. **Constructor Args go in class docstring**: Not in `__init__` method
+6. **Multi-line descriptions**: Indent continuation lines by 4 spaces
+7. **Optional parameters**: Note defaults in description (e.g., "Defaults to None.")
+8. **Optional returns**: Use `Optional[T]` when `None` is a valid return value; explain when `None` is returned
+9. **No Examples for framework methods**: The following don't need Example sections:
+   - Extension lifecycle: `on_startup`, `on_shutdown`
+   - Private methods: `_*` (any method starting with underscore)
+   - Command methods: `do()`, `undo()`
+   - OmniGraph: `compute(db)`, `internal_state()`
+   - Simulation lifecycle: `initialize`, `post_reset`, `pre_reset`
+   - Callbacks: `*_callback`, `*_callback_fn`
+   - Tests: `setUp`, `tearDown`, `test_*`
+
+## pydocstyle configuration
+
+When using `pydocstyle --convention=google`, the following rules conflict with our conventions
+and should be ignored:
+
+- **D104**: Missing docstring in public package - we skip `__init__.py` files intentionally.
+- **D107**: Missing docstring in `__init__` - constructor Args go in class docstring for Sphinx autodoc.
+- **D412**: No blank lines allowed between section header and content - our Example sections use
+  `.. code-block:: python` RST directive which requires a blank line for proper Sphinx rendering.
+
+Recommended pydocstyle configuration (in `pyproject.toml` or `setup.cfg`):
+
+```toml
+[tool.pydocstyle]
+convention = "google"
+add-ignore = ["D104", "D107", "D412"]
 ```

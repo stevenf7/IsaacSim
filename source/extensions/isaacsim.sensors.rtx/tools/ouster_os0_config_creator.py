@@ -12,6 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Tool to generate Ouster OS0 Lidar sensor JSON configuration files.
+
+This script generates JSON configuration files for the Ouster OS0 128-channel Lidar sensor
+with various Hz and resolution combinations. The generated configs can be used with the
+RTX Lidar sensor system in Isaac Sim.
+
+The beam intrinsics (azimuth and elevation angles) should be obtained from your actual
+sensor using the get_beam_intrinsics function. The values provided here are examples only.
+
+Usage:
+    python ouster_os0_config_creator.py
+
+Output:
+    Generates JSON config files in the current directory with naming pattern:
+    OS0_128ch{hz}hz{resolution}res.json
+"""
+
 brand = "ouster"
 model = "OS0"
 channels = 128
@@ -82,7 +100,15 @@ beam_intrinsics = {
 comment_count = 0
 
 
-def comment(str_in):
+def comment(str_in: str) -> str:
+    """Generate a unique comment key-value pair for JSON output.
+
+    Args:
+        str_in (str): The comment string to include.
+
+    Returns:
+        str: JSON-formatted comment with unique key.
+    """
     global comment_count
     comment_count = comment_count + 1
     return f'"comment{comment_count}" : "{str_in}"'

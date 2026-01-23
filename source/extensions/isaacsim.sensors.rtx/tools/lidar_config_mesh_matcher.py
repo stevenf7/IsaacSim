@@ -13,6 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tool to create RTX sensor USD files from JSON configs and mesh references.
+
+This script creates a USD file containing an RTX sensor at the desired location
+with an optional mesh reference. It can process single JSON config files or all
+JSON files in a directory.
+
+Usage:
+    python lidar_config_mesh_matcher.py -j <json_config> -u <usd_path> [options]
+
+Arguments:
+    -j, --json: Path to JSON config file or directory containing JSON files.
+    -u, --usd_path: USD path to the mesh to reference.
+    -o, --om_path: True for Omniverse asset, False for local asset. Defaults to True.
+    -t, --translation: Relative translation [x, y, z]. Defaults to [0, 0, 0].
+    -q, --orientation: Relative orientation quaternion [w, x, y, z]. Defaults to [1, 0, 0, 0].
+"""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
@@ -56,7 +73,8 @@ parser.add_argument(
 args, unknown = parser.parse_known_args()
 
 
-def main():
+def main() -> None:
+    """Create RTX sensor USD files from JSON configs and mesh references."""
     input_path = Path(args.json)
     config_paths = []
 
