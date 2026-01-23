@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.6] - 2026-01-21
+### Added
+- Added ros2 image buffer util unit tests 
+
 ## [1.5.5] - 2025-12-23
 ### Changed
 - Update unit tests to reduce overall test time
