@@ -1,4 +1,9 @@
 # Changelog
+
+## [15.11.8] - 2026-01-23
+### Changed
+- Cleanup and make docstrings consistent and add missing docstrings, example strings and type hints
+
 ## [15.11.7] - 2026-01-09
 ### Changed
 - Cleanup unused imports

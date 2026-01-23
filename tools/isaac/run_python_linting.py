@@ -1,0 +1,957 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Run Python linting tools on Isaac Sim extensions, one extension at a time.
+
+This script runs multiple linting tools (mypy, pydocstyle, darglint, interrogate)
+on each extension separately, providing comprehensive code quality checks.
+
+Tools:
+    - mypy: Static type checking
+    - pydocstyle: Docstring style checking (Google convention)
+    - darglint: Docstring argument/return validation
+    - interrogate: Docstring coverage metrics
+
+Usage (via repo.sh):
+    # Run all tools on all extensions
+    ./repo.sh run_python_linting
+
+    # Run only mypy
+    ./repo.sh run_python_linting --mypy
+
+    # Run mypy and pydocstyle
+    ./repo.sh run_python_linting --mypy --pydocstyle
+
+    # Check specific extensions
+    ./repo.sh run_python_linting --extensions isaacsim.core.utils isaacsim.core.prims
+
+    # Check extensions matching a pattern
+    ./repo.sh run_python_linting --pattern "isaacsim.core.*"
+
+    # Show only extensions with errors
+    ./repo.sh run_python_linting --errors-only
+
+    # Generate JSON report
+    ./repo.sh run_python_linting --json-output report.json
+"""
+
+import argparse
+import fnmatch
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Set
+
+# =============================================================================
+# Tool Configurations (hardcoded defaults when config files not supported)
+# =============================================================================
+
+# pydocstyle configuration (Google style with ignored rules for our conventions)
+PYDOCSTYLE_CONFIG = {
+    "convention": "google",
+    "add_ignore": ["D104", "D107", "D412"],  # See python_docstrings.mdc for rationale
+}
+
+# darglint configuration
+DARGLINT_CONFIG = {
+    "docstring_style": "google",
+    "strictness": "full",  # short, long, or full
+}
+
+# interrogate configuration
+INTERROGATE_CONFIG = {
+    "ignore_init_method": True,
+    "ignore_init_module": True,
+    "ignore_magic": False,  # We want __del__ documented
+    "ignore_private": True,
+    "fail_under": 0,  # Don't fail, just report coverage
+    "exclude": ["_vendor"],
+}
+
+
+# =============================================================================
+# Result Classes
+# =============================================================================
+
+
+class ToolResult:
+    """Results from running a single tool on an extension."""
+
+    def __init__(
+        self,
+        tool_name: str,
+        errors: int = 0,
+        warnings: int = 0,
+        messages: Optional[List[str]] = None,
+        coverage: Optional[float] = None,
+        duration_seconds: float = 0.0,
+        skipped: bool = False,
+        skip_reason: str = "",
+    ):
+        self.tool_name = tool_name
+        self.errors = errors
+        self.warnings = warnings
+        self.messages: List[str] = messages if messages is not None else []
+        self.coverage = coverage
+        self.duration_seconds = duration_seconds
+        self.skipped = skipped
+        self.skip_reason = skip_reason
+
+
+class ExtensionResult:
+    """Results from running all tools on a single extension."""
+
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        files_checked: int = 0,
+        tool_results: Optional[Dict[str, ToolResult]] = None,
+        duration_seconds: float = 0.0,
+        skipped: bool = False,
+        skip_reason: str = "",
+    ):
+        self.name = name
+        self.path = path
+        self.files_checked = files_checked
+        self.tool_results: Dict[str, ToolResult] = tool_results if tool_results is not None else {}
+        self.duration_seconds = duration_seconds
+        self.skipped = skipped
+        self.skip_reason = skip_reason
+
+    @property
+    def total_errors(self) -> int:
+        """Get total errors across all tools."""
+        return sum(r.errors for r in self.tool_results.values())
+
+    @property
+    def has_errors(self) -> bool:
+        """Check if any tool reported errors."""
+        return self.total_errors > 0
+
+
+# =============================================================================
+# Terminal Colors
+# =============================================================================
+
+
+class Colors:
+    """ANSI color codes for terminal output."""
+
+    RESET = "\033[0m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+
+
+def colorize(text: str, color: str, use_color: bool = True) -> str:
+    """Apply color to text if colors are enabled."""
+    if use_color and sys.stdout.isatty():
+        return f"{color}{text}{Colors.RESET}"
+    return text
+
+
+# =============================================================================
+# Tool Discovery
+# =============================================================================
+
+
+class ToolInfo:
+    """Information about an available tool."""
+
+    def __init__(
+        self,
+        name: str,
+        binary_path: Optional[str] = None,
+        available: bool = False,
+        version: str = "",
+        error_message: str = "",
+    ):
+        self.name = name
+        self.binary_path = binary_path
+        self.available = available
+        self.version = version
+        self.error_message = error_message
+
+
+def find_tool(name: str, vendor_dir: Optional[str] = None) -> ToolInfo:
+    """Find a tool binary, checking vendor directory first, then PATH.
+
+    Args:
+        name: Name of the tool (e.g., 'mypy', 'pydocstyle').
+        vendor_dir: Optional vendor directory to check first.
+
+    Returns:
+        ToolInfo with availability status and path.
+    """
+    info = ToolInfo(name=name)
+
+    # Check vendor directory first (for repo_lint tools)
+    if vendor_dir:
+        vendor_path = Path(vendor_dir) / "bin" / name
+        if vendor_path.exists():
+            info.binary_path = str(vendor_path)
+            info.available = True
+            return info
+
+    # Check system PATH
+    system_path = shutil.which(name)
+    if system_path:
+        info.binary_path = system_path
+        info.available = True
+        return info
+
+    info.error_message = f"{name} not found. Install with: pip install {name}"
+    return info
+
+
+def get_vendor_directory() -> Optional[str]:
+    """Get vendor directory from repo_lint if available."""
+    try:
+        from omni.repo.lint import vendor_directory
+
+        return str(vendor_directory)
+    except ImportError:
+        return None
+
+
+def discover_tools(vendor_dir: Optional[str] = None) -> Dict[str, ToolInfo]:
+    """Discover all available linting tools.
+
+    Args:
+        vendor_dir: Optional vendor directory to check for tools.
+
+    Returns:
+        Dictionary mapping tool names to ToolInfo objects.
+    """
+    tools = {}
+    for name in ["mypy", "pydocstyle", "darglint", "interrogate"]:
+        tools[name] = find_tool(name, vendor_dir)
+    return tools
+
+
+# =============================================================================
+# Extension Discovery
+# =============================================================================
+
+
+def find_extensions(extensions_dir: Path) -> List[Path]:
+    """Find all extension directories in the given path."""
+    extensions = []
+    if not extensions_dir.exists():
+        return extensions
+
+    for item in sorted(extensions_dir.iterdir()):
+        if item.is_dir() and item.name.startswith("isaacsim."):
+            extensions.append(item)
+
+    return extensions
+
+
+def find_python_dir(extension_path: Path) -> Optional[Path]:
+    """Find the Python source directory for an extension.
+
+    Extensions can have different structures:
+    - python/impl/  (common pattern)
+    - isaacsim/.../ (namespace package pattern)
+    """
+    # Check for python/impl structure
+    python_impl = extension_path / "python" / "impl"
+    if python_impl.exists():
+        return python_impl
+
+    # Check for isaacsim namespace package structure
+    isaacsim_dir = extension_path / "isaacsim"
+    if isaacsim_dir.exists():
+        return isaacsim_dir
+
+    # Check for any Python files directly
+    if list(extension_path.glob("*.py")):
+        return extension_path
+
+    return None
+
+
+def count_python_files(directory: Path, exclude_patterns: Optional[List[str]] = None) -> int:
+    """Count Python files in a directory, excluding certain patterns."""
+    exclude_patterns = exclude_patterns or []
+    count = 0
+    for py_file in directory.rglob("*.py"):
+        relative_path = str(py_file.relative_to(directory))
+        excluded = False
+        for pattern in exclude_patterns:
+            if fnmatch.fnmatch(relative_path, pattern) or fnmatch.fnmatch(py_file.name, pattern):
+                excluded = True
+                break
+        if not excluded:
+            count += 1
+    return count
+
+
+# =============================================================================
+# Tool Runners
+# =============================================================================
+
+
+def run_mypy(
+    python_dir: Path,
+    config_file: Optional[Path],
+    exclude_patterns: List[str],
+    tool_info: ToolInfo,
+    vendor_dir: Optional[str],
+    cwd: Path,
+) -> ToolResult:
+    """Run mypy on a directory."""
+    result = ToolResult(tool_name="mypy")
+
+    if not tool_info.available:
+        result.skipped = True
+        result.skip_reason = tool_info.error_message
+        return result
+
+    cmd = [tool_info.binary_path]
+    if config_file and config_file.exists():
+        cmd.extend(["--config-file", str(config_file)])
+
+    for pattern in exclude_patterns:
+        cmd.extend(["--exclude", pattern])
+
+    cmd.append(str(python_dir))
+
+    env = os.environ.copy()
+    if vendor_dir:
+        env["PYTHONPATH"] = vendor_dir
+    else:
+        env.pop("PYTHONPATH", None)
+    env.pop("PYTHONHOME", None)
+
+    start_time = time.time()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, env=env)
+        result.duration_seconds = time.time() - start_time
+
+        if proc.stdout.strip():
+            for line in proc.stdout.strip().split("\n"):
+                if ": error:" in line:
+                    result.errors += 1
+                    result.messages.append(line)
+                elif ": warning:" in line:
+                    result.warnings += 1
+                    result.messages.append(line)
+                elif line.strip() and not line.startswith("Success"):
+                    result.messages.append(line)
+
+    except Exception as e:
+        result.skipped = True
+        result.skip_reason = f"Error running mypy: {e}"
+
+    return result
+
+
+def run_pydocstyle(
+    python_dir: Path,
+    tool_info: ToolInfo,
+    cwd: Path,
+) -> ToolResult:
+    """Run pydocstyle on a directory."""
+    result = ToolResult(tool_name="pydocstyle")
+
+    if not tool_info.available:
+        result.skipped = True
+        result.skip_reason = tool_info.error_message
+        return result
+
+    cmd = [
+        tool_info.binary_path,
+        "--convention={}".format(PYDOCSTYLE_CONFIG["convention"]),
+        "--add-ignore={}".format(",".join(PYDOCSTYLE_CONFIG["add_ignore"])),
+        str(python_dir),
+    ]
+
+    start_time = time.time()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+        result.duration_seconds = time.time() - start_time
+
+        if proc.stdout.strip():
+            for line in proc.stdout.strip().split("\n"):
+                if line.strip():
+                    result.errors += 1
+                    result.messages.append(line)
+
+        if proc.stderr.strip() and "error" in proc.stderr.lower():
+            result.messages.append("[stderr] {}".format(proc.stderr.strip()))
+
+    except Exception as e:
+        result.skipped = True
+        result.skip_reason = "Error running pydocstyle: {}".format(e)
+
+    return result
+
+
+def run_darglint(
+    python_dir: Path,
+    tool_info: ToolInfo,
+    cwd: Path,
+) -> ToolResult:
+    """Run darglint on a directory."""
+    result = ToolResult(tool_name="darglint")
+
+    if not tool_info.available:
+        result.skipped = True
+        result.skip_reason = tool_info.error_message
+        return result
+
+    # Find all Python files (darglint doesn't support directories directly)
+    py_files = list(python_dir.rglob("*.py"))
+    # Exclude vendor files
+    py_files = [f for f in py_files if "/_vendor/" not in str(f)]
+
+    if not py_files:
+        result.skipped = True
+        result.skip_reason = "No Python files to check"
+        return result
+
+    cmd = [
+        tool_info.binary_path,
+        "--docstring-style={}".format(DARGLINT_CONFIG["docstring_style"]),
+        "--strictness={}".format(DARGLINT_CONFIG["strictness"]),
+    ] + [str(f) for f in py_files]
+
+    start_time = time.time()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+        result.duration_seconds = time.time() - start_time
+
+        if proc.stdout.strip():
+            for line in proc.stdout.strip().split("\n"):
+                if line.strip():
+                    # darglint outputs errors as DAR### codes
+                    if "DAR" in line:
+                        result.errors += 1
+                    result.messages.append(line)
+
+    except Exception as e:
+        result.skipped = True
+        result.skip_reason = "Error running darglint: {}".format(e)
+
+    return result
+
+
+def run_interrogate(
+    python_dir: Path,
+    tool_info: ToolInfo,
+    cwd: Path,
+) -> ToolResult:
+    """Run interrogate on a directory."""
+    result = ToolResult(tool_name="interrogate")
+
+    if not tool_info.available:
+        result.skipped = True
+        result.skip_reason = tool_info.error_message
+        return result
+
+    cmd = [
+        tool_info.binary_path,
+        "--verbose",
+        "--fail-under={}".format(INTERROGATE_CONFIG["fail_under"]),
+    ]
+
+    if INTERROGATE_CONFIG["ignore_init_method"]:
+        cmd.append("--ignore-init-method")
+    if INTERROGATE_CONFIG["ignore_init_module"]:
+        cmd.append("--ignore-init-module")
+    if INTERROGATE_CONFIG["ignore_magic"]:
+        cmd.append("--ignore-magic")
+    if INTERROGATE_CONFIG["ignore_private"]:
+        cmd.append("--ignore-private")
+
+    for exclude in INTERROGATE_CONFIG["exclude"]:
+        cmd.extend(["--exclude", exclude])
+
+    cmd.append(str(python_dir))
+
+    start_time = time.time()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+        result.duration_seconds = time.time() - start_time
+
+        # Parse output for coverage percentage
+        if proc.stdout.strip():
+            for line in proc.stdout.strip().split("\n"):
+                result.messages.append(line)
+                # Look for coverage line like "TOTAL ... 85.0%"
+                if "%" in line and ("TOTAL" in line or "actual" in line.lower()):
+                    try:
+                        # Extract percentage
+                        parts = line.split()
+                        for part in parts:
+                            if "%" in part:
+                                result.coverage = float(part.replace("%", ""))
+                                break
+                    except ValueError:
+                        pass
+
+        # interrogate returns non-zero if below threshold
+        if proc.returncode != 0 and result.coverage is not None:
+            if result.coverage < INTERROGATE_CONFIG["fail_under"]:
+                result.errors = 1
+
+    except Exception as e:
+        result.skipped = True
+        result.skip_reason = "Error running interrogate: {}".format(e)
+
+    return result
+
+
+# =============================================================================
+# Main Runner
+# =============================================================================
+
+
+def run_tools_on_extension(
+    extension_path: Path,
+    tools: Dict[str, ToolInfo],
+    enabled_tools: Set[str],
+    mypy_config: Optional[Path],
+    exclude_patterns: List[str],
+    vendor_dir: Optional[str],
+) -> ExtensionResult:
+    """Run all enabled tools on a single extension."""
+    result = ExtensionResult(name=extension_path.name, path=str(extension_path))
+
+    # Find Python source directory
+    python_dir = find_python_dir(extension_path)
+    if python_dir is None:
+        result.skipped = True
+        result.skip_reason = "No Python source directory found"
+        return result
+
+    result.files_checked = count_python_files(python_dir)
+    if result.files_checked == 0:
+        result.skipped = True
+        result.skip_reason = "No Python files to check"
+        return result
+
+    cwd = extension_path.parent.parent.parent
+    start_time = time.time()
+
+    # Run each enabled tool
+    if "mypy" in enabled_tools:
+        result.tool_results["mypy"] = run_mypy(
+            python_dir, mypy_config, exclude_patterns, tools["mypy"], vendor_dir, cwd
+        )
+
+    if "pydocstyle" in enabled_tools:
+        result.tool_results["pydocstyle"] = run_pydocstyle(python_dir, tools["pydocstyle"], cwd)
+
+    if "darglint" in enabled_tools:
+        result.tool_results["darglint"] = run_darglint(python_dir, tools["darglint"], cwd)
+
+    if "interrogate" in enabled_tools:
+        result.tool_results["interrogate"] = run_interrogate(python_dir, tools["interrogate"], cwd)
+
+    result.duration_seconds = time.time() - start_time
+    return result
+
+
+# =============================================================================
+# Output Formatting
+# =============================================================================
+
+
+def print_tool_availability(tools: Dict[str, ToolInfo], use_color: bool = True) -> None:
+    """Print tool availability status."""
+    print("\nTool availability:")
+    for name, info in tools.items():
+        if info.available:
+            status = colorize("available", Colors.GREEN, use_color)
+            path = colorize("({})".format(info.binary_path), Colors.DIM, use_color)
+            print("  {}: {} {}".format(name, status, path))
+        else:
+            status = colorize("NOT FOUND", Colors.RED, use_color)
+            print("  {}: {} - {}".format(name, status, info.error_message))
+
+
+def print_summary(
+    results: List[ExtensionResult],
+    enabled_tools: Set[str],
+    use_color: bool = True,
+    errors_only: bool = False,
+) -> None:
+    """Print a summary of all results."""
+    total_extensions = len(results)
+    passed = sum(1 for r in results if not r.has_errors and not r.skipped)
+    failed = sum(1 for r in results if r.has_errors)
+    skipped = sum(1 for r in results if r.skipped)
+    total_time = sum(r.duration_seconds for r in results)
+
+    # Print errors grouped by tool and extension
+    failed_results = [r for r in results if r.has_errors]
+    if failed_results:
+        for tool_name in enabled_tools:
+            tool_errors = [
+                (r, r.tool_results.get(tool_name))
+                for r in failed_results
+                if tool_name in r.tool_results and r.tool_results[tool_name].errors > 0
+            ]
+
+            if tool_errors:
+                print("\n" + "=" * 80)
+                print("{} ERRORS".format(tool_name.upper()))
+                print("=" * 80)
+
+                for ext_result, tool_result in tool_errors:
+                    print("\n## {} ({} errors)".format(ext_result.name, tool_result.errors))
+                    for msg in tool_result.messages:
+                        print("  {}".format(msg))
+
+    # Print coverage summary for interrogate
+    if "interrogate" in enabled_tools:
+        coverage_results = [
+            (r.name, r.tool_results["interrogate"].coverage)
+            for r in results
+            if "interrogate" in r.tool_results
+            and r.tool_results["interrogate"].coverage is not None
+            and not r.tool_results["interrogate"].skipped
+        ]
+        if coverage_results:
+            print("\n" + "=" * 80)
+            print("DOCSTRING COVERAGE (interrogate)")
+            print("=" * 80)
+            for name, coverage in sorted(coverage_results, key=lambda x: x[1] or 0):
+                color = Colors.GREEN if coverage >= 80 else Colors.YELLOW if coverage >= 50 else Colors.RED
+                print("  {}: {}".format(name, colorize("{:.1f}%".format(coverage), color, use_color)))
+
+    # Print summary table
+    print("\n" + "=" * 80)
+    print("SUMMARY")
+    print("=" * 80)
+
+    for result in results:
+        if errors_only and not result.has_errors and not result.skipped:
+            continue
+
+        if result.skipped:
+            status = colorize("SKIP", Colors.YELLOW, use_color)
+            detail = result.skip_reason
+        elif not result.has_errors:
+            status = colorize("PASS", Colors.GREEN, use_color)
+            tool_summary = []
+            for tool_name in enabled_tools:
+                if tool_name in result.tool_results:
+                    tr = result.tool_results[tool_name]
+                    if not tr.skipped:
+                        if tool_name == "interrogate" and tr.coverage is not None:
+                            tool_summary.append("{}:{:.0f}%".format(tool_name, tr.coverage))
+                        else:
+                            tool_summary.append("{}:ok".format(tool_name))
+            detail = ", ".join(tool_summary) if tool_summary else "{} files".format(result.files_checked)
+        else:
+            status = colorize("FAIL", Colors.RED, use_color)
+            tool_errors = []
+            for tool_name in enabled_tools:
+                if tool_name in result.tool_results and result.tool_results[tool_name].errors > 0:
+                    tool_errors.append("{}:{}".format(tool_name, result.tool_results[tool_name].errors))
+            detail = ", ".join(tool_errors)
+
+        print("  [{}] {}: {}".format(status, result.name, detail))
+
+    print("\nTotal: {} extensions, {} passed, {} failed, {} skipped".format(total_extensions, passed, failed, skipped))
+    print("Time: {:.2f}s".format(total_time))
+
+
+def save_json_report(results: List[ExtensionResult], output_path: Path) -> None:
+    """Save results as a JSON report."""
+    report = {
+        "summary": {
+            "total_extensions": len(results),
+            "passed": sum(1 for r in results if not r.has_errors and not r.skipped),
+            "failed": sum(1 for r in results if r.has_errors),
+            "skipped": sum(1 for r in results if r.skipped),
+        },
+        "extensions": [
+            {
+                "name": r.name,
+                "path": r.path,
+                "files_checked": r.files_checked,
+                "total_errors": r.total_errors,
+                "duration_seconds": r.duration_seconds,
+                "skipped": r.skipped,
+                "skip_reason": r.skip_reason,
+                "tools": {
+                    name: {
+                        "errors": tr.errors,
+                        "warnings": tr.warnings,
+                        "messages": tr.messages,
+                        "coverage": tr.coverage,
+                        "duration_seconds": tr.duration_seconds,
+                        "skipped": tr.skipped,
+                        "skip_reason": tr.skip_reason,
+                    }
+                    for name, tr in r.tool_results.items()
+                },
+            }
+            for r in results
+        ],
+    }
+
+    with open(output_path, "w") as f:
+        json.dump(report, f, indent=2)
+
+    print("\nJSON report saved to: {}".format(output_path))
+
+
+# =============================================================================
+# Repo Tool Integration
+# =============================================================================
+
+
+def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> Callable:
+    """Setup function for the repo tool integration.
+
+    Args:
+        parser: ArgumentParser to configure with command-line arguments.
+        config: Configuration dictionary from repo.toml.
+
+    Returns:
+        The run_tool function to execute the tool.
+    """
+    parser.description = "Run Python linting tools on extensions (mypy, pydocstyle, darglint, interrogate)."
+
+    # Extension selection
+    parser.add_argument(
+        "--extensions",
+        "-e",
+        nargs="+",
+        help="Specific extension names to check (e.g., isaacsim.core.utils)",
+    )
+    parser.add_argument(
+        "--pattern",
+        "-p",
+        help="Glob pattern to filter extensions (e.g., 'isaacsim.core.*')",
+    )
+
+    # Tool selection (if none specified, all are enabled)
+    parser.add_argument(
+        "--mypy",
+        action="store_true",
+        help="Run mypy type checking",
+    )
+    parser.add_argument(
+        "--pydocstyle",
+        action="store_true",
+        help="Run pydocstyle docstring style checking",
+    )
+    parser.add_argument(
+        "--darglint",
+        action="store_true",
+        help="Run darglint docstring argument validation",
+    )
+    parser.add_argument(
+        "--interrogate",
+        action="store_true",
+        help="Run interrogate docstring coverage",
+    )
+
+    # Configuration
+    parser.add_argument(
+        "--mypy-config",
+        help="Path to mypy configuration file (default: tools/isaac/.mypy.ini)",
+    )
+    parser.add_argument(
+        "--exclude",
+        nargs="+",
+        default=[],
+        help="Regex patterns to exclude from mypy checking",
+    )
+
+    # Output options
+    parser.add_argument(
+        "--errors-only",
+        action="store_true",
+        help="Only show extensions with errors in summary",
+    )
+    parser.add_argument(
+        "--json-output",
+        "-j",
+        help="Save results to JSON file",
+    )
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored output",
+    )
+
+    tool_config = config.get("repo_run_python_linting", {})
+
+    def run_tool(args: argparse.Namespace, config: Dict[str, Any] = config) -> int:
+        """Run the Python linting tool.
+
+        Args:
+            args: Parsed command-line arguments.
+            config: Configuration dictionary.
+
+        Returns:
+            0 if all checks passed, 1 if there were errors.
+        """
+        repo_root = Path(config.get("root", os.getcwd()))
+        use_color = not args.no_color
+
+        # Determine which tools to run
+        tool_flags = {
+            "mypy": args.mypy,
+            "pydocstyle": args.pydocstyle,
+            "darglint": args.darglint,
+            "interrogate": args.interrogate,
+        }
+        # If no specific tools requested, run all
+        if not any(tool_flags.values()):
+            enabled_tools = set(tool_flags.keys())
+        else:
+            enabled_tools = {name for name, enabled in tool_flags.items() if enabled}
+
+        # Find extensions directory
+        extensions_dir = repo_root / "source" / "extensions"
+        if not extensions_dir.exists():
+            print("Error: Extensions directory not found: {}".format(extensions_dir))
+            return 1
+
+        # Discover available tools
+        vendor_dir = get_vendor_directory()
+        tools = discover_tools(vendor_dir)
+
+        # Print tool availability
+        print_tool_availability(tools, use_color)
+
+        # Check if any enabled tools are missing
+        missing_tools = [name for name in enabled_tools if not tools[name].available]
+        if missing_tools:
+            print(
+                colorize(
+                    "\nWarning: Some tools not available: {}".format(", ".join(missing_tools)), Colors.YELLOW, use_color
+                )
+            )
+            print("These tools will be skipped.\n")
+
+        # Find all extensions
+        all_extensions = find_extensions(extensions_dir)
+        if not all_extensions:
+            print("Error: No extensions found in {}".format(extensions_dir))
+            return 1
+
+        # Filter extensions
+        extensions_to_check = all_extensions
+        if args.extensions:
+            extensions_to_check = [e for e in all_extensions if e.name in args.extensions]
+            if not extensions_to_check:
+                print("Error: No matching extensions found for: {}".format(args.extensions))
+                return 1
+        elif args.pattern:
+            extensions_to_check = [e for e in all_extensions if fnmatch.fnmatch(e.name, args.pattern)]
+            if not extensions_to_check:
+                print("Error: No extensions matching pattern: {}".format(args.pattern))
+                return 1
+
+        # Determine mypy config file
+        mypy_config = None
+        if args.mypy_config:
+            mypy_config = Path(args.mypy_config)
+        else:
+            config_path = tool_config.get("mypy_config", "${root}/tools/isaac/.mypy.ini")
+            config_path = config_path.replace("${root}", str(repo_root))
+            default_config = Path(config_path)
+            if default_config.exists():
+                mypy_config = default_config
+
+        exclude_patterns = args.exclude or tool_config.get("exclude", [])
+
+        # Run tools on each extension
+        print(
+            colorize(
+                "\nRunning {} on {} extensions...".format(", ".join(sorted(enabled_tools)), len(extensions_to_check)),
+                Colors.CYAN,
+                use_color,
+            )
+        )
+        if mypy_config and "mypy" in enabled_tools:
+            print(colorize("Using mypy config: {}".format(mypy_config), Colors.DIM, use_color))
+
+        results = []  # type: List[ExtensionResult]
+        for i, extension in enumerate(extensions_to_check, 1):
+            progress = "[{}/{}]".format(i, len(extensions_to_check))
+            print("  {} Checking {}...".format(progress, extension.name), end=" ", flush=True)
+
+            result = run_tools_on_extension(
+                extension_path=extension,
+                tools=tools,
+                enabled_tools=enabled_tools,
+                mypy_config=mypy_config,
+                exclude_patterns=exclude_patterns,
+                vendor_dir=vendor_dir,
+            )
+            results.append(result)
+
+            if result.skipped:
+                print(colorize("skipped", Colors.YELLOW, use_color))
+            elif not result.has_errors:
+                print(colorize("ok", Colors.GREEN, use_color))
+            else:
+                error_summary = ", ".join(
+                    "{}:{}".format(name, tr.errors) for name, tr in result.tool_results.items() if tr.errors > 0
+                )
+                print(colorize(error_summary, Colors.RED, use_color))
+
+        # Print summary
+        print_summary(results, enabled_tools, use_color=use_color, errors_only=args.errors_only)
+
+        # Save JSON report if requested
+        if args.json_output:
+            save_json_report(results, Path(args.json_output))
+
+        # Return exit code
+        total_errors = sum(r.total_errors for r in results)
+        return 1 if total_errors > 0 else 0
+
+    return run_tool
+
+
+def main() -> int:
+    """Main entry point for standalone execution."""
+    parser = argparse.ArgumentParser(
+        description="Run Python linting tools on extensions.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+
+    script_path = Path(__file__).resolve()
+    repo_root = script_path.parent.parent.parent
+    config = {"root": str(repo_root)}
+
+    run_tool = setup_repo_tool(parser, config)
+    args = parser.parse_args()
+
+    return run_tool(args, config)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

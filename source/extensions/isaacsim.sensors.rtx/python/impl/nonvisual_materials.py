@@ -140,14 +140,16 @@ def apply_nonvisual_material(
     material prim for use by RTX sensors. The material must be a valid material prim.
 
     Args:
-        prim: USD prim that must be a material prim.
-        base: Base material type, either string name or integer ID.
-        coating: Coating type, either string name or integer ID.
-        attribute: Material attribute, either string name or integer ID.
+        prim (Usd.Prim): USD prim that must be a material prim.
+        base (Union[str, int]): Base material type, either string name or integer ID.
+        coating (Union[str, int]): Coating type, either string name or integer ID.
+            Defaults to "none".
+        attribute (Union[str, int]): Material attribute, either string name or integer ID.
+            Defaults to "none".
 
     Returns:
-        True if the nonvisual material was successfully applied, False otherwise.
-        Error messages are logged via carb.log_error for debugging.
+        bool: True if the nonvisual material was successfully applied, False otherwise.
+            Error messages are logged via carb.log_error for debugging.
 
     Example:
 
@@ -258,14 +260,15 @@ def get_material_id(prim: Usd.Prim) -> int:
     - Upper byte bits 11-15 (upper 5 bits): attributes (values 0-31)
 
     Args:
-        prim: USD prim that must be a material prim with nonvisual material attributes.
+        prim (Usd.Prim): USD prim that must be a material prim with nonvisual material
+            attributes.
 
     Returns:
-        Computed material ID as an integer. Returns 0 if attributes are not found.
+        int: Computed material ID as an integer. Returns 0 if attributes are not found
+            or if prim is invalid.
 
     Note:
         Error messages are logged via carb.log_error for debugging.
-        Returns 0 if attributes are not found or if prim is invalid.
 
     Example:
 
@@ -341,11 +344,11 @@ def decode_material_id(material_id: int) -> tuple[str, str, str]:
     - Upper byte bits 11-15 (upper 5 bits): attributes (values 0-31)
 
     Args:
-        material_id: Material ID as computed by get_material_id function.
+        material_id (int): Material ID as computed by get_material_id function.
 
     Returns:
-        Tuple containing (base_name, coating_name, attribute_name) as strings.
-        Returns ("none", "none", "none") if any component cannot be decoded.
+        tuple[str, str, str]: Tuple containing (base_name, coating_name, attribute_name)
+            as strings. Returns ("none", "none", "none") if any component cannot be decoded.
 
     Raises:
         ValueError: If material_id is negative or exceeds uint16 range.

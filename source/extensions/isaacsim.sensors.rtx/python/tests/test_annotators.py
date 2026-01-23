@@ -42,7 +42,16 @@ DEBUG_DRAW_PRINT = False
 MAX_TIMESTAMP_DIFF = 3500
 
 
-def create_sarcophagus(enable_nonvisual_material: bool = True):
+def create_sarcophagus(enable_nonvisual_material: bool = True) -> dict:
+    """Create a sarcophagus-shaped test environment made of cubes.
+
+    Args:
+        enable_nonvisual_material (bool): Whether to apply nonvisual materials to the cubes.
+            Defaults to True.
+
+    Returns:
+        dict: Dictionary mapping cube prim paths to their material information.
+    """
     # Autogenerate sarcophagus
     dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
     i = 0
@@ -875,8 +884,11 @@ def _create_flat_scan_annotator_test(config: str = None, variant: str = None):
     """Create OmniLidar prim with specified config and variants, then attach an annotator and run for several frames.
 
     Args:
-        config (str, optional): Lidar config name. Defaults to None.
-        variant (str, optional): Lidar variant name. Defaults to None.
+        config: Lidar config name. Defaults to None.
+        variant: Lidar variant name. Defaults to None.
+
+    Returns:
+        An async test function.
     """
 
     async def test_function(self):
@@ -960,8 +972,11 @@ def _create_isaac_extract_rtx_sensor_point_cloud_test(config: str = None, varian
     """Create OmniLidar prim with specified config and variants, then attach an IsaacExtractRTXSensorPointCloud annotator and run for several frames.
 
     Args:
-        config (str, optional): _description_. Defaults to None.
-        variant (str, optional): _description_. Defaults to None.
+        config: Lidar config name. Defaults to None.
+        variant: Lidar variant name. Defaults to None.
+
+    Returns:
+        An async test function.
     """
 
     async def test_function(self):

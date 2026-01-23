@@ -22,7 +22,14 @@ from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_a
 
 
 def _create_test_for_usda(usda_path):
-    """Create a test function for a specific USDA file"""
+    """Create a test function for a specific USDA file.
+
+    Args:
+        usda_path: Path to the USDA file to test.
+
+    Returns:
+        An async test function.
+    """
     file_name = os.path.basename(usda_path).split(".")[0]
 
     async def test_function(self):

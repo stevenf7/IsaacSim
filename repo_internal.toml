@@ -107,6 +107,7 @@ sphinx_conf_py_extra = """
     html_static_path += [
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
+    autoclass_content = "both"
     autodoc_member_order = 'groupwise'
     autodoc_mock_imports = [
         "carb",
