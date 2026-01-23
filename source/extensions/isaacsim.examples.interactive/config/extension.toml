@@ -80,6 +80,18 @@ name = "isaacsim.examples.interactive.user_examples"
 name = "isaacsim.examples.interactive.getting_started"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "omni.isaac.ml_archive",
@@ -136,16 +148,4 @@ args = [
     ### Extension specific args
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-stdoutFailPatterns.exclude = [    
-    '*The NumPy module was reloaded*',
 ]

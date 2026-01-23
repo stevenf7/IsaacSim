@@ -35,6 +35,15 @@ name = "isaacsim.sensors.camera.tests"
 public = false
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
@@ -91,13 +100,4 @@ stdoutFailPatterns.exclude = [
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view * device **',
     '*[Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture.*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

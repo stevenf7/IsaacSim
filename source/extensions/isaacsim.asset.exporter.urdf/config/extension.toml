@@ -28,6 +28,12 @@ name = "isaacsim.asset.exporter.urdf"
 name = "isaacsim.asset.exporter.urdf.tests"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.core_archive",
+]
+
+[[test]]
 timeout = 400
 dependencies = [
     "isaacsim.asset.importer.urdf",
@@ -43,10 +49,4 @@ stdoutFailPatterns.exclude = [
     '*not added to `TransformGraph` because it is not a link type or joint type prim.*',
     '*parent prim is missing contact report API*',
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.core_archive",
 ]

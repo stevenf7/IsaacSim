@@ -1275,9 +1275,9 @@ class ExtensionTomlValidator:
                 fixed_content = test_fields_result.fixed_content
 
         # Check and fix test section order
-        has_multiple_unnamed, has_order_issue = self._validate_test_section_order(file_path, fixed_content)
+        has_multiple_unnamed, has_startup_order_issue = self._validate_test_section_order(file_path, fixed_content)
 
-        if (has_order_issue or has_multiple_unnamed) and config.fix_section_order:  # Reuse fix_section_order flag
+        if (has_multiple_unnamed or has_startup_order_issue) and config.fix_section_order:
             test_order_result = self._validate_and_fix_test_section_order(file_path, fixed_content, True)
             if test_order_result.was_fixed:
                 fixed = True
@@ -1924,9 +1924,8 @@ class ExtensionTomlValidator:
                 current_section_lines = [line]
                 current_section_start_line = i
             # Check for end of section (next section header)
-            elif (
-                in_test_section
-                and (line_stripped.startswith("[") and not line_stripped.startswith("[["))
+            elif in_test_section and (
+                (line_stripped.startswith("[") and not line_stripped.startswith("[["))
                 or (line_stripped.startswith("[[") and not line_stripped.startswith("[[test]]"))
             ):
                 in_test_section = False
@@ -1960,24 +1959,25 @@ class ExtensionTomlValidator:
         """
         Validate that:
         1. There is only one unnamed test section
-        2. Unnamed test sections appear before named test sections
+        2. The "startup" test section appears first among all test sections
 
         Args:
             file_path: Path to the file being validated
             content: The file content to check
 
         Returns:
-            Tuple of (has_multiple_unnamed_sections, has_order_issue)
+            Tuple of (has_multiple_unnamed_sections, has_startup_order_issue)
         """
         if self.config.verbose:
             print(f"DEBUG: Validating test section order in {file_path}")
         lines = content.split("\n")
 
         # Extract all test sections with their names and line numbers
-        test_sections_info = []  # List of tuples: (start_line, has_name)
+        test_sections_info = []  # List of tuples: (start_line, has_name, name_value)
         in_test_section = False
         current_section_start = -1
         current_section_has_name = False
+        current_section_name = ""
 
         # Find all test sections and whether they have a name field
         for i, line in enumerate(lines):
@@ -1987,12 +1987,13 @@ class ExtensionTomlValidator:
             if line_stripped == "[[test]]":
                 # If we were already in a section, save the previous one
                 if in_test_section:
-                    test_sections_info.append((current_section_start, current_section_has_name))
+                    test_sections_info.append((current_section_start, current_section_has_name, current_section_name))
 
                 # Start tracking the new section
                 in_test_section = True
                 current_section_start = i
                 current_section_has_name = False
+                current_section_name = ""
                 # if self._verbose: # <<< Optional: Add verbose check here if needed
                 #     print(f"DEBUG: Found test section at line {i}")
                 continue
@@ -2004,6 +2005,14 @@ class ExtensionTomlValidator:
                     # if self._verbose: # <<< Optional: Add verbose check here if needed
                     #     print(f"DEBUG: Found name at line {i}: '{line_stripped}'")
                     current_section_has_name = True
+                    # Extract the name value
+                    try:
+                        name_value = line_stripped.split("=", 1)[1].strip()
+                        if name_value.startswith('"') and name_value.endswith('"'):
+                            name_value = name_value[1:-1]
+                        current_section_name = name_value
+                    except:
+                        pass
                 # End of test section block (start of a new, non-test section)
                 elif (line_stripped.startswith("[") and not line_stripped.startswith("[[")) or (
                     line_stripped.startswith("[[") and not line_stripped.startswith("[[test]]")
@@ -2011,25 +2020,27 @@ class ExtensionTomlValidator:
                     # if self._verbose: # <<< Optional: Add verbose check here if needed
                     #     print(f"DEBUG: End of section at line {i}")
                     # Save the last test section info
-                    test_sections_info.append((current_section_start, current_section_has_name))
+                    test_sections_info.append((current_section_start, current_section_has_name, current_section_name))
                     in_test_section = False  # Stop processing test sections
                     break
 
         # Add the last section if we reached the end of the file while in a test section
         if in_test_section:
-            test_sections_info.append((current_section_start, current_section_has_name))
+            test_sections_info.append((current_section_start, current_section_has_name, current_section_name))
 
         # Now check for issues based on the collected info
         unnamed_sections = [section for section in test_sections_info if not section[1]]
-        named_sections = [section for section in test_sections_info if section[1]]
+        startup_sections = [section for section in test_sections_info if section[2] == "startup"]
+        non_startup_sections = [section for section in test_sections_info if section[2] != "startup"]
 
         if self.config.verbose:
             print(f"DEBUG: test_sections_info = {test_sections_info}")
             print(f"DEBUG: unnamed_sections = {unnamed_sections}")
-            print(f"DEBUG: named_sections = {named_sections}")
+            print(f"DEBUG: startup_sections = {startup_sections}")
+            print(f"DEBUG: non_startup_sections = {non_startup_sections}")
 
         has_multiple_unnamed_sections = len(unnamed_sections) > 1
-        has_order_issue = False
+        has_startup_order_issue = False
 
         # Check if there are multiple unnamed sections
         if has_multiple_unnamed_sections:
@@ -2042,44 +2053,45 @@ class ExtensionTomlValidator:
                 )
             )
 
-        # Check if unnamed sections come before named sections
-        if unnamed_sections and named_sections:
-            # Find the line number of the last unnamed section
-            max_unnamed_line = max(section[0] for section in unnamed_sections)
-            # Find the line number of the first named section
-            min_named_line = min(section[0] for section in named_sections)
+        # Check if "startup" test section comes first among ALL test sections
+        if startup_sections and non_startup_sections:
+            # Find the line number of the first startup section
+            min_startup_line = min(section[0] for section in startup_sections)
+            # Find the line number of the first non-startup section (named or unnamed)
+            min_non_startup_line = min(section[0] for section in non_startup_sections)
 
             if self.config.verbose:
-                print(f"DEBUG: max_unnamed_line={max_unnamed_line}, min_named_line={min_named_line}")
+                print(f"DEBUG: min_startup_line={min_startup_line}, min_non_startup_line={min_non_startup_line}")
 
-            if max_unnamed_line > min_named_line:
-                has_order_issue = True
-                # Find the first named section that appears before the last unnamed section
-                offending_named_section = min(
-                    (s for s in named_sections if s[0] < max_unnamed_line), key=lambda x: x[0]
+            if min_startup_line > min_non_startup_line:
+                has_startup_order_issue = True
+                # Find the first non-startup section that appears before startup
+                offending_section = min(
+                    (s for s in non_startup_sections if s[0] < min_startup_line), key=lambda x: x[0]
                 )
+                section_desc = f"'{offending_section[2]}'" if offending_section[2] else "unnamed"
                 self.errors.append(
                     ValidationError(
                         file_path,
                         "Test Section Order",
-                        f"Named [[test]] section at line {offending_named_section[0] + 1} appears before unnamed section at line {max_unnamed_line + 1}. Unnamed section must come first.",
-                        offending_named_section[0] + 1,
+                        f"[[test]] section {section_desc} at line {offending_section[0] + 1} appears before 'startup' section at line {min_startup_line + 1}. The 'startup' test section must come first among all test sections.",
+                        offending_section[0] + 1,
                     )
                 )
 
         if self.config.verbose:
             print(
-                f"DEBUG: has_multiple_unnamed_sections={has_multiple_unnamed_sections}, has_order_issue={has_order_issue}"
+                f"DEBUG: has_multiple_unnamed_sections={has_multiple_unnamed_sections}, has_startup_order_issue={has_startup_order_issue}"
             )
 
-        return has_multiple_unnamed_sections, has_order_issue
+        return has_multiple_unnamed_sections, has_startup_order_issue
 
     def _validate_and_fix_test_section_order(self, file_path: str, content: str, fix: bool = False) -> FixResult:
         """Validate and fix the order of test sections.
 
         1. Ensure only one unnamed test section (keeps the first one found)
-        2. Ensure the unnamed test section appears before named test sections
-        3. Sort named test sections alphabetically by their 'name' field.
+        2. Ensure the "startup" test section appears first among all test sections
+        3. Sort remaining test sections alphabetically by their 'name' field (unnamed sections last).
 
         Args:
             file_path: Path to the file being validated.
@@ -2089,14 +2101,16 @@ class ExtensionTomlValidator:
         Returns:
             FixResult indicating whether content was fixed and the new content.
         """
-        has_multiple_unnamed_sections, has_order_issue = self._validate_test_section_order(file_path, content)
+        has_multiple_unnamed_sections, has_startup_order_issue = self._validate_test_section_order(file_path, content)
 
         # If there are no issues or we're not fixing, just return
-        if (not has_multiple_unnamed_sections and not has_order_issue) or not fix:
+        if (not has_multiple_unnamed_sections and not has_startup_order_issue) or not fix:
             return FixResult(was_fixed=False, fixed_content=content)
 
         if self.config.verbose:
-            print(f"DEBUG: Fixing issues: multi_unnamed={has_multiple_unnamed_sections}, order_issue={has_order_issue}")
+            print(
+                f"DEBUG: Fixing issues: multi_unnamed={has_multiple_unnamed_sections}, startup_order_issue={has_startup_order_issue}"
+            )
 
         lines = content.split("\n")
 
@@ -2146,60 +2160,63 @@ class ExtensionTomlValidator:
                     f"Removed {len(unnamed_test_sections) - 1} duplicate unnamed test sections, keeping the first."
                 )
 
-        # Sort named test sections alphabetically by name
-        named_test_sections.sort(key=lambda x: x[1])  # Sort by name (index 1)
+        # Sort named test sections: "startup" first, then alphabetically by name
+        # Using a tuple key: (0, name) for "startup", (1, name) for others
+        named_test_sections.sort(key=lambda x: (0 if x[1] == "startup" else 1, x[1]))
 
         # Rebuild the block content
+        # Order: "startup" first, then other named sections alphabetically, then unnamed section(s)
         reordered_block_lines = []
 
-        # Add the single unnamed section first (if it exists)
-        if kept_unnamed_section:
-            reordered_block_lines.extend(kept_unnamed_section)
-
-        # Add named sections
+        # Add named sections first (startup will be first due to sorting)
         for i, (section_content, _) in enumerate(named_test_sections):
-            # Add a blank line before this named section if it's not the first section in the block
-            # OR if it follows the unnamed section
-            if kept_unnamed_section or i > 0:
+            # Add a blank line before this section if it's not the first section in the block
+            if i > 0:
                 # Check if the last line added wasn't already blank
                 if reordered_block_lines and reordered_block_lines[-1].strip():
                     reordered_block_lines.append("")
             reordered_block_lines.extend(section_content)
 
+        # Add the single unnamed section after named sections (if it exists)
+        if kept_unnamed_section:
+            # Add a blank line before the unnamed section if there are named sections
+            if reordered_block_lines and reordered_block_lines[-1].strip():
+                reordered_block_lines.append("")
+            reordered_block_lines.extend(kept_unnamed_section)
+
         # Combine the parts of the file
         # Content before the block + reordered block + content after the block
         fixed_content_lines = lines[:block_start] + reordered_block_lines + lines[block_end:]
+
+        # Extract original names from section_contents to check if order changed
+        original_named_names = []
+        for section_content in section_contents:
+            section_name = None
+            for line in section_content:
+                line_stripped = line.strip()
+                if line_stripped.startswith("name") and "=" in line_stripped and not line_stripped.endswith("["):
+                    try:
+                        name_value = line_stripped.split("=", 1)[1].strip().strip('"')
+                        section_name = name_value
+                    except:
+                        pass
+                    break
+            if section_name is not None:
+                original_named_names.append(section_name)
+
+        # Sort with "startup" first, then alphabetically
+        sorted_original_names = sorted(original_named_names, key=lambda x: (0 if x == "startup" else 1, x))
 
         # Add messages about fixes
         if has_multiple_unnamed_sections:
             # Message already added when selecting the kept section
             pass
-        if has_order_issue:
-            self.fixes_applied.append("Reordered [[test]] sections (unnamed first, then named alphabetically)")
-        elif named_test_sections:
-            # Check if the order actually changed
-            original_named_order = [
-                name for _, name in named_test_sections
-            ]  # Original extracted order might not be sorted
-            # Extract names based on original section_contents order
-            original_named_names = []
-            for section_content in section_contents:
-                section_name = None
-                for line in section_content:
-                    line_stripped = line.strip()
-                    if line_stripped.startswith("name") and "=" in line_stripped and not line_stripped.endswith("["):
-                        try:
-                            name_value = line_stripped.split("=", 1)[1].strip().strip('"')
-                            section_name = name_value
-                        except:
-                            pass
-                        break
-                if section_name is not None:
-                    original_named_names.append(section_name)
-
-            sorted_original_names = sorted(original_named_names)
-            if original_named_names != sorted_original_names:
-                self.fixes_applied.append("Sorted named [[test]] sections alphabetically")
+        if has_startup_order_issue:
+            self.fixes_applied.append(
+                "Reordered [[test]] sections ('startup' first, then other named alphabetically, then unnamed)"
+            )
+        elif named_test_sections and original_named_names != sorted_original_names:
+            self.fixes_applied.append("Sorted named [[test]] sections ('startup' first, then alphabetically)")
 
         if self.config.verbose:
             print(f"DEBUG: Test position: {block_start}")  # Use block_start as test position indicator
@@ -2235,7 +2252,7 @@ class ExtensionTomlValidator:
         # Return True if any structural change was made
         was_fixed = (
             has_multiple_unnamed_sections
-            or has_order_issue
+            or has_startup_order_issue
             or (named_test_sections and original_named_names != sorted_original_names)
         )
 

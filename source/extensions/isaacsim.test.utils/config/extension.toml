@@ -27,6 +27,12 @@ name = "isaacsim.test.utils"
 name = "isaacsim.test.utils.tests"
 
 [[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 
 args = [
     "--enable",
@@ -76,10 +82,4 @@ args = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

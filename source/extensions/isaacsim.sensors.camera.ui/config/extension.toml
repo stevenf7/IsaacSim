@@ -20,6 +20,15 @@ writeTarget.kit = true
 name = "isaacsim.sensors.camera.ui"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 dependencies = [
     "isaacsim.test.utils",
     "omni.isaac.ml_archive",
@@ -73,13 +82,4 @@ args = [
 stdoutFailPatterns.exclude = [
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view 1 device 0*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

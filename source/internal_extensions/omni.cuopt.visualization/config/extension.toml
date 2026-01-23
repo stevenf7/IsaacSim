@@ -19,7 +19,7 @@ writeTarget.kit = true
 name = "omni.cuopt.visualization"
 
 [[test]]
-dependencies = []
+name = "startup"
 
 [[test]]
-name = "startup"
+dependencies = []

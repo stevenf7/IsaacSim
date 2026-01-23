@@ -24,6 +24,16 @@ name = "isaacsim.ucx.bridge"
 # All UCX Bridge settings are centrally defined in the ucx.core extension
 
 [[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -68,16 +78,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
 stdoutFailPatterns.exclude = [

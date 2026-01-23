@@ -39,6 +39,15 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "isaacsim.core.experimental.objects",  # for GroundPlane
@@ -104,14 +113,5 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.physx.tensors.plugin] Provided pattern list did not match any articulations*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacJointNameResolver: [/TestGraph] OmniGraph Error: no articulation root prim found*",
     "*Invalid RationalTime - zero denominator*",
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

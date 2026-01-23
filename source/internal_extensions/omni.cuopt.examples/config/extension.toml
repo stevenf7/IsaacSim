@@ -33,7 +33,7 @@ name = "omni.cuopt.examples.wpgraph"
 name = "omni.cuopt.examples.warehouse_transport_demo"
 
 [[test]]
-dependencies = []
+name = "startup"
 
 [[test]]
-name = "startup"
+dependencies = []

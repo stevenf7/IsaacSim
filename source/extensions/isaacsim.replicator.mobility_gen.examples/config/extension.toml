@@ -29,6 +29,19 @@ name = "isaacsim.replicator.mobility_gen.examples"
 name = "isaacsim.replicator.mobility_gen.examples.tests"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 dependencies = [
     "omni.isaac.ml_archive",
 ]
@@ -76,19 +89,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-stdoutFailPatterns.exclude = [    
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
 stdoutFailPatterns.exclude = [    

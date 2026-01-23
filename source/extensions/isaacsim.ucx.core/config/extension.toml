@@ -21,6 +21,27 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
+name = "startup"
+dependencies = [
+    "isaacsim.test.utils",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
+name = "doctest"
+enabled = true
+timeout = 300
+dependencies = [
+    "isaacsim.test.utils",
+]
+cppTests.libraries = ["bin/${lib_prefix}isaacsim.ucx.core.tests${lib_ext}"]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 timeout = 300
 dependencies = [
     "isaacsim.test.utils",
@@ -70,25 +91,4 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "isaacsim.test.utils",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-
-[[test]]
-name = "doctest"
-enabled = true
-timeout = 300
-dependencies = [
-    "isaacsim.test.utils",
-]
-cppTests.libraries = ["bin/${lib_prefix}isaacsim.ucx.core.tests${lib_ext}"]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

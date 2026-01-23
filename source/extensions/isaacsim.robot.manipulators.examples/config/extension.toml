@@ -36,6 +36,19 @@ name = "isaacsim.robot.manipulators.examples.interactive.pick_place"
 name = "isaacsim.robot.manipulators.examples.interactive.follow_target"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 dependencies = [
     "omni.isaac.ml_archive",
 ]
@@ -83,19 +96,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-stdoutFailPatterns.exclude = [    
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
 stdoutFailPatterns.exclude = [    
