@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.1] - 2026-01-22
+### Changed
+- Replace the `isaacsim.core.version` extension used for app utils test cases by `omni.pip.cloud`
+
 ## [0.11.0] - 2026-01-16
 ### Added
 - Add `get_prim_attribute_names()` to prim utils for listing authored attribute names
