@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.6] - 2026-01-21
+### Added
+- Added ros2 image buffer utils 
+
 ## [1.2.5] - 2025-12-23
 ### Changed
 - Added a simulate_until_condition method to simplify test cases

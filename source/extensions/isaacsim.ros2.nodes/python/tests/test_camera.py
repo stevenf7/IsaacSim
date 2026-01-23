@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import asyncio
+import os
 
 import carb
 import omni.graph.core as og
@@ -27,14 +28,21 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
+import rclpy
 from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.experimental.prims import XformPrim
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.storage.native import get_assets_root_path
+from isaacsim.test.utils.image_comparison import compare_arrays_within_tolerances
+from isaacsim.test.utils.image_io import read_image_as_array
 from pxr import Sdf
+from sensor_msgs.msg import Image
 
-from .common import ROS2TestCase, get_qos_profile
+from .common import ROS2TestCase, get_qos_profile, ros2_image_to_buffer
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -629,3 +637,85 @@ class TestRos2Camera(ROS2TestCase):
         semantic_dict = json.loads(self._semantic_data.data)
         self.assertTrue("time_stamp" in semantic_dict)
         self.assertFalse("0" in semantic_dict)
+
+    async def test_rgb_golden_image_comparison(self):
+        """Subscribe to an RGB image topic and compare received buffer against a golden image."""
+
+        # Retrieve golden image from data/tests/golden_img folder
+        golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden")
+        golden_img_path = os.path.join(golden_dir, "nova_carter_warehouse_front_stereo_left_rgb.png")
+
+        # Open the nova carter warehouse scene (following simulation_control pattern)
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        assets_root_path = get_assets_root_path()
+        warehouse_scene = assets_root_path + "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
+        (success, error) = await stage_utils.open_stage_async(warehouse_scene)
+        self.assertTrue(success, f"Failed to open stage: {error}")
+
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Setup ROS2 subscriber for the RGB image topic
+        self._received_rgb_image = None
+
+        def rgb_callback(data):
+            self._received_rgb_image = data
+
+        node = self.create_node("rgb_image_test_node")
+        rgb_sub = self.create_subscription(
+            node, Image, "/front_stereo_camera/left/image_raw", rgb_callback, get_qos_profile()
+        )
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Move /World/Nova_Carter_ROS to -6, -1, 0 and 180 degree rotation around z axis
+        # Quaternion for 180 deg rotation around z: (w=0, x=0, y=0, z=1)
+        nova_carter = XformPrim("/World/Nova_Carter_ROS", reset_xform_op_properties=True)
+        nova_carter.set_world_poses(positions=[-6, -1, 0], orientations=[0, 0, 0, 1])
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Hit Play on scene and wait for image
+        self._timeline.play()
+        await self.simulate_until_condition(
+            lambda: self._received_rgb_image is not None,
+            max_frames=300,
+            per_frame_callback=spin,
+        )
+
+        # Verify image was received
+        self.assertIsNotNone(self._received_rgb_image, "Failed to receive RGB image from topic")
+
+        # Retrieve image buffer from subscriber
+        received_array = ros2_image_to_buffer(
+            self._received_rgb_image,
+            normalize_color_order=True,
+            squeeze_singleton_channel=True,
+            copy=True,
+        )
+
+        # Hit Stop on scene
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Compare image with golden image
+        golden_img_data = read_image_as_array(str(golden_img_path))
+
+        # Handle channel mismatch between RGBA golden and RGB received
+        if golden_img_data.ndim == 3 and golden_img_data.shape[2] == 4:
+            golden_img_data = golden_img_data[:, :, :3]
+
+        results = compare_arrays_within_tolerances(
+            golden_img_data,
+            received_array,
+            allclose_rtol=None,
+            allclose_atol=None,
+            mean_tolerance=10,
+            print_all_stats=True,
+        )
+        self.assertTrue(results["passed"], f"Image comparison failed: {results}")
