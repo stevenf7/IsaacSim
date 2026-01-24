@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 from pathlib import Path
 
 import omni.kit.app
@@ -37,9 +36,9 @@ from pxr import UsdPhysics
 EXTENSION_FOLDER_PATH = Path(omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__))
 TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
 
-# Get menu structure at module load time
-_window = get_main_window()
-_menu_dict = asyncio.run(get_context_menu(_window._ui_main_window.main_menu_bar, get_all=False))
+# Menu dict is populated lazily in test setUp to avoid hanging during test discovery.
+# At module load time, we use empty dict so dynamic test generation creates a placeholder test.
+_menu_dict = {}
 
 # =============================================================================
 # Robot Menu Tests
@@ -51,7 +50,17 @@ ROBOT_SKIP_LIST = ["Create/Robots/Asset Browser"]
 class TestRobotMenuAssets(MenuUITestCase):
     """Test class for verifying robot menu asset loading functionality."""
 
-    pass
+    _menu_loaded = False
+
+    async def setUp(self):
+        """Set up test environment and populate menu dict if needed."""
+        await super().setUp()
+        # Populate menu dict on first test run (not at module load time)
+        if not TestRobotMenuAssets._menu_loaded:
+            global _menu_dict
+            window = get_main_window()
+            _menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
+            TestRobotMenuAssets._menu_loaded = True
 
 
 def _create_robot_test(test_path: str):
@@ -106,11 +115,19 @@ ENVIRONMENT_SKIP_LIST = ["Create/Environments/Asset Browser"]
 class TestEnvironmentMenuAssets(MenuUITestCase):
     """Test class for verifying environment menu asset loading functionality."""
 
+    _menu_loaded = False
+
     async def setUp(self):
         """Set up test environment before each test method."""
         await super().setUp()
         self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
         self._usd_selection = omni.usd.get_context().get_selection()
+        # Populate menu dict on first test run (not at module load time)
+        if not TestEnvironmentMenuAssets._menu_loaded:
+            global _menu_dict
+            window = get_main_window()
+            _menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
+            TestEnvironmentMenuAssets._menu_loaded = True
 
 
 def _create_environment_test(test_path: str):

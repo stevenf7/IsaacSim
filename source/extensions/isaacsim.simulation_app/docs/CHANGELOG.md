@@ -1,4 +1,13 @@
 # Changelog
+
+## [2.14.4] - 2026-01-22
+### Changed
+- is_running method does not require an active USD stage
+
+## [2.14.3] - 2026-01-19
+### Changed
+- Use close_stage_async method when closing stage to avoid blocking the main thread if available
+
 ## [2.14.2] - 2026-01-15
 ### Changed
 - simulation app close() method now waits for replicator workflows to complete even when using replicator step()

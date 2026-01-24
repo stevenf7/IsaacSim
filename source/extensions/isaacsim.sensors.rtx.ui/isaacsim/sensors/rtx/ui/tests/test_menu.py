@@ -13,25 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-
 from isaacsim.core.utils.stage import traverse_stage
 from isaacsim.test.utils import MenuUITestCase, get_all_menu_paths
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test import get_context_menu
 
+# Menu dict is populated lazily in test setUp to avoid hanging during test discovery.
+# At module load time, we use empty dict so dynamic test generation creates a placeholder test.
+_menu_dict = {}
+
 
 class TestMenuAssets(MenuUITestCase):
-    pass
+    """Test class for verifying RTX Lidar sensor menu functionality."""
 
+    _menu_loaded = False
 
-# Find all RTX sensor creation menu items and dynamically add test methods to the TestMenuAssets class
-window = get_main_window()
-menu_dict = asyncio.run(get_context_menu(window._ui_main_window.main_menu_bar, get_all=False))
-sensor_menu_dict = menu_dict["Create"]["Sensors"]["RTX Lidar"]
-sensor_root_path = "Create/Sensors/RTX Lidar"
-
-sensor_menu_list = get_all_menu_paths(sensor_menu_dict, root_path=sensor_root_path)
+    async def setUp(self):
+        """Set up test environment and populate menu dict if needed."""
+        await super().setUp()
+        # Populate menu dict on first test run (not at module load time)
+        if not TestMenuAssets._menu_loaded:
+            global _menu_dict
+            window = get_main_window()
+            _menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
+            TestMenuAssets._menu_loaded = True
 
 
 def _create_test_for_menu_option(test_path):
@@ -59,6 +64,11 @@ def _create_test_for_menu_option(test_path):
 
     return test_function
 
+
+# Find all RTX sensor creation menu items and dynamically add test methods to the TestMenuAssets class
+sensor_root_path = "Create/Sensors/RTX Lidar"
+sensor_menu_dict = _menu_dict.get("Create", {}).get("Sensors", {}).get("RTX Lidar", {})
+sensor_menu_list = get_all_menu_paths(sensor_menu_dict, root_path=sensor_root_path)
 
 if len(sensor_menu_list) == 0:
 

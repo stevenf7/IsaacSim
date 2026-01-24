@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1] - 2026-01-22
+### Changed
+- Move menu dictionary to initialize when tests are run rather than at module load time
+
 ## [2.4.0] - 2025-12-22
 ### Added
 - Add unit tests.

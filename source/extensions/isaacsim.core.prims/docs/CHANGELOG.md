@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.6] - 2026-01-19
+### Fixed
+- Fixed missing argument `context` in `_reset_fabric_selection` method.
+
 ## [0.8.5] - 2026-01-08
 ### Fixed
 - Fixed incorrect method call `set_wind` to `set_winds` in `ParticleSystem` constructor.

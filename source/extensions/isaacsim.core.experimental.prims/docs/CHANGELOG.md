@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.1] - 2026-01-23
+### Changed
+- Fixed docstring test errors
+
 ## [0.10.0] - 2026-01-16
 ### Added
 - Add contact tracking functionality to RigidPrim: `set_enabled_contact_tracking()`, `get_enabled_contact_tracking()`, `get_net_contact_forces()`, `get_contact_force_matrix()`, `get_contact_force_data()`, `get_friction_data()`
