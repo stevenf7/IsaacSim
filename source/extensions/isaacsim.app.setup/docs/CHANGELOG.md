@@ -1,4 +1,7 @@
 # Changelog
+## [1.8.1] - 2026-01-22
+### Changed
+- Refactor enable_ros_extensions to properly wait for viewport to be ready before enabling ROS2 extensions
 
 ## [1.8.0] - 2026-01-08
 ### Changed

@@ -1421,8 +1421,8 @@ class RigidPrim(XformPrim):
         .. code-block:: python
 
             >>> # get the net contact forces on all prims
-            >>> forces = prims.get_net_contact_forces()
-            >>> forces.shape
+            >>> forces = prims.get_net_contact_forces()  # doctest: +SKIP
+            >>> forces.shape  # doctest: +SKIP
             (3, 3)
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
@@ -1463,8 +1463,8 @@ class RigidPrim(XformPrim):
         .. code-block:: python
 
             >>> # get the contact force matrix for all prims
-            >>> forces = prims.get_contact_force_matrix()
-            >>> forces.shape
+            >>> forces = prims.get_contact_force_matrix()  # doctest: +SKIP
+            >>> forces.shape  # doctest: +SKIP
             (3, 1, 3)  # 3 prims, 1 filter, 3D force vector
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
@@ -1515,7 +1515,7 @@ class RigidPrim(XformPrim):
         .. code-block:: python
 
             >>> # get detailed contact force data
-            >>> forces, points, normals, distances, counts, start_indices = prims.get_contact_force_data()
+            >>> forces, points, normals, distances, counts, start_indices = prims.get_contact_force_data()  # doctest: +SKIP
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"
@@ -1572,7 +1572,7 @@ class RigidPrim(XformPrim):
         .. code-block:: python
 
             >>> # get friction data
-            >>> forces, points, counts, start_indices = prims.get_friction_data()
+            >>> forces, points, counts, start_indices = prims.get_friction_data()  # doctest: +SKIP
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"

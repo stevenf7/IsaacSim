@@ -1,4 +1,8 @@
 # Changelog
+## [2.5.2] - 2026-01-22
+### Changed
+- Move menu dictionary to initialize when tests are run rather than at module load time
+
 ## [2.5.1] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.

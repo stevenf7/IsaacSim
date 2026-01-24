@@ -94,10 +94,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self._pending_tasks.append(asyncio.ensure_future(layout.dock_windows(update_cb)))
         self._pending_tasks.append(asyncio.ensure_future(layout.setup_property_window(update_cb)))
         self._pending_tasks.append(
-            asyncio.ensure_future(startup.enable_ros_bridge(self._settings, self._ext_manager, update_cb))
-        )
-        self._pending_tasks.append(
-            asyncio.ensure_future(startup.enable_ros_sim_control(self._settings, self._ext_manager, update_cb))
+            asyncio.ensure_future(startup.enable_ros_extensions(self._settings, self._ext_manager, update_cb))
         )
         self._pending_tasks.append(
             asyncio.ensure_future(startup.await_viewport(self._app, self._ext_manager, self._app_title, update_cb))

@@ -812,6 +812,7 @@ class SimulationApp:
             _logging = carb.logging.acquire_logging()
             _logging.set_log_enabled(False)
             self._app.shutdown_and_release_framework()
+            return
         try:
             # Ensure replicator workflows complete any queued writes.
             import omni.replicator.core as rep
@@ -831,9 +832,18 @@ class SimulationApp:
             pass
         carb.log_info("SimulationApp.close: Replicator shutdown finished")
         # close the stage to make sure all the objects are destroyed
-        if self.context.can_close_stage():
-            self.context.close_stage()
-            carb.log_info("SimulationApp.close: Stage closed")
+        usd_context = self.context
+        if usd_context.can_close_stage():
+            try:
+                close_stage_async = getattr(usd_context, "close_stage_async", None)
+                if callable(close_stage_async):
+                    self.run_coroutine(close_stage_async())
+                    carb.log_info("SimulationApp.close: Stage closed (async)")
+                else:
+                    usd_context.close_stage()
+                    carb.log_info("SimulationApp.close: Stage closed")
+            except Exception as exc:
+                carb.log_warn(f"SimulationApp.close: Stage close failed: {exc}")
         else:
             carb.log_info("SimulationApp.close: Stage could not be closed")
         # check if exited already
@@ -861,8 +871,10 @@ class SimulationApp:
     def is_running(self) -> bool:
         """Check if the simulation application is currently running.
 
-        Returns True if the application is running and has a valid stage,
-        False if the application is stopped or exiting.
+        Returns True if the application is running and not exiting.
+
+        This reflects the lifetime of the underlying Kit application and does
+        not require an active USD stage.
 
         Returns:
             True if the application is running, False otherwise.
@@ -878,8 +890,7 @@ class SimulationApp:
             >>> simulation_app.is_running()
             False
         """
-        # If there is no stage, we can assume that the app is about to close
-        return self._app.is_running() and not self.is_exiting() and self.context.get_stage() is not None
+        return self._app.is_running() and not self.is_exiting()
 
     def is_exiting(self) -> bool:
         """Check if the simulation application is in the process of exiting.

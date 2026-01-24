@@ -116,45 +116,67 @@ def record_startup_benchmark(ext_manager: IExtensionManager) -> None:
         benchmark.stop()
 
 
-async def enable_ros_bridge(
+async def enable_ros_extensions(
     settings: ISettings,
     ext_manager: IExtensionManager,
     update_callback: Callable[[], None],
 ) -> None:
-    """Enable the ROS bridge extension if configured in settings.
+    """Enable ROS2 bridge and sim control extensions if configured in settings.
+
+    Waits for viewport to be ready before enabling ROS2 extensions,
+    as they require certain systems to be fully initialized.
 
     Args:
         settings: Carb settings interface for reading configuration.
         ext_manager: Extension manager for enabling extensions.
         update_callback: Async callback to update the app without signaling ready.
     """
+    import os
+
     try:
         ros_bridge_name = settings.get("isaac/startup/ros_bridge_extension")
-        if ros_bridge_name:
-            await update_callback()
-            ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
-            await update_callback()
-    except Exception:
-        carb.log_warn("isaacsim.app.setup shutdown before ros bridge enabled")
-
-
-async def enable_ros_sim_control(
-    settings: ISettings,
-    ext_manager: IExtensionManager,
-    update_callback: Callable[[], None],
-) -> None:
-    """Enable the ROS simulation control extension if configured in settings.
-
-    Args:
-        settings: Carb settings interface for reading configuration.
-        ext_manager: Extension manager for enabling extensions.
-        update_callback: Async callback to update the app without signaling ready.
-    """
-    try:
         ros_sim_control_enabled = settings.get("isaac/startup/ros_sim_control_extension")
+
+        # Nothing to do if neither ROS2 extension is configured
+        if not ros_bridge_name and not ros_sim_control_enabled:
+            return
+
+        # Log the ROS environment status for debugging
+        ros_distro = os.environ.get("ROS_DISTRO", "<not set>")
+        carb.log_info(f"Enabling ROS2 extensions (ROS_DISTRO={ros_distro})")
+
+        # Wait for viewport to be available before loading ROS2 extensions.
+        # ROS2 extensions depend on systems that may not be initialized during early startup.
+        # We can't wait for app.is_app_ready() because _update_without_ready delays it.
+        from omni.kit.viewport.utility import get_active_viewport
+
+        viewport_api = get_active_viewport()
+        while viewport_api.frame_info.get("viewport_handle", None) is None:
+            await update_callback()
+
+        # Additional update frames to ensure all systems are stable
+        for _ in range(5):
+            await update_callback()
+
+        # Enable ROS2 bridge if configured
+        if ros_bridge_name:
+            ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
+            for _ in range(3):
+                await update_callback()
+
+            if ext_manager.is_extension_enabled(ros_bridge_name):
+                carb.log_info(f"ROS bridge extension {ros_bridge_name} enabled successfully")
+            else:
+                carb.log_warn(f"ROS bridge extension {ros_bridge_name} may not have loaded correctly")
+
+        # Enable ROS2 sim control if configured
         if ros_sim_control_enabled:
-            await update_callback()
             ext_manager.set_extension_enabled_immediate("isaacsim.ros2.sim_control", True)
-            await update_callback()
-    except Exception:
-        carb.log_warn("isaacsim.app.setup shutdown before sim control enabled")
+            for _ in range(3):
+                await update_callback()
+            carb.log_info("ROS2 sim control extension enabled")
+
+    except asyncio.CancelledError:
+        carb.log_warn("isaacsim.app.setup shutdown before ROS2 extensions enabled")
+    except Exception as e:
+        carb.log_error(f"Failed to enable ROS2 extensions: {type(e).__name__}: {e}")

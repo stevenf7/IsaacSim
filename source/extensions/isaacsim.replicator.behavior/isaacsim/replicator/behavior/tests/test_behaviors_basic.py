@@ -16,6 +16,7 @@
 import importlib
 import os
 
+import carb
 import isaacsim.replicator.behavior.behaviors as behaviors_module
 import omni.kit.app
 import omni.kit.commands
@@ -27,10 +28,6 @@ from omni.kit.scripting import BehaviorScript
 from pxr import Sdf
 
 SCRIPTS_ATTR = "omni:scripting:scripts"
-
-# Get the behavior classes to test from the behaviors module __all__ list
-BEHAVIOR_CLASSES = [getattr(behaviors_module, class_name) for class_name in behaviors_module.__all__]
-print(f"BEHAVIOR_CLASSES: {BEHAVIOR_CLASSES}")
 
 
 class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
@@ -167,6 +164,9 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
             )
 
     async def test_exposed_variables(self):
+        # Get the behavior classes to test from the behaviors module __all__ list
+        BEHAVIOR_CLASSES = [getattr(behaviors_module, class_name) for class_name in behaviors_module.__all__]
+        carb.log_info(f"BEHAVIOR_CLASSES: {BEHAVIOR_CLASSES}")
         for behavior_class in BEHAVIOR_CLASSES:
             print(f"Testing behavior: {behavior_class.__name__}")
             await self.check_exposed_variables(behavior_class)

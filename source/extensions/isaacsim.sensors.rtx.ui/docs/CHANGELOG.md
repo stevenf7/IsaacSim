@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.1] - 2026-01-22
+### Changed
+- Move menu dictionary to initialize when tests are run rather than at module load time
+
 ## [1.2.0] - 2025-12-22
 ### Changed
 - Refactor unit tests to use isaacsim.test.utils.

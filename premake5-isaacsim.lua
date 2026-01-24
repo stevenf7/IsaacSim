@@ -282,13 +282,16 @@ popd
 set PATH=%%PATH%%;%%basedir%%
 ]], win_rel_path)
     else
+        -- Source setup_ros_env.sh like isaac-sim.sh does for consistent ROS environment setup
+        -- Save SCRIPT_DIR before sourcing since setup_ros_env.sh overwrites it
         return string.format([[
-export ROS_DISTRO=humble
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=$((($RANDOM %% 18) + 80))
-INTERNAL_LIBS=$(readlink -f $SCRIPT_DIR/%sexts/isaacsim.ros2.core/humble/lib)
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTERNAL_LIBS
-]], rel_path)
+_SAVED_SCRIPT_DIR="$SCRIPT_DIR"
+if [ -f "$SCRIPT_DIR/%ssetup_ros_env.sh" ]; then
+    source "$SCRIPT_DIR/%ssetup_ros_env.sh"
+fi
+SCRIPT_DIR="$_SAVED_SCRIPT_DIR"
+]], rel_path, rel_path)
     end
 end
 -- Write experience running .bat/.sh file, like _build\windows-x86_64\release\example.helloext.app.bat
