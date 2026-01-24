@@ -24,6 +24,12 @@ writeTarget.kit = true
 name = "isaacsim.replicator.behavior"
 
 [[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 dependencies = [
     "isaacsim.core.experimental.utils",
     "isaacsim.test.utils",
@@ -75,10 +81,4 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-[[test]]
-name = "startup"
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

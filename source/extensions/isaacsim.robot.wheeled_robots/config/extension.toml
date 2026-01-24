@@ -37,6 +37,18 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "omni.isaac.ml_archive",
@@ -89,17 +101,5 @@ args = [
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
     "*AttributeError: 'NoneType' object has no attribute 'GetPrimAtPath'*", # For ackermann node omnigraph tests
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

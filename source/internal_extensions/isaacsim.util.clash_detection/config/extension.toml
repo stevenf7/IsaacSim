@@ -25,6 +25,9 @@ name = "isaacsim.util.clash_detection"
 name = "isaacsim.util.clash_detection.tests"
 
 [[test]]
+name = "startup"
+
+[[test]]
 pyCoverageEnabled = false
 dependencies=[
     "isaacsim.core.experimental.objects",
@@ -76,6 +79,3 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
-
-[[test]]
-name = "startup"

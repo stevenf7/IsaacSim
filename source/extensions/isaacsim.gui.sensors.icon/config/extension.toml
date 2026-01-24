@@ -42,6 +42,13 @@ exts."omni.kit.prim.sensor".showTitle = false
 persistent.exts."isaacsim.gui.sensors.icon".visible_on_startup=false
 
 [[test]]
+name = "startup"
+enabled = false
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 enabled = true
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
@@ -102,9 +109,3 @@ stdoutFailPatterns.exclude = [
 ]
 
 # disable startup test
-[[test]]
-name = "startup"
-enabled = false
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]

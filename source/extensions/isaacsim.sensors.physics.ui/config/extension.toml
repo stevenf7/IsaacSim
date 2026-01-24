@@ -20,6 +20,15 @@ writeTarget.kit = true
 name = "isaacsim.sensors.physics.ui"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
@@ -73,13 +82,4 @@ args = [
     ### Extension specific args
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

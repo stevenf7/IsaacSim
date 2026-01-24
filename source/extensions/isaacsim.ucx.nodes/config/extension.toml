@@ -39,6 +39,36 @@ exclude = ["Ogn*Database.py"]
 exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
+name = "startup"
+dependencies = [
+    "isaacsim.test.utils",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
+name = "doctest"
+enabled = false
+timeout = 300
+dependencies = [
+    "isaacsim.test.utils",
+]
+pythonTests.include = []
+pythonTests.exclude = ["*"]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 timeout = 300
 dependencies = [
     "isaacsim.core.experimental.objects",
@@ -94,35 +124,5 @@ args = [
 stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /ActionGraph/PublishClock: [/ActionGraph] Invalid port *",
     "*Request timed out*",
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "isaacsim.test.utils",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-
-stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
-]
-
-[[test]]
-name = "doctest"
-enabled = false
-timeout = 300
-dependencies = [
-    "isaacsim.test.utils",
-]
-pythonTests.include = []
-pythonTests.exclude = ["*"]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-
-stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

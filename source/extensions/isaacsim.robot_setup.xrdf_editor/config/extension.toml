@@ -25,12 +25,12 @@ writeTarget.kit = true
 name = "isaacsim.robot_setup.xrdf_editor"
 
 [[test]]
+name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
 ]
 
 [[test]]
-name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
 ]

@@ -29,6 +29,15 @@ name = "isaacsim.gui.menu"
 name = "isaacsim.gui.menu.tests"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
@@ -83,13 +92,4 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',
     '*[Error] [asyncio] Task exception was never retrieved*',
     '*[Error] [omni.hydra] Unsupported data type 0 on primvar *doNotCastShadows*',
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

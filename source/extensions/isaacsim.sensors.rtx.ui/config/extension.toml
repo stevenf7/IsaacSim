@@ -20,6 +20,15 @@ writeTarget.kit = true
 name = "isaacsim.sensors.rtx.ui"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
@@ -76,13 +85,4 @@ args = [
 ]
 stdoutFailPatterns.include = [
     "*Config * not found for OmniLidar*"
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

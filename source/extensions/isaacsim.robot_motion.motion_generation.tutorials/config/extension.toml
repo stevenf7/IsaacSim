@@ -42,6 +42,7 @@ name = "isaacsim.robot_motion.motion_generation.tutorials.kinematics"
 name = "isaacsim.robot_motion.motion_generation.tutorials.trajectory_generator"
 
 [[test]]
+name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
 ]
@@ -51,7 +52,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
 ]

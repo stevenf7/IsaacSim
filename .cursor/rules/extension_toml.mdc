@@ -176,21 +176,28 @@ stdoutFailPatterns.exclude = [   # Patterns to exclude from failure detection
 The dependencies listed in the [[test]] section must be sorted alphabetically for consistency and easier maintenance.
 
 Test sections have specific ordering requirements:
+- The `name = "startup"` test section must appear first among all test sections
 - There must be at most one unnamed test section per extension.toml file
-- Unnamed test sections must appear before all named test sections
+- All other test sections (unnamed and named) should follow after the "startup" test section
 - Named test sections should have a `name` field that uniquely identifies the test
 
 Example of proper test section ordering:
 ```toml
-[[test]]  # Unnamed default test section
+[[test]]
+name = "startup"  # "startup" test section must be first
 args = [
     "--arg1=value1",
 ]
 
-[[test]]
-name = "startup"  # Named test section
+[[test]]  # Unnamed test section comes after "startup"
 args = [
     "--arg2=value2",
+]
+
+[[test]]
+name = "other_test"  # Other named test sections come after "startup"
+args = [
+    "--arg3=value3",
 ]
 ```
 

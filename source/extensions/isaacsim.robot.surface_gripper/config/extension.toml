@@ -37,6 +37,18 @@ exclude = ["Ogn*Database.py"]
 # Ensure the plugin path and dependencies are correctly specified
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 dependencies = [
     "omni.isaac.ml_archive",
 ]
@@ -89,16 +101,4 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-stdoutFailPatterns.exclude = [    
-    '*The NumPy module was reloaded*',
 ]

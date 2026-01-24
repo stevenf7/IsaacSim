@@ -48,8 +48,8 @@ exts."isaacsim.code_editor.jupyter".notebook_dir = ""
 exts."isaacsim.code_editor.jupyter".command_line_options = "--allow-root --no-browser --JupyterApp.answer_yes=True"
 
 [[test]]
-enabled = true
-
-[[test]]
 name = "startup"
 enabled = false
+
+[[test]]
+enabled = true

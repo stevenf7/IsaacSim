@@ -80,6 +80,15 @@ rtx.materialDb.nonVisualMaterialCSV.enabled=false
 rtx.materialDb.nonVisualMaterialSemantics.prefix="omni:simready:nonvisual"
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 timeout = 1200
 dependencies = [
     "omni.isaac.ml_archive",
@@ -158,13 +167,4 @@ args = [
     "--/renderer/raytracingMotion/enabled=true",
     "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
     "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

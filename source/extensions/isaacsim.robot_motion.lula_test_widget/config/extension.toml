@@ -25,6 +25,7 @@ writeTarget.kit = true
 name = "isaacsim.robot_motion.lula_test_widget"
 
 [[test]]
+name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
 ]
@@ -34,7 +35,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-name = "startup"
 dependencies = [
     "omni.isaac.ml_archive",
 ]

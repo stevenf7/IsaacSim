@@ -42,9 +42,10 @@ exts."isaacsim.gui.content_browser".folders = [
 ]
 
 [[test]]
+name = "startup"
+enabled = false
+
+[[test]]
 enabled = true
 
 # disable startup test
-[[test]]
-name = "startup"
-enabled = false

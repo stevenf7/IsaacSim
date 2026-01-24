@@ -36,6 +36,12 @@ exts."isaacsim.benchmark.services".metrics.nvdataflow_default_test_suite_name = 
 exts."isaacsim.benchmark.services".metrics.randomize_filename_prefix = false
 
 [[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 dependencies = [
     "omni.physx.ui",
 ]
@@ -83,10 +89,4 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-[[test]]
-name = "startup"
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

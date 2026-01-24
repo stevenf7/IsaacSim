@@ -57,6 +57,19 @@ exclude = ["Ogn*Database.py"]
 exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
 timeout = 1200
 dependencies = [
     "isaacsim.robot.wheeled_robots",
@@ -139,17 +152,4 @@ args = [
     "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
     "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
     "--/rtx-transient/stableIds/enabled=true",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-
-stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
 ]

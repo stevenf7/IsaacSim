@@ -22,6 +22,12 @@ writeTarget.platform = true
 name = "isaacsim.xr.input_devices"
 
 [[test]]
+name = "startup"
+stdoutFailPatterns.exclude = [
+ "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
+]
+
+[[test]]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -68,12 +74,6 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
-stdoutFailPatterns.exclude = [
- "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
-]
-
-[[test]]
-name = "startup"
 stdoutFailPatterns.exclude = [
  "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
 ]

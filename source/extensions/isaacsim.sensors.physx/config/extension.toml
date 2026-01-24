@@ -42,6 +42,15 @@ path = "bin/*.plugin"
 recursive = false
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
 
 stdoutFailPatterns.exclude = [
  "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physx_IsaacReadLidarBeams: [/TestGraph] no prim path found for the lidar*",
@@ -101,13 +110,4 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]

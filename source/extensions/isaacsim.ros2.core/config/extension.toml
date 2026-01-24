@@ -62,6 +62,35 @@ exts."isaacsim.ros2.bridge".enable_nitros_bridge = false
 exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
+name = "doctest"
+enabled = true
+timeout = 900
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
+]
+# apps = [""]
+args = ["--/app/settings/fabricDefaultStageFrameHistoryCount=3",]
+pythonTests.include = []
+pythonTests.exclude = ["*"]
+cppTests.libraries = ["bin/${lib_prefix}isaacsim.ros2.core.backend_tests${lib_ext}"]
+stdoutFailPatterns.exclude = [
+  "*[Error] Node name * not valid*",
+  "*[Error] Namespace name * not valid*",
+  "*[Error] Topic name * not valid*",
+  '*The NumPy module was reloaded*',
+]
+
+[[test]]
 
 timeout = 900
 dependencies = [
@@ -124,33 +153,4 @@ args = [
     '--/exts/isaacsim.ros2.bridge/ros_distro = "system_default"',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",
 
-]
-
-[[test]]
-name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-
-[[test]]
-name = "doctest"
-enabled = true
-timeout = 900
-dependencies = [
-    "isaacsim.test.utils",
-    "omni.isaac.ml_archive"
-]
-# apps = [""]
-args = ["--/app/settings/fabricDefaultStageFrameHistoryCount=3",]
-pythonTests.include = []
-pythonTests.exclude = ["*"]
-cppTests.libraries = ["bin/${lib_prefix}isaacsim.ros2.core.backend_tests${lib_ext}"]
-stdoutFailPatterns.exclude = [
-  "*[Error] Node name * not valid*",
-  "*[Error] Namespace name * not valid*",
-  "*[Error] Topic name * not valid*",
-  '*The NumPy module was reloaded*',
 ]
