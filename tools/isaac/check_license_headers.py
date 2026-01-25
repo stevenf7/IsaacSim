@@ -159,6 +159,67 @@ def get_current_year() -> str:
     return str(datetime.now().year)
 
 
+def compute_year_range(existing_year: str, current_year: str = None) -> str:
+    """Compute the proper year range preserving the original start year.
+
+    If the existing year is a single year different from the current year,
+    creates a range like "2022-2026". If it's already a range, updates the
+    end year to the current year if needed.
+
+    Args:
+        existing_year: Existing year or year range from the copyright (e.g., '2022', '2022-2023').
+        current_year: Current year. Defaults to the actual current year.
+
+    Returns:
+        Year or year range string (e.g., '2026' or '2022-2026').
+    """
+    if current_year is None:
+        current_year = get_current_year()
+
+    if not existing_year or existing_year == "YYYY":
+        return current_year
+
+    # Parse existing year - could be "2022" or "2022-2023"
+    if "-" in existing_year:
+        # Already a range like "2022-2023"
+        parts = existing_year.split("-")
+        start_year = parts[0].strip()
+        # Use the original start year with current year
+        if start_year == current_year:
+            return current_year
+        return f"{start_year}-{current_year}"
+    else:
+        # Single year like "2022"
+        if existing_year == current_year:
+            return current_year
+        return f"{existing_year}-{current_year}"
+
+
+def extract_year_from_lines(lines: List[str], comment_symbol: str) -> str:
+    """Extract the year from existing license header lines.
+
+    Args:
+        lines: List of file lines to search.
+        comment_symbol: Comment symbol used in the file.
+
+    Returns:
+        Year or year range string, or None if not found.
+    """
+    for line in lines[:20]:  # Check first 20 lines
+        stripped = line.strip()
+        # Remove comment symbol
+        if stripped.startswith(comment_symbol):
+            content = stripped[len(comment_symbol) :].strip()
+        else:
+            content = stripped
+
+        # Look for copyright line (SPDX or legacy format)
+        if "Copyright (c)" in content and "NVIDIA" in content:
+            return extract_year_from_copyright(content)
+
+    return None
+
+
 def is_jupyter_notebook(file_path: Path) -> bool:
     """Check if a file is a Jupyter notebook.
 
@@ -400,6 +461,7 @@ def find_all_license_headers(lines: List[str]) -> List[Tuple[int, int]]:
             # Found start of a license header, find its end
             start_index = i
             end_index = i + 1
+            found_empty_line = False
 
             # Continue until we find the end of this license header
             for j in range(i + 1, min(len(lines), i + 20)):  # Look ahead up to 20 lines
@@ -412,15 +474,33 @@ def find_all_license_headers(lines: List[str]) -> List[Tuple[int, int]]:
                     next_line.startswith(cs) for cs in all_comment_symbols
                 ) and not _is_preprocessor_directive(next_line)
 
-                # Check if this line is still part of the license
-                if is_comment_line or not next_line or _is_license_line(next_content):
+                # Empty line handling
+                if not next_line:
+                    # Mark that we've seen an empty line
+                    found_empty_line = True
+                    end_index = j + 1
+                    continue
+
+                # After an empty line, only continue if it's clearly license content
+                if found_empty_line:
+                    if _is_license_line(next_content):
+                        # Still part of the license (e.g., Apache 2.0 full text)
+                        end_index = j + 1
+                        found_empty_line = False  # Reset for next empty line
+                    else:
+                        # Not license content after empty line - stop here
+                        # Don't include the empty line in the header
+                        end_index = j
+                        break
+                elif is_comment_line or _is_license_line(next_content):
+                    # Still in license header block (no empty line yet)
                     end_index = j + 1
                 else:
                     # Found the end of the license header
                     break
 
-            # Include any trailing empty lines
-            while end_index < len(lines) and not lines[end_index].strip():
+            # Include one trailing empty line after the license header (if present)
+            if end_index < len(lines) and not lines[end_index].strip():
                 end_index += 1
 
             license_headers.append((start_index, end_index))
@@ -679,8 +759,26 @@ def fix_file_header(file_path: Path) -> bool:
     if has_multiple:
         return False  # Don't attempt to fix files with multiple headers
 
-    # Generate the license header
-    license_header = generate_license_header(file_path)
+    # Extract existing year from file before replacing header
+    existing_year = None
+    try:
+        if is_jupyter_notebook(file_path):
+            notebook = read_notebook(file_path)
+            lines = get_notebook_header_lines(notebook)
+        else:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                lines = [line.rstrip() for line in f.readlines()[:30]]
+
+        comment_symbol = get_comment_symbol(file_path)
+        existing_year = extract_year_from_lines(lines, comment_symbol)
+    except Exception:
+        pass  # If we can't read, just use current year
+
+    # Compute proper year range (preserving original start year)
+    year = compute_year_range(existing_year) if existing_year else get_current_year()
+
+    # Generate the license header with the appropriate year
+    license_header = generate_license_header(file_path, year)
 
     if is_jupyter_notebook(file_path):
         return _fix_notebook_header(file_path, license_header)
