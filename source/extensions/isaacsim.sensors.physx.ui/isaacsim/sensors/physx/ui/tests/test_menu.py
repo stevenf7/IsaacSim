@@ -20,32 +20,16 @@ from isaacsim.test.utils import MenuUITestCase, get_all_menu_paths
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test import get_context_menu
 
-# Menu dict is populated lazily in test setUp to avoid hanging during test discovery.
-# At module load time, we use empty dict so dynamic test generation creates a placeholder test.
-_menu_dict = {}
+PHYSX_LIDAR_ROOT_PATH = "Create/Sensors/PhysX Lidar"
+LIGHTBEAM_ROOT_PATH = "Create/Sensors/LightBeam Sensor"
 
 
 class TestPhysxMenuAssets(MenuUITestCase):
     """Test class for verifying PhysX sensor menu functionality."""
 
-    _menu_loaded = False
-
-    async def setUp(self):
-        """Set up test environment and populate menu dict if needed."""
-        await super().setUp()
-        # Populate menu dict on first test run (not at module load time)
-        if not TestPhysxMenuAssets._menu_loaded:
-            global _menu_dict
-            window = get_main_window()
-            _menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
-            TestPhysxMenuAssets._menu_loaded = True
-
-
-def _create_test_for_physx_lidar_option(test_path):
-    """Create a test function for a PhysX Lidar menu option."""
-
-    async def test_function(self):
-        await self.click_menu_with_retry(test_path)
+    async def _test_physx_lidar_option(self, test_path):
+        """Test a PhysX Lidar menu option."""
+        await self.menu_click_with_retry(test_path)
         await self.run_timeline_frames(5)
 
         num_prims = 0
@@ -61,18 +45,9 @@ def _create_test_for_physx_lidar_option(test_path):
         self.assertGreater(num_prims, 0, "No prims added to stage.")
         self.assertTrue(sensor_passed, f"{test_path} did not pass, missing prim or wrong prim type")
 
-    test_name = test_path.replace("/", "_").replace(" ", "_")
-    test_function.__name__ = f"test_reference_{test_name}"
-    test_function.__doc__ = f"Test adding {test_path} as a reference"
-
-    return test_function
-
-
-def _create_test_for_lightbeam_option(test_path):
-    """Create a test function for a LightBeam Sensor menu option."""
-
-    async def test_function(self):
-        await self.click_menu_with_retry(test_path)
+    async def _test_lightbeam_option(self, test_path):
+        """Test a LightBeam Sensor menu option."""
+        await self.menu_click_with_retry(test_path)
         await self.run_timeline_frames(5)
 
         num_prims = 0
@@ -91,37 +66,27 @@ def _create_test_for_lightbeam_option(test_path):
         self.assertGreater(num_prims, 0, "No prims added to stage.")
         self.assertTrue(sensor_passed, f"{test_path} did not pass, missing prim or wrong prim type")
 
-    test_name = test_path.replace("/", "_").replace(" ", "_")
-    test_function.__name__ = f"test_reference_{test_name}"
-    test_function.__doc__ = f"Test adding {test_path} as a reference"
+    async def test_physx_sensor_menu_items(self):
+        """Test all PhysX Lidar and LightBeam sensor menu items."""
+        # Get menu dict at runtime instead of module load time
+        window = get_main_window()
+        menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
 
-    return test_function
+        physx_lidar_menu_dict = menu_dict.get("Create", {}).get("Sensors", {}).get("PhysX Lidar", {})
+        lightbeam_menu_dict = menu_dict.get("Create", {}).get("Sensors", {}).get("LightBeam Sensor", {})
 
+        # Collect menu items
+        physx_lidar_menu_list = get_all_menu_paths(physx_lidar_menu_dict, root_path=PHYSX_LIDAR_ROOT_PATH)
+        lightbeam_menu_list = get_all_menu_paths(lightbeam_menu_dict, root_path=LIGHTBEAM_ROOT_PATH)
+        sensor_menu_list = physx_lidar_menu_list + lightbeam_menu_list
 
-# Find all PhysX Lidar and LightBeam sensor creation menu items and dynamically add test methods
-physx_lidar_root_path = "Create/Sensors/PhysX Lidar"
-lightbeam_root_path = "Create/Sensors/LightBeam Sensor"
+        self.assertGreater(len(sensor_menu_list), 0, "No menu items found in PhysX Lidar or LightBeam Sensor menus")
 
-physx_lidar_menu_dict = _menu_dict.get("Create", {}).get("Sensors", {}).get("PhysX Lidar", {})
-lightbeam_menu_dict = _menu_dict.get("Create", {}).get("Sensors", {}).get("LightBeam Sensor", {})
-
-# Collect PhysX Lidar menu items
-physx_lidar_menu_list = get_all_menu_paths(physx_lidar_menu_dict, root_path=physx_lidar_root_path)
-# Collect LightBeam Sensor menu items
-lightbeam_menu_list = get_all_menu_paths(lightbeam_menu_dict, root_path=lightbeam_root_path)
-# Combine both sensor lists
-sensor_menu_list = physx_lidar_menu_list + lightbeam_menu_list
-
-if len(sensor_menu_list) == 0:
-
-    async def test_no_menu_items_found(self):
-        self.fail("No menu items found in PhysX Lidar or LightBeam Sensor menus")
-
-    setattr(TestPhysxMenuAssets, "test_no_menu_items_found", test_no_menu_items_found)
-else:
-    for test_path in sensor_menu_list:
-        if test_path.startswith(physx_lidar_root_path):
-            test_func = _create_test_for_physx_lidar_option(test_path)
-        else:
-            test_func = _create_test_for_lightbeam_option(test_path)
-        setattr(TestPhysxMenuAssets, test_func.__name__, test_func)
+        for test_path in sensor_menu_list:
+            with self.subTest(menu_path=test_path):
+                if test_path.startswith(PHYSX_LIDAR_ROOT_PATH):
+                    await self._test_physx_lidar_option(test_path)
+                else:
+                    await self._test_lightbeam_option(test_path)
+                # Reset stage for next iteration
+                await self.new_stage()

@@ -1,5 +1,5 @@
 [package]
-version = "2.1.25"
+version = "2.1.26"
 category = "Simulation"
 title = "Isaac Sim Manipulators UI"
 description = "Provides UI menus for creating OmniGraph-based robot controllers including joint position, joint velocity, and gripper control interfaces."
@@ -36,6 +36,7 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 dependencies = [
+    "isaacsim.test.utils",
     "omni.isaac.ml_archive",
 ]
 args = [

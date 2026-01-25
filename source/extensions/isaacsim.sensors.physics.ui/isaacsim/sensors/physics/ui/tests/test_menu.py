@@ -62,7 +62,7 @@ class TestPhysicsMenuAssets(MenuUITestCase):
         self.select_prim("/World/RigidParent")
         await self.wait_n_frames(2)
 
-        await self.click_menu_with_retry("Create/Sensors/Contact Sensor")
+        await self.menu_click_with_retry("Create/Sensors/Contact Sensor")
         await self.run_timeline_frames(50)
 
         sensor_count = self.count_prims_by_type("IsaacContactSensor")
@@ -84,7 +84,7 @@ class TestPhysicsMenuAssets(MenuUITestCase):
         self.select_prim("/World/RigidParent")
         await self.wait_n_frames(2)
 
-        await self.click_menu_with_retry("Create/Sensors/Imu Sensor")
+        await self.menu_click_with_retry("Create/Sensors/Imu Sensor")
         await self.run_timeline_frames(50)
 
         sensor_count = self.count_prims_by_type("IsaacImuSensor")

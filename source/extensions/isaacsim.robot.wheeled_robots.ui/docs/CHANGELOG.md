@@ -1,4 +1,7 @@
 # Changelog
+## [2.1.25] - 2026-01-24
+### Changed
+- Fix issues with menu click and context menu tests being flaky
 
 ## [2.1.24] - 2025-10-27
 ### Changed

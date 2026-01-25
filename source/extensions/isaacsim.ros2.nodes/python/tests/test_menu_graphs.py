@@ -31,9 +31,8 @@ from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import add_reference_to_stage, update_stage_async
+from isaacsim.test.utils import menu_click_with_retry
 from nav_msgs.msg import Odometry
-from omni.kit.ui_test.menu import *
-from omni.kit.ui_test.query import *
 from rclpy.node import Node
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import Image, JointState, LaserScan, PointCloud2
@@ -132,12 +131,8 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Camera")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Camera Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/Camera", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         await update_stage_async()
@@ -208,12 +203,8 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Camera")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Camera Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/Camera", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         root_widget_path = f"{window_name}//Frame/VStack[0]"
@@ -271,12 +262,9 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         self.create_subscriber(depth_topic, Image, depth_callback)
         self.create_subscriber(point_cloud_topic, PointCloud2, point_cloud_callback)
 
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Camera")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
+        # Click through the menu to create the graph
         window_name = "ROS2 Camera Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/Camera", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         root_widget_path = f"{window_name}//Frame/VStack[0]"
@@ -358,12 +346,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 RTX Lidar Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -412,12 +396,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 RTX Lidar Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -479,20 +459,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         self.create_subscriber(point_cloud_topic, PointCloud2, point_cloud_callback)
 
         # Click through the menu to create the graph
-        delays = [5, 50, 100]
-        for delay in delays:
-            try:
-                await menu_click("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", human_delay_speed=delay)
-                break
-            except AttributeError as e:
-                if "NoneType' object has no attribute 'center'" in str(e) and delay != delays[-1]:
-                    continue
-                raise
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 RTX Lidar Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -587,12 +555,10 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Joint States")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Joint States Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Joint States", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -646,12 +612,10 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Joint States")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Joint States Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Joint States", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -709,20 +673,10 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         self.create_subscriber(joint_states_topic, JointState, joint_states_callback)
 
         # Create graph through menu
-        delays = [5, 50, 100]
-        for delay in delays:
-            try:
-                await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Joint States", human_delay_speed=delay)
-                break
-            except AttributeError as e:
-                if "NoneType' object has no attribute 'center'" in str(e) and delay != delays[-1]:
-                    continue
-                raise
-        await omni.kit.app.get_app().next_update_async()
-
-        # Configure graph parameters
         window_name = "ROS2 Joint States Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Joint States", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         root_widget_path = f"{window_name}//Frame/VStack[0]"
@@ -872,12 +826,10 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/TF Publisher")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 TF Publisher Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/TF Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -921,12 +873,10 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/TF Publisher")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 TF Publisher Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/TF Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -975,12 +925,10 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         await omni.kit.app.get_app().next_update_async()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/TF Publisher")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 TF Publisher Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/TF Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -1060,12 +1008,10 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Odometry Publisher")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Odometry Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Odometry Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -1116,12 +1062,10 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Odometry Publisher", human_delay_speed=50)
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Odometry Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Odometry Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -1180,21 +1124,12 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         self.create_subscriber(odom_topic, Odometry, odom_callback)
 
         # Create Odometry graph through menu
-
         window_name = "ROS2 Odometry Graph"
-        delays = [10, 100, 200]
-        for delay in delays:
-            try:
-                await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Odometry Publisher", human_delay_speed=delay)
-                if (param_window := ui_test.find(window_name)) is not None:
-                    break
-            except AttributeError as e:
-                if "NoneType' object has no attribute 'center'" in str(e) and delay != delays[-1]:
-                    continue
-                raise
-        for _ in range(10):
-            await update_stage_async()
-
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Odometry Publisher",
+            delays=[10, 100, 200],
+            window_name=window_name,
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         await omni.kit.app.get_app().next_update_async()
@@ -1336,12 +1271,8 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Clock")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Clock Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/Clock", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -1401,12 +1332,8 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         self.create_subscriber(clock_topic, Clock, clock_callback)
 
         # Create graph through menu as required
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Clock")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Configure graph parameters
         window_name = "ROS2 Clock Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/Clock", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         root_widget_path = f"{window_name}//Frame/VStack[0]"
@@ -1515,12 +1442,10 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Generic Publisher")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Wait for and interact with parameter window
         window_name = "ROS2 Generic Publisher Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Generic Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim
@@ -1575,12 +1500,10 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
         self.create_subscriber(test_topic, Float32, float_callback)
 
         # Create graph through menu
-        await menu_click("Tools/Robotics/ROS 2 OmniGraphs/Generic Publisher")
-        await omni.kit.app.get_app().next_update_async()
-
-        # Configure graph parameters
         window_name = "ROS2 Generic Publisher Graph"
-        param_window = ui_test.find(window_name)
+        param_window = await menu_click_with_retry(
+            "Tools/Robotics/ROS 2 OmniGraphs/Generic Publisher", window_name=window_name
+        )
         self.assertIsNotNone(param_window, "Parameter window not found")
 
         # Find and set the graph root prim

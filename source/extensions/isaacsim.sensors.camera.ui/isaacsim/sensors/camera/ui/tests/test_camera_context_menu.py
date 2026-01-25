@@ -61,7 +61,7 @@ class TestCameraContextMenu(MenuUITestCase):
             await self.wait_n_frames(2)
 
             await self.get_viewport_context_menu()
-            await ui_test.select_context_menu(full_test_path)
+            await ui_test.select_context_menu(full_test_path, offset=ui_test.Vec2(10, 10))
 
             await self.wait_for_stage_loading()
             await self.wait_n_frames(50)

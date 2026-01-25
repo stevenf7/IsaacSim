@@ -13,6 +13,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import omni.kit.app
+import omni.kit.ui_test as ui_test
+from omni.kit.ui_test import menu_click
+
+
+async def menu_click_with_retry(
+    menu_path: str, delays: list[int] = None, window_name: str = None, wait_n_frames: int = 10
+):
+    """Click a menu item with retry at different delay speeds.
+
+    Some menu items require different timing to be clicked successfully.
+    This function tries multiple delay values before giving up.
+
+    Args:
+        menu_path: The menu path to click (e.g., "Create/Sensors/Contact Sensor").
+        delays: List of delay values to try in milliseconds. Defaults to [5, 50, 100].
+        window_name: Optional window name to check for after clicking.
+            If provided, the function returns early when the window is found
+            and returns the window widget.
+
+    Returns:
+        The found window widget if window_name is provided and found, else None.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.test.utils import menu_click_with_retry
+        >>>
+        >>> # Simple menu click
+        >>> await menu_click_with_retry("Create/Sensors/Contact Sensor")
+        >>>
+        >>> # Menu click that waits for a window to appear
+        >>> window = await menu_click_with_retry(
+        ...     "Tools/Robotics/OmniGraph Controllers/Differential Controller",
+        ...     window_name="Differential Controller"
+        ... )
+    """
+    delays = delays or [5, 50, 100]
+    for delay in delays:
+        try:
+            await menu_click(menu_path, human_delay_speed=delay)
+            if window_name:
+                if (window := ui_test.find(window_name)) is not None:
+                    return window
+            else:
+                for _ in range(wait_n_frames):
+                    await omni.kit.app.get_app().next_update_async()
+                return None
+        except AttributeError as e:
+            if "NoneType" in str(e) and delay != delays[-1]:
+                continue
+            raise
+    return None
+
 
 def get_all_menu_paths(menu_dict: dict, current_path: str = "", root_path: str = "") -> list[str]:
     """Extract all leaf menu paths from a menu dictionary structure.

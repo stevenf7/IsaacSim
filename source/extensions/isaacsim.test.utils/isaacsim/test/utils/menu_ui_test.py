@@ -22,8 +22,9 @@ import omni.kit.ui_test as ui_test
 import omni.timeline
 import omni.usd
 from isaacsim.core.experimental.utils import stage as stage_utils
-from omni.kit.ui_test import menu_click
 from omni.ui.tests.test_base import OmniUiTest
+
+from .menu_utils import menu_click_with_retry as _menu_click_with_retry
 
 
 class MenuUITestCase(OmniUiTest):
@@ -74,6 +75,15 @@ class MenuUITestCase(OmniUiTest):
         while stage_utils.is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
 
+    async def new_stage(self):
+        """Create a new stage and wait for it to load.
+
+        Useful for resetting the stage between test iterations in a loop.
+        """
+        self._stage = await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        await self.wait_for_stage_loading()
+
     async def wait_n_frames(self, n: int = 10):
         """Wait for N app update frames.
 
@@ -112,7 +122,9 @@ class MenuUITestCase(OmniUiTest):
                     carb.log_error(f"Failed to get context menu after {max_attempts} attempts: {e}")
                     raise
 
-    async def click_menu_with_retry(self, menu_path: str, delays: list[int] = None):
+    async def menu_click_with_retry(
+        self, menu_path: str, delays: list[int] = None, window_name: str = None, wait_n_frames: int = 10
+    ):
         """Click a menu item with retry at different delay speeds.
 
         Some menu items require different timing to be clicked successfully.
@@ -121,17 +133,16 @@ class MenuUITestCase(OmniUiTest):
         Args:
             menu_path: The menu path to click (e.g., "Create/Sensors/Contact Sensor").
             delays: List of delay values to try in milliseconds.
+            window_name: Optional window name to check for after clicking.
+                If provided, the method returns early when the window is found
+                and returns the window widget.
+
+        Returns:
+            The found window widget if window_name is provided and found, else None.
         """
-        delays = delays or [5, 50, 100]
-        for delay in delays:
-            try:
-                await menu_click(menu_path, human_delay_speed=delay)
-                await self.wait_n_frames(10)
-                return
-            except AttributeError as e:
-                if "NoneType" in str(e) and delay != delays[-1]:
-                    continue
-                raise
+        return await _menu_click_with_retry(
+            menu_path, delays=delays, window_name=window_name, wait_n_frames=wait_n_frames
+        )
 
     def count_prims_by_type(self, prim_type: str) -> int:
         """Count the number of prims of a given type on the stage.

@@ -29,45 +29,27 @@ from isaacsim.test.utils import (
     read_image_as_array,
 )
 from omni.kit.mainwindow import get_main_window
-from omni.kit.ui_test import get_context_menu, menu_click
+from omni.kit.ui_test import get_context_menu
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import UsdPhysics
 
 EXTENSION_FOLDER_PATH = Path(omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__))
 TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
 
-# Menu dict is populated lazily in test setUp to avoid hanging during test discovery.
-# At module load time, we use empty dict so dynamic test generation creates a placeholder test.
-_menu_dict = {}
-
 # =============================================================================
 # Robot Menu Tests
 # =============================================================================
 
+ROBOT_ROOT_PATH = "Create/Robots"
 ROBOT_SKIP_LIST = ["Create/Robots/Asset Browser"]
 
 
 class TestRobotMenuAssets(MenuUITestCase):
     """Test class for verifying robot menu asset loading functionality."""
 
-    _menu_loaded = False
-
-    async def setUp(self):
-        """Set up test environment and populate menu dict if needed."""
-        await super().setUp()
-        # Populate menu dict on first test run (not at module load time)
-        if not TestRobotMenuAssets._menu_loaded:
-            global _menu_dict
-            window = get_main_window()
-            _menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
-            TestRobotMenuAssets._menu_loaded = True
-
-
-def _create_robot_test(test_path: str):
-    """Create a test function for a specific robot menu option."""
-
-    async def test_function(self):
-        await menu_click(test_path, human_delay_speed=50)
+    async def _test_robot_menu_option(self, test_path: str):
+        """Test a specific robot menu option."""
+        await self.menu_click_with_retry(test_path)
         await self.wait_n_frames(20)
         await self.wait_for_stage_loading()
 
@@ -81,60 +63,45 @@ def _create_robot_test(test_path: str):
 
         self.assertTrue(has_robot, f"Failed to find articulation root for {test_path}")
 
-    test_name = test_path.replace("/", "_").replace(" ", "_")
-    test_function.__name__ = f"test_robot_{test_name}"
-    test_function.__doc__ = f"Test loading robot from menu: {test_path}"
+    async def test_robot_menu_items(self):
+        """Test all robot menu items."""
+        # Get menu dict at runtime instead of module load time
+        window = get_main_window()
+        menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
 
-    return test_function
+        robot_menu_dict = menu_dict.get("Create", {}).get("Robots", {})
+        robot_menu_list = get_all_menu_paths(robot_menu_dict, root_path=ROBOT_ROOT_PATH)
 
+        self.assertGreater(len(robot_menu_list), 0, f"No menu items found in {ROBOT_ROOT_PATH}")
 
-# Dynamically add robot test methods
-_robot_menu_dict = _menu_dict.get("Create", {}).get("Robots", {})
-_robot_menu_list = get_all_menu_paths(_robot_menu_dict, root_path="Create/Robots")
-
-if len(_robot_menu_list) == 0:
-
-    async def test_no_robot_menu_items_found(self):
-        self.fail("No menu items found in Create/Robots")
-
-    setattr(TestRobotMenuAssets, "test_no_robot_menu_items_found", test_no_robot_menu_items_found)
-else:
-    for _test_path in _robot_menu_list:
-        if _test_path not in ROBOT_SKIP_LIST:
-            _test_func = _create_robot_test(_test_path)
-            setattr(TestRobotMenuAssets, _test_func.__name__, _test_func)
+        for test_path in robot_menu_list:
+            if test_path not in ROBOT_SKIP_LIST:
+                with self.subTest(menu_path=test_path):
+                    await self._test_robot_menu_option(test_path)
+                    # Reset stage for next iteration
+                    await self.new_stage()
 
 
 # =============================================================================
 # Environment Menu Tests
 # =============================================================================
 
+ENVIRONMENT_ROOT_PATH = "Create/Environments"
 ENVIRONMENT_SKIP_LIST = ["Create/Environments/Asset Browser"]
 
 
 class TestEnvironmentMenuAssets(MenuUITestCase):
     """Test class for verifying environment menu asset loading functionality."""
 
-    _menu_loaded = False
-
     async def setUp(self):
         """Set up test environment before each test method."""
         await super().setUp()
         self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
         self._usd_selection = omni.usd.get_context().get_selection()
-        # Populate menu dict on first test run (not at module load time)
-        if not TestEnvironmentMenuAssets._menu_loaded:
-            global _menu_dict
-            window = get_main_window()
-            _menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
-            TestEnvironmentMenuAssets._menu_loaded = True
 
-
-def _create_environment_test(test_path: str):
-    """Create a test function for a specific environment menu option."""
-
-    async def test_function(self):
-        await self.click_menu_with_retry(test_path, delays=[100, 150, 200])
+    async def _test_environment_menu_option(self, test_path: str):
+        """Test a specific environment menu option."""
+        await self.menu_click_with_retry(test_path, delays=[100, 150, 200])
         await self.wait_n_frames(10)
         await self.wait_for_stage_loading()
         await self.wait_n_frames(1)
@@ -167,28 +134,23 @@ def _create_environment_test(test_path: str):
         num_prims = sum(1 for _ in self._stage.Traverse())
         self.assertGreaterEqual(num_prims, 9, f"Failed to find sufficient prims for {test_path}")
 
-    test_name = test_path.replace("/", "_").replace(" ", "_")
-    test_function.__name__ = f"test_environment_{test_name}"
-    test_function.__doc__ = f"Test loading environment from menu: {test_path}"
+    async def test_environment_menu_items(self):
+        """Test all environment menu items."""
+        # Get menu dict at runtime instead of module load time
+        window = get_main_window()
+        menu_dict = await get_context_menu(window._ui_main_window.main_menu_bar, get_all=False)
 
-    return test_function
+        environment_menu_dict = menu_dict.get("Create", {}).get("Environments", {})
+        environment_menu_list = get_all_menu_paths(environment_menu_dict, root_path=ENVIRONMENT_ROOT_PATH)
 
+        self.assertGreater(len(environment_menu_list), 0, f"No menu items found in {ENVIRONMENT_ROOT_PATH}")
 
-# Dynamically add environment test methods
-_environment_menu_dict = _menu_dict.get("Create", {}).get("Environments", {})
-_environment_menu_list = get_all_menu_paths(_environment_menu_dict, root_path="Create/Environments")
-
-if len(_environment_menu_list) == 0:
-
-    async def test_no_environment_menu_items_found(self):
-        self.fail("No menu items found in Create/Environments")
-
-    setattr(TestEnvironmentMenuAssets, "test_no_environment_menu_items_found", test_no_environment_menu_items_found)
-else:
-    for _test_path in _environment_menu_list:
-        if _test_path not in ENVIRONMENT_SKIP_LIST:
-            _test_func = _create_environment_test(_test_path)
-            setattr(TestEnvironmentMenuAssets, _test_func.__name__, _test_func)
+        for test_path in environment_menu_list:
+            if test_path not in ENVIRONMENT_SKIP_LIST:
+                with self.subTest(menu_path=test_path):
+                    await self._test_environment_menu_option(test_path)
+                    # Reset stage for next iteration
+                    await self.new_stage()
 
 
 # =============================================================================
@@ -204,7 +166,7 @@ class TestAprilTagMenu(MenuUITestCase):
         apriltag_path = "Create/April Tags"
 
         await self.wait_n_frames(1)
-        await self.click_menu_with_retry(apriltag_path)
+        await self.menu_click_with_retry(apriltag_path)
         await self.wait_n_frames(1)
 
         omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_type="Cube", above_ground=True)
