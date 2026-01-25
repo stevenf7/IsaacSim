@@ -62,7 +62,7 @@ class TestPhysicsContextMenu(MenuUITestCase):
         await self.wait_n_frames(2)
 
         await self.get_viewport_context_menu()
-        await ui_test.select_context_menu("Create/Isaac/Sensors/Contact Sensor")
+        await ui_test.select_context_menu("Create/Isaac/Sensors/Contact Sensor", offset=ui_test.Vec2(10, 10))
         await self.wait_n_frames(50)
         await self.run_timeline_frames(50)
 
@@ -86,7 +86,7 @@ class TestPhysicsContextMenu(MenuUITestCase):
         await self.wait_n_frames(2)
 
         await self.get_viewport_context_menu()
-        await ui_test.select_context_menu("Create/Isaac/Sensors/Imu Sensor")
+        await ui_test.select_context_menu("Create/Isaac/Sensors/Imu Sensor", offset=ui_test.Vec2(10, 10))
         await self.wait_n_frames(50)
         await self.run_timeline_frames(50)
 

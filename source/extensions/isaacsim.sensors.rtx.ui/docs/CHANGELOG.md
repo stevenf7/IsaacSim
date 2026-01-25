@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.2] - 2026-01-24
+### Changed
+- Fix issues with menu click and context menu tests being flaky
+
 ## [1.2.1] - 2026-01-22
 ### Changed
 - Move menu dictionary to initialize when tests are run rather than at module load time

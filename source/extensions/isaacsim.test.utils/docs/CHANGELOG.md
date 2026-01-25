@@ -1,4 +1,9 @@
 # Changelog
+## [0.7.1] - 2026-01-24
+### Changed
+- refactor menu_click_with_retry into a separate function
+- add new_stage to MenuUITestCase
+
 ## [0.7.0] - 2025-12-22
 ### Added
 - Add new utility functions (`get_all_menu_paths`, `count_menu_items`) and `MenuUITestCase` base class for menu UI tests.
