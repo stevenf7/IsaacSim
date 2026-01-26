@@ -39,38 +39,23 @@ else
 fi
 echo ""
 
-# Step 1: Analyze package usage
-echo -e "${BLUE}Step 1: Analyzing package usage across extensions...${NC}"
+# Step 1: Analyze package usage and update pip*.toml files
+echo -e "${BLUE}Step 1: Analyzing package usage and updating pip*.toml files...${NC}"
 echo -e "${YELLOW}This will scan all Python files to identify which extensions use which packages${NC}"
-python tools/isaac/validate_pip_dependencies.py \
+python tools/isaac/update_pip_toml_with_deps.py \
     --package-extensions \
     --include-transitive-deps \
-    --package-extensions-json package_extensions_with_deps.json
+    --package-extensions-json package_extensions_with_deps.json \
+    --update-pip-toml
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}✗ Failed to analyze package usage${NC}"
+    echo -e "${RED}✗ Failed to analyze or update pip*.toml files${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Analysis complete${NC}"
+echo -e "${GREEN}✓ Analysis and update complete${NC}"
 echo ""
 
-# Step 2: Update pip*.toml files
-echo -e "${BLUE}Step 2: Updating pip*.toml files with usage information...${NC}"
-if [ ! -f "package_extensions_with_deps.json" ]; then
-    echo -e "${RED}✗ Error: package_extensions_with_deps.json not found${NC}"
-    exit 1
-fi
-
-python tools/isaac/update_pip_toml_with_deps.py
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}✗ Failed to update pip*.toml files${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✓ All pip*.toml files updated${NC}"
-echo ""
-
-# Step 3: Show summary
+# Step 2: Show summary
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  Summary${NC}"
 echo -e "${BLUE}========================================${NC}"
