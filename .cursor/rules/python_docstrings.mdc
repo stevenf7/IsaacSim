@@ -13,17 +13,41 @@ You are an expert at writing and maintaining Python docstrings to document funct
 - Never add, modify, refactor or delete code when adding or updating documentation.
 - Document all functions and class properties and methods in order and without skipping any. Be consistent.
 
+## Type annotations
+
+- **Do NOT include types in docstrings** - types belong in function signatures only.
+- Use modern Python annotation style (PEP 604 union syntax, lowercase generics):
+  - `X | Y` instead of `Union[X, Y]`
+  - `X | None` instead of `Optional[X]`
+  - `list[T]` instead of `List[T]`
+  - `dict[K, V]` instead of `Dict[K, V]`
+  - `set[T]` instead of `Set[T]`
+  - `tuple[T, ...]` instead of `Tuple[T, ...]`
+- This reduces imports from `typing` and improves readability.
+
+### Type annotation consistency for parameters
+
+- Only include `| None` in a parameter's type annotation when:
+  1. The default value is `None` (e.g., `param: str | None = None`), OR
+  2. The function explicitly handles `None` as a valid input distinct from the default
+- Do NOT use `| None` when the parameter has a non-None default and `None` is not a supported input:
+  - **Wrong**: `visibility: bool | None = False` (implies None is accepted, but it isn't)
+  - **Correct**: `visibility: bool = False`
+- If a parameter has a non-None default but also accepts `None` for special behavior,
+  document this in the docstring (e.g., "Pass None to skip this step.")
+
 ## Docstring style
 
 - Brief summary line just after opening triple quotes.
 - Long description, separated by an empty line.
   The long description should only appear as long as it is worthwhile to add relevant
   information to clarify complex logic, help explain calling conventions, or edge cases.
-- List of all parameters defined under the 'Args' section with types.
-- Return description defined under the 'Returns' section with type.
+- List of all parameters defined under the 'Args' section (without types - types are in the signature).
+- Return description defined under the 'Returns' section (without type - type is in the signature).
 - List of all raised exception types defined under the 'Raises' section.
 - Usage example, for public functions and class properties and methods, under the 'Example:' section using the `.. code-block:: python` directive.
   Code must be separated by an empty line from the 'Example:' header.
+- Example sections for deprecated methods are optional and not required.
 
 ## Class docstrings
 
@@ -37,10 +61,9 @@ class LidarRtx(BaseSensor):
     Long description of the class functionality.
 
     Args:
-        prim_path (str): Path to the USD prim for the sensor.
-        name (str): Name of the sensor. Defaults to "lidar_rtx".
-        position (Optional[np.ndarray]): Global position as [x, y, z].
-            Defaults to None.
+        prim_path: Path to the USD prim for the sensor.
+        name: Name of the sensor. Defaults to "lidar_rtx".
+        position: Global position as [x, y, z]. Defaults to None.
         **kwargs: Additional keyword arguments.
 
     Raises:
@@ -51,7 +74,7 @@ class LidarRtx(BaseSensor):
         self,
         prim_path: str,
         name: str = "lidar_rtx",
-        position: Optional[np.ndarray] = None,
+        position: np.ndarray | None = None,
         **kwargs,
     ) -> None:
         # No docstring needed here - Args are in the class docstring
@@ -60,14 +83,14 @@ class LidarRtx(BaseSensor):
 
 ## Method and function docstrings
 
-For methods and standalone functions, include types in both Args and Returns sections:
+For methods and standalone functions, describe parameters and returns without repeating type information:
 
 ```python
 def attach_annotator(self, annotator_name: str, **kwargs) -> None:
     """Attach an annotator to the sensor.
 
     Args:
-        annotator_name (str): Name of the annotator to attach.
+        annotator_name: Name of the annotator to attach.
         **kwargs: Additional arguments to pass to the annotator.
 
     Raises:
@@ -79,59 +102,57 @@ def get_current_frame(self) -> dict:
     """Get the current frame data from the sensor.
 
     Returns:
-        dict: Dictionary containing the current frame data including
-            rendering time and frame number.
+        Dictionary containing the current frame data including rendering time
+        and frame number.
     """
     pass
 
-def get_depth_range(self) -> Tuple[float, float]:
+def get_depth_range(self) -> tuple[float, float]:
     """Get the depth range of the sensor.
 
     Returns:
-        Tuple[float, float]: Tuple of (min_depth, max_depth).
+        Tuple of (min_depth, max_depth).
     """
     pass
 ```
 
 ## Optional return types
 
-When a function can return `None`, use `Optional[T]` in both the type annotation and docstring.
+When a function can return `None`, use `T | None` in the type annotation.
 The docstring description should explain when `None` is returned.
 
 ```python
-def get_horizontal_fov(self) -> Optional[float]:
+def get_horizontal_fov(self) -> float | None:
     """Get the horizontal field of view of the sensor.
 
     Returns:
-        Optional[float]: The horizontal FOV value if available, None otherwise.
+        The horizontal FOV value if available, None otherwise.
     """
     if self._is_initialized:
         return self._fov
     return None
 
-def get_render_product_path(self) -> Optional[str]:
+def get_render_product_path(self) -> str | None:
     """Get the path to the render product.
 
     Returns:
-        Optional[str]: Path to the render product, or None if not initialized.
+        Path to the render product, or None if not initialized.
     """
     return self._render_product_path
 
-def get_depth_range(self) -> Optional[Tuple[float, float]]:
+def get_depth_range(self) -> tuple[float, float] | None:
     """Get the depth range of the sensor.
 
     Returns:
-        Optional[Tuple[float, float]]: Tuple of (min_depth, max_depth) if available,
-            None otherwise.
+        Tuple of (min_depth, max_depth) if available, None otherwise.
     """
     pass
 ```
 
-**Key rules for Optional returns:**
-1. Use `Optional[T]` when the function can return `None` as a valid result
-2. Match the type annotation exactly in the docstring Returns section
-3. Always explain the condition when `None` is returned (e.g., "if not initialized", "if unavailable")
-4. Do NOT use `Optional` when `None` indicates an error - raise an exception instead
+**Key rules for optional returns:**
+1. Use `T | None` when the function can return `None` as a valid result
+2. Always explain the condition when `None` is returned (e.g., "if not initialized", "if unavailable")
+3. Do NOT return `None` when it indicates an error - raise an exception instead
 
 ## Methods that do NOT need Example sections
 
@@ -160,6 +181,9 @@ Methods registered as event handlers (often named `*_callback`, `*_callback_fn`)
 `setUp`, `tearDown`, `test_*` methods - called by test frameworks.
 Test helper functions in test files (e.g., `_create_test_*`, factory functions) have relaxed requirements.
 
+### Deprecated methods
+Example sections are optional for deprecated methods. Include them only if they add value.
+
 ```python
 class MyExtension(omni.ext.IExt):
     """Extension that provides functionality X."""
@@ -168,7 +192,7 @@ class MyExtension(omni.ext.IExt):
         """Initialize the extension when it is loaded.
 
         Args:
-            ext_id (str): Extension identifier provided by the extension manager.
+            ext_id: Extension identifier provided by the extension manager.
         """
         pass
 
@@ -188,7 +212,7 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         """Execute the command to create the sensor.
 
         Returns:
-            Usd.Prim: The created sensor prim.
+            The created sensor prim.
         """
         pass
 
@@ -199,24 +223,59 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
 
 ## Key rules (Google Style)
 
-1. **Args format**: `param_name (type): Description.` - always include types
-2. **Returns format**: `type: Description.` - always include type
+1. **Args format**: `param_name: Description.` - NO types (types are in the signature)
+2. **Returns format**: `Description.` - NO type prefix (type is in the signature)
 3. **Raises format**: `ExceptionType: Description.`
-4. **Never use `param` prefix**: Write `param_name (type):` not `param param_name:`
+4. **Never use `param` prefix**: Write `param_name:` not `param param_name:`
 5. **Constructor Args go in class docstring**: Not in `__init__` method
 6. **Multi-line descriptions**: Indent continuation lines by 4 spaces
 7. **Optional parameters**: Note defaults in description (e.g., "Defaults to None.")
-8. **Optional returns**: Use `Optional[T]` when `None` is a valid return value; explain when `None` is returned
-9. **No Examples for framework methods**: The following don't need Example sections:
-   - Extension lifecycle: `on_startup`, `on_shutdown`
-   - Private methods: `_*` (any method starting with underscore)
-   - Command methods: `do()`, `undo()`
-   - OmniGraph: `compute(db)`, `internal_state()`
-   - Simulation lifecycle: `initialize`, `post_reset`, `pre_reset`
-   - Callbacks: `*_callback`, `*_callback_fn`
-   - Tests: `setUp`, `tearDown`, `test_*`
+8. **Optional returns**: Use `T | None` when `None` is a valid return value; explain when `None` is returned
+9. **Modern type annotations**: Use `X | Y` not `Union[X, Y]`, `list[T]` not `List[T]`
+10. **No Examples for framework methods**: The following don't need Example sections:
+    - Extension lifecycle: `on_startup`, `on_shutdown`
+    - Private methods: `_*` (any method starting with underscore)
+    - Command methods: `do()`, `undo()`
+    - OmniGraph: `compute(db)`, `internal_state()`
+    - Simulation lifecycle: `initialize`, `post_reset`, `pre_reset`
+    - Callbacks: `*_callback`, `*_callback_fn`
+    - Tests: `setUp`, `tearDown`, `test_*`
 
-## pydocstyle configuration
+## Linting tools
+
+Use `./repo.sh run_python_linting` to check extensions. The following tools enforce these guidelines:
+
+### pydoclint (enforces no types in docstrings)
+
+pydoclint validates that docstrings match function signatures and that types are NOT in docstrings:
+
+```bash
+./repo.sh run_python_linting --pydoclint --extensions isaacsim.core.api
+```
+
+Configuration used:
+- `--arg-type-hints-in-docstring=false` - Types should NOT be in docstrings
+- `--arg-type-hints-in-signature=true` - Types should be in function signatures
+- `--style=google` - Google-style docstrings
+
+### ruff (enforces modern type annotations)
+
+ruff checks for modern Python type annotation style using UP (pyupgrade) rules:
+
+```bash
+# Check for issues
+./repo.sh run_python_linting --ruff --extensions isaacsim.core.api
+
+# Auto-fix issues
+./repo.sh run_python_linting --ruff --fix --extensions isaacsim.core.api
+```
+
+Rules enforced:
+- **UP006**: `List[X]` → `list[X]`, `Dict[K, V]` → `dict[K, V]`, `Set[X]` → `set[X]`
+- **UP007**: `Union[X, Y]` → `X | Y`
+- **UP035**: Deprecated `typing` module imports
+
+### pydocstyle configuration
 
 When using `pydocstyle --convention=google`, the following rules conflict with our conventions
 and should be ignored:

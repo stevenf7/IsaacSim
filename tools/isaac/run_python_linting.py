@@ -14,14 +14,16 @@
 # limitations under the License.
 """Run Python linting tools on Isaac Sim extensions, one extension at a time.
 
-This script runs multiple linting tools (mypy, pydocstyle, darglint, interrogate)
-on each extension separately, providing comprehensive code quality checks.
+This script runs multiple linting tools on each extension separately, providing
+comprehensive code quality checks.
 
 Tools:
     - mypy: Static type checking
     - pydocstyle: Docstring style checking (Google convention)
     - darglint: Docstring argument/return validation
     - interrogate: Docstring coverage metrics
+    - pydoclint: Docstring validation (enforces no types in docstrings)
+    - ruff: Fast linter with modern type annotation checks (UP rules)
 
 Usage (via repo.sh):
     # Run all tools on all extensions
@@ -32,6 +34,18 @@ Usage (via repo.sh):
 
     # Run mypy and pydocstyle
     ./repo.sh run_python_linting --mypy --pydocstyle
+
+    # Run ruff to check modern type annotations
+    ./repo.sh run_python_linting --ruff
+
+    # Run ruff with auto-fix enabled
+    ./repo.sh run_python_linting --ruff --fix
+
+    # Run ruff cleanup rules to remove unused imports and extra pass statements
+    ./repo.sh run_python_linting --ruff --ruff-clean --fix
+
+    # Run pydoclint to check docstrings don't contain types
+    ./repo.sh run_python_linting --pydoclint
 
     # Check specific extensions
     ./repo.sh run_python_linting --extensions isaacsim.core.utils isaacsim.core.prims
@@ -44,6 +58,9 @@ Usage (via repo.sh):
 
     # Generate JSON report
     ./repo.sh run_python_linting --json-output report.json
+
+    # Run all tools and report issues without failing (exit code 0)
+    ./repo.sh run_python_linting --keep-going
 """
 
 import argparse
@@ -55,7 +72,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable
 
 # =============================================================================
 # Tool Configurations (hardcoded defaults when config files not supported)
@@ -68,9 +85,10 @@ PYDOCSTYLE_CONFIG = {
 }
 
 # darglint configuration
+# Note: "long" strictness doesn't require Returns section when function returns None
 DARGLINT_CONFIG = {
     "docstring_style": "google",
-    "strictness": "full",  # short, long, or full
+    "strictness": "long",  # short, long, or full (full is too strict about None returns)
 }
 
 # interrogate configuration
@@ -82,6 +100,39 @@ INTERROGATE_CONFIG = {
     "fail_under": 0,  # Don't fail, just report coverage
     "exclude": ["_vendor"],
 }
+
+# pydoclint configuration (enforces no types in docstrings - types belong in signatures)
+# See python_docstrings.mdc for rationale on these settings
+PYDOCLINT_CONFIG = {
+    "style": "google",
+    "arg_type_hints_in_docstring": False,  # Types should NOT be in docstrings (rule: line 18)
+    "arg_type_hints_in_signature": True,  # Types should be in function signatures (rule: line 18)
+    "check_return_types": False,  # Disabled: we don't put types in docstrings (rule: line 35, 212)
+    "check_yield_types": False,  # Disabled: we don't put types in docstrings
+    "require_return_section_when_returning_nothing": False,  # Don't require Returns for void functions
+    "skip_checking_short_docstrings": False,
+    "skip_checking_raises": True,  # Raises documentation is optional per our conventions
+    "check_class_attributes": False,  # Skip DOC602/DOC603 - Attributes sections are optional
+    "exclude": ["_vendor"],
+}
+
+# ruff configuration (enforces modern Python type annotations)
+# UP = pyupgrade rules for modernizing type annotations
+RUFF_CONFIG = {
+    "select": [
+        "UP006",  # non-pep585-annotation: List[X] -> list[X], Dict -> dict, Set -> set
+        "UP007",  # non-pep604-annotation-union: Union[X, Y] -> X | Y
+        "UP035",  # deprecated-import: deprecated typing module imports
+    ],
+    "target_version": "py310",  # Python 3.10+ for native union syntax
+    "exclude": ["_vendor"],
+}
+
+# ruff cleanup rules for auto-fixable code hygiene
+RUFF_CLEANUP_SELECT = [
+    "F401",  # unused-import
+    "PIE790",  # unnecessary-pass
+]
 
 
 # =============================================================================
@@ -97,8 +148,8 @@ class ToolResult:
         tool_name: str,
         errors: int = 0,
         warnings: int = 0,
-        messages: Optional[List[str]] = None,
-        coverage: Optional[float] = None,
+        messages: list[str] | None = None,
+        coverage: float | None = None,
         duration_seconds: float = 0.0,
         skipped: bool = False,
         skip_reason: str = "",
@@ -106,7 +157,7 @@ class ToolResult:
         self.tool_name = tool_name
         self.errors = errors
         self.warnings = warnings
-        self.messages: List[str] = messages if messages is not None else []
+        self.messages: list[str] = messages if messages is not None else []
         self.coverage = coverage
         self.duration_seconds = duration_seconds
         self.skipped = skipped
@@ -121,7 +172,7 @@ class ExtensionResult:
         name: str,
         path: str,
         files_checked: int = 0,
-        tool_results: Optional[Dict[str, ToolResult]] = None,
+        tool_results: dict[str, ToolResult] | None = None,
         duration_seconds: float = 0.0,
         skipped: bool = False,
         skip_reason: str = "",
@@ -129,7 +180,7 @@ class ExtensionResult:
         self.name = name
         self.path = path
         self.files_checked = files_checked
-        self.tool_results: Dict[str, ToolResult] = tool_results if tool_results is not None else {}
+        self.tool_results: dict[str, ToolResult] = tool_results if tool_results is not None else {}
         self.duration_seconds = duration_seconds
         self.skipped = skipped
         self.skip_reason = skip_reason
@@ -181,7 +232,7 @@ class ToolInfo:
     def __init__(
         self,
         name: str,
-        binary_path: Optional[str] = None,
+        binary_path: str | None = None,
         available: bool = False,
         version: str = "",
         error_message: str = "",
@@ -193,12 +244,33 @@ class ToolInfo:
         self.error_message = error_message
 
 
-def find_tool(name: str, vendor_dir: Optional[str] = None) -> ToolInfo:
-    """Find a tool binary, checking vendor directory first, then PATH.
+def get_packman_python_bin() -> str | None:
+    """Get the bin directory for the currently running Python environment.
+
+    This uses sys.executable to find the bin directory, which works correctly
+    when running under packman's Python via repo.sh.
+    """
+    python_exe = Path(sys.executable).resolve()
+    # Python executable is typically at .../python or .../bin/python
+    # We want the bin directory
+    if python_exe.parent.name == "bin":
+        bin_dir = python_exe.parent
+    else:
+        # Python exe is directly in version dir (e.g., .../3.10.19-nv2-linux-x86_64/python)
+        bin_dir = python_exe.parent / "bin"
+
+    if bin_dir.exists():
+        return str(bin_dir)
+    return None
+
+
+def find_tool(name: str, vendor_dir: str | None = None, packman_bin: str | None = None) -> ToolInfo:
+    """Find a tool binary, checking vendor directory and packman bin first, then PATH.
 
     Args:
         name: Name of the tool (e.g., 'mypy', 'pydocstyle').
-        vendor_dir: Optional vendor directory to check first.
+        vendor_dir: Vendor directory to check first. Defaults to None.
+        packman_bin: Packman Python bin directory. Defaults to None.
 
     Returns:
         ToolInfo with availability status and path.
@@ -213,6 +285,14 @@ def find_tool(name: str, vendor_dir: Optional[str] = None) -> ToolInfo:
             info.available = True
             return info
 
+    # Check packman Python bin directory (for pip-installed tools in packman env)
+    if packman_bin:
+        packman_path = Path(packman_bin) / name
+        if packman_path.exists():
+            info.binary_path = str(packman_path)
+            info.available = True
+            return info
+
     # Check system PATH
     system_path = shutil.which(name)
     if system_path:
@@ -224,7 +304,7 @@ def find_tool(name: str, vendor_dir: Optional[str] = None) -> ToolInfo:
     return info
 
 
-def get_vendor_directory() -> Optional[str]:
+def get_vendor_directory() -> str | None:
     """Get vendor directory from repo_lint if available."""
     try:
         from omni.repo.lint import vendor_directory
@@ -234,18 +314,19 @@ def get_vendor_directory() -> Optional[str]:
         return None
 
 
-def discover_tools(vendor_dir: Optional[str] = None) -> Dict[str, ToolInfo]:
+def discover_tools(vendor_dir: str | None = None) -> dict[str, ToolInfo]:
     """Discover all available linting tools.
 
     Args:
-        vendor_dir: Optional vendor directory to check for tools.
+        vendor_dir: Vendor directory to check for tools. Defaults to None.
 
     Returns:
         Dictionary mapping tool names to ToolInfo objects.
     """
+    packman_bin = get_packman_python_bin()
     tools = {}
-    for name in ["mypy", "pydocstyle", "darglint", "interrogate"]:
-        tools[name] = find_tool(name, vendor_dir)
+    for name in ["mypy", "pydocstyle", "darglint", "interrogate", "pydoclint", "ruff"]:
+        tools[name] = find_tool(name, vendor_dir, packman_bin)
     return tools
 
 
@@ -254,7 +335,7 @@ def discover_tools(vendor_dir: Optional[str] = None) -> Dict[str, ToolInfo]:
 # =============================================================================
 
 
-def find_extensions(extensions_dir: Path) -> List[Path]:
+def find_extensions(extensions_dir: Path) -> list[Path]:
     """Find all extension directories in the given path."""
     extensions = []
     if not extensions_dir.exists():
@@ -267,7 +348,7 @@ def find_extensions(extensions_dir: Path) -> List[Path]:
     return extensions
 
 
-def find_python_dir(extension_path: Path) -> Optional[Path]:
+def find_python_dir(extension_path: Path) -> Path | None:
     """Find the Python source directory for an extension.
 
     Extensions can have different structures:
@@ -291,7 +372,7 @@ def find_python_dir(extension_path: Path) -> Optional[Path]:
     return None
 
 
-def count_python_files(directory: Path, exclude_patterns: Optional[List[str]] = None) -> int:
+def count_python_files(directory: Path, exclude_patterns: list[str] | None = None) -> int:
     """Count Python files in a directory, excluding certain patterns."""
     exclude_patterns = exclude_patterns or []
     count = 0
@@ -314,10 +395,10 @@ def count_python_files(directory: Path, exclude_patterns: Optional[List[str]] = 
 
 def run_mypy(
     python_dir: Path,
-    config_file: Optional[Path],
-    exclude_patterns: List[str],
+    config_file: Path | None,
+    exclude_patterns: list[str],
     tool_info: ToolInfo,
-    vendor_dir: Optional[str],
+    vendor_dir: str | None,
     cwd: Path,
 ) -> ToolResult:
     """Run mypy on a directory."""
@@ -392,6 +473,13 @@ def run_pydocstyle(
         proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
         result.duration_seconds = time.time() - start_time
 
+        # Check for tool crashes (e.g., ModuleNotFoundError)
+        combined_output = (proc.stdout or "") + (proc.stderr or "")
+        if "Traceback" in combined_output or "ModuleNotFoundError" in combined_output:
+            result.skipped = True
+            result.skip_reason = "pydocstyle crashed (possibly not installed in this Python environment)"
+            return result
+
         if proc.stdout.strip():
             for line in proc.stdout.strip().split("\n"):
                 if line.strip():
@@ -441,6 +529,13 @@ def run_darglint(
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
         result.duration_seconds = time.time() - start_time
+
+        # Check for tool crashes (e.g., ModuleNotFoundError)
+        combined_output = (proc.stdout or "") + (proc.stderr or "")
+        if "Traceback" in combined_output or "ModuleNotFoundError" in combined_output:
+            result.skipped = True
+            result.skip_reason = "darglint crashed (possibly not installed in this Python environment)"
+            return result
 
         if proc.stdout.strip():
             for line in proc.stdout.strip().split("\n"):
@@ -495,6 +590,13 @@ def run_interrogate(
         proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
         result.duration_seconds = time.time() - start_time
 
+        # Check for tool crashes (e.g., ModuleNotFoundError)
+        combined_output = (proc.stdout or "") + (proc.stderr or "")
+        if "Traceback" in combined_output or "ModuleNotFoundError" in combined_output:
+            result.skipped = True
+            result.skip_reason = "interrogate crashed (possibly not installed in this Python environment)"
+            return result
+
         # Parse output for coverage percentage
         if proc.stdout.strip():
             for line in proc.stdout.strip().split("\n"):
@@ -523,6 +625,158 @@ def run_interrogate(
     return result
 
 
+def run_pydoclint(
+    python_dir: Path,
+    tool_info: ToolInfo,
+    cwd: Path,
+) -> ToolResult:
+    """Run pydoclint on a directory.
+
+    pydoclint validates that docstrings match function signatures and enforces
+    that types are NOT included in docstrings (types belong in signatures only).
+    """
+    result = ToolResult(tool_name="pydoclint")
+
+    if not tool_info.available:
+        result.skipped = True
+        result.skip_reason = tool_info.error_message
+        return result
+
+    cmd = [
+        tool_info.binary_path,
+        "--style={}".format(PYDOCLINT_CONFIG["style"]),
+        "--arg-type-hints-in-docstring={}".format(str(PYDOCLINT_CONFIG["arg_type_hints_in_docstring"]).lower()),
+        "--arg-type-hints-in-signature={}".format(str(PYDOCLINT_CONFIG["arg_type_hints_in_signature"]).lower()),
+        "--check-return-types={}".format(str(PYDOCLINT_CONFIG["check_return_types"]).lower()),
+        "--check-yield-types={}".format(str(PYDOCLINT_CONFIG["check_yield_types"]).lower()),
+        "--require-return-section-when-returning-nothing={}".format(
+            str(PYDOCLINT_CONFIG["require_return_section_when_returning_nothing"]).lower()
+        ),
+        "--skip-checking-short-docstrings={}".format(str(PYDOCLINT_CONFIG["skip_checking_short_docstrings"]).lower()),
+        "--skip-checking-raises={}".format(str(PYDOCLINT_CONFIG["skip_checking_raises"]).lower()),
+        "--check-class-attributes={}".format(str(PYDOCLINT_CONFIG["check_class_attributes"]).lower()),
+    ]
+
+    for exclude in PYDOCLINT_CONFIG["exclude"]:
+        cmd.extend(["--exclude", exclude])
+
+    cmd.append(str(python_dir))
+
+    start_time = time.time()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+        result.duration_seconds = time.time() - start_time
+
+        # Check for tool crashes (e.g., ModuleNotFoundError)
+        if proc.stderr and ("Traceback" in proc.stderr or "ModuleNotFoundError" in proc.stderr):
+            result.skipped = True
+            result.skip_reason = "pydoclint crashed (possibly not installed in this Python environment)"
+            return result
+
+        # pydoclint outputs to stderr, not stdout
+        output = proc.stderr.strip() if proc.stderr.strip() else proc.stdout.strip()
+        if output:
+            for line in output.split("\n"):
+                if line.strip():
+                    # Look for DOC error codes (e.g., DOC111, DOC203)
+                    if ": DOC" in line:
+                        result.errors += 1
+                        result.messages.append(line)
+
+    except Exception as e:
+        result.skipped = True
+        result.skip_reason = "Error running pydoclint: {}".format(e)
+
+    return result
+
+
+def run_ruff(
+    python_dir: Path,
+    tool_info: ToolInfo,
+    cwd: Path,
+    fix: bool = False,
+    cleanup: bool = False,
+) -> ToolResult:
+    """Run ruff on a directory.
+
+    ruff checks for modern Python type annotation style:
+    - UP006: List[X] -> list[X], Dict -> dict, Set -> set
+    - UP007: Union[X, Y] -> X | Y
+    - UP035: Deprecated typing module imports
+    Optional cleanup rules:
+    - F401: Remove unused imports
+    - PIE790: Remove unnecessary pass statements
+
+    Args:
+        python_dir: Directory containing Python files to check.
+        tool_info: Information about the ruff tool.
+        cwd: Current working directory for running the command.
+        fix: If True, automatically fix issues. Defaults to False.
+        cleanup: If True, include cleanup rules. Defaults to False.
+
+    Returns:
+        ToolResult with errors, warnings, and messages.
+    """
+    result = ToolResult(tool_name="ruff")
+
+    if not tool_info.available:
+        result.skipped = True
+        result.skip_reason = tool_info.error_message
+        return result
+
+    # Build select rules string
+    select_rules = list(RUFF_CONFIG["select"])
+    if cleanup:
+        select_rules.extend(RUFF_CLEANUP_SELECT)
+    select_rules = sorted(set(select_rules))
+    select_rules_arg = ",".join(select_rules)
+    select_rules_set = set(select_rules)
+
+    cmd = [
+        tool_info.binary_path,
+        "check",
+        "--select={}".format(select_rules_arg),
+        "--target-version={}".format(RUFF_CONFIG["target_version"]),
+    ]
+
+    if fix:
+        cmd.append("--fix")
+    else:
+        cmd.append("--no-fix")
+
+    for exclude in RUFF_CONFIG["exclude"]:
+        cmd.extend(["--exclude", exclude])
+
+    cmd.append(str(python_dir))
+
+    start_time = time.time()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+        result.duration_seconds = time.time() - start_time
+
+        # ruff outputs errors with file:line:col: CODE message format
+        if proc.stdout.strip():
+            for line in proc.stdout.strip().split("\n"):
+                if line.strip():
+                    # Count lines with selected rule codes as errors
+                    if any(rule in line for rule in select_rules_set):
+                        result.errors += 1
+                    result.messages.append(line)
+
+        # Also check stderr for any errors
+        if proc.stderr.strip():
+            # ruff may output summary to stderr
+            for line in proc.stderr.strip().split("\n"):
+                if line.strip() and "error" in line.lower():
+                    result.messages.append("[stderr] {}".format(line))
+
+    except Exception as e:
+        result.skipped = True
+        result.skip_reason = "Error running ruff: {}".format(e)
+
+    return result
+
+
 # =============================================================================
 # Main Runner
 # =============================================================================
@@ -530,13 +784,29 @@ def run_interrogate(
 
 def run_tools_on_extension(
     extension_path: Path,
-    tools: Dict[str, ToolInfo],
-    enabled_tools: Set[str],
-    mypy_config: Optional[Path],
-    exclude_patterns: List[str],
-    vendor_dir: Optional[str],
+    tools: dict[str, ToolInfo],
+    enabled_tools: set[str],
+    mypy_config: Path | None,
+    exclude_patterns: list[str],
+    vendor_dir: str | None,
+    fix: bool = False,
+    cleanup: bool = False,
 ) -> ExtensionResult:
-    """Run all enabled tools on a single extension."""
+    """Run all enabled tools on a single extension.
+
+    Args:
+        extension_path: Path to the extension directory.
+        tools: Dictionary mapping tool names to ToolInfo objects.
+        enabled_tools: Set of tool names to run.
+        mypy_config: Path to mypy configuration file. Defaults to None.
+        exclude_patterns: List of patterns to exclude from checking.
+        vendor_dir: Vendor directory for tools. Defaults to None.
+        fix: If True, automatically fix issues where supported. Defaults to False.
+        cleanup: If True, include ruff cleanup rules. Defaults to False.
+
+    Returns:
+        ExtensionResult with results from all enabled tools.
+    """
     result = ExtensionResult(name=extension_path.name, path=str(extension_path))
 
     # Find Python source directory
@@ -570,6 +840,12 @@ def run_tools_on_extension(
     if "interrogate" in enabled_tools:
         result.tool_results["interrogate"] = run_interrogate(python_dir, tools["interrogate"], cwd)
 
+    if "pydoclint" in enabled_tools:
+        result.tool_results["pydoclint"] = run_pydoclint(python_dir, tools["pydoclint"], cwd)
+
+    if "ruff" in enabled_tools:
+        result.tool_results["ruff"] = run_ruff(python_dir, tools["ruff"], cwd, fix=fix, cleanup=cleanup)
+
     result.duration_seconds = time.time() - start_time
     return result
 
@@ -579,7 +855,7 @@ def run_tools_on_extension(
 # =============================================================================
 
 
-def print_tool_availability(tools: Dict[str, ToolInfo], use_color: bool = True) -> None:
+def print_tool_availability(tools: dict[str, ToolInfo], use_color: bool = True) -> None:
     """Print tool availability status."""
     print("\nTool availability:")
     for name, info in tools.items():
@@ -593,8 +869,8 @@ def print_tool_availability(tools: Dict[str, ToolInfo], use_color: bool = True) 
 
 
 def print_summary(
-    results: List[ExtensionResult],
-    enabled_tools: Set[str],
+    results: list[ExtensionResult],
+    enabled_tools: set[str],
     use_color: bool = True,
     errors_only: bool = False,
 ) -> None:
@@ -624,6 +900,26 @@ def print_summary(
                     print("\n## {} ({} errors)".format(ext_result.name, tool_result.errors))
                     for msg in tool_result.messages:
                         print("  {}".format(msg))
+
+    # Print skipped tools summary
+    skipped_tools_info: dict[str, list[tuple[str, str]]] = {}  # tool_name -> [(ext_name, reason), ...]
+    for r in results:
+        for tool_name, tr in r.tool_results.items():
+            if tr.skipped:
+                if tool_name not in skipped_tools_info:
+                    skipped_tools_info[tool_name] = []
+                skipped_tools_info[tool_name].append((r.name, tr.skip_reason))
+
+    if skipped_tools_info:
+        print("\n" + "=" * 80)
+        print("SKIPPED TOOLS")
+        print("=" * 80)
+        for tool_name, skip_list in sorted(skipped_tools_info.items()):
+            print("\n  {} ({} skipped):".format(tool_name, len(skip_list)))
+            # Show unique skip reasons
+            reasons = set(reason for _, reason in skip_list)
+            for reason in reasons:
+                print("    - {}".format(colorize(reason, Colors.YELLOW, use_color)))
 
     # Print coverage summary for interrogate
     if "interrogate" in enabled_tools:
@@ -669,10 +965,16 @@ def print_summary(
         else:
             status = colorize("FAIL", Colors.RED, use_color)
             tool_errors = []
+            tool_skipped = []
             for tool_name in enabled_tools:
-                if tool_name in result.tool_results and result.tool_results[tool_name].errors > 0:
-                    tool_errors.append("{}:{}".format(tool_name, result.tool_results[tool_name].errors))
-            detail = ", ".join(tool_errors)
+                if tool_name in result.tool_results:
+                    tr = result.tool_results[tool_name]
+                    if tr.errors > 0:
+                        tool_errors.append("{}:{}".format(tool_name, tr.errors))
+                    elif tr.skipped:
+                        tool_skipped.append("{}:skip".format(tool_name))
+            parts = tool_errors + tool_skipped
+            detail = ", ".join(parts) if parts else "errors found"
 
         print("  [{}] {}: {}".format(status, result.name, detail))
 
@@ -680,7 +982,7 @@ def print_summary(
     print("Time: {:.2f}s".format(total_time))
 
 
-def save_json_report(results: List[ExtensionResult], output_path: Path) -> None:
+def save_json_report(results: list[ExtensionResult], output_path: Path) -> None:
     """Save results as a JSON report."""
     report = {
         "summary": {
@@ -726,7 +1028,7 @@ def save_json_report(results: List[ExtensionResult], output_path: Path) -> None:
 # =============================================================================
 
 
-def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> Callable:
+def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> Callable:
     """Setup function for the repo tool integration.
 
     Args:
@@ -736,7 +1038,9 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     Returns:
         The run_tool function to execute the tool.
     """
-    parser.description = "Run Python linting tools on extensions (mypy, pydocstyle, darglint, interrogate)."
+    parser.description = (
+        "Run Python linting tools on extensions (mypy, pydocstyle, darglint, interrogate, pydoclint, ruff)."
+    )
 
     # Extension selection
     parser.add_argument(
@@ -772,6 +1076,21 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
         action="store_true",
         help="Run interrogate docstring coverage",
     )
+    parser.add_argument(
+        "--pydoclint",
+        action="store_true",
+        help="Run pydoclint to validate docstrings don't contain types (types belong in signatures)",
+    )
+    parser.add_argument(
+        "--ruff",
+        action="store_true",
+        help="Run ruff to check for modern type annotation style (UP rules: list[] not List[], X | Y not Union)",
+    )
+    parser.add_argument(
+        "--ruff-clean",
+        action="store_true",
+        help="Include ruff cleanup rules (remove unused imports and extra pass statements)",
+    )
 
     # Configuration
     parser.add_argument(
@@ -783,6 +1102,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
         nargs="+",
         default=[],
         help="Regex patterns to exclude from mypy checking",
+    )
+
+    # Fix options
+    parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="Automatically fix issues where supported (currently: ruff)",
     )
 
     # Output options
@@ -801,10 +1127,16 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
         action="store_true",
         help="Disable colored output",
     )
+    parser.add_argument(
+        "--keep-going",
+        "-k",
+        action="store_true",
+        help="Return exit code 0 even if errors are found (report all issues without failing)",
+    )
 
     tool_config = config.get("repo_run_python_linting", {})
 
-    def run_tool(args: argparse.Namespace, config: Dict[str, Any] = config) -> int:
+    def run_tool(args: argparse.Namespace, config: dict[str, Any] = config) -> int:
         """Run the Python linting tool.
 
         Args:
@@ -812,7 +1144,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
             config: Configuration dictionary.
 
         Returns:
-            0 if all checks passed, 1 if there were errors.
+            0 if all checks passed (or --keep-going is set), 1 if there were errors.
         """
         repo_root = Path(config.get("root", os.getcwd()))
         use_color = not args.no_color
@@ -823,6 +1155,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
             "pydocstyle": args.pydocstyle,
             "darglint": args.darglint,
             "interrogate": args.interrogate,
+            "pydoclint": args.pydoclint,
+            "ruff": args.ruff,
         }
         # If no specific tools requested, run all
         if not any(tool_flags.values()):
@@ -893,10 +1227,14 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
                 use_color,
             )
         )
+        if args.fix:
+            print(colorize("Fix mode enabled: ruff will auto-fix issues", Colors.YELLOW, use_color))
+            if args.ruff_clean:
+                print(colorize("Ruff cleanup enabled: unused imports and pass removal", Colors.DIM, use_color))
         if mypy_config and "mypy" in enabled_tools:
             print(colorize("Using mypy config: {}".format(mypy_config), Colors.DIM, use_color))
 
-        results = []  # type: List[ExtensionResult]
+        results: list[ExtensionResult] = []
         for i, extension in enumerate(extensions_to_check, 1):
             progress = "[{}/{}]".format(i, len(extensions_to_check))
             print("  {} Checking {}...".format(progress, extension.name), end=" ", flush=True)
@@ -908,6 +1246,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
                 mypy_config=mypy_config,
                 exclude_patterns=exclude_patterns,
                 vendor_dir=vendor_dir,
+                fix=args.fix,
+                cleanup=args.ruff_clean,
             )
             results.append(result)
 
@@ -930,6 +1270,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
 
         # Return exit code
         total_errors = sum(r.total_errors for r in results)
+        if args.keep_going:
+            return 0  # Always return success when --keep-going is specified
         return 1 if total_errors > 0 else 0
 
     return run_tool
