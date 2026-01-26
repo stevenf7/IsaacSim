@@ -202,6 +202,7 @@ class HolonomicController(BaseController):
 
         try:
             self.P = sparse.csc_matrix(np.diag(self.wheel_radius) / np.linalg.norm(self.wheel_radius))
+            self.q = np.zeros(self.num_wheels)  # Linear cost term (zero for pure quadratic minimization)
             self.b = sparse.csc_matrix(np.zeros((6, 1)))
             V = self.base_dir
             W = np.cross(V, self.wheel_dists_inv, axis=0)
@@ -210,7 +211,7 @@ class HolonomicController(BaseController):
             self.u = np.array([0.0, 0.0, np.inf, np.inf, np.inf, 0.0])
 
             self.prob = osqp.OSQP()
-            self.prob.setup(self.P, A=self.A, l=self.l, u=self.u, verbose=False)
+            self.prob.setup(self.P, q=self.q, A=self.A, l=self.l, u=self.u, verbose=False)
         finally:
             # Restore original functions
             npm._amax = original_amax

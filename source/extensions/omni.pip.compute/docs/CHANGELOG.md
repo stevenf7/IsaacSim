@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.0] - 2026-01-26
+### Changed
+- Update imageio==2.37.2, scipy==1.17.0, pyyaml==6.0.3, opencv-python-headless==4.13.0.90, trimesh==4.11.1, rtree==1.4.1
+
 ## [1.6.5] - 2025-12-17
 ### Changed
 - Revert to opencv-python-headless==4.11.0.86

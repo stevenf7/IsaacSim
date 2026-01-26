@@ -1,4 +1,9 @@
 # Changelog
+
+## [5.0.3] - 2026-01-26
+### Changed
+- Update to new osqp version and fix OSQP.setup() positional argument issue
+
 ## [5.0.2] - 2025-11-27
 ### Changed
 - Add missing docstrings
