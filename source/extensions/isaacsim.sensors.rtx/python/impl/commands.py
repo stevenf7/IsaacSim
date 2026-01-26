@@ -19,8 +19,11 @@ This module provides command classes for creating various RTX sensors
 including Lidar, Radar, IDS, and Ultrasonic sensors.
 """
 
+from __future__ import annotations
+
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import carb
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
@@ -44,19 +47,17 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     Replicator API, or direct camera prim creation.
 
     Args:
-        path (Optional[str]): Path where the sensor will be created. If None, a default
-            path will be used. Defaults to None.
-        parent (Optional[str]): Parent prim path for the sensor. Defaults to None.
-        config (Optional[str]): Configuration name for the sensor. Defaults to None.
-        translation (Optional[Gf.Vec3d]): 3D translation vector for sensor placement.
+        path: Path where the sensor will be created. If None, a default path will be
+            used. Defaults to None.
+        parent: Parent prim path for the sensor. Defaults to None.
+        config: Configuration name for the sensor. Defaults to None.
+        translation: 3D translation vector for sensor placement.
             Defaults to Gf.Vec3d(0, 0, 0).
-        orientation (Optional[Gf.Quatd]): Quaternion for sensor orientation.
-            Defaults to Gf.Quatd(1, 0, 0, 0).
-        visibility (Optional[bool]): Visibility flag for the sensor. Defaults to False.
-        variant (Optional[str]): Variant name for the sensor configuration.
-            Defaults to None.
-        force_camera_prim (bool): If True, forces creation of a camera prim instead
-            of using references or Replicator API. Defaults to False.
+        orientation: Quaternion for sensor orientation. Defaults to Gf.Quatd(1, 0, 0, 0).
+        visibility: Visibility flag for the sensor. Defaults to False.
+        variant: Variant name for the sensor configuration. Defaults to None.
+        force_camera_prim: If True, forces creation of a camera prim instead of using
+            references or Replicator API. Defaults to False.
         **kwargs: Additional keyword arguments for prim creation.
 
     Attributes:
@@ -68,22 +69,22 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         _camera_config_name: Name of the camera configuration.
     """
 
-    _replicator_api: Optional[Callable[..., Any]] = None
+    _replicator_api: Callable[..., Any] | None = None
     _sensor_type: str = "sensor"
-    _supported_configs: Union[list[Any], dict[str, set[str]]] = []
+    _supported_configs: list[Any] | dict[str, set[str]] = []
     _schema: Any = None
     _sensor_plugin_name: str = ""
     _camera_config_name: str = ""
 
     def __init__(
         self,
-        path: Optional[str] = None,
-        parent: Optional[str] = None,
-        config: Optional[str] = None,
-        translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
-        orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
-        visibility: Optional[bool] = False,
-        variant: Optional[str] = None,
+        path: str | None = None,
+        parent: str | None = None,
+        config: str | None = None,
+        translation: Gf.Vec3d | None = Gf.Vec3d(0, 0, 0),
+        orientation: Gf.Quatd | None = Gf.Quatd(1, 0, 0, 0),
+        visibility: bool = False,
+        variant: str | None = None,
         force_camera_prim: bool = False,
         **kwargs,
     ) -> None:
@@ -100,7 +101,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         self._desired_prim_type = f"Omni{self._sensor_type.capitalize()}"
         self._camera_config = self._config
 
-    def _add_reference(self) -> Optional[Usd.Prim]:
+    def _add_reference(self) -> Usd.Prim | None:
         """Add a reference to the stage if a config is provided.
 
         If a config is provided, this method adds a reference to the stage and sets the
@@ -108,8 +109,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         referenced assets.
 
         Returns:
-            Optional[Usd.Prim]: The created or found prim, or None if no config was
-                provided or found.
+            The created or found prim, or None if no config was provided or found.
         """
         if self._config:
             found_config = False
@@ -166,14 +166,14 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
                 )
         return None
 
-    def _call_replicator_api(self) -> Optional[Usd.Prim]:
+    def _call_replicator_api(self) -> Usd.Prim | None:
         """Create a sensor using the Replicator API.
 
         Converts position and orientation into the format required by the Replicator API
         and creates the sensor prim.
 
         Returns:
-            Optional[Usd.Prim]: The created prim, or None if no Replicator API is available.
+            The created prim, or None if no Replicator API is available.
         """
         if self._replicator_api is not None and self._translation is not None and self._orientation is not None:
             # Convert position and orientation into tuples for Replicator API.
@@ -209,7 +209,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         with sensor-specific attributes.
 
         Returns:
-            Usd.Prim: The created camera prim.
+            The created camera prim.
         """
         carb.log_warn(
             "Support for creating RTX sensors as camera prims is deprecated as of Isaac Sim 5.0, and support will be removed in a future release. Please use an OmniSensor prim instead."
@@ -234,7 +234,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         and available APIs.
 
         Returns:
-            Usd.Prim: The created sensor prim.
+            The created sensor prim.
         """
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
@@ -245,7 +245,6 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
 
     def undo(self) -> None:
         """Undo the sensor creation command."""
-        pass
 
 
 class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
@@ -272,7 +271,7 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
     _schema: Any = IsaacSensorSchema.IsaacRtxLidarSensorAPI
     _sensor_plugin_name: str = "omni.sensors.nv.lidar.lidar_core.plugin"
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if self._config and self._config.startswith("OS") and len(self._config) > 3:
             carb.log_warn(
@@ -290,7 +289,7 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
         """Execute the Lidar sensor creation command.
 
         Returns:
-            Usd.Prim: The created Lidar sensor prim.
+            The created Lidar sensor prim.
         """
         prim = super().do()
         if prim.IsValid() and prim.HasAttribute("omni:sensor:Core:skipDroppingInvalidPoints"):
@@ -341,7 +340,7 @@ class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
     _sensor_type: str = "ids"
     _sensor_plugin_name: str = "omni.sensors.nv.ids.ids.plugin"
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if self._config is None:
             self._config = "idsoccupancy"

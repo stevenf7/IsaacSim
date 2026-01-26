@@ -22,8 +22,6 @@ Based on documentation from omni.sensors.nv.material extension:
 https://docs.isaacsim.omniverse.nvidia.com/4.5.0/sensors/omni_sensors_docs/materials_extension/materials_extension.html#current-materials
 """
 
-from typing import Union
-
 import carb
 from pxr import Sdf, Usd, UsdShade
 
@@ -132,7 +130,7 @@ ATTR_ATTRIBUTE = f"{ATTR_PREFIX}:attributes"
 
 
 def apply_nonvisual_material(
-    prim: Usd.Prim, base: Union[str, int], coating: Union[str, int] = "none", attribute: Union[str, int] = "none"
+    prim: Usd.Prim, base: str | int, coating: str | int = "none", attribute: str | int = "none"
 ) -> bool:
     """Apply nonvisual material attributes to a USD material prim.
 
@@ -140,16 +138,14 @@ def apply_nonvisual_material(
     material prim for use by RTX sensors. The material must be a valid material prim.
 
     Args:
-        prim (Usd.Prim): USD prim that must be a material prim.
-        base (Union[str, int]): Base material type, either string name or integer ID.
-        coating (Union[str, int]): Coating type, either string name or integer ID.
-            Defaults to "none".
-        attribute (Union[str, int]): Material attribute, either string name or integer ID.
-            Defaults to "none".
+        prim: USD prim that must be a material prim.
+        base: Base material type, either string name or integer ID.
+        coating: Coating type, either string name or integer ID. Defaults to "none".
+        attribute: Material attribute, either string name or integer ID. Defaults to "none".
 
     Returns:
-        bool: True if the nonvisual material was successfully applied, False otherwise.
-            Error messages are logged via carb.log_error for debugging.
+        True if the nonvisual material was successfully applied, False otherwise.
+        Error messages are logged via carb.log_error for debugging.
 
     Example:
 
@@ -260,12 +256,11 @@ def get_material_id(prim: Usd.Prim) -> int:
     - Upper byte bits 11-15 (upper 5 bits): attributes (values 0-31)
 
     Args:
-        prim (Usd.Prim): USD prim that must be a material prim with nonvisual material
-            attributes.
+        prim: USD prim that must be a material prim with nonvisual material attributes.
 
     Returns:
-        int: Computed material ID as an integer. Returns 0 if attributes are not found
-            or if prim is invalid.
+        Computed material ID as an integer. Returns 0 if attributes are not found
+        or if prim is invalid.
 
     Note:
         Error messages are logged via carb.log_error for debugging.
@@ -344,11 +339,11 @@ def decode_material_id(material_id: int) -> tuple[str, str, str]:
     - Upper byte bits 11-15 (upper 5 bits): attributes (values 0-31)
 
     Args:
-        material_id (int): Material ID as computed by get_material_id function.
+        material_id: Material ID as computed by get_material_id function.
 
     Returns:
-        tuple[str, str, str]: Tuple containing (base_name, coating_name, attribute_name)
-            as strings. Returns ("none", "none", "none") if any component cannot be decoded.
+        Tuple containing (base_name, coating_name, attribute_name) as strings.
+        Returns ("none", "none", "none") if any component cannot be decoded.
 
     Raises:
         ValueError: If material_id is negative or exceeds uint16 range.

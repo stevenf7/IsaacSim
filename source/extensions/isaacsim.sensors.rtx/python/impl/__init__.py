@@ -15,6 +15,6 @@
 
 from .commands import *
 from .extension import *
-from .lidar_rtx import LidarRtx
+from .lidar_rtx import LidarRtx as LidarRtx
 from .nonvisual_materials import *
 from .supported_lidar_configs import *
