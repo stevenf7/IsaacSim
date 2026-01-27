@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.6] - 2026-01-20
+### Removed
+- Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_position_residuals`, `get_velocity_residuals`) from `Articulation` and `SingleArticulation`.
+
 ## [0.8.6] - 2026-01-19
 ### Fixed
 - Fixed missing argument `context` in `_reset_fabric_selection` method.

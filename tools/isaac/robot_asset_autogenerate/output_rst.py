@@ -47,7 +47,6 @@ def get_all_physics_apis(prim):
         (PhysxSchema.PhysxSceneAPI, "PhysX SceneAPI"),
         (PhysxSchema.PhysxMimicJointAPI, "PhysX MimicJointAPI"),
         (PhysxSchema.PhysxJointAPI, "PhysX JointAPI"),
-        (PhysxSchema.PhysxResidualReportingAPI, "PhysX ResidualReportingAPI"),
         (PhysxSchema.PhysxAutoParticleClothAPI, "PhysX AutoParticleClothAPI"),
         (PhysxSchema.PhysxParticleClothAPI, "PhysX ParticleClothAPI"),
     ]
