@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.8] - 2026-01-26
+### Added
+- Also run ros2 image buffer tests with async rendering handshake enabled
+
 ## [1.5.7] - 2026-01-24
 ### Changed
 - Fix issues with menu click and context menu tests being flaky
