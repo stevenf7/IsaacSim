@@ -404,24 +404,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(
-        backends=["tensor", "usd"],
-        operations=["wrap"],
-        prim_class=Articulation,
-        prim_class_kwargs={"enable_residual_reports": True},
-        populate_stage_func=populate_stage,
-    )
-    async def test_solver_residual_reports(self, prim, num_prims, device, backend):
-        # check backend
-        self.check_backend(backend, prim)
-        # test cases
-        for indices, expected_count in draw_indices(count=num_prims, step=2):
-            cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
-            with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
-                position_residuals, velocity_residuals = prim.get_solver_residual_reports(indices=indices)
-            check_array(position_residuals, shape=(expected_count, 1), dtype=wp.float32, device=device)
-            check_array(velocity_residuals, shape=(expected_count, 1), dtype=wp.float32, device=device)
-
-    @parametrize(
         backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
     )
     async def test_dof_armatures(self, prim, num_prims, device, backend):

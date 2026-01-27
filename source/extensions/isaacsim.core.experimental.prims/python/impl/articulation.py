@@ -60,7 +60,6 @@ class Articulation(XformPrim):
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         reset_xform_op_properties: Whether to reset the transformation operation attributes of the prims to a standard set.
             See :py:meth:`reset_xform_op_properties` for more details.
-        enable_residual_reports: Whether to enable residual reporting for the articulations.
 
     Raises:
         ValueError: If no prims are found matching the specified path(s).
@@ -83,7 +82,6 @@ class Articulation(XformPrim):
         ...     "/World/prim_.*",
         ...     positions=[[x, 0, 0] for x in range(3)],
         ...     reset_xform_op_properties=True,
-        ...     enable_residual_reports=True,
         ... )  # doctest: +NO_CHECK
         >>>
         >>> # play the simulation so that the Physics tensor entity becomes valid
@@ -102,8 +100,6 @@ class Articulation(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
-        # Articulation
-        enable_residual_reports: bool = False,
     ) -> None:
         paths = Articulation.fetch_articulation_root_api_prim_paths(paths)
         # define properties
@@ -149,10 +145,6 @@ class Articulation(XformPrim):
             scales=scales,
             reset_xform_op_properties=reset_xform_op_properties,
         )
-        # initialize instance from arguments
-        self._enable_residual_reports = enable_residual_reports
-        if enable_residual_reports:
-            Articulation.ensure_api(self.prims, PhysxSchema.PhysxResidualReportingAPI)
 
         # setup subscriptions
         def safe_timeline_stop_callback(event, obj=weakref.proxy(self)):
@@ -2419,69 +2411,6 @@ class Articulation(XformPrim):
         data = self._physics_articulation_view.get_root_velocities()  # shape: (N, 6)
         indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return data[indices, :3].contiguous().to(self._device), data[indices, 3:].contiguous().to(self._device)
-
-    def get_solver_residual_reports(
-        self,
-        *,
-        indices: int | list | np.ndarray | wp.array | None = None,
-        report_maximum: bool = True,
-    ) -> tuple[wp.array, wp.array]:
-        """Get the physics solver residuals (position and velocity) of the prims.
-
-        Backends: :guilabel:`usd`.
-
-        The solver residual quantifies the convergence of the iterative physics solver.
-        A perfectly converged solution has a residual value of zero.
-        For articulations, the solver residual is computed across all joints that are part of the articulations.
-
-        Search for *Solver Residual* in |physx_docs| for more details.
-
-        Args:
-            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
-            report_maximum: Whether to report the maximum (true) or the root mean square (false) residual.
-
-        Returns:
-            Two-elements tuple. 1) The solver residuals for position (shape ``(N, 1)``).
-            2) The solver residuals for velocity (shape ``(N, 1)``).
-
-        Raises:
-            AssertionError: Residual reporting is not enabled.
-            AssertionError: Wrapped prims are not valid.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> # get the solver residuals of all prims
-            >>> position_residuals, velocity_residuals = prims.get_solver_residual_reports()
-            >>> position_residuals.shape, velocity_residuals.shape
-            ((3, 1), (3, 1))
-            >>>
-            >>> # get the solver residuals of the first and last prims
-            >>> position_residuals, velocity_residuals = prims.get_solver_residual_reports(indices=[0, 2])
-            >>> position_residuals.shape, velocity_residuals.shape
-            ((2, 1), (2, 1))
-        """
-        assert (
-            self._enable_residual_reports
-        ), "Enable residual reporting in Articulation class constructor to use residuals API"
-        assert self.valid, _MSG_PRIM_NOT_VALID
-        # USD API
-        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
-        position_residuals = np.zeros(shape=(indices.shape[0], 1), dtype=np.float32)
-        velocity_residuals = np.zeros(shape=(indices.shape[0], 1), dtype=np.float32)
-        for i, index in enumerate(indices.numpy()):
-            residual_api = Articulation.ensure_api([self.prims[index]], PhysxSchema.PhysxResidualReportingAPI)[0]
-            if report_maximum:
-                position_residuals[i] = residual_api.GetPhysxResidualReportingMaxResidualPositionIterationAttr().Get()
-                velocity_residuals[i] = residual_api.GetPhysxResidualReportingMaxResidualVelocityIterationAttr().Get()
-            else:
-                position_residuals[i] = residual_api.GetPhysxResidualReportingRmsResidualPositionIterationAttr().Get()
-                velocity_residuals[i] = residual_api.GetPhysxResidualReportingRmsResidualVelocityIterationAttr().Get()
-        return (
-            ops_utils.place(position_residuals, device=self._device),
-            ops_utils.place(velocity_residuals, device=self._device),
-        )
 
     def set_default_state(
         self,
