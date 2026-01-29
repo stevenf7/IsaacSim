@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.7] - 2026-01-23
+### Changed
+- Set publish_with_queue_thread extension setting to true
+
 ## [1.2.6] - 2026-01-21
 ### Added
 - Added ros2 image buffer utils 
