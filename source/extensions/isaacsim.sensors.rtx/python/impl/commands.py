@@ -31,6 +31,7 @@ import omni.kit.commands
 import omni.kit.utils
 import omni.replicator.core as rep
 import omni.usd
+from isaacsim.core.utils.prims import delete_prim
 from isaacsim.core.utils.stage import add_reference_to_stage, get_next_free_path
 from isaacsim.core.utils.xforms import reset_and_set_xform_ops
 from isaacsim.storage.native import get_assets_root_path
@@ -51,6 +52,9 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
             used. Defaults to None.
         parent: Parent prim path for the sensor. Defaults to None.
         config: Configuration name for the sensor. Defaults to None.
+        usd_path: Path to a USD file containing the sensor asset. If both config and
+            usd_path are provided, config takes precedence and a warning is logged.
+            Defaults to None.
         translation: 3D translation vector for sensor placement.
             Defaults to Gf.Vec3d(0, 0, 0).
         orientation: Quaternion for sensor orientation. Defaults to Gf.Quatd(1, 0, 0, 0).
@@ -81,6 +85,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         path: str | None = None,
         parent: str | None = None,
         config: str | None = None,
+        usd_path: str | None = None,
         translation: Gf.Vec3d | None = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd | None = Gf.Quatd(1, 0, 0, 0),
         visibility: bool = False,
@@ -90,6 +95,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     ) -> None:
         self._parent = parent
         self._config = config
+        self._usd_path = usd_path
         self._translation = translation
         self._orientation = orientation
         self._visibility = visibility
@@ -101,16 +107,28 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         self._desired_prim_type = f"Omni{self._sensor_type.capitalize()}"
         self._camera_config = self._config
 
-    def _add_reference(self) -> Usd.Prim | None:
-        """Add a reference to the stage if a config is provided.
+        # Warn if both config and usd_path are provided
+        if self._config and self._usd_path:
+            carb.log_warn(
+                f"Both 'config' and 'usd_path' provided for Omni{self._sensor_type.capitalize()}. "
+                f"Using 'config' ({self._config}) and ignoring 'usd_path' ({self._usd_path})."
+            )
+            self._usd_path = None
 
-        If a config is provided, this method adds a reference to the stage and sets the
-        prim's variant if provided. It also handles finding the correct sensor prim within
-        referenced assets.
+    def _add_reference(self) -> Usd.Prim | None:
+        """Add a reference to the stage if a config or usd_path is provided.
+
+        If a config is provided, this method looks up the corresponding USD path from
+        supported configs. If usd_path is provided directly, it uses that path.
+        The method adds a reference to the stage and sets the prim's variant if provided.
+        It also handles finding the correct sensor prim within referenced assets.
 
         Returns:
-            The created or found prim, or None if no config was provided or found.
+            The created or found prim, or None if no config/usd_path was provided or found.
         """
+        usd_path_to_load = None
+        prim_type = "Xform"
+
         if self._config:
             found_config = False
             for config in self._supported_configs:
@@ -127,44 +145,76 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
                     or self._config == config_name_without_vendor.replace("_", " ")
                 ):
                     found_config = True
-                    prim = add_reference_to_stage(
-                        usd_path=get_assets_root_path() + config,
-                        prim_path=self._prim_path,
-                        prim_type=self._desired_prim_type if config.endswith(".usda") else "Xform",
-                    )
-                    reset_and_set_xform_ops(prim.GetPrim(), self._translation, self._orientation)
-                    if self._variant and isinstance(self._supported_configs, dict):
-                        allowed_variants = self._supported_configs[config]
-                        if self._variant not in allowed_variants:
-                            carb.log_warn(
-                                f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Allowed variants: {allowed_variants}."
-                            )
-                        else:
-                            variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
-                            if len(variant_set.GetVariantNames()) == 0:
-                                carb.log_warn(
-                                    f"Variant set {SUPPORTED_LIDAR_VARIANT_SET_NAME} for Omni{self._sensor_type.capitalize()} at {self._prim_path} does not contain any variants."
-                                )
-                            elif not variant_set.SetVariantSelection(self._variant):
-                                carb.log_warn(
-                                    f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Mismatch between allowed variant list and available variants."
-                                )
-                    # If necessary, traverse children of referenced asset to find OmniSensor prim
-                    # Note: if multiple children of the referenced asset are OmniSensor types, this will select the first one
-                    if prim.GetTypeName() == "Xform":
-                        for child in Usd.PrimRange(prim):
-                            if child.GetTypeName() == self._desired_prim_type:
-                                carb.log_info(f"Using {self._desired_prim_type} prim at path {child.GetPath()}")
-                                prim = child
-                    for attr, value in self._prim_creation_kwargs.items():
-                        if prim.HasAttribute(attr):
-                            prim.GetAttribute(attr).Set(value)
-                    return prim
+                    usd_path_to_load = get_assets_root_path() + config
+                    prim_type = self._desired_prim_type if config.endswith(".usda") else "Xform"
+                    break
             if not found_config:
                 carb.log_warn(
                     f"Config '{self._config}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}."
                 )
-        return None
+                return None
+        elif self._usd_path:
+            usd_path_to_load = self._usd_path
+            prim_type = self._desired_prim_type if self._usd_path.endswith(".usda") else "Xform"
+
+        if usd_path_to_load is None:
+            return None
+
+        prim = add_reference_to_stage(
+            usd_path=usd_path_to_load,
+            prim_path=self._prim_path,
+            prim_type=prim_type,
+        )
+        reset_and_set_xform_ops(prim.GetPrim(), self._translation, self._orientation)
+
+        if self._variant:
+            # Check if the variant is in the allowed list (if using config with supported configs)
+            if isinstance(self._supported_configs, dict) and self._config:
+                config_key = None
+                for config in self._supported_configs:
+                    if usd_path_to_load.endswith(config) or usd_path_to_load == get_assets_root_path() + config:
+                        config_key = config
+                        break
+                if config_key:
+                    allowed_variants = self._supported_configs[config_key]
+                    if self._variant not in allowed_variants:
+                        carb.log_warn(
+                            f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Allowed variants: {allowed_variants}."
+                        )
+
+            # Apply variant selection to the prim
+            variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
+            if len(variant_set.GetVariantNames()) == 0:
+                carb.log_warn(
+                    f"Variant set {SUPPORTED_LIDAR_VARIANT_SET_NAME} for Omni{self._sensor_type.capitalize()} at {self._prim_path} does not contain any variants."
+                )
+            elif not variant_set.SetVariantSelection(self._variant):
+                carb.log_warn(
+                    f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Available variants: {variant_set.GetVariantNames()}."
+                )
+
+        # If necessary, traverse children of referenced asset to find OmniSensor prim
+        # Note: if multiple children of the referenced asset are OmniSensor types, this will select the first one
+        if prim.GetTypeName() == "Xform":
+            found_sensor = False
+            for child in Usd.PrimRange(prim):
+                if child.GetTypeName() == self._desired_prim_type:
+                    carb.log_info(f"Using {self._desired_prim_type} prim at path {child.GetPath()}")
+                    prim = child
+                    found_sensor = True
+                    break
+            if not found_sensor:
+                carb.log_error(
+                    f"No {self._desired_prim_type} prim found in referenced asset at {self._prim_path}. "
+                    f"USD path: {usd_path_to_load}"
+                )
+                self.undo()
+                return None
+
+        for attr, value in self._prim_creation_kwargs.items():
+            if prim.HasAttribute(attr):
+                prim.GetAttribute(attr).Set(value)
+        return prim
 
     def _call_replicator_api(self) -> Usd.Prim | None:
         """Create a sensor using the Replicator API.
@@ -244,7 +294,9 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         return self._prim
 
     def undo(self) -> None:
-        """Undo the sensor creation command."""
+        """Undo the sensor creation command by deleting the created prim."""
+        if self._prim_path:
+            delete_prim(self._prim_path)
 
 
 class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
@@ -303,6 +355,9 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
     This class specializes the base RTX sensor creation for Radar sensors, providing
     specific configuration and plugin settings for Radar functionality.
 
+    RTX Radar requires Motion BVH to be enabled. If Motion BVH is not enabled,
+    the command will warn the user and not create the prim.
+
     Args:
         **kwargs: Keyword arguments passed to the parent class constructor.
             See IsaacSensorCreateRtxSensor for available parameters.
@@ -318,6 +373,29 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
     _sensor_type: str = "radar"
     _schema: Any = IsaacSensorSchema.IsaacRtxRadarSensorAPI
     _sensor_plugin_name: str = "omni.sensors.nv.radar.wpm_dmatapprox.plugin"
+
+    def do(self) -> Usd.Prim | None:
+        """Execute the Radar sensor creation command.
+
+        Checks if Motion BVH settings are enabled before creating the radar sensor.
+        If Motion BVH is not enabled, logs a warning and returns None without
+        creating the prim.
+
+        Returns:
+            The created Radar sensor prim, or None if Motion BVH is not enabled.
+        """
+        settings = carb.settings.get_settings()
+        motion_bvh_enabled = settings.get("/renderer/raytracingMotion/enabled")
+
+        if not motion_bvh_enabled:
+            carb.log_warn(
+                "RTX Radar requires Motion BVH to be enabled. "
+                "Please enable Motion BVH by setting '/renderer/raytracingMotion/enabled' to true. "
+                "Radar sensor was not created."
+            )
+            return None
+
+        return super().do()
 
 
 class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
