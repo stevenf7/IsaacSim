@@ -1,5 +1,10 @@
 # Changelog
 
+## [15.11.9] - 2026-01-28
+### Changed
+- IsaacSensorCreateRtxSensor commands accept usd_path argument to enable adding arbitrary RTX Sensor USDs to the stage
+- IsaacSensorCreateRtxRadar command validates if user has enabled Motion BVH before creating prim
+
 ## [15.11.8] - 2026-01-23
 ### Changed
 - Cleanup and make docstrings consistent and add missing docstrings, example strings and type hints
