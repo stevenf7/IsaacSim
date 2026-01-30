@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.3.0] - 2025-01-27
+### Added
+- IsaacAttachHydraTexture node allows user to add HydraTextures and RenderVars on demand to RenderProduct prims already in the stage
+
 ## [5.2.0] - 2025-12-15
 ### Changed
 - Migrate extension implementation to core experimental API
