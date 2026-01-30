@@ -831,21 +831,7 @@ class SimulationApp:
         except Exception:
             pass
         carb.log_info("SimulationApp.close: Replicator shutdown finished")
-        # close the stage to make sure all the objects are destroyed
-        usd_context = self.context
-        if usd_context.can_close_stage():
-            try:
-                close_stage_async = getattr(usd_context, "close_stage_async", None)
-                if callable(close_stage_async):
-                    self.run_coroutine(close_stage_async())
-                    carb.log_info("SimulationApp.close: Stage closed (async)")
-                else:
-                    usd_context.close_stage()
-                    carb.log_info("SimulationApp.close: Stage closed")
-            except Exception as exc:
-                carb.log_warn(f"SimulationApp.close: Stage close failed: {exc}")
-        else:
-            carb.log_info("SimulationApp.close: Stage could not be closed")
+        # Explicit stage close call is not needed as the framework shutdown will handle cleanup.
         # check if exited already
         if not self._exiting:
             self._exiting = True

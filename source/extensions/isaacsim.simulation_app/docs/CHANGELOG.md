@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.14.5] - 2026-01-29
+### Changed
+- Skip explicit stage close in simulation app close() method to avoid crashes
+
 ## [2.14.4] - 2026-01-22
 ### Changed
 - is_running method does not require an active USD stage
