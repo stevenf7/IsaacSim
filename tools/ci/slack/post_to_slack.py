@@ -19,6 +19,7 @@ except ImportError:
 
 import requests
 
+KIT_PROJECT_ID = 6510
 
 def emoji_for_job_status(status, allow_fail=False):
     if status == 'success':
@@ -38,8 +39,43 @@ def source_for_pipeline(source_str):
     if source_str == "pipeline":
         if upstream_pipeline_id := os.getenv("UPSTREAM_PIPELINE_ID"):
             upstream_pipeline_url = f"https://gitlab-master.nvidia.com/omniverse/kit/pipelines/{upstream_pipeline_id}"
-            upstream_pipeline_source = os.getenv('UPSTREAM_PIPELINE_SOURCE', 'Unknown')
-            return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>, which was a {upstream_pipeline_source} pipeline"
+
+            # Fetch the branch for the upstream pipeline
+            branch_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/pipelines/{upstream_pipeline_id}"
+            response = requests.get(branch_url)
+            # Fetch the branch for the upstream pipeline
+            branch_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/pipelines/{upstream_pipeline_id}"
+            try:
+                response = requests.get(branch_url)
+                response.raise_for_status()
+            except requests.RequestException:
+                # Fall back to basic message if API call fails
+                return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
+            branch = response.json()
+            branch_name = branch['ref']
+
+
+            if os.getenv('UPSTREAM_PIPELINE_SOURCE') == "nightly":
+                return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>, which was a nightly pipeline on branch `{branch_name}`"
+            else:
+                if 'refs/merge-requests' in branch_name:
+                    mr_number = branch_name.split('/')[2]
+                    mr_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/merge_requests/{mr_number}"
+                    response = requests.get(mr_url)
+                    mr_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/merge_requests/{mr_number}"
+                    try:
+                        response = requests.get(mr_url)
+                        response.raise_for_status()
+                    except requests.RequestException:
+                        # Fall back to pipeline reference without MR details
+                        return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
+                    mr = response.json()
+                    mr_web_url = mr['web_url']
+                    return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>, which was for merge request <{mr_web_url}|{mr_number}>\n`{mr['title']}`\n"
+                
+            return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
+
+
         else:
             return "Downstream pipeline"
     elif source_str == "merge_request_event":
