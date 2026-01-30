@@ -1,5 +1,5 @@
 [package]
-version = "5.2.0"
+version = "5.3.0"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Provides OmniGraph nodes for Isaac Sim workflows including articulation control, simulation timing, camera info reading, viewport management, and physics step event handling."
@@ -51,6 +51,7 @@ stdoutFailPatterns.exclude = [
 timeout = 900
 dependencies = [
     "isaacsim.core.experimental.objects",  # for GroundPlane
+    "isaacsim.test.utils",  # for image comparison utilities
 ]
 args = [
     "--enable",
@@ -104,6 +105,7 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacComputeOdometry: [/TestGraph] Omnigraph Error: no chassis prim found*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacCreateRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacSetCameraOnRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacAttachHydraTexture: [/TestGraph] OmniGraph Error: Render product prim must be specified*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacArticulationController: [/TestGraph] Omnigraph Error: No robot prim found for the articulation controller*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacArticulationState: [/TestGraph] OmniGraph Error: No robot prim found for the articulation state*',
     '*[Error] [isaacsim.core.nodes] Physics OnSimulationStep node detected in a non on-demand Graph. Node will only trigger events if the parent Graph is set to compute on-demand*',
@@ -114,4 +116,9 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacJointNameResolver: [/TestGraph] OmniGraph Error: no articulation root prim found*",
     "*Invalid RationalTime - zero denominator*",
     '*The NumPy module was reloaded*',
+    # IsaacAttachHydraTexture test error exclusions
+    '*[Error] [omni.graph.core.plugin] /ActionGraph/attachHydraTexture: [/ActionGraph] OmniGraph Error: Render product prim does not exist*',
+    '*[Error] [omni.graph.core.plugin] /ActionGraph/attachHydraTexture: [/ActionGraph] OmniGraph Error: Render product prim must be specified*',
+    '*[Error] [omni.graph.core.plugin] /ActionGraph/attachHydraTexture: [/ActionGraph] OmniGraph Error: Prim is not a RenderProduct*',
+    '*[Error] [omni.hydratexture.plugin] Was not able to get a RenderProduct from the path*',
 ]
