@@ -180,11 +180,12 @@ def euler_angles_to_quaternion(
     """Convert Euler angles to quaternion.
 
     Args:
-        euler_angles: Euler XYZ angles or batch of Euler angles with shape (..., 3).
+        euler_angles: Euler angles or batch of Euler angles with shape (..., 3).
         degrees: Whether input angles are in degrees. Defaults to False.
         extrinsic: True if the euler angles follows the extrinsic angles
-            convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
-            the intrinsic angles conventions (equivalent to XYZ ordering). Defaults to True.
+            convention (equivalent to ZYX ordering but returned in the reverse). In this case the input
+            order is [Z, Y, X] = [yaw, pitch, roll]. If False, it follows the intrinsic angles convention
+            (equivalent to XYZ ordering) with input order [X, Y, Z] = [roll, pitch, yaw]. Defaults to True.
         dtype: Data type of the output array. If ``None``, the data type of the input is used.
         device: Device to place the output array on. If ``None``, the default device is used,
             unless the input is a Warp array (in which case the input device is used).
@@ -441,7 +442,7 @@ def quaternion_to_euler_angles(
     """Convert quaternion to Euler angles.
 
     Converts quaternions in [w, x, y, z] format to Euler angles. The output order matches
-    the input convention of :func:`euler_angles_to_quaternion` for round-trip consistency.
+    :func:`isaacsim.core.utils.numpy.rotations.quat_to_euler_angles` for consistency.
 
     Args:
         quaternion: Quaternion or batch of quaternions with shape (..., 4) in [w, x, y, z] format.
@@ -454,7 +455,7 @@ def quaternion_to_euler_angles(
             unless the input is a Warp array (in which case the input device is used).
 
     Returns:
-        Euler angles with shape (..., 3). For extrinsic convention, order is [Z, Y, X] (yaw, pitch, roll).
+        Euler angles with shape (..., 3). For extrinsic convention, order is [X, Y, Z] (roll, pitch, yaw).
         For intrinsic convention, order is [X, Y, Z] (roll, pitch, yaw).
 
     Example:
@@ -737,8 +738,7 @@ def _wk_quaternion_to_euler_angles(
 ):
     """Convert quaternion to Euler angles using Warp kernel.
 
-    For extrinsic convention, output order is [Z, Y, X] = [yaw, pitch, roll] to match
-    the euler_angles_to_quaternion input convention.
+    For extrinsic convention, output order is [X, Y, Z] = [roll, pitch, yaw].
     For intrinsic convention, output order is [X, Y, Z] = [roll, pitch, yaw].
     """
     i = wp.tid()
@@ -778,7 +778,7 @@ def _wk_quaternion_to_euler_angles(
     # Extract euler angles
     if extrinsic:
         # For extrinsic ZYX convention: R = Rz(yaw) * Ry(pitch) * Rx(roll)
-        # Output order is [Z, Y, X] = [yaw, pitch, roll] to match euler_angles_to_quaternion
+        # Output order is [X, Y, Z] = [roll, pitch, yaw]
 
         # pitch = -asin(m20)
         m20_clamped = wp.clamp(m20, -one, one)
@@ -797,10 +797,10 @@ def _wk_quaternion_to_euler_angles(
             roll = zero
             yaw = wp.atan2(-m01, m11)
 
-        # Output in [Z, Y, X] order for extrinsic convention
-        angle1 = yaw  # Z rotation (first element)
+        # Output in [X, Y, Z] order for extrinsic convention
+        angle1 = roll  # X rotation (first element)
         angle2 = pitch  # Y rotation (second element)
-        angle3 = roll  # X rotation (third element)
+        angle3 = yaw  # Z rotation (third element)
     else:
         # For intrinsic XYZ convention: R = Rx(roll) * Ry(pitch) * Rz(yaw)
         # Output order is [X, Y, Z] = [roll, pitch, yaw]

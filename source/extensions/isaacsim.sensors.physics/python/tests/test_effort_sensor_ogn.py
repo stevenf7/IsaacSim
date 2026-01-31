@@ -15,35 +15,34 @@
 import asyncio
 import sys
 
-import carb
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
+import omni.timeline
 import usdrt.Sdf
-from isaacsim.core.api import World
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
-from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf, UsdPhysics
+from pxr import UsdPhysics
+
+from .common import step_simulation
 
 
 class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
+        physics_rate = 60
+        SimulationManager.setup_simulation(dt=1.0 / physics_rate)
+        self._timeline = omni.timeline.get_timeline_interface()
         await self.setUp_environment()
         await self.setup_ogn()
 
-        physics_rate = 60
-        self.my_world = World(stage_units_in_meters=1.0, physics_dt=1.0 / physics_rate, rendering_dt=1.0 / physics_rate)
-        await self.my_world.initialize_simulation_context_async()
-
     async def tearDown(self):
-        if self.my_world:
-            self.my_world.stop()
-            self.my_world.clear_instance()
+        if self._timeline.is_playing():
+            self._timeline.stop()
+        SimulationManager.invalidate_physics()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             # print("tearDown, assets still loading, waiting to finish...")
@@ -56,17 +55,17 @@ class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
         assets_root_path = get_assets_root_path()
 
         asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/Articulation")
+        stage_utils.add_reference_to_stage(usd_path=asset_path, path="/Articulation")
         arm_joint = "/Articulation/Arm/RevoluteJoint"
-        arm_prim = get_prim_at_path(arm_joint)
+        arm_prim = prim_utils.get_prim_at_path(arm_joint)
         joint = UsdPhysics.RevoluteJoint(arm_prim)
         joint.CreateAxisAttr("Y")
 
     async def setup_ogn(self):
         self.graph_path = "/TestGraph"
 
-        if get_prim_at_path(self.graph_path):
-            delete_prim(self.graph_path)
+        if prim_utils.get_prim_at_path(self.graph_path).IsValid():
+            stage_utils.delete_prim(self.graph_path)
 
         keys = og.Controller.Keys
         try:
@@ -91,9 +90,9 @@ class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
             og.Controller.attribute(self.graph_path + "/ReadEffortNode.inputs:prim"),
             [usdrt.Sdf.Path("/Articulation/Arm/RevoluteJoint")],
         )
-        self.my_world.play()
+        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5)
+        await step_simulation(0.5)
         effort_value = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:value").get()
         self.assertNotEqual(effort_value, 0.0)
 
@@ -104,8 +103,8 @@ class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
 
     async def test_invalid_effort_sensor_ogn(self):
 
-        self.my_world.play()
-        await simulate_async(0.5)
+        self._timeline.play()
+        await step_simulation(0.5)
 
         effort_value = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:value").get()
         self.assertEqual(effort_value, 0.0)

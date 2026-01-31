@@ -434,10 +434,10 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         result_rad = transform_utils.quaternion_to_euler_angles(quat_90x, degrees=False, extrinsic=True)
         result_deg = transform_utils.quaternion_to_euler_angles(quat_90x, degrees=True, extrinsic=True)
 
-        # For extrinsic convention, output order is [Z, Y, X], so X rotation is at index 2
-        # Should be approximately [0, 0, pi/2] in radians and [0, 0, 90] in degrees
-        self.assertTrue(np.allclose(result_rad.numpy()[2], np.pi / 2, atol=self.tolerance))
-        self.assertTrue(np.allclose(result_deg.numpy()[2], 90.0, atol=self.tolerance))
+        # For extrinsic convention, output order is [X, Y, Z], so X rotation is at index 0
+        # Should be approximately [pi/2, 0, 0] in radians and [90, 0, 0] in degrees
+        self.assertTrue(np.allclose(result_rad.numpy()[0], np.pi / 2, atol=self.tolerance))
+        self.assertTrue(np.allclose(result_deg.numpy()[0], 90.0, atol=self.tolerance))
 
     async def test_quaternion_to_euler_angles_intrinsic(self):
         """Test quaternion_to_euler_angles with intrinsic convention"""
@@ -518,7 +518,8 @@ class TestTransform(omni.kit.test.AsyncTestCase):
 
         for euler_original in test_angles:
             # Convert to quaternion
-            quaternion = transform_utils.euler_angles_to_quaternion(euler_original, extrinsic=True)
+            euler_extrinsic = euler_original[[2, 1, 0]]
+            quaternion = transform_utils.euler_angles_to_quaternion(euler_extrinsic, extrinsic=True)
 
             # Convert back to euler
             euler_back = transform_utils.quaternion_to_euler_angles(quaternion, extrinsic=True)
@@ -548,7 +549,8 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             euler = transform_utils.quaternion_to_euler_angles(quat_original, extrinsic=True)
 
             # Convert back to quaternion
-            quat_back = transform_utils.euler_angles_to_quaternion(euler, extrinsic=True)
+            euler_extrinsic = euler.numpy()[[2, 1, 0]]
+            quat_back = transform_utils.euler_angles_to_quaternion(euler_extrinsic, extrinsic=True)
 
             # Quaternions q and -q represent the same rotation
             quat_back_np = quat_back.numpy()
@@ -617,16 +619,16 @@ class TestTransform(omni.kit.test.AsyncTestCase):
 
         result_np = result.numpy()
 
-        # For extrinsic convention, output order is [Z, Y, X]
+        # For extrinsic convention, output order is [X, Y, Z]
         # Check identity gives zero angles
         self.assertTrue(np.allclose(result_np[0], np.zeros(3), atol=self.tolerance))
 
-        # Check 90 deg X rotation gives [0, 0, pi/2] (X is at index 2)
-        self.assertTrue(np.allclose(result_np[1, 2], np.pi / 2, atol=self.tolerance))
-        self.assertTrue(np.allclose(result_np[1, :2], np.zeros(2), atol=self.tolerance))
+        # Check 90 deg X rotation gives [pi/2, 0, 0]
+        self.assertTrue(np.allclose(result_np[1, 0], np.pi / 2, atol=self.tolerance))
+        self.assertTrue(np.allclose(result_np[1, 1:], np.zeros(2), atol=self.tolerance))
 
-        # Check 90 deg Y rotation gives [0, pi/2, 0] (Y is at index 1)
+        # Check 90 deg Y rotation gives [0, pi/2, 0]
         self.assertTrue(np.allclose(result_np[2, 1], np.pi / 2, atol=self.tolerance))
 
-        # Check 90 deg Z rotation gives [pi/2, 0, 0] (Z is at index 0)
-        self.assertTrue(np.allclose(result_np[3, 0], np.pi / 2, atol=self.tolerance))
+        # Check 90 deg Z rotation gives [0, 0, pi/2]
+        self.assertTrue(np.allclose(result_np[3, 2], np.pi / 2, atol=self.tolerance))
