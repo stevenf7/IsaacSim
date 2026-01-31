@@ -12,15 +12,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-TODO: we should allow the user to easily access all of the collision objects, robot pose,
-etc that exist in the real sim.
-"""
-
-
-class SimWorldInterface:
-    """
-    Interface for searching the USD world for collision objects.
-    """
-
-    pass
+from .core_type import get_shape_type
