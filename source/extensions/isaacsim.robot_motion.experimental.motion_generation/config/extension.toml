@@ -4,7 +4,7 @@
 #
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "simulation"
 title = "motion_generation"
 description = "Contains APIs for interfacing external motion generation code to isaacsim."
@@ -17,6 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.core.experimental.utils" = {}
+"isaacsim.core.experimental.objects" = {}
 
 # define the Python module that the extension provides
 [[python.module]]
@@ -30,7 +31,6 @@ name = "isaacsim.robot_motion.experimental.motion_generation.tests"
 [[test]]
 enabled = true
 dependencies = [
-    "omni.kit.test",
 ]
 
 stdoutFailPatterns.exclude = [
