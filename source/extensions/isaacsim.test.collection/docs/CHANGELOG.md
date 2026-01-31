@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.0] - 2026-01-27
+### Changed
+- Add test for euler to quaternion conversion utils
+
 ## [2.2.7] - 2025-12-03
 ### Changed
 - Remove TODOs.

@@ -1,5 +1,5 @@
 [package]
-version = "0.6.3"
+version = "0.7.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -17,6 +17,9 @@ writeTarget.kit = true
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.nodes" = {}
 "isaacsim.robot.schema" = {}
+"isaacsim.core.experimental.objects" = {}
+"isaacsim.core.experimental.prims" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
 "omni.kit.numpy.common" = {}
@@ -62,6 +65,8 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadIMU: [/TestGraph] Invalid Imu sensor prim*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/ReadEffortNode: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/ReadIMUNode: [/TestGraph] Invalid Imu sensor prim*',
+    '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
+    '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
 ]

@@ -1,4 +1,8 @@
 # Changelog
+## [0.7.0] - 2026-01-28
+### Added
+- Refactor IMU and contact sensor tests to use experimental core APIs
+
 ## [0.6.3] - 2025-12-07
 ### Changed
 - Fix clang tidy issues in cpp code

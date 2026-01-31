@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.2] - 2026-01-27
+### Fixed
+- Fix inconsistency in euler to quaternion conversion utils
+
 ## [0.11.1] - 2026-01-22
 ### Changed
 - Replace the `isaacsim.core.version` extension used for app utils test cases by `omni.pip.cloud`
