@@ -109,17 +109,116 @@ simulation_app = SimulationApp(
 
 REPLICATOR_GLOBAL_SEED = 11
 
+from typing import List
+
 import carb
 import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.storage.native import get_assets_root_path
+from omni.replicator.core import Writer
 
 enable_extension("isaacsim.benchmark.services")
-from isaacsim.benchmark.services import BaseIsaacBenchmark
+from isaacsim.benchmark.services import DEFAULT_RECORDERS, BaseIsaacBenchmark
+from isaacsim.benchmark.services.datarecorders import (
+    MeasurementData,
+    MeasurementDataRecorder,
+    MeasurementDataRecorderRegistry,
+)
+from isaacsim.benchmark.services.metrics import measurements
+
+
+class FPSWriter(Writer):
+    """Lightweight writer that tracks replicator step speed (FPS)."""
+
+    def __init__(self, annotators=None):
+        self._last_frame_time = None
+        self._times_per_frame = []
+        self.annotators = annotators if annotators else ["rgb"]
+
+    def write(self, data):
+        if self._last_frame_time is None:
+            self._last_frame_time = time.time()
+            return
+
+        time_per_frame = time.time() - self._last_frame_time
+        self._times_per_frame.append(time_per_frame)
+        self._last_frame_time = time.time()
+
+    def on_final_frame(self):
+        if self._times_per_frame:
+            time_per_frame = sum(self._times_per_frame) / len(self._times_per_frame)
+
+
+# ============================================================================
+# Custom Replicator FPS Recorder (Benchmark Recorder Plugin)
+# ============================================================================
+@MeasurementDataRecorderRegistry.register("replicator_fps")
+class ReplicatorFPSRecorder(MeasurementDataRecorder):
+    """
+    Records Replicator FPS by reading data from an attached FPSWriter.
+
+    This recorder acts as a bridge between the Replicator FPSWriter and
+    the benchmark metrics system.
+    """
+
+    def __init__(self, context=None):
+        self.context = context
+        self._fps_writer = None
+
+    def set_fps_writer(self, fps_writer: FPSWriter):
+        """Attach an FPSWriter instance to read data from."""
+        self._fps_writer = fps_writer
+
+    def start_collecting(self):
+        pass
+
+    def stop_collecting(self):
+        pass
+
+    def get_data(self) -> MeasurementData:
+        """Get Replicator FPS measurements from the attached FPSWriter."""
+        if not self._fps_writer or not self._fps_writer._times_per_frame:
+            return MeasurementData()
+
+        times = self._fps_writer._times_per_frame
+        avg_time = sum(times) / len(times)
+        avg_fps = 1.0 / avg_time if avg_time > 0 else 0.0
+        min_time = min(times)
+        max_time = max(times)
+
+        return MeasurementData(
+            measurements=[
+                measurements.SingleMeasurement(name="Mean FPS", value=round(avg_fps, 2), unit="FPS"),
+                measurements.SingleMeasurement(
+                    name="Replicator Images/s", value=round(avg_fps * num_cameras, 2), unit="img/s"
+                ),
+                measurements.SingleMeasurement(
+                    name="Mean Replicator Frametime", value=round(avg_time * 1000, 2), unit="ms"
+                ),
+                measurements.SingleMeasurement(
+                    name="Min Replicator Frametime", value=round(min_time * 1000, 2), unit="ms"
+                ),
+                measurements.SingleMeasurement(
+                    name="Max Replicator Frametime", value=round(max_time * 1000, 2), unit="ms"
+                ),
+                measurements.SingleMeasurement(name="Replicator Total Frames", value=len(times) + 1, unit="frames"),
+            ]
+        )
+
 
 # Create the benchmark
+recorders = DEFAULT_RECORDERS.copy()
+if gpu_frametime:
+    recorders.append("gpu_frametime")
+
+# Don't track app_frametime to avoid overhead of timing Kit updates
+if "app_frametime" in recorders:
+    recorders.remove("app_frametime")
+# Add replicator FPS recorder (useful for SDG benchmarks)
+recorders.append("replicator_fps")
+
 benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_sdg",
     workflow_metadata={
@@ -131,10 +230,11 @@ benchmark = BaseIsaacBenchmark(
             {"name": "asset_count", "data": asset_count},
             {"name": "annotators", "data": annotators_str},
             {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
+            {"name": "skip_write", "data": skip_write},
         ]
     },
     backend_type=args.backend_type,
-    gpu_frametime=gpu_frametime,
+    recorders=recorders,
 )
 
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
@@ -162,14 +262,24 @@ for i in range(num_cameras):
 render_products = []
 for i, cam in enumerate(cameras):
     render_products.append(rep.create.render_product(cam, (width, height), name=f"rp_{i}"))
-if skip_write:
-    print("[SDG Benchmark] Skipping writing to disk, attaching annotators to render products..")
-    for annot_type, enabled in annotators_kwargs.items():
-        if enabled:
-            annot = rep.AnnotatorRegistry.get_annotator(annot_type)
-            for rp in render_products:
-                annot.attach(rp)
-else:
+
+# Get replicator FPS recorder if enabled
+replicator_fps_recorder = None
+for recorder in benchmark.recorders:
+    if isinstance(recorder, ReplicatorFPSRecorder):
+        replicator_fps_recorder = recorder
+        break
+
+# Setup FPS writer if recorder is enabled
+if replicator_fps_recorder:
+    # Use the same annotators as the benchmark to track actual workload
+    fps_writer_instance = FPSWriter(annotators=list(annotators_kwargs.keys()))
+    fps_writer_instance.attach(render_products)
+    replicator_fps_recorder.set_fps_writer(fps_writer_instance)
+    print(f"[SDG Benchmark] FPS writer attached tracking annotators: {list(annotators_kwargs.keys())}")
+
+# Setup BasicWriter for data output (unless skip_write is enabled)
+if not skip_write:
     writer = rep.writers.get("BasicWriter")
     output_directory = (
         os.getcwd()
@@ -178,6 +288,7 @@ else:
     print(f"[SDG Benchmark] Output directory: {output_directory}")
     writer.initialize(output_dir=output_directory, **annotators_kwargs)
     writer.attach(render_products)
+
 assets = rep.create.group([cubes, cones, cylinders, spheres, tori])
 cameras = rep.create.group(cameras)
 

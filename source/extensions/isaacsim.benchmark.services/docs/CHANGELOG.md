@@ -1,4 +1,24 @@
 # Changelog
+## [4.0.0] - 2026-01-28
+### Added
+- Decorator-based plug-in system for recorders using `@MeasurementDataRecorderRegistry.register()`
+- `DEFAULT_RECORDERS` constant exported for customization in benchmark scripts
+- Process-specific CPU tracking
+- Main thread CPU tracking via single-core usage metrics (Mean/Min/Max)
+- Support for selecting recorders via `recorders` list passed into `BaseIsaacBenchmark` instance
+
+### Changed
+- Merged `BaseIsaacBenchmark` and `BaseIsaacBenchmarkAsync` into unified core with shared logic
+- Refactored data architecture: eliminated collector layer, one recorder per metric
+- Report formatting: metrics ordered by category (Performance, Custom, Memory, CPU table, Frametime table)
+- Recorder lifecycle: stop/collect from recorders that were started in a given phase
+
+### Removed
+- Legacy collector classes (`IsaacUpdateFrametimeCollector`)
+- Wrapper layer between collectors and recorders
+- Unused profiling, settings, and execution modules
+- Removed support for passing in `gpu_frametime=True` into `BaseIsaacBenchmark` instance
+
 ## [3.5.2] - 2026-01-08
 ### Changed
 - Migrate more events to Events 2.0.
