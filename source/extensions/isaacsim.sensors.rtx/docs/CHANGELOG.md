@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.12.0] - 2025-01-30
+### Added
+- Use Hydra time (omni.timeline) in RTX Sensor models
+### Changed
+- Refactor Annotator tests to include soak tests and comparisons against upstream Annotator outputs
+- TestSupportedLidarConfigs tests only prims without saving a new USD for each test
+### Removed
+- Test only specific lidar configs in Annotator tests, rather than all configs
+- Unused Lidar USDA test
+### Fixed
+- Only reset outputs in IsaacCreateRTXLidarScanBuffer if enablePerFrameOutput == True, preventing output "flickering"
+- Prevent USD path warnings when using IsaacSensorCreateRtxSensor commands
+
 ## [15.11.9] - 2026-01-28
 ### Changed
 - IsaacSensorCreateRtxSensor commands accept usd_path argument to enable adding arbitrary RTX Sensor USDs to the stage

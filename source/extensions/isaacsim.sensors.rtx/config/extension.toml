@@ -1,5 +1,5 @@
 [package]
-version = "15.11.9"
+version = "15.12.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -78,6 +78,8 @@ app.sensors.nv.radar.outputBufferOnGPU = true
 rtx.materialDb.nonVisualMaterialCSV.enabled=false
 # Specify non-visual material USD attribute prefix
 rtx.materialDb.nonVisualMaterialSemantics.prefix="omni:simready:nonvisual"
+# Use Hydra time (omni.timeline) in RTX Sensor models
+rtx.rtxsensor.useHydraTimeAlways = true
 
 [[test]]
 name = "startup"
@@ -161,8 +163,8 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     ### Extension specific args
-    "--/app/hydraEngine/waitIdle=1",
-    "--/app/updateOrder/checkForHydraRenderComplete=1000",
+    #"--/app/hydraEngine/waitIdle=1",
+    #"--/app/updateOrder/checkForHydraRenderComplete=1000",
     "--/rtx-transient/stableIds/enabled=true",
     "--/renderer/raytracingMotion/enabled=true",
     "--/renderer/raytracingMotion/enableHydraEngineMasking=true",

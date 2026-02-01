@@ -50,6 +50,7 @@ class TestSupportedLidarConfigs(omni.kit.test.AsyncTestCase):
         self._checker.init(model_info)
 
     async def tearDown(self):
+        del self._checker
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -58,12 +59,6 @@ class TestSupportedLidarConfigs(omni.kit.test.AsyncTestCase):
 
 
 # Iterate over all supported lidar configs and variants, creating a test for each as sensor prims
-DISABLE_FOR_TEST = {
-    "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda",
-    "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda",
-}
-
-
 def _create_lidar_parameters_test(config_name, variant):
     async def test_function(self):
         # Create sensor prim
@@ -83,37 +78,24 @@ def _create_lidar_parameters_test(config_name, variant):
             sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
         )
 
-        # Get the prim path
-        prim_path = str(self.sensor.GetPath())
+        error_string = self._checker.validateParams(self.sensor)
+        self.assertIsNone(
+            error_string,
+            f"Sensor parameter validation failed for config {config_name} variant {variant}: {error_string}",
+        )
 
-        # Save the current stage to a temporary file
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_usd_path = os.path.join(temp_dir, "test_stage.usda")
-            save_result = save_stage(temp_usd_path, save_and_reload_in_place=False)
-            self.assertTrue(save_result, f"Failed to save stage to {temp_usd_path}")
-
-            # Validate parameters using sensor checker
-            error_string = self._checker.validateParams(temp_usd_path, prim_path)
-            self.assertIsNone(
-                error_string,
-                f"Sensor parameter validation failed for config {config_name} variant {variant}: {error_string}",
-            )
-
-            # Verify that validated parameters were cached
-            validated_params = self._checker.getValidatedParams()
-            self.assertIsNotNone(validated_params, "Failed to retrieve validated parameters")
-            self.assertGreater(
-                validated_params.numParams,
-                0,
-                f"Expected validated parameters, got {validated_params.numParams} parameters",
-            )
+        validated_params = self._checker.getValidatedParams()
+        self.assertIsNotNone(validated_params, "Failed to retrieve validated parameters")
+        self.assertGreater(
+            validated_params.numParams,
+            0,
+            f"Expected validated parameters, got {validated_params.numParams} parameters",
+        )
 
     return test_function
 
 
 for config_path in SUPPORTED_LIDAR_CONFIGS:
-    if config_path in DISABLE_FOR_TEST:
-        continue
     config_name = Path(config_path).stem
     for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
         test_name = f"test_lidar_parameters_{config_name}_{variant}"
