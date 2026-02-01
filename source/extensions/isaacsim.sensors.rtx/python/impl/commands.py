@@ -287,6 +287,8 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
             The created sensor prim.
         """
         self._stage = omni.usd.get_context().get_stage()
+        if not self._path.startswith("/"):
+            self._path = "/" + self._path
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = (
             not self._force_camera_prim and (self._add_reference() or self._call_replicator_api())

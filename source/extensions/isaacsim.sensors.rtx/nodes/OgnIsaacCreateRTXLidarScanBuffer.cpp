@@ -806,6 +806,46 @@ public:
         }
     }
 
+    static void resetOutputs(OgnIsaacCreateRTXLidarScanBufferDatabase& db)
+    {
+        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
+        matrixOutput.SetIdentity();
+        db.outputs.dataPtr() = 0;
+        db.outputs.bufferSize() = 0;
+        db.outputs.width() = 0;
+        db.outputs.height() = 1;
+        db.outputs.azimuthPtr() = 0;
+        db.outputs.azimuthBufferSize() = 0;
+        db.outputs.elevationPtr() = 0;
+        db.outputs.elevationBufferSize() = 0;
+        db.outputs.distancePtr() = 0;
+        db.outputs.distanceBufferSize() = 0;
+        db.outputs.intensityPtr() = 0;
+        db.outputs.intensityBufferSize() = 0;
+        db.outputs.timestampPtr() = 0;
+        db.outputs.timestampBufferSize() = 0;
+        db.outputs.emitterIdPtr() = 0;
+        db.outputs.emitterIdBufferSize() = 0;
+        db.outputs.channelIdPtr() = 0;
+        db.outputs.channelIdBufferSize() = 0;
+        db.outputs.materialIdPtr() = 0;
+        db.outputs.materialIdBufferSize() = 0;
+        db.outputs.tickIdPtr() = 0;
+        db.outputs.tickIdBufferSize() = 0;
+        db.outputs.hitNormalPtr() = 0;
+        db.outputs.hitNormalBufferSize() = 0;
+        db.outputs.velocityPtr() = 0;
+        db.outputs.velocityBufferSize() = 0;
+        db.outputs.objectIdPtr() = 0;
+        db.outputs.objectIdBufferSize() = 0;
+        db.outputs.echoIdPtr() = 0;
+        db.outputs.echoIdBufferSize() = 0;
+        db.outputs.tickStatePtr() = 0;
+        db.outputs.tickStateBufferSize() = 0;
+        db.outputs.radialVelocityMSPtr() = 0;
+        db.outputs.radialVelocityMSBufferSize() = 0;
+    }
+
 
     static bool compute(OgnIsaacCreateRTXLidarScanBufferDatabase& db)
     {
@@ -814,45 +854,15 @@ public:
         db.outputs.exec() = kExecutionAttributeStateEnabled;
         auto& state = db.perInstanceState<OgnIsaacCreateRTXLidarScanBuffer>();
 
+        // Always set the CUDA device index so downstream nodes know on which device to expect data
+        db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
+
         // Set default output values
         auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
+        matrixOutput.SetIdentity();
+        if (state.m_firstFrame || db.inputs.enablePerFrameOutput())
         {
-            db.outputs.dataPtr() = 0;
-            db.outputs.cudaDeviceIndex() = db.inputs.cudaDeviceIndex();
-            db.outputs.bufferSize() = 0;
-            db.outputs.width() = 0;
-            db.outputs.height() = 1;
-            matrixOutput.SetIdentity();
-            db.outputs.azimuthPtr() = 0;
-            db.outputs.azimuthBufferSize() = 0;
-            db.outputs.elevationPtr() = 0;
-            db.outputs.elevationBufferSize() = 0;
-            db.outputs.distancePtr() = 0;
-            db.outputs.distanceBufferSize() = 0;
-            db.outputs.intensityPtr() = 0;
-            db.outputs.intensityBufferSize() = 0;
-            db.outputs.timestampPtr() = 0;
-            db.outputs.timestampBufferSize() = 0;
-            db.outputs.emitterIdPtr() = 0;
-            db.outputs.emitterIdBufferSize() = 0;
-            db.outputs.channelIdPtr() = 0;
-            db.outputs.channelIdBufferSize() = 0;
-            db.outputs.materialIdPtr() = 0;
-            db.outputs.materialIdBufferSize() = 0;
-            db.outputs.tickIdPtr() = 0;
-            db.outputs.tickIdBufferSize() = 0;
-            db.outputs.hitNormalPtr() = 0;
-            db.outputs.hitNormalBufferSize() = 0;
-            db.outputs.velocityPtr() = 0;
-            db.outputs.velocityBufferSize() = 0;
-            db.outputs.objectIdPtr() = 0;
-            db.outputs.objectIdBufferSize() = 0;
-            db.outputs.echoIdPtr() = 0;
-            db.outputs.echoIdBufferSize() = 0;
-            db.outputs.tickStatePtr() = 0;
-            db.outputs.tickStateBufferSize() = 0;
-            db.outputs.radialVelocityMSPtr() = 0;
-            db.outputs.radialVelocityMSBufferSize() = 0;
+            resetOutputs(db);
         }
 
         if (!db.inputs.dataPtr())
