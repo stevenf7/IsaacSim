@@ -23,7 +23,7 @@ optional ROS bridge setup.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 import carb.settings
 import omni.client
@@ -58,7 +58,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings: ISettings = carb.settings.get_settings()
         self._ext_manager: IExtensionManager = omni.kit.app.get_app().get_extension_manager()
         self._app: IApp = omni.kit.app.get_app()
-        self._pending_tasks: List[asyncio.Task] = []
+        self._pending_tasks: list[asyncio.Task] = []
 
         self._setup_window_title()
         self._schedule_async_tasks()
@@ -73,6 +73,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
         Cancels any pending async tasks to ensure clean shutdown.
         """
+        menu.cleanup_menus()
         for task in self._pending_tasks:
             if not task.done():
                 task.cancel()

@@ -1,4 +1,11 @@
 # Changelog
+
+## [2.6.0] - 2026-01-26
+### Changed
+- Fix broken Isaac Sim documentation links
+- Update deprecated onclick_fn to on_click_action
+- Added missing docstrings and cleanup code
+
 ## [2.5.3] - 2026-01-24
 ### Changed
 - Fix issues with menu click and context menu tests being flaky

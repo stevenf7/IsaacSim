@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Menu-driven asset creation tests for Isaac Sim."""
 
 from pathlib import Path
 
@@ -47,8 +48,12 @@ ROBOT_SKIP_LIST = ["Create/Robots/Asset Browser"]
 class TestRobotMenuAssets(MenuUITestCase):
     """Test class for verifying robot menu asset loading functionality."""
 
-    async def _test_robot_menu_option(self, test_path: str):
-        """Test a specific robot menu option."""
+    async def _test_robot_menu_option(self, test_path: str) -> None:
+        """Test a specific robot menu option.
+
+        Args:
+            test_path: Menu path to trigger.
+        """
         await self.menu_click_with_retry(test_path)
         await self.wait_n_frames(20)
         await self.wait_for_stage_loading()
@@ -99,8 +104,12 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
         self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
         self._usd_selection = omni.usd.get_context().get_selection()
 
-    async def _test_environment_menu_option(self, test_path: str):
-        """Test a specific environment menu option."""
+    async def _test_environment_menu_option(self, test_path: str) -> None:
+        """Test a specific environment menu option.
+
+        Args:
+            test_path: Menu path to trigger.
+        """
         await self.menu_click_with_retry(test_path, delays=[100, 150, 200])
         await self.wait_n_frames(10)
         await self.wait_for_stage_loading()

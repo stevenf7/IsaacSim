@@ -1,4 +1,9 @@
 # Changelog
+## [1.9.0] - 2026-01-26
+### Changed
+- Update deprecated onclick_fn to on_click_action
+- Added missing docstrings and cleanup code
+
 ## [1.8.1] - 2026-01-22
 ### Changed
 - Refactor enable_ros_extensions to properly wait for viewport to be ready before enabling ROS2 extensions
